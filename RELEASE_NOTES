@@ -81,4 +81,8 @@
    it into a file ."configname".queue
 
 
-6- FUN : sarracenia  :  another rare, mostly carnivorous, canadian plant... (as sundew,columbo)
+6- Under etc/config_samples you will find working configuration files provided as is
+   without garanty. Under directory others you will find other programs that play with
+   our URL messages
+
+7- FUN : sarracenia  :  another rare, mostly carnivorous, canadian plant... (as sundew,columbo)
