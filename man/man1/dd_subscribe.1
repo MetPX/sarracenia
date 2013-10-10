@@ -5,13 +5,12 @@ dd_subscribe \- Python program to select and download Environment Canada's datam
 .B dd_subscribe \fIconfigfile.conf\fR
 .SH DESCRIPTION
 .PP
-\fBdd.weather.gc.ca\fR is Environment Canada's website where several meteorological products are
-made available. The website servers run \fBRabbitMQ\fR (http://www.rabbitmq.com).
-\fBMETPX\fR (http://sourceforge.net/projects/metpx)) is able to publish an amqp messages
-that contain the URL for each products posted (as soon as it is available on the website).
+\fBdd.weather.gc.ca\fR is Environment Canada's website where a wide variety of meteorological products are
+made available to the public. The website servers publish an amqp messages
+containing the URL for each product posted as soon as it is available on the website.
 
 \fBdd_subscribe\fR is a python program that uses python-pika to receive these amqp messages
-and retrieve the web products using python's urllib2 module.
+and retrieve the web products and place them in a chosen local directory.
 
 \fBdd_subscribe\fR takes one argument a configuration file. 
 
