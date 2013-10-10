@@ -1,16 +1,16 @@
 ------------- Below some notes for the initial release ---------------------------------------------
 
-1- dd.weather.gc.ca is Environment Canada's website where a whide variety of meteorological products are
+1- dd.weather.gc.ca is Environment Canada's website where a wide variety of meteorological products are
    made available to the public. The website servers publish an amqp message containing
    the URL for each product posted as soon as it is available on the website. Any application which can 
    connect to an AMQP broket and retrieve via http could be used to obtain data from the server in
    real-time. There is a wide variety of languages with theses capabilities available on virtually any
-   computing platform. We have produced some simple client for demonstration purposes.
+   computing platform. We have produced some simple clients for demonstration purposes.
 
 2- dd_subscribe is a python program that uses python-pika to receive these amqp messages
    and retrieve the web products and place them in a chosen local directory.
 
-3- dd_subscribe takes one argument a config file. 
+3- dd_subscribe takes one argument: a config file. 
 
 4- The config file is simple (see dd_subscribe manpage).
    The specified defaults for the config file options are valid and
