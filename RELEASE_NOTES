@@ -1,0 +1,82 @@
+------------- Below some notes for the initial release ---------------------------------------------
+
+1- dd.weather.gc.ca is Environment Canada's website where several meteorological products are
+   made available to the public. The website servers run RabbitMQ (http://www.rabbitmq.com)
+   METPX (http://sourceforge.net/projects/metpx)) is able to publish an amqp message containing
+   the URL for each products posted as soon as it is available on the website.
+
+2- dd_subscribe is a python program that uses python-pika to receive these amqp messages
+   and retrieve the web products using python's urllib2 module.
+
+3- dd_subscribe takes one argument a config file. 
+
+4- The config file is simple (see dd_subscribe manpage).
+   The specified defaults for the config file options are valid and
+   working at the time this release was done.  The config files may contain :
+
+      a) credentials for the rabbitmq server, these options are 
+
+               host               default  host          dd.weather.gc.ca
+               port               default  port          5672
+               amqp-user          default  amqp-user     anonymous
+               amqp-password      default  amqp-password anonymous
+
+
+      b) amqp exchange settings to be able to receive the desired notifications (URL)
+
+              exchange            default  exchange      cmc
+              exchange_type       default  exchange_type topic
+              exchange_key        no default ... 
+                                  
+         - several exchange_key options may be declared
+         - to give a correct value to the exchange key, browse the following website
+           http://dd.weather.gc.ca  and pick any directories where the products are 
+           interesting for you. For each directory use the option exchange_key as follow :
+
+                 exchange_key  exp.dd.notify.directory1.subdirectory2.*.subdirectory4.#
+
+                 where     exp.dd.notify. is a mandatory prefix
+                           *              replace a directory name (one * per directory)
+                           #              stands for the remaining possibilities
+
+
+      c) http credentials (not used for now... might be implemented for restricted products)
+
+               http-user          default  http-user     None
+               http-password      default  http-password None
+
+
+      d) delivery specifications
+
+               lock               default  lock          .tmp
+               directory          default  directory     .
+               accept             default  accept        None
+               reject             default  reject        None
+
+        
+         - The lock option is a suffix given to the file during the download
+           and taken away when it is completed... This gives a mean to avoid
+           processing the file prematurely.
+
+         - The option directory  defines where to put the files on your server.
+           Combined with accept/reject options, the user can select the
+           files of interest and their directories of residence.
+           Theses options are processed sequentially. A product rejected is never downloaded.
+           Accepted products are places under the closest directory option declared above the
+           accept option that picked it. The accept and reject option used regexp to match
+           URL.
+
+           ex.     directory /mylocal/myradars
+                   accept    .*RADAR.*
+
+                   directory /mylocal/mygribs
+                   reject    .*Reg.*
+                   accept    .*GRIB.*
+           
+           
+
+5- When executed, dd_subscribe creates a queue name that should be unique and puts
+   it into a file ."configname".queue
+
+
+6- FUN : sarracenia  : yet another canadian carnivore plant... (as sundew,columbo)
