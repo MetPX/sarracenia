@@ -290,6 +290,8 @@ class Consumer(object):
         """
         LOGGER.debug('Issuing consumer related RPC commands')
         self.add_on_cancel_callback()
+        # this line permits parallel pull 
+        self._channel.basic_qos(prefetch_count=1)
         self._consumer_tag = self._channel.basic_consume(self.on_message, self.queue)
 
     def on_bindok(self, unused_frame):

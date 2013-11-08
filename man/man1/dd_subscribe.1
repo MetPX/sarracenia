@@ -117,8 +117,11 @@ ex.     directory /mylocaldirectory/myradars
 When executed, \fBdd_subscribe\fR creates a queue name that should be unique.
 It puts that name a file named ."configfile".queue . Normally \fBdd_subscribe\fR
 would run like a deamon. If it is stopped, the messages (URL notifications) are queued.
-Once reconnected, the downloads resume as expected. Queues take resources onto our
-servers. We are running periodicaly a queue cleaner. 
+Once reconnected, the downloads resume as expected.
+You can run several dd_subscribe with different configuration files.
+You can parallelize the download of products by running under the same user/directory
+several dd_subscribe with the same configuration file.
+Queues take resources onto our servers. We are running periodicaly a queue cleaner. 
 A queue, unaccessed, for a long period (to be determined) will be destroyed.
 A queue, unaccessed, with too much products (to be determined) will be destroyed.
 .SH SARRACENIA
