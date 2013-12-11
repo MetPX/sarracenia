@@ -2,7 +2,7 @@
 .SH NAME
 dd_subscribe \- Python program to select and download Environment Canada's datamart products
 .SH SYNOPSIS
-.B dd_subscribe \fIconfigfile.conf\fR
+.B dd_subscribe \fI[-n]\fR \fIconfigfile.conf\fR
 .SH DESCRIPTION
 .PP
 \fBdd.weather.gc.ca\fR is Environment Canada's website where a wide variety of meteorological products are
@@ -13,6 +13,8 @@ containing the URL for each product posted as soon as it is available on the web
 and retrieve the web products and place them in a chosen local directory.
 
 \fBdd_subscribe\fR takes one argument a configuration file. 
+If you want \fBdd_subscribe\fR not to retrieve the products but only post the URL on standard
+output, execute:   dd_subscribe -n config_file
 
 .PP
 .SH CONFIGURATION

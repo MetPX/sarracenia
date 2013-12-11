@@ -11,6 +11,8 @@
    and retrieve the web products and place them in a chosen local directory.
 
 3- dd_subscribe takes one argument: a config file. 
+   If you want dd_subscribe not to retrieve the products but only post the URL on standard
+   output, execute:   dd_subscribe -n config_file
 
 4- The config file is simple (see dd_subscribe manpage).
    The specified defaults for the config file options are valid and

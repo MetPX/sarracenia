@@ -41,6 +41,7 @@ class Consumer(object):
         self._channel = None
         self._closing = False
         self._consumer_tag = None
+        self.notify_only = False
 
         self.config = config
         self.name   = config
@@ -395,6 +396,10 @@ class Consumer(object):
 
     def treaturl(self,url):
 
+        if self.notify_only :
+           LOGGER.info("%s" % url)
+           return True
+
         odir = self.getMatchingMask(url)
 
         # url not selected
@@ -472,7 +477,7 @@ class Consumer(object):
     def readConfig(self):
         currentDir = '.'
         currentFileOption = 'NONE' 
-        self.readConfigFile(sys.argv[1],currentDir,currentFileOption)
+        self.readConfigFile(self.config,currentDir,currentFileOption)
 
     def readConfigFile(self,filePath,currentDir,currentFileOption):
         
@@ -536,11 +541,25 @@ def main():
 
     # should have one argument
 
-    if len(sys.argv) != 2 :
-       LOGGER.error("need a configuration file")
+    if len(sys.argv) == 3 :
+           if sys.argv[1] != "-n" :
+              LOGGER.error("1USAGE %s [-n] configuration file",sys.argv[0])
+              sys.exit(1)
+           config = sys.argv[2]
+    else :
+           if len(sys.argv) != 2 :
+              LOGGER.error("2USAGE %s [-n] configuration file",sys.argv[0])
+              sys.exit(1)
+           config = sys.argv[1]
+
+
+    if not os.path.exists(config) :
+       LOGGER.error("3USAGE %s [-n] configuration file",sys.argv[0])
        sys.exit(1)
 
-    consumer = Consumer(sys.argv[1])
+    consumer = Consumer(config)
+    if sys.argv[1] == '-n' : consumer.notify_only = True
+
     try:
         consumer.run()
     except KeyboardInterrupt:
