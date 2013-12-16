@@ -80,7 +80,8 @@ products in the future.
 
 .fi
 .SH DELIVERY SPECIFICATIONS
-Theses options set what products the user wants and where it will be placed.
+Theses options set what products the user wants and where it will be placed,
+and under which name.
 .nf
 
 
@@ -89,6 +90,8 @@ Theses options set what products the user wants and where it will be placed.
 \fBaccept    <regexp pattern> (must be set)\fR
 \fBreject    <regexp pattern> (optional)\fR
 
+\fBflatten   <boolean>        (default: false)\fR
+\fBmirror    <boolean>        (default: false)\fR
 
 .fi
 .nf
@@ -98,7 +101,9 @@ processing the file prematurely.
 
 The option directory  defines where to put the files on your server.
 Combined with \fBaccept\fR/\fBreject\fR options, the user can select the
-files of interest and their directories of residence.
+files of interest and their directories of residence. (see the \fBmirror\fR
+option for more directory settings).
+
 
 The \fBaccept\fR and \fBreject\fR options use regexp to match URL.
 Theses options are processed sequentially. 
@@ -113,6 +118,35 @@ ex.     directory /mylocaldirectory/myradars
         reject    .*Reg.*
         accept    .*GRIB.*
 
+The \fBmirror\fR option can be used to mirror the dd.weather.gc.ca tree of the products.
+If set to \fBTrue\fR the directory given by the \fBdirectory\fR option
+will be the basename of a tree. Accepted products under that directory will be
+placed under the subdirectory tree leaf where it resides under dd.weather.gc.ca.
+For example retrieving the following url, with options:
+
+http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+
+   mirror    True
+   directory /mylocaldirectory
+   accept    .*RADAR.*
+
+would result in the creation of the directories and the file
+/mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+
+The \fBflatten\fR option is use to set a separator character. This character
+will be used to replace the '/' in the url directory and create a "flatten" filename
+form its dd.weather.gc.ca path.  For example retrieving the following url, 
+with options:
+
+http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
+
+   flatten   -
+   directory /mylocaldirectory
+   accept    .*model_gem_global.*
+
+would result in the creation of the filepath :
+
+/mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
 .fi
 .SH PRODUCT QUEUING

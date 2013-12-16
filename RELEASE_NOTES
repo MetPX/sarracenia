@@ -56,6 +56,8 @@
                directory          default  directory     .
                accept             default  accept        None
                reject             default  reject        None
+               mirror             enabling mirror        False
+               flatten            default flat char.     '/'
 
         
          - The lock option is a suffix given to the file during the download
@@ -77,6 +79,14 @@
                    reject    .*Reg.*
                    accept    .*GRIB.*
            
+         - The option mirror, if set to True, will put the files into a directory tree
+           similar to the one it resides on dd.weather.gc.ca except that the basename of
+           the tree will be the path set by the directory option.
+           
+         - The option flatten, sets a character that will be used to rename the file from
+           its path on dd.weather.gc.ca replacing the '/' by the flatten character setting.
+           The file will placed with that extended name in the directory defined by the directory
+           option.
            
 
 5- When executed, dd_subscribe creates a queue name that should be unique and puts

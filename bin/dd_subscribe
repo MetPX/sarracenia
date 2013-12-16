@@ -365,6 +365,9 @@ class Consumer(object):
         self.http_user     = None
         self.http_passwd   = None
 
+        self.flatten       = '/'
+        self.mirror        = False
+
         self.queuefile = ''
         parts = self.config.split(os.sep)
         if len(parts) != 1 :  self.queuefile = os.sep.join(parts[:-1]) + os.sep
@@ -394,24 +397,58 @@ class Consumer(object):
            f.write(self.queue)
            f.close()
 
+
+    # url path will be replicated under odir (the directory given in config file)
+    def mirrorpath(self, odir, url ):
+        nodir = odir
+        
+        try :
+              parts = url.split("/")
+              for d in parts[3:] :
+                  nodir = nodir + os.sep + d
+                  if os.path.isdir(nodir) : continue
+                  os.mkdir(nodir)
+        except :
+              LOGGER.error("directory problem %s" % nodir)
+
+        return nodir
+
+    # process individual url notification
     def treaturl(self,url):
 
+        # notify_only mode : print out received url
         if self.notify_only :
            LOGGER.info("%s" % url)
            return True
 
+        # root directory where the product will be put
         odir = self.getMatchingMask(url)
 
-        # url not selected
+        # no root directory for this url means url not selected
         if not odir : return True
 
-        if not os.path.exists(odir) :
+        # root directory should exists
+        if not os.path.isdir(odir) :
            LOGGER.error("directory %s does not exist" % odir)
            return False
 
+        # mirror mode True
+        # means extend root directory with url directory
+        nodir = odir
+        if self.mirror :
+           nodir = self.mirrorpath(odir,url)
+
+        # filename setting
         parts = url.split("/")
         fname = parts[-1]
-        opath = odir + os.sep + fname
+
+        # flatten mode True
+        # means use url to create filename by replacing "/" for self.flatten character
+        if self.flatten != '/' :
+           fname = self.flatten.join(parts[3:])
+
+        # setting filepath and temporary filepath
+        opath = nodir + os.sep + fname
         tpath = opath + self.lock
 
         try :
@@ -524,6 +561,8 @@ class Consumer(object):
                     elif words[0] == 'exchange_key': self.exchange_key.append(words[1])
                     elif words[0] == 'http-user': self.http_user = words[1]
                     elif words[0] == 'http-password': self.http_passwd = words[1]
+                    elif words[0] == 'mirror': self.mirror = isTrue(words[1])
+                    elif words[0] == 'flatten': self.flatten = words[1]
 
                 except:
                     LOGGER.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))
