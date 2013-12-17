@@ -404,12 +404,13 @@ class Consumer(object):
         
         try :
               parts = url.split("/")
-              for d in parts[3:] :
+              for d in parts[3:-1] :
                   nodir = nodir + os.sep + d
                   if os.path.isdir(nodir) : continue
                   os.mkdir(nodir)
         except :
-              LOGGER.error("directory problem %s" % nodir)
+              LOGGER.error("could not create or use directory %s" % nodir)
+              return None
 
         return nodir
 
@@ -437,6 +438,7 @@ class Consumer(object):
         nodir = odir
         if self.mirror :
            nodir = self.mirrorpath(odir,url)
+           if nodir == None : return False
 
         # filename setting
         parts = url.split("/")
