@@ -1,3 +1,11 @@
+metpx-sarracenia (0.2-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * default exchange name is now  xpublic
+  * call to exchange_declare : expose all option settings
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 27 Jan 2014 19:44:18 +0000
+
 metpx-sarracenia (0.1-precise) unstable; urgency=low
 
   [ Michel Grenier ]

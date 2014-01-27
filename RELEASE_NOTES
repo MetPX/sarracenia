@@ -40,7 +40,7 @@ you started.  The config files may contain :
 
       b) amqp exchange settings to be able to receive the desired notifications (URL)
 
-              exchange            default  exchange      cmc
+              exchange            default  exchange      xpublic
               exchange_type       default  exchange_type topic
               exchange_key        no default ... 
                                   
@@ -153,7 +153,7 @@ commencer.
       b) réglages d'échanges amqp permettant de recevoir les notifications (indiquant
          l'URL du produit)
 
-              exchange            default  exchange      cmc
+              exchange            default  exchange      xpublic
               exchange_type       default  exchange_type topic
               exchange_key        no default ... 
                                   

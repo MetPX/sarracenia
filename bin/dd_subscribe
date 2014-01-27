@@ -164,7 +164,10 @@ class Consumer(object):
 
         """
         LOGGER.info('Declaring exchange %s', exchange_name)
-        self._channel.exchange_declare(self.on_exchange_declareok, exchange_name, self.exchange_type)
+        self._channel.exchange_declare(self.on_exchange_declareok, exchange_name, self.exchange_type,
+                                       passive=False, durable=False, auto_delete=False, internal=False, nowait=False,
+                                       arguments=None)
+
 
     def on_exchange_declareok(self, unused_frame):
         """Invoked by pika when RabbitMQ has finished the Exchange.Declare RPC
@@ -358,7 +361,7 @@ class Consumer(object):
         self.masks         = []             # All the masks (accept and reject)
         self.lock          = '.tmp'         # file send with extension .tmp for lock
 
-        self.exchange      = 'cmc'
+        self.exchange      = 'xpublic'
         self.exchange_type = 'topic'
         self.exchange_key  = []
 
