@@ -1,3 +1,52 @@
+
+[ le français suit ]
+
+Dear MSC Datamart users,
+
+Thanks to users who started using the experimental Notification 
+Service to access MSC Datamart content. This experimental service was 
+recently announced:
+http://lists.ec.gc.ca/pipermail/dd_info/2014-January/000104.html
+
+We are making some changes to Notification Service. Specifically, in the dd_subscribe.py script, the variable
+         self.exchange =  'cmc'
+must be update to
+        self.exchange = 'xpublic'
+
+The associated documentation has also been updated:
+http://sourceforge.net/projects/metpx/files/sarracenia/
+
+These changes will be effective February 5 11:00 EST 2014
+
+Sincere regards
+
+
+========================================
+
+
+Chers usagers du datamart du SMC,
+
+Merci aux usagers qui ont commencé à utiliser le service expérimental de notification pour accéder au datamart du SMC. Ce service expérimental a récemment été annoncé :
+http://lists.ec.gc.ca/pipermail/dd_info/2014-January/000104.html
+
+Nous procédons à quelques changements de ce service. Spéciquement, dans le script dd_subscribe.py , la variable
+         self.exchange =  'cmc'
+doit être mise à jour pour
+        self.exchange = 'xpublic'
+
+La documentation associée a également été mise à jour :
+http://sourceforge.net/projects/metpx/files/sarracenia/
+
+Ces changements prendrons effet le 5 Février  à 11:00 EST 2014
+
+Cordialement
+
+
+
+========================================
+
+
+
 Le français suit (recherchez FRANCAIS)
 
 Sarracenia/dd_subscribe release notes
@@ -40,7 +89,7 @@ you started.  The config files may contain :
 
       b) amqp exchange settings to be able to receive the desired notifications (URL)
 
-              exchange            default  exchange      xpublic
+              exchange            default  exchange      cmc
               exchange_type       default  exchange_type topic
               exchange_key        no default ... 
                                   
@@ -153,7 +202,7 @@ commencer.
       b) réglages d'échanges amqp permettant de recevoir les notifications (indiquant
          l'URL du produit)
 
-              exchange            default  exchange      xpublic
+              exchange            default  exchange      cmc
               exchange_type       default  exchange_type topic
               exchange_key        no default ... 
                                   
