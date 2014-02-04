@@ -9,9 +9,6 @@ ADMIN = sys.argv[2]
 PW    = sys.argv[3]
 QUEUE = sys.argv[4]
 
-EXCHANGE = sys.argv[5]
-EXCHANGE_TYPE = sys.argv[6]
-
 class DeleteQueueNamed(object):
 
     def __init__(self, amqp_url):
@@ -32,9 +29,6 @@ class DeleteQueueNamed(object):
 
     def on_channel_open(self, channel):
         self._channel = channel
-        self._channel.exchange_declare(self.on_exchange_declareok, EXCHANGE, EXCHANGE_TYPE)
-
-    def on_exchange_declareok(self, unused_frame):
         self._channel.queue_delete(None, QUEUE, if_unused=False, if_empty=False, nowait=True)
         self._channel.close()
         self._connection.close()
