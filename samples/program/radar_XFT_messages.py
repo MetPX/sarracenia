@@ -22,7 +22,7 @@ user           = "anonymous"
 passwd         = "anonymous"
 
 exchange_realm = "/data"
-exchange_name  = "cmc"
+exchange_name  = "xpublic"
 exchange_type  = "topic"
 
 # getting notifications for the GIF of the XFT radar

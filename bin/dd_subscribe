@@ -361,7 +361,7 @@ class Consumer(object):
         self.masks         = []             # All the masks (accept and reject)
         self.lock          = '.tmp'         # file send with extension .tmp for lock
 
-        self.exchange      = 'cmc'
+        self.exchange      = 'xpublic'
         self.exchange_type = 'topic'
         self.exchange_key  = []
 
