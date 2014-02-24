@@ -70,7 +70,7 @@ STARTTIME=0             # Time to wait for the server to start, in seconds
                         # when it actually did, default 2 sec.)
 
 # Include defaults if available
-test -f /etc/default/dd-xml-notify && . /etc/default/dd-xml-notify
+test -f /etc/default/dd-xml-inotify && . /etc/default/dd-xml-inotify
 
 
 LOGDIR=/tmp		  	# Log directory to use
