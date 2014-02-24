@@ -1,0 +1,235 @@
+#!/bin/sh
+
+#
+# Example init.d script with LSB support.
+#
+# Please read this init.d carefully and modify the sections to
+# adjust it to the program you want to run.
+#
+# Copyright (c) 2007 Javier Fernandez-Sanguino <jfs@debian.org>
+#
+# This is free software; you may redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2,
+# or (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License with
+# the Debian operating system, in /usr/share/common-licenses/GPL;  if
+# not, write to the Free Software Foundation, Inc., 59 Temple Place,
+# Suite 330, Boston, MA 02111-1307 USA
+#
+### BEGIN INIT INFO
+# Provides:          cmcdataserver
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Should-Start:      $named
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: <Enter a short description of the sortware>
+# Description:       <Enter a long description of the software>
+#                    <...>
+#                    <...>
+### END INIT INFO
+
+DAEMON1=/usr/bin/dd-xml-inotify.py 		# Introduce the server's location here
+DAEMON1_NAME=dd-xml-inotify.py     		# Introduce the daemon name here
+DAEMON1_OPTS=""					# Additional options given to the server
+NAME=dd-xml-inotify
+DESC="AMQP process(es)"
+OWNER=root			# owner of the the directory where the pid file is stored
+GROUP=root			# group of the the directory where the pid file is stored
+
+
+# set stack size to 500000
+ulimit -s 500000
+
+test -x $DAEMON1 || exit 0
+
+. /lib/lsb/init-functions
+
+# Default options, these can be overriden by the information
+# at /etc/default/$NAME
+DIETIME=1               # Time to wait for the server to die, in seconds (default 10 sec.)
+                        # If this value is set too low you might not
+                        # let some servers to die gracefully and
+                        # 'restart' will not work
+
+STARTTIME=0             # Time to wait for the server to start, in seconds
+                        # If this value is set each time the server is
+                        # started (on start or restart) the script will
+                        # stall to try to determine if it is running
+                        # If it is not set and the server takes time
+                        # to setup a pid file the log message might
+                        # be a false positive (says it did not start
+                        # when it actually did, default 2 sec.)
+
+# Include defaults if available
+test -f /etc/default/dd-xml-notify && . /etc/default/dd-xml-notify
+
+
+LOGDIR=/tmp		  	# Log directory to use
+LOGFILE=$LOGDIR/$NAME.log 	# Server logfile
+
+
+pidof_process() {
+	pid1=$(get_pid $DAEMON1)
+	echo "$pid1"
+	return 0
+}
+
+get_pid() {
+	# make ps command to retrieve the pid number
+	process=$1
+	x=""
+	pid=`ps -ef | grep -v grep | grep $process | head -1 | awk {'print $2'}`
+	if [ -n $pid ]; then
+		echo $pid
+	else
+		echo $x
+	fi
+	return 0
+}
+
+running_pid() {
+# Check if a given process pid's cmdline matches a given name
+    pid=$1
+    name=$2
+    daemon=$3
+    #if [ ! -d /proc/$pid ]; then
+    #   echo "[ERROR] No running process $daemon define in /proc/$pid" && return 1
+    #fi
+    #cmd=`cat /proc/$pid/cmdline | tr "\000" "\n"|head -n 1 |cut -d : -f 1`
+    cmd=`cat /proc/$pid/cmdline | cut -d - -f 1`
+    # Is this the expected server
+    [ "$cmd" != "$name$daemon" ] && echo "[ERROR] /proc/$pid/cmdline not the same as define" && return 1
+    return 0
+}
+
+running() {
+    arg=$1
+    pid1=`ps -ef | grep -v grep | grep $DAEMON1 | head -1 | awk {'print $2'}`
+
+    # will display a message  if the command ps -ef return nothing (no process running)
+    if [ $arg != "s1" ]; then
+        errcode=0
+        #[ -z $pid1 ] && echo "[ERROR] Process $DAEMON1_NAME is NOT running" && errcode=1
+        [ -z $pid1 ] && errcode=1
+        [ $errcode -eq 1 ] && return $errcode
+    #elif [ $arg = "s1" ] && [ -n "$pid1" ]; then
+    #    running_pid $pid1 $TCSHELL $DAEMON1_NAME || return 1
+    else
+        return 1
+    fi
+    return 0
+}
+
+start_server() {
+        # Start the process using a daemonuser then change the user id
+        start-stop-daemon --start --quiet --background --exec $DAEMON1 -- $DAEMON1_OPTS 
+        errcode=$?
+        return $errcode
+}
+
+stop_server() {
+        quiet=$1
+        # Stop the processes
+        errcode=0
+        pid=$(get_pid $DAEMON1)
+        if [ -z $pid ]; then
+           [ $quiet="0" ] || echo "[ERROR] Process $DAEMON1_NAME NOT running" && errcode=1
+        else
+           #echo "[WARNING] Executing the kill command on pid: $pid"
+           kill $pid
+        fi
+        return $errcode
+}
+
+
+
+case "$1" in
+  start)
+        log_daemon_msg "Starting $DESC $NAME"
+	arg1="s1"
+	arg2="s2"
+        # Check if it's running first
+        pid1=$(get_pid $DAEMON1)
+
+        if ! [ -z $pid1 ] ;  then
+            echo "The $NAME is already running (PID: $pid1)."
+            log_progress_msg "apparently already running"
+            log_end_msg 1
+            exit 0
+        fi
+        stop_server 1 || errcode=$?
+	log_progress_msg $errcode
+        if start_server ; then
+	    #echo "This can take more then $STARTTIME secondes..."
+            # NOTE: Some servers might die some time after they start,
+            # this code will detect this issue if STARTTIME is set
+            # to a reasonable value
+            [ -n "$STARTTIME" ] && sleep $STARTTIME	# Wait some time 
+            if  running $arg2 ; then
+                # It's ok, the server started and is running
+		echo "[INFO] The $DESC $NAME has been started successfully"
+                log_end_msg 0
+            else
+                # It is not running after we did start
+		echo "[ERROR] The process $NAME died and $STARTTIME sec."
+                log_end_msg 0
+            fi
+        else
+            # Either we could not start it
+	    echo "[ERROR] Enable to start $DESC $NAME"
+            log_end_msg 1
+        fi
+        ;;
+  stop)
+        log_daemon_msg "Stopping $DESC $NAME"
+        errcode=0
+        stop_server || errcode=$?
+        log_end_msg $errcode
+        ;;
+  restart|reload)
+	x=$1
+	y="${x^}"
+	arg="r1"
+        log_daemon_msg $y"ing $DESC $NAME"
+        errcode=0
+	#echo "[INFO] This can take more then $DIETIME sec. to stop and more then $STARTTIME sec. to start it..."
+        # Stop and Wait some sensible amount, some server need this
+        stop_server || errcode=$?
+        [ -n "$DIETIME" ] && sleep $DIETIME
+	# Start and Wait some sensible amount, some server need this
+        start_server || errcode=$?
+        [ -n "$STARTTIME" ] && sleep $STARTTIME
+        running $arg && echo "[INFO] The $DESC $NAME has been $1ed successfully" || errcode=$?
+        log_end_msg $errcode
+        ;;
+  status)
+	arg="stat"
+        log_daemon_msg "Checking $1 of $DESC $NAME"
+        if running $arg ;  then
+	    PIDS=$(pidof_process) || true
+	    echo "[INFO] The $NAME is running (PID: $PIDS)."
+            log_progress_msg "running"
+            log_end_msg 0
+        else
+	    echo "[INFO] The $DESC $NAME is NOT running"
+            log_progress_msg "apparently not running"
+            log_end_msg 0
+        fi
+        ;;
+  *)
+        N=/etc/init.d/$NAME
+        echo "Usage: $N {start|stop|restart|reload|status}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
