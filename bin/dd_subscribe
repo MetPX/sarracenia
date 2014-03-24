@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import logging, os, pika, random, re, string, sys
+import logging, os, pika, random, re, string, sys, time
 
 #============================================================
 # usage example
@@ -604,10 +604,15 @@ def main():
     consumer = Consumer(config)
     if sys.argv[1] == '-n' : consumer.notify_only = True
 
-    try:
-        consumer.run()
-    except KeyboardInterrupt:
-        consumer.stop()
+    while( True ) :
+         try:
+                consumer.run()
+         except KeyboardInterrupt:
+                consumer.stop()
+                break
+         except :
+                time.sleep(10)
+                pass
 
 
 if __name__ == '__main__':
