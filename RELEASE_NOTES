@@ -70,7 +70,8 @@ you started.  The config files may contain :
                accept             default  accept        None
                reject             default  reject        None
                mirror             enabling mirror        False
-               flatten            default flat char.     '/'
+               flatten            default  flat char.     '/'
+               timeout            default  timeout       180
 
         
          - The 'lock' option is a suffix given to the file during the download
@@ -99,6 +100,10 @@ you started.  The config files may contain :
            basis of its path name on dd.weather.gc.ca, replacing the '/' with the chosen
            character. The file will placed with that extended name in the directory defined
            by the 'directory' option.       
+           
+         - The option 'timeout' sets a limit in seconds of time under which the file should
+           have been downloaded and placed under the proper directory/name... If the timeout
+           is reached the download is retried ... until succes.
 
 6- When executed, dd_subscribe creates a queue name that should be unique and puts
    it into a file .<configname>.queue, where <configname> is the unique name.
@@ -186,7 +191,8 @@ commencer.
                accept             default  accept        None
                reject             default  reject        None
                mirror             enabling mirror        False
-               flatten            default flat char.     '/'
+               flatten            default  flat char.    '/'
+               timeout            default  timeout       180 
 
         
          - Le paramètre 'lock' contrôle le suffixe qui sera donné au
@@ -225,6 +231,10 @@ commencer.
 	   dd.weather.gc.ca, en remplaçant les '/' par le caractère
 	   choisi. Le fichier sera placé avec ce nom étendu dans le
 	   répertoire défini par le paramètre 'directory'.
+           
+         - L'option 'timeout' défini une limite en seconds pour le temps ou le fichier
+           est téléchargé et placé dans le répertoire/nom approprié... Si le timeout
+           est dépassé, le download est repris... jusqu'à ce qu'il soit un succès.
 
 6- Au moment de son lancement, dd_subscribe crée un nom de queue qui
 devrait être unique et l'enregistre dans un fichier nommé

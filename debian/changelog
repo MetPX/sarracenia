@@ -1,3 +1,10 @@
+metpx-sarracenia (0.4-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * while loop over consumer.run() to stay alive when server/service stops/restarts
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 03 Feb 2014 19:44:18 +0000
+
 metpx-sarracenia (0.3-precise) unstable; urgency=low
 
   [ Michel Grenier ]

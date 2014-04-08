@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import logging, os, pika, random, re, string, sys, time
+import logging, os, pika, random, re, signal, string, sys, time
 
 #============================================================
 # usage example
@@ -12,6 +12,27 @@ import logging, os, pika, random, re, string, sys, time
 
 LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
 LOGGER = logging.getLogger(__name__)
+
+#############################################################################################
+# Class AlarmTimeout
+
+class TimeoutException(Exception):
+    """Classe d'exception specialises au timeout"""
+    pass
+
+class AlarmTimeout:
+      def __init__(self, message ):
+          self.state   = False
+          self.message = message
+      def sigalarm(self, n, f):
+          raise TimeoutException(self.message)
+      def alarm(self, time):
+          self.state = True
+          signal.signal(signal.SIGALRM, self.sigalarm)
+          signal.alarm(time)
+      def cancel(self):
+          signal.alarm(0)
+          self.state = False
 
 #============================================================
 
@@ -48,6 +69,8 @@ class Consumer(object):
         self.myinit()
 
         self._url = self.amqp_url
+
+        self.timex = AlarmTimeout('timeout reached')
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -456,13 +479,24 @@ class Consumer(object):
         opath = nodir + os.sep + fname
         tpath = opath + self.lock
 
-        try :
-              self.wget(url,tpath,self.http_user,self.http_passwd)
-              os.rename(tpath,opath)
-              LOGGER.info('wget %s %s', url, opath)
-        except:
-              LOGGER.error('wget %s', url)
-              return False
+        # we have to get the file... loop if any issues to retry
+        # only on success we acknowledge the amqp message...
+        while True:
+              try :
+                    # gives self.timeout seconds to get the product
+                    self.timex.alarm(self.timeout)
+                    self.wget(url,tpath,self.http_user,self.http_passwd)
+                    os.rename(tpath,opath)
+                    LOGGER.info('wget %s %s', url, opath)
+                    self.timex.cancel()
+                    break
+              except TimeoutException:
+                    self.timex.cancel()
+                    LOGGER.error('Timeout: wget %s', url)
+              except:
+                    self.timex.cancel()
+                    LOGGER.error('wget %s', url)
+                    time.sleep(5)
 
         return True
 
@@ -538,6 +572,8 @@ class Consumer(object):
             print("Type: %s, Value: %s" % (type, value))
             return 
 
+        self.timeout = 180
+
         for line in config.readlines():
             words = line.split()
             if (len(words) >= 2 and not re.compile('^[ \t]*#').search(line)):
@@ -568,6 +604,8 @@ class Consumer(object):
                     elif words[0] == 'http-password': self.http_passwd = words[1]
                     elif words[0] == 'mirror': self.mirror = isTrue(words[1])
                     elif words[0] == 'flatten': self.flatten = words[1]
+                    elif words[0] == 'timeout': self.timeout = int(words[1])
+
 
                 except:
                     LOGGER.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))

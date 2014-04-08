@@ -92,6 +92,7 @@ and under which name.
 
 \fBflatten   <boolean>        (default: false)\fR
 \fBmirror    <boolean>        (default: false)\fR
+\fBtimeout   <integer>        (default: 180)\fR
 
 .fi
 .nf
@@ -148,6 +149,10 @@ would result in the creation of the filepath :
 
 /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+
+The \fBtimeout\fR option is use to set a time limit to the file download, avoiding network freeze.
+If a download takes more than \fBtimeout\fR seconds, the download is restarted. This looping continues
+until the file is properly downloaded... Only than, the amqp message is acknowledge.
 .fi
 .SH PRODUCT QUEUING
 When executed, \fBdd_subscribe\fR creates a queue name that should be unique.
