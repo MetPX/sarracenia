@@ -153,7 +153,7 @@ class EventHandler(pyinotify.ProcessEvent):
           exchange_key = 'exp.dd.notify.' + key_final
           publisher.publish(url,exchange_key,filename)
 
-          # publish old message and exchange_key
+          # publish new message and exchange_key
 
           exchange_key = 'v00.dd.notify.' + key_final
           publisher.publish(msg,exchange_key,filename)
