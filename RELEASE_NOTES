@@ -52,9 +52,9 @@ you started.  The config files may contain :
            and pick any directories where the products are interesting for you. For each
            directory, create an exchange_key as follows:
 
-                 exchange_key  exp.dd.notify.directory1.subdirectory2.*.subdirectory4.#
+                 exchange_key  v00.dd.notify.directory1.subdirectory2.*.subdirectory4.#
 
-                 where     exp.dd.notify. is a mandatory prefix
+                 where     v00.dd.notify. is a mandatory prefix
                            *              replace a directory name (one * per directory)
                            #              stands for the remaining possibilities
 
@@ -173,9 +173,9 @@ commencer.
            produits qui sont d'intérêt pour vous. Pour chacun de ces répertoires, spécifiez
            la clé comme suit:
 
-                 exchange_key  exp.dd.notify.directory1.subdirectory2.*.subdirectory4.#
+                 exchange_key  v00.dd.notify.directory1.subdirectory2.*.subdirectory4.#
 
-                 where     exp.dd.notify. is a mandatory prefix
+                 where     v00.dd.notify. is a mandatory prefix
                            *              caractère de remplacement (wildcard) 
                                           (un seul '*' per par répertoire)
                            #              signifie les possibilités restantes
