@@ -7,8 +7,10 @@ Sarracenia/dd_subscribe release notes
 meteorological data access repository.
 
 2- For each product posted on the Datamart, an AMQP message is
-immediately transmitted. This message contains the URL of the
-product. Any application which can subscribe to an AMQP service can
+immediately transmitted. This message contains :
+"md5sum filesize http://servername/ filepath".
+The product's URL is described by the last two fields.
+Any application which can subscribe to an AMQP service can
 receive notification of products being published and then retrieve
 them in real time via http.  There is a wide variety of languages and
 platforms whereby this procedure can be implemented. Here you will
@@ -123,8 +125,10 @@ Notes de publication pour sarracenia/dd_subscribe
 données météorologiques d'Environnement Canada
 
 2- Chaque fois qu'un produit arrive dans le datamart, un message AMQP
-est immédiatement transmis. Ce message contient l'URL du
-produit. Toute application capable de s'abonner à un service AMQP
+est immédiatement transmis. Ce message a la forme :
+"md5sum taillefichier http://servername/ filepath".
+Le URL du produit est décrit par les deux derniers chanps.
+Toute application capable de s'abonner à un service AMQP
 peut recevoir les notifications des produits en qui sont publiés et
 les récupérer en temps réel par HTTP. Il existe un grand nombre de
 langages et de plateformes qui peuvent être utilisées pour mettre en

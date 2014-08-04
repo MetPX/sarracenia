@@ -277,9 +277,14 @@ class Consumer(object):
 
         """
 
-        LOGGER.debug('Received message # %s from %s: %s', basic_deliver.delivery_tag, properties.app_id, body)
+        routing_key = basic_deliver.routing_key
+        exchange    = basic_deliver.exchange
+        filename    = properties.headers['filename']
 
-        processed = self.treaturl(body)
+        LOGGER.debug('Received message # %s from %s: %s', basic_deliver.delivery_tag, properties.app_id, body)
+        LOGGER.info('Received exchange %s, key %s, message file %s', exchange, routing_key, filename )
+
+        processed = self.treat_message(exchange,routing_key,body,filename)
 
         if processed :
            self.acknowledge_message(basic_deliver.delivery_tag)
@@ -441,12 +446,20 @@ class Consumer(object):
         return nodir
 
     # process individual url notification
-    def treaturl(self,url):
+    def treat_message(self,exchange,routing_key,msg,filename):
 
-        # notify_only mode : print out received url
+        # notify_only mode : print out received message
         if self.notify_only :
-           LOGGER.info("%s" % url)
+           LOGGER.info("%s" % msg)
            return True
+
+        # in operational version, routing key starts with 'v**.dd.notify'
+        # in that case message is  'md5sum http://hostname/ filepath'
+
+        url = msg
+        if routing_key[0] == 'v' :
+           parts = msg.split()
+           url   = parts[-2] + parts[-1]
 
         # root directory where the product will be put
         odir = self.getMatchingMask(url)

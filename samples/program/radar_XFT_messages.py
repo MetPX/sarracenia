@@ -26,7 +26,7 @@ exchange_name  = "xpublic"
 exchange_type  = "topic"
 
 # getting notifications for the GIF of the XFT radar
-exchange_key   = "exp.dd.notify.radar.PRECIP.GIF.XFT.#"
+exchange_key   = "v00.dd.notify.radar.PRECIP.GIF.XFT.#"
 
 # connection
 connection = amqp.Connection( machine,userid=user,password=passwd,ssl=False)

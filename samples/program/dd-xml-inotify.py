@@ -6,6 +6,13 @@ import amqplib.client_0_8 as amqp
 import asyncore 
 import pyinotify 
 
+if sys.version[:3] >= '2.6' :
+   import hashlib
+   md5sum = hashlib.md5
+else :
+   import md5
+   md5sum = md5.new
+
 
 # credential from args
 
@@ -42,33 +49,37 @@ SRC['/data/wxofeed/cmc/cache/xml/public/marine'] = URL + 'marine_weather/xml'
 class Publisher: 
    
    def __init__(self, host ):
-      self.connection = None                          # The connection
-      self.ssl        = False
 
-      self.host       = host
-      self.user       = USER
-      self.passwd     = PASSWORD
+       self.connected  = False 
 
-      self.realm         = '/data'
-      self.exchange_name = 'xpublic'
-      self.exchange_type = 'topic'
+       self.connection = None
+       self.channel    = None
+       self.ssl        = False
+  
+       self.host       = host
+       self.user       = USER
+       self.passwd     = PASSWORD
 
-      self._connect()
+       self.realm         = '/data'
+       self.exchange_name = 'xpublic'
+       self.exchange_type = 'topic'
+       self.exchange_key  = None
+
+       self.connect()
 
    def close(self):
-       try:
-              self.channel.close()
-              self.connection.close()
-       except:
-              (type, value, tb) = sys.exc_info()
-              print("Problem in closing socket! Type: %s, Value: %s" % (type, value))
+       try:    self.channel.close()
+       except: pass
+       try:    self.connection.close()
+       except: pass
+       self.connected = False
 
-   def _connect(self):
+   def connect(self):
 
-      self.connection = None
-      self.channel    = None
+       self.connection = None
+       self.channel    = None
 
-      while True:
+       while True:
          try:
               # connect
               self.connection = amqp.Connection(self.host, userid=self.user, password=self.passwd, ssl=self.ssl)
@@ -78,6 +89,7 @@ class Publisher:
               self.channel.access_request(self.realm, active=True, write=True)
               self.channel.exchange_declare(self.exchange_name, self.exchange_type, auto_delete=False)
 
+              self.connected = True
               print("AMQP Sender is now connected to: %s" % str(self.host))
               break
          except:
@@ -87,51 +99,26 @@ class Publisher:
               time.sleep(5)
 
 
-   def publish_url(self, url):
-
-       # build exchange_key
-
-       parts = url.split('/')
-       exchange_key = 'exp.dd.notify.' + '.'.join(parts[3:])
-       print("exchange_key %s created" % exchange_key)
-
-       # build filename
-
-       filename = '.'.join(parts[3:-1]) + '++'+ parts[-1] + ':WXO:LOCAL:FILE:XML'
-
-       # publish message
-
-       hdr = {'filename': filename }
-       msg = amqp.Message(url, content_type= 'text/plain',application_headers=hdr)
-
-       self.channel.basic_publish(msg, self.exchange_name, exchange_key )
-
-       print("Message %s  delivered" % url )
-
-
-   def publish_safe(self, url):
-
-       try:
-               self.publish_url(url)
-       except:
-               (type, value, tb) = sys.exc_info()
-               print("Error publishing %s ! Type: %s, Value: %s" % (url,type, value))
-               self.reconnect()
-               self.publish_url(url)
-            
    def reconnect(self):
+       self.close()
+       self.connect()
 
-       # We close the connection
-       try:
-                self.channel.close()
-                self.connection.close()
-       except:
-                (type, value, tb) = sys.exc_info()
-                print("Problem in closing socket! Type: %s, Value: %s" % (type, value))
+   def publish(self,message,exchange_key,filename):
+       try :
+              hdr = {'filename': filename }
+              msg = amqp.Message(message, content_type= 'text/plain',application_headers=hdr)
+              self.channel.basic_publish(msg, self.exchange_name, exchange_key )
+              print("Key %s Message %s " % (exchange_key,message) )
+       except :
+              (type, value, tb) = sys.exc_info()
+              print("AMQP cound not publish...reconnecting" )
+              print("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
+              time.sleep(5)
+              self.reconnect()
+              self.publish(message,exchange_key,filename)
 
-       # We try to reconnect. 
-       self._connect()
 
+            
 # =========================================
 # Create one instanciation and publish urls
 # =========================================
@@ -146,8 +133,32 @@ class EventHandler(pyinotify.ProcessEvent):
   def process_IN_CLOSE_WRITE(self,event):
       for spath in SRC :
           if not spath in event.pathname : continue
-          url = event.pathname.replace(spath,SRC[spath])
-      publisher.publish_safe(url)
+
+          filepath = event.pathname
+          checksum = md5sum(filepath).hexdigest()
+
+          lstat = os.stat(filepath)
+          fsiz  = lstat[stat.ST_SIZE]
+          ssiz  = "%d" % fsiz
+
+          url   = event.pathname.replace(spath,SRC[spath])
+          parts = url.split('/')
+          msg   = checksum + ' ' + ssiz + ' ' + '/'.join(parts[:3]) + '/ ' + '/'.join(parts[3:])
+
+          filename  = 'msg_' + parts[-1] + ':WXO:LOCAL:FILE:XML'
+          key_final = '.'.join(parts[3:])
+
+          # publish old message and exchange_key
+
+          exchange_key = 'exp.dd.notify.' + key_final
+          publisher.publish(url,exchange_key,filename)
+
+          # publish old message and exchange_key
+
+          exchange_key = 'v00.dd.notify.' + key_final
+          publisher.publish(msg,exchange_key,filename)
+
+          break
 
 # start inotify engine
 
