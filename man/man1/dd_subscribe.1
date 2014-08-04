@@ -7,7 +7,8 @@ dd_subscribe \- Python program to select and download Environment Canada's datam
 .PP
 \fBdd.weather.gc.ca\fR is Environment Canada's website where a wide variety of meteorological products are
 made available to the public. The website servers publish an amqp messages
-containing the URL for each product posted as soon as it is available on the website.
+containing 4 fields "md5sun filesize http://servername/ filepath" for each product posted as soon as 
+it is available on the website. The combination of the 2 last fields make the URL of the product.
 
 \fBdd_subscribe\fR is a python program that uses python-pika to receive these amqp messages
 and retrieve the web products and place them in a chosen local directory.
@@ -59,9 +60,9 @@ browse the our website \fBhttp://dd.weather.gc.ca\fR and write down all director
 For each directories write an \fBexchange_key\fR option as follow:
 .nf
 
-\fBexchange_key  exp.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#\fR
+\fBexchange_key  v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#\fR
 
-where  exp.dd.notify.   is a mandatory prefix
+where  v00.dd.notify.   is a mandatory prefix
        *                replaces a directory name 
        #                stands for the remaining possibilities
 
