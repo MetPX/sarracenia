@@ -17,7 +17,7 @@ platforms whereby this procedure can be implemented. Here you will
 find a simple demonstration client, "dd_subscribe". It is implemented
 in the Python language.
 
-3- dd_subscribe is a python program that uses python-pika to receive
+3- dd_subscribe is a python program that uses python-amqplib to receive
 these amqp notification messages, retrieve the products from the
 datamart via HTTP and place them in a chosen local directory.
 
@@ -135,7 +135,7 @@ langages et de plateformes qui peuvent être utilisées pour mettre en
 oeuvre cette procédure. Vous trouverez ici un script de démonstration
 simple, "dd_subscribe". Le script est écrit en Python.
 
-3- dd_subscribe est un programme en python, utilisant python-pika pour
+3- dd_subscribe est un programme en python, utilisant python-amqplib pour
 recevoir les notification AMQP, récupérer les produits sur le datamart
 par HTTP et les placer dans un répertoire local choisi par l'usager.
 

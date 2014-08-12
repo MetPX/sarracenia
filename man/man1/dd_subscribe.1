@@ -10,7 +10,7 @@ made available to the public. The website servers publish an amqp messages
 containing 4 fields "md5sun filesize http://servername/ filepath" for each product posted as soon as 
 it is available on the website. The combination of the 2 last fields make the URL of the product.
 
-\fBdd_subscribe\fR is a python program that uses python-pika to receive these amqp messages
+\fBdd_subscribe\fR is a python program that uses python-amqplib to receive these amqp messages
 and retrieve the web products and place them in a chosen local directory.
 
 \fBdd_subscribe\fR takes one argument a configuration file. 

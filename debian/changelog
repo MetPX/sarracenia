@@ -1,3 +1,24 @@
+metpx-sarracenia (0.7-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * uses python-amqplib
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
+
+metpx-sarracenia (0.6-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * supports newer type of messages under topic that starts with v00
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
+
+metpx-sarracenia (0.5-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * loop wget and addition of a timeout of 180 secs by default to download the file
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 03 Feb 2014 19:44:18 +0000
+
 metpx-sarracenia (0.4-precise) unstable; urgency=low
 
   [ Michel Grenier ]
