@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import logging, os, random, re, signal, string, sys, time
+import logging, logging.handlers, os, random, re, signal, string, sys, time
 import amqplib.client_0_8 as amqp
 
 #============================================================
@@ -9,10 +9,6 @@ import amqplib.client_0_8 as amqp
 # python dd_subscribe.py configfile.conf
 
 #============================================================
-# logging metpx like
-
-LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-LOGGER = logging.getLogger(__name__)
 
 #############################################################################################
 # Class AlarmTimeout
@@ -39,12 +35,18 @@ class AlarmTimeout:
 
 class Consumer(object):
 
-    def __init__(self,config):
+    def __init__(self,config,logger):
+        self.logger     = logger
+
         self.connected  = False
 
         self.connection = None
         self.channel    = None
         self.ssl        = False
+
+        self.queue      = None
+        self.durable    = False
+        self.expire     = None
 
         self.notify_only = False
 
@@ -84,7 +86,7 @@ class Consumer(object):
 
              try:
                   # connect
-                  LOGGER.info("AMQP connecting %s %s " % (self.host,self.amqp_user) )
+                  self.logger.info("AMQP connecting %s %s " % (self.host,self.amqp_user) )
                   self.connection = amqp.Connection(self.host, userid=self.amqp_user,
                                                     password=self.amqp_passwd, ssl=self.ssl)
                   self.channel    = self.connection.channel()
@@ -94,25 +96,28 @@ class Consumer(object):
 
                   # queue declare and bind
 
+                  args = None
+                  if self.expire != None :
+                     args = { 'x-expires' : self.expire }
+
                   qn,Nmsg,Nconsumer = self.channel.queue_declare( self.queue,
-                                      passive=False, durable=False, exclusive=False,
-                                      auto_delete=False, nowait=False)
-                                      #arguments={'x-expires' : 1800000})
+                                      passive=False, durable=self.durable, exclusive=False,
+                                      auto_delete=False, nowait=False, arguments=args )
 
                   for k in self.exchange_key :
-                      LOGGER.info('Binding %s to %s with %s', self.exchange, self.queue, k)
+                      self.logger.info('Binding %s to %s with %s', self.exchange, self.queue, k)
                       self.channel.queue_bind(self.queue, self.exchange, k )
 
                   self.timex.cancel()
                   self.connected = True
-                  LOGGER.info("Connected ")
+                  self.logger.info("Connected ")
 
                   break
              except:
                   self.timex.cancel()
                   (type, value, tb) = sys.exc_info()
-                  LOGGER.error("AMQP Sender cannot connected to: %s" % str(self.host))
-                  LOGGER.error("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
+                  self.logger.error("AMQP Sender cannot connected to: %s" % str(self.host))
+                  self.logger.error("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
                   time.sleep(5)
 
 
@@ -154,8 +159,8 @@ class Consumer(object):
                   exchange    = msg.delivery_info['exchange']
                   filename    = hdr['filename']
 
-                  LOGGER.debug('Received message # %s from %s: %s', msg, msg.delivery_info, body)
-                  LOGGER.debug('Received exchange %s, key %s, message file %s', exchange, routing_key, filename )
+                  self.logger.debug('Received message # %s from %s: %s', msg, msg.delivery_info, body)
+                  self.logger.debug('Received exchange %s, key %s, message file %s', exchange, routing_key, filename )
 
                   processed = self.treat_message(exchange,routing_key,body,filename)
 
@@ -164,7 +169,7 @@ class Consumer(object):
 
              except :
                  (type, value, tb) = sys.exc_info()
-                 LOGGER.error("Type: %s, Value: %s,  ..." % (type, value))
+                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
 
     def myinit(self):
@@ -187,17 +192,20 @@ class Consumer(object):
         self.flatten       = '/'
         self.mirror        = False
 
-        self.queuefile = ''
-        parts = self.config.split(os.sep)
-        if len(parts) != 1 :  self.queuefile = os.sep.join(parts[:-1]) + os.sep
-
-        fnp   = parts[-1].split('.')
-        if fnp[0][0] != '.' : fnp[0] = '.' + fnp[0]
-        self.queuefile = self.queuefile + '.'.join(fnp[:-1]) + '.queue'
-
-        self.queuename()
-
         self.readConfig()
+
+        # if not set in config : automated queue name saved in queuefile
+
+        if self.queue == None :
+           self.queuefile = ''
+           parts = self.config.split(os.sep)
+           if len(parts) != 1 :  self.queuefile = os.sep.join(parts[:-1]) + os.sep
+
+           fnp   = parts[-1].split('.')
+           if fnp[0][0] != '.' : fnp[0] = '.' + fnp[0]
+           self.queuefile = self.queuefile + '.'.join(fnp[:-1]) + '.queue'
+
+           self.queuename()
 
     def queuename(self) :
 
@@ -226,7 +234,7 @@ class Consumer(object):
                   if os.path.isdir(nodir) : continue
                   os.mkdir(nodir)
         except :
-              LOGGER.error("could not create or use directory %s" % nodir)
+              self.logger.error("could not create or use directory %s" % nodir)
               return None
 
         return nodir
@@ -236,7 +244,7 @@ class Consumer(object):
 
         # notify_only mode : print out received message
         if self.notify_only :
-           LOGGER.info("%s" % msg)
+           self.logger.info("%s" % msg)
            return True
 
         # in operational version, routing key starts with 'v**.dd.notify'
@@ -255,7 +263,7 @@ class Consumer(object):
 
         # root directory should exists
         if not os.path.isdir(odir) :
-           LOGGER.error("directory %s does not exist" % odir)
+           self.logger.error("directory %s does not exist" % odir)
            return False
 
         # mirror mode True
@@ -278,6 +286,9 @@ class Consumer(object):
         opath = nodir + os.sep + fname
         tpath = opath + self.lock
 
+        # special case where lock is only '.' ... it leads the filename
+        if self.lock == '.' : tpath = nodir + os.sep + '.' + fname
+
         # we have to get the file... loop if any issues to retry
         # only on success we acknowledge the amqp message...
         while True:
@@ -286,15 +297,15 @@ class Consumer(object):
                     self.timex.alarm(self.timeout)
                     self.wget(url,tpath,self.http_user,self.http_passwd)
                     os.rename(tpath,opath)
-                    LOGGER.info('wget %s %s', url, opath)
+                    self.logger.info('wget %s %s', url, opath)
                     self.timex.cancel()
                     break
               except TimeoutException:
                     self.timex.cancel()
-                    LOGGER.error('Timeout: wget %s', url)
+                    self.logger.error('Timeout: wget %s', url)
               except:
                     self.timex.cancel()
-                    LOGGER.error('wget %s', url)
+                    self.logger.error('wget %s', url)
                     time.sleep(5)
 
         return True
@@ -397,7 +408,7 @@ class Consumer(object):
                          if words[1] in ['fanout','direct','topic','headers'] :
                             self.exchange_type = words[1]
                          else :
-                            LOGGER.error("Problem with exchange_type %s" % words[1])
+                            self.logger.error("Problem with exchange_type %s" % words[1])
                     elif words[0] == 'exchange_key': self.exchange_key.append(words[1])
                     elif words[0] == 'http-user': self.http_user = words[1]
                     elif words[0] == 'http-password': self.http_passwd = words[1]
@@ -405,9 +416,13 @@ class Consumer(object):
                     elif words[0] == 'flatten': self.flatten = words[1]
                     elif words[0] == 'timeout': self.timeout = int(words[1])
 
+                    elif words[0] == 'durable': self.durable = isTrue(words[1])
+                    elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
+                    elif words[0] == 'queue': self.queue = words[1] 
+
 
                 except:
-                    LOGGER.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))
+                    self.logger.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))
         config.close()
     
     def getMatchingMask(self, filename): 
@@ -418,28 +433,84 @@ class Consumer(object):
         return None
 
 def main():
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
-    # should have one argument
+    # First logging on stdout as default
 
-    if len(sys.argv) == 3 :
-           if sys.argv[1] != "-n" :
-              LOGGER.error("1USAGE %s [-n] configuration file",sys.argv[0])
+    argv = list(sys.argv)
+    argc = len(argv)
+
+
+    # command line option -l specify logging directory ( ex.: -l /var/log )
+    # in this case we log to $dir/config_pid.log and the log gets rotated
+
+    ldir = None
+    try    : 
+             pos = argv.index('-l')
+             if argc < pos+2 :
+                print("Error 1: USAGE %s [-n] [-l logdir] configuration file",argv[0])
+                sys.exit(1)
+
+             l    = argv.pop(pos)
+             ldir = argv.pop(pos)
+             if not os.path.exists(ldir) :
+                print("Error 2: USAGE %s [-n] [-l logdir] configuration file",argv[0])
+                sys.exit(1)
+    except : 
+             (type, value, tb) = sys.exc_info()
+             print("Type: %s, Value: %s,  ..." % (type, value))
+             pass
+
+
+    # check remaining arguments
+
+    argc = len(argv)
+
+    if argc == 3 :
+           if argv[1] != "-n" :
+              print("Error 3: USAGE %s [-n] [-l logdir] configuration file",argv[0])
               sys.exit(1)
-           config = sys.argv[2]
+           config = argv[2]
     else :
-           if len(sys.argv) != 2 :
-              LOGGER.error("2USAGE %s [-n] configuration file",sys.argv[0])
+           if argc != 2 :
+              print("Error 4: USAGE %s [-n] [-l logdir] configuration file",argv[0])
               sys.exit(1)
-           config = sys.argv[1]
+           config = argv[1]
 
 
     if not os.path.exists(config) :
-       LOGGER.error("3USAGE %s [-n] configuration file",sys.argv[0])
+       print("Error 5: USAGE %s [-n] [-l logdir] configuration file",argv[0])
        sys.exit(1)
 
-    consumer = Consumer(config)
-    if sys.argv[1] == '-n' : consumer.notify_only = True
+    # logging to stdout
+    LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+
+    if ldir == None :
+       LOGGER = logging.getLogger(__name__)
+       logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
+    # user wants to logging in a directory/file
+    else :
+       parts  = argv[-1].split(os.sep)
+       fn     = parts[-1].replace(".conf","")
+       lfn    = fn + "_%s" % os.getpid() + ".log"
+       lfile  = ldir + os.sep + lfn
+
+       # Standard error is redirected in the log
+       sys.stderr = open(lfile, 'a')
+
+       # python logging
+       LOGGER = None
+       fmt    = logging.Formatter( LOG_FORMAT )
+       hdlr   = logging.handlers.TimedRotatingFileHandler(lfile, when='midnight', interval=1, backupCount=5) 
+       hdlr.setFormatter(fmt)
+       LOGGER = logging.getLogger(lfn)
+       LOGGER.setLevel(logging.INFO)
+       LOGGER.addHandler(hdlr)
+
+    # instanciate consumer
+
+    consumer = Consumer(config,LOGGER)
+    if argv[1] == '-n' : consumer.notify_only = True
 
     while( True ) :
          try:

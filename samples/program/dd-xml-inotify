@@ -37,6 +37,8 @@
 #                    <...>
 ### END INIT INFO
 
+export PATH=/sbin:$PATH
+
 DAEMON1=/usr/bin/dd-xml-inotify.py 		# Introduce the server's location here
 DAEMON1_NAME=dd-xml-inotify.py     		# Introduce the daemon name here
 DAEMON1_OPTS=""					# Additional options given to the server

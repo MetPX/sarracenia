@@ -68,6 +68,24 @@ where  v00.dd.notify.   is a mandatory prefix
 
 
 .fi
+
+.SH AMQP QUEUE SETTINGS
+The queue is where the notifications are held on the server.
+.nf
+
+
+\fBqueue         <name>         (default: None)\fR
+\fBdurable       <boolean>      (default: False)\fR
+\fBexpire        <minutes>      (default: None)\fR
+
+
+.fi
+By default, dd_subscribe creates a queue name that should be unique and starts with \fBcmc\fR
+and puts it into a file .<configname>.queue, where <configname> is the config filename.
+The \fBqueue\fR option sets a queue name. It should always start with \fBcmc\fR.
+The \fBexpire\fR option is expressed in minutes... it sets how long should live
+a queue without connections The \fBdurable\fR option set to True, means writes the queue
+on disk if the rabbitmq server is stop or restarted...
 .SH HTTP CREDENTIAL OPTIONS
 Theses options set all the credential information for the http site.
 It is unused for now but Environment Canada might implement some restricted
@@ -98,8 +116,9 @@ and under which name.
 .fi
 .nf
 The \fBlock\fR option is a suffix given to the file during the download
-and taken away when it is completed... This gives a mean to avoid
-processing the file prematurely.
+and taken away when it is completed... If \fBlock\fR is set to \fB.\fR
+then it is prefixed with it and taken away when it is completed...
+This gives a mean to avoid processing the file prematurely.
 
 The option directory  defines where to put the files on your server.
 Combined with \fBaccept\fR/\fBreject\fR options, the user can select the

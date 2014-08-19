@@ -1,3 +1,14 @@
+metpx-sarracenia (0.8-precise) unstable; urgency=low
+
+  [ Michel Grenier ]
+  * lock option set to . will be used as a temporary prefix for download
+  * command line option [-l logdir] used to log into a file instead of stdout
+  * option  queue to set a queue name
+  * option  durable to set a queue durable
+  * option  expire  to set a number of minutes to remove queue when unconnected
+
+ -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
+
 metpx-sarracenia (0.7-precise) unstable; urgency=low
 
   [ Michel Grenier ]

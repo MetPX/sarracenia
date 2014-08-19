@@ -21,12 +21,12 @@ in the Python language.
 these amqp notification messages, retrieve the products from the
 datamart via HTTP and place them in a chosen local directory.
 
-4- dd_subscribe takes one argument: a config file. By default, the
-program will automatically initiate product download upon
-notification. If you want dd_subscribe to simply display the
-notification message without retrieving the products,add the "-n"
-switch, as follows:
-dd_subscribe -n config_file
+4- dd_subscribe's usage is : dd_subscribe [-n] [-l logdir] config_file.
+By default, the program will automatically initiate product download
+upon notification. If you want dd_subscribe to simply display the
+notification message without retrieving the products,use the "-n"
+The -l option sets a logging directory, and a file named config_file_PID.log
+will be written.(where PID is the process id)
 
 5- The config file is simple (see dd_subscribe manpage).  To make
 things even easier, the example config files provided with the script
@@ -58,14 +58,25 @@ you started.  The config files may contain :
                            *              replace a directory name (one * per directory)
                            #              stands for the remaining possibilities
 
+      c) amqp queue settings to be able to queue the desired notifications (URL)
 
-      c) http credentials (not used for now... might be implemented for restricted products)
+               queue              default  None        
+               durable            default  False         
+               expire             default  None
+
+         - queue sets the queue name. It should start with cmc.
+         - expire is expressed in minutes... it sets how long should live a queue without connections
+         - durable means write queue on disk if the rabbitmq server is stop/restarted...
+         - by default, dd_subscribe creates a queue name that should be unique and starts with cmc
+           and puts it into a file .<configname>.queue, where <configname> is the config filename.
+
+      d) http credentials (not used for now... might be implemented for restricted products)
 
                http-user          default  http-user     None
                http-password      default  http-password None
 
 
-      d) delivery specifications
+      e) delivery specifications
 
                lock               default  lock          .tmp
                directory          default  directory     .
@@ -107,14 +118,11 @@ you started.  The config files may contain :
            have been downloaded and placed under the proper directory/name... If the timeout
            is reached the download is retried ... until succes.
 
-6- When executed, dd_subscribe creates a queue name that should be unique and puts
-   it into a file .<configname>.queue, where <configname> is the unique name.
 
-
-7- Under samples/config you will find working configuration files, provided as is,
+6- Under samples/config you will find working configuration files, provided as is,
    without guaranty. Under samples/program you will find other programs we played with.
 
-8- FUN FACT: sarracenia : another rare, mostly carnivorous, Canadian
+7- FUN FACT: sarracenia : another rare, mostly carnivorous, Canadian
    plant... (as are sundew,columbo)
 _____________________________________________________________________________________
 FRANCAIS
@@ -139,13 +147,15 @@ simple, "dd_subscribe". Le script est écrit en Python.
 recevoir les notification AMQP, récupérer les produits sur le datamart
 par HTTP et les placer dans un répertoire local choisi par l'usager.
 
-4- dd_subscribe prend un seul argument: le nom d'un fichier de
-configuration. Par défaut, le programme télécharge immédiatement le
-produit lorsqu'une notification est reçue. Si vous voulez simplement
-afficher les notifications sans effectuer de téléchargement, ajoutez
-l'option "-n", comme suit:
 
-dd_subscribe -n config_file
+4- L'utilisation du programme: dd_subscribe [-n] [-l logdir] fichier_config.
+Par défaut, le programme télécharge immédiatement le
+produit lorsqu'une notification est reçue. Si vous voulez simplement
+afficher les notifications sans effectuer de téléchargement, utilisez
+l'option "-n". L'option "-l" quand a elle, définit un répertoire de
+logging et un fichier nomme "fichier_config_PID.log" sera écrit.
+(PID est le ID du process)
+
 
 5- Le fichier de configuration est simple (voir le manpage pour
 dd_subscribe). Pour faciliter encore les choses, les exemples de
@@ -180,15 +190,28 @@ commencer.
                                           (un seul '*' per par répertoire)
                            #              signifie les possibilités restantes
 
+      c) réglages de la queue amqp permettant de recevoir les notifications
 
-      c) identifiant http (non utilisé en ce moment, pourrait l'être pour des produits
+               queue              default  None        
+               durable            default  False         
+               expire             default  None
+
+         - queue défini le nom de la queue, qui commence toujours avec cmc. Par défaut un nom de queue
+           au hazard est créé et conserver dans un fichier nomme .fichier_config.queue
+         - expire est un nombre de minutes... qui déclare la longueur de la vie d'une queue sans connection
+         - durable permet d'écrire la queue sur disque si le serveur rabbitmq est arrêté ou redemarré
+         - par defaut, dd_subscribe crée un nom de queue qui devrait être unique et l'enregistre dans
+           un fichier nommé .<configname>.queue où <configname> est le nom du fichier de configuration.
+
+
+      d) identifiant http (non utilisé en ce moment, pourrait l'être pour des produits
          à distribution restreinte)
 
                http-user          default  http-user     None
                http-password      default  http-password None
 
 
-      d) paramètres de livraison
+      e) paramètres de livraison
 
                lock               default  lock          .tmp
                directory          default  directory     .
@@ -240,16 +263,12 @@ commencer.
            est téléchargé et placé dans le répertoire/nom approprié... Si le timeout
            est dépassé, le download est repris... jusqu'à ce qu'il soit un succès.
 
-6- Au moment de son lancement, dd_subscribe crée un nom de queue qui
-devrait être unique et l'enregistre dans un fichier nommé
-.<configname>.queue où <configname> est le nom unique.
-
-7- Dans le répertoire samples/config vous trouverez des fichiers de
+6- Dans le répertoire samples/config vous trouverez des fichiers de
 configuration qui devraient fonctionner tels quels (sans
 garantie). Sous samples/program vous trouverez d'autres programmes
 avec lesquels nous avons expérimenté.
 
-8- Détail distrayant: sarracenia est le nom latin de la sarracène, une
+7- Détail distrayant: sarracenia est le nom latin de la sarracène, une
 plante canadienne rare et à prédominance carnivore (au même titre que la
 droséra et la columbo).
 
