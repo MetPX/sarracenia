@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import logging, logging.handlers, os, random, re, signal, string, sys, time
+import logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
 import amqplib.client_0_8 as amqp
 
 #============================================================
@@ -49,7 +49,8 @@ class Consumer(object):
         self.expire     = None
 
         self.notify_only = False
-
+        self.discard = False
+        
         self.config = config
         self.name   = config
         self.myinit()
@@ -191,7 +192,7 @@ class Consumer(object):
 
         self.flatten       = '/'
         self.mirror        = False
-
+        
         self.readConfig()
 
         # if not set in config : automated queue name saved in queuefile
@@ -242,14 +243,8 @@ class Consumer(object):
     # process individual url notification
     def treat_message(self,exchange,routing_key,msg,filename):
 
-        # notify_only mode : print out received message
-        if self.notify_only :
-           self.logger.info("%s" % msg)
-           return True
-
         # in operational version, routing key starts with 'v**.dd.notify'
         # in that case message is  'md5sum http://hostname/ filepath'
-
         url = msg
         if routing_key[0] == 'v' :
            parts = msg.split()
@@ -260,7 +255,12 @@ class Consumer(object):
 
         # no root directory for this url means url not selected
         if not odir : return True
-
+        
+        # notify_only mode : print out received message
+        if self.notify_only :
+           self.logger.info("%s" % msg)
+           return True
+        
         # root directory should exists
         if not os.path.isdir(odir) :
            self.logger.error("directory %s does not exist" % odir)
@@ -295,9 +295,16 @@ class Consumer(object):
               try :
                     # gives self.timeout seconds to get the product
                     self.timex.alarm(self.timeout)
-                    self.wget(url,tpath,self.http_user,self.http_passwd)
-                    os.rename(tpath,opath)
-                    self.logger.info('wget %s %s', url, opath)
+                    self.wget(url,tpath,self.http_user,self.http_passwd)                    
+                    if self.discard: 
+                      try:
+                        os.unlink(tpath)
+                        self.logger.info('delete %s', tpath)
+                      except:
+                        self.logger.error('unable to delete %s', tpath)
+                    else:
+                      os.rename(tpath,opath)                    
+                      self.logger.info('wget %s %s', url, opath)                    
                     self.timex.cancel()
                     break
               except TimeoutException:
@@ -316,7 +323,7 @@ class Consumer(object):
         # the simplest, simply get the html source from URL
     
         if user == None :
-           sock       = urllib2.urlopen(url)
+           #sock       = urllib2.urlopen(url)
            sock = urllib2.urlopen(url)
            self.write_to_file(sock,tpath)
            return tpath
@@ -419,8 +426,9 @@ class Consumer(object):
                     elif words[0] == 'durable': self.durable = isTrue(words[1])
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'queue': self.queue = words[1] 
-
-
+                    else:
+		      self.logger.error("Unknown configuration directive %s in %s" % (words[0], self.config))
+		      print("Unknown configuration directive %s in %s" % (words[0], self.config))
                 except:
                     self.logger.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))
         config.close()
@@ -432,55 +440,65 @@ class Consumer(object):
                return None
         return None
 
+def help():     
+    #print chr(27)+'[1m'+'Script'+chr(27)+'[0m'
+    print("Usage: dd_subscribe [OPTION]...[CONFIG_FILE]")
+    print("dd_subscribe [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] config-file")
+    print("rabbitmq python client connects to rabbitmq server for getting notice in real time to download new files")
+    print("Examples:")    
+    print("dd_subscribe subscribe.conf  # download files and display log in stout")
+    print("dd_subscribe -d subscribe.conf  # delete files after downloaded and display log in stout")
+    print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
+    print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout")        
+    
 def main():
 
-    # First logging on stdout as default
-
-    argv = list(sys.argv)
-    argc = len(argv)
-
-
-    # command line option -l specify logging directory ( ex.: -l /var/log )
-    # in this case we log to $dir/config_pid.log and the log gets rotated
-
     ldir = None
-    try    : 
-             pos = argv.index('-l')
-             if argc < pos+2 :
-                print("Error 1: USAGE %s [-n] [-l logdir] configuration file",argv[0])
-                sys.exit(1)
-
-             l    = argv.pop(pos)
-             ldir = argv.pop(pos)
-             if not os.path.exists(ldir) :
-                print("Error 2: USAGE %s [-n] [-l logdir] configuration file",argv[0])
-                sys.exit(1)
-    except : 
-             (type, value, tb) = sys.exc_info()
-             print("Type: %s, Value: %s,  ..." % (type, value))
-             pass
-
-
-    # check remaining arguments
-
-    argc = len(argv)
-
-    if argc == 3 :
-           if argv[1] != "-n" :
-              print("Error 3: USAGE %s [-n] [-l logdir] configuration file",argv[0])
-              sys.exit(1)
-           config = argv[2]
-    else :
-           if argc != 2 :
-              print("Error 4: USAGE %s [-n] [-l logdir] configuration file",argv[0])
-              sys.exit(1)
-           config = argv[1]
-
-
-    if not os.path.exists(config) :
-       print("Error 5: USAGE %s [-n] [-l logdir] configuration file",argv[0])
-       sys.exit(1)
-
+    notice_only = False
+    discard = False
+    config = None
+    
+    #get options arguments
+    try:
+      opts, args = getopt.getopt(sys.argv[1:],'hl:dn',['help','log-dir=','download-and-discard','no-download'])
+    except getopt.GetoptError as err:    
+      print("Error 1: %s" %err)      
+      print("Try `dd_subscribe --help' for more information.")
+      sys.exit(2)                    
+    
+    #validate options
+    if opts == [] and args == []:
+      help()  
+      sys.exit(1)
+    for o, a in opts:
+      if o in ('-h','--help'):
+        help()
+        sys.exit(1)
+      elif o in ('-n','--no-download'):
+        notice_only = True        
+      elif o in ('-l','--log-dir'):
+        ldir = a       
+        if not os.path.exists(ldir) :
+          print("Error 2: specified logging directory does not exist.")
+          print("Try `dd_subscribe --help' for more information.")
+          sys.exit(2)
+      elif o in ('-d','--download-and-discard'):		  
+        discard = True        
+        
+    #validate arguments
+    if len(args) == 1:
+      config = args[0]
+      if not os.path.exists(config) :
+	print("Error 3: configuration file does not exist.")	
+	sys.exit(2)
+    elif len(args) == 0:
+      help()  
+      sys.exit(1)
+    else:      
+      print("Error 4: too many arguments given: %s." %' '.join(args))
+      print("Try `dd_subscribe --help' for more information.")
+      sys.exit(2)            
+             
     # logging to stdout
     LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
 
@@ -489,9 +507,8 @@ def main():
        logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
     # user wants to logging in a directory/file
-    else :
-       parts  = argv[-1].split(os.sep)
-       fn     = parts[-1].replace(".conf","")
+    else :       
+       fn     = config.replace(".conf","")
        lfn    = fn + "_%s" % os.getpid() + ".log"
        lfile  = ldir + os.sep + lfn
 
@@ -510,8 +527,9 @@ def main():
     # instanciate consumer
 
     consumer = Consumer(config,LOGGER)
-    if argv[1] == '-n' : consumer.notify_only = True
-
+    consumer.notify_only = notice_only
+    consumer.discard = discard
+    
     while( True ) :
          try:
                 consumer.run()
@@ -520,6 +538,7 @@ def main():
                 LOGGER.error("Type: %s, Value: %s,  ..." % (type, value))
                 time.sleep(10)
                 pass
+                
 
     consumer.close()
 
