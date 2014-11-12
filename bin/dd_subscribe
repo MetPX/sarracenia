@@ -289,73 +289,71 @@ class Consumer(object):
         # special case where lock is only '.' ... it leads the filename
         if self.lock == '.' : tpath = nodir + os.sep + '.' + fname
 
-        # we have to get the file... loop if any issues to retry
-        # only on success we acknowledge the amqp message...
-        while True:
-              try :
-                    # gives self.timeout seconds to get the product
-                    self.timex.alarm(self.timeout)
-                    self.wget(url,tpath,self.http_user,self.http_passwd)                    
-                    if self.discard: 
-                      try:
-                        os.unlink(tpath)
-                        self.logger.info('delete %s', tpath)
-                      except:
-                        self.logger.error('unable to delete %s', tpath)
-                    else:
-                      os.rename(tpath,opath)                    
-                      self.logger.info('wget %s %s', url, opath)                    
-                    self.timex.cancel()
-                    break
-              except TimeoutException:
-                    self.timex.cancel()
-                    self.logger.error('Timeout: wget %s', url)
-              except:
-                    self.timex.cancel()
-                    self.logger.error('wget %s', url)
-                    time.sleep(5)
+        # download file
+        self.download(url,tpath,opath,self.http_user,self.http_passwd)
 
         return True
 
-    def wget(self,url,tpath,user=None,password=None) :
+    def download(self,url,tpath,opath,user=None,password=None) :
         import urllib2
+        # we have to get the file... loop if any issues to retry
+        # only on success we acknowledge the amqp message...
+        while True:
+            # gives self.timeout seconds to get the product       
+            self.timex.alarm(self.timeout)
+            try :
+                # create a password manager                
+                if user != None :                          
+                    # Add the username and password.
+                    password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                    password_mgr.add_password(None, url, user, password)
+                    handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+                        
+                    # create "opener" (OpenerDirector instance)
+                    opener = urllib2.build_opener(handler)
     
-        # the simplest, simply get the html source from URL
+                    # use the opener to fetch a URL
+                    opener.open(url)
     
-        if user == None :
-           #sock       = urllib2.urlopen(url)
-           sock = urllib2.urlopen(url)
-           self.write_to_file(sock,tpath)
-           return tpath
-    
-        # a little more complicated, need to authenticate
-    
-        # create a password manager
-        # Add the username and password.
-    
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, url, user, password )
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-    
-        # create "opener" (OpenerDirector instance)
-    
-        opener = urllib2.build_opener(handler)
-    
-        # use the opener to fetch a URL
-    
-        opener.open(url)
-    
-        # Install the opener.
-        # Now all calls to urllib2.urlopen use our opener.
-    
-        urllib2.install_opener(opener)
-    
-        # now  get the html source from URL
-    
-        sock = urllib2.urlopen(url)
-        self.write_to_file(sock,tpath)
-
-        return tpath
+                    # Install the opener.
+                    # Now all calls to urllib2.urlopen use our opener.
+                    urllib2.install_opener(opener)
+            
+                #download file
+                response = urllib2.urlopen(url)                
+                self.write_to_file(response,tpath)                    
+                self.logger.info('Download successful: %s', url)  
+                
+                #option to delete file
+                if self.discard: 
+                    try:
+                        os.unlink(tpath)
+                        self.logger.info('Delete %s', tpath)
+                    except:
+                        self.logger.error('Unable to delete %s', tpath)
+                else:
+                    os.rename(tpath,opath)                                        
+                    self.logger.info('Local file created: %s', opath)
+                    
+                self.timex.cancel()
+                break
+                
+            except TimeoutException:                    
+                self.logger.error('Download failed: %s', url)                    
+                self.logger.error('Connection timeout')
+            except urllib2.HTTPError as e:
+                self.logger.error('Download failed: %s', url)                    
+                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
+            except urllib2.URLError as e:
+                self.logger.error('Download failed: %s', url)                                    
+                self.logger.error('Failed to reach server. Reason: %s', e.reason)            
+            except:
+                self.logger.error('Download failed: %s', url)                    
+                self.logger.error('Uexpected error')              
+                
+            self.timex.cancel()
+            self.logger.info('Retry in 5 seconds...')
+            time.sleep(5)
 
     def write_to_file(self,req,ofile) :
         fp = open(ofile,'w')
@@ -427,8 +425,8 @@ class Consumer(object):
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'queue': self.queue = words[1] 
                     else:
-		      self.logger.error("Unknown configuration directive %s in %s" % (words[0], self.config))
-		      print("Unknown configuration directive %s in %s" % (words[0], self.config))
+                        self.logger.error("Unknown configuration directive %s in %s" % (words[0], self.config))
+                        print("Unknown configuration directive %s in %s" % (words[0], self.config))
                 except:
                     self.logger.error("Problem with this line (%s) in configuration file of client %s" % (words, self.name))
         config.close()
@@ -450,6 +448,12 @@ def help():
     print("dd_subscribe -d subscribe.conf  # delete files after downloaded and display log in stout")
     print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
     print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout")        
+
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    print('Resume in 5 seconds...')
+    time.sleep(5)
+    #os.kill(os.getpid(),9)
     
 def main():
 
@@ -544,5 +548,6 @@ def main():
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
     main()
 
