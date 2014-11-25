@@ -55,25 +55,25 @@ class Consumer(object):
         self.name   = config
         self.myinit()
 
-        self.timex = AlarmTimeout('timeout reached')
+        self.timex = None
 
     def ack(self,msg):
         # ack timeout 5 sec
-        self.timex.alarm(5)
+        if self.timex != None:self.timex.alarm(5)
         self.channel.basic_ack(msg.delivery_tag)
-        self.timex.cancel()
+        if self.timex != None:self.timex.cancel()
 
     def close(self):
        # timeout 5 sec for each operation
-       self.timex.alarm(5)
+       if self.timex != None:self.timex.alarm(5)
        try:    self.channel.close()
        except: pass
-       self.timex.cancel()
+       if self.timex != None:self.timex.cancel()
 
-       self.timex.alarm(5)
+       if self.timex != None:self.timex.alarm(5)
        try:    self.connection.close()
        except: pass
-       self.timex.cancel()
+       if self.timex != None:self.timex.cancel()
 
        self.connected = False
 
@@ -83,13 +83,13 @@ class Consumer(object):
 
         while True:
              # give 20 sec to connect
-             self.timex.alarm(20)
+             if self.timex != None:self.timex.alarm(20)
 
              try:
                   # connect
                   self.logger.info("AMQP connecting %s %s " % (self.host,self.amqp_user) )
                   self.connection = amqp.Connection(self.host, userid=self.amqp_user,
-                                                    password=self.amqp_passwd, ssl=self.ssl)
+                                                    password=self.amqp_passwd, ssl=self.ssl,connect_timeout=60)
                   self.channel    = self.connection.channel()
 
                   # shared queue : each pull receive 1 message (prefetch_count=1)
@@ -109,13 +109,13 @@ class Consumer(object):
                       self.logger.info('Binding %s to %s with %s', self.exchange, self.queue, k)
                       self.channel.queue_bind(self.queue, self.exchange, k )
 
-                  self.timex.cancel()
+                  if self.timex != None:self.timex.cancel()
                   self.connected = True
                   self.logger.info("Connected ")
 
                   break
              except:
-                  self.timex.cancel()
+                  if self.timex != None:self.timex.cancel()
                   (type, value, tb) = sys.exc_info()
                   self.logger.error("AMQP Sender cannot connected to: %s" % str(self.host))
                   self.logger.error("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
@@ -125,13 +125,13 @@ class Consumer(object):
     def consume(self):
 
         # give 10 sec to consume a message
-        self.timex.alarm(10)
+        if self.timex != None:self.timex.alarm(10)
 
         try :
               msg = self.channel.basic_get(self.queue)
-              self.timex.cancel()
+              if self.timex != None:self.timex.cancel()
         except :
-              self.timex.cancel()
+              if self.timex != None:self.timex.cancel()
               msg = None
               time.sleep(5)
               self.reconnect()
@@ -289,18 +289,19 @@ class Consumer(object):
         # special case where lock is only '.' ... it leads the filename
         if self.lock == '.' : tpath = nodir + os.sep + '.' + fname
 
-        # download file
+        # download file        
         self.download(url,tpath,opath,self.http_user,self.http_passwd)
 
         return True
 
     def download(self,url,tpath,opath,user=None,password=None) :
         import urllib2
-        # we have to get the file... loop if any issues to retry
-        # only on success we acknowledge the amqp message...
-        while True:
+        # get the file, in case of error it will try three times.
+        nb_try = 0
+        while nb_try < 3:
+            nb_try = nb_try + 1
             # gives self.timeout seconds to get the product       
-            self.timex.alarm(self.timeout)
+            if self.timex != None:self.timex.alarm(self.timeout)
             try :
                 # create a password manager                
                 if user != None :                          
@@ -324,18 +325,18 @@ class Consumer(object):
                 self.write_to_file(response,tpath)                    
                 self.logger.info('Download successful: %s', url)  
                 
-                #option to delete file
+                #option to discard file
                 if self.discard: 
                     try:
                         os.unlink(tpath)
-                        self.logger.info('Delete %s', tpath)
+                        self.logger.info('Discard %s', tpath)
                     except:
-                        self.logger.error('Unable to delete %s', tpath)
+                        self.logger.error('Unable to discard %s', tpath)
                 else:
                     os.rename(tpath,opath)                                        
                     self.logger.info('Local file created: %s', opath)
                     
-                self.timex.cancel()
+                if self.timex != None:self.timex.cancel()
                 break
                 
             except TimeoutException:                    
@@ -351,9 +352,9 @@ class Consumer(object):
                 self.logger.error('Download failed: %s', url)                    
                 self.logger.error('Uexpected error')              
                 
-            self.timex.cancel()
-            self.logger.info('Retry in 5 seconds...')
-            time.sleep(5)
+            if self.timex != None:self.timex.cancel()
+            self.logger.info('Retry in 3 seconds...')
+            time.sleep(3)
 
     def write_to_file(self,req,ofile) :
         fp = open(ofile,'w')
@@ -445,7 +446,7 @@ def help():
     print("rabbitmq python client connects to rabbitmq server for getting notice in real time to download new files")
     print("Examples:")    
     print("dd_subscribe subscribe.conf  # download files and display log in stout")
-    print("dd_subscribe -d subscribe.conf  # delete files after downloaded and display log in stout")
+    print("dd_subscribe -d subscribe.conf  # discard files after downloaded and display log in stout")
     print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
     print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout")        
 
@@ -461,10 +462,11 @@ def main():
     notice_only = False
     discard = False
     config = None
+    timex = None
     
     #get options arguments
     try:
-      opts, args = getopt.getopt(sys.argv[1:],'hl:dn',['help','log-dir=','download-and-discard','no-download'])
+      opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','timeout','no-download'])
     except getopt.GetoptError as err:    
       print("Error 1: %s" %err)      
       print("Try `dd_subscribe --help' for more information.")
@@ -533,8 +535,9 @@ def main():
     consumer = Consumer(config,LOGGER)
     consumer.notify_only = notice_only
     consumer.discard = discard
+    consumer.timex = timex
     
-    while( True ) :
+    while True:
          try:
                 consumer.run()
          except :
