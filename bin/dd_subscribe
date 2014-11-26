@@ -114,6 +114,8 @@ class Consumer(object):
                   self.logger.info("Connected ")
 
                   break
+             except (KeyboardInterrupt, SystemExit):
+                 break                      
              except:
                   if self.timex != None:self.timex.cancel()
                   (type, value, tb) = sys.exc_info()
@@ -167,11 +169,13 @@ class Consumer(object):
 
                   if processed :
                      self.ack(msg)
-
+             except (KeyboardInterrupt, SystemExit):
+                 break                 
              except :
                  (type, value, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
-
+                 
+                 
 
     def myinit(self):
         self.bufsize       = 128 * 1024     # read/write buffer size
@@ -338,7 +342,8 @@ class Consumer(object):
                     
                 if self.timex != None:self.timex.cancel()
                 break
-                
+            except (KeyboardInterrupt, SystemExit):
+                 break                     
             except TimeoutException:                    
                 self.logger.error('Download failed: %s', url)                    
                 self.logger.error('Connection timeout')
@@ -452,8 +457,9 @@ def help():
 
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
-    print('Resume in 5 seconds...')
-    time.sleep(5)
+    #print('Resume in 5 seconds...')
+    #time.sleep(5)
+    sys.exit()
     #os.kill(os.getpid(),9)
     
 def main():
@@ -537,6 +543,8 @@ def main():
     consumer.discard = discard
     consumer.timex = timex
     
+    consumer.run()
+    """
     while True:
          try:
                 consumer.run()
@@ -546,7 +554,7 @@ def main():
                 time.sleep(10)
                 pass
                 
-
+    """
     consumer.close()
 
 
