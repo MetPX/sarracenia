@@ -468,6 +468,10 @@ def verify_version():
         sys.stderr.write("You need python2 and version 2.6 or later to run this script.\n")
         exit(1)
     
+    if sys.version_info >= (3,0,0):
+        sys.stderr.write("Python3 not supported, you need python2 to run this script.\n")
+        exit(1)
+    
     amqplib_version = '1.0.0'   
     if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
         sys.stderr.write("You need amqplib %s or later to run this script.\n" % amqplib_version)        
