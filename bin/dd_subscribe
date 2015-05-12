@@ -462,6 +462,18 @@ def signal_handler(signal, frame):
     sys.exit()
     #os.kill(os.getpid(),9)
     
+def verify_version():    
+    python_version = (2,6,0)
+    if sys.version_info < python_version:
+        sys.stderr.write("You need python2 and version 2.6 or later to run this script.\n")
+        exit(1)
+    
+    amqplib_version = '1.0.0'   
+    if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
+        sys.stderr.write("You need amqplib %s or later to run this script.\n" % amqplib_version)        
+        exit(1)
+
+    
 def main():
 
     ldir = None
@@ -469,7 +481,7 @@ def main():
     discard = False
     config = None
     timex = None
-    
+                
     #get options arguments
     try:
       opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','timeout','no-download'])
@@ -559,6 +571,8 @@ def main():
 
 
 if __name__ == '__main__':
+  
+    verify_version()
     signal.signal(signal.SIGINT, signal_handler)
     main()
 
