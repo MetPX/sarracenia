@@ -464,17 +464,13 @@ def signal_handler(signal, frame):
     
 def verify_version():    
     python_version = (2,6,0)
-    if sys.version_info < python_version:
-        sys.stderr.write("You need python2 and version 2.6 or later to run this script.\n")
+    if sys.version_info < python_version or sys.version_info >= (3,0,0):
+        sys.stderr.write("Python version higher than 2.6.0 and lower than 3.0.0 required.\n")
         exit(1)
-    
-    if sys.version_info >= (3,0,0):
-        sys.stderr.write("Python3 not supported, you need python2 to run this script.\n")
-        exit(1)
-    
+        
     amqplib_version = '1.0.0'   
     if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
-        sys.stderr.write("You need amqplib %s or later to run this script.\n" % amqplib_version)        
+        sys.stderr.write("Amqplib version %s or higher required.\n" % amqplib_version)        
         exit(1)
 
     
