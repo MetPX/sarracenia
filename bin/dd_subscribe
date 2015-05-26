@@ -165,6 +165,8 @@ class Consumer(object):
                   self.logger.debug('Received message # %s from %s: %s', msg, msg.delivery_info, body)
                   self.logger.debug('Received exchange %s, key %s, message file %s', exchange, routing_key, filename )
 
+                  if sys.version[:1] >= '3' : body = body.decode("utf-8")
+
                   processed = self.treat_message(exchange,routing_key,body,filename)
 
                   if processed :
@@ -215,8 +217,12 @@ class Consumer(object):
     def queuename(self) :
 
         self.queue  = 'cmc'
-        self.queue += '.' + string.zfill(random.randint(0,100000000),8)
-        self.queue += '.' + string.zfill(random.randint(0,100000000),8)
+        if sys.version[:1] >= '3' :
+           self.queue += '.' + str(random.randint(0,100000000)).zfill(8)
+           self.queue += '.' + str(random.randint(0,100000000)).zfill(8)
+        else :
+           self.queue += '.' + string.zfill(random.randint(0,100000000),8)
+           self.queue += '.' + string.zfill(random.randint(0,100000000),8)
 
         if os.path.isfile(self.queuefile) :
            f = open(self.queuefile)
@@ -299,7 +305,15 @@ class Consumer(object):
         return True
 
     def download(self,url,tpath,opath,user=None,password=None) :
-        import urllib2
+        if sys.version[:1] >= '3' :
+           import urllib.request, urllib.error
+           urllib_request = urllib.request
+           urllib_error   = urllib.error
+        else :
+           import urllib2
+           urllib_request = urllib2
+           urllib_error   = urllib2
+
         # get the file, in case of error it will try three times.
         nb_try = 0
         while nb_try < 3:
@@ -310,22 +324,22 @@ class Consumer(object):
                 # create a password manager                
                 if user != None :                          
                     # Add the username and password.
-                    password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                    password_mgr = urllib_request.HTTPPasswordMgrWithDefaultRealm()
                     password_mgr.add_password(None, url, user, password)
-                    handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+                    handler = urllib_request.HTTPBasicAuthHandler(password_mgr)
                         
                     # create "opener" (OpenerDirector instance)
-                    opener = urllib2.build_opener(handler)
+                    opener = urllib_request.build_opener(handler)
     
                     # use the opener to fetch a URL
                     opener.open(url)
     
                     # Install the opener.
                     # Now all calls to urllib2.urlopen use our opener.
-                    urllib2.install_opener(opener)
+                    urllib_request.install_opener(opener)
             
                 #download file
-                response = urllib2.urlopen(url)                
+                response = urllib_request.urlopen(url)
                 self.write_to_file(response,tpath)                    
                 self.logger.info('Download successful: %s', url)  
                 
@@ -347,14 +361,14 @@ class Consumer(object):
             except TimeoutException:                    
                 self.logger.error('Download failed: %s', url)                    
                 self.logger.error('Connection timeout')
-            except urllib2.HTTPError as e:
+            except urllib_error.HTTPError as e:
                 self.logger.error('Download failed: %s', url)                    
                 self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
-            except urllib2.URLError as e:
+            except urllib_error.URLError as e:
                 self.logger.error('Download failed: %s', url)                                    
                 self.logger.error('Failed to reach server. Reason: %s', e.reason)            
             except:
-                self.logger.error('Download failed: %s', url)                    
+                self.logger.error('Download failed: %s', url )
                 self.logger.error('Uexpected error')              
                 
             if self.timex != None:self.timex.cancel()
@@ -362,7 +376,7 @@ class Consumer(object):
             time.sleep(3)
 
     def write_to_file(self,req,ofile) :
-        fp = open(ofile,'w')
+        fp = open(ofile,'wb')
 
         while True:
             chunk = req.read(self.bufsize)
@@ -439,7 +453,7 @@ class Consumer(object):
     
     def getMatchingMask(self, filename): 
         for mask in self.masks:
-            if mask[3].match(filename) :
+            if mask[3].match(filename) != None :
                if mask[4] : return mask[1]
                return None
         return None
@@ -461,18 +475,17 @@ def signal_handler(signal, frame):
     #time.sleep(5)
     sys.exit()
     #os.kill(os.getpid(),9)
-    
+
 def verify_version():    
     python_version = (2,6,0)
-    if sys.version_info < python_version or sys.version_info >= (3,0,0):
-        sys.stderr.write("Python version higher than 2.6.0 and lower than 3.0.0 required.\n")
+    if sys.version_info < python_version :
+        sys.stderr.write("Python version higher than 2.6.0 required.\n")
         exit(1)
         
     amqplib_version = '1.0.0'   
     if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
         sys.stderr.write("Amqplib version %s or higher required.\n" % amqplib_version)        
         exit(1)
-
     
 def main():
 
@@ -481,12 +494,12 @@ def main():
     discard = False
     config = None
     timex = None
-                
+    
     #get options arguments
     try:
       opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','timeout','no-download'])
     except getopt.GetoptError as err:    
-      print("Error 1: %s" %err)      
+      print("Error 1: %s" %err)
       print("Try `dd_subscribe --help' for more information.")
       sys.exit(2)                    
     
@@ -506,15 +519,15 @@ def main():
           print("Error 2: specified logging directory does not exist.")
           print("Try `dd_subscribe --help' for more information.")
           sys.exit(2)
-      elif o in ('-d','--download-and-discard'):		  
+      elif o in ('-d','--download-and-discard'):
         discard = True        
         
     #validate arguments
     if len(args) == 1:
       config = args[0]
       if not os.path.exists(config) :
-	print("Error 3: configuration file does not exist.")	
-	sys.exit(2)
+         print("Error 3: configuration file does not exist.")
+         sys.exit(2)
     elif len(args) == 0:
       help()  
       sys.exit(1)
@@ -571,7 +584,6 @@ def main():
 
 
 if __name__ == '__main__':
-  
     verify_version()
     signal.signal(signal.SIGINT, signal_handler)
     main()
