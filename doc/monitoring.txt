@@ -1,0 +1,35 @@
+
+notes about monitoring...
+
+If a message error occurs, such that a downstream system is unable to process a message,
+then the log message needs to propagate that back to the source.
+
+Sources need to see the log messages for their sources.
+Admin and monitoring needs to see all the messages. 
+
+dd_log just dumps log messages.
+
+-- the CFS runs a subscribe to pull the logs in in real-time, no cron required (but queue if it goes down?)
+
+-- for each known source, a log exchange is created (log_goes)
+
+-- logs come through the brokers in the common log exchange (log) but most people cannot read that,
+   only admin access.
+
+-- process on log broker looks at mesages and routes them to per source log exchanges. ?
+   source exchange permissions decide who can read those messages.
+
+   new component:  dd_log2source
+	-- looks at the topic, and just copies the message from the general log to the per source log.
+	
+
+dd_log can be used:
+	-- by sources to see the consumption of their products.
+	-- by the CFS to capture significant logs directly (with bulk file transfer)
+	-- by analysts, either on a real-time log capture host, or on the CFS
+		to get traceability
+	-- by netops to feed into nagios.
+	-- by netops to feed into "speedometers"
+	--     web site? or app, taps into log feed.
+
+

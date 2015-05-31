@@ -1,0 +1,49 @@
+
+Log message contains:
+
+is only emitted after processing of an announcement is completed, to indicate a final status of processing
+that announcent.
+
+topic matches announcement message except...
+v01.log....
+
+sz sum baseurl relativeurl
+<startdate> <enddate> <status> <flow> <client>
+
+what if there are spaces in the file name?
+do we escape with \ or is it url-encoded %20? or something? just need to know.
+
+can we just space out the fields on a single line? or do we need fancier parsing....
+for v01, perhaps just use spaces?
+
+stuff that needs to be there:
+start <date-time> of transfer...
+End <date-time> of transfer ...
+status 
+	-- ok or error code> ... copy use http ones?
+	-- 200 OK
+	-- use 4xxx series to report most issues.
+
+flow 
+	-- application determined flow id, so the appication can relate it to their processing.
+	-- flow is a display field, unchanged/untouched by sarracenia.
+
+client 
+	-- talk to the data source, and determine what is a good label to share.
+           this is analogous to a company, or organization, and is likely not be unique to a single flow.
+	-- subscriber chosen significant id, so that source can understand who has received it>
+	-- often subscriber will be on s12124.rogers.net ... not terribly significant.
+	-- client id is essentially a display field... based unchanged to source.
+
+	-- so only sources and clients need to negotiate the id´s,  we just need to pass it 
+	   in both directions transparently, and use the identifier that they both know
+	   whenever appropriate.
+
+is client the username used to connect to the broker and httpd instance?
+	-- in which case, it is no longer transparent.
+	-- then we have to say something about it.
+
+system each ddi/ddsr instance will be defined as an internal client, so internal vs. actual deliveries
+are easily distinguished... does that mean each layer of switches has an amqp username?
+
+
