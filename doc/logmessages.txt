@@ -5,24 +5,44 @@ is only emitted after processing of an announcement is completed, to indicate a 
 that announcent.
 
 topic matches announcement message except...
-v01.log....
+v01.log.... (or maybe status also, see 'status' below)
 
-sz sum baseurl relativeurl
-<startdate> <enddate> <status> <flow> <client>
+version should match the announcement version.
 
-what if there are spaces in the file name?
-do we escape with \ or is it url-encoded %20? or something? just need to know.
+start is as per notification... just add fields after:
+
+	sz sum baseurl relativeurl <host> <duration> <enddate> <status> <flow> <client>
+
+------
+
+	what if there are spaces in the file name?
+	do we escape with \ or is it url-encoded %20? or something? just need to know.
+
+------
 
 can we just space out the fields on a single line? or do we need fancier parsing....
-for v01, perhaps just use spaces?
+one line is better, because grep etc... works, and 1 message per line is easier to parse.
 
 stuff that needs to be there:
-start <date-time> of transfer...
-End <date-time> of transfer ...
+
+startdate <date-time> of transfer...
+	-- perhaps just indicate duration of transfer in seconds, rather than two dates.
+	   saves few bytes.
+
+Enddate <date-time> of transfer ... 
+
 status 
-	-- ok or error code> ... copy use http ones?
+	-- ok or error code> ... use http ones?
 	-- 200 OK
-	-- use 4xxx series to report most issues.
+	-- use 4xx series to report most issues.
+		-- might invent some new ones, say to signify disk full ?
+		-- encode errno?
+
+	-- should topic include status?
+	       v01.log.200..... (then do not need it in the body...)
+	   cant subscribe only to errors? likely not useful as too many errors to subscribe to.
+	   perhaps just 200 for success, and 400 for failure?
+	    naw, think it is a pain. just leave it in body.
 
 flow 
 	-- application determined flow id, so the appication can relate it to their processing.
@@ -40,8 +60,9 @@ client
 	   whenever appropriate.
 
 is client the username used to connect to the broker and httpd instance?
-	-- in which case, it is no longer transparent.
-	-- then we have to say something about it.
+	-- in which case, it is no longer transparent to the switches, 
+	   and we have to say something about it.
+              so the client will see it, and it is a ''monitoring unit''
 
 system each ddi/ddsr instance will be defined as an internal client, so internal vs. actual deliveries
 are easily distinguished... does that mean each layer of switches has an amqp username?
