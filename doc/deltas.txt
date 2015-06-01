@@ -9,6 +9,42 @@ algorithm assumed:
 
 the zsync algorithm is the right idea, can perhaps use it directly.
 
+----------- what if each notification is for a block, not a file ?--------------
+
+what if the messages we send are all per block?
+say we set a blocksize of 1MB, and we checksum that block, noting the offset, then
+continue?
+
+so v01.notify...  
+
+gedanken experiment... per block messages, rather than entire files ?
+
+has 
+sz offset blocksz chksum base-url relative-path ....
+
+offset as the second field, and blocksz... so as you are calculating the checksum
+you send off a message with the block, and as each block is ready you send if off.
+
+when it receives a block where offset + blocksize > sz, the this is the last block
+do the file completion logic.
+
+this way, for large files, the transfer can be split over a large number of nodes.
+but then re-assembly is a bit of a puzzle.  will each node of ddsr have only
+fractional (aka sparse) large files?   as long as the dd_sub is to both ddsr's, it should
+get everything.   what happens with sparse  files?
+
+https://administratosphere.wordpress.com/2008/05/23/sparse-files-what-why-and-how/
+
+it's OK...
+
+Why is this really cool?  It does the gridftp thing, splitting out single
+file transfers into parallel streams.
+
+
+-------------------------------------------------------------------------
+
+
+----------- digression about zsync ------------------
 zsync is available in repositories.  
 and zsync(1) is the existing download client.  
 zsyncmake(1) builds the signatures, with a programmable block size. 
@@ -44,6 +80,9 @@ The intent is not to replicate source trees, but large data sets.
 
 perhaps build the zsync client into dd_subscribe, but use zsync make on the server side ?
 or when the file is big enough, forking a zsync is no big deal? but mac & win...
+--------digression about zsync --------------------------------------------------------
+
+
 
 server/protocol considerations.
 
