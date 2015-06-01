@@ -20,7 +20,7 @@ Why is this really cool?
 
    -- For large files, the ddsr's might have a whole bunch of part files, 
       instead of the complete ones, because the transfer is split over
-      multiple nodes,  no problem, as long as later stages are subscribed 
+      multiple nodes, no problem, as long as later stages are subscribed 
       to all ddsr's.
 
    -- intervening switches do not need to store the largest file
@@ -34,15 +34,19 @@ Why is this really cool?
       any number of dd_senders listening to their own input exchange.
       sharing the subscription, just like dd_subscribe does.
 
+   -- for large files, you can see progress reports sources receive
+      confirmation of each switching layer receiving each chunk.
 
 say we set a blocksize of 10MB, and we checksum that block, noting the offset, then
 continue?
 
 so v01.notify:
-blocksz sz-inblocks remainder blocknum flags chksum base-url relative-path ....
+blocksz sz-inblocks remainder blocknum flags chksum base-url relative-path flow ....
 
+see logging.txt for a description of 'flow', user settable, with a default.
 
-flags says whether the chksum is for the name or the body.
+flags says whether the chksum is for the name or the body. (if checksum is for name,
+then cannot use blocking chksums.) ... says name checksums should only be used for smallish files.
 
 The blocksz establishes the multiplier for the sz and the blocknum.  the remainder
 is the last bit of the file after the last block boundary.
@@ -111,14 +115,16 @@ compatibility... uprading...
 v00.notify alerts boil down to:
 
 v01.notify could be:
-   sz 1 0 0  ...
+
+   filesz 1 0 0  ...
 	- the blocksize is the length of the entire file, 1 block ithe sz
 	- no remainder.
 	- 0th block (the first one, zero origin counting)
 
 or we take the convention that a blocksize of zero means no blocking...
 in which chase it would be:
-   0 1 0 sz ... 
+
+   0 1 filesz 0 ... 
 	- store the sz as the remainder.
 	- disable blocking for that file.
 
