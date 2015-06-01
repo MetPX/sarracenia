@@ -6,22 +6,21 @@ algorithm assumed:
 	- when a subscriber reads an announcement, it includes the signature.
 	- he compares the signatures on the file he already has, and updates it to match.
 
-
 the zsync algorithm is the right idea, can perhaps use it directly.
 
+
 ----------- what if each notification is for a block, not a file ?--------------
-
-what if the messages we send are all per block?
-say we set a blocksize of 1MB, and we checksum that block, noting the offset, then
-continue?
-
-so v01.notify...  
-
 gedanken experiment... per block messages, rather than entire files ?
 
-has 
-v01.notify:
-blocksz sz-inblocks remainder blocknum chksum base-url relative-path ....
+what if the messages we send are all per block?
+say we set a blocksize of 10MB, and we checksum that block, noting the offset, then
+continue?
+
+so v01.notify:
+blocksz sz-inblocks remainder blocknum flags chksum base-url relative-path ....
+
+
+flags says whether the chksum is for the name or the body.
 
 The blocksz establishes the multiplier for the sz and the blocknum.  the remainder
 is the last bit of the file after the last block boundary.
@@ -71,6 +70,15 @@ how to pick chunksize...
 	- we impose our own on ddsr?
 	
 a default to 10*1024*1024=10485760 bytes, with override possible.
+
+v00.notify alerts boil down to:
+
+v01.notify with:
+sz 1 0 0  ...
+	- the blocksize is the length of the entire file, 1 block ithe sz
+	- no remainder.
+	- 0th block (the first one, zero origin counting)
+
 
 -------------------------------------------------------------------------
 
