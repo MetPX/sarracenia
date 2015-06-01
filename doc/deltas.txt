@@ -20,13 +20,13 @@ so v01.notify...
 gedanken experiment... per block messages, rather than entire files ?
 
 has 
-sz offset blocksz chksum base-url relative-path ....
+v01.notify:
+blocksz sz-inblocks remainder blocknum chksum base-url relative-path ....
 
-offset as the second field, and blocksz... so as you are calculating the checksum
-you send off a message with the block, and as each block is ready you send if off.
+The blocksz establishes the multiplier for the sz and the blocknum.  the remainder
+is the last bit of the file after the last block boundary.
 
-when it receives a block where offset + blocksize > sz, the this is the last block
-do the file completion logic.
+So you calculating the checksum for each block you send off a message with the block, 
 
 this way, for large files, the transfer can be split over a large number of nodes.
 but then re-assembly is a bit of a puzzle.  will each node of ddsr have only
@@ -36,10 +36,41 @@ get everything.   what happens with sparse  files?
 https://administratosphere.wordpress.com/2008/05/23/sparse-files-what-why-and-how/
 
 it's OK...
+it would work, but it's a bit strange, and how do we know when we are done?
+How about the following.  when dd_subscribe writes files, it writes to a file
+suffixed .part when it receives a file, and there is a .part it checks the size
+of the file, if the current part is contiguous, it just appends the data to the .part
+file.  If not, it creates a separate .part<blocknum>
+
+Then it looks in the directory to see if a .part<blocknum +1> exists, and appends
+it if it does, and loops until all contiguous parts are appended (the corresponding
+files deleted.)  
+
+NOTE: Do not use append writing .part, but always lseek and write.  This prevents 
+race conditions from causing havoc.  If there are multiple dd_subscribes writing 
+the file they will just both write the same data multiple times (worst case.)
+
+anyways when you run out of contiguous parts, you stop.
+
+if the last contiguous block received includes the end of the file, then
+do the file completion logic.
 
 Why is this really cool?  It does the gridftp thing, splitting out single
 file transfers into parallel streams.
 
+so this means that for large files, the ddsr's might have a whole bunch of
+part files, instead of the complete ones, because the transfer is split over
+multiple nodes,  no problem, as long as later stages are subscribed to all
+ddsr's.
+
+This also deals with files that are written over time, without waiting
+until they are complete before hitting send.
+
+how to pick chunksize...
+	- source choice?
+	- we impose our own on ddsr?
+	
+a default to 10*1024*1024=10485760 bytes, with override possible.
 
 -------------------------------------------------------------------------
 
