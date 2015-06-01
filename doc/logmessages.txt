@@ -11,7 +11,7 @@ version should match the announcement version.
 
 start is as per notification... just add fields after:
 
-	sz sum baseurl relativeurl <host> <duration> <enddate> <status> <flow> <client>
+	<date> blksz blckcnt remainder blocknum flags baseurl relativeurl <flow> <status> <host> <client> <duration> 
 
 ------
 

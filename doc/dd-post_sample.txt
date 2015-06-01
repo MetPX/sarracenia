@@ -1,0 +1,84 @@
+
+afsiext:  user name assigned to us to retreive data on cmcdata server
+ec_cmc:   Account assigned for AMQP access. (rabbitmq username)
+
+dd-post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
+
+file is 457 bytes, blocksize is 0.
+flow is 'exp13' (by default, would be 'default')  user settable, just passes through. DMS guys will appreciate this.
+checksum is done on actual data, not the file name, or a script
+
+dd-post connects to the 'ec_cmc' exchange on bunny-op
+
+posting is:
+
+v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF exp13
+
+  -- blocksize is 457  (== file size)
+  -- block count is 1
+  -- remainder is 0.
+  -- block number is 0.
+  -- d - checksum was calculated on the body.
+  -- Relative used to store relative destination directory
+  -- flow is an argument after the relative path.
+
+dd-validate is subscribed to bunny-op
+	- checks that the block-size is legal.
+	- modifies the destination directory to YYYYMMDD/ec_cmc/NRDPS/GIF/
+	- posts the result to the normal exchange (xpublic?)
+
+v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+1 457 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13
+
+also emits a log message to log exchange:
+v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 202 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
+
+if we go with HTTP error codes, then...
+	-- 202 is HTTP status code for ''Accepted'' meaning accepted for processing.
+
+other options:
+	-- 400 bad request, in case of bad blocksize or other issue.
+		
+based on the v01.notify above the log one..., 
+
+then dd-sara pulls the file in, and puts it on a local disk, in 
+	/apps/dd/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
+	and it knows the root of the web tree is /apps/dd/... ?
+
+then it needs to re-announce:
+
+v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db  YYYYMMDD/ec_cmc/NRDPS/GIF/NRDPS_HiRes_000.gif
+
+?
+
+dd-sara then emits a log entry:
+v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011358.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
+
+You wanted the date first... you are right, I forgot that makes it naturally sort in date order.
+	- date
+	- fields as in notify,
+	- flowid: 'exp13'
+	- status codes (http) 200 means successful, so at this point, the file has made it to ddsr.
+	- host that retrieved.
+	- on whose behalf (ssc_ddsr account is AMQP user used on ddsr, one per layer of switching ?) 
+	- duration of transfer in seconds.
+	
+then a client with dd_subscribe pulls it down, based on the notify above.
+
+amqp user: weather_underground
+
+
+v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011359.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 sv121.wug.org weather_underground 0.1 
+
+
+
+Looking at it now, I get your point about having a date at the beginning of the notifications also.
+It would be cleaner/more consistent, if they had a data there... it's aesthetically pleasing to have log
+messages be just longer versions of announcements,
+
+is it worth the extra bytes (for every file?)

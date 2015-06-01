@@ -14,7 +14,8 @@ Admin and monitoring needs to see all the messages.
 
 dd_log just dumps log messages (might be just dd_subscribe -n.)
 
--- the CFS runs a subscribe to pull the logs in in real-time, no cron required (but queue if it goes down?)
+-- the CFS runs a subscribe to pull the logs in in real-time, no cron required 
+   (but queue if it goes down?)
 
 -- for each known source, a log exchange is created (log_goes)
 
