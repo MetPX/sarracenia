@@ -12,16 +12,18 @@ So a Account is allocated for:
 
 Each Source. (Alice)
    each source gets a source_<sourcename> exchange ... source_Alice. 
-   on the posting switch.
-
-   each source gets a 'log_<sourcename>' exchange ... log_Alice
-   on the logging switch.
+   on the posting switch (and the logging switch if different.)
 
    their directories get disseminated as YYYYMMDD/Alice/...
 
    Since the clients will see the directories, and therefore client configurations will include them.
    it would be wise to consider the account name public, and relatively static.
 
+   Sources determine who can access their data.
+   two aspects:
+	- distribution scope ( what servers to post to )
+	- authorization (which clients on the servers should access it.)
+   	- see below sections for each.
    
 Each Client (Bob)
     Client gets permission to access files (http level)
@@ -59,4 +61,31 @@ these are data interchange accounts (separate from interactive ones,
 per org, rather than per person.)
 
 
+
+Distribution/Scope:
+
+
+
+Authorization:
+	when sara picks up permit messages, it needs to route them to 
+	a separate exchange, that only specific users will be able to see,
+	rather than a public one.
+
+	source emits a message.
+	v01.permit.set.<source>.<topic>.<subtopic>...   
+	body of message is the list of permitted users.
+
+	if the file is empty, then remove the .htaccess file.
+
+	reply:
+	v01.log.permit.set...   
+		which has a succeed or fail status.
+
+	v01.permit.get.<source>.<topic>.<subtopic>...
+
+	v01.log.permit.get
+		body contains the list of users.
+
+	body of message is the list of permitted users.
+	
 
