@@ -1,0 +1,28 @@
+
+This is a problem to be addressed after the basic proof of concept is demonstrated.
+
+MetPX-sundew runs as an administrator configured tool.
+having configurations entirely in configuration files makes sense for that.
+We also have positional significance (config file options apply from top down in file.)
+
+MetPX-sarracenia, is intended to be more user facing and interactive.
+User facing commands ought to have robust command line parsing.
+
+dd-subscribe and dd-post, likely need more polish here.
+
+How to do this is not obvious...
+
+It would appear that optparse, want to do it elegantly.
+
+
+read options from 
+
+	$DD_ROOT (default if not present, /etc/dd/ )
+	~/.dd
+	.dd
+	commandline
+
+have them work together.
+
+Don't want to change the config file format... hmm.. maybe we should...
+lot's of work here.
