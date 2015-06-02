@@ -4,6 +4,9 @@ These usernames are significant in that they are visible to all. Need to be unde
 they are wider scope, than a person... perhaps call them 'Accounts'.
 they turn up as usernames in AMQP and HTTP.
 
+All Account names should be unique, but nothing will avoid clashes when sources are on 
+different origins, and clients at different destinations.  Just a matter of seeing name
+clashes in practice and fixing them.
 
 So a Account is allocated for:
 
@@ -16,6 +19,9 @@ Each Source. (Alice)
 
    their directories get disseminated as YYYYMMDD/Alice/...
 
+   Since the clients will see the directories, and therefore client configurations will include them.
+   it would be wise to consider the account name public, and relatively static.
+
    
 Each Client (Bob)
     Client gets permission to access files (http level)
@@ -27,19 +33,30 @@ Each Client (Bob)
     also in apache at end server.
 
     All sources will see the client name in their logs.
-
+    
 
 Each Layer between Source and Client (ddsr,ddi,dd)   
     so each hop generates a log message, assigned to the layers.
     internal hops can be removed from stats easily.
     only exists in AMQP on the relevant brokers.
+    ssc_ddsr
+    ssc_ddi
+    ssc_dd
 
 
 Is Speedo a source? ... 
 	creates no data, only messages.
+	ssc_mon user?
 
 Does Monitoring need an account?
 
 
 To store the accounts, do we create a sub-domain for ldap 
 ( dd.science.gc.ca, dd.collab.science.gc.ca) and put them in there?
+just allocate locally?   hmm... dunno.
+
+these are data interchange accounts (separate from interactive ones, 
+per org, rather than per person.)
+
+
+
