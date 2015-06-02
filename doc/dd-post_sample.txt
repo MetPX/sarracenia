@@ -45,7 +45,7 @@ v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 
 also emits a log message to log exchange:
 v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 202 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
+20150601135701.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 202 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
 if we go with HTTP error codes, then...
 	-- 202 is HTTP status code for ''Accepted'' meaning accepted for processing.
