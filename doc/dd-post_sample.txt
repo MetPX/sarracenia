@@ -1,19 +1,27 @@
 
 afsiext:  user name assigned to us to retreive data on cmcdata server
+	client will not see this, private between source and ingest switch.
+
 ec_cmc:   Account assigned for AMQP access. (rabbitmq username)
+	clients will see this... it is a public label for the source.
 
 dd-post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
 
 file is 457 bytes, blocksize is 0.
-flow is 'exp13' (by default, would be 'default')  user settable, just passes through. DMS guys will appreciate this.
+flow is 'exp13' (by default, would be 'default')  user settable, just passes through. 
+DMS guys will appreciate this, for labelling warning flows.
 checksum is done on actual data, not the file name, or a script
+	- this is default behaviour.
 
-dd-post connects to the 'ec_cmc' exchange on bunny-op
+need an option to checksum only the name...
+	-namesum ?
+
+dd-post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
 
 posting is:
 
 v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF exp13
+201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF exp13
 
   -- blocksize is 457  (== file size)
   -- block count is 1
@@ -26,13 +34,17 @@ v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 dd-validate is subscribed to bunny-op
 	- checks that the block-size is legal.
 	- modifies the destination directory to YYYYMMDD/ec_cmc/NRDPS/GIF/
+	- runs validscript on the data.
+		- IT Sec may want arbitrary scanning of data depending on source.
+		- only after the scan is complete do we post to the next hop.
+		- so the timing between post and accept can be significant.
 	- posts the result to the normal exchange (xpublic?)
 
 v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-1 457 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13
+201506011357.445 1 457 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13
 
 also emits a log message to log exchange:
-v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 202 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
 if we go with HTTP error codes, then...
@@ -50,17 +62,15 @@ then dd-sara pulls the file in, and puts it on a local disk, in
 then it needs to re-announce:
 
 v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db  YYYYMMDD/ec_cmc/NRDPS/GIF/NRDPS_HiRes_000.gif
+201506011357.545 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db  YYYYMMDD/ec_cmc/NRDPS/GIF/NRDPS_HiRes_000.gif
 
 ?
 
 dd-sara then emits a log entry:
-v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011358.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
+v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011358.345 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
-You wanted the date first... you are right, I forgot that makes it naturally sort in date order.
-	- date
-	- fields as in notify,
+	- fields as in notify, log.<source>.<dest>
 	- flowid: 'exp13'
 	- status codes (http) 200 means successful, so at this point, the file has made it to ddsr.
 	- host that retrieved.
@@ -69,16 +79,12 @@ You wanted the date first... you are right, I forgot that makes it naturally sor
 	
 then a client with dd_subscribe pulls it down, based on the notify above.
 
+then there is another hop, similar to the above, to get to dd1.weather.gc.ca
+
 amqp user: weather_underground
 
 
-v01.log.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011359.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 sv121.wug.org weather_underground 0.1 
+v01.log.ec_cmc.weather_underground.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011359.345 457 1 0 0 d <md5sum> http://dd1.weather.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 sv121.wug.org weather_underground 1.0 
 
 
-
-Looking at it now, I get your point about having a date at the beginning of the notifications also.
-It would be cleaner/more consistent, if they had a data there... it's aesthetically pleasing to have log
-messages be just longer versions of announcements,
-
-is it worth the extra bytes (for every file?)

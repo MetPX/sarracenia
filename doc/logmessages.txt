@@ -1,13 +1,13 @@
 
 Log message contains:
 
-is only emitted after processing of an announcement is completed, to indicate a final status of processing
-that announcent.
+is only emitted after processing of an announcement is completed, 
+to indicate a final status of processing that announcement.
 
 topic matches announcement message except...
-v01.log.... (or maybe status also, see 'status' below)
+v01.log.<source>.<client>...... 
 
-version should match the announcement version.
+version is protocol version, should increment in sync with notify.
 
 start is as per notification... just add fields after:
 
