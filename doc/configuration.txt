@@ -26,3 +26,27 @@ have them work together.
 
 Don't want to change the config file format... hmm.. maybe we should...
 lot's of work here.
+
+what's wrong with argparse?
+	- no ordering 
+	- cannot repeat arguments
+
+so if you want to have similar to:
+
+	reject ^x.z
+	reject ^x.w
+	accept ^x
+
+	accept ^z.
+	
+then you don't ...
+so it looks like it is just incompatible.  maybe just have a series of keywords on the command line 
+with a line separator?
+
+dd-subscribe directive='directory /home/cc ' reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
+
+then just split on ; and run it through the same parser?
+
+
+
+
