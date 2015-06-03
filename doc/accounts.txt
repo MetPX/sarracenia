@@ -110,3 +110,13 @@ Authorization:
 
 
 
+
+Authentication methods:
+	- DMS uses signatures... should we be doing that?
+	- each user signs each message?
+	- then no LDAP, have to manage all the keys.
+
+
+
+	- limited to using username/password because rabbitmq can only bind to LDAP.
+	- need to use methods supported by LDAP.
