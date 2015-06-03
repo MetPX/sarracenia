@@ -50,10 +50,21 @@ Principles which guide (reflect?) design/implementation:
        go faster.  
 
 
-7. This is not a web application.
+7. This is not a web application, this is not an FTP server.
 
    this is an application that uses HTTP as one of the transport protocols, but
    that's all.  It is not trying to be a web site, any more than it is trying
-   to be an sftp server.
+   to be an sftp server.  it is something else.  dunno what exactly.
+
+
+8. Common management not needed, just pass logs around.
+   Different groups will manage different switches.
+   We are trying to make a switch that others can easily adopt.
+   That means they can install and go.
+
+   when we interconnect switches, they become a source for us.
+   log messages are routed to the data sources, so they get our logs on their
+   data. 
+
 
 
