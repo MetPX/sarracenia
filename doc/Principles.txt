@@ -1,4 +1,43 @@
 
+Overview:
+MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
+standard technologies (web servers and AMQP brokers) to achieve real-time message 
+delivery and end to end transparency in file transfers.  Whereas in Sundew, each 
+switch is a standalone configuration which transforms data in complex ways, in 
+sarracenia, the data sources establish a structure which is carried through any 
+number of intervening switches until they arrive at a client.  The consumer can 
+provide explicit acknowledgement that propagates back through the network to the 
+source.  
+
+Whereas traditional file switching is a point-to-point affair where knowledge is only
+between each segment, in Sarracenia, information flows from end to end in both directions.
+At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using 
+any standard HTTP server (tested with apache).  Weather applications are soft real-time, 
+where data should be delivered as quickly as possible to the next hop, and 
+minutes, perhaps seconds, count.  The standard web push technologies, ATOM, RSS, etc... are actually polling technologies that when used in low latency applications consume a great 
+deal of bandwidth an overhead.  For exactly these reasons, those standards 
+stipulate a minimum polling interval of five minutes.   Advanced Message Queueing 
+Protocol (AMQP) messaging brings true push to notifications, and makes real-time 
+sending far more efficient.
+
+insert diagram here.
+
+Sources of data announce their products, switching systems pull the data onto their 
+WAF trees, and then announce their trees for downstream clients.  When clients 
+download data, they may write a log message back to the server.  Servers are configured 
+to forward those client log messages back through the intervening servers back to 
+the source.  The Source can see the entire path that the data took to get to each 
+client.  With traditional switching applications, sources only see that they delivered 
+to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
+the path of data required assistance from administrators of each intervening system.  
+With Sarracenia's log forwarding, the switching network is completely transparent 
+to the sources, in that they can see where it went.  With end to end logs, diagnostics 
+are vastly simplified for everyone.
+
+
+These principles are not in order (yet?) maybe we will do that later.
+not sure about priorities, just number to be able to refer to them.
+
 Principles which guide (reflect?) design/implementation:
 
 1.  The switch (any number of switches) are transparent.
@@ -10,8 +49,14 @@ Principles which guide (reflect?) design/implementation:
     The source can obtain any information about themselves.
 
 
-2.  The switches do not transfer any user data.
-    just metadata.
+2.  AMQP brokers do not transfer any user data, just metadata.
+
+
+    reasoning:
+    need to keep the messages small so that the forwarding rate is high.
+    large messages will gum up the works.  also permissions become interesting.
+    end up with a 'maximum size' threshold, and implementing two methods for everything.
+
 
 
 3.  All changes propagate. No change should be unique to a host
@@ -74,3 +119,9 @@ Principles which guide (reflect?) design/implementation:
 
 	it needs to be easy to set up, both client and server.
 	   (this aspect dealt with in packaging)
+
+
+some references:
+	CAP theorem
+	Fallacies of Distributed Computing.
+
