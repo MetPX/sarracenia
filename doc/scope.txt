@@ -1,0 +1,68 @@
+
+Source control who sees their data.
+So there is a fundamental  'Routing' that users need to say 'where' it gets posted.
+
+what are distributions/scopes?
+	- does each source have a permission per scope ?
+	- does each source have a disk space allocation per scope?
+	- if you just set the allocation to 0, that's a permission.
+
+	some more examples:  ec, science, internet, warning
+
+	original ddi will be deployed in ec, but will be tied into science.gc.ca switches.
+	and be able to push to ddi.science.gc.ca so all of GoC will be reachable.
+
+	warnings: high priority queue. only very few able to post there.
+		how this works is unclear.
+
+internal servers, or internet facing?
+
+for each layer of switching, a list of valid scopes is defined?
+scope corresponds to an exchange to which a given switch posts (outputs of validation)
+
+	- validate distribution/scope list (header?)
+		internet vs. escience (comma separated list) vs. warning?
+		is scope is invalid: reject.
+
+		are there scope permissions ? some source can only send to 
+
+
+-------- scope as priority mechanism -------------------
+if we create a wxwarn scope, then warnings go through that scope.
+
+-------- scope as priority mechanism -------------------
+
+
+-------- scope as username of switching layer -----------------
+try:
+	is scope the username of each switching layer?  ssc_ddsr, ssc_ddi, ssc_dd
+	each scope has an exchange scope_ssc_ddsr, scope_ssc_ddi, scope_ssc_dd.
+	what about warnings?
+
+-------- scope as username of switching layer -----------------
+
+
+
+
+
+Scenarios:
+
+
+why check scope/distribution?
+	scopes:  science, internet, warnings?
+
+	correspond to exchanges. where things get posted.
+	most source cannot post 
+
+	if we have a 'warnings' scope, then limit who can post to it.
+	
+
+transitivity
+	there is an switch in EC that hands off to a switch in SSC an sr,
+	that hands off to a public facing switch.
+
+	that means each switch that connects to another one needs to pass
+        the list of known scopes back.
+
+	v01.admin.scopes.get
+	issued from a client, requests the list of scopes of the server.

@@ -24,6 +24,15 @@ dd-admin Alice stop.
 			  (if there is a DOS or a they have a problem.)
 
 
+Alice can send a dd-admin Alice stop, and it should work.
+
+
+Bob (client> can send an dd-admin Bob drop... ? ) ... not sure...
+
+v01.admin.<source>.queue  ?
+returns the number of files which have not yet been validated.... (1st line)
+and the file names. (1 per line?)
+
 
 ------------ pxpush, built in? ---------------------------------
 

@@ -2,10 +2,16 @@
 SW -- Implementation plan, basically 
 	-- 1 iteration per month.
 	-- at least a .dpkg produced per iteration.
+	-- run stuff once on windows to make sure it vaguely works.
+	   (don't package it, just trivial test.)
+	-- Design work needs to run one iteration ahead.
+	   features of iteration 3 need to be designed during iteration 2.
 
 ------------- Iteration 1: block-oriented transfers and logs   -- June.
 
    dd-post, dd-sara, and dd-subscribe 
+
+    validate that AMQP over SSL works, because it will all need to be there.
 
    implements v01.notice, and v01.log
    maintains compatibility with v00 (so subscribe can read v00.)
@@ -33,6 +39,12 @@ HW: whatever is lying around.
 
 
    watch a directory, and post what is there (flat)
+	- using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
+
+   deferred: windows version of dd-watch (no inotify available.)
+	question, if this is built as inotifywait calling dd-post (or something like that.)
+	then there is an inotify-win.  just introduces a dependency... but makes it easy.
+
 
    base user-facing delivery function done.
 
@@ -43,6 +55,7 @@ HW: whatever is lying around.
    testing, testing, testing...
 
 HW: whatever is lying around.
+
 
 
 ------------- Iteration 3:  Security/Authentication, Transition Strategy -- August.
@@ -68,6 +81,7 @@ HW: whatever is lying around.
  need to pick a strategy that minimizes future work.
  determine how Sundew and Sarracenia work together.
 
+ somebody add windows directory polling.
 
 HW:  initial config... in ec.gc.ca  or science.gc.ca ?
 
@@ -97,7 +111,7 @@ Figure out how to get users created (UVL? something else?)
 
 
 
------------ Iteration 5: Operations for Science.gc.ca.
+----------- Iteration 5: Operations for Science.gc.ca.  -- October
 
 Analyst training.
 
@@ -122,7 +136,7 @@ HW:
     do logs make it back from science to urp ?	yes it just shovels from it's own echange
     on ddsr to it's own and it keeps going back to urp. cool.
 
--------------- Iteration 6: Packaging & Acquisition from outside.
+-------------- Iteration 6: Packaging & Acquisition from outside. -- November.
 
 So far it's all sources that are inside, and we are pushing internal or to outside.
 what about accepting data from outside?
@@ -132,4 +146,42 @@ Are they just ordinary sources?
 Can we make it really easy to build a ddsr node. for other people to deploy.
 so it is easy for others to adopt.   Recipe for a standlone single node config.
 
+
+Figure out packaging?
+	
+start making other packages?
+	redhat/centos?
+	windows?
+
+	do we make it 'pip' compatible?
+		so on windows they install python, then pip pulls in deps?
+
 --------------
+
+End of Phase 1.
+     Success criteria:
+	operating di.science.gc.ca cluster.
+	operating dd.science.gc.ca cluster.
+	operating ddsr.science.gc.ca cluster?
+
+	operating ddi.edm.ec.gc.ca cluster
+	operating dd*.* in ec, with 'new' model available.
+	transition begun.
+
+     November to March...
+	clean up from phase 1.
+        move transition forward.
+
+Phase 2: 
+     performance tuning/accelleration.
+
+     migrate from AMQP/s to https websockets (every broker runs a gateway.)
+     to eliminate firewalling issue.
+
+     GUI'ish enablement. 
+
+
+
+
+
+

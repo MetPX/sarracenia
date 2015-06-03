@@ -1,0 +1,59 @@
+
+Principles which guide (reflect?) design/implementation:
+
+1.  The switch (any number of switches) are transparent.
+    Put another way:
+    The source is in charge of the data they provide.
+
+    The source determines the distribution (scope, and permissions)
+   
+    The source can obtain any information about themselves.
+
+
+2.  The switches do not transfer any user data.
+    just metadata.
+
+
+3.  All changes propagate. No change should be unique to a host
+    you should not have to do dsh, or px-push.  
+    That sort of management is built in. the message bus is there for that.
+
+
+4.  Log is data.
+
+   "It is not enough for justice to be done.  Justice must be seen to be done."
+
+    It is not enough for data to be delivered.  That delivery must be logged,
+    and that log must be returned to the source.
+
+
+5.  This is a data distribution tool, not a file tree replicator.
+
+    -- we do not need to know who owned it originally.
+    -- we do not care when it was modified.
+    -- we do not care about it's original permission bits.
+    -- we do not care what ACL's it has (they aren't relevant on the destination.)
+    -- we do not care about extended attributes. (portability, win,mac,lin,netapp?)
+
+
+6. Not worried about performance in phase 1
+    -- performance is enabled by the scalability of the design.
+          -- segmentation/re-assembly provides multi-threading.
+	  -- segmentation means bigger files transfer with greater parallelism.
+	     adds multiple streams when that is worthwhile, uses a single stream
+	     when that makes sense.
+	  -- validation provides source bandwidth limiting.
+
+    -- need to prove all the moving parts work together first.
+
+    -- much later, may return to see how to make each transfer engine
+       go faster.  
+
+
+7. This is not a web application.
+
+   this is an application that uses HTTP as one of the transport protocols, but
+   that's all.  It is not trying to be a web site, any more than it is trying
+   to be an sftp server.
+
+

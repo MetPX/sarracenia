@@ -50,6 +50,8 @@ Each Layer between Source and Client (ddsr,ddi,dd)
     ssc_ddi
     ssc_dd
 
+    Is each layer a scope?... distribution?
+
 
 
 Is Speedo a source? ... 
@@ -78,6 +80,7 @@ Distribution/Scope:
 
 
 Authorization:
+
 	when sara picks up permit messages, it needs to route them to 
 	a separate exchange, that only specific users will be able to see,
 	rather than a public one.
@@ -85,7 +88,6 @@ Authorization:
 	source emits a message.
 	v01.permit.set.<source>.<topic>.<subtopic>...   
 	body of message is the list of permitted users.
-
 
 	create an htaccess file with the users in it, but because of the date rollover,
 	every day the directories are re-created, so it is not enough to
@@ -97,12 +99,12 @@ Authorization:
 
 
 	reply:
-	v01.log.permit.set...   
+	v01.log.<source>.<scope>.permit.set...   
 		which has a succeed or fail status.
 
-	v01.permit.get.<source>.<topic>.<subtopic>...
+	v01.admin.perm.get.<source>.<scope?>.<topic>.<subtopic>...
 
-	v01.log.permit.get
+	v01.log.admin.permit.get
 		body contains the list of users.
 
 	body of message is the list of permitted users.

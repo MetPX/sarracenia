@@ -21,9 +21,6 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 		internet vs. escience (comma separated list) vs. warning?
 		is scope is invalid: reject.
 
-		are there scope permissions ? some source can only send to 
-
-		
 
 	- compare against allocated bandwidth for this source,
 		wait loop if exceeded.
@@ -36,20 +33,6 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 
 
 ---
-
-what are distributions/scopes?
-	- does each source have a permission per scope ?
-	- does each source have a disk space allocation per scope?
-	- if you just set the allocation to 0, that's a permission.
-
-	some more examples:  ec, science, internet, warning
-
-	original ddi will be deployed in ec, but will be tied into science.gc.ca switches.
-	and be able to push to ddi.science.gc.ca so all of GoC will be reachable.
-
-	warnings: high priority queue. only very few able to post there.
-		how this works is unclear.
-
 
 
 Scenarios:

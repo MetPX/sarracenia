@@ -5,6 +5,7 @@ is only emitted after processing of an announcement is completed,
 to indicate a final status of processing that announcement.
 
 topic matches announcement message except...
+
 v01.log.<source>.<client>...... 
 
 version is protocol version, should increment in sync with notify.
