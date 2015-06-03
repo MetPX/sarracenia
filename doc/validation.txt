@@ -1,4 +1,6 @@
 
+Status: Pre-Draft
+
 when a source posts an announcement, the switch must validate that it is proper,
 
 examples of validation. 

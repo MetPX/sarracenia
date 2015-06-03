@@ -1,4 +1,6 @@
 
+Status: Pre-Draft
+
 afsiext:  user name assigned to us to retreive data on cmcdata server
 	client will not see this, private between source and ingest switch.
 

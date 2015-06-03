@@ -1,4 +1,6 @@
 
+Status: Pre-Draft
+
 Implementation plan, basically 
 	-- 1 iteration per month.
 	-- at least a .dpkg produced per iteration.

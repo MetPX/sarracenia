@@ -1,4 +1,6 @@
 
+Status: Pre-Draft
+
 These usernames are significant in that they are visible to all. Need to be understandable.
 they are wider scope, than a person... perhaps call them 'Accounts'.
 they turn up as usernames in AMQP and HTTP.

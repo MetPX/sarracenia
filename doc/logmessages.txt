@@ -1,4 +1,6 @@
 
+Status: Pre-Draft
+
 Log message contains:
 
 is only emitted after processing of an announcement is completed, 
