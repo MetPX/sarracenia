@@ -1,0 +1,34 @@
+
+What does a cluster look like?
+
+determine the topologies.
+
+  standalone:
+	router, sftp and apache on one node.
+
+  switching/routing configuration:
+	- ddsr
+		one broker per node? 
+		just one broker?
+
+		ddsr - broker
+		ddsr1 - data mover.
+		ddsr2 - data mover.
+		ddsr3 - data mover.
+			.
+			.
+			.
+		
+		do we need a load balancer?
+
+
+  data dissemination configuration.
+	- multiple server nodes.
+		each standalone?
+
+	- dd - load balancer, just re-directs to a dd node?
+		dd1,dd2, 
+
+
+
+

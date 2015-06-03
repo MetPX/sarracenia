@@ -54,6 +54,7 @@ HW: whatever is lying around.
 ------------ Iteration 2: directory watch.   -- July
 
    focus: cluster.txt
+	- because then we need to get hw implemented next iteration.
 
 
    watch a directory, and post what is there (flat)
