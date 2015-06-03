@@ -4,14 +4,24 @@
 use amqp to push config changes around.
 
 
-dd-admin source stop.
+there are admin exchanges... no sources can post to them.
+only admin users can.
+
+dd-admin Alice stop.
 	sends a v01.admin.<source>.stop  message around and admin bus.
 			-- stop ingesting messages coming from <source> 
 			-- likely implemented in validation code.
+			-- default scope will be cluster-wide (all of ddsr)
+			-- option to go multi-cluster?
+
+           once the stop is processed on a node, emit:
+		v01.log.Alice.admin.stopped ...
+			-- and the source will hear about it!
+			-- there will be a log message for each node on which it occurred.
 	
 		v01.admin.<client>.drop
 			-- drop messages coming from <client> 
-			  (DDOS or a they have a problem.)
+			  (if there is a DOS or a they have a problem.)
 
 
 
