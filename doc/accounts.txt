@@ -1,5 +1,4 @@
 
-
 These usernames are significant in that they are visible to all. Need to be understandable.
 they are wider scope, than a person... perhaps call them 'Accounts'.
 they turn up as usernames in AMQP and HTTP.
@@ -15,6 +14,8 @@ Each Source. (Alice)
    on the posting switch (and the logging switch if different.)
 
    their directories get disseminated as YYYYMMDD/Alice/...
+   They get daily directories because we impose system-wide life-time for data, it is deleted
+   after a standard number of days (and we don't need to use 'find') just delete from the root.
 
    Since the clients will see the directories, and therefore client configurations will include them.
    it would be wise to consider the account name public, and relatively static.
@@ -25,6 +26,8 @@ Each Source. (Alice)
 	- authorization (which clients on the servers should access it.)
    	- see below sections for each.
    
+
+
 Each Client (Bob)
     Client gets permission to access files (http level)
     Client gets permission to post log messages to log exchange 
@@ -33,22 +36,29 @@ Each Client (Bob)
 	they authenticate to broker to get messages.
 
     also in apache at end server.
-
     All sources will see the client name in their logs.
     
 
 Each Layer between Source and Client (ddsr,ddi,dd)   
+
     so each hop generates a log message, assigned to the layers.
+
     internal hops can be removed from stats easily.
-    only exists in AMQP on the relevant brokers.
+    only exists in AMQP on the relevant brokers (not needed in HTTP)
+
     ssc_ddsr
     ssc_ddi
     ssc_dd
 
 
+
 Is Speedo a source? ... 
 	creates no data, only messages.
 	ssc_mon user?
+
+Do we use the same authentication for SFTP?
+	create an SFTP server using the same account?
+
 
 Does Monitoring need an account?
 
@@ -57,13 +67,14 @@ To store the accounts, do we create a sub-domain for ldap
 ( dd.science.gc.ca, dd.collab.science.gc.ca) and put them in there?
 just allocate locally?   hmm... dunno.
 
+
 these are data interchange accounts (separate from interactive ones, 
 per org, rather than per person.)
 
 
 
 Distribution/Scope:
-
+	
 
 
 Authorization:
@@ -75,7 +86,15 @@ Authorization:
 	v01.permit.set.<source>.<topic>.<subtopic>...   
 	body of message is the list of permitted users.
 
+
+	create an htaccess file with the users in it, but because of the date rollover,
+	every day the directories are re-created, so it is not enough to
+	create the htaccess once.  You need to remember the directory hierarchy
+	and subscribe or sara's mkdir needs to recreate the .htaccess before
+	writing any files there.
+
 	if the file is empty, then remove the .htaccess file.
+
 
 	reply:
 	v01.log.permit.set...   
@@ -88,4 +107,6 @@ Authorization:
 
 	body of message is the list of permitted users.
 	
+
+
 

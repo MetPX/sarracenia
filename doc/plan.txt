@@ -1,0 +1,132 @@
+
+SW -- Implementation plan, basically 
+	-- 1 iteration per month.
+	-- at least a .dpkg produced per iteration.
+
+------------- Iteration 1: block-oriented transfers and logs   -- June.
+
+   dd-post, dd-sara, and dd-subscribe 
+
+   implements v01.notice, and v01.log
+   maintains compatibility with v00 (so subscribe can read v00.)
+   
+   -- does blockwise checksums.
+   -- does just enough validation to do the YMD/<source> thing.
+   -- dd-post should not do validation (so easier to test psychotic settings
+	like 1 byte blocks.)
+
+   post to a switch, sara build a site, dd-subscribe pulls from it.
+	             logs build                      logs pull
+
+   -- use a single exchange (no source exchanges etc...)
+   -- logs just go to log exchange.
+
+HW: whatever is lying around.
+
+... meanwhile in GPSC...
+    someone is building ssh servers in science.gc.ca for interactive...
+    some nodes for sftp & bbcp ... these will just use
+
+
+
+------------ Iteration 2: directory watch.   -- July
+
+
+   watch a directory, and post what is there (flat)
+
+   base user-facing delivery function done.
+
+   do speedos (see monitoring.txt)
+
+   figure out whether we need a dd-log, or if dd-subscribe is enough.
+    
+   testing, testing, testing...
+
+HW: whatever is lying around.
+
+
+------------- Iteration 3:  Security/Authentication, Transition Strategy -- August.
+
+   -- LDAP realms are ready.
+	design is done.
+	user mirroring.
+
+  add the source_<user> exchanges.
+   log2source routing thing.
+
+  v01.permit.
+		set
+		get
+
+   move all the of amqp traffic to SSL.
+   validation of same 
+
+   create .htaccess files using sara and subscribe
+	-- re-create them each day
+
+ understand the situation with new PX, old PX, px-inter.
+ need to pick a strategy that minimizes future work.
+ determine how Sundew and Sarracenia work together.
+
+
+HW:  initial config... in ec.gc.ca  or science.gc.ca ?
+
+    ddsr1.cmc.ec.gc.ca ... these could be in science.gc.ca ?
+    ddsr2.cmc.ec.gc.ca ... why not?
+
+    use existing ddi and dd.beta... eventually dd
+
+
+----------- Iteration 4: Management.	-- September
+
+add operator monitoring (read-only at first)
+	-- nagios based on speedos?
+
+add configuration settings / management.
+
+	analysts operators can stop/start ingest,
+	set things in discard.
+
+	set bandwidth-quotas per source
+
+
+implement scopes/distribution
+
+helpdesk...
+Figure out how to get users created (UVL? something else?)
+
+
+
+----------- Iteration 5: Operations for Science.gc.ca.
+
+Analyst training.
+
+Security scanning...
+	... hmm...
+
+HW:
+  add:
+    ddsr1.science.gc.ca
+    ddsr2.science.gc.ca
+
+    di1.science.gc.ca
+    di2.science.gc.ca
+
+    dd1.collab.science.gc.ca
+    dd2.collab.science.gc.ca
+	
+
+    say for URP, the chain could be nurp->ddsr.ec-><push>->ddsr.science.gc.ca
+		->di1.science.gc.ca, <push> dd1.science.gc.ca
+
+    do logs make it back from science to urp ?	yes it just shovels from it's own echange
+    on ddsr to it's own and it keeps going back to urp. cool.
+
+-------------- Iteration 6: Acquisition from outside.
+
+So far it's all sources that are inside, and we are pushing internal or to outside.
+what about accepting data from outside?
+
+Are they just ordinary sources?
+
+--------------

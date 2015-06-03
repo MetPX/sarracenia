@@ -1,14 +1,38 @@
 
+
+------------ pxpush, built in? ---------------------------------
+use amqp to push config changes around.
+
+
+dd-admin source stop.
+	sends a v01.admin.<source>.stop  message around and admin bus.
+			-- stop ingesting messages coming from <source> 
+			-- likely implemented in validation code.
+	
+		v01.admin.<client>.drop
+			-- drop messages coming from <client> 
+			  (DDOS or a they have a problem.)
+
+
+
+------------ pxpush, built in? ---------------------------------
+
+
+
+------------------- command line arguments and config files -----------------------------
+low priority...
+
+
 This is a problem to be addressed after the basic proof of concept is demonstrated.
 
-MetPX-sundew runs as an administrator configured tool.
-having configurations entirely in configuration files makes sense for that.
-We also have positional significance (config file options apply from top down in file.)
+MetPX-sundew runs as an administrator configured tool.  having configurations entirely 
+in configuration files makes sense for that.  
+We have positional significance (config file options apply from top down in file.)
 
 MetPX-sarracenia, is intended to be more user facing and interactive.
 User facing commands ought to have robust command line parsing.
 
-dd-subscribe and dd-post, likely need more polish here.
+dd-subscribe and dd-post, might be candidates for this.
 
 How to do this is not obvious...
 
@@ -43,9 +67,16 @@ then you don't ...
 so it looks like it is just incompatible.  maybe just have a series of keywords on the command line 
 with a line separator?
 
-dd-subscribe directive='directory /home/cc ' reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
+dd-subscribe directives='directory /home/cc;reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
 
-then just split on ; and run it through the same parser?
+have to deal with escaping the separator, then just split on ; and run 
+it through the same parser?
+
+I dunno, it looks so complicated, that maybe it just isn't worth it, and stick with
+just the config file.
+
+need to look at all the config options needed, the URL notation saves a lot.
+------------------- command line arguments and config files -----------------------------
 
 
 
