@@ -5,6 +5,7 @@ examples of validation.
 	might not need them all, and there may be others, this just gives an idea.
 
 ---
+prefetch:
 This could be done, either as a distinct component or a pre-fetch script from dd-sara
 
 	- if the source is stopped,
@@ -21,6 +22,10 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 		internet vs. escience (comma separated list) vs. warning?
 		is scope is invalid: reject.
 
+	- look at the file name.
+		it sec may provide a list of extensions to ban.
+		.exe, .zip, etc...
+		reject.
 
 	- compare against allocated bandwidth for this source,
 		wait loop if exceeded.
@@ -31,8 +36,18 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 	v01.permit.set  --> outbound is v01.permit.set.<source>
 	v01.permit.get  --> outbound is v01.permit.get.<source>
 
+---
 
 ---
+postfetch:
+
+    malware scan.
+	run a virus scan or other tool against the block obtained.
+	if an alert is triggerred, refuse to re-announce.	
+
+
+---
+
 
 
 Scenarios:

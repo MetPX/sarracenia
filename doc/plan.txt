@@ -53,6 +53,8 @@ HW: whatever is lying around.
 
 ------------ Iteration 2: directory watch.   -- July
 
+   focus: cluster.txt
+
 
    watch a directory, and post what is there (flat)
 	- using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
@@ -75,7 +77,7 @@ HW: whatever is lying around.
 
 
 ------------- Iteration 3:  Security/Authentication, Transition Strategy -- August.
-   focus: validation.txt, accounts.txt, scope.txt
+   focus: validation.txt, accounts.txt, 
 
    -- LDAP realms are ready.
 	design is done.
@@ -109,7 +111,7 @@ HW:  initial config... in ec.gc.ca  or science.gc.ca ?
 
 
 ----------- Iteration 4: Management.	-- September
-focus: configuration.txt, monitoring.txt
+focus: configuration.txt, monitoring.txt, scope.txt
 
 add operator monitoring (read-only at first)
 	-- nagios based on speedos?

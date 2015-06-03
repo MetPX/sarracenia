@@ -34,6 +34,20 @@ returns the number of files which have not yet been validated.... (1st line)
 and the file names. (1 per line?)
 
 
+v01.admin.<source>.rmafterdelivery.yes ?  -- deferred.
+determines whether source file should be deleted after all scopes have reported
+success in obtaining the file.
+
+  hmm...
+   something monitors the log files, and knows which files are going to which scopes.
+   as the log messages return, that is noted.  when all scopes have reported receipt.
+   delete local file.
+
+   this is is complicated... maybe not. not really sure if it is useful...
+
+   use case is large files with lots of blocks, where keeping dozens of GB in flight
+   does not make sense.
+
 ------------ pxpush, built in? ---------------------------------
 
 
