@@ -1,7 +1,7 @@
 
 Overview:
 MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
-standard technologies (web servers and AMQP brokers) to achieve real-time message 
+standard technologies (sftp and web servers and AMQP brokers) to achieve real-time message 
 delivery and end to end transparency in file transfers.  Whereas in Sundew, each 
 switch is a standalone configuration which transforms data in complex ways, in 
 sarracenia, the data sources establish a structure which is carried through any 
@@ -34,8 +34,19 @@ With Sarracenia's log forwarding, the switching network is completely transparen
 to the sources, in that they can see where it went.  With end to end logs, diagnostics 
 are vastly simplified for everyone.
 
+For large files / high performance, files are segmented on ingest if they are sufficiently 
+large to make this worthwhile.  Each file can traverse the switch network independently, 
+and reassembly is only needed at end points.   A file of sufficient size will announce 
+the availability of several segments for transfer, multiple threads or transfer nodes 
+will pick up segments and transfer them.  The more segments available, the higher 
+the parallelism of the transfer.    Sarracenia manages parallelism and network usage 
+without explicit user intervention.  As intervening switches do not store and 
+forward entire files, the maximum file size which can traverse the network is 
+maximized.  
 
-These principles are not in order (yet?) maybe we will do that later.
+
+
+These principles below are not in order (yet?) maybe we will do that later.
 not sure about priorities, just number to be able to refer to them.
 
 Principles which guide (reflect?) design/implementation:
