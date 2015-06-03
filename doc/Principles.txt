@@ -17,6 +17,7 @@ Principles which guide (reflect?) design/implementation:
 3.  All changes propagate. No change should be unique to a host
     you should not have to do dsh, or px-push.  
     That sort of management is built in. the message bus is there for that.
+    might use 'scope' to have commands propagate through multiple clusters.
 
 
 4.  Log is data.
@@ -67,4 +68,9 @@ Principles which guide (reflect?) design/implementation:
    data. 
 
 
+9. It needs to run anywhere.
+	ubuntu,centos -- primary.
+        but windows also.
 
+	it needs to be easy to set up, both client and server.
+	   (this aspect dealt with in packaging)

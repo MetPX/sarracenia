@@ -13,6 +13,9 @@ Each Source. (Alice)
    each source gets a source_<sourcename> exchange ... source_Alice. 
    on the posting switch (and the logging switch if different.)
 
+   each source has a single ingest scope/context, where they can inject messages, or get logs.
+     (same source cannot inject on ddsr, and ddi directly, as will not know where the logs 
+      should go, for example, or control messages... hmm.)
    their directories get disseminated as YYYYMMDD/Alice/...
    They get daily directories because we impose system-wide life-time for data, it is deleted
    after a standard number of days (and we don't need to use 'find') just delete from the root.
@@ -37,6 +40,21 @@ Each Client (Bob)
 
     also in apache at end server.
     All sources will see the client name in their logs.
+
+    I'm starting to wonder if a client isn't just a source with a 0 b/w allocation.
+
+    so instead of having a general exchange on the outside,
+    every client gets their own, just like a source, and there is a 
+    validator/shovel that puts it in the general log queue.
+
+    If they decide to start posting, it ''just works.''
+
+    they specify scope also?  say on dd we say their scope is 0 bytes (cannot post to our public site) but they can post to science (and it will get pulled in.)... 
+
+    inside switches are subscribed to the source_dd exchange, and 
+    they pull it in from the DMZ.  n chunks at a time.
+
+    
     
 
 Each Layer between Source and Client (ddsr,ddi,dd)   

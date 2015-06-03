@@ -2,6 +2,14 @@
 Source control who sees their data.
 So there is a fundamental  'Routing' that users need to say 'where' it gets posted.
 
+Is it better to:
+	-  post once, listing multiple scopes?
+	-  post once for each scope?
+
+
+Each account has a home 'scope' which is the only place they can insert messages in.
+when receiving a log message, it will be sent to the appropriate exchange on the home scope.
+
 what are distributions/scopes?
 	- does each source have a permission per scope ?
 	- does each source have a disk space allocation per scope?
