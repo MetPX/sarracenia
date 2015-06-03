@@ -122,11 +122,14 @@ HW:
     do logs make it back from science to urp ?	yes it just shovels from it's own echange
     on ddsr to it's own and it keeps going back to urp. cool.
 
--------------- Iteration 6: Acquisition from outside.
+-------------- Iteration 6: Packaging & Acquisition from outside.
 
 So far it's all sources that are inside, and we are pushing internal or to outside.
 what about accepting data from outside?
 
 Are they just ordinary sources?
+
+Can we make it really easy to build a ddsr node. for other people to deploy.
+so it is easy for others to adopt.   Recipe for a standlone single node config.
 
 --------------
