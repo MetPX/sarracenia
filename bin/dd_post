@@ -73,6 +73,7 @@ def Key( ntype, user, relative_filepath ):
 
     today = time.strftime("%Y%m%d",time.gmtime())
     fkey  = relative_filepath.replace('/','.')
+    if fkey[:1] == '.' : fkey = fkey[1:]
 
     parts = []
     parts.append('v01')   # version
@@ -124,7 +125,6 @@ class Publisher:
        self.host          = host
        self.user          = user
        self.passwd        = passwd
-       self.realm         = '/data'
        self.exchange_name = exchange_name
        self.exchange_type = 'topic'
 
@@ -144,7 +144,6 @@ class Publisher:
               self.channel    = self.connection.channel()
 
               # what kind of exchange
-              # self.channel.access_request(self.realm, active=True, write=True)
               self.channel.exchange_declare(self.exchange_name, self.exchange_type, auto_delete=False)
               self.channel.tx_select()
        except:
@@ -179,7 +178,10 @@ def Seekinfo( chunksize, block_count, remainder, current_block ):
     length = chunksize
     if remainder > 0 and current_block == block_count-1 : length = remainder
 
-    return offset,length
+    fsiz   = block_count * chunksize
+    if remainder > 0 : fsiz = fsiz - chunksize + remainder
+
+    return offset,length,fsiz
 
 # ===================================
 # URL joggling
@@ -365,18 +367,18 @@ def main():
                      destination.password, destination.user )
     for c in parts :
         key    = Key('dd_post', destination.user, source.path )
-        print(" Key %s" % key )
+        print("\n Key %s" % key )
         notice = Notice(c, source, destination, taginfo )
         print(" Notice %s" % notice )
         hdr = {'filename': destination.filename }
         print(" header %s" % hdr )
 
         pub.publish( notice, key, hdr )
+
         #chunksize, block_count, remainder, current_block, dsum, sum = c
         #print(" %d %d %d %d %s %s " % (chunksize, block_count, remainder, current_block, dsum, sum))
-        #offset,length = Seekinfo( chunksize, block_count, remainder, current_block )
-        #print(" %d %d " % (offset,length))
-
+        #offset,length,fsiz = Seekinfo( chunksize, block_count, remainder, current_block )
+        #print(" %d %d %d" % (offset,length,fsiz))
 
     pub.close()
     sys.exit(0)
