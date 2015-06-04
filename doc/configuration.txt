@@ -25,6 +25,14 @@ dd-admin Alice stop.
 			-- drop messages coming from <client> 
 			  (if there is a DOS or a they have a problem.)
 
+	  set ingest space limits.
+		v01.admin.<source>.<scope>.quota.
+			
+		v01.admin.<source>.<scope>.quota.
+
+	  set ingest bandwidth limits.
+
+
 
 Alice can send a dd-admin Alice stop, and it should work.
 

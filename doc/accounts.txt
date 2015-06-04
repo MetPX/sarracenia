@@ -134,9 +134,13 @@ Authorization:
 		body contains the list of users.
 
 	body of message is the list of permitted users.
+
+
+Do we do user groups.
+	user reps (users who can admin for groups of users.)
+
+	Data Interchange....
 	
-
-
 
 
 Authentication methods:

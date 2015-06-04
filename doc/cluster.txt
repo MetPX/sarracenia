@@ -28,11 +28,21 @@ determine the topologies.
 		   probably not?
 
   data dissemination configuration.
+    on a switching/router:
+	Once delivery has occurred to all contexts, can you delete the file?
+	just watch the log files and tick off as each scope confirms receipt.
+	when last one confirmed, delete. (makes re-xmit difficult ;-)
+
+	based on a file size threshold? if the file is too big, don´t keep it around?
+
+
+  data dissemination configuration.
 	- multiple server nodes.  Each standalone.
 
 	- dd - load balancer, just re-directs to a dd node?
 		dd1,dd2, 
 
+		broker on dd node has connection thereafter.
   data dissemination with a shared file system?
          dd - one broker.
 	 dd1,dd2, ... all share the one big file system.

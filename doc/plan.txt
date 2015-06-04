@@ -1,20 +1,30 @@
 
-Status: Pre-Draft
+Status: Draft1
 
 Implementation plan, basically 
 	-- 1 iteration per month.
 	-- at least a .dpkg produced per iteration.
-	-- run stuff once on windows to make sure it vaguely works.
-	   (don't package it, just trivial test.)
+	-- run stuff once per iteration on windows to see it vaguely works.
+	   (don't package it, just try it out.)
 	   if it doesn't work on windows, note the problem, that's all.
+		until we get to packaging...
 	-- Design work needs to run one iteration ahead.
-	   features of iteration 3 need to be designed during iteration 2.
+	   features of iteration 3 need to be firmed up in iteration 2.
 	-- at the beginning of the month, the initial focus documents are agreed.
 	   through the month, they evolve.
 	-- at the end of the month, features corresponding to the focus documents 
 	   have been implemented, and the focus documents updated to reflect them.
 
 	-- at end of each phase, revise plan.txt
+
+focus documents go through:
+	pre-draft  -- document being create/modified, not ready for review.
+	draft1 -- document ready for review.
+	approved-draft1 -- document reviewed and approved.
+
+	draft1...N
+	
+
 
 ------------- Iteration 0 -------------------------
 focus: Outline.txt, the glossy design.vsd
@@ -61,6 +71,7 @@ HW: whatever is lying around.
 
    watch a directory, and post what is there (flat)
 	- using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
+	- only needs to work for a flat directory at first.
 
    deferred: windows version of dd-watch (no inotify available.)
 	question, if this is built as inotifywait calling dd-post (or something like that.)
