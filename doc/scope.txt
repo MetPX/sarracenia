@@ -58,6 +58,11 @@ try:
 Scenarios:
 
 
+want to transport a really large file (terabytes.)
+	target scope of ddsr (the parallel switching array.)
+
+
+
 why check scope/distribution?
 	scopes:  science, internet, warnings?
 

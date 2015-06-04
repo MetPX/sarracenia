@@ -28,7 +28,8 @@ dd_log just dumps log messages (might be just dd_subscribe -n.)
    source exchange permissions decide who can read those messages.
 
    new component:  dd_log2source
-	-- looks at the topic, and just copies the message from the general log to the per source log.
+	-- looks at the topic, and just copies the message from the general log to the per 
+	   source log.
 	
 
 dd_log use cases:
@@ -108,5 +109,12 @@ FIXME: defined speedos
 -- by the CFS to capture significant logs directly .. so
 	reducing requirement for periodic bulk transfers.?
 	do we use this for real-time logs? not sure, CFS would need to be more up.
+
+
+-- when a node fails... dd_watchdog? 
+       if dd_sara emitted a log when it started a transfer, and another when it finished.
+       then dd_watchdog could be subscribed to them and know what products were in flight
+       on every node at any time.
+
 
 

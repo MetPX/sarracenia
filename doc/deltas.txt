@@ -110,6 +110,25 @@ we set a minimum, say 10MB, then if that is less than 5% of the file,
 then use 5%, until we get to a maximum chunksize... say 500MB.
 override with size 0 (no chunking one long send.)
 
+what is the overhead to send a block?
+  - there are no fixed width fields in the messages, are all variable length ASCII.
+  - estimate that an avereage notification is 100 bytes,
+  - log message is perhaps 120 bytes.
+
+for each block transferred.
+	notification goes in one direction, 
+	at least one log message per scope hope goes through in the other direction.
+
+	if we say two hops + client delivery (a third hop)	
+
+	so a block will have on the order of 100+4*120 = 580 bytes.
+
+It accepted that there is substantial protocol overhead on small files.
+
+However, one would hope the overhead would get more reasonable for bigger files,
+but that is limited by the blocksize.  
+Aesthetically, need to choose a size that dwarfs the overhead.
+
 
 
 ---------- if we do blockwise cksums, path from v00 ----------------------

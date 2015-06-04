@@ -56,6 +56,12 @@ Each Client (Bob)
     inside switches are subscribed to the source_dd exchange, and 
     they pull it in from the DMZ.  n chunks at a time.
 
+    can clients issue re-xmit requests?
+ 
+    v01.request.<source>.retransmit.....
+	I can't understand when this would happen...
+ 	but it's interesting.
+	is it a different type, or just a logentry
     
     
 

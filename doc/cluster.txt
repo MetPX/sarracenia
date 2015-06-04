@@ -14,6 +14,9 @@ determine the topologies.
 		just one broker?
 
 		ddsr - broker
+		   pre-fetch validation would happen on the broker.
+		   then re-post for the sara's on the movers.
+
 		ddsr1 - data mover.
 		ddsr2 - data mover.
 		ddsr3 - data mover.
@@ -22,15 +25,17 @@ determine the topologies.
 			.
 		
 		do we need a load balancer?
-
+		   probably not?
 
   data dissemination configuration.
-	- multiple server nodes.
-		each standalone?
+	- multiple server nodes.  Each standalone.
 
 	- dd - load balancer, just re-directs to a dd node?
 		dd1,dd2, 
 
+  data dissemination with a shared file system?
+         dd - one broker.
+	 dd1,dd2, ... all share the one big file system.
 
 
 

@@ -1,0 +1,49 @@
+
+status: Pre-Draft
+
+Figure out packaging?
+
+Goals:
+	Can we make it really easy to build a ddsr node for techies to deploy a server ?
+	so it is easy for others to adopt.   Recipe for a standlone single node config.
+	- this would be linux only,
+	- either a dpkg
+
+        Make it easy for mortals to install the client.
+	need self-contained windows install (an .exe) folks can download.
+	because many clients in various departments use windows as clients,
+	and many data sources may use windows also.
+
+
+how to do languages & messaging....
+	need English & French likely?
+	just keep it in code, no natural language?
+	There's fabulous ones:
+	http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+metpx-sarracenia-server
+	- depends: rabbitmq.
+	- configuration sugar, to create a working/secure default to just start using.
+	- dd-sara, and all the other components...
+		log, and whatever.
+
+
+metpx-sarracenia-client
+	- dd_subscribe
+	- dd_post
+	- dd_watch
+
+
+
+	
+start making other packages?
+	redhat/centos?
+	windows?
+
+	do we make it 'pip' compatible?
+		so on windows they install python, then pip pulls in deps?
+
+
+Dunno. We probably need to try a bunch out and see what sticks?
+
+

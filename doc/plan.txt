@@ -17,7 +17,7 @@ Implementation plan, basically
 	-- at end of each phase, revise plan.txt
 
 ------------- Iteration 0 -------------------------
-focus: Principles.txt, the glossy design.vsd
+focus: Outline.txt, the glossy design.vsd
 
 initial versions of all the focus documents, and plan.txt
 
@@ -114,6 +114,7 @@ HW:  initial config... in ec.gc.ca  or science.gc.ca ?
 
 
 ----------- Iteration 4: Management.	-- September
+
 focus: configuration.txt, monitoring.txt, scope.txt
 
 add operator monitoring (read-only at first)

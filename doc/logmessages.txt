@@ -36,10 +36,7 @@ Enddate <date-time> of transfer ...
 
 status 
 	-- ok or error code> ... use http ones?
-	-- 200 OK
-	-- use 4xx series to report most issues.
-		-- might invent some new ones, say to signify disk full ?
-		-- encode errno?
+		lots of good ones on wikipedia.
 
 	-- should topic include status?
 	       v01.log.200..... (then do not need it in the body...)
@@ -48,7 +45,7 @@ status
 	    naw, think it is a pain. just leave it in body.
 
 flow 
-	-- application determined flow id, so the appication can relate it to their processing.
+	-- application determined flow id, so the application can relate it to their processing.
 	-- flow is a display field, unchanged/untouched by sarracenia.
 
 client 
