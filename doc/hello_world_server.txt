@@ -1,0 +1,66 @@
+
+#
+# This file should always contain the simplest instructions for setting
+# up a first server on a debian/ubuntu server.
+#
+
+# The coniguration is for demonstration only, it is totally insecure.
+# just a demo. 
+
+1. install rabbitmq
+
+sudo apt-get install rabbitmq-server python3-amqplib
+# using the entirely default configuration: no config of rabbitmq at all.
+
+
+2. Verify that you can post and subscribe.
+
+# cd into the root of the sarracenia tree, where the release notes are...
+
+
+2.1 Build the coniguration for dd_subscribe.
+
+cat >rawall.conf <<EOT 
+# this is a raw feed of everything on the broker. 
+
+host localhost
+
+# AMQP exchange to connect to, dd_post creates it named after the user it uses to log in.
+exchange guest
+
+amqp-user guest
+amqp-password guest
+
+
+# This is the AMQP topic key for the exchange.  # is a wildcard to mean anything.
+
+exchange_key #
+
+
+# This is the metpx style filter directive, more fine grained than the exchange key.
+# works on the file names themselves.  It uses regular expressions. .* is a wildcard
+# which means accept anything.
+
+accept .*
+EOT
+
+2.2 Start up the subscriber.
+bin/dd_subscribe -n all.conf
+
+
+2.3.  
+Start a second shell in a second window, cd to the same folder.
+
+python3 bin/dd_post  -b 12 `pwd` http://localhost/RELEASE_NOTES amqp://guest:guest@localhost/
+
+
+3. Result.
+
+dd_subscribe will display the raw notices received from dd_post.
+ 
+
+4. add http server.
+
+will do this once the dd_sub2 works with the v01 announcements.
+
+

@@ -92,7 +92,10 @@ read options from
 have them work together.
 
 Don't want to change the config file format... hmm.. maybe we should...
-lot's of work here.
+lot's of work here.  
+
+argparse is the current command line parsing module for python.
+It's flexible and builds all the help strings (in one language)
 
 what's wrong with argparse?
 	- no ordering 
@@ -122,5 +125,28 @@ need to look at all the config options needed, the URL notation saves a lot.
 ------------------- command line arguments and config files -----------------------------
 
 
+------------------- store client onfig files on switch? -----------------------------
+just have enough configuration to query the switch.   amqp://user@ddsr
+then most other options just stored on the switch?
+
+clients don't have to maintain a large config file... 
+That way, admins can see what product selections clients are doing.
+
+Admins could know exactly what the config file is,... 
+	- but they get that info from the logs, not much point.
+	- if clients want to provide configs, email works.
+	- is there a real value?
+
+------------------- store config files -----------------------------
 
 
+------------------- can ask for the node list  -----------------------------
+
+somebody, like a dd_sender, or a dd_subscribe, connects to a central switch (dd)
+and asks how many nodes there are (dd1, dd2),  fire up transfer engines for
+both.  if someone adds a node, a log message alerts them to a change in list, and
+they 
+
+does this help or make sense?
+
+------------------- can ask for the node list  -----------------------------

@@ -25,7 +25,6 @@ determine the topologies.
 			.
 		
 		do we need a load balancer?
-		   probably not?
 
   data dissemination configuration.
     on a switching/router:
@@ -47,5 +46,24 @@ determine the topologies.
          dd - one broker.
 	 dd1,dd2, ... all share the one big file system.
 
+
+Use cases:
+
+   somebody wants to transfer a 3 TiB file.
+
+   somebody wants rock solid, op1hr service
+   somebody wants to see a continuous feed of tiny files.
+
+   someone (outside org) wants to send us data.
+	- using straight sftp.
+	- using dd-aware method.
+	- using dd-watch.
+
+   someone inside Gov. wants to do same.
+
+
+
+
+   
 
 
