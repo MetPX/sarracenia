@@ -2,15 +2,18 @@
 status: Pre-Draft
 
 Figure out packaging? 
+	- audit source to ensure full copyright headers applied.
 	- the real command line interface.... uptil now was just working stuff.
 	- what documentation should be available.
 	- what packages should be built.
+
 
 Goals:
 	Can we make it really easy to build a ddsr node for techies to deploy a server ?
 	so it is easy for others to adopt.   Recipe for a standlone single node config.
 	- this would be linux only,
 	- either a dpkg
+	- a docker container?
 
         Make it easy for mortals to install the client.
 	need self-contained windows install (an .exe) folks can download.

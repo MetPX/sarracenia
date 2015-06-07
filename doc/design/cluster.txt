@@ -61,20 +61,40 @@ universal considerations/constraints:
    or perform heavier scanning on those file types.
 
 
-Questions for each use case:
+'Use Cases' / 'Deployment Scenarios' ...
+
+propose some strawman problems with a variety of cluster configurations to address them.
+explore strengths and weaknesses.
+
+Questions to examine for each:
 
    1. Storage Distribution
        how is storage provisioned (1 per server, common, grouped?)
+       where do the files (or blocks) reside?
 
    2. Server Software Distribution 
        where are brokers and http/sftp servers? (together? separate scopes? )
 
    3. Authentication Distribution
        does it make sense to share auth between amqp and sftp? (plan to do that for http.)
+       note which credentials are used where.
 
    4. Naming/scopes?
        what is a good name for this use case/scope?
 
+   5. Retention quota strategy?
+       how long does one keep each file/block?  
+       delete immediately after passing on?  for big stuff, this makes sense.
+       if in user space, upto the user.
+
+       where do quotas apply?
+  
+   6. bandwidth/scaling.
+       what are the limits to bandwidth for this configuration?
+	where will the choke points be.
+       where is a reasonable place to insert bandwidth controls?
+
+	
 
 
 
@@ -121,6 +141,9 @@ Use Case 2: somebody wants rock solid, op0hr PDS/PX style service
 
 	   want full dev/stage/ops for change management.
 		no user code anywhere.
+
+
+Use Case 2.1: Send a weather warning.
   
 
 Use Case 3: Somebody wants a web server where they can see the files sent (dd style)
@@ -166,5 +189,5 @@ Name the scopes after the zones they serve?
 references:
     http://spring.io/blog/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
    
-
+    scaling rabbitmq to 11: http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
 

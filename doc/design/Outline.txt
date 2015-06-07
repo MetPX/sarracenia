@@ -178,6 +178,25 @@ and seem helpful.  We should get rid of any that are not helpful.
 	to flow those through the switches.  Worth thinking about transporting huge files.
 
 
+12. Normal operation should not require programming knowledge.
+
+	configuratin and coding are distinct activities.  One should not have to modify scripts 
+        to configure standard elements of the application.  Software can be much simpler if it 
+        just leaves all features implemented as plug-in scripts.  leaving the local details 
+        for the scripts.  But most people will not be able to use it.
+
+        Need to provide all core functionality through CLI at the very least.
+	config files are consiered part of the CLI, which is why we try to choose carefully 
+        there as well.   For programmers, difference between script and config is subtle,
+        not so for most other people.
+
+        Scripting should only be required to extend features beyond what is standard.
+        to provide added flexibility.  If the flexibility proves generally useful over time, 
+        then it should be brought out of scripts and into the configuration realm.
+
+
+
+
 
 some references:
 	CAP theorem

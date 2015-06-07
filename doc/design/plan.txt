@@ -227,7 +227,8 @@ Phase 2:  (Next FY)
 	   rather than guessing.
 
      migrate from AMQP/s to https websockets (every broker runs a gateway.)
-     to eliminate firewalling issue.
+     to eliminate firewalling issue. 
+     focus document: webification.txt
 	   all the AMQP functionality used in phase1 remains unchanged.
            the only change is that the client programs might use a websocket:
            to initiate their AMQP connections tunnelled through ws:
