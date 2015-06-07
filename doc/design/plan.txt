@@ -93,6 +93,8 @@ HW: whatever is lying around.
 ------------- Iteration 3:  Security/Authentication, Transition Strategy -- August.
    focus: validation.txt, accounts.txt, 
 
+   -- now start using the exchanges correctly.
+
    -- LDAP realms are ready.
 	design is done.
 	user mirroring.
@@ -109,6 +111,7 @@ HW: whatever is lying around.
 
    create .htaccess files using sara and subscribe
 	-- re-create them each day
+
 
  understand the situation with new PX, old PX, px-inter.
  need to pick a strategy that minimizes future work.
@@ -233,6 +236,7 @@ Phase 2:  (Next FY)
 	   if we do ws:, then it would web socket over SSL, and we no longer
 	   need AMQP/S,
 	   Kazaa provides this, but it's commercial... free one might not be 
+           jwebsocket.org looks promising...
 	   hard (ie. hardcode proxy to localhost.)
 
      GUI'ish enablement ?

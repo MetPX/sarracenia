@@ -142,12 +142,17 @@ Do we do user groups.
 	Data Interchange....
 	
 
+AMQP has vhosts.
+	Does this bring us anything?
+	exchanges etc... all live in vhosts.
+	could declare a separate vhost and put everything in there.
+	currently using '/' (default) probably fine, but should review.
+
 
 Authentication methods:
 	- DMS uses signatures... should we be doing that?
 	- each user signs each message?
 	- then no LDAP, have to manage all the keys.
-
 
 
 	- limited to using username/password because rabbitmq can only bind to LDAP.

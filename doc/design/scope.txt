@@ -10,7 +10,11 @@ Is it better to:
 
 
 Each account has a home 'scope' which is the only place they can insert messages in.
+	- do not want common passwords used on inside and outside (hence single scope for insertion.)
+
+
 when receiving a log message, it will be sent to the appropriate exchange on the home scope.
+
 
 what are distributions/scopes?
 	- does each source have a permission per scope ?
@@ -25,7 +29,9 @@ what are distributions/scopes?
 	warnings: high priority queue. only very few able to post there.
 		how this works is unclear.
 
+
 internal servers, or internet facing?
+
 
 for each layer of switching, a list of valid scopes is defined?
 scope corresponds to an exchange to which a given switch posts (outputs of validation)
@@ -38,10 +44,12 @@ scope corresponds to an exchange to which a given switch posts (outputs of valid
 
 
 -------- scope as priority mechanism -------------------
-if we create a wxwarn scope, then warnings go through that scope.
+
+If we create a wxwarn scope, then warnings go through that scope.
 
 -------- scope as priority mechanism -------------------
-
+    if send to a warning scope it might just set the priority when copied to the
+    common exchange, not requiring separate exchanges downstream.
 
 -------- scope as username of switching layer -----------------
 try:

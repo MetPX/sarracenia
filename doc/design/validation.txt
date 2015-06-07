@@ -60,8 +60,23 @@ why rate-limit:
 	if validation does no rate limiting, then the 2000 blocks will get 
 	fed into the queue in one go, and that transfer will take over.
 
-	no priorities. priorities... priorities...
+Priorities: so far not present in design.
+	want to send a weather warning then a 3 TB file is transferring with 20 threads.
 
+	AMQP does have priorities, not there by default.
+
+	the exchange that the validator writes to could be prioritized.
+	there could be a number of priority mechanisms for dispatches.
+
+	priority 0 is lowest (last picked).
+	could assigne priorities as an inverse function of size (bigger files let smaller 
+	ones through.)  not cler if use of amqp prio is the way to go..
+	https://www.rabbitmq.com/priority.html -- hmm..
+	
+		Queues which have a max-length set will, as usual, drop messages from 
+		the head of the queue to enforce the limit. This means that higher 
+		priority messages might be dropped to make way for lower priority ones, 
+		which might not be what you would expect.
 
 why check scope/distribution?
 	scopes:  science, internet, warnings?
