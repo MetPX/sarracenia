@@ -143,8 +143,8 @@ Use Case 4:   somebody wants to send us a continuous feed of tiny files. (px-paz
 
    someone (outside org) wants to send us data.
 	- using straight sftp.
-	- using dd-aware method.
-	- using dd-watch.
+	- using dd_aware method.
+	- using dd_watch.
 
    someone inside Gov. wants to do same.
 

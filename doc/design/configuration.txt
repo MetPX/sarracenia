@@ -9,7 +9,7 @@ use amqp to push config changes around.
 there are admin exchanges... no sources can post to them.
 only admin users can.
 
-dd-admin Alice stop.
+dd_admin Alice stop.
 	sends a v01.admin.<source>.stop  message around and admin bus.
 			-- stop ingesting messages coming from <source> 
 			-- likely implemented in validation code.
@@ -34,10 +34,10 @@ dd-admin Alice stop.
 
 
 
-Alice can send a dd-admin Alice stop, and it should work.
+Alice can send a dd_admin Alice stop, and it should work.
 
 
-Bob (client> can send an dd-admin Bob drop... ? ) ... not sure...
+Bob (client> can send an dd_admin Bob drop... ? ) ... not sure...
 
 v01.admin.<source>.queue  ?
 returns the number of files which have not yet been validated.... (1st line)
@@ -75,7 +75,7 @@ We have positional significance (config file options apply from top down in file
 MetPX-sarracenia, is intended to be more user facing and interactive.
 User facing commands ought to have robust command line parsing.
 
-dd-subscribe and dd-post, might be candidates for this.
+dd_subscribe and dd_post, might be candidates for this.
 
 How to do this is not obvious...
 
@@ -113,7 +113,7 @@ then you don't ...
 so it looks like it is just incompatible.  maybe just have a series of keywords on the command line 
 with a line separator?
 
-dd-subscribe directives='directory /home/cc;reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
+dd_subscribe directives='directory /home/cc;reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
 
 have to deal with escaping the separator, then just split on ; and run 
 it through the same parser?

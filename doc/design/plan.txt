@@ -35,9 +35,9 @@ initial versions of all the focus documents, and plan.txt
 
 ------------- Iteration 1: block-oriented transfers and logs   -- June.
 
-focus: deltas.txt, logmessages.txt, dd-post_sample.txt
+focus: deltas.txt, logmessages.txt, dd_post_sample.txt
 
-   dd-post, dd-sara, and dd-subscribe 
+   dd_post, dd_sara, and dd_subscribe 
 
    validate that AMQP over SSL works, because it will all need to be there.
 
@@ -46,10 +46,10 @@ focus: deltas.txt, logmessages.txt, dd-post_sample.txt
    
    -- does blockwise checksums.
    -- does just enough validation to do the YMD/<source> thing.
-   -- dd-post should not do validation (so easier to test psychotic settings
+   -- dd_post should not do validation (so easier to test psychotic settings
 	like 1 byte blocks.)
 
-   post to a switch, sara build a site, dd-subscribe pulls from it.
+   post to a switch, sara build a site, dd_subscribe pulls from it.
 	             logs build                      logs pull
 
    -- use a single exchange (no source exchanges etc...)
@@ -73,8 +73,8 @@ HW: whatever is lying around.
 	- using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
 	- only needs to work for a flat directory at first.
 
-   deferred: windows version of dd-watch (no inotify available.)
-	question, if this is built as inotifywait calling dd-post (or something like that.)
+   deferred: windows version of dd_watch (no inotify available.)
+	question, if this is built as inotifywait calling dd_post (or something like that.)
 	then there is an inotify-win.  just introduces a dependency... but makes it easy.
 
 
@@ -82,7 +82,7 @@ HW: whatever is lying around.
 
    do speedos (see monitoring.txt)
 
-   figure out whether we need a dd-log, or if dd-subscribe is enough.
+   figure out whether we need a dd_log, or if dd_subscribe is enough.
     
    testing, testing, testing...
 

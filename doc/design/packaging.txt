@@ -44,15 +44,15 @@ there might be a meta-client... one that invokes the others appropriately...
 		-broker says what the URL of the AMQP broker is.
 		-threads says how many local instances to start.
 		<operation>
-		    post4pickup  -- dd-post, and the switch is expected to pull
+		    post4pickup  -- dd_post, and the switch is expected to pull
 			-- requires <srcurl> to show URL remote will use to fetch.
-			fires off: just the dd-post -threads ignored.
+			fires off: just the dd_post -threads ignored.
 
-		    post2send    -- dd-post, then have local threads to send to sftp destination.
+		    post2send    -- dd_post, then have local threads to send to sftp destination.
 			sftp destination is likely a 'source' for the switch, triggering further fwding ...
-			fires off: 1 dd-post and a 5 dd_sends, as appropriate.
+			fires off: 1 dd_post and a 5 dd_sends, as appropriate.
 
-		    subscribe    -- dd-subscribe, but with n local instances.
+		    subscribe    -- dd_subscribe, but with n local instances.
 			fires off: 5 dd_sends, as appropriate.
 
 		fires off 5 dd_subscribes, or 

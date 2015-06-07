@@ -7,7 +7,7 @@ afsiext:  user name assigned to us to retreive data on cmcdata server
 ec_cmc:   Account assigned for AMQP access. (rabbitmq username)
 	clients will see this... it is a public label for the source.
 
-dd-post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
+dd_post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
 
 file is 457 bytes, blocksize is 0.
 flow is 'exp13' (by default, would be 'default')  user settable, just passes through. 
@@ -18,7 +18,7 @@ checksum is done on actual data, not the file name, or a script
 need an option to checksum only the name...
 	-namesum ?
 
-dd-post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
+dd_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
 
 posting is:
 
@@ -33,7 +33,7 @@ v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
   -- Relative used to store relative destination directory
   -- flow is an argument after the relative path.
 
-dd-validate is subscribed to bunny-op
+dd_validate is subscribed to bunny-op
 	- checks that the block-size is legal.
 	- modifies the destination directory to YYYYMMDD/ec_cmc/NRDPS/GIF/
 	- runs validscript on the data.
@@ -57,7 +57,7 @@ other options:
 		
 based on the v01.notify above the log one..., 
 
-then dd-sara pulls the file in, and puts it on a local disk, in 
+then dd_sara pulls the file in, and puts it on a local disk, in 
 	/apps/dd/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
 	and it knows the root of the web tree is /apps/dd/... ?
 
@@ -68,7 +68,7 @@ v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 
 ?
 
-dd-sara then emits a log entry:
+dd_sara then emits a log entry:
 v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011358.345 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
