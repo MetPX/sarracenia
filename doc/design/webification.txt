@@ -1,0 +1,38 @@
+
+Status: Pre-Draft.  Deferred. 
+
+
+Problem:   Every adopter is going to have to approach their firewall people
+	and get them to approve use of AMQP protocol.  It's probably a good
+        thing, but an impediment to deployment.
+
+proposal:  Nowadays HTML5 has web sockets.  These are connections that start
+	out as HTTP.  Once the validation is done, it hands off to any
+        binary protocol.  In otherwords it becomes a socket.
+        Sockets are what AMQP uses for communications anyways, so this
+	would likely work.
+
+There are two known websocket to AMQP gateways.
+
+	- KAAZING - is commercial, proprietary.
+	  here's a demo:
+
+http://blog.kaazing.com/2013/04/01/remote-controlling-a-car-over-the-web-ingredients-smartphone-websocket-and-raspberry-pi/
+	  the demo uses kaazing, and an additional level of indirection.. it writes 
+          through a JMS, which is unnecessary.
+
+	  at any rate, there is a direct AMQP gateway option.  
+	  The project involves setting it up.
+	
+
+	- jwebsocket.org. is opeen source.
+
+neither one seems to have python bindings, so the unpleasant problem is
+either figuring that out... number of approaches:
+	1. try to hook up ws4py and amqplib
+	2. write new javascript versions of dd_post, dd_send, and dd_subscribe clients.
+	3. try to write a new ws2amqp gateway in python.
+		to work with something created in 1.
+
+None of these are easy or short.  So this is deferred for now.
+
