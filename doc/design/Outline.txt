@@ -1,5 +1,5 @@
 
-Status: Draft1
+Status: Approved-Draft1-20150608
 
 Overview:
 MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
@@ -81,7 +81,6 @@ and seem helpful.  We should get rid of any that are not helpful.
     That sort of management is built in. the message bus is there for that.
     might use 'scope' to have commands propagate through multiple clusters.
 
-     this one (3) ... not sure if it worthwhile.  Discuss.
 
 
 4.  Log is data.
@@ -95,7 +94,7 @@ and seem helpful.  We should get rid of any that are not helpful.
 
 5.  This is a data distribution tool, not a file tree replicator.
 
-    -- we do not need to know who owned it originally.
+    -- we do not need to know what linux uid/gid owned it originally.
     -- we do not care when it was modified.
     -- we do not care about it's original permission bits.
     -- we do not care what ACL's it has (they aren't relevant on the destination.)
@@ -126,7 +125,7 @@ and seem helpful.  We should get rid of any that are not helpful.
    that's all.  It is not trying to be a web site, any more than it is trying
    to be an sftp server.  it is something else.  dunno what exactly.
 
-
+   
 
 8. Common management not needed, just pass logs around.
 
@@ -135,7 +134,7 @@ and seem helpful.  We should get rid of any that are not helpful.
    log messages are routed to the data sources, so they get our logs on their
    data.  (security can have something to say about that.)
 
-
+   
 
 
 9. It needs to run anywhere.
@@ -149,7 +148,9 @@ and seem helpful.  We should get rid of any that are not helpful.
 	   (this aspect dealt with in packaging)
 
 
-10. Redundancy in the face of node failure is not a huge concern.
+
+10. the application does not need to pursue absolute reliability.
+
 	Node failure is rare in a Data Centre environment.  
         Working well in the normal case is the priority.  
 	if it breaks, information is never lost.
@@ -157,17 +158,18 @@ and seem helpful.  We should get rid of any that are not helpful.
 	through the nodes that are left.
 
 	There might be some diagnostics to figure out which files are 'in flight'
-	when a given node goes down.  But not sure that multiple acks with 
-        guarantees in the face of node failure is needed.
+	when a given node goes down (deadman timers).  But not sure that multiple 
+        acks with guarantees in the face of node failure is needed.
 	going faster and being simpler is likely more reliable in practice.
 
 	this is not a database, but a transfer engine.
 
 
-11. Bulletins getting rarer, Files are larger... No file too large.
+11. Bulletins getting less common, Files are larger... No file too large.
 
  	old apps are used to tiny files (millions of them) in EC/MSC.  
 	but even in EC, files are getting bigger, and will likely grow a lot.
+        Satellite sensor data is now very critical, and that is substantially larger.
 	A traditional WMO format weather warning was limited to 15Kbytes (limited by internals 
 	systems to 32 Kbytes now) and those sizes were rarely reached.  It was more like 7-12K.
         an average modern XML weather warning (CAP) is 60K so, so a five to eight fold increase.
