@@ -198,10 +198,3 @@ and seem helpful.  We should get rid of any that are not helpful.
 
 
 
-
-
-some references:
-	CAP theorem
-	Fallacies of Distributed Computing.
-
-
