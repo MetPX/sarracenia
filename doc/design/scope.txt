@@ -1,19 +1,35 @@
 
 Status: Pre-Draft
 
-Source control who sees their data.
-So there is a fundamental  'Routing' that users need to say 'where' it gets posted.
+Sources control who sees their data.  There is a 'Routing' that sources 
+need to say 'where' it gets posted.  to get things posted to ´internet´ 
+vs. ´internal´ etc...
 
 Is it better to:
 	-  post once, listing multiple scopes?
 	-  post once for each scope?
 
+answer: it feels like listing multiple scopes ensures that the data 
+is only transferred once from origin.
 
-Each account has a home 'scope' which is the only place they can insert messages in.
-	- do not want common passwords used on inside and outside (hence single scope for insertion.)
+
+Each account has a home 'scope' which is the only place they can 
+insert messages in.
+	- do not want common passwords used on inside and outside 
+          (hence single scope for insertion.)
 
 
-when receiving a log message, it will be sent to the appropriate exchange on the home scope.
+when receiving a log message, it will be sent to the appropriate 
+exchange on the home scope. 
+
+Users are ´scope-local´ but visible to other scopes.  Downstream
+scopes do not have pw for user Alice in scope A.   Assumption is
+that someone else might control account assignment in other scopes.
+So user name clashes are possible.  There might be an Alice in 
+scope A, and in scope AA.
+
+Any one scope may not be able to ¨see¨ all other scopes,
+it has to know ´routes´ to other scopes.
 
 
 what are distributions/scopes?
@@ -23,12 +39,17 @@ what are distributions/scopes?
 
 	some more examples:  ec, science, internet, warning
 
-	original ddi will be deployed in ec, but will be tied into science.gc.ca switches.
-	and be able to push to ddi.science.gc.ca so all of GoC will be reachable.
+	original ddi will be deployed in ec, but will be tied into 
+        science.gc.ca switches.  and be able to push to 
+        ddi.science.gc.ca so all of GoC will be reachable.
 
 	warnings: high priority queue. only very few able to post there.
 		how this works is unclear.
 
+Admin functions:
+	alias scope a to scope b.
+	maintain a list of scope routes?
+	or have it all be dynamic and learning?
 
 internal servers, or internet facing?
 
@@ -43,9 +64,46 @@ scope corresponds to an exchange to which a given switch posts (outputs of valid
 		are there scope permissions ? some source can only send to 
 
 
--------- scope as priority mechanism -------------------
+-------- inter scope channel -------------------
+to go from scope A to scope B, on scope A.
 
-If we create a wxwarn scope, then warnings go through that scope.
+set up a an exchange:
+to_B, and from_B (log B)?
+
+on B, the complementary exchanges are established:
+to_A and from_A
+
+If the source has specified ´B´ as a destination scope, then
+SARA places the announcement on to_B.
+
+If A ´knows´ that C is reachable through B, then also put on to_B.
+
+either a dd_sender on A or a dd_subscribe on B is subscribed to to_B
+and does the data transfer. 
+
+The dd_sender on A will then re-announce... where?
+	as B(!) on from_A ? on B ??
+	as A on from_A ? ?? <-- makes more sense.
+		then a SARA (with no fetch, since the file is delivered)
+		picks it up from exchange from_A and posts to xPublic
+
+		(since this is a destination scope for the message)
+			or do this unconditionally.
+		it makes sense from permission perspective,
+		scope A should only be able to post to from_A...
+
+		so admin/sender user on <scope> would be something 
+		like dd<scope>.  ddA.
+
+if a dd_subscribe on b does the transfer, then it is logged as
+ddB on B. 
+
+-------- inter scope channel  -------------------
+
+-------- no: scope as priority mechanism -------------------
+
+    If we create a wxwarn scope, then warnings go through that scope.
+    i think this is not good.  have a priority mechanism per source.
 
 -------- scope as priority mechanism -------------------
     if send to a warning scope it might just set the priority when copied to the
