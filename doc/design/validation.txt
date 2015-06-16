@@ -44,12 +44,32 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 postfetch:
 
     malware scan.
+    probably do a demontration configuration with clamAV.
 	run a virus scan or other tool against the block obtained.
 	if an alert is triggerred, refuse to re-announce.	
 
+    security guys worry: 
+      splitting files up means some malware split on boundary, so it gets missed.
+      Do you interchange last nth of one part, with first nth of next part
+      to trigger a boundary scan?  worst case n=2.
+
+      ugh:
+      now you need to associate each pair of parts... 
+	triger exchange between them... 
+  
+      defer this ... 
+
+    problem:  what to do if something fails the scan?
+        -- discard?
+        -- log and wait for a 'force' from the source?
+             aka quarantine...
+	-- consult a setting, that says 'let it go...'
+		administrator can set 'do not scan' on per source basis.
+
+	-- can set file size threshold for scanning.
+
 
 ---
-
 
 
 Scenarios:
@@ -59,6 +79,7 @@ why rate-limit:
 	with 500MB chunks that will create 2000 block notifies.
 	if validation does no rate limiting, then the 2000 blocks will get 
 	fed into the queue in one go, and that transfer will take over.
+
 
 Priorities: so far not present in design.
 	want to send a weather warning then a 3 TB file is transferring with 20 threads.
@@ -77,6 +98,8 @@ Priorities: so far not present in design.
 		the head of the queue to enforce the limit. This means that higher 
 		priority messages might be dropped to make way for lower priority ones, 
 		which might not be what you would expect.
+
+
 
 why check scope/distribution?
 	scopes:  science, internet, warnings?
