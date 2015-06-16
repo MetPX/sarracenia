@@ -64,6 +64,11 @@ Meta information about AMQP:
 	  will never be adopted. (10 years old now.)  we continue to use 0-9-1 which is
           the last simple yet fully featured standard.
 
+        why using a DB as a backing store makes little sense.
+          DB's are very popular, people want to use them for many things, but sometimes
+	  they are a poor fit.  A message transfer system is one such case.
+	  https://www.rabbitmq.com/blog/2011/01/20/rabbitmq-backing-stores-databases-and-disks/
+
 
 Why not DDS?
 	- http://portals.omg.org/dds/
