@@ -1,4 +1,9 @@
 
+NOTe: SCOPE ... permanent dd.
+    permanent URL´s for use in DOI´s.  archiving? backups?
+    new scope.
+
+
 Status: Pre-Draft
 
 Sources control who sees their data.  There is a 'Routing' that sources 
@@ -45,6 +50,8 @@ what are distributions/scopes?
 
 	warnings: high priority queue. only very few able to post there.
 		how this works is unclear.
+
+	
 
 Admin functions:
 	alias scope a to scope b.
