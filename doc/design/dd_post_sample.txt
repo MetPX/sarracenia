@@ -15,15 +15,62 @@ DMS guys will appreciate this, for labelling warning flows.
 checksum is done on actual data, not the file name, or a script
 	- this is default behaviour.
 
-need an option to checksum only the name...
-	-namesum ?
+checksumming options:
+	-checksum none,data,name,<script>
+
+checksum setting contained in ´flags´ field, but is not the whole thing.  Other 
+letters/digits could be there to designate other things.  ´-´ acts as a separator 
+of flags from arguments.  We may need after - to be comma separated to support 
+multiple arguments... hope not.  if arguments needed, presented in same order as 
+flags...
+
+	results in ´flags´ entry:
+
+	0 - no checksums
+	d - checksum the data
+	n - checksum the file name
+	s-<script> - checksum with a script, named <script>
+
+<script> should be ´registered´ in the switch network.
+       registered means that all downstream subscribers can obtain the script
+	to validate the checksum. there needs to be a retrieval mechanism.
+	example s flag:
+
+        s-u
+	u.py would be a script stored in the switch network that would 
+        create the checksum. 
+
+	when a dd-post is issued, if it specifies to use s-u, it needs to
+	download the u.py script from the network (unless locally cached.)
+
+
+
+Only admins can register scripts. 
+ 
+Admins need to audit the scripts, as they will be run in many places under many 
+permissions.  Ensure they do not do anything nasty, and dependencies are a
+problem.  scripts should have short names, because they will be in every 
+notification using that checksum algorithm.
+
+0 (no checksums): useful for:
+	-- notification case. when no data will be downloaded anyways.
+	-- unconditional transfer case, such as a datamover.
 
 dd_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
 
 posting is:
 
-v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF exp13
+
+v01 - version of protocol
+post - indicates the type of message (defines format of following topics and body)
+	message types:
+	post - announce or notify that a new product block is available.
+	       possible strings: post,ann(ounce), not(ify)
+	log  - report status of operations.
+	adm  - change settings 
+		´admin´, ´config´, etc...
 
   -- blocksize is 457  (== file size)
   -- block count is 1
@@ -42,7 +89,7 @@ dd_validate is subscribed to bunny-op  (dd_validate is perhaps just dd_sara with
 		- so the timing between post and accept can be significant.
 	- posts the result to the normal exchange (xpublic?)
 
-v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011357.445 1 457 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13
 
 also emits a log message to log exchange:
@@ -55,7 +102,7 @@ if we go with HTTP error codes, then...
 other options:
 	-- 400 bad request, in case of bad blocksize or other issue.
 		
-based on the v01.notify above the log one..., 
+based on the v01.post above the log one..., 
 
 then dd_sara pulls the file in, and puts it on a local disk, in 
 	/apps/dd/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
@@ -63,7 +110,7 @@ then dd_sara pulls the file in, and puts it on a local disk, in
 
 then it needs to re-announce:
 
-v01.notify.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011357.545 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db  YYYYMMDD/ec_cmc/NRDPS/GIF/NRDPS_HiRes_000.gif
 
 ?
@@ -72,14 +119,14 @@ dd_sara then emits a log entry:
 v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011358.345 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
-	- fields as in notify, log.<source>.<dest>
+	- fields as in post, log.<source>.<dest>
 	- flowid: 'exp13'
 	- status codes (http) 200 means successful, so at this point, the file has made it to ddsr.
 	- host that retrieved.
 	- on whose behalf (ssc_ddsr account is AMQP user used on ddsr, one per layer of switching ?) 
 	- duration of transfer in seconds.
 	
-then a client with dd_subscribe pulls it down, based on the notify above.
+then a client with dd_subscribe pulls it down, based on the post above.
 
 then there is another hop, similar to the above, to get to dd1.weather.gc.ca
 

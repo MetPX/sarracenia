@@ -8,6 +8,7 @@ determine the topologies.
   standalone:
 	router, sftp and apache on one node.
 
+
   switching/routing configuration:
 	- ddsr
 		one broker per node? 
@@ -25,6 +26,7 @@ determine the topologies.
 			.
 		
 		do we need a load balancer?
+
 
   data dissemination configuration.
     on a switching/router:
@@ -102,7 +104,7 @@ Questions to examine for each:
 
 
 
-Use Case 1: somebody wants to transfer a 3 TiB file.
+Use Case 1: Transfer a 3 TiB file.
 
    
         more info:
@@ -193,6 +195,12 @@ references:
     http://spring.io/blog/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
    
     scaling rabbitmq to 11: http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
+
+interesting bits:
+	https://www.rabbitmq.com/community-plugins.html
+   
+		rabbitmq_delayed_message_exchange
+
 
 
 ------------- Number of Switches --------------
@@ -640,3 +648,4 @@ FIXME:
     6. bandwidth/scaling
     Observations:
 ----------
+

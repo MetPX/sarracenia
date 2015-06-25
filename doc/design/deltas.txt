@@ -42,7 +42,7 @@ Why is this really cool?
 say we set a blocksize of 10MB, and we checksum that block, noting the offset, then
 continue?
 
-so v01.notify:
+so v01.post:
 blocksz sz-inblocks remainder blocknum flags chksum base-url relative-path flow ....
 
 see logging.txt for a description of 'flow', user settable, with a default.
@@ -135,7 +135,7 @@ Aesthetically, need to choose a size that dwarfs the overhead.
 compatibility... uprading...
 v00.notify alerts boil down to:
 
-v01.notify could be:
+v01.post could be:
 
    filesz 1 0 0  ...
 	- the blocksize is the length of the entire file, 1 block ithe sz

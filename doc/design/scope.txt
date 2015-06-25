@@ -1,10 +1,57 @@
 
+Status: Pre-Draft
+
+scope is the logical name of a switching cluster, which must be unique in a network.
+Each cluster has channels to connect to either other scopes, or single accounts.
+account is the logical name of a client, which must be unique in a network.
+
+
+
+account2scope.conf: -- maps accounts to scopes.
+  <scope> <account>,<account>, ...
+  
+  not sure how this is maintained, likely by spying on post messages
+  as they go by?
+
+
+scope2channel.conf -- maps scopes to channels
+  <channel/scope> <scope>,<scope>,...
+
+  perhaps a manually configured file, changes rarely, involves inter cluster
+  relationships?
+
+
+This is a switch global account file, to be used by validation scripts.
+don´t know how it is created yet, perhaps manual, perhaps auto.
+
+There are two kinds of channels:
+	- inter-cluster / inter-scope / inter-switch.
+	- source / account 
+
+
+For a source channel, validation will insist that all postings received are 
+from that source.
+
+for an inter-cluster/inter-scope/inter-switch channel:
+   the scopes2channel.conf file indicates scopes are valid from that channel.
+
+   all postings will need to be from accounts listed in one of the valid scopes, 
+   so search the scopes_accounts.conf file for each valid scope for that channel
+
+   when log messages are returned:
+   The log2src process consults these files and determines where to route log messages.
+
+
+-------------- earlier stuff.
+
 NOTe: SCOPE ... permanent dd.
     permanent URL´s for use in DOI´s.  archiving? backups?
     new scope.
 
+    this destination strips out the dates from the tree on receipt.
+    
 
-Status: Pre-Draft
+upshot:
 
 Sources control who sees their data.  There is a 'Routing' that sources 
 need to say 'where' it gets posted.  to get things posted to ´internet´ 
@@ -152,5 +199,5 @@ transitivity
 	that means each switch that connects to another one needs to pass
         the list of known scopes back.
 
-	v01.admin.scopes.get
+	v01.adm.scopes.get
 	issued from a client, requests the list of scopes of the server.

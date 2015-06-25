@@ -29,6 +29,9 @@ dd_log2src
 	copy them to xac_<account> exchange so the user can pick them up.
 	on the same broker... 
 
+	in some cases, <account> will not be a local account.  look up account
+	in a table (acc2src table) to identify which source to send the messages to.
+
 	dunno: run one for all accounts, or one per account?
 
 
@@ -46,6 +49,7 @@ dd_sara
 	--prefetch-script <prescript>
 
 	run prescript, based on the dd.post to see if it is OK to download.
+	if not, log an error.
 	if so, download it.
 
 	--postfetch-script <postscript>
