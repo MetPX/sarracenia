@@ -1,0 +1,256 @@
+
+Status: Pre-Draft
+
+Description of the message protocol / format.
+
+Messages posted include a ´topic´ and a ´body.´
+
+The message topic breaks down as follows:
+
+	<version>.<type>.[varies by verison].<dir>.<dir>.<dir>...
+
+	<version>:
+		exp -- initial version, deprecated (not covered in this document)
+		v00 -- used for NURP & PAN-AM in 2013-2014. (not covered in this document)
+		v01 -- 2015 version.
+
+	<type>:
+		adm  - change settings 
+			´admin´, ´config´, etc...
+
+		log  - report status of operations.
+
+		notify - ´post´ but in exp and v00 versions. (not covered here.)
+
+		post - announce or notify that a new product block is available.
+	       		possible strings: post,ann(ounce), not(ify)
+		
+	<source>:
+
+Rest of this document assumes version 1 (v01 topic):
+
+topic: <version>.<type>.<src>(.<dir>.)*.<filename>
+content: 1st line:
+<date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <srcpath> <relpath> <flowid>
+
+breaks down to:
+
+<date stamp>: date
+	YYYYMMDDHHMMSS.<decimal> 
+
+<blocksize in bytes>: bsz
+        the number of bytes in a block.
+	checksums are calculated per block, so one post 
+
+<filesize in blocks>: fzb
+	the integer total number of blocks in the file
+	FIXME: (including the last block or not?)
+
+	
+<block#>: bno
+  	0 origin, the block number covered by this posting.
+
+<remainder>: brem
+	normally 0, on the last block, it remaining blocks in the file to transfer.
+
+<flags>: a list of option letters, followed by a hyphen, followed by a list of option parameters.
+
+	checksum setting contained in ´flags´ field, but is not the whole thing.  Other
+	letters/digits could be there to designate other things.  ´-´ acts as a separator
+	of flags from arguments.  We may need after - to be comma separated to support
+	multiple arguments... hope not.  if arguments needed, presented in same order as
+	flags...
+
+        results in ´flags´ entry:
+
+        0 - no checksums (unconditional copy.)
+        d - checksum the entire data
+        n - checksum the file name
+        c-<script> - checksum with a script, named <script>
+
+		<script> should be ´registered´ in the switch network.
+       			registered means that all downstream subscribers can obtain the script
+        		to validate the checksum. there needs to be a retrieval mechanism.
+        		example s flag:
+
+	other possible flag values:
+		scopes?
+		u - unlinked... for files that have been removed? 'r'?
+
+
+
+
+The two paths are subtly inter-related.  Neither can be interpreted on their own.  One must consider both path components.
+
+<srcpath> -- the base URL used to retrieve the data.
+
+	options: Complete URL:
+
+	sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
+
+	in the case where the URL does not end with a path separator ('/'), the src path is taken
+	to be the complete source of the file to retrieve.
+
+
+	Static URL:
+
+	sftp://afsiext@cmcdataserver/  
+
+	if the URL ends with a path separator ('/'), then the src URL is considered a prefix for the
+	variable part of the retrieval URL.
+
+
+<relpath> -- The relative path from the current directory in which to place the file.
+	
+	Two cases based on the end being a path separator or not.
+
+	case 1: NURP/GIF/	
+
+	based on the current working directory of the downloading client, create a subdirectory called URP,
+	and within that, a subdirectory calle GIF will be created.  The file name will be taken from the srcpath.
+
+	if the srcpath ends in pathsep, then the relpath here will be concatenated to the srcpath, forming
+	the complete retrieval URL.
+
+	case 2: NRP/GIF/mine.gif
+
+	if the  srcpath ends in pathsep, then the relpath will be concatenated to srcpath for form the 
+        complete retrieval URL.
+
+	if the src path does not end in pathsep, then the src URL is taken as complete, and the file is
+	renamed on download according to the specification (in this case, mine.gif)
+
+<flowid>
+	an arbitrary tag used for tracking of data through the network.
+	
+
+
+FIXME: verify the following:
+	fsz = Size of a file in bytes = ( bsz * (fsb-1) ) + brem ?
+
+
+example 1:
+
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ exp13
+
+	v01 - version of protocol
+	post - indicates the type of message 
+
+	version and type together determine format of following topics and the message body.
+
+	ec_cmc - the account used to issue the post (unique in a network).
+  
+	  -- blocksize is 457  (== file size)
+	  -- block count is 1
+	  -- remainder is 0.
+	  -- block number is 0.
+	  -- d - checksum was calculated on the body.
+	  -- complete source URL specified (does not end in '/')
+	  -- relative path specified for 
+	  -- flow is an argument after the relative path.
+
+	pull from: 
+		sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
+
+	complete relative download path:
+		NRDPS/GIF/NRDPS_HiRes_000.gif
+
+		-- takes file name from srcpath.
+		-- may be modified by validation process.
+
+
+example 2:
+
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 457 1 0 0 d <md5sum> http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif  exp13
+
+in this case, the
+	pull from: 
+		http://afsiext@cmcdataserver/data/NRPDS/GIF/NRDPS_HiRes_000.gif
+
+		-- srcpath ends in '/', so concatenated, takes file from relative URL.
+		-- true 'mirror'
+
+
+	complete relative download path:
+		NRDPS/GIF/NRDPS_HiRes_000.gif
+
+		-- may be modified by validation process.
+
+
+
+
+
+
+Log message contains:
+
+is only emitted after processing of an announcement is completed, 
+to indicate a final status of processing that announcement.
+
+topic matches announcement message except...
+
+v01.log.<source>.<client>...... 
+
+version is protocol version, should increment in sync with notify.
+
+start is as per post... just add fields after:
+
+	<date> blksz blckcnt remainder blocknum flags baseurl relativeurl <flow> <status> <host> <client> <duration> 
+
+------
+
+	what if there are spaces in the file name?
+	do we escape with \ or is it url-encoded %20? or something? just need to know.
+
+------
+
+can we just space out the fields on a single line? or do we need fancier parsing....
+one line is better, because grep etc... works, and 1 message per line is easier to parse.
+
+stuff that needs to be there:
+
+startdate <date-time> of transfer...
+	-- perhaps just indicate duration of transfer in seconds, rather than two dates.
+	   saves few bytes.
+
+Enddate <date-time> of transfer ... 
+
+status 
+	-- ok or error code> ... use http ones?
+		lots of good ones on wikipedia.
+
+	-- should topic include status?
+	       v01.log.200..... (then do not need it in the body...)
+	   cant subscribe only to errors? likely not useful as too many errors to subscribe to.
+	   perhaps just 200 for success, and 400 for failure?
+	    naw, think it is a pain. just leave it in body.
+
+flow 
+	-- application determined flow id, so the application can relate it to their processing.
+	-- flow is a display field, unchanged/untouched by sarracenia.
+
+client 
+	-- talk to the data source, and determine what is a good label to share.
+           this is analogous to a company, or organization, and is likely not be unique to a single flow.
+	-- subscriber chosen significant id, so that source can understand who has received it>
+	-- often subscriber will be on s12124.rogers.net ... not terribly significant.
+	-- client id is essentially a display field... based unchanged to source.
+
+	-- so only sources and clients need to negotiate the id´s,  we just need to pass it 
+	   in both directions transparently, and use the identifier that they both know
+	   whenever appropriate.
+
+is client the username used to connect to the broker and httpd instance?
+	-- in which case, it is no longer transparent to the switches, 
+	   and we have to say something about it.
+              so the client will see it, and it is a ''monitoring unit''
+
+system each ddi/ddsr instance will be defined as an internal client, so internal vs. actual deliveries
+are easily distinguished... does that mean each layer of switches has an amqp username?
+
+
+------------------------------------------
+
+
+
