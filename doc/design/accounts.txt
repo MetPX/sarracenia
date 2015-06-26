@@ -128,9 +128,9 @@ Authorization:
 	v01.log.<source>.<scope>.permit.set...   
 		which has a succeed or fail status.
 
-	v01.adm.perm.get.<source>.<scope?>.<topic>.<subtopic>...
+	v01.cfg.perm.get.<source>.<scope?>.<topic>.<subtopic>...
 
-	v01.log.adm.permit.get
+	v01.log.cfg.permit.get
 		body contains the list of users.
 
 	body of message is the list of permitted users.

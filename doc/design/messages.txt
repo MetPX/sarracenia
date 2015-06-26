@@ -251,6 +251,10 @@ are easily distinguished... does that mean each layer of switches has an amqp us
 
 
 ------------------------------------------
+Configuration / Administration
 
+just a place holder.
 
+really not baked yet. thinking is in configuration.txt
 
+v01.cfg  

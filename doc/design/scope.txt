@@ -199,5 +199,5 @@ transitivity
 	that means each switch that connects to another one needs to pass
         the list of known scopes back.
 
-	v01.adm.scopes.get
+	v01.cfg.scopes.get
 	issued from a client, requests the list of scopes of the server.
