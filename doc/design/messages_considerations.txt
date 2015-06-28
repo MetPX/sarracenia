@@ -1,0 +1,135 @@
+
+Status: Pre-Draft
+
+-------------------------------------------------------------
+Thinking about post messages
+-------------------------------------------------------------
+how to specify ´scope´ is still unsettled.
+
+use a flag with a list?
+	s=ddi-ddbeta-
+
+repeat the same flag?
+	s=ddi,s=ddbeta,s= ...
+
+add a separate element to the post message
+	<scope> = comma separated list of destinations.
+
+Things to think about:
+	- the post goes to all clients...
+	- do we want all recipients knowing which scopes a message targets?
+
+information about a scope might not be something to share with all consumers.
+Putting it ´out of band´ makes some sense.  an AMQP header might make sense
+to avoid modifying the message as it traverses switches, and making scope
+information too easily available.
+
+methods of addressing scope visibility:
+
+	- Edit the scope field as we go? (deleting irrelevant scopes?)
+
+	- always delete scope field when posting to xPublic?
+	  (meaning have arrived at a ´destination´ scope?)
+
+	- have a setting to delete scope under admin control at a specific
+	  point?
+
+Routing between scopes is always going to be under administrator control.
+the inter-switch transfer will always be something the admins of the various
+switches configure and need to be aware of.
+
+if we post on xPublic on ddsr, and ddi is subscribed to it, then...
+that´s fine.
+
+
+
+
+-------------------------------------------------------------
+Thinking about log messages
+-------------------------------------------------------------
+
+Log message contains:
+
+is only emitted after processing of an announcement is completed, 
+to indicate a final status of processing that announcement.
+
+topic matches announcement message except...
+
+v01.log.<source>.<consumer>...... 
+
+version is protocol version, should increment in sync with notify.
+
+start is as per post... just add fields after:
+
+	<date> blksz blckcnt remainder blocknum flags baseurl relativeurl <flow> <status> <host> <client> <duration> 
+
+------
+
+	what if there are spaces in the file name?
+	path should be url-encoded (so space is: %20 )
+
+------
+
+can we just space out the fields on a single line? or do we need fancier 
+parsing....  one line is better, because grep etc... works, and 1 message 
+per line is easier to parse.
+
+Fields that needs to be there:
+
+startdate <date-time> of transfer...
+	-- perhaps just indicate duration of transfer in seconds, rather than 
+	   two dates.  saves few bytes.
+
+Enddate <date-time> of transfer ... 
+
+status 
+	-- ok or error code> ... use http ones?
+		lots of good ones on wikipedia.
+
+	-- should topic include status?
+	       v01.log.200..... (then do not need it in the body...)
+	   cant subscribe only to errors? likely not useful as too 
+	   many errors to subscribe to.  perhaps just 200 for success, 
+           and 400 for failure?  
+
+	   No, think it is a pain. just leave it in body.
+
+flow 
+	-- application determined flow id, so the application can relate it 
+	   to their processing.
+	-- flow is a display field, unchanged/untouched by sarracenia.
+
+consumer 
+	-- talk to the data source, and determine what is a good label to 
+	   share.  This is analogous to a company, or organization, and is 
+	   likely not be unique to a single flow.
+	-- subscriber chosen significant id, so that source can understand 
+           who has received it.
+	-- often subscriber will be on s12124.rogers.net ... not terribly 
+           significant.
+	-- client id is essentially a display field... based unchanged to 
+           source.
+
+	-- so only sources and clients need to negotiate the id´s,  we 
+           just need to pass it in both directions transparently, and use 
+           the identifier that they both know whenever appropriate.
+
+is client the username used to connect to the broker and httpd instance?
+	-- in which case, it is no longer transparent to the switches, 
+	   and we have to say something about it.
+              so the client will see it, and it is a ''monitoring unit''
+
+system each ddi/ddsr instance will be defined as an internal client, so internal vs. actual deliveries
+are easily distinguished... does that mean each layer of switches has an amqp username?
+
+
+------------------------------------------
+Thinking about Configuration / Administration
+------------------------------------------
+
+just a place holder.
+
+really not baked yet. thinking is in configuration.txt
+
+v01.cfg  
+

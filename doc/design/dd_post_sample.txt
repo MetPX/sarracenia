@@ -15,46 +15,6 @@ DMS guys will appreciate this, for labelling warning flows.
 checksum is done on actual data, not the file name, or a script
 	- this is default behaviour.
 
-checksumming options:
-	-checksum none,data,name,<script>
-
-checksum setting contained in ´flags´ field, but is not the whole thing.  Other 
-letters/digits could be there to designate other things.  ´-´ acts as a separator 
-of flags from arguments.  We may need after - to be comma separated to support 
-multiple arguments... hope not.  if arguments needed, presented in same order as 
-flags...
-
-	results in ´flags´ entry:
-
-	0 - no checksums
-	d - checksum the data
-	n - checksum the file name
-	s-<script> - checksum with a script, named <script>
-
-<script> should be ´registered´ in the switch network.
-       registered means that all downstream subscribers can obtain the script
-	to validate the checksum. there needs to be a retrieval mechanism.
-	example s flag:
-
-        s-u
-	u.py would be a script stored in the switch network that would 
-        create the checksum. 
-
-	when a dd-post is issued, if it specifies to use s-u, it needs to
-	download the u.py script from the network (unless locally cached.)
-
-
-
-Only admins can register scripts. 
- 
-Admins need to audit the scripts, as they will be run in many places under many 
-permissions.  Ensure they do not do anything nasty, and dependencies are a
-problem.  scripts should have short names, because they will be in every 
-notification using that checksum algorithm.
-
-0 (no checksums): useful for:
-	-- notification case. when no data will be downloaded anyways.
-	-- unconditional transfer case, such as a datamover.
 
 dd_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
 
