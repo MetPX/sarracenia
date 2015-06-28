@@ -4,6 +4,8 @@ Status: Pre-Draft
 --------------- Configuration / Administration
 
 Asymmetric... can use wget request to a static directory for configuration?
+	-- this doesn´t work in S > 1. need to pass results back as messages.
+	-- does work for ´public´ info like bin, checksum scripts, include
 
 What is the tree:
 
@@ -13,6 +15,9 @@ What is the tree:
 
 	    bin/ 
                 dd-<clients>
+
+	    include/
+		   some standard patterns set by admins.
 
 	    checksum/
 		  u.py  <the library of checksum scripts>
@@ -54,9 +59,20 @@ Things I want to set:
 
 	that means file deletion needs to work.
 
-	
+Things that I think sources will want to set:
+
+    - this sets default, which can still be over-ridden by command-line settings.
+	- destination list (in scopes and perhaps accounts)
+	- block-size for retransmission stuff.
+		- perhaps un-necessary, built-in heuristic is likely good enough.	
 	    
-	    
+    I think client programs  will have, as a baseline :
+	--broker amqp://user@broker/
+	--set DD_BROKER as an environment variable, or have it in a config file...
+
+    - setting default broker is hard to do, because to get these settings,
+	you have contacted a broker and asked for your settings.
+    
 
 ------------ pxpush, built in? ---------------------------------
 use amqp to push config changes around.
@@ -104,6 +120,7 @@ and the file names. (1 per line?)
 
 
 -------- v
+
 v01.cfg.<source>.rmafterdelivery.yes ?  -- deferred.
 determines whether source file should be deleted after all scopes have reported
 success in obtaining the file.

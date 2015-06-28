@@ -14,7 +14,6 @@ Implementation plan, basically
 	   through the month, they evolve.
 	-- at the end of the month, features corresponding to the focus documents 
 	   have been implemented, and the focus documents updated to reflect them.
-
 	-- at end of each phase, revise plan.txt
 
 focus documents go through:

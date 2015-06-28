@@ -3,8 +3,7 @@ Status: Pre-Draft
 
 scope is the logical name of a switching cluster, which must be unique in a network.
 Each cluster has channels to connect to either other scopes, or single accounts.
-account is the logical name of a client, which must be unique in a network.
-
+account is the logical name of a source and/or client, which must be unique in a network.
 
 
 account2scope.conf: -- maps accounts to scopes.
@@ -42,6 +41,34 @@ for an inter-cluster/inter-scope/inter-switch channel:
    The log2src process consults these files and determines where to route log messages.
 
 
+----- forget scopes, just use account names to stand for 'everyone' ? ------------------------
+
+Switch looks for a given user on it's own account, it does not find it,
+but then it sees that that user is accessible (via account2scope) and posts to that scope.
+
+Given the mapping of account names to scopes... users just list the accounts they want
+to have access.  We have stand-in accounts for 'everyone' in a given scope.
+
+Example:
+	to make data available to everyone in the 'interdepartmentalHPCOZ' we make
+	a fake account: 'InterdepartmentalHPCOZ' which gets interpreted as making
+	stuff 'public' for anyone that can access a server in that zone.
+
+	We have another fake account called 'public' to mean anyone...
+
+	using the account2scope.conf file, you find that 'public' is on dd.science.gc.ca
+	and so routing is arranged to get stuff for 'public' send to that scope.
+
+might have cases where many accounts should be given access, does this inevitably lead
+to 'groups'?
+
+
+----- /forget scopes, just use account names for everyone? -----------------------------------
+
+
+
+
+
 -------------- earlier stuff.
 
 NOTe: SCOPE ... permanent dd.
@@ -50,6 +77,9 @@ NOTe: SCOPE ... permanent dd.
 
     this destination strips out the dates from the tree on receipt.
     
+    --strip=n
+
+    strip-count as used in the patch command.
 
 upshot:
 
@@ -122,17 +152,17 @@ scope corresponds to an exchange to which a given switch posts (outputs of valid
 to go from scope A to scope B, on scope A.
 
 set up a an exchange:
-to_B, and from_B (log B)?
+xto_B, and xfrom_B (log B)?
 
 on B, the complementary exchanges are established:
-to_A and from_A
+xto_A and xfrom_A
 
 If the source has specified ´B´ as a destination scope, then
-SARA places the announcement on to_B.
+SARA places the announcement on xto_B.
 
-If A ´knows´ that C is reachable through B, then also put on to_B.
+If A ´knows´ that C is reachable through B, then also put on xto_B.
 
-either a dd_sender on A or a dd_subscribe on B is subscribed to to_B
+either a dd_sender on A or a dd_subscribe on B is subscribed to xto_B
 and does the data transfer. 
 
 The dd_sender on A will then re-announce... where?
@@ -154,16 +184,18 @@ ddB on B.
 
 -------- inter scope channel  -------------------
 
--------- no: scope as priority mechanism -------------------
+-------- scope as priority mechanism -------------------
 
     If we create a wxwarn scope, then warnings go through that scope.
     i think this is not good.  have a priority mechanism per source.
 
 -------- scope as priority mechanism -------------------
+
     if send to a warning scope it might just set the priority when copied to the
     common exchange, not requiring separate exchanges downstream.
 
 -------- scope as username of switching layer -----------------
+
 try:
 	is scope the username of each switching layer?  ssc_ddsr, ssc_ddi, ssc_dd
 	each scope has an exchange scope_ssc_ddsr, scope_ssc_ddi, scope_ssc_dd.

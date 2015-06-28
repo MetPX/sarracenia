@@ -44,7 +44,6 @@ breaks down to:
         the number of bytes in a block.
 	checksums are calculated per block, so one post 
 	
-	if fsb=1, then bsz=fsz in bytes in bytes.
 
 <filesize in blocks>: fzb
 	the integer total number of blocks in the file
@@ -59,28 +58,25 @@ breaks down to:
 	normally 0, on the last block, it remaining blocks in the file 
         to transfer.
 
+	-- if (fzb=1 and brem=0) 
+	       then bsz=fsz in bytes in bytes. 
+	       -- entire files replaced.
+	       -- this is the same as rsync's --whole-file mode.
+		
 
-<flags>:a list of option letters, some with arguments.
-	Would prefer for this to be easy to parse... 
-	Equivalent to AMQP headers, but more visible, and not AMQP specific.
-        variety of syntaxes possible. which one? dunno
-	samples: 
-		di   d,i (strictly comma separated?) just becomes 
-		ic=u,d  i,c,d-u  
-                dp=part,c=u, 
+
+<flags>:a comma-separated list of option letters, some with arguments after ´=´.
 
 	checksum setting contained in ´flags´ field, but is not the whole 
 	thing.  Other letters/digits could be there to designate other things.
-	´=´ acts as a separator of flags from arguments.  We may need after 
-	´-´ to be comma separated to support multiple arguments... 
-        If arguments needed, presented in same order as flags?
+	´=´ acts as a separator of flags from arguments.  
 
         results in ´flags´ entry:
 
         0 - no checksums (unconditional copy.)
         d - checksum the entire data
         n - checksum the file name
-        c-<script> - checksum with a script, named <script>
+        c=<script> - checksum with a script, named <script>
 
 		<script> should be ´registered´ in the switch network.
        			registered means that all downstream subscribers 
@@ -89,8 +85,6 @@ breaks down to:
 
 	other possible flag values:
 
-
-		scopes -- mention target scopes?
 		u - unlinked... for files that have been removed? 'r'?
 
         File Segment strategy:        
@@ -100,6 +94,7 @@ breaks down to:
 		p - part files.  use .part files,  suffix fixed.
 		    do not know which will be default.
 	   - file segment strategy can be overridden by client. just a suggestion.
+	   - analogous to rsync options: --inplace, --partial, 
 
 
 The two paths are subtly inter-related.  Neither can be interpreted on their own.  One must consider both path components.

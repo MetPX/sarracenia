@@ -1,9 +1,87 @@
 
 Status: Pre-Draft
 
+Text here is just notes, not settled, looking at different considerations, constraints, requirements.
+All the different angles discussed here.  Conclusions graduate to messages.txt which contains
+only net result of discussions.
+
 -------------------------------------------------------------
 Thinking about post messages
 -------------------------------------------------------------
+
+--------- v01.post: Is there post AND notify ? -----------------------
+
+post was supposed to be the same thing as a notify.  Michel said they are different, do not know why.
+We talked, and I think it has been captured in the different ways of interpreting srcpath and 
+relpath in messages.txt there was never any intent to have two different messages (post and notify) 
+need to understand whether that is truly needed, and why.
+
+There should be only one type, but maybe it is clearer to have two?  
+
+
+--------- v01.post: Is there post AND notify ? -----------------------
+
+
+-------- v01.post: flag syntax --------------------
+
+how to represent flags in post messages.  there a flags with arguments and without.
+assume:
+	o - a boolean flag
+	k - a flag that has 'karg' as a value.
+	j - a flag that has 'jarg' as a value.
+
+Look at different ways of representing those flags 
+
+++ prefer a single space-separated field within a dd.post message for unix filter command compatibility.
+   post syntax is re-used by log messages 
+   (logs are just post messages with a suffix, and a different topic)
+++ Assume default value is false when k omitted, true when present.
+++ cannot have spaces or other things that need to be URL encoded %20% ?
+   aim is to ensure that all flags fit as a single field in a space separated line.
+++ assume that one letter flags is all we need.  
+++ Since this will show up in every post, and posts are very common, there is some interest in
+   minimizing the size of them in bytes.
+++ do we need nesting?  (flags with lists as values?) give a +mark for ones that do support that.
+
+++ get a net score for options by adding all the +&-s to get a net number.
+
+Syntax options so far:
+
+flags followed by args:     
+	okj-karg,jarg
+
+	+ least bytes. This will show up very often... 
+	- hard to parse for computers and people, need to associate left & right.
+	net: 0
+	
+comma separated keyword=value pairs:
+	o,k=karg,j=jarg
+
+	++ very easy to parse and understand.
+	+ extensible for flags >1 letter.
+	net: +3
+
+json:
+	{"o":true,"k":"karg","j":"jarg"}
+	+ use a standard parser module.
+	-- more characters
+	-- harder to read without a parser (grep/awk)
+	+ extensible for flags >1 letter.
+	+ supports nesting, can use brackets, etc...
+	net: -1
+
+AMQP headers:
+	++ easy (no parsing)
+	+ supports nesting, can use brackets, etc...
+	+ extensible for flags >1 letter.
+	-- not visible to grep/awk etc... unless we do something on print.
+	net: +2
+
+
+-------- /v01.post: flag syntax --------------------
+
+
+--------- v01.post: how to specify scope ---------------------
 how to specify ´scope´ is still unsettled.
 
 use a flag with a list?
@@ -41,6 +119,8 @@ switches configure and need to be aware of.
 if we post on xPublic on ddsr, and ddi is subscribed to it, then...
 that´s fine.
 
+--------- /how to specify scope in post messages  ---------------------
+
 
 
 
@@ -57,17 +137,15 @@ topic matches announcement message except...
 
 v01.log.<source>.<consumer>...... 
 
-version is protocol version, should increment in sync with notify.
+version is protocol version, should increment in sync with post.
 
 start is as per post... just add fields after:
 
 	<date> blksz blckcnt remainder blocknum flags baseurl relativeurl <flow> <status> <host> <client> <duration> 
 
 ------
-
 	what if there are spaces in the file name?
 	path should be url-encoded (so space is: %20 )
-
 ------
 
 can we just space out the fields on a single line? or do we need fancier 
