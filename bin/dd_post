@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 import getopt,hashlib,os,random,socket,stat,sys,time
-from   hashlib import md5
 import amqplib.client_0_8 as amqp
 import logging,logging.handlers
+from hashlib import md5
 
 # ==========
 # HostConnect
@@ -225,18 +225,62 @@ class Queue:
        for exchange_name,exchange_key in self.bindings:
            self.bind(exchange_name, exchange_key )
 
+# ===================================
+# Checksum class
+# ===================================
+
+class Checksum:
+      def __init__(self):
+          self.checksum = self.checksum_d
+
+      def from_list(self,flgs):
+          self.checksum = self.checksum_d
+          for f in flgs:
+              if f == 'n' :
+                 self.checksum = self.checksum_n
+                 break;
+              if f == '0' :
+                 self.checksum = self.checksum_0
+                 break;
+              if f[:2] == 'c=' :
+                 exec(compile(open(f[2:]).read(), f[2:], 'exec'))
+
+      # checksum_0 = checksum for flag 0
+
+      def checksum_0(self, filepath, offset=0, length=0 ):
+          return '0'
+
+      # checksum_d = checksum for flag d
+
+      def checksum_d(self, filepath, offset=0, length=0 ):
+          f = open(filepath,'rb')
+          if offset != 0 : f.seek(offset,0)
+          if length != 0 : data = f.read(length)
+          else:            data = f.read()
+          f.close()
+          return md5(data).hexdigest()
+
+      # checksum_n = checksum for flag n
+
+      def checksum_n( self, filepath, offset=0, length=0 ):
+          filename = os.path.basename(filepath)
+          return md5(bytes(filename,'utf-8')).hexdigest()
 
 # ===================================
-# checksum of file
+# chunk size from a string value
 # ===================================
 
-def Checksum( filepath, offset=0, length=0 ):
-    f = open(filepath,'rb')
-    if offset != 0 : f.seek(offset,0)
-    if length != 0 : data = f.read(length)
-    else:            data = f.read()
-    f.close()
-    return md5(data).hexdigest(),len(data)
+def chunksize_from_str(str_value):
+    factor = 1
+    if str_value[-1] in 'bB'   : str_value = str_value[:-1]
+    if str_value[-1] in 'kK'   : factor = 1024
+    if str_value[-1] in 'mM'   : factor = 1024 * 1024
+    if str_value[-1] in 'gG'   : factor = 1024 * 1024 * 1024
+    if str_value[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
+    if str_value[-1].isalpha() : str_value = str_value[:-1]
+    chunksize = int(str_value) * factor
+
+    return chunksize
 
 # ===================================
 # Chunk of file
@@ -244,21 +288,12 @@ def Checksum( filepath, offset=0, length=0 ):
 
 def Chunk( chunksize, chksum, filepath ):
 
-    factor = 1
-    if chunksize[-1] in 'bB'   : chunksize = chunksize[:-1]
-    if chunksize[-1] in 'kK'   : factor = 1024
-    if chunksize[-1] in 'mM'   : factor = 1024 * 1024
-    if chunksize[-1] in 'gG'   : factor = 1024 * 1024 * 1024
-    if chunksize[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
-    if chunksize[-1].isalpha() : chunksize = chunksize[:-1]
-    chunksize = int(chunksize) * factor
-
     lstat = os.stat(filepath)
     fsiz  = lstat[stat.ST_SIZE]
 
     if chunksize == 0 or chunksize >= fsiz :
-       data_sum,l   = chksum(filepath,0,fsiz)
-       return [ (fsiz, 1, 0, 0, 'd', data_sum) ]
+       data_sum  = chksum(filepath,0,fsiz)
+       return [ (fsiz, 1, 0, 0, data_sum) ]
 
     block_count = int(fsiz / chunksize)
     remainder   = fsiz % chunksize
@@ -280,12 +315,31 @@ def Chunk( chunksize, chksum, filepath ):
     current_block=0
     parts = []
     while i<fsiz:
-          data_sum,length = chksum(filepath,i,chunksize)
-          parts.append( (chunksize, block_count, remainder, current_block, 'd', data_sum) )
+          data_sum = chksum(filepath,i,chunksize)
+          parts.append( (chunksize, block_count, remainder, current_block, data_sum) )
           current_block += 1
-          i = i + length
+          i = i + chunksize
 
     return parts
+
+# ===================================
+# Flags parse
+# ===================================
+
+class Flags:
+      def __init__(self):
+         self.chkclass = Checksum()
+         self.checksum = self.chkclass.checksum
+         self.inplace  = False
+
+      def from_str(self,str_flags):
+         flgs          = str_flags.split(',')
+         self.chkclass.from_list(flgs)
+         self.checksum = self.chkclass.checksum
+         for f in flgs:
+             if f == 'i' :
+                self.inplace = True
+                break;
 
 # ===================================
 # Key for exchange
@@ -359,7 +413,7 @@ class Notice:
           self.block_count   = 0
           self.remainder     = 0
           self.current_block = 0
-          self.type_sum      = ''
+          self.str_flags     = ''
           self.data_sum      = ''
 
           self.tag           = ''
@@ -380,7 +434,7 @@ class Notice:
           self.notice = self.notice + ' %d' % self.block_count
           self.notice = self.notice + ' %d' % self.remainder
           self.notice = self.notice + ' %d' % self.current_block
-          self.notice = self.notice + ' %c' % self.type_sum
+          self.notice = self.notice + ' %s' % self.str_flags
           self.notice = self.notice + ' %s' % self.data_sum
           self.notice = self.notice + ' %s' % self.tag
           self.notice = self.notice + ' %s' % self.source
@@ -404,7 +458,7 @@ class Notice:
           self.block_count   = int(parts[2])
           self.remainder     = int(parts[3])
           self.current_block = int(parts[4])
-          self.type_sum      = parts[5]
+          self.str_flags     = parts[5]
           self.data_sum      = parts[6]
           self.tag           = parts[7]
 
@@ -428,12 +482,12 @@ class Notice:
              self.download_time = parts[13]
 
       # set chunk info
-      def set_chunk(self,chunksize,block_count,remainder,current_block,type_sum,data_sum):
+      def set_chunk(self,chunksize,block_count,remainder,current_block,str_flags,data_sum):
           self.chunksize     = chunksize
           self.block_count   = block_count
           self.remainder     = remainder
           self.current_block = current_block
-          self.type_sum      = type_sum
+          self.str_flags     = str_flags
           self.data_sum      = data_sum
 
       # set log info
@@ -566,7 +620,7 @@ class URL:
 # ===================================
 
 def help(logger):
-    logger.info("Usage: dd_post [-r] [-b blocksize] [-w tag] [basedir] <source-url> <destination-url>")
+    logger.info("Usage: dd_post [-r] [-b blocksize] [-w tag] [-f flags] [basedir] <source-url> <destination-url>")
     logger.info("default blocksize 0")
     logger.info("default tag ''")
 
@@ -576,12 +630,13 @@ def main():
     logger     = logging.getLogger(__name__)
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
-    chunksize = '0'
+    str_flags = 'd'
+    chunksize = 0
     taginfo   = 'default'
     randomiz  = False
 
     #get options arguments
-    try:   opts, args = getopt.getopt(sys.argv[1:],'hrb:w:',['help'])
+    try:   opts, args = getopt.getopt(sys.argv[1:],'hrb:f:w:',['help'])
     except getopt.GetoptError as err:    
            logger.error("%s" % err )      
            logger.info("Try `dd_post --help' for more information.")
@@ -597,7 +652,9 @@ def main():
              help(logger)
              sys.exit(0)
         elif opt in ('-b'):
-             chunksize = value        
+             chunksize = chunksize_from_str(value)
+        elif opt in ('-f'):
+             str_flags = value
         elif opt in ('-r'):
              randomiz = True        
         elif opt in ('-w'):
@@ -670,11 +727,6 @@ def main():
        source.path = None
        source.set(source.get())
 
-    #
-    # file chunk 
-    #
-    parts = Chunk(chunksize,Checksum,filepath)
-
     # ==============
     # publisher part
     # ==============
@@ -696,25 +748,18 @@ def main():
     ex = Exchange(hc_pub,exchange_name)
     ex.build()
 
-    # ==============
-    # consumer part
-    # ==============
+    #
+    # process flags
+    #
 
-    hc_con = HostConnect( destination.host,destination.user,destination.password,\
-                          logger = logger, loop=False)
-    hc_con.connect()
+    flags    = Flags()
+    flags.from_str(str_flags)
 
-    # consumer
+    #
+    # file chunk 
+    #
 
-    consumer = Consumer(hc_con)
-    consumer.build()
-
-    # log queue
-
-    name  = ''
-    log_queue = Queue(hc_con,name)
-    log_queue.add_expire(len(parts)*10*1000)
-    log_queue.build()
+    parts = Chunk(chunksize,flags.checksum,filepath)
 
     #
     # randomize chunks
@@ -744,16 +789,6 @@ def main():
     logger.info(" Key %s" % str_key )
 
     #
-    # build product log exchange key and bind it
-    #
-
-    log_key = Key()
-    log_key.ktype = 'log'
-    log_key.set(destination.user, destination.path )
-    logkey  = log_key.get()
-    log_queue.bind(exchange_name,logkey)
-
-    #
     # build notice class
     #
 
@@ -767,9 +802,9 @@ def main():
 
     for c in parts :
 
-        chunksize, block_count, remainder, current_block, sum_typ, sum_data = c
+        chunksize, block_count, remainder, current_block, sum_data = c
 
-        notice.set_chunk(chunksize, block_count, remainder, current_block, sum_typ, sum_data)
+        notice.set_chunk(chunksize, block_count, remainder, current_block, str_flags, sum_data)
         str_notice = notice.get()
 
         logger.info(" Notice %s \n" % str_notice )
@@ -778,18 +813,7 @@ def main():
         pub.publish( exchange_name, str_key, str_notice, destination.filename )
 
 
-    # get message log
-    time.sleep(2.0)
-    for c in parts :
-        msg=consumer.consume(log_queue.qname)
-        if msg == None :
-               logger.info("%s"% msg) 
-        else :
-               logger.info("%s"% msg.body) 
-               consumer.ack(msg)
-
     hc_pub.close()
-    hc_con.close()
     sys.exit(0)
 
 if __name__ == '__main__':

@@ -1,13 +1,15 @@
 #!/usr/bin/python3
 
 import builtins,getopt,hashlib,os,socket,stat,sys,time
-from   hashlib import md5
-import amqplib.client_0_8 as amqp
-import logging,logging.handlers
 import socket
 import paramiko
 from   paramiko import *
 import urllib.request, urllib.error
+
+import amqplib.client_0_8 as amqp
+import logging,logging.handlers
+
+from hashlib import md5
 
 # ==========
 # HostConnect
@@ -230,16 +232,61 @@ class Queue:
            self.bind(exchange_name, exchange_key )
 
 # ===================================
-# checksum of file
+# Checksum class
 # ===================================
 
-def Checksum( filepath, offset=0, length=0 ):
-    f = open(filepath,'rb')
-    if offset != 0 : f.seek(offset,0)
-    if length != 0 : data = f.read(length)
-    else:            data = f.read()
-    f.close()
-    return md5(data).hexdigest(),len(data)
+class Checksum:
+      def __init__(self):
+          self.checksum = self.checksum_d
+
+      def from_list(self,flgs):
+          self.checksum = self.checksum_d
+          for f in flgs:
+              if f == 'n' :
+                 self.checksum = self.checksum_n
+                 break;
+              if f == '0' :
+                 self.checksum = self.checksum_0
+                 break;
+              if f[:2] == 'c=' :
+                 exec(compile(open(f[2:]).read(), f[2:], 'exec'))
+
+      # checksum_0 = checksum for flag 0
+
+      def checksum_0(self, filepath, offset=0, length=0 ):
+          return '0'
+
+      # checksum_d = checksum for flag d
+
+      def checksum_d(self, filepath, offset=0, length=0 ):
+          f = open(filepath,'rb')
+          if offset != 0 : f.seek(offset,0)
+          if length != 0 : data = f.read(length)
+          else:            data = f.read()
+          f.close()
+          return md5(data).hexdigest()
+
+      # checksum_n = checksum for flag n
+
+      def checksum_n( self, filepath, offset=0, length=0 ):
+          filename = os.path.basename(filepath)
+          return md5(bytes(filename,'utf-8')).hexdigest()
+
+# ===================================
+# chunk size from a string value
+# ===================================
+
+def chunksize_from_str(str_value):
+    factor = 1
+    if str_value[-1] in 'bB'   : str_value = str_value[:-1]
+    if str_value[-1] in 'kK'   : factor = 1024
+    if str_value[-1] in 'mM'   : factor = 1024 * 1024
+    if str_value[-1] in 'gG'   : factor = 1024 * 1024 * 1024
+    if str_value[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
+    if str_value[-1].isalpha() : str_value = str_value[:-1]
+    chunksize = int(str_value) * factor
+
+    return chunksize
 
 # ===================================
 # Chunk of file
@@ -247,21 +294,12 @@ def Checksum( filepath, offset=0, length=0 ):
 
 def Chunk( chunksize, chksum, filepath ):
 
-    factor = 1
-    if chunksize[-1] in 'bB'   : chunksize = chunksize[:-1]
-    if chunksize[-1] in 'kK'   : factor = 1024
-    if chunksize[-1] in 'mM'   : factor = 1024 * 1024
-    if chunksize[-1] in 'gG'   : factor = 1024 * 1024 * 1024
-    if chunksize[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
-    if chunksize[-1].isalpha() : chunksize = chunksize[:-1]
-    chunksize = int(chunksize) * factor
-
     lstat = os.stat(filepath)
     fsiz  = lstat[stat.ST_SIZE]
 
     if chunksize == 0 or chunksize >= fsiz :
-       data_sum,l   = chksum(filepath,0,fsiz)
-       return [ (fsiz, 1, 0, 0, 'd', data_sum) ]
+       data_sum  = chksum(filepath,0,fsiz)
+       return [ (fsiz, 1, 0, 0, data_sum) ]
 
     block_count = int(fsiz / chunksize)
     remainder   = fsiz % chunksize
@@ -283,12 +321,31 @@ def Chunk( chunksize, chksum, filepath ):
     current_block=0
     parts = []
     while i<fsiz:
-          data_sum,length = chksum(filepath,i,chunksize)
-          parts.append( (chunksize, block_count, remainder, current_block, 'd', data_sum) )
+          data_sum = chksum(filepath,i,chunksize)
+          parts.append( (chunksize, block_count, remainder, current_block, data_sum) )
           current_block += 1
-          i = i + length
+          i = i + chunksize
 
     return parts
+
+# ===================================
+# Flags parse
+# ===================================
+
+class Flags:
+      def __init__(self):
+         self.chkclass = Checksum()
+         self.checksum = self.chkclass.checksum
+         self.inplace  = False
+
+      def from_str(self,str_flags):
+         flgs          = str_flags.split(',')
+         self.chkclass.from_list(flgs)
+         self.checksum = self.chkclass.checksum
+         for f in flgs:
+             if f == 'i' :
+                self.inplace = True
+                break;
 
 # ===================================
 # Key for exchange
@@ -362,7 +419,7 @@ class Notice:
           self.block_count   = 0
           self.remainder     = 0
           self.current_block = 0
-          self.type_sum      = ''
+          self.str_flags     = ''
           self.data_sum      = ''
 
           self.tag           = ''
@@ -383,7 +440,7 @@ class Notice:
           self.notice = self.notice + ' %d' % self.block_count
           self.notice = self.notice + ' %d' % self.remainder
           self.notice = self.notice + ' %d' % self.current_block
-          self.notice = self.notice + ' %c' % self.type_sum
+          self.notice = self.notice + ' %s' % self.str_flags
           self.notice = self.notice + ' %s' % self.data_sum
           self.notice = self.notice + ' %s' % self.tag
           self.notice = self.notice + ' %s' % self.source
@@ -407,7 +464,7 @@ class Notice:
           self.block_count   = int(parts[2])
           self.remainder     = int(parts[3])
           self.current_block = int(parts[4])
-          self.type_sum      = parts[5]
+          self.str_flags     = parts[5]
           self.data_sum      = parts[6]
           self.tag           = parts[7]
 
@@ -431,12 +488,12 @@ class Notice:
              self.download_time = parts[13]
 
       # set chunk info
-      def set_chunk(self,chunksize,block_count,remainder,current_block,type_sum,data_sum):
+      def set_chunk(self,chunksize,block_count,remainder,current_block,str_flags,data_sum):
           self.chunksize     = chunksize
           self.block_count   = block_count
           self.remainder     = remainder
           self.current_block = current_block
-          self.type_sum      = type_sum
+          self.str_flags     = str_flags
           self.data_sum      = data_sum
 
       # set log info
@@ -577,7 +634,11 @@ class dd_download(object):
 
         self.ssh_keyfile = None
 
+        self.flags    = Flags()
+        self.checksum = self.flags.checksum
+
         self.bufsize  = 128 * 1024 # read/write buffer size
+
 
     def chunk_filename(self, chunksize, current_block ):
         parts = self.lfile.split(os.sep)
@@ -586,7 +647,36 @@ class dd_download(object):
         chunk_fname = '.' + fname + '.%d.%d' % (chunksize, current_block )
         return fdir + os.sep + chunk_fname
 
-    def http_download(self,lfile,offset,length,fsiz):
+    def chunk_insert(self, lfile, loffset, length, chunksize, current_block ):
+        cfile = self.chunk_filename( chunksize, current_block )
+        if not os.path.isfile(cfile) : return False
+
+        str_range = 'bytes=%d-%d'%(loffset,loffset+length-1)
+        self.logger.info('Inserting: %s %s %s' % (cfile,lfile,str_range))  
+
+        fp = open(cfile,'rb')
+        self.write_to_file(fp,lfile,loffset,length)
+        fp.close() 
+
+        os.unlink(cfile)
+
+        return True
+
+    def chunk_write(self, roffset, rlength, rfsiz, chunksize, current_block ):
+        cfile   = self.chunk_filename( chunksize, current_block )
+        loffset = 0
+
+        return self.download(cfile,loffset,roffset,rlength,rfsiz)
+
+    def download(self,lfile,loffset,roffset,length,fsiz):
+        downloaded = False
+        if self.url.protocol == 'http' :
+           downloaded = self.http_download(lfile,loffset,roffset,length,fsiz)
+        if self.url.protocol == 'sftp' :
+           downloaded = self.sftp_download(lfile,loffset,roffset,length,fsiz)
+        return downloaded
+
+    def http_download(self,lfile,loffset,roffset,length,fsiz):
         url    = self.url.get_nocredential()
         user   = self.url.user
         passwd = self.url.password
@@ -612,14 +702,14 @@ class dd_download(object):
                 req   = urllib.request.Request(url)
                 str_range = ''
                 if length != 0 :
-                   str_range = 'bytes=%d-%d'%(offset,offset+length-1)
+                   str_range = 'bytes=%d-%d'%(roffset,roffset+length-1)
                    req.headers['Range'] = str_range
                 else :
                    length = fsiz
                    
                 #download file
                 response = urllib.request.urlopen(req)
-                self.write_to_file(response,lfile,offset,length)                    
+                self.write_to_file(response,lfile,loffset,length)                    
 
                 if str_range != '' :
                    self.logger.info('Inserting: %s %s %s' % (url,lfile,str_range))  
@@ -639,102 +729,104 @@ class dd_download(object):
                 self.logger.error('Uexpected error')              
         return False
 
-    def get(self, chunksize, block_count, remainder, current_block, type_sum, data_sum, from_chunk = False ):
+    def get(self, chunksize, block_count, remainder, current_block, str_flags, data_sum, from_chunk = False ):
+
+        self.start_timer()
+
+        # ingest flags
+        
+        self.flags.from_str(str_flags)
+
+        self.checksum = self.flags.checksum
 
         # setting notice
 
-        self.dnotice.set_chunk(chunksize,block_count,remainder,current_block,type_sum,data_sum)
+        self.dnotice.set_chunk(chunksize,block_count,remainder,current_block,str_flags,data_sum)
 
         # get chunk info
 
         r_offset,r_length,r_fsiz = Seekinfo(chunksize, block_count, remainder, current_block )
 
+        r_lastchunk = (current_block == block_count-1)
+
         # check if chunk update needed
 
-        l_needs_update,l_fsiz = self.update(self.lfile, r_offset,r_length,r_fsiz, type_sum,data_sum )
+        l_needs_update,l_fsiz = self.update(self.lfile, r_offset,r_length,r_fsiz,str_flags,data_sum )
 
         # needs to be truncated maybe
 
-        truncated = False
-        if current_block == block_count-1 :
-           if r_fsiz < l_fsiz :
-              self.truncate(r_fsiz)
-              truncated = True
+        to_truncate = ( r_lastchunk and r_fsiz < l_fsiz )
 
+        # update from chunk file
+
+        if from_chunk :
+           insert = self.chunk_insert(self.lfile, r_offset, r_length, chunksize, current_block )
+           if to_truncate : self.truncate(self.lfile,l_fsiz,r_fsiz)
+           if insert or to_truncate : self.publish()
+           return insert
+           
         # if not needed everything is ok
 
         if not l_needs_update :
-           self.logger.info("Unchanged: %s" % self.lfile )
-           if truncated :
-              self.logger.info("Truncated: %s (%d to %d)" % (self.lfile,l_fsiz,r_fsiz) )
-              self.publish()
+           self.logger.info("Unchanged: %s " % self.lfile )
+           if to_truncate : 
+              self.truncate(self.lfile,l_fsiz,r_fsiz)
+           self.publish(message=to_truncate)
            return True
 
         # should we put the chunk straight in the file
 
-        infile = False
-        if r_offset <= l_fsiz : infile = True
+        infile   = False
+        l_offset = r_offset
+        if l_offset <= l_fsiz : infile = True
 
         # if we cannot download for now... keep chunk info
-        if not infile and not from_chunk :
-           cfile = self.chunk_filename( chunksize, current_block )
-           f = open( cfile, 'w' )
-           f.write('%d,%d,%d,%d,\'%c\',\'%s\'' % \
-                  ( chunksize, block_count, remainder, current_block, type_sum, data_sum ))
-           f.close()
-           self.logger.info("Suspended: %s " % cfile )
-           return True
+        if not infile and not self.flags.inplace :
+           return self.chunk_write( r_offset, r_length, r_fsiz, chunksize, current_block )
 
         # special case download the entire file
         length = r_length
         if block_count == 1 : length = 0
 
         # go ahead and download in file
-        downloaded = False
-        if self.url.protocol == 'http' :
-           downloaded = self.http_download(self.lfile,r_offset,length,r_fsiz)
-        if self.url.protocol == 'sftp' :
-           downloaded = self.sftp_download(self.lfile,r_offset,length,r_fsiz)
+        downloaded = self.download(self.lfile,l_offset,r_offset,length,r_fsiz)
 
+        if to_truncate: self.truncate(self.lfile,l_fsiz,r_fsiz)
         if downloaded : self.publish()
-        if truncated  : self.logger.info("Truncated: %s (%d to %d)" % (self.lfile,l_fsiz,r_fsiz) )
 
         if not downloaded : return False
         
-        if downloaded and from_chunk :
-           cfile = self.chunk_filename( chunksize, current_block )
-           os.unlink(cfile)
-
-        # process other chunk already received ?
+        # process with chunk file needed ?
         next_block = current_block + 1
-        if next_block < block_count :
+        while next_block < block_count :
            cfile = self.chunk_filename( chunksize, next_block )
-           if os.path.isfile(cfile) :
-              self.logger.info("Detecting %s " % cfile )
-              exec(compile('self.get(' + open(cfile).read() + ',True)\n',cfile,'exec'))
+           if not os.path.isfile(cfile) : break
+           self.logger.info("Detecting: %s " % cfile )
+           downloaded = self.get( chunksize, block_count, remainder, next_block, str_flags, data_sum, True )
+           if not downloaded : break 
+           next_block = next_block + 1
 
         return True
 
-    def publish(self):
+    def get_elapse(self):
+        return time.time()-self.tbegin
 
-        str_key  = self.dkey.get()
-        filename = os.path.basename(self.lfile)
-        message  = self.dnotice.get()
+    def publish(self,code=202,message=True,log=True):
 
-        self.logger.info("%s : key      = %s" % ('xpublic',str_key))
-        self.logger.info("%s : body     = %s" % ('xpublic',message) )
-        self.logger.info("%s : filename = %s" % ('xpublic',filename) )
+        str_key = self.dkey.get()
+        body    = self.dnotice.get()
 
-        self.pub.publish('xpublic',str_key,message,filename)
+        if message :
+           filename = os.path.basename(self.lfile)
+           self.pub.publish('xpublic',str_key,body,filename)
+           self.logger.info("Publishes: %s   key      = %s" % ('xpublic',str_key))
+           self.logger.info("Publishes: %s   body     = %s" % ('xpublic',body) )
 
-        log_key   = str_key.replace('.post.','.log.')
-        message  += ' 202 ' + socket.gethostname() + ' ' + self.url.user + ' 0.0'
+        if log :
+           log_key  = str_key.replace('.post.','.log.')
+           body    += ' %d %s %s %f' % (code,socket.gethostname(),self.url.user,self.get_elapse())
+           self.log.publish('log',log_key,body,'log')
 
-        self.logger.info("%s : key      = %s" % ('log',log_key))
-        self.logger.info("%s : body     = %s" % ('log',message) )
-        self.logger.info("%s : filename = %s" % ('log',filename) )
-
-        self.log.publish('log',log_key,message,filename)
 
     def set_key(self,dkey):
         self.dkey = dkey
@@ -753,7 +845,7 @@ class dd_download(object):
         self.str_url = url
         self.url.set(url)
 
-    def sftp_download(self,lfile,offset,length,fsiz):
+    def sftp_download(self,lfile,loffset,roffset,length,fsiz):
         host     = self.url.host
         port     = self.url.port
         user     = self.url.user
@@ -786,10 +878,10 @@ class dd_download(object):
                    self.sftp.get(cfile,lfile)
                    self.logger.info('Downloads:  %s %s' % (url,lfile))  
                 else :
-                   str_range = 'bytes=%d-%d'%(offset,offset+length-1)
+                   str_range = 'bytes=%d-%d'%(roffset,roffset+length-1)
                    response  = self.sftp.file(cfile,'rb',self.bufsize)
-                   if offset != 0 : response.seek(offset,0)
-                   self.write_to_file(response,lfile,offset,length)                    
+                   if roffset != 0 : response.seek(roffset,0)
+                   self.write_to_file(response,lfile,loffset,length)                    
                    self.logger.info('Inserting: %s %s %s' % (url,lfile,str_range))  
 
                 try    : self.sftp.close()
@@ -804,13 +896,17 @@ class dd_download(object):
                 self.logger.error("Download failed %s. Type: %s, Value: %s" % (self.url.get_nocredential(), stype ,value))
 
         return False
-  
-    def truncate(self,r_siz):
-        fp = open(self.lfile,'r+b')
-        fp.truncate(r_siz)
-        fp.close()
 
-    def update(self, lfile, offset, length, fsiz, type_sum, data_sum ):
+    def start_timer(self):
+        self.tbegin = time.time()
+  
+    def truncate(self,lfile,l_fsiz,r_fsiz):
+        fp = open(lfile,'r+b')
+        fp.truncate(r_fsiz)
+        fp.close()
+        self.logger.info("Truncated: %s (%d to %d)" % (lfile,l_fsiz,r_fsiz) )
+
+    def update(self, lfile, offset, length, fsiz, str_flags, data_sum ):
         lfsiz  = 0
 
         if not os.path.isfile(lfile) : return True,lfsiz
@@ -821,12 +917,12 @@ class dd_download(object):
         echunk = offset + length - 1
         if echunk >= lfsiz : return True,lfsiz
 
-        ldata_sum,l = Checksum(lfile,offset,length)
+        ldata_sum = self.checksum(lfile,offset,length)
         if ldata_sum != data_sum : return True,lfsiz
    
         return False,lfsiz
                 
-    def write_to_file(self,req,lfile,offset,length) :
+    def write_to_file(self,req,lfile,loffset,length) :
         # file should exists
         if not os.path.isfile(lfile) :
            fp = open(lfile,'w')
@@ -834,7 +930,7 @@ class dd_download(object):
 
         # file open read/modify binary
         fp = open(lfile,'r+b')
-        if offset != 0 : fp.seek(offset,0)
+        if loffset != 0 : fp.seek(loffset,0)
 
         nc = int(length/self.bufsize)
         r  = length % self.bufsize
@@ -893,7 +989,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
     #get options arguments
-    try:   opts, args = getopt.getopt(sys.argv[1:],'hv:',['help','validation_script'])
+    try:   opts, args = getopt.getopt(sys.argv[1:],'hpv:',['help','validation_script'])
     except getopt.GetoptError as err:    
            logger.error("%s" % err )      
            logger.info("Try `dd_sara --help' for more information.")
@@ -1043,7 +1139,6 @@ def main():
                     logger.error('Not valid: %s',body)
                     body   += ' 404 ' + socket.gethostname() + ' ' + source.user + ' 0.0'
                     log.publish('log',log_key,body,filename)
-                    logger.info("Consumed")
                     consumer.ack(msg)
                     continue
 
@@ -1077,9 +1172,8 @@ def main():
 
                  download.set_url(notice.url)
                  download.set_local_file(target_file)
-                 download.get(notice.chunksize, notice.block_count, notice.remainder, notice.current_block, notice.type_sum,notice.data_sum)
+                 download.get(notice.chunksize, notice.block_count, notice.remainder, notice.current_block, notice.str_flags,notice.data_sum)
 
-                 logger.info("Consumed")
                  consumer.ack(msg)
 
           except :
