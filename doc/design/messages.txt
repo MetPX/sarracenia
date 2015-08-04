@@ -1,5 +1,5 @@
 
-Status: Pre-Draft
+Status: Draft
 
 Description of the message protocol / format.
 
