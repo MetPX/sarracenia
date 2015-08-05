@@ -1,5 +1,5 @@
 
-Status: Draft
+Status: Approved-Draft1-20150805
 
 Description of the message protocol / format.
 
@@ -33,7 +33,7 @@ Rest of this document assumes version 1 (v01 topic):
 
 topic: <version>.<type>.<src>(.<dir>.)*.<filename>
 content: 1st line:
-<date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <srcpath> <relpath> <flowid>
+<date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <flowid> <srcpath> <relpath>
 
 breaks down to:
 
@@ -96,6 +96,8 @@ breaks down to:
 	   - file segment strategy can be overridden by client. just a suggestion.
 	   - analogous to rsync options: --inplace, --partial, 
 
+<flowid>
+	an arbitrary tag used for tracking of data through the network.
 
 The two paths are subtly inter-related.  Neither can be interpreted on their own.  One must consider both path components.
 ------
@@ -104,6 +106,7 @@ The two paths are subtly inter-related.  Neither can be interpreted on their own
 	it is url-encoded, so a space should turn into: %20
 
 ------
+
 
 <srcpath> -- the base URL used to retrieve the data.
 
@@ -147,8 +150,6 @@ The two paths are subtly inter-related.  Neither can be interpreted on their own
 	as complete, and the file is renamed on download according to the 
 	specification (in this case, mine.gif)
 
-<flowid>
-	an arbitrary tag used for tracking of data through the network.
 	
 
 
@@ -159,7 +160,7 @@ FIXME: verify the following:
 example 1:
 
 v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ exp13
+201506011357.345 457 1 0 0 d <md5sum> exp13 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 
 
 	v01 - version of protocol
 	post - indicates the type of message 
@@ -173,9 +174,9 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 	  -- remainder is 0.
 	  -- block number is 0.
 	  -- d - checksum was calculated on the body.
+	  -- flow is an argument after the relative path.
 	  -- complete source URL specified (does not end in '/')
 	  -- relative path specified for 
-	  -- flow is an argument after the relative path.
 
 	pull from: 
 		sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
@@ -190,7 +191,7 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 example 2:
 
 v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif  exp13
+201506011357.345 457 1 0 0 d <md5sum> exp13 http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif
 
 in this case, the
 	pull from: 
@@ -223,7 +224,7 @@ version is protocol version, should increment in sync with notify.
 
 start is as per post... just add fields after:
 
-	<date> blksz blckcnt remainder blocknum flags baseurl relativeurl <flow> <status> <host> <client> <duration> 
+	<date> blksz blckcnt remainder blocknum flags <flow> baseurl relativeurl <status> <host> <client> <duration> 
 
 
 ----------------------------------------------------------------------
