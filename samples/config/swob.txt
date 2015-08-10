@@ -1,8 +1,15 @@
 # Fichiers d'observations en format SWOB 
+# Pour plus d'information sur ce produit, veuillez consulter la documentation a
+# http://dd.meteo.gc.ca/observations/doc/README_SWOB.txt
+
 # Observation files in SWOB format
-host amqp.weather.gc.ca
+# For more information about this product, please consult the documentation at 
+# http://dd.weather.gc.ca/observations/doc/README_SWOB.txt
+
+host dd.weather.gc.ca
 # All stations
 exchange_key v00.dd.notify.observations.swob-ml.#
+
 # Only station CYQL
 # exchange_key v00.dd.notify.observations.swob-ml.*.CYQL.#
 accept .*

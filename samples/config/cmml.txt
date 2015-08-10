@@ -1,7 +1,16 @@
-host amqp.weather.gc.ca
-# ALL CMML files / Tous les fichiers CMML
-# exchange_key v00.dd.notify.meteocode.*.cmml.# 
-# All CSV files from QUEBEC / Tous les fichiers CSV du Québec
-exchange_key v00.dd.notify.meteocode.que.csv.#
+# Configuration for the CMML files in XML format.
+# For more information about this product, please consult the documentation at 
+#  http://dd.weather.gc.ca/meteocode/doc/cmml/README_CMML.txt
+#  http://dd.weather.gc.ca/meteocode/doc/csv/README_meteocode_csv.txt
+
+# Configuration pour les fichiers CMML 
+# Pour plus d'information sur ce produit, veuillez consulter la documentation a
+#  http://dd.meteo.gc.ca/meteocode/doc/cmml/README_CMML.txt
+#  http://dd.meteo.gc.ca/meteocode/doc/csv/README_meteocode_csv.txt
+
+
+host dd.weather.gc.ca
+exchange_key v00.dd.notify.meteocode.*.cmml.# 
+
 accept    .*
 

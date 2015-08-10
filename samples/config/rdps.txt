@@ -1,6 +1,12 @@
 # Fichiers GRIB pour le SRPD 15km
-# RDPS 15km GRIB files
+# Pour plus d'information sur ce produit, veuillez consulter la documentation a
+#  http://weather.gc.ca/grib/grib2_reg_15km_f.html
 
-host amqp.weather.gc.ca
+# RDPS 15km GRIB files
+# For more information about this product, please consult the documentation at 
+# http://weather.gc.ca/include/lang.php
+
+
+host dd.weather.gc.ca
 exchange_key v00.dd.notify.model_gem_regional.15km.grib2.#
 accept .*
