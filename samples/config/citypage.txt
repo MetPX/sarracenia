@@ -1,0 +1,6 @@
+# Get the XML Citypage file for Whitehorse. 
+# See the documentation at http://dd.meteo.gc.ca/citypage_weather/docs/ for more information about city name and URL
+host amqp.weather.gc.ca
+exchange_key v00.dd.notify.citypage_weather.xml.YT.s0000825_f#
+accept .*
+mirror True 

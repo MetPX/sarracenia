@@ -1,0 +1,9 @@
+# Fichiers d'observations en format SWOB 
+# Observation files in SWOB format
+host amqp.weather.gc.ca
+# All stations
+exchange_key v00.dd.notify.observations.swob-ml.#
+# Only station CYQL
+# exchange_key v00.dd.notify.observations.swob-ml.*.CYQL.#
+accept .*
+

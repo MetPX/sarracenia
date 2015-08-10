@@ -1,0 +1,8 @@
+host amqp.weather.gc.ca
+
+# To download radar images in CAPPI format for XAM radar
+# Pour télécharger les images radar en format CAPPI pour le radar XAM 
+
+exchange_key v00.dd.notify.radar.CAPPI.GIF.XAM.#
+accept .*
+mirror True

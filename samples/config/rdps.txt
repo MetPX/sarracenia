@@ -1,0 +1,6 @@
+# Fichiers GRIB pour le SRPD 15km
+# RDPS 15km GRIB files
+
+host amqp.weather.gc.ca
+exchange_key v00.dd.notify.model_gem_regional.15km.grib2.#
+accept .*

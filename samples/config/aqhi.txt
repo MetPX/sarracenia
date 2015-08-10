@@ -1,0 +1,3 @@
+host amqp.weather.gc.ca
+exchange_key v00.dd.notify.air_quality.aqhi.#
+accept .*

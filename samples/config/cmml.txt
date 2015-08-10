@@ -1,0 +1,7 @@
+host amqp.weather.gc.ca
+# ALL CMML files / Tous les fichiers CMML
+# exchange_key v00.dd.notify.meteocode.*.cmml.# 
+# All CSV files from QUEBEC / Tous les fichiers CSV du Québec
+exchange_key v00.dd.notify.meteocode.que.csv.#
+accept    .*
+

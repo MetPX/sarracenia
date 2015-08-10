@@ -1,0 +1,7 @@
+# Download CSCN22 bulletins
+# Téléchargement des bulletins CSCN22
+host amqp.weather.gc.ca
+key v00.dd.notify.bulletins.alphanumeric.*.CA.*.#
+accept .*CACN45.*
+reject .*CACN00.*
+mirror True
