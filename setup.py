@@ -22,10 +22,10 @@ setup(
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
-    url='https://github.com/petersilva/metpx.git/sarracenia',
+    url='http://metpx.sf.net',
     license='LGPL',
     author='Dads',
-    author_email='peter.silva@ssc-spc.gc.ca',
+    author_email='peter_silva@sourceforge.net',
     packages=find_packages(),
     entry_points={
         "console_scripts":[
@@ -38,7 +38,7 @@ setup(
               ]
     },
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: MIT License',
