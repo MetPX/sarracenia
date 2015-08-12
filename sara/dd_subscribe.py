@@ -1,7 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
 import amqplib.client_0_8 as amqp
+
+try :
+         from dd_transfert      import *
+         from dd_util           import *
+except :
+         from sara.dd_transfert import *
+         from sara.dd_util      import *
 
 #============================================================
 # usage example
@@ -41,7 +48,8 @@ class Consumer(object):
         self.connected  = False
 
         self.connection = None
-        self.channel    = None
+        self.channel1   = None
+        self.channel2   = None
         self.ssl        = False
 
         self.queue      = None
@@ -53,20 +61,29 @@ class Consumer(object):
         
         self.config = config
         self.name   = config
+
+        self.download = dd_download(self.logger)
+
         self.myinit()
 
         self.timex = None
 
+        self.log = None
+
+        self.recompute_chksum = False
+
     def ack(self,msg):
         # ack timeout 5 sec
         if self.timex != None:self.timex.alarm(5)
-        self.channel.basic_ack(msg.delivery_tag)
+        self.channel1.basic_ack(msg.delivery_tag)
         if self.timex != None:self.timex.cancel()
 
     def close(self):
        # timeout 5 sec for each operation
        if self.timex != None:self.timex.alarm(5)
-       try:    self.channel.close()
+       try:    self.channel2.close()
+       except: pass
+       try:    self.channel1.close()
        except: pass
        if self.timex != None:self.timex.cancel()
 
@@ -79,7 +96,8 @@ class Consumer(object):
 
     def connect(self):
         self.connection = None
-        self.channel    = None
+        self.channel1   = None
+        self.channel2   = None
 
         while True:
              # give 20 sec to connect
@@ -87,13 +105,15 @@ class Consumer(object):
 
              try:
                   # connect
-                  self.logger.info("AMQP connecting %s %s " % (self.host,self.amqp_user) )
-                  self.connection = amqp.Connection(self.host, userid=self.amqp_user,
+                  host = self.host
+                  if self.port != '5672' : host = host + ':' + self.port
+                  self.logger.info("AMQP connecting %s %s " % (host,self.amqp_user) )
+                  self.connection = amqp.Connection(host, userid=self.amqp_user,
                                                     password=self.amqp_passwd, ssl=self.ssl,connect_timeout=60)
-                  self.channel    = self.connection.channel()
+                  self.channel1   = self.connection.channel()
 
                   # shared queue : each pull receive 1 message (prefetch_count=1)
-                  self.channel.basic_qos(prefetch_size=0,prefetch_count=1,a_global=False)
+                  self.channel1.basic_qos(prefetch_size=0,prefetch_count=1,a_global=False)
 
                   # queue declare and bind
 
@@ -101,13 +121,17 @@ class Consumer(object):
                   if self.expire != None :
                      args = { 'x-expires' : self.expire }
 
-                  qn,Nmsg,Nconsumer = self.channel.queue_declare( self.queue,
+                  qn,Nmsg,Nconsumer = self.channel1.queue_declare( self.queue,
                                       passive=False, durable=self.durable, exclusive=False,
                                       auto_delete=False, nowait=False, arguments=args )
 
                   for k in self.exchange_key :
                       self.logger.info('Binding %s to %s with %s', self.exchange, self.queue, k)
-                      self.channel.queue_bind(self.queue, self.exchange, k )
+                      self.channel1.queue_bind(self.queue, self.exchange, k )
+
+                  # logging
+                  self.channel2   = self.connection.channel()
+                  self.channel2.tx_select()
 
                   if self.timex != None:self.timex.cancel()
                   self.connected = True
@@ -118,9 +142,9 @@ class Consumer(object):
                  break                      
              except:
                   if self.timex != None:self.timex.cancel()
-                  (type, value, tb) = sys.exc_info()
+                  (stype, value, tb) = sys.exc_info()
                   self.logger.error("AMQP Sender cannot connected to: %s" % str(self.host))
-                  self.logger.error("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
+                  self.logger.error("Type: %s, Value: %s, Sleeping 5 seconds ..." % (stype, value))
                   time.sleep(5)
 
 
@@ -130,7 +154,7 @@ class Consumer(object):
         if self.timex != None:self.timex.alarm(10)
 
         try :
-              msg = self.channel.basic_get(self.queue)
+              msg = self.channel1.basic_get(self.queue)
               if self.timex != None:self.timex.cancel()
         except :
               if self.timex != None:self.timex.cancel()
@@ -165,7 +189,7 @@ class Consumer(object):
                   self.logger.debug('Received message # %s from %s: %s', msg, msg.delivery_info, body)
                   self.logger.debug('Received exchange %s, key %s, message file %s', exchange, routing_key, filename )
 
-                  if sys.version[:1] >= '3' : body = body.decode("utf-8")
+                  if sys.version[:1] >= '3' and type(body) == bytes : body = body.decode("utf-8")
 
                   processed = self.treat_message(exchange,routing_key,body,filename)
 
@@ -174,14 +198,15 @@ class Consumer(object):
              except (KeyboardInterrupt, SystemExit):
                  break                 
              except :
-                 (type, value, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 (stype, value, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, value))
                  
                  
 
     def myinit(self):
         self.bufsize       = 128 * 1024     # read/write buffer size
 
+        self.protocol      = 'amqp'
         self.host          = 'dd.weather.gc.ca'
         self.port          = '5672'
         self.amqp_user     = 'anonymous'
@@ -200,6 +225,9 @@ class Consumer(object):
         self.mirror        = False
         
         self.readConfig()
+
+        self.download.user     = self.http_user
+        self.download.password = self.http_passwd
 
         # if not set in config : automated queue name saved in queuefile
 
@@ -249,6 +277,22 @@ class Consumer(object):
               return None
 
         return nodir
+
+       
+    def publish(self,exchange_name,exchange_key,message,filename):
+        try :
+              hdr = {'filename': filename }
+              msg = amqp.Message(message, content_type= 'text/plain',application_headers=hdr)
+              self.channel2.basic_publish(msg, exchange_name, exchange_key )
+              self.channel2.tx_commit()
+              return True
+        except :
+              (stype, value, tb) = sys.exc_info()
+              self.logger.error("Type: %s, Value: %s" % (stype, value))
+              time.sleep(5)
+              self.reconnect()
+              return self.publish(exchange_name,exchange_key,message,filename)
+
 
     # process individual url notification
     def treat_message(self,exchange,routing_key,msg,filename):
@@ -300,90 +344,67 @@ class Consumer(object):
         if self.lock == '.' : tpath = nodir + os.sep + '.' + fname
 
         # download file        
-        self.download(url,tpath,opath,self.http_user,self.http_passwd)
+
+        body    = msg
+        str_key = routing_key
+
+        # instanciate key and notice
+
+        dkey    = Key()
+        notice  = Notice()
+        new_key = str_key
+
+        if str_key[:3] == 'v01':
+           dkey.from_key(str_key) 
+           notice.from_notice(body)
+        else :
+           dkey.from_v00_key(str_key,self.amqp_user)
+           notice.from_v00_notice(body)
+           new_key = dkey.get()
+           body    = notice.get()
+
+        ok = True
+        if notice.url[:4] != 'http' : ok = False
+
+        if not ok :
+           log_key = new_key.replace('.post.','.log.')
+           self.logger.error('Not valid: %s',body)
+           body   += ' 404 ' + socket.gethostname() + ' ' + self.source.user + ' 0.0'
+           self.publish('log',log_key,body,filename)
+           return True
+
+        # Target file and directory (directory created if needed)
+
+        #self.download(url,tpath,opath,self.http_user,self.http_passwd)
+
+        dnotice = Notice()
+        dnotice.from_notice(body)
+       
+        self.download.set_key(dkey)
+        self.download.set_notice(dnotice)
+        self.download.set_publish(None,self)
+        self.download.set_recompute(self.recompute_chksum)
+
+        self.download.set_url(notice.url)
+        self.download.set_local_file(tpath)
+        ok = self.download.get(notice.chunksize, notice.block_count, notice.remainder, notice.current_block, \
+                               notice.str_flags,notice.data_sum)
+
+        if not ok : return False
+               
+        #option to discard file
+        if self.discard: 
+           try:
+               os.unlink(tpath)
+               self.logger.info('Discard %s', tpath)
+           except:
+               self.logger.error('Unable to discard %s', tpath)
+        else:
+           os.rename(tpath,opath)                                        
+           self.logger.info('Local file created: %s', opath)
 
         return True
-
-    def download(self,url,tpath,opath,user=None,password=None) :
-        if sys.version[:1] >= '3' :
-           import urllib.request, urllib.error
-           urllib_request = urllib.request
-           urllib_error   = urllib.error
-        else :
-           import urllib2
-           urllib_request = urllib2
-           urllib_error   = urllib2
-
-        # get the file, in case of error it will try three times.
-        nb_try = 0
-        while nb_try < 3:
-            nb_try = nb_try + 1
-            # gives self.timeout seconds to get the product       
-            if self.timex != None:self.timex.alarm(self.timeout)
-            try :
-                # create a password manager                
-                if user != None :                          
-                    # Add the username and password.
-                    password_mgr = urllib_request.HTTPPasswordMgrWithDefaultRealm()
-                    password_mgr.add_password(None, url, user, password)
-                    handler = urllib_request.HTTPBasicAuthHandler(password_mgr)
-                        
-                    # create "opener" (OpenerDirector instance)
-                    opener = urllib_request.build_opener(handler)
-    
-                    # use the opener to fetch a URL
-                    opener.open(url)
-    
-                    # Install the opener.
-                    # Now all calls to urllib2.urlopen use our opener.
-                    urllib_request.install_opener(opener)
-            
-                #download file
-                response = urllib_request.urlopen(url)
-                self.write_to_file(response,tpath)                    
-                self.logger.info('Download successful: %s', url)  
-                
-                #option to discard file
-                if self.discard: 
-                    try:
-                        os.unlink(tpath)
-                        self.logger.info('Discard %s', tpath)
-                    except:
-                        self.logger.error('Unable to discard %s', tpath)
-                else:
-                    os.rename(tpath,opath)                                        
-                    self.logger.info('Local file created: %s', opath)
                     
-                if self.timex != None:self.timex.cancel()
-                break
-            except (KeyboardInterrupt, SystemExit):
-                 break                     
-            except TimeoutException:                    
-                self.logger.error('Download failed: %s', url)                    
-                self.logger.error('Connection timeout')
-            except urllib_error.HTTPError as e:
-                self.logger.error('Download failed: %s', url)                    
-                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
-            except urllib_error.URLError as e:
-                self.logger.error('Download failed: %s', url)                                    
-                self.logger.error('Failed to reach server. Reason: %s', e.reason)            
-            except:
-                self.logger.error('Download failed: %s', url )
-                self.logger.error('Uexpected error')              
-                
-            if self.timex != None:self.timex.cancel()
-            self.logger.info('Retry in 3 seconds...')
-            time.sleep(3)
-
-    def write_to_file(self,req,ofile) :
-        fp = open(ofile,'wb')
-
-        while True:
-            chunk = req.read(self.bufsize)
-            if not chunk: break
-            fp.write(chunk)
-
-        fp.close()
 
     def readConfig(self):
         currentDir = '.'
@@ -403,8 +424,8 @@ class Consumer(object):
         try:
             config = open(filePath, 'r')
         except:
-            (type, value, tb) = sys.exc_info()
-            print("Type: %s, Value: %s" % (type, value))
+            (stype, value, tb) = sys.exc_info()
+            print("Type: %s, Value: %s" % (stype, value))
             return 
 
         self.timeout = 180
@@ -422,6 +443,9 @@ class Consumer(object):
                          cmask = re.compile(words[1])
                          self.masks.append((words[1], currentDir, currentFileOption, cmask, False))
                     elif words[0] == 'directory': currentDir = words[1]
+                    elif words[0] == 'protocol':
+                         self.protocol = words[1]
+                         if self.protocol == 'amqps' : self.ssl = True
                     elif words[0] == 'host': self.host = words[1]
                     elif words[0] == 'port': self.port = int(words[1])
                     elif words[0] == 'amqp-user': self.amqp_user = words[1]
@@ -488,6 +512,9 @@ def verify_version():
         exit(1)
     
 def main():
+
+    verify_version()
+    signal.signal(signal.SIGINT, signal_handler)
 
     ldir = None
     notice_only = False
@@ -574,17 +601,18 @@ def main():
          try:
                 consumer.run()
          except :
-                (type, value, tb) = sys.exc_info()
-                LOGGER.error("Type: %s, Value: %s,  ..." % (type, value))
+                (stype, value, tb) = sys.exc_info()
+                LOGGER.error("Type: %s, Value: %s,  ..." % (stype, value))
                 time.sleep(10)
                 pass
                 
     """
     consumer.close()
 
+# =========================================
+# direct invocation
+# =========================================
 
-if __name__ == '__main__':
-    verify_version()
-    signal.signal(signal.SIGINT, signal_handler)
-    main()
+if __name__=="__main__":
+   main()
 
