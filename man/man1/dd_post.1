@@ -1,0 +1,213 @@
+.TH DD_Post "1" "Aug 2015" "sara 0.0.1" "Sarracenia suite"
+.SH NAME
+dd_post \- Sarracenia program posting a message about a product made available.
+.SH SYNOPSIS
+.B dd_post 
+[\fI-s|--source source_url\fR] [\fI-pb|--post_broker broker_url\fR]...[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+In the SARRACENIA suite, the main goal is to post the availability and readiness
+of one's file product. Subscribers use \fIdd_subscribe\fR to consume the post and
+download the product.
+
+\fIdd-post\fR posts a product. The [\fI-s|--source source_url\fR] option specifies
+the location to download from which the product can be downloaded by subscribers.
+There is usually one posting per product.
+
+The destination of the post is an AMQP server, also called a broker.
+The user specifies it with the option [\fI-pb|--post_broker broker_url\fR]. 
+
+.nf
+The URL form of the \fIsource_url\fR are :
+
+       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/product_name
+       or
+       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the/product_name
+       or
+       file://absolute_path_to_the/product_name
+.fi
+
+.nf
+The URL form of the \fIbroker_url\fR :
+
+       [amqp|amqps]://[user[:password]@]host[:port]
+.fi
+
+An example of an excution of \fIdd-post\fR:
+.nf
+
+dd_post -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+
+By default, dd_post reads the file /data/shared/products/foo and calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post to exchange 'sx_guest' (default exchange)
+
+A subscriber can download the file /data/shared/products/foo  by logging as user stanley
+on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+
+The output of the command is as follows :
+
+[INFO] Key v01.post.20150813.guest.data.shared.products.foo
+[INFO] Notice 20150813161959.854 256 1 0 0 d 25d231ec0ae3c569ba27ab7a74dd72ce default sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+
+.fi
+In SARRACENIA each post is published under a certain topic.
+The first log line starting with '[INFO] Key', gives the \fBtopic\fR of the
+post. Topics in \fIAMQP\fR are fields separated by dot. In SARRACENIA 
+it is made of a version \fIV01\fR, an action \fIpost\fR, the date \fI20150813\fR,
+the AMQP user \fIguest\fR and finally the file path separated with dots, here,
+\fIdata.shared.products.foo\fR
+
+The second log line starting with '[INFO] Notice' is the product post.
+Here it consists of a time \fI20150813161959.854\fR, a size in bytes \fI256\fR,
+the number of block of that size \fI1\fR, the remaining bytes \fI0\fR, the
+current block \fI0\fR, a flag \fId\fR meaning the md5 checksum is
+performed on the data, the checksum \fI25d231ec0ae3c569ba27ab7a74dd72ce\fR,
+a tag \fIdefault\fR and finally the source url of the product in the last 2 fields.
+.fi
+
+Another example:
+.nf
+
+dd_post -bd /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
+
+By default, dd_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(concatenating the basedir and relative path of the source url to obtain the local file path)
+and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+(default credentials) and sends the post to exchange 'sx_guest' (default exchange)
+
+A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+.fi
+
+.SH ARGUMENTS AND OPTIONS
+.PP
+.TP
+\fB[-bd|--basedir <path>]
+.nf
+The \fIbasedir\fR option supplies the directory path that,
+when combined with the relative one from \fIsource url\fR, 
+gives the local absolute path to the data file to be posted.
+.fi
+
+.TP
+\fB[-bz|--blocksize <value>]
+.nf
+\fIdd-post\fR can post a file in multiple blocks.
+This option determines the \fIblocksize\fR.
+This will result in several posts for one product whenever the
+file is bigger than the \fIblocksize\fR.
+The value of the \fIblocksize\fR  is an integer that may be
+followed by  [\fIB|K|M|G|T\fR] which stands for \fIB\fRytes
+,\fIK\fRilobytes, \fIM\fRegabytes, \fIG\fRigabytes, \fIT\fRerabytes.
+All theses references are powers of 2 (except for Bytes).
+.fi
+
+
+.TP
+\fB[-c|--config <configfile>]
+.nf
+Any command line arguments has a corresponding long version starting with '--'.
+For example \fI-s\fR has the long form \fI--source\fR. You can also specify
+this option in a configuration file shall you need it. To do so, you simply
+use the long form without the '--', and put its value separated by a space.
+In a configuration file the right syntax to set the source is :
+
+\fBsource <source-url>\fR 
+
+The \fIconfig\fR option is no exception... and if used the content of this
+other specified file will have its options processed.
+.fi
+
+.TP
+\fB[-dp|--destination_path <path>]
+.nf
+With the \fIdestination-path\fR  option, the user can
+suggest a destination path to its products. If the given
+path ends with '/' it suggests a directory path... 
+If it doesn't, the option specifies a file renaming.
+Some examples (some arguments/details omitted) :
+
+     With no  \fIdestination-path\fR  option :
+
+     dd_post -s http://myapache.com/products/foo ...
+
+     The post will look like this :
+     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/ products/foo
+
+
+     With a directory :
+
+     dd_post -s http://myapache.com/products/foo -dp /dbase/ ...
+
+     The post will look like this :
+     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/foo
+
+
+     Renaming the file:
+
+     dd_post -s http://myapache.com/products/foo -dp /dbase/toto ...
+
+     The post will look like this :
+     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/toto
+.fi
+
+.TP
+\fB[-f|--flags <string>]
+.nf
+Product posts include a flag field.
+It is a comma separated string.
+Some flag values tell dd_post how to calculate the checksum.
+Valid checksum flags are :
+
+    [0|n|d|c=<scriptname>]
+    where 0 : no checksum... value in post is 0
+          n : do checksum on filename
+          d : do md5sum on file content
+
+.fi
+
+.TP
+\fB[-pb|--post_broker <broker-url>]
+.nf
+\fIpost_broker\fR is the broker to connect to to send the post.
+.fi
+
+.TP
+\fB[-s|--source <source-url>]
+.nf
+\fIsource\fR is the actual download url to be
+used by the subscribers.
+.fi
+
+.TP
+\fB[-t|--tag <string>]
+.nf
+\fItag\fR is an arbitrary label that allows
+the user to identify a specific flow.
+By default the tag is \fIdefault\fR.
+The tag string appears in the post.
+.fi
+
+.SH DEVELOPER SPECIFIC OPTIONS
+
+.TP
+\fB[-r|--randomize]
+.nf
+Active if \fI-r|--randomize\fR appears in the command line... or
+\fIrandomize\fR is set to True in the configuration file used.
+\fIIf there are several posts because the file is posted
+by block because the \fIblocksize\fR option was set, the block 
+posts are randomized meaning that the will not be posted
+ordered by block number.
+.fi
+
+.TP
+\fB[-rr|--reconnect]
+.nf
+Active if \fI-rr|--reconnect\fR appears in the command line... or
+\fIreconnect\fR is set to True in the configuration file used.
+\fIIf there are several posts because the file is posted
+by block because the \fIblocksize\fR option was set, there is a
+reconnection to the broker everytime a post is to be sent.
+.fi
