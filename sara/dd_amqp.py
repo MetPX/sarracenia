@@ -10,21 +10,24 @@ import sys, time
 
 class HostConnect:
 
-   def __init__(self, host, port, user, passwd, ssl = False, logger = None, loop = True):
+   def __init__(self, logger = None):
 
        self.asleep     = False
-       self.loop       = loop
+       self.loop       = True
 
        self.connection = None
        self.channel    = None
-       self.ssl        = ssl
+       self.ssl        = False
 
        self.logger     = logger
 
-       self.host       = host
-       self.port       = port
-       self.user       = user
-       self.passwd     = passwd
+       self.protocol   = 'amqp'
+       self.host       = 'localhost'
+       self.port       = None
+       self.user       = 'guest'
+       self.passwd     = 'guest'
+
+       self.vhost      = '/'
 
        self.rebuilds   = []
        self.toclose    = []
@@ -60,7 +63,9 @@ class HostConnect:
                self.logger.debug("Connecting %s %s (ssl %s)" % (self.host,self.user,self.ssl) )
                host = self.host
                if self.port   != None : host = host + ':%s' % self.port
-               self.connection = amqp.Connection(host, userid=self.user, password=self.passwd, ssl=self.ssl)
+               self.logger.debug("%s://%s:%s@%s%s ssl=%s" % (self.protocol,self.user,self.password,host,self.vhost,self.ssl))
+               self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
+                                                 virtual_host=self.vhost,ssl=self.ssl)
                self.channel    = self.new_channel()
                self.logger.debug("Connected ")
                for func in self.rebuilds:
@@ -82,6 +87,26 @@ class HostConnect:
    def reconnect(self):
        self.close()
        self.connect()
+
+   def set_credentials(self,protocol,user,password,host,port,vhost):
+       self.protocol = protocol
+       self.user     = user
+       self.password = password
+       self.host     = host
+       self.port     = port
+       self.vhost    = vhost
+
+       if self.protocol == 'amqps' : self.ssl = True
+
+   def set_url(self,url):
+       self.protocol = url.protocol
+       self.user     = url.user
+       self.password = url.password
+       self.host     = url.host
+       self.port     = url.port
+       self.vhost    = url.vhost
+
+       if self.protocol == 'amqps' : self.ssl = True
 
 # ==========
 # Consumer

@@ -12,51 +12,87 @@ except : from sara.dd_post import *
 # MAIN
 # ===================================
 
-def help(logger):
-    logger.info("Usage: dd_watch [-c configfile] [-r] [-bz blocksize] [-t tag] [-f flags] [-bd basedir] -s <source-url> -b <broker-url> -d destination")
-    logger.info("default blocksize 0")
-    logger.info("default tag ''")
-
 def main():
 
     LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-    logger     = logging.getLogger(__name__)
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logger     = logging.getLogger(__name__)
 
-    post = dd_post(logger,config=None,args=sys.argv)
+    if len(sys.args) == 0 || 
+       len(sys.args) == 1 && sys.args[1] in ['-h','--help'] :
+       post.help()
+       sys.exit(0)
 
-# =========================================
-# interrupt
-# =========================================
+    # =========================================
+    # instanciate dd_post and determine watch_path
+    # =========================================
+
+    try :
+             post = dd_post(logger,config=None,args=sys.argv)
+
+             watch_path = post.source.path
+
+             if post.document_root != None :
+                if not post.document_root in watch_path :
+                   watch_path = post.document_root + os.sep + watch_path
+
+             if not os.path.exists(watch_path):
+                logger.error("Not found %s " % watch_path )
+                sys.exit(1)
+
+             if os.path.isfile(watch_path):
+                logger.info("Watching file %s " % watch_path )
+
+             if os.path.isdir(watch_path):
+                logger.info("Watching directory %s " % watch_path )
+    except :
+             (stype, value, tb) = sys.exc_info()
+             logger.error("Type: %s, Value:%s\n" % (stype, value))
+             post.help()
+             sys.exit(1)
+
+    # =========================================
+    # interrupt
+    # =========================================
 
     def signal_handler(signal, frame):
-        print('Stop!')
+        logger.info('Stop!')
         post.close()
-        sys.exit()
+        post.stop = True
+        sys.exit(0)
 
-    signal.signal(signal.SIGINT, signal_handler)
-
-# =========================================
-# setup the async inotifier
-# =========================================
+    # =========================================
+    # inotify callback
+    # =========================================
 
     class EventHandler(pyinotify.ProcessEvent):
-      def process_IN_CLOSE_WRITE(self,event):
-          post.watching(event.pathname)
+          def process_IN_CLOSE_WRITE(self,event):
+              post.watching(event.pathname)
 
-    wm  = pyinotify.WatchManager()
-    notifier = pyinotify.AsyncNotifier(wm,EventHandler())
 
-    post.connect()
+    # =========================================
+    # inotify watch and loop start
+    # =========================================
 
-    wdd = wm.add_watch(post.watch_dir, pyinotify.IN_CLOSE_WRITE, rec=True)
+    try :
+             post.connect()
+             post.stop = False
 
-#   watch loop
+             signal.signal(signal.SIGINT, signal_handler)
 
-    asyncore.loop()
+             wm       = pyinotify.WatchManager()
+             notifier = pyinotify.AsyncNotifier(wm,EventHandler())
+             wdd      = wm.add_watch(watch_path, pyinotify.IN_CLOSE_WRITE, rec=True)
 
-#   stop
-    post.close()
+             asyncore.loop()
+             post.close()
+
+    except :
+             if not post.stop :
+                (stype, value, tb) = sys.exc_info()
+                logger.error("Type: %s, Value:%s\n" % (stype, value))
+                post.help()
+
     sys.exit(0)
 
 # =========================================

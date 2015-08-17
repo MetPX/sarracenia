@@ -109,7 +109,6 @@ class Flags:
          self.chkclass = Checksum()
          self.checksum = self.chkclass.checksum
          self.inplace  = False
-         self.scope    = ''
 
       def from_str(self,str_flags):
          self.default()
@@ -119,8 +118,6 @@ class Flags:
          for f in flgs:
              if f == 'i' :
                 self.inplace = True
-             elif f[:2] == 's=' :
-                self.scope = f[2:].split(':')
 
 # ===================================
 # Key for exchange
@@ -396,7 +393,7 @@ class URL:
           self.url   = url
           try :
                 slashes       = url.split('/')
-                self.protocol = slashes[0][:-1]
+                self.protocol = slashes[0].split(':')[0]
 
                 if self.protocol == 'file' :
                    if len(slashes) >= 2  : self.path = '/'.join(slashes[1:])
@@ -415,8 +412,13 @@ class URL:
                 if len(slashes) >= 4  : self.path = '/'.join(slashes[3:])
                 if slashes[-1]  != '' : self.filename = slashes[-1]
 
-                if slashes[1]     != '' : raise error
+                self.vhost = '/'
+                if self.protocol in ['amqp','amqps'] and self.path != None :
+                   self.vhost += self.path
+                   self.vhost.replace('//','/')
+
                 if slashes[0][-1] != ':': raise error
+                if slashes[1]     != '' : raise error
                 if self.protocol  == '' : raise error
                 if self.host      == '' : raise error
                 if self.port      == '' : raise error

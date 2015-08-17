@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import re,sys
+import logging,re,sys
 
 try :    from dd_util      import *
 except : from sara.dd_util import *
@@ -21,6 +21,11 @@ class dd_config:
 
     def config(self,path):
         if path == None : return
+
+        # keep root config_path
+        if self.config_path == None :
+           self.config_path = path
+
         try:
             f = open(path, 'r')
         except:
@@ -34,7 +39,54 @@ class dd_config:
                 self.option(words)
 
         f.close()
-    
+
+    def defaults(self):
+
+        self.ask4help             = False
+
+        self.blocksize            = 0
+
+        self.config_path          = None
+
+        self.debug                = False
+
+        self.destination_path     = None
+
+        self.document_root        = None
+
+        self.flags                = Flags()
+        self.flags_str            = 'd'
+        self.flags.from_str(self.flags_str)
+
+        self.post_broker          = URL()
+        self.post_broker.set('amqp://guest:guest@localhost/')
+
+        self.post_exchange        = None
+
+        self.post_topic_key       = None
+
+        self.randomize            = False
+
+        self.reconnect            = True
+
+        self.source               = URL()
+        self.source.set('amqp://guest:guest@localhost/')
+
+        self.tag                  = 'default'
+
+        #
+
+        self.destination          = URL()
+        self.destination.set('amqp://guest:guest@localhost/')
+        self.destination_exchange = 'sx_guest'
+
+        self.exchange_key         = []
+
+        self.instances            = 0
+
+
+        self.recompute_chksum     = False
+
 
     def isTrue(self,s):
         if  s == 'True' or s == 'true' or s == 'yes' or s == 'on' or \
@@ -49,44 +101,53 @@ class dd_config:
 
         n = 0
         try:
-                if   words[0] in ['include','-c']:
-                     self.config(words[1])
-                     n = 2
-                elif words[0] in ['blocksize','-bz','--blocksize']:
+                if   words[0] in ['blocksize','-bz','--blocksize']:
                      self.blocksize = chunksize_from_str(words[1])
                      n = 2
-                elif words[0] in ['basedir','-bd','--basedir']:
-                     self.basedir = words[1]
+
+                elif words[0] in ['config','-c','--config']:
+                     self.config(words[1])
                      n = 2
-                elif words[0] in ['clustered','-cl','--clustered']:
+
+                elif words[0] in ['debug','-debug','--debug']:
                      if words[0][0:1] == '-' : 
-                        self.clustered = True
+                        self.debug = True
                         n = 1
                      else :
-                        self.clustered = self.isTrue(words[1])
+                        self.debug = self.isTrue(words[1])
                         n = 2
-                elif words[0] in ['destination','-d','--destination'] :
-                     self.destination.set(words[1])
+                     if self.debug :
+                        self.logger.setLevel(logging.DEBUG)
+
+                elif words[0] in ['destination_path','-dp','--destination_path']:
+                     self.destination_path = words[1]
                      n = 2
-                elif words[0] in ['dest_exchange','-de','--destination_exchange']:
-                     self.dest_exchange = words[1]
+
+                elif words[0] in ['document_root','-dr','--document_root']:
+                     self.document_root = words[1]
                      n = 2
-                elif words[0] in ['dest_path','-dp','--destination_path']:
-                     self.dest_path = words[1]
-                     n = 2
-                elif words[0] in ['exchange_key','-ek','--exchange_key']:
-                     self.exchange_key.append(words[1])
-                     n = 2
+
                 elif words[0] in ['flags','-f','--flags']:
                      self.str_flags = words[1] 
                      self.flags.from_str(self.str_flags)
                      n = 2
-                elif words[0] in ['instances','-i','--instances']:
-                     self.instances = int(words[1])
+
+                elif words[0] in ['help','-h','-help','--help']:
+                     self.ask4help = True
+                     n = 1
+
+                elif words[0] in ['post_broker','-pb','--post_broker'] :
+                     self.post_broker.set(words[1])
                      n = 2
-                elif words[0] in ['post','-p','--post'] :
-                     self.post.set(words[1])
+
+                elif words[0] in ['post_exchange','-pe','--post_exchange'] :
+                     self.post_exchange = words[1]
                      n = 2
+
+                elif words[0] in ['post_topic_key','-pk','--post_topic_key'] :
+                     self.post_topic_key = words[1]
+                     n = 2
+
                 elif words[0] in ['randomize','-r','--randomize']:
                      if words[0][0:1] == '-' : 
                         self.randomize = True
@@ -94,6 +155,7 @@ class dd_config:
                      else :
                         self.randomize = self.isTrue(words[1])
                         n = 2
+
                 elif words[0] in ['recompute_chksum','-rc','--recompute_chksum']:
                      if words[0][0:1] == '-' : 
                         self.recompute_chksum = True
@@ -101,6 +163,7 @@ class dd_config:
                      else :
                         self.recompute_chksum = self.isTrue(words[1])
                         n = 2
+
                 elif words[0] in ['reconnect','-rr','--reconnect']:
                      if words[0][0:1] == '-' : 
                         self.reconnect = True
@@ -108,10 +171,29 @@ class dd_config:
                      else :
                         self.reconnect = self.isTrue(words[1])
                         n = 2
-                elif words[0] in ['source','-s','--source_url']:
+
+                elif words[0] in ['source','-s','--source']:
                      self.source.set(words[1])
                      n = 2
-                elif words[0] in ['src_exchange','-se','--source_exchange']:
+                elif words[0] in ['tag','-t','--tag']:
+                     self.tag = words[1] 
+                     n = 2
+
+
+                elif words[0] in ['destination_exchange','-de','--destination_exchange']:
+                     self.dest_exchange = words[1]
+                     n = 2
+                elif words[0] in ['destination','-d','--destination'] :
+                     self.destination.set(words[1])
+                     n = 2
+                elif words[0] in ['exchange_key','-ek','--exchange_key']:
+                     self.exchange_key.append(words[1])
+                     n = 2
+                elif words[0] in ['instances','-i','--instances']:
+                     self.instances = int(words[1])
+                     n = 2
+
+                elif words[0] in ['source_exchange','-se','--source_exchange']:
                      self.src_exchange = words[1]
                      n = 2
                 elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
@@ -120,18 +202,21 @@ class dd_config:
                 elif words[0] in ['strip','-st','--strip']:
                      self.strip = int(words[1])
                      n = 2
-                elif words[0] in ['tag','-t','--tag']:
-                     self.tag = words[1] 
-                     n = 2
-                elif words[0] in ['transmission','-tr','--transmission_url']:
+                elif words[0] in ['transmission_url','-tr','--transmission_url']:
                      self.transmission.set(words[1])
                      n = 2
-                elif words[0] in ['trx_basedir','-tbd','--transmission_basedir']:
-                     self.trx_basedir = words[1]
+                elif words[0] in ['transmission_document_root','-tdr','--transmission_document_root']:
+                     self.trx_document_root = words[1]
                      n = 2
-                elif words[0] in ['watch_dir','-wd','--watch_directory']:
-                     self.watch_dir = words[1]
-                     n = 2
+
+
+                elif words[0] in ['clustered','-cl','--clustered']:
+                     if words[0][0:1] == '-' : 
+                        self.clustered = True
+                        n = 1
+                     else :
+                        self.clustered = self.isTrue(words[1])
+                        n = 2
         except:
                 pass
 
