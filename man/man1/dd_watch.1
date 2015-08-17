@@ -58,7 +58,7 @@ dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp:/
 Here, \fIdd_watch\fR checks if the file /data/shared/products/foo is modified.
 When it happens, \fIdd_watch\fR  reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post to exchange 'sx_guest' (default exchange)
+and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
 
 A subscriber can download the file /data/shared/products/foo  by logging as user stanley
 on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
@@ -92,7 +92,7 @@ dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanum
 By default, dd_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path).
 If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to exchange 'sx_guest' (default exchange)
+(default credentials) and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
@@ -116,17 +116,9 @@ without authentication on dd.weather.gc.ca.
 .SH ARGUMENTS AND OPTIONS
 .PP
 .TP
-\fB[-dr|--document_root <path>]
-.nf
-The \fIdocument_root\fR option supplies the directory path that,
-when combined with the relative one from \fIsource url\fR, 
-gives the local absolute path to the data file to be posted.
-.fi
-
-.TP
 \fB[-bz|--blocksize <value>]
 .nf
-\fIdd_watch\fR can post a file in multiple blocks.
+The user can post a file in multiple blocks.
 This option determines the \fIblocksize\fR.
 This will result in several posts for one product whenever the
 file is bigger than the \fIblocksize\fR.
@@ -163,17 +155,17 @@ Some examples (some arguments/details omitted) :
 
      With no  \fIdestination-path\fR  option :
 
-     dd_watch -s http://myapache.com/products/foo ...
+     dd_watch -s http://myapache.com/products ...
 
-     The post will look like this :
+     If product foo gets created, the post will look like this :
      20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/ products/foo
 
 
      With a directory :
 
-     dd_watch -s http://myapache.com/products/foo -dp /dbase/ ...
+     dd_watch -s http://myapache.com/products -dp /dbase/ ...
 
-     The post will look like this :
+     If product foo gets created, the post will look like this :
      20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/foo
 
 
@@ -181,8 +173,16 @@ Some examples (some arguments/details omitted) :
 
      dd_watch -s http://myapache.com/products/foo -dp /dbase/toto ...
 
-     The post will look like this :
+     If the product foo gets modified, the post will look like this :
      20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/toto
+.fi
+
+.TP
+\fB[-dr|--document_root <path>]
+.nf
+The \fIdocument_root\fR option supplies the directory path that,
+when combined with the relative one from \fIsource url\fR, 
+gives the local absolute path to the data file to be posted.
 .fi
 
 .TP
@@ -190,7 +190,7 @@ Some examples (some arguments/details omitted) :
 .nf
 Product posts include a flag field.
 It is a comma separated string.
-Some flag values tell dd_watch how to calculate the checksum.
+Some flag values tell the program how to calculate the checksum.
 Valid checksum flags are :
 
     [0|n|d|c=<scriptname>]
@@ -201,18 +201,38 @@ Valid checksum flags are :
 .fi
 
 .TP
+\fB[-h|-help|--help]
+.nf
+Display program options.
+.fi
+
+.TP
 \fB[-pb|--post_broker <broker-url>]
 .nf
 \fIpost_broker\fR is the broker to connect to to send the post.
 .fi
 
 .TP
+\fB[-pe|--post_exchange <exchange_name>]
+.nf
+By default, the exchange name is the concatenation of string 'sx_' and
+the post_broker username. It can be overwritten with the \fIpost_exchange\fR
+option.
+.fi
+
+.TP
+\fB[-pk|--post_topic_key <key>]
+.nf
+By default, the topic key is made of a version \fIV01\fR, an action \fIpost\fR,
+the date \fIYYYYmmdd\fR, the post_broker user and finally the file path separated
+with dots (dot being the topic separator for amqp). It can be overwritten with the
+\fIpost_topic_key\fR option.
+.fi
+
+.TP
 \fB[-s|--source <source-url>]
 .nf
-When watching a file, \fIsource\fR is the actual download url to be
-used by the subscribers.
-When watching a directory,  \fIsource\fR is the url to which filename
-is added to create the actual download url to be
+\fIsource\fR is the actual download url to be
 used by the subscribers.
 .fi
 
@@ -228,11 +248,18 @@ The tag string appears in the post.
 .SH DEVELOPER SPECIFIC OPTIONS
 
 .TP
+\fB[-debug|--debug]
+.nf
+Active if \fI-debug|--debug\fR appears in the command line... or
+\fIdebug\fR is set to True in the configuration file used.
+.fi
+
+.TP
 \fB[-r|--randomize]
 .nf
 Active if \fI-r|--randomize\fR appears in the command line... or
 \fIrandomize\fR is set to True in the configuration file used.
-\fIIf there are several posts because the file is posted
+If there are several posts because the file is posted
 by block because the \fIblocksize\fR option was set, the block 
 posts are randomized meaning that the will not be posted
 ordered by block number.
@@ -241,7 +268,7 @@ ordered by block number.
 .TP
 \fB[-rr|--reconnect]
 .nf
-Active if \fI-rr|--reconnect\fR appears in the command line... or
+Active if \fI-rc|--reconnect\fR appears in the command line... or
 \fIreconnect\fR is set to True in the configuration file used.
 \fIIf there are several posts because the file is posted
 by block because the \fIblocksize\fR option was set, there is a
