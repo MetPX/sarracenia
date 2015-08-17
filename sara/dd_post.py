@@ -41,7 +41,7 @@ class dd_post(dd_config):
 
         if self.ask4help :
            self.help()
-           sys.exit()
+           return
 
         # verify all settings
 
@@ -236,6 +236,7 @@ def main():
 
     try :
              post = dd_post(logger,config=None,args=sys.argv[1:])
+             if post.ask4help : return
              post.connect()
              post.posting()
              post.close()

@@ -18,17 +18,13 @@ def main():
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     logger     = logging.getLogger(__name__)
 
-    if len(sys.args) == 0 || 
-       len(sys.args) == 1 && sys.args[1] in ['-h','--help'] :
-       post.help()
-       sys.exit(0)
-
     # =========================================
     # instanciate dd_post and determine watch_path
     # =========================================
 
-    try :
-             post = dd_post(logger,config=None,args=sys.argv)
+    try    :
+             post = dd_post(logger,config=None,args=sys.argv[1:])
+             if post.ask4help : return
 
              watch_path = post.source.path
 
@@ -48,7 +44,6 @@ def main():
     except :
              (stype, value, tb) = sys.exc_info()
              logger.error("Type: %s, Value:%s\n" % (stype, value))
-             post.help()
              sys.exit(1)
 
     # =========================================
