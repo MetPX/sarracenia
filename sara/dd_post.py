@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
-import getopt,hashlib,os,random,re,socket,stat,sys,time,ssl
-
-from hashlib import md5
+import logging,os,random,sys
 
 try :
          from dd_amqp        import *
@@ -15,40 +13,16 @@ except :
 
 class dd_post(dd_config):
 
-    def __init__(self,logger,config=None,args=None):
-
-        self.logger = logger
-
-        # defaults general and proper to dd_post
-
-        self.defaults()
-        self.source    = URL()
-        self.reconnect = False
-
-        # config from file
-
-        self.config(config)
-
-        # arguments from command line
-
-        if args == [] : args = None
-        self.args(args)
-
-        # no settings or asked for help
-
-        if config == None and args == None :
-           self.ask4help = True
-
-        if self.ask4help :
-           self.help()
-           return
-
-        # verify all settings
-
-        self.check()
-
+    def __init__(self,config=None,args=None):
+        dd_config.__init__(self,config,args)
+        self.configure()
 
     def check(self):
+
+        if self.program_name == 'dd_post' :
+           if self.logpath != None : self.logpath = None
+
+        self.setlog()
 
         self.source.set(self.source.get())
         if not self.source.protocol in [ 'file', 'ftp', 'http','sftp'] : self.source.error = True
@@ -71,32 +45,56 @@ class dd_post(dd_config):
            self.exchange_name = self.post_exchange
 
     def close(self):
-        self.hc_dst.close()
+        self.hc_post.close()
+
+    def configure(self):
+
+        # defaults general and proper to dd_post
+
+        self.defaults()
+        self.source    = URL()
+        self.reconnect = False
+
+        # arguments from command line
+
+        self.args(self.user_args)
+
+        # config from file
+
+        self.config(self.user_config)
+
+        # verify all settings
+
+        self.check()
+
 
     def connect(self):
 
-        self.hc_dst      = HostConnect( logger = self.logger )
-        self.hc_dst.loop = False
-        self.hc_dst.set_url( self.post_broker )
-                                   
-        self.hc_dst.connect()
+        self.hc_post      = HostConnect( logger = self.logger )
+        self.hc_post.set_url( self.post_broker )
 
-        self.pub    = Publisher(self.hc_dst)
+        # dd_post : no loop to reconnect to broker
+
+        if self.program_name == 'dd_post' :
+           self.hc_post.loop = False
+                                   
+        self.hc_post.connect()
+
+        self.pub    = Publisher(self.hc_post)
         self.pub.build()
 
-        ex = Exchange(self.hc_dst,self.exchange_name)
+        ex = Exchange(self.hc_post,self.exchange_name)
         ex.build()
 
     def help(self):
-        pgm = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
-
-        self.logger.info("Usage: %s -s <source-url> -pb <broker-url> ... [OPTIONS]\n" % pgm )
+        self.logger.info("Usage: %s -s <source-url> -pb <broker-url> ... [OPTIONS]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-c  <config_file>")
         self.logger.info("-dr <document_root>")
         self.logger.info("-dp <destination_path>")
         self.logger.info("-bz <blocksize>")
         self.logger.info("-f  <flags>")
+        if self.program_name == 'dd_watch': self.logger.info("-l  <logpath>")
         self.logger.info("-pe <exchange>")
         self.logger.info("-pk <topic key>")
         self.logger.info("-t  <tag>\n")
@@ -202,10 +200,9 @@ class dd_post(dd_config):
             # reconnect ?
             if self.reconnect :
                self.logger.info("Reconnect")
-               self.hc_dst.reconnect()
+               self.hc_post.reconnect()
 
             i = i + 1
-
 
     def watching(self, fpath ):
 
@@ -221,28 +218,43 @@ class dd_post(dd_config):
 
         self.source.path = spath
 
+    def watchpath(self ):
+
+       watch_path = self.source.path
+       if watch_path == None : watch_path = ''
+
+       if self.document_root != None :
+          if not self.document_root in watch_path :
+             watch_path = self.document_root + os.sep + watch_path
+
+       if not os.path.exists(watch_path):
+          self.logger.error("Not found %s " % watch_path )
+          sys.exit(1)
+
+       if os.path.isfile(watch_path):
+          self.logger.info("Watching file %s " % watch_path )
+
+       if os.path.isdir(watch_path):
+          self.logger.info("Watching directory %s " % watch_path )
+
+       return watch_path
+
 
 # ===================================
 # MAIN
 # ===================================
 
-import logging
-
 def main():
 
-    LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger     = logging.getLogger(__name__)
+    post = dd_post(config=None,args=sys.argv[1:])
 
     try :
-             post = dd_post(logger,config=None,args=sys.argv[1:])
-             if post.ask4help : return
              post.connect()
              post.posting()
              post.close()
     except :
              (stype, value, tb) = sys.exc_info()
-             logger.error("Type: %s, Value:%s\n" % (stype, value))
+             post.logger.error("Type: %s, Value:%s\n" % (stype, value))
              sys.exit(1)
 
 

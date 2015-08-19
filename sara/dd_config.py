@@ -1,16 +1,37 @@
 #!/usr/bin/python3
 
-import logging,re,sys
+import logging,os,re,sys
 
 try :    from dd_util      import *
 except : from sara.dd_util import *
 
 class dd_config:
 
-    def __init__(self,logger,config=None,args=None):
-        self.logger = logger
+    def __init__(self,config=None,args=None):
+
+        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+
+        # set logging to printit until we are fixed with it
+
+        self.logger  = Printit()
+        
+        # check arguments
+
+        if args == [] : args = None
+
+        # no settings call help
+
+        if config == None and args == None :
+           self.help()
+           sys.exit(0)
+
+        # initialisation settings
+
+        self.user_args   = args
+        self.user_config = config
 
     def args(self,args):
+
         if args == None : return
 
         i = 0
@@ -20,11 +41,8 @@ class dd_config:
               i = i + n
 
     def config(self,path):
-        if path == None : return
 
-        # keep root config_path
-        if self.config_path == None :
-           self.config_path = path
+        if path == None : return
 
         try:
             f = open(path, 'r')
@@ -42,11 +60,7 @@ class dd_config:
 
     def defaults(self):
 
-        self.ask4help             = False
-
         self.blocksize            = 0
-
-        self.config_path          = None
 
         self.debug                = False
 
@@ -57,6 +71,8 @@ class dd_config:
         self.flags                = Flags()
         self.flags_str            = 'd'
         self.flags.from_str(self.flags_str)
+
+        self.logpath              = None
 
         self.post_broker          = URL()
         self.post_broker.set('amqp://guest:guest@localhost/')
@@ -71,6 +87,9 @@ class dd_config:
 
         self.source               = URL()
         self.source.set('amqp://guest:guest@localhost/')
+
+        self.source_broker        = URL()
+        self.source_broker.set('amqp://guest:guest@localhost/')
 
         self.tag                  = 'default'
 
@@ -99,7 +118,8 @@ class dd_config:
 
     def option(self,words):
 
-        n = 0
+        ask4help = False
+        n        = 0
         try:
                 if   words[0] in ['blocksize','-bz','--blocksize']:
                      self.blocksize = chunksize_from_str(words[1])
@@ -133,8 +153,12 @@ class dd_config:
                      n = 2
 
                 elif words[0] in ['help','-h','-help','--help']:
-                     self.ask4help = True
-                     n = 1
+                     ask4help = True
+                     self.help()
+
+                elif words[0] in ['log','-l','-log','--log']:
+                     self.logpath = words[1]
+                     n = 2
 
                 elif words[0] in ['post_broker','-pb','--post_broker'] :
                      self.post_broker.set(words[1])
@@ -175,6 +199,11 @@ class dd_config:
                 elif words[0] in ['source','-s','--source']:
                      self.source.set(words[1])
                      n = 2
+
+                elif words[0] in ['source_broker','-sb','--source_broker'] :
+                     self.source_broker.set(words[1])
+                     n = 2
+
                 elif words[0] in ['tag','-t','--tag']:
                      self.tag = words[1] 
                      n = 2
@@ -220,4 +249,50 @@ class dd_config:
         except:
                 pass
 
+        if ask4help : sys.exit(0)
+
         return n
+
+    def setlog(self):
+
+        if type(self.logger) != Printit : return
+
+        LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+
+        if self.logpath == None :
+           logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+           self.logger = logging.getLogger(__name__)
+
+        else :
+           logpath = self.logpath
+           logpath = logpath.replace('PGM',self.program_name)
+           logpath = logpath.replace('PID',"%s"%os.getpid())
+           if self.user_config != None :
+              logpath = logpath.replace('CONFIG',self.user_config)
+
+           fmt        = logging.Formatter( LOG_FORMAT )
+           hdlr       = logging.handlers.TimedRotatingFileHandler(logpath, when='midnight', interval=1, backupCount=5)
+           hdlr.setFormatter(fmt)
+           self.logger = logging.getLogger(logpath)
+           self.logger.setLevel(logging.INFO)
+           self.logger.addHandler(hdlr)
+
+        if self.debug :
+           self.logger.setLevel(logging.DEBUG)
+
+# ===================================
+# MAIN
+# ===================================
+
+def main():
+
+    cfg = dd_config(None,sys.argv[1:])
+    sys.exit(0)
+
+# =========================================
+# direct invocation
+# =========================================
+
+if __name__=="__main__":
+   main()
+

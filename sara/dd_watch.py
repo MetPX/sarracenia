@@ -12,81 +12,64 @@ except : from sara.dd_post import *
 # MAIN
 # ===================================
 
+post = dd_post(config=None,args=sys.argv[1:])
+
 def main():
 
-    LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger     = logging.getLogger(__name__)
-
     # =========================================
-    # instanciate dd_post and determine watch_path
+    # posting and watch_path ready
     # =========================================
 
-    try    :
-             post = dd_post(logger,config=None,args=sys.argv[1:])
-             if post.ask4help : return
+    post.configure()
+    post.connect()
 
-             watch_path = post.source.path
-
-             if post.document_root != None :
-                if not post.document_root in watch_path :
-                   watch_path = post.document_root + os.sep + watch_path
-
-             if not os.path.exists(watch_path):
-                logger.error("Not found %s " % watch_path )
-                sys.exit(1)
-
-             if os.path.isfile(watch_path):
-                logger.info("Watching file %s " % watch_path )
-
-             if os.path.isdir(watch_path):
-                logger.info("Watching directory %s " % watch_path )
-    except :
-             (stype, value, tb) = sys.exc_info()
-             logger.error("Type: %s, Value:%s\n" % (stype, value))
-             sys.exit(1)
+    watch_path = post.watchpath()
 
     # =========================================
-    # interrupt
-    # =========================================
-
-    def signal_handler(signal, frame):
-        logger.info('Stop!')
-        post.close()
-        post.stop = True
-        sys.exit(0)
-
-    # =========================================
-    # inotify callback
+    # setup pyinotify watching
     # =========================================
 
     class EventHandler(pyinotify.ProcessEvent):
           def process_IN_CLOSE_WRITE(self,event):
               post.watching(event.pathname)
 
+    wm         = pyinotify.WatchManager()
+    notifier   = pyinotify.AsyncNotifier(wm,EventHandler())
+    wdd        = wm.add_watch(watch_path, pyinotify.IN_CLOSE_WRITE, rec=True)
 
     # =========================================
-    # inotify watch and loop start
+    # signal reload
     # =========================================
 
-    try :
-             post.connect()
-             post.stop = False
+    def signal_reload(signal, frame):
+        post.logger.info('Reloading!')
+        post.close()
+        wm.rm_watch( wm.get_wd(watch_path))
+        main()
 
-             signal.signal(signal.SIGINT, signal_handler)
+    # =========================================
+    # signal stop
+    # =========================================
 
-             wm       = pyinotify.WatchManager()
-             notifier = pyinotify.AsyncNotifier(wm,EventHandler())
-             wdd      = wm.add_watch(watch_path, pyinotify.IN_CLOSE_WRITE, rec=True)
+    def signal_stop(signal, frame):
+        post.logger.info('Stop!')
+        post.close()
+        post.stop = True
+        sys.exit(0)
 
-             asyncore.loop()
-             post.close()
+    # =========================================
+    # signal handling
+    # =========================================
 
-    except :
-             if not post.stop :
-                (stype, value, tb) = sys.exc_info()
-                logger.error("Type: %s, Value:%s\n" % (stype, value))
-                post.help()
+    signal.signal(signal.SIGINT, signal_stop)
+    signal.signal(signal.SIGHUP, signal_reload)
+
+    # =========================================
+    # looping
+    # =========================================
+
+    asyncore.loop()
+    post.close()
 
     sys.exit(0)
 

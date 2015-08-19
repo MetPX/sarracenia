@@ -305,6 +305,29 @@ class Notice:
           self.time = now
 
 # ===================================
+# printit until logger is fixed
+# ===================================
+
+class Printit:
+      def __init__(self):
+          pass
+      def info(self,line):
+          print("%s [INFO]. %s" % (self.ztime(),line))
+      def error(self,line):
+          print("%s [ERROR]. %s" % (self.ztime(),line))
+      def warning(self,line):
+          print("%s [WARNING]. %s" % (self.ztime(),line))
+      def ztime(self):
+          default_time_format = '%Y-%m-%d %H:%M:%S'
+          default_msec_format = '%s,%03d'
+          ct = time.localtime()
+          ep = time.time()
+          msecs = (ep - int(ep)) * 1000
+          t = time.strftime(default_time_format, ct)
+          s = default_msec_format % (t, msecs)
+          return s
+
+# ===================================
 # Seek info
 # ===================================
 
