@@ -1,0 +1,252 @@
+.TH DD_post "7" "Aug 2015" "sara 0.0.1" "Sarracenia suite"
+.SH NAME
+dd_post \- Sarracenia format of post messages.
+.SH SYNOPSIS
+.B AMQP Topic: <version>.post.<src>.{<dir>.}*<filename>
+
+.B Body: \fI<first line>\fR = 
+\fI<date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <flowid> <srcpath> <relpath> <newline>\fR
+
+<\fIrest of body is reserved for future use\fR>
+
+
+.SH DESCRIPTION
+.PP
+In the SARRACENIA suite, sources post the availability and readiness of files. 
+Subscribers use \fIdd_subscribe\fR to consume the post and download the product.  
+This manual page describes the format of the messages used to announce
+availability.
+
+The messages are payloads for an AMQP message bus.  So AMQP is assumed as the underlying 
+messaging mechanism, however other protocols may be considered in future, so the use of 
+AMQP-specific features is as limited as reasonable.  Sarracenia uses topic based 
+exchanges exclusively. 
+
+.SH AMQP TOPIC
+
+In topic based AMQP exchanges, every message has a topic header.  AMQP defines the '.' character as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of the topic string. To allow for changes in the message body in the future, topic trees begin with the version number of the protocol.  
+
+.SH THE FIRST LINE 
+
+In the body of a post message, on the first line, there is a series of white space 
+separated fields encoded in the UTF-8 character set.  The fields have no fixed widths, and 
+there are no optional elements.   The fields are as follows:
+
+.nf
+
+<date stamp>: date
+        YYYYMMDDHHMMSS.<decimal>
+	Note: The datestamp is always in UTC timezone.
+
+<blocksize in bytes>: bsz
+        the number of bytes in a block.
+        checksums are calculated per block, so one post
+
+<filesize in blocks>: fzb
+        the integer total number of blocks in the file
+        FIXME: (including the last block or not?)
+        if set to 1.
+
+<block#>: bno
+        0 origin, the block number covered by this posting.
+
+<remainder>: brem
+        normally 0, on the last block, remaining bytes in the file
+        to transfer.
+
+        -- if (fzb=1 and brem=0)
+               then bsz=fsz in bytes in bytes.
+               -- entire files replaced.
+               -- this is the same as rsync's --whole-file mode.
+
+
+<flags>: a comma-separated list of option letters, some with arguments after ´=´.
+
+        checksum setting contained in ´flags´ field, but is not the whole
+        thing.  Other letters/digits could be there to designate other things.
+        ´=´ acts as a separator of flags from arguments.
+
+        results in ´flags´ entry:
+
+        0 - no checksums (unconditional copy.)
+        d - checksum the entire data
+        n - checksum the file name
+        c=<script> - checksum with a script, named <script>
+
+                <script> should be ´registered´ in the switch network.
+                        registered means that all downstream subscribers
+                        can obtain the script to validate the checksum.
+                        there needs to be a retrieval mechanism.
+
+        other possible flag values:
+
+                u - unlinked... for files that have been removed? 'r'?
+
+	watch/stop watch is used by dd_wait, and dd_wait_daemon.
+
+		w - watch the URL given.
+		x - stop watching the URL given.
+
+
+        File Segment strategy:
+		n - none only full files transferred.
+                i - inplace (do not create temporary files, just lseek
+                        within file.)
+                    may result in .ddsig file being created?
+                p - part files.  use .part files,  suffix fixed.
+                    do not know which will be default.
+
+           - file segment strategy can be overridden by client. just a suggestion.
+           - analogous to rsync options: --inplace, --partial,
+
+<flowid>
+        an arbitrary tag set by sources for application defined tracking. 
+
+
+<srcpath> -- the base URL used to retrieve the data.
+
+	This should be the URL consumers will use to download the data.
+        options: Complete URL:
+
+        sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
+
+        in the case where the URL does not end with a path separator ('/'),
+        the src path is taken to be the complete source of the file to retrieve.
+
+        Static URL:
+
+        sftp://afsiext@cmcdataserver/
+
+        If the URL ends with a path separator ('/'), then the src URL is
+        considered a prefix for the variable part of the retrieval URL.
+
+
+<relpath> -- The relative path from the current directory in which to
+        place the file.
+
+        Two cases based on the end being a path separator or not.
+
+        case 1: NURP/GIF/
+
+        based on the current working directory of the downloading client,
+        create a subdirectory called URP, and within that, a subdirectory
+        called GIF will be created.  The file name will be taken from the
+        srcpath.
+
+        if the srcpath ends in pathsep, then the relpath here will be
+        concatenated to the srcpath, forming the complete retrieval URL.
+
+        case 2: NRP/GIF/mine.gif
+
+        if the  srcpath ends in pathsep, then the relpath will be concatenated
+        to srcpath for form the complete retrieval URL.
+
+        if the src path does not end in pathsep, then the src URL is taken
+        as complete, and the file is renamed on download according to the
+        specification (in this case, mine.gif)
+
+<newline> signals the end of the first line of the message.
+
+.fi
+
+
+
+
+
+.SH EXAMPLE
+
+.nf 
+
+v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 457 1 0 0 d <md5sum> exp13 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/
+
+        v01 - version of protocol
+        post - indicates the type of message
+
+        version and type together determine format of following topics and the message body.
+
+        ec_cmc - the account used to issue the post (unique in a network).
+
+          -- blocksize is 457  (== file size)
+          -- block count is 1
+          -- remainder is 0.
+          -- block number is 0.
+          -- d - checksum was calculated on the body.
+          -- flow is an argument after the relative path.
+          -- complete source URL specified (does not end in '/')
+          -- relative path specified for
+
+        pull from:
+                sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
+
+        complete relative download path:
+                NRDPS/GIF/NRDPS_HiRes_000.gif
+
+                -- takes file name from srcpath.
+                -- may be modified by validation process.
+
+
+.fi
+
+
+.PP Another example.
+
+The post resulting from the following dd_watch command, noticing creation of the file 'foor':
+
+dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+
+Here, \fIdd_watch\fR checks if the file /data/shared/products/foo is modified.
+When it happens, \fIdd_watch\fR  reads the file /data/shared/products/foo and calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
+
+A subscriber can download the file /data/shared/products/foo  by logging as user stanley
+on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+
+The output of the command is as follows :
+
+AMQP Topic: v01.post.20150813.guest.data.shared.products.foo
+1st line of body: 20150813161959.854 256 1 0 0 d 25d231ec0ae3c569ba27ab7a74dd72ce default sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+
+.fi
+SARRACENIA publishes each post on AMQP topic exchanges, meaning every message has a topic header.
+The body consists of a time \fI20150813161959.854\fR, a size in bytes \fI256\fR,
+the number of block of that size \fI1\fR, the remaining bytes \fI0\fR, the
+current block \fI0\fR, a flag \fId\fR meaning the md5 checksum is
+performed on the data, the checksum \fI25d231ec0ae3c569ba27ab7a74dd72ce\fR,
+a tag \fIdefault\fR and finally the source url of the product in the last 2 fields.
+.fi
+
+Another example checking a product:
+.nf
+
+dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
+
+By default, dd_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(concatenating the document_root and relative path of the source url to obtain the local file path).
+If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+(default credentials) and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
+
+A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+.fi
+
+An example checking a directory:
+.nf
+
+dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric -pb amqp://broker.com
+
+Here, dd_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
+(concatenating the document_root and relative path of the source url to obtain the directory path).
+If the file SACN32_CWAO_123456 is being created in that directory, dd_watch calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest' 
+(default credentials) and sends the post to exchange 'sx_guest' (default exchange)
+
+A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+.fi
+
+.SH ARGUMENTS AND OPTIONS
+.PP
+.TP
+.nf
