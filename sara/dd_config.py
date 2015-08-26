@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-import logging,os,re,sys
+import os,re,sys
+import urllib,urllib.parse
 
 try :    from dd_util      import *
 except : from sara.dd_util import *
@@ -10,10 +11,17 @@ class dd_config:
     def __init__(self,config=None,args=None):
 
         self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.config_name  = config
+        self.etcdir       = os.getcwd()
+        self.exedir       = os.getcwd()
+        self.logdir       = os.getcwd()
+
+        if config != None :
+           self.config_name = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
 
         # set logging to printit until we are fixed with it
 
-        self.logger  = Printit()
+        self.setlog()
         
         # check arguments
 
@@ -22,7 +30,7 @@ class dd_config:
         # no settings call help
 
         if config == None and args == None :
-           self.help()
+           if hasattr(self,'help') : self.help()
            sys.exit(0)
 
         # initialisation settings
@@ -58,40 +66,67 @@ class dd_config:
 
         f.close()
 
-    def defaults(self):
+    def configure(self):
 
-        self.blocksize            = 0
+        # defaults general and proper to dd_post
+
+        self.defaults()
+
+        # arguments from command line
+
+        self.args(self.user_args)
+
+        # config from file
+
+        self.config(self.user_config)
+
+        # verify all settings
+
+        if hasattr(self,'check') : self.check()
+
+    def defaults(self):
 
         self.debug                = False
 
-        self.destination_path     = None
-
         self.document_root        = None
 
-        self.flags                = Flags()
-        self.flags_str            = 'd'
-        self.flags.from_str(self.flags_str)
+        self.flow                 = None
 
         self.logpath              = None
 
-        self.post_broker          = URL()
-        self.post_broker.set('amqp://guest:guest@localhost/')
+        self.instance             = 0
+        self.nbr_instances        = 0
+
+        self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
         self.post_exchange        = None
 
         self.post_topic_key       = None
 
+        self.post_url             = None
+
+        self.queue_name           = None
+
         self.randomize            = False
 
-        self.reconnect            = True
+        self.reconnect            = False
 
-        self.source               = URL()
-        self.source.set('amqp://guest:guest@localhost/')
+        self.rename               = None
 
-        self.source_broker        = URL()
-        self.source_broker.set('amqp://guest:guest@localhost/')
+        self.source               = None
 
-        self.tag                  = 'default'
+        self.source_broker        = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+
+        self.source_exchange      = None
+
+        self.source_topic_key     = None
+
+        self.parts                = '1'
+        self.partflg              = '1'
+
+        self.blocksize            = 0
+
+        self.sumflg               = 'd'
 
         #
 
@@ -100,9 +135,6 @@ class dd_config:
         self.destination_exchange = 'sx_guest'
 
         self.exchange_key         = []
-
-        self.instances            = 0
-
 
         self.recompute_chksum     = False
 
@@ -118,14 +150,10 @@ class dd_config:
 
     def option(self,words):
 
-        ask4help = False
+        needexit = False
         n        = 0
         try:
-                if   words[0] in ['blocksize','-bz','--blocksize']:
-                     self.blocksize = chunksize_from_str(words[1])
-                     n = 2
-
-                elif words[0] in ['config','-c','--config']:
+                if words[0] in ['config','-c','--config']:
                      self.config(words[1])
                      n = 2
 
@@ -139,30 +167,40 @@ class dd_config:
                      if self.debug :
                         self.logger.setLevel(logging.DEBUG)
 
-                elif words[0] in ['destination_path','-dp','--destination_path']:
-                     self.destination_path = words[1]
-                     n = 2
-
                 elif words[0] in ['document_root','-dr','--document_root']:
                      self.document_root = words[1]
                      n = 2
 
-                elif words[0] in ['flags','-f','--flags']:
-                     self.str_flags = words[1] 
-                     self.flags.from_str(self.str_flags)
+                if   words[0] in ['blocksize','-bz','--blocksize']:
+                     self.blocksize = chunksize_from_str(words[1])
+                     n = 2
+
+                elif words[0] in ['flow','-f','--flow']:
+                     self.flow = words[1] 
                      n = 2
 
                 elif words[0] in ['help','-h','-help','--help']:
-                     ask4help = True
-                     self.help()
+                     needexit = True
+                     if hasattr(self,'help') : self.help()
 
                 elif words[0] in ['log','-l','-log','--log']:
                      self.logpath = words[1]
                      n = 2
 
-                elif words[0] in ['post_broker','-pb','--post_broker'] :
-                     self.post_broker.set(words[1])
+                elif words[0] in ['instances','-i','--instances']:
+                     self.nbr_instances = int(words[1])
                      n = 2
+
+                elif words[0] in ['parts','-p','--parts']:
+                     self.parts   = words[1]
+                     ok = self.validate_parts()
+                     if not ok : 
+                        if hasattr(self,'help') : self.help()
+                        needexit = True
+                     n = 2
+
+                elif words[0] in ['post_broker','-pb','--post_broker'] :
+                     self.post_broker = urllib.parse.urlparse(words[1])
 
                 elif words[0] in ['post_exchange','-pe','--post_exchange'] :
                      self.post_exchange = words[1]
@@ -170,6 +208,13 @@ class dd_config:
 
                 elif words[0] in ['post_topic_key','-pk','--post_topic_key'] :
                      self.post_topic_key = words[1]
+                     n = 2
+
+                elif words[0] in ['post_url','-pu','--post_url'] :
+                     self.post_url = urllib.parse.urlparse(words[1])
+
+                elif words[0] in ['queue_name','-qn','--queue_name'] :
+                     self.queue_name = words[1]
                      n = 2
 
                 elif words[0] in ['randomize','-r','--randomize']:
@@ -196,18 +241,34 @@ class dd_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
+                elif words[0] in ['rename','-rn','--rename']:
+                     self.rename = words[1]
+                     n = 2
+
+
                 elif words[0] in ['source','-s','--source']:
-                     self.source.set(words[1])
+                     self.source = urllib.parse.urlparse(words[1])
                      n = 2
 
                 elif words[0] in ['source_broker','-sb','--source_broker'] :
-                     self.source_broker.set(words[1])
+                     self.source_broker = urllib.parse.urlparse(words[1])
                      n = 2
 
-                elif words[0] in ['tag','-t','--tag']:
-                     self.tag = words[1] 
+                elif words[0] in ['source_exchange','-se','--source_exchange']:
+                     self.source_exchange = words[1]
                      n = 2
 
+                elif words[0] in ['source_topic_key','-stk','--source_topic_key']:
+                     self.source_topic_key = words[1]
+                     n = 2
+
+                elif words[0] in ['sum','-sum','--sum']:
+                     self.sumflg = words[1]
+                     ok = self.validate_sum()
+                     if not ok : 
+                        if hasattr(self,'help') : self.help()
+                        needexit = True
+                     n = 2
 
                 elif words[0] in ['destination_exchange','-de','--destination_exchange']:
                      self.dest_exchange = words[1]
@@ -218,13 +279,7 @@ class dd_config:
                 elif words[0] in ['exchange_key','-ek','--exchange_key']:
                      self.exchange_key.append(words[1])
                      n = 2
-                elif words[0] in ['instances','-i','--instances']:
-                     self.instances = int(words[1])
-                     n = 2
 
-                elif words[0] in ['source_exchange','-se','--source_exchange']:
-                     self.src_exchange = words[1]
-                     n = 2
                 elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
                      self.ssh_keyfile = words[1]
                      n = 2
@@ -249,36 +304,82 @@ class dd_config:
         except:
                 pass
 
-        if ask4help : sys.exit(0)
+        if needexit : sys.exit(0)
 
         return n
 
     def setlog(self):
 
-        if type(self.logger) != Printit : return
+        import logging
+        import logging.handlers
 
-        LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+        LOG_FORMAT  = ('%(asctime)s [%(levelname)s] %(message)s')
+
+        if not hasattr(self,'logger') :
+           logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+           self.logger = logging.getLogger()
+           self.lpath  = None
+           return
+
+        if self.logpath == self.lpath :
+           if self.debug : self.logger.setLevel(logging.DEBUG)
+           return
 
         if self.logpath == None :
-           logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-           self.logger = logging.getLogger(__name__)
+           self.logger.debug("switching log to stdout")
+           del self.logger
+           self.setlog()
+           return
 
-        else :
-           logpath = self.logpath
-           logpath = logpath.replace('PGM',self.program_name)
-           logpath = logpath.replace('PID',"%s"%os.getpid())
-           if self.user_config != None :
-              logpath = logpath.replace('CONFIG',self.user_config)
+        logpath = self.logpath
+        logpath = logpath.replace('PGM',self.program_name)
+        logpath = logpath.replace('PID',     "%s"   % os.getpid())
+        logpath = logpath.replace('INSTANCE',"%.4d" % self.instance )
+        if self.user_config != None :
+           logpath = logpath.replace('CONFIG',self.user_config)
 
-           fmt        = logging.Formatter( LOG_FORMAT )
-           hdlr       = logging.handlers.TimedRotatingFileHandler(logpath, when='midnight', interval=1, backupCount=5)
-           hdlr.setFormatter(fmt)
-           self.logger = logging.getLogger(logpath)
-           self.logger.setLevel(logging.INFO)
-           self.logger.addHandler(hdlr)
+        self.logger.debug("switching to log file %s" % logpath )
+          
+        self.lpath   = self.logpath
+        self.handler = logging.handlers.TimedRotatingFileHandler(logpath, when='midnight', interval=1, backupCount=5)
+        fmt          = logging.Formatter( LOG_FORMAT )
+        self.handler.setFormatter(fmt)
+
+        del self.logger
+
+        self.logger = logging.RootLogger(logging.WARNING)
+        self.logger.setLevel(logging.INFO)
+        self.logger.addHandler(self.handler)
 
         if self.debug :
            self.logger.setLevel(logging.DEBUG)
+
+    def validate_parts(self):
+        if not self.parts[0] in ['1','p','i']:
+           self.logger.error("parts invalid (%s)" % self.parts)
+           return False
+
+        self.partflg = self.parts[0]
+        token = self.parts.split(',')
+        if self.partflg == '1' and len(token) != 1 :
+           self.logger.error("parts invalid (%s)" % self.parts)
+           return False
+        if self.partflg in ['p','i'] :
+           if len(token) != 2 :
+              self.logger.error("parts invalid (%s)" % self.parts)
+              return False
+           try    : self.blocksize = chunksize_from_str(token[1])
+           except :
+                    self.logger.error("parts invalid (%s)" % self.parts)
+                    return False
+        return True
+
+    def validate_sum(self):
+        if not self.sumflg[0] in ['0','n','d','c']:
+           self.logger.error("sum invalid (%s)" % self.sumflg)
+           return false
+        return True
+
 
 # ===================================
 # MAIN
