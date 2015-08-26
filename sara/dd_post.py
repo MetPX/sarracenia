@@ -1,15 +1,17 @@
 #!/usr/bin/python3
 
-import logging,os,random,sys
+import os,random,sys
 
 try :
-         from dd_amqp        import *
-         from dd_config      import *
-         from dd_util        import *
+         from dd_amqp         import *
+         from dd_config       import *
+         from dd_message      import *
+         from dd_util         import *
 except :
-         from sara.dd_amqp   import *
-         from sara.dd_config import *
-         from sara.dd_util   import *
+         from sara.dd_amqp    import *
+         from sara.dd_config  import *
+         from sara.dd_message import *
+         from sara.dd_util    import *
 
 class dd_post(dd_config):
 
@@ -19,54 +21,26 @@ class dd_post(dd_config):
 
     def check(self):
 
-        if self.program_name == 'dd_post' :
-           if self.logpath != None : self.logpath = None
+        if self.source == None :
+           self.logger.error("source_url requiered")
+           sys.exit(1)
 
-        self.setlog()
+        self.chkclass = Checksum()
+        self.chkclass.from_list(self.sumflg)
+        self.chksum = self.chkclass.checksum
 
-        self.source.set(self.source.get())
-        if not self.source.protocol in [ 'file', 'ftp', 'http','sftp'] : self.source.error = True
-        if self.source.protocol in ['ftp','sftp'] and \
-           self.source.user     == None   :                              self.source.error = True
-        if self.source.error :
-           self.logger.error("source_url %s " % self.source.get())
-
-        self.post_broker.set(self.post_broker.get())
-        if not self.post_broker.protocol in ['amqp','amqps'] or \
-           self.post_broker.user     == None   or \
-           self.post_broker.password == None   or \
-           self.post_broker.error :
-           self.logger.error("post_broker error %s " % self.post_broker.error)
-           self.logger.error("post_broker url %s "   % self.post_broker.get())
-
-        self.default_exchange  = 'sx_' + self.post_broker.user
-        self.exchange_name     = self.default_exchange
+        user = self.post_broker.username
+        self.exchange_name  = 'sx_' + self.post_broker.username
         if self.post_exchange != None :
            self.exchange_name = self.post_exchange
 
+        self.msg = dd_message(self.logger)
+        self.msg.set_exchange_name(self.exchange_name)
+        self.msg.set_post_exchange_topic_key(user,self.source)
+        self.msg.set_post_options(self.flow,self.rename)
+
     def close(self):
         self.hc_post.close()
-
-    def configure(self):
-
-        # defaults general and proper to dd_post
-
-        self.defaults()
-        self.source    = URL()
-        self.reconnect = False
-
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        self.check()
-
 
     def connect(self):
 
@@ -89,23 +63,27 @@ class dd_post(dd_config):
     def help(self):
         self.logger.info("Usage: %s -s <source-url> -pb <broker-url> ... [OPTIONS]\n" % self.program_name )
         self.logger.info("OPTIONS:")
-        self.logger.info("-c  <config_file>")
-        self.logger.info("-dr <document_root>")
-        self.logger.info("-dp <destination_path>")
-        self.logger.info("-bz <blocksize>")
-        self.logger.info("-f  <flags>")
-        if self.program_name == 'dd_watch': self.logger.info("-l  <logpath>")
-        self.logger.info("-pe <exchange>")
-        self.logger.info("-pk <topic key>")
-        self.logger.info("-t  <tag>\n")
+        self.logger.info("-c   <config_file>")
+        self.logger.info("-dr  <document_root>")
+        self.logger.info("-f   <flow>\n")
+        self.logger.info("-l   <logpath>")
+        self.logger.info("-p   <parts>")
+        self.logger.info("-pe  <exchange>")
+        self.logger.info("-pk  <topic key>")
+        self.logger.info("-rn  <rename>")
+        self.logger.info("-sum <sum>")
         self.logger.info("DEBUG:")
         self.logger.info("-debug")
         self.logger.info("-r  : randomize chunk posting")
         self.logger.info("-rr : reconnect between chunks")
 
+    def instantiate(self,i=0):
+        self.instance = i
+        self.setlog()
+
     def posting(self):
 
-        filepath = self.source.path
+        filepath = self.source.path[1:]
 
         # check abspath for filename
 
@@ -119,43 +97,16 @@ class dd_post(dd_config):
            self.logger.error("File not found %s " % filepath )
            return False
 
-        # fix destination path if needed
+        # rename path given with no filename
 
-        notice_path = self.destination_path
-        notice_url  = self.source.get()
-
-        # no destination given
-
-        if self.destination_path == None :
-           notice_path = self.source.path
-           notice_url  = notice_url.replace(notice_path,'')
-
-        # destination path given with no filename
-
-        elif self.destination_path[-1] == os.sep :
-             notice_path += os.path.basename(self.source.path)
-
-        # build product exchange key
-
-        post_key = Key()
-        post_key.set(self.post_broker.user, notice_path )
-        str_key  = post_key.get()
-
-        if self.post_topic_key != None :
-           str_key = self.post_topic_key
-
-        # build notice class
-
-        notice = Notice()
-        notice.set_source(notice_url,notice_path)
-        notice.set_tag(self.tag)
-
+        if self.rename != None and self.rename[-1] == os.sep :
+           self.rename += os.path.basename(self.source.path)
 
         # ==============
         # Chunk set up
         # ==============
 
-        chunk  = Chunk(self.blocksize,self.flags.checksum,filepath)
+        chunk  = Chunk(self.blocksize,self.chksum,filepath)
         N      = chunk.get_Nblock()
 
         # ==============
@@ -178,22 +129,33 @@ class dd_post(dd_config):
         # loop on chunk
         # ==============
 
-        self.logger.debug("vhost %s  exchange_name %s" % (self.post_broker.vhost,self.exchange_name) )
+        self.logger.debug("vhost %s  exchange_name %s" % (self.post_broker.path,self.exchange_name) )
 
         i  = 0
         while i < N:
 
             c = chunk.get( rparts[i] )
             blocksize, block_count, remainder, current_block, sum_data = c
+ 
+            # build message
 
-            notice.set_chunk(blocksize, block_count, remainder, current_block, self.flags_str, sum_data)
-            str_notice = notice.get()
+            self.msg.set_post_parts(self.partflg, blocksize, block_count, remainder, current_block)
+            self.msg.set_post_sum(self.sumflg,sum_data)
+            self.msg.set_post_notice(self.source)
+            self.msg.set_post_headers()
 
-            self.logger.info("Key %s" % str_key )
-            self.logger.info("Notice %s" % str_notice )
+            self.logger.info("Key %s" % self.msg.exchange_topic_key )
+            self.logger.info("Notice %s" % self.msg.notice)
+            self.logger.info("parts=%s sum=%s flow=%s rename=%s" %(self.msg.partstr,self.msg.sumstr,self.msg.flow,self.msg.rename))
+
+            self.msg.print_message()
 
             # publish
-            ok = self.pub.publish( self.exchange_name, str_key, str_notice, os.path.basename(notice_path) )
+            str_key = self.msg.exchange_topic_key
+            if self.post_topic_key != None :
+               str_key = self.post_topic_key
+
+            ok = self.pub.publish( self.msg.exchange_name, str_key, self.msg.notice, self.msg.headers )
             if not ok :
                sys.exit(1)
 
@@ -249,6 +211,7 @@ def main():
     post = dd_post(config=None,args=sys.argv[1:])
 
     try :
+             post.instantiate()
              post.connect()
              post.posting()
              post.close()

@@ -21,6 +21,7 @@ def main():
     # =========================================
 
     post.configure()
+    post.instantiate()
     post.connect()
 
     watch_path = post.watchpath()
