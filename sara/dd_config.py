@@ -90,6 +90,9 @@ class dd_config:
 
         self.document_root        = None
 
+        self.events               = None
+        self.event                = 'IN_CLOSE_WRITE'
+
         self.flow                 = None
 
         self.logpath              = None
@@ -101,6 +104,7 @@ class dd_config:
 
         self.post_exchange        = None
 
+        self.post_topic           = None
         self.post_topic_key       = None
 
         self.post_url             = None
@@ -119,20 +123,26 @@ class dd_config:
 
         self.source_exchange      = None
 
+        self.source_queue_name    = None
+
         self.source_topic_key     = None
+
+        self.strip                = 0
 
         self.parts                = '1'
         self.partflg              = '1'
 
+        self.sumflg               = 'd'
         self.blocksize            = 0
 
-        self.sumflg               = 'd'
+        self.msg_script           = None
+        self.file_script          = None
 
         #
 
-        self.destination          = URL()
-        self.destination.set('amqp://guest:guest@localhost/')
-        self.destination_exchange = 'sx_guest'
+        #self.destination          = URL()
+        #self.destination.set('amqp://guest:guest@localhost/')
+        #self.destination_exchange = 'sx_guest'
 
         self.exchange_key         = []
 
@@ -171,8 +181,29 @@ class dd_config:
                      self.document_root = words[1]
                      n = 2
 
-                if   words[0] in ['blocksize','-bz','--blocksize']:
-                     self.blocksize = chunksize_from_str(words[1])
+                elif words[0] in ['events','-e','--events']:
+                     i = 0
+                     if 'IN_CLOSE_WRITE' in words[1] : i = i + 1
+                     if 'IN_DELETE'      in words[1] : i = i + 1
+                     if i == 0 :
+                        self.logger.error("events invalid (%s)" % words[1])
+                        if hasattr(self,'help') : self.help()
+                        needexit = True
+                     self.events = words[1]
+                     n = 2
+
+                elif words[0] in ['file_validation_script','-fs','--file_validation_script']:
+                     ok = True
+                     try    : exec(compile(open(words[1]).read(), words[1], 'exec'))
+                     except : 
+                              self.logger.error("file_validation_script invalid (%s)" % words[1])
+                              ok = False
+                     if self.file_script == None :
+                        self.logger.error("file_validation_script invalid (%s)" % words[1])
+                        ok = False
+                     if not ok : 
+                        if hasattr(self,'help') : self.help()
+                        needexit = True
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:
@@ -191,6 +222,20 @@ class dd_config:
                      self.nbr_instances = int(words[1])
                      n = 2
 
+                elif words[0] in ['message_validation_script','-ms','--message_validation_script']:
+                     ok = True
+                     try    : exec(compile(open(words[1]).read(), words[1], 'exec'))
+                     except : 
+                              self.logger.error("message_validation_script invalid (%s)" % words[1])
+                              ok = False
+                     if self.msg_script == None :
+                        self.logger.error("message_validation_script invalid (%s)" % words[1])
+                        ok = False
+                     if not ok : 
+                        if hasattr(self,'help') : self.help()
+                        needexit = True
+                     n = 2
+
                 elif words[0] in ['parts','-p','--parts']:
                      self.parts   = words[1]
                      ok = self.validate_parts()
@@ -205,6 +250,9 @@ class dd_config:
                 elif words[0] in ['post_exchange','-pe','--post_exchange'] :
                      self.post_exchange = words[1]
                      n = 2
+
+                elif words[0] in ['post_topic','-pt','--post_topic'] :
+                     self.post_topic = words[1]
 
                 elif words[0] in ['post_topic_key','-pk','--post_topic_key'] :
                      self.post_topic_key = words[1]
@@ -258,8 +306,20 @@ class dd_config:
                      self.source_exchange = words[1]
                      n = 2
 
+                elif words[0] in ['source_queue_name','-sq','--source_queue_name']:
+                     self.source_queue_name = words[1]
+                     n = 2
+
+                elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
+                     self.ssh_keyfile = words[1]
+                     n = 2
+
                 elif words[0] in ['source_topic_key','-stk','--source_topic_key']:
                      self.source_topic_key = words[1]
+                     n = 2
+
+                elif words[0] in ['strip','-st','--strip']:
+                     self.strip = int(words[1])
                      n = 2
 
                 elif words[0] in ['sum','-sum','--sum']:
@@ -270,6 +330,7 @@ class dd_config:
                         needexit = True
                      n = 2
 
+                # XXX
                 elif words[0] in ['destination_exchange','-de','--destination_exchange']:
                      self.dest_exchange = words[1]
                      n = 2
@@ -278,13 +339,6 @@ class dd_config:
                      n = 2
                 elif words[0] in ['exchange_key','-ek','--exchange_key']:
                      self.exchange_key.append(words[1])
-                     n = 2
-
-                elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
-                     self.ssh_keyfile = words[1]
-                     n = 2
-                elif words[0] in ['strip','-st','--strip']:
-                     self.strip = int(words[1])
                      n = 2
                 elif words[0] in ['transmission_url','-tr','--transmission_url']:
                      self.transmission.set(words[1])

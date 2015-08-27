@@ -12,31 +12,48 @@ except : from sara.dd_post import *
 # MAIN
 # ===================================
 
-post = dd_post(config=None,args=sys.argv[1:])
 
 def main():
 
-    # =========================================
-    # posting and watch_path ready
-    # =========================================
-
+    post = dd_post(config=None,args=sys.argv[1:])
     post.configure()
     post.instantiate()
     post.connect()
 
+    # =========================================
+    # watch_path ready
+    # =========================================
+
     watch_path = post.watchpath()
+    events     = 0
+
+    d = 'IN_DELETE'       in post.events 
+    w = 'IN_CLOSE_WRITE'  in post.events 
+    if d and w :
+       events = pyinotify.IN_CLOSE_WRITE|pyinotify.IN_DELETE|pyinotify.IN_DELETE_SELF
+    elif d :
+       events = pyinotify.IN_DELETE|pyinotify.IN_DELETE_SELF
+    elif w :
+       events = pyinotify.IN_CLOSE_WRITE
 
     # =========================================
     # setup pyinotify watching
     # =========================================
 
+    wm         = pyinotify.WatchManager()
+
     class EventHandler(pyinotify.ProcessEvent):
           def process_IN_CLOSE_WRITE(self,event):
-              post.watching(event.pathname)
+              post.watching(event.pathname,'IN_CLOSE_WRITE')
+          def process_IN_DELETE(self,event):
+              post.watching(event.pathname,'IN_DELETE')
+          def process_IN_DELETE_SELF(self,event):
+              post.watching(event.pathname,'IN_DELETE')
+              post.logger.info("exiting")
+              os._exit(0)
 
-    wm         = pyinotify.WatchManager()
     notifier   = pyinotify.AsyncNotifier(wm,EventHandler())
-    wdd        = wm.add_watch(watch_path, pyinotify.IN_CLOSE_WRITE, rec=True)
+    wdd = wm.add_watch(watch_path, events, rec=True)
 
     # =========================================
     # signal reload
@@ -69,7 +86,7 @@ def main():
     # looping
     # =========================================
 
-    asyncore.loop()
+    asyncore.loop(100000000)
     post.close()
 
     sys.exit(0)

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import amqplib.client_0_8 as amqp
-import logging,logging.handlers
 import sys, time
 
 # ==========
@@ -26,8 +25,6 @@ class HostConnect:
        self.port       = None
        self.user       = 'guest'
        self.passwd     = 'guest'
-
-       self.vhost      = '/'
 
        self.rebuilds   = []
        self.toclose    = []
@@ -99,14 +96,15 @@ class HostConnect:
        if self.protocol == 'amqps' : self.ssl = True
 
    def set_url(self,url):
-       self.protocol = url.protocol
-       self.user     = url.user
+       self.protocol = url.scheme
+       self.user     = url.username
        self.password = url.password
-       self.host     = url.host
+       self.host     = url.hostname
        self.port     = url.port
-       self.vhost    = url.vhost
+       self.vhost    = url.path
 
        if self.protocol == 'amqps' : self.ssl = True
+
 
 # ==========
 # Consumer
@@ -193,10 +191,9 @@ class Publisher:
        self.channel = self.hc.new_channel()
        self.channel.tx_select()
        
-   def publish(self,exchange_name,exchange_key,message,filename):
+   def publish(self,exchange_name,exchange_key,message,headers):
        try :
-              hdr = {'filename': filename }
-              msg = amqp.Message(message, content_type= 'text/plain',application_headers=hdr)
+              msg = amqp.Message(message, content_type= 'text/plain',application_headers=headers)
               self.channel.basic_publish(msg, exchange_name, exchange_key )
               self.channel.tx_commit()
               return True
@@ -205,11 +202,11 @@ class Publisher:
                  time.sleep(5)
                  self.hc.reconnect()
                  if self.hc.asleep : return False
-                 return self.publish(exchange_name,exchange_key,message,filename)
+                 return self.publish(exchange_name,exchange_key,message,headers)
               else:
                  (etype, evalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
-                 self.logger.error("could not publish %s %s %s %s" % (exchange_name,exchange_key,message,filename))
+                 self.logger.error("could not publish %s %s %s %s" % (exchange_name,exchange_key,message,headers))
                  return False
 
 

@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import os,stat,time
+import urllib
+import urllib.parse
 from hashlib import md5
 
 # ===================================
@@ -96,75 +98,6 @@ class Chunk:
 
         return (self.chunksize, self.block_count, self.remainder, current_block, data_sum) 
 
-
-# ===================================
-# Flags parse
-# ===================================
-
-class Flags:
-      def __init__(self):
-         self.default()
-
-      def default(self):
-         self.chkclass = Checksum()
-         self.checksum = self.chkclass.checksum
-         self.inplace  = False
-
-      def from_str(self,str_flags):
-         self.default()
-         flgs          = str_flags.split(',')
-         self.chkclass.from_list(flgs)
-         self.checksum = self.chkclass.checksum
-         for f in flgs:
-             if f == 'i' :
-                self.inplace = True
-
-# ===================================
-# Key for exchange
-# v01.dd_notify.relative_filepath
-# v01.post.YYYYMMDD.user.relative_filepath
-# ===================================
-
-class Key:
-      def __init__(self):
-          self.version = 'v01'
-          self.ktype   = 'post'
-          self.day     = time.strftime("%Y%m%d",time.gmtime())
-          self.user    = None
-          self.lpath   = ''
-
-      def from_key(self,key):
-          self.key = key
-          parts = key.split('.')
-          self.version = parts[0]
-          self.ktype   = parts[1]
-          self.day     = parts[2]
-          self.user    = parts[3]
-          self.lpath   = os.sep.join(parts[4:])
-
-      def from_v00_key(self,key,user):
-          parts = key.split('.')
-          self.version = 'v01'
-          self.ktype = 'post'
-          self.user  = user
-          self.day   = time.strftime("%Y%m%d",time.gmtime())
-          self.lpath = os.sep.join(parts[3:])
-          self.get()
-
-      def get(self):
-          self.key = self.version
-          self.key = self.key + '.%s' % self.ktype
-          self.key = self.key + '.%s' % self.day
-          self.key = self.key + '.%s' % self.user
-          self.key = self.key + '.%s' % self.lpath.replace(os.sep,'.')
-          self.key = self.key.replace('..','.')
-          if self.key[-1] == '.' : self.key = self.key[:-1]
-          return self.key
-
-      def set(self, user, lpath ):
-          self.user  = user
-          self.lpath = lpath
-
 # ==========
 # Notice
 # ==========
@@ -181,8 +114,6 @@ class Notice:
           self.current_block = 0
           self.str_flags     = ''
           self.data_sum      = ''
-
-          self.tag           = ''
 
           self.source        = ''
           self.lpath         = ''
@@ -202,7 +133,6 @@ class Notice:
           self.notice = self.notice + ' %d' % self.current_block
           self.notice = self.notice + ' %s' % self.str_flags
           self.notice = self.notice + ' %s' % self.data_sum
-          self.notice = self.notice + ' %s' % self.tag
           self.notice = self.notice + ' %s' % self.source
           self.notice = self.notice + ' %s' % self.lpath
 
@@ -226,7 +156,6 @@ class Notice:
           self.current_block = int(parts[4])
           self.str_flags     = parts[5]
           self.data_sum      = parts[6]
-          self.tag           = parts[7]
 
           self.source        = parts[8]
           self.lpath         = parts[9]
@@ -259,7 +188,6 @@ class Notice:
           self.current_block = 0
           self.str_flags     = 'd'
           self.data_sum      = parts[0]
-          self.tag           = 'default'
 
           self.source        = parts[2]
           self.lpath         = parts[3]
@@ -294,38 +222,11 @@ class Notice:
           self.source = source
           self.lpath  = lpath
 
-      # set tag info
-      def set_tag(self,tag):
-          self.tag           = tag
-
       # set time
       def set_time(self):
           msec = '.%d' % (int(round(time.time() * 1000)) %1000)
           now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
           self.time = now
-
-# ===================================
-# printit until logger is fixed
-# ===================================
-
-class Printit:
-      def __init__(self):
-          pass
-      def info(self,line):
-          print("%s [INFO]. %s" % (self.ztime(),line))
-      def error(self,line):
-          print("%s [ERROR]. %s" % (self.ztime(),line))
-      def warning(self,line):
-          print("%s [WARNING]. %s" % (self.ztime(),line))
-      def ztime(self):
-          default_time_format = '%Y-%m-%d %H:%M:%S'
-          default_msec_format = '%s,%03d'
-          ct = time.localtime()
-          ep = time.time()
-          msecs = (ep - int(ep)) * 1000
-          t = time.strftime(default_time_format, ct)
-          s = default_msec_format % (t, msecs)
-          return s
 
 # ===================================
 # Seek info
@@ -345,107 +246,3 @@ def Seekinfo( chunksize, block_count, remainder, current_block ):
     if remainder > 0 : fsiz = fsiz - chunksize + remainder
 
     return offset,length,fsiz
-
-# ==========
-# URL
-# ==========
-
-class URL:
-      def __init__(self):
-         self.error    = False
-         self.url      = None
-         self.protocol = None
-         self.host     = None
-         self.port     = None
-         self.user     = None
-         self.password = None
-         self.path     = None
-         self.filename = None
-
-      # get url from pieces
-      def get(self):
-          self.error   = False
-          url          = None
-          try :
-                credentials = None
-                hp = self.host
-                if self.port     != None : hp += ':' + self.port
-                up = self.user
-                if self.password != None : up += ':' + self.password
-                if hp != None : credentials = hp
-                if up != None : credentials = up + '@' + credentials
-
-                url = self.protocol + ':/'
-                if credentials != None : url += '/' + credentials + '/'
-                if self.path   != None : url += self.path
-                self.url = url
-
-                if self.protocol  == '' : raise error
-                if self.host      == '' : raise error
-                if self.port      == '' : raise error
-                if self.user      == '' : raise error
-                if self.password  == '' : raise error
-          except:
-                self.error = True
-
-          return url
-
-      # get url from pieces
-      def get_nocredential(self):
-          self.error   = False
-          url          = None
-          try :
-                hp = self.host
-                if self.port     != None : hp += ':' + self.port
-                url = self.protocol + '://'
-                if hp        != None : url +=  hp + '/'
-                if self.path != None : url += self.path
-                self.url = url
-
-                if self.protocol  == '' : raise error
-                if self.host      == '' : raise error
-                if self.port      == '' : raise error
-          except:
-                self.error = True
-
-          return url
-
-      # set pieces from url
-      def set(self,url):
-          self.error = False
-          self.url   = url
-          try :
-                slashes       = url.split('/')
-                self.protocol = slashes[0].split(':')[0]
-
-                if self.protocol == 'file' :
-                   if len(slashes) >= 2  : self.path = '/'.join(slashes[1:])
-                   if slashes[-1]  != '' : self.filename = slashes[-1]
-                   if slashes[1]   != '' : raise error
-                   return
-
-                credentials   = slashes[2].split('@')
-                parts         = credentials[-1].split(':')
-                self.host     = parts[0]
-                if len(parts) == 2 : self.port = parts[-1]
-                if len(credentials) == 2 :
-                   parts      = credentials[0].split(':')
-                   self.user  = parts[0]
-                   if len(parts)    == 2  : self.password = parts[-1]
-                if len(slashes) >= 4  : self.path = '/'.join(slashes[3:])
-                if slashes[-1]  != '' : self.filename = slashes[-1]
-
-                self.vhost = '/'
-                if self.protocol in ['amqp','amqps'] and self.path != None :
-                   self.vhost += self.path
-                   self.vhost.replace('//','/')
-
-                if slashes[0][-1] != ':': raise error
-                if slashes[1]     != '' : raise error
-                if self.protocol  == '' : raise error
-                if self.host      == '' : raise error
-                if self.port      == '' : raise error
-                if self.user      == '' : raise error
-                if self.password  == '' : raise error
-          except:
-                self.error = True

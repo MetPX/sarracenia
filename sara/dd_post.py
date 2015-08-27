@@ -29,15 +29,15 @@ class dd_post(dd_config):
         self.chkclass.from_list(self.sumflg)
         self.chksum = self.chkclass.checksum
 
-        user = self.post_broker.username
         self.exchange_name  = 'sx_' + self.post_broker.username
         if self.post_exchange != None :
            self.exchange_name = self.post_exchange
 
         self.msg = dd_message(self.logger)
         self.msg.set_exchange_name(self.exchange_name)
-        self.msg.set_post_exchange_topic_key(user,self.source)
-        self.msg.set_post_options(self.flow,self.rename)
+        self.msg.set_post_exchange_topic_key(self.post_broker.username,self.source,self.post_topic)
+        self.msg.set_post_options(self.flow,self.rename,'IN_CLOSE_WRITE')
+
 
     def close(self):
         self.hc_post.close()
@@ -65,11 +65,13 @@ class dd_post(dd_config):
         self.logger.info("OPTIONS:")
         self.logger.info("-c   <config_file>")
         self.logger.info("-dr  <document_root>")
+        if self.progran_name == 'dd_watch' : self.logger.info("-e   <events>\n")
         self.logger.info("-f   <flow>\n")
         self.logger.info("-l   <logpath>")
         self.logger.info("-p   <parts>")
         self.logger.info("-pe  <exchange>")
-        self.logger.info("-pk  <topic key>")
+        self.logger.info("-pt  <post_topic>")
+        self.logger.info("-pk  <post_topic_key>")
         self.logger.info("-rn  <rename>")
         self.logger.info("-sum <sum>")
         self.logger.info("DEBUG:")
@@ -93,7 +95,7 @@ class dd_post(dd_config):
 
         # verify that file exists
 
-        if not os.path.isfile(filepath):
+        if not os.path.isfile(filepath) and self.event != 'IN_DELETE' :
            self.logger.error("File not found %s " % filepath )
            return False
 
@@ -106,8 +108,10 @@ class dd_post(dd_config):
         # Chunk set up
         # ==============
 
-        chunk  = Chunk(self.blocksize,self.chksum,filepath)
-        N      = chunk.get_Nblock()
+        N = 1
+        if self.event == 'IN_CLOSE_WRITE' :
+           chunk  = Chunk(self.blocksize,self.chksum,filepath)
+           N      = chunk.get_Nblock()
 
         # ==============
         # Randomize
@@ -134,30 +138,32 @@ class dd_post(dd_config):
         i  = 0
         while i < N:
 
-            c = chunk.get( rparts[i] )
-            blocksize, block_count, remainder, current_block, sum_data = c
- 
             # build message
+ 
+            if self.event == 'IN_CLOSE_WRITE' :
+               c = chunk.get( rparts[i] )
+               blocksize, block_count, remainder, current_block, sum_data = c
+               self.msg.set_post_parts(self.partflg, blocksize, block_count, remainder, current_block)
+               self.msg.set_post_sum(self.sumflg,sum_data)
+            if self.event == 'IN_DELETE' :
+               self.msg.set_post_sum(None)
+               self.msg.set_post_parts(None)
+               self.msg.set_post_sum(None)
 
-            self.msg.set_post_parts(self.partflg, blocksize, block_count, remainder, current_block)
-            self.msg.set_post_sum(self.sumflg,sum_data)
             self.msg.set_post_notice(self.source)
             self.msg.set_post_headers()
 
             self.logger.info("Key %s" % self.msg.exchange_topic_key )
             self.logger.info("Notice %s" % self.msg.notice)
-            self.logger.info("parts=%s sum=%s flow=%s rename=%s" %(self.msg.partstr,self.msg.sumstr,self.msg.flow,self.msg.rename))
+            self.logger.info("parts=%s sum=%s flow=%s rename=%s event=%s" %(self.msg.partstr,self.msg.sumstr,self.msg.flow,self.msg.rename,self.msg.event))
 
             self.msg.print_message()
 
             # publish
-            str_key = self.msg.exchange_topic_key
-            if self.post_topic_key != None :
-               str_key = self.post_topic_key
-
-            ok = self.pub.publish( self.msg.exchange_name, str_key, self.msg.notice, self.msg.headers )
+            ok = self.pub.publish( self.msg.exchange_name, self.msg.exchange_topic_key, self.msg.notice, self.msg.headers )
             if not ok :
                sys.exit(1)
+            self.logger.info("published")
 
             # reconnect ?
             if self.reconnect :
@@ -166,19 +172,21 @@ class dd_post(dd_config):
 
             i = i + 1
 
-    def watching(self, fpath ):
+    def watching(self, fpath, event ):
+
+        self.event = event
+        self.msg.set_post_options(self.flow,self.rename,self.event)
 
         if self.document_root != None :
            bd = self.document_root
            if self.document_root[-1] != '/' : bd = bd + '/'
            fpath = fpath.replace(bd,'')
 
-        spath = self.source.path
-        self.source.path = fpath
-
+        source = self.source
+        self.source = urllib.parse.urlparse('%s://%s%s'%(source.scheme,source.netloc,fpath))
+        self.msg.set_post_exchange_topic_key(self.post_broker.username,self.source,self.post_topic)
         self.posting()
-
-        self.source.path = spath
+        self.source = source
 
     def watchpath(self ):
 
