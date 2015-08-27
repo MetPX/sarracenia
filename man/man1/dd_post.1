@@ -186,6 +186,12 @@ The value of the \fIblocksize\fR  is an integer that may be
 followed by  [\fIB|K|M|G|T\fR] which stands for \fIB\fRytes
 ,\fIK\fRilobytes, \fIM\fRegabytes, \fIG\fRigabytes, \fIT\fRerabytes.
 All theses references are powers of 2 (except for Bytes).
+
+When suggesting parts, the value put in the amqp message header varies.
+For example if headers[parts] as value 'p,256,12,11,4' it stands for :
+\fIp\fR suggesting part, a blocksize in bytes \fI256\fR,
+the number of block of that size \fI12\fR, the remaining bytes \fI11\fR, 
+and the current block \fI4\fR,
 .fi
 
 

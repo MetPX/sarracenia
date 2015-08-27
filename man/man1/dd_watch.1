@@ -47,7 +47,7 @@ The URL form of the \fIsource_url\fR are to watch a directory :
 .nf
 The URL form of the \fIbroker_url\fR :
 
-       [amqp|amqps]://[user[:password]@]host[:port]
+       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 .fi
 
 An example of an excution of \fIdd_watch\fR checking a product:
@@ -65,23 +65,28 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows :
 
-[INFO] Key v01.post.20150813.guest.data.shared.products.foo
-[INFO] Notice 20150813161959.854 256 1 0 0 d 25d231ec0ae3c569ba27ab7a74dd72ce default sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+[INFO] Key v02.post.guest.data.shared.products.foo
+[INFO] Notice 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+[INFO] parts=1,256 sum=d,fc473c7a2801babbd3818260f50859de flow=None rename=None
 
 .fi
 In SARRACENIA each post is published under a certain topic.
 The first log line starting with '[INFO] Key', gives the \fBtopic\fR of the
 post. Topics in \fIAMQP\fR are fields separated by dot. In SARRACENIA 
-it is made of a version \fIV01\fR, an action \fIpost\fR, the date \fI20150813\fR,
+it is made of a version \fIV02\fR, an action \fIpost\fR,
 the AMQP user \fIguest\fR and finally the file path separated with dots, here,
 \fIdata.shared.products.foo\fR
 
 The second log line starting with '[INFO] Notice' is the product post.
-Here it consists of a time \fI20150813161959.854\fR, a size in bytes \fI256\fR,
-the number of block of that size \fI1\fR, the remaining bytes \fI0\fR, the
-current block \fI0\fR, a flag \fId\fR meaning the md5 checksum is
-performed on the data, the checksum \fI25d231ec0ae3c569ba27ab7a74dd72ce\fR,
-a tag \fIdefault\fR and finally the source url of the product in the last 2 fields.
+Here it consists of a time \fI20150813161959.854\fR, 
+and the source url of the product in the last 2 fields.
+
+The third log line gives informations that are placed in the amqp message header.
+Here it consists of \fIparts=1,256\fR, which suggest to download the file in 1 part of 256 bytes
+(the actual filesize).  \fIsum=d,fc473c7a2801babbd3818260f50859de\fR mentions checksum information,
+here, \fId\fR means md5 checksum performed on the data, and \fIfc473c7a2801babbd3818260f50859de\fR
+is the checksum value.  The \fIrename=None\fR means the user did not supply another name to that product
+(see rename option).  The \fIflow=None\fR means the user did not supply a label for this message (see flow option)
 .fi
 
 Another example checking a product:
@@ -116,20 +121,6 @@ without authentication on dd.weather.gc.ca.
 .SH ARGUMENTS AND OPTIONS
 .PP
 .TP
-\fB[-bz|--blocksize <value>]
-.nf
-The user can post a file in multiple blocks.
-This option determines the \fIblocksize\fR.
-This will result in several posts for one product whenever the
-file is bigger than the \fIblocksize\fR.
-The value of the \fIblocksize\fR  is an integer that may be
-followed by  [\fIB|K|M|G|T\fR] which stands for \fIB\fRytes
-,\fIK\fRilobytes, \fIM\fRegabytes, \fIG\fRigabytes, \fIT\fRerabytes.
-All theses references are powers of 2 (except for Bytes).
-.fi
-
-
-.TP
 \fB[-c|--config <configfile>]
 .nf
 Any command line arguments has a corresponding long version starting with '--'.
@@ -145,39 +136,6 @@ other specified file will have its options processed.
 .fi
 
 .TP
-\fB[-dp|--destination_path <path>]
-.nf
-With the \fIdestination-path\fR  option, the user can
-suggest a destination path to its products. If the given
-path ends with '/' it suggests a directory path... 
-If it doesn't, the option specifies a file renaming.
-Some examples (some arguments/details omitted) :
-
-     With no  \fIdestination-path\fR  option :
-
-     dd_watch -s http://myapache.com/products ...
-
-     If product foo gets created, the post will look like this :
-     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/ products/foo
-
-
-     With a directory :
-
-     dd_watch -s http://myapache.com/products -dp /dbase/ ...
-
-     If product foo gets created, the post will look like this :
-     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/foo
-
-
-     Renaming the file:
-
-     dd_watch -s http://myapache.com/products/foo -dp /dbase/toto ...
-
-     If the product foo gets modified, the post will look like this :
-     20150813161959.854 123 1 0 0 d 271dbe52628a3f83a77ab494817525c6 default http://myapache.com/products/foo /dbase/toto
-.fi
-
-.TP
 \fB[-dr|--document_root <path>]
 .nf
 The \fIdocument_root\fR option supplies the directory path that,
@@ -186,18 +144,12 @@ gives the local absolute path to the data file to be posted.
 .fi
 
 .TP
-\fB[-f|--flags <string>]
+\fB[-f|--flow <string>]
 .nf
-Product posts include a flag field.
-It is a comma separated string.
-Some flag values tell the program how to calculate the checksum.
-Valid checksum flags are :
-
-    [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is 0
-          n : do checksum on filename
-          d : do md5sum on file content
-
+\fIflow\fR is an arbitrary label that allows
+the user to identify a specific flow.
+The flow string is sets in the amqp message header.
+By default there is no flow.
 .fi
 
 .TP
@@ -223,10 +175,19 @@ option.
 .TP
 \fB[-pk|--post_topic_key <key>]
 .nf
-By default, the topic key is made of a version \fIV01\fR, an action \fIpost\fR,
-the date \fIYYYYmmdd\fR, the post_broker user and finally the file path separated
+By default, the topic key is made of a version \fIV02\fR, an action \fIpost\fR,
+the post_broker user and finally the file path separated
 with dots (dot being the topic separator for amqp). It can be overwritten with the
 \fIpost_topic_key\fR option.
+.fi
+
+.TP
+\fB[-rn|--rename <path>]
+.nf
+With the \fIrename\fR  option, the user can
+suggest a destination path to its products. If the given
+path ends with '/' it suggests a directory path... 
+If it doesn't, the option specifies a file renaming.
 .fi
 
 .TP
@@ -236,14 +197,52 @@ with dots (dot being the topic separator for amqp). It can be overwritten with t
 used by the subscribers.
 .fi
 
+.SH ADVANCED OPTIONS
+
 .TP
-\fB[-t|--tag <string>]
+\fB[-p|--parts <value>]
 .nf
-\fItag\fR is an arbitrary label that allows
-the user to identify a specific flow.
-By default the tag is \fIdefault\fR.
-The tag string appears in the post.
+The user can suggest how to download a file.
+By default it suggests to download the entire file.
+In this case, the amqp message header will have an
+entry parts with value '1,filesize_in_bytes'.
+To suggest to download a file in blocksize of 10Mb,
+the user can specify \fI-p i,10M\fR. \fIi\fR stands for
+"inplace" and means to put the part directly into the file.
+\fR-p p,10M\fR suggests the same blocksize but to put the part
+in a separate filepart. If the \fIblocksize\fR is bigger than
+the filesize, the program will fall back to the default.
+There will be one post per suggested part.
+
+The value of the \fIblocksize\fR  is an integer that may be
+followed by  [\fIB|K|M|G|T\fR] which stands for \fIB\fRytes
+,\fIK\fRilobytes, \fIM\fRegabytes, \fIG\fRigabytes, \fIT\fRerabytes.
+All theses references are powers of 2 (except for Bytes).
+
+When suggesting parts, the value put in the amqp message header varies.
+For example if headers[parts] as value 'p,256,12,11,4' it stands for :
+\fIp\fR suggesting part, a blocksize in bytes \fI256\fR,
+the number of block of that size \fI12\fR, the remaining bytes \fI11\fR,
+and the current block \fI4\fR,
 .fi
+
+.TP
+\fB[-sum|--sum <string>]
+.nf
+All product posts include a checksum.
+It is placed in the amqp message header will have as an
+entry \fIsum\fR with default value 'd,md5_checksum_on_data'.
+The \fIsum\fR option tell the program how to calculate the checksum.
+It is a comma separated string.
+Valid checksum flags are :
+
+    [0|n|d|c=<scriptname>]
+    where 0 : no checksum... value in post is 0
+          n : do checksum on filename
+          d : do md5sum on file content
+
+.fi
+
 
 .SH DEVELOPER SPECIFIC OPTIONS
 
