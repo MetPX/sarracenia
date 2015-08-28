@@ -22,7 +22,7 @@ class dd_post(dd_config):
     def check(self):
 
         if self.source == None :
-           self.logger.error("source_url requiered")
+           self.logger.error("source required")
            sys.exit(1)
 
         self.chkclass = Checksum()
@@ -65,7 +65,7 @@ class dd_post(dd_config):
         self.logger.info("OPTIONS:")
         self.logger.info("-c   <config_file>")
         self.logger.info("-dr  <document_root>")
-        if self.progran_name == 'dd_watch' : self.logger.info("-e   <events>\n")
+        if self.program_name == 'dd_watch' : self.logger.info("-e   <events>\n")
         self.logger.info("-f   <flow>\n")
         self.logger.info("-l   <logpath>")
         self.logger.info("-p   <parts>")

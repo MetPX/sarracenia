@@ -90,7 +90,7 @@ class dd_config:
 
         self.document_root        = None
 
-        self.events               = None
+        self.events               = 'IN_CLOSE_WRITE'
         self.event                = 'IN_CLOSE_WRITE'
 
         self.flow                 = None
@@ -187,7 +187,6 @@ class dd_config:
                      if 'IN_DELETE'      in words[1] : i = i + 1
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
-                        if hasattr(self,'help') : self.help()
                         needexit = True
                      self.events = words[1]
                      n = 2
@@ -198,12 +197,12 @@ class dd_config:
                      except : 
                               self.logger.error("file_validation_script invalid (%s)" % words[1])
                               ok = False
+
                      if self.file_script == None :
                         self.logger.error("file_validation_script invalid (%s)" % words[1])
                         ok = False
-                     if not ok : 
-                        if hasattr(self,'help') : self.help()
-                        needexit = True
+
+                     if not ok : needexit = True
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:
@@ -212,7 +211,6 @@ class dd_config:
 
                 elif words[0] in ['help','-h','-help','--help']:
                      needexit = True
-                     if hasattr(self,'help') : self.help()
 
                 elif words[0] in ['log','-l','-log','--log']:
                      self.logpath = words[1]
@@ -231,21 +229,22 @@ class dd_config:
                      if self.msg_script == None :
                         self.logger.error("message_validation_script invalid (%s)" % words[1])
                         ok = False
-                     if not ok : 
-                        if hasattr(self,'help') : self.help()
-                        needexit = True
+                     if not ok : needexit = True
                      n = 2
 
                 elif words[0] in ['parts','-p','--parts']:
                      self.parts   = words[1]
                      ok = self.validate_parts()
-                     if not ok : 
-                        if hasattr(self,'help') : self.help()
-                        needexit = True
+                     if not ok : needexit = True
                      n = 2
 
                 elif words[0] in ['post_broker','-pb','--post_broker'] :
                      self.post_broker = urllib.parse.urlparse(words[1])
+                     ok, self.post_broker = self.validate_amqp_url(self.post_broker)
+                     if not ok :
+                        self.logger.error("post_broker has wrong protocol (%s)" % self.post_broker.scheme)
+                        needexit = True
+                     n = 2
 
                 elif words[0] in ['post_exchange','-pe','--post_exchange'] :
                      self.post_exchange = words[1]
@@ -300,6 +299,10 @@ class dd_config:
 
                 elif words[0] in ['source_broker','-sb','--source_broker'] :
                      self.source_broker = urllib.parse.urlparse(words[1])
+                     ok, self.source_broker = self.validate_amqp_url(self.source_broker)
+                     if not ok :
+                        self.logger.error("source_broker has wrong protocol (%s)" % self.source_broker.scheme)
+                        needexit = True
                      n = 2
 
                 elif words[0] in ['source_exchange','-se','--source_exchange']:
@@ -325,9 +328,7 @@ class dd_config:
                 elif words[0] in ['sum','-sum','--sum']:
                      self.sumflg = words[1]
                      ok = self.validate_sum()
-                     if not ok : 
-                        if hasattr(self,'help') : self.help()
-                        needexit = True
+                     if not ok : needexit = True
                      n = 2
 
                 # XXX
@@ -348,17 +349,12 @@ class dd_config:
                      n = 2
 
 
-                elif words[0] in ['clustered','-cl','--clustered']:
-                     if words[0][0:1] == '-' : 
-                        self.clustered = True
-                        n = 1
-                     else :
-                        self.clustered = self.isTrue(words[1])
-                        n = 2
         except:
                 pass
 
-        if needexit : sys.exit(0)
+        if needexit :
+           if hasattr(self,'help') : self.help()
+           sys.exit(0)
 
         return n
 
@@ -407,6 +403,31 @@ class dd_config:
 
         if self.debug :
            self.logger.setLevel(logging.DEBUG)
+
+    def validate_amqp_url(self,url):
+        if not url.scheme in ['amqp','amqps'] :
+           return False,url
+
+        user = url.username
+        pasw = url.password
+        path = url.path
+
+        rebuild = False
+        if user == None  :
+           user = 'guest'
+           rebuild = True
+        if pasw == None  :
+           pasw = 'guest'
+           rebuild = True
+        if path == ''  :
+           path = '/'
+           rebuild = True
+
+        if rebuild :
+           urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,url.netloc,path)
+           url  = urllib.parse.urlparse(urls)
+
+        return True,url
 
     def validate_parts(self):
         if not self.parts[0] in ['1','p','i']:
