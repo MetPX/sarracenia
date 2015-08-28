@@ -241,7 +241,7 @@ class dd_config:
                         needexit = True
                      n = 2
 
-                elif words[0] in ['exchange','-e','--exchange'] :
+                elif words[0] in ['exchange','-ex','--exchange'] :
                      self.exchange = words[1]
                      n = 2
 
