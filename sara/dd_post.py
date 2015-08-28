@@ -181,12 +181,11 @@ class dd_post(dd_config):
         self.event = event
 
         if self.document_root != None :
-           bd = self.document_root
-           if self.document_root[-1] != '/' : bd = bd + '/'
-           fpath = fpath.replace(bd,'')
+           fpath = fpath.replace(self.document_root,'')
+           if fpath[0] == '/' : fpath = fpath[1:]
 
         url = self.url
-        self.url = urllib.parse.urlparse('%s://%s%s'%(url.scheme,url.netloc,fpath))
+        self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
         self.posting()
         self.url = url
 
@@ -198,6 +197,8 @@ class dd_post(dd_config):
        if self.document_root != None :
           if not self.document_root in watch_path :
              watch_path = self.document_root + os.sep + watch_path
+
+       watch_path = watch_path.replace('//','/')
 
        if not os.path.exists(watch_path):
           self.logger.error("Not found %s " % watch_path )
