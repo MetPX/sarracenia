@@ -11,6 +11,12 @@ class dd_message():
         self.notice        = None
         self.headers       = {}
 
+        self.partstr       = None
+        self.sumstr        = None
+        self.flow          = None
+        self.rename        = None
+        self.event         = None
+
     def from_amqplib(self, msg ):
 
         self.start_timer()
@@ -142,9 +148,9 @@ class dd_message():
         self.url        = url
         path            = url.path.strip('/')
         self.kpath      = path.replace('/','.')
-        self.post_topic = 'v02.post.%s' % self.user
+        self.post_topic = 'v02.post'
         if post_topic != None : self.post_topic = post_topic
-        self.exchange_topic_key = '%s.%s' % (self.post_topic,self.kpath)
+        self.exchange_topic_key = '%s.%s.%s' % (self.post_topic,self.user,self.kpath)
         self.exchange_topic_key = self.exchange_topic_key.replace('..','.')
 
     def set_post_options(self,flow=None,rename=None,event=None):
