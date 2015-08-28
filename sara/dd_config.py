@@ -101,7 +101,7 @@ class dd_config:
         self.nbr_instances        = 0
 
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        self.exchange             = 'topic'
+        self.exchange             = 'amq.topic'
         self.topic                = None
         self.topic_prefix         = 'v02.post'
         self.url                  = None

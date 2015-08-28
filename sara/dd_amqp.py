@@ -172,6 +172,7 @@ class Exchange:
        self.hc.add_build(self.build)
 
    def build(self):
+       if self.name[:4] == 'amq.' : return
        self.logger.debug("building exchange %s" % self.name)
        self.hc.channel.exchange_declare(self.name, self.exchange_type, auto_delete=False)
 
