@@ -100,14 +100,11 @@ class dd_config:
         self.instance             = 0
         self.nbr_instances        = 0
 
-        self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-
-        self.post_exchange        = None
-
-        self.post_topic           = None
-        self.post_topic_key       = None
-
-        self.post_url             = None
+        self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.exchange             = 'topic'
+        self.topic                = None
+        self.topic_prefix         = 'v02.post'
+        self.url                  = None
 
         self.queue_name           = None
 
@@ -116,8 +113,6 @@ class dd_config:
         self.reconnect            = False
 
         self.rename               = None
-
-        self.source               = None
 
         self.source_broker        = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
@@ -238,23 +233,23 @@ class dd_config:
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['post_broker','-pb','--post_broker'] :
-                     self.post_broker = urllib.parse.urlparse(words[1])
-                     ok, self.post_broker = self.validate_amqp_url(self.post_broker)
+                elif words[0] in ['broker','-b','--broker'] :
+                     self.broker = urllib.parse.urlparse(words[1])
+                     ok, self.broker = self.validate_amqp_url(self.broker)
                      if not ok :
-                        self.logger.error("post_broker has wrong protocol (%s)" % self.post_broker.scheme)
+                        self.logger.error("broker has wrong protocol (%s)" % self.broker.scheme)
                         needexit = True
                      n = 2
 
-                elif words[0] in ['post_exchange','-pe','--post_exchange'] :
-                     self.post_exchange = words[1]
+                elif words[0] in ['exchange','-e','--exchange'] :
+                     self.exchange = words[1]
                      n = 2
 
-                elif words[0] in ['post_topic','-pt','--post_topic'] :
-                     self.post_topic = words[1]
+                elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
+                     self.topic_prefix = words[1]
 
-                elif words[0] in ['post_topic_key','-pk','--post_topic_key'] :
-                     self.post_topic_key = words[1]
+                elif words[0] in ['topic','-t','--topic'] :
+                     self.topic = words[1]
                      n = 2
 
                 elif words[0] in ['post_url','-pu','--post_url'] :
@@ -293,8 +288,11 @@ class dd_config:
                      n = 2
 
 
-                elif words[0] in ['source','-s','--source']:
-                     self.source = urllib.parse.urlparse(words[1])
+                elif words[0] in ['url','-u','--url']:
+                     # patch file...
+                     word1 = words[1]
+                     if 'file://' in word1 and not '/localhost/' in word1  : word1 = word1.replace('//','//localhost//')
+                     self.url = urllib.parse.urlparse(word1)
                      n = 2
 
                 elif words[0] in ['source_broker','-sb','--source_broker'] :
@@ -422,6 +420,7 @@ class dd_config:
         if path == ''  :
            path = '/'
            rebuild = True
+
 
         if rebuild :
            urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,url.netloc,path)
