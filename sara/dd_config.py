@@ -90,7 +90,7 @@ class dd_config:
 
         self.document_root        = None
 
-        self.events               = 'IN_CLOSE_WRITE'
+        self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
         self.event                = 'IN_CLOSE_WRITE'
 
         self.flow                 = None
