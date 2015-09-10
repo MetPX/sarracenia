@@ -3,7 +3,7 @@
 dd_watch \- Sarracenia program watching a directory and posting messages when a file is written.
 .SH SYNOPSIS
 .B dd_watch 
-[\fI-s|--source source_url\fR] [\fI-pb|--post_broker broker_url\fR]...[\fIOPTIONS\fR]
+[\fI-u|--url url\fR] [\fI-b|--broker broker_url\fR]...[\fIOPTIONS\fR]
 .SH DESCRIPTION
 .PP
 In the SARRACENIA suite, the main goal is to post the availability and readiness
@@ -11,18 +11,17 @@ of one's file product. Subscribers use \fIdd_subscribe\fR to consume the post an
 download the product.
 
 \fIdd_watch\fR watches a directory (or a file) and posts product when they are created or modified.
-\fIdd_watch\fR arguments are exactly like \fIdd_post\fR.
+\fIdd_watch\fR arguments are very similar to \fIdd_post\fR.
 
-The [\fI-s|--source source_url\fR] option specifies
-the location to download from which the product can be downloaded by subscribers.
-There is usually one posting per product.
+The [\fI-u|--url url\fR] option specifies the location to download from which the product
+can be downloaded by subscribers.  There is usually one posting per product.
 
-If the product is included in the \fIsource_url\fR, \fIdd_watch\fR watches that file.
-If the \fIsource_url\fR ends at a directory level, \fIdd_watch\fR posts any file in
-that directory that is created or modified.
+If the product is included in the \fIurl\fR, \fIdd_watch\fR watches that file.
+If the \fIurl\fR ends at a directory level, \fIdd_watch\fR posts any file in
+that directory that is created, modified or deleted.
 
 The destination of the post is an AMQP server, also called a broker.
-The user specifies it with the option [\fI-pb|--post_broker broker_url\fR]. 
+The user specifies it with the option [\fI-b|--broker broker_url\fR]. 
 
 .nf
 The URL form of the \fIsource_url\fR are to watch a product :
@@ -55,38 +54,39 @@ An example of an excution of \fIdd_watch\fR checking a product:
 
 dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
-Here, \fIdd_watch\fR checks if the file /data/shared/products/foo is modified.
-When it happens, \fIdd_watch\fR  reads the file /data/shared/products/foo and calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
+Here, \fIdd_watch\fR checks events on the file /data/shared/products/foo.
+Default events settings reports if the file the file is modified or deleted.
+When the file gets modified, \fIdd_watch\fR reads the file /data/shared/products/foo
+and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post to defaults vhost '/' and exchange 'amq.topic' (default exchange)
 
 A subscriber can download the file /data/shared/products/foo  by logging as user stanley
 on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
 
 The output of the command is as follows :
 
-[INFO] Key v02.post.guest.data.shared.products.foo
-[INFO] Notice 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
-[INFO] parts=1,256 sum=d,fc473c7a2801babbd3818260f50859de flow=None rename=None
+[INFO] v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
+       source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de event=IN_CLOSE_WRITE
 
 .fi
 In SARRACENIA each post is published under a certain topic.
-The first log line starting with '[INFO] Key', gives the \fBtopic\fR of the
+After the '[INFO]' the next information gives the \fBtopic\fR of the
 post. Topics in \fIAMQP\fR are fields separated by dot. In SARRACENIA 
-it is made of a version \fIV02\fR, an action \fIpost\fR,
-the AMQP user \fIguest\fR and finally the file path separated with dots, here,
+it is made of a \fItopic_prefix\fR by default : version \fIV02\fR, an action \fIpost\fR,
+followed by the \fIsubtopic\fR by default : the file path separated with dots, here,
 \fIdata.shared.products.foo\fR
 
-The second log line starting with '[INFO] Notice' is the product post.
+The second line information is the post notification.
 Here it consists of a time \fI20150813161959.854\fR, 
 and the source url of the product in the last 2 fields.
 
-The third log line gives informations that are placed in the amqp message header.
-Here it consists of \fIparts=1,256\fR, which suggest to download the file in 1 part of 256 bytes
-(the actual filesize).  \fIsum=d,fc473c7a2801babbd3818260f50859de\fR mentions checksum information,
+The remaining line gives informations that are placed in the amqp message header.
+Here it consists of \fIsource=guest\fR, which is the amqp user, \fIparts=1,256,0,0,1\fR,
+which suggest to download the file in 1 part of 256 bytes (the actual filesize), trailing 1,0,0
+gives the number of block, the remaining in bytes and the current block. 
+ \fIsum=d,fc473c7a2801babbd3818260f50859de\fR mentions checksum information,
 here, \fId\fR means md5 checksum performed on the data, and \fIfc473c7a2801babbd3818260f50859de\fR
-is the checksum value.  The \fIrename=None\fR means the user did not supply another name to that product
-(see rename option).  The \fIflow=None\fR means the user did not supply a label for this message (see flow option)
+is the checksum value.  The \fIevent=IN_CLOSE_WRITE\fR means, in our case, that the file was modified.
 .fi
 
 Another example checking a product:
@@ -112,7 +112,7 @@ Here, dd_watch checks for file creation(modification) in /data/web/public_data/b
 (concatenating the document_root and relative path of the source url to obtain the directory path).
 If the file SACN32_CWAO_123456 is being created in that directory, dd_watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' 
-(default credentials) and sends the post to exchange 'sx_guest' (default exchange)
+(default credentials) and sends the post to exchange 'amq.topic' (default exchange)
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
@@ -121,18 +121,27 @@ without authentication on dd.weather.gc.ca.
 .SH ARGUMENTS AND OPTIONS
 .PP
 .TP
+
+\fB[-b|--broker <broker>]
+.nf
+\fIbroker\fR is the broker to connect to to send the post.
+.fi
+
+.TP
 \fB[-c|--config <configfile>]
 .nf
 Any command line arguments has a corresponding long version starting with '--'.
-For example \fI-s\fR has the long form \fI--source\fR. You can also specify
+For example \fI-u\fR has the long form \fI--url\fR. You can also specify
 this option in a configuration file shall you need it. To do so, you simply
 use the long form without the '--', and put its value separated by a space.
-In a configuration file the right syntax to set the source is :
+In a configuration file the right syntax to set the url is :
 
-\fBsource <source-url>\fR 
+\fBurl <url>\fR 
 
 The \fIconfig\fR option is no exception... and if used the content of this
 other specified file will have its options processed.
+.fi
+
 .fi
 
 .TP
@@ -141,6 +150,21 @@ other specified file will have its options processed.
 The \fIdocument_root\fR option supplies the directory path that,
 when combined with the relative one from \fIsource url\fR, 
 gives the local absolute path to the data file to be posted.
+.fi
+
+.TP
+\fB[-e|--events <exchange>]
+.nf
+By default, the events for dd_watch are IN_CLOSE_WRITE|IN_DELETE.
+If you want to consider only one of these simply use the \fIevents\fR option
+and set it to IN_CLOSE_WRITE for creation/modification or  IN_DELETE for deletion.
+.fi
+
+.TP
+\fB[-ex|--exchange <exchange>]
+.nf
+By default, the exchange used is amq.topic. This exchange is provided on broker
+for general usage. It can be overwritten with this \fIexchange\fR option
 .fi
 
 .TP
@@ -159,27 +183,12 @@ Display program options.
 .fi
 
 .TP
-\fB[-pb|--post_broker <broker-url>]
+\fB[-l <logpath>]
 .nf
-\fIpost_broker\fR is the broker to connect to to send the post.
+Set a file where all the logs will be written.
+Logfile will rotate at 'midnight' and kept for an history of 5 files.
 .fi
 
-.TP
-\fB[-pe|--post_exchange <exchange_name>]
-.nf
-By default, the exchange name is the concatenation of string 'sx_' and
-the post_broker username. It can be overwritten with the \fIpost_exchange\fR
-option.
-.fi
-
-.TP
-\fB[-pk|--post_topic_key <key>]
-.nf
-By default, the topic key is made of a version \fIV02\fR, an action \fIpost\fR,
-the post_broker user and finally the file path separated
-with dots (dot being the topic separator for amqp). It can be overwritten with the
-\fIpost_topic_key\fR option.
-.fi
 
 .TP
 \fB[-rn|--rename <path>]
@@ -191,11 +200,26 @@ If it doesn't, the option specifies a file renaming.
 .fi
 
 .TP
-\fB[-s|--source <source-url>]
+\fB[-tp|--topic_prefix <key>]
 .nf
-\fIsource\fR is the actual download url to be
+By default, the topic is made of the default topic_prefix : version \fIV02\fR, an action \fIpost\fR,
+followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+You can overwrite the topic_prefix by setting this option.
+.fi
+
+.TP
+\fB[-sub|--subtopic <key>]
+.nf
+The subtopic default can be overwritten with the \fIsubtopic\fR option.
+.fi
+
+.TP
+\fB[-u|--url <url>]
+.nf
+\fIurl\fR is the actual download url to be
 used by the subscribers.
 .fi
+
 
 .SH ADVANCED OPTIONS
 

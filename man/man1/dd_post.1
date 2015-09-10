@@ -47,28 +47,27 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows :
 
-[INFO] Key v02.post.guest.data.shared.products.foo
-[INFO] Notice 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
-[INFO] Headers {'source': 'guest', 'sum': 'd,82edc8eb735fd99598a1fe04541f558d', 'parts': '1,4574,1,0,0'}
+[INFO] v02.post.data.shared.products.foo  '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
+                source=guest sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
 
 .fi
 In SARRACENIA each post is published under a certain topic.
-The first log line starting with '[INFO] Key', gives the \fBtopic key\fR of the
+The log line starts with '[INFO]', followed by the \fBtopic\fR of the
 post. Topics in \fIAMQP\fR are fields separated by dot. In SARRACENIA 
-it is made of a version \fIV02\fR, an action \fIpost\fR, and finally the file path separated with dots, here,
+it is made of a topic_prefix (see option)  version \fIV02\fR, an action \fIpost\fR,
+followed by a subtopic (see option) here the default, the file path separated with dots
 \fIdata.shared.products.foo\fR
 
-The second log line starting with '[INFO] Notice' is the product post.
-Here it consists of a time \fI20150813161959.854\fR, and the source url of the product in the last 2 fields.
+The second field in the log line is the message notice.
+It consists of a time \fI20150813161959.854\fR, and the source url of the product in the last 2 fields.
 
-The third log line gives informations that are placed in the amqp message header.
-Here it consists of \fI'source': 'guest'\fR the amqp user.
-\fI'sum': 'd,82edc8eb735fd99598a1fe04541f558d'\fR mentions checksum information,
+The other log informations come the amqp message header.
+In this case, it consists of \fIsource=guest\fR the amqp user.
+\fIsum=d,82edc8eb735fd99598a1fe04541f558d\fR mentions checksum information,
 here, \fId\fR means md5 checksum performed on the data, and \fI82edc8eb735fd99598a1fe04541f558d\fR
-is the checksum value.  \fI'parts': '1,4574,1,0,0'\fR suggest to download the file in 1 part of 4574 bytes
+is the checksum value. And \fIparts=1,4574,1,0,0\fR suggest to download the file in 1 part of 4574 bytes
 (the actual filesize),  the remaining 1,0,0 gives the number of block, the remaining in bytes and the current block.
-.
 .fi
 
 Another example:
@@ -149,18 +148,17 @@ If it doesn't, the option specifies a file renaming.
 .fi
 
 .TP
-\fB[-t|--topic <key>]
+\fB[-tp|--topic_prefix <key>]
 .nf
-By default, the topic key is made of a version \fIV02\fR, an action \fIpost\fR,
-and finally the file path separated with dots (dot being the topic separator for amqp).
-It can be overwritten with the \fItopic\fR option.
+By default, the topic is made of the default topic_prefix : version \fIV02\fR, an action \fIpost\fR,
+followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+You can overwrite the topic_prefix by setting this option.
 .fi
 
 .TP
-\fB[-tp|--topic_prefix <key>]
+\fB[-sub|--subtopic <key>]
 .nf
-By default, the topic prefix is version \fIV02\fR, an action \fIpost\fR.
-You can overwrite this default with option \fItopic_prefix\fR.
+The subtopic default can be overwritten with the \fIsubtopic\fR option.
 .fi
 
 .TP
