@@ -15,15 +15,14 @@ class Checksum:
 
       def from_list(self,flgs):
           self.checksum = self.checksum_d
-          for f in flgs:
-              if f == 'n' :
-                 self.checksum = self.checksum_n
-                 break;
-              if f == '0' :
-                 self.checksum = self.checksum_0
-                 break;
-              if f[:2] == 'c=' :
-                 exec(compile(open(f[2:]).read(), f[2:], 'exec'))
+          if   flgs == 'd' :
+             self.checksum = self.checksum_d
+          elif flgs == 'n' :
+             self.checksum = self.checksum_n
+          elif flgs == '0' :
+             self.checksum = self.checksum_0
+          else :
+             exec(compile(open(flgs).read(), flgs, 'exec'))
 
       # checksum_0 = checksum for flag 0
 
@@ -98,135 +97,45 @@ class Chunk:
 
         return (self.chunksize, self.block_count, self.remainder, current_block, data_sum) 
 
-# ==========
-# Notice
-# ==========
 
-class Notice:
-      def __init__(self):
-          self.set_time()
+def write_to_file(this,req,lfile,loffset,length) :
+        bufsize = 10 * 1024 * 1024
+        # file should exists
+        if not os.path.isfile(lfile) :
+           fp = open(lfile,'w')
+           fp.close()
 
-          self.chksum = Checksum()
+        # file open read/modify binary
+        fp = open(lfile,'r+b')
+        if loffset != 0 : fp.seek(loffset,0)
 
-          self.chunksize     = 0
-          self.block_count   = 0
-          self.remainder     = 0
-          self.current_block = 0
-          self.str_flags     = ''
-          self.data_sum      = ''
+        nc = int(length/bufsize)
+        r  = length % bufsize
 
-          self.source        = ''
-          self.lpath         = ''
+        # loop on bufsize if needed
+        i  = 0
+        while i < nc :
+              chunk = req.read(bufsize)
+              if len(chunk) != bufsize :
+                 this.logger.debug('length %d and bufsize = %d' % (len(chunk),bufsize))
+                 this.logger.error('1 source data differ from notification... abort')
+                 if i > 0 : this.logger.error('product corrupted')
+                 return False,417,'Expectation Failed'
+              fp.write(chunk)
+              i = i + 1
 
-          self.code          = None
-          self.server        = ''
-          self.user          = ''
-          self.download_time = 0.0
+        # remaining
+        if r > 0 :
+           chunk = req.read(r)
+           if len(chunk) != r :
+              this.logger.debug('length %d and remainder = %d' % (len(chunk),r))
+              this.logger.error('2 source data differ from notification... abort')
+              return False,417,'Expectation Failed'
+           fp.write(chunk)
 
-      # get notice from its settings
-      def get(self):
+        fp.close()
 
-          self.notice = self.time   
-          self.notice = self.notice + ' %d' % self.chunksize
-          self.notice = self.notice + ' %d' % self.block_count
-          self.notice = self.notice + ' %d' % self.remainder
-          self.notice = self.notice + ' %d' % self.current_block
-          self.notice = self.notice + ' %s' % self.str_flags
-          self.notice = self.notice + ' %s' % self.data_sum
-          self.notice = self.notice + ' %s' % self.source
-          self.notice = self.notice + ' %s' % self.lpath
-
-          if self.code != None :
-             self.notice = self.notice + ' %s'  % self.code
-             self.notice = self.notice + ' %s'  % self.server
-             self.notice = self.notice + ' %s'  % self.user
-             self.notice = self.notice + ' %s'  % self.download_time
-          
-          return self.notice
-
-      # set notice from its string
-      def from_notice(self,notice):
-
-          parts = notice.split(' ')
-
-          self.time          = parts[0]
-          self.chunksize     = int(parts[1])
-          self.block_count   = int(parts[2])
-          self.remainder     = int(parts[3])
-          self.current_block = int(parts[4])
-          self.str_flags     = parts[5]
-          self.data_sum      = parts[6]
-
-          self.source        = parts[8]
-          self.lpath         = parts[9]
-          self.dpath         = parts[9]
-
-          sparts = self.dpath.split('/')
-          self.dfile         = sparts[-1]
-
-          self.url           = self.source
-
-          if self.url[-1] == os.sep :
-             self.url   = self.url + self.lpath
-
-          # log notice
-          if len(parts) > 10 :
-             self.code          = parts[10]
-             self.server        = parts[11]
-             self.user          = parts[12]
-             self.download_time = parts[13]
-
-      # set notice from its string
-      def from_v00_notice(self,notice):
-
-          parts = notice.split(' ')
-
-          self.set_time()
-          self.chunksize     = int(parts[1])
-          self.block_count   = 1
-          self.remainder     = 0
-          self.current_block = 0
-          self.str_flags     = 'd'
-          self.data_sum      = parts[0]
-
-          self.source        = parts[2]
-          self.lpath         = parts[3]
-          self.dpath         = parts[3]
-
-          sparts = self.dpath.split('/')
-          self.dfile         = sparts[-1]
-
-          self.url           = self.source
-
-          if self.url[-1] == '/' :
-             self.url   = self.url + self.lpath
-
-      # set chunk info
-      def set_chunk(self,chunksize,block_count,remainder,current_block,str_flags,data_sum):
-          self.chunksize     = chunksize
-          self.block_count   = block_count
-          self.remainder     = remainder
-          self.current_block = current_block
-          self.str_flags     = str_flags
-          self.data_sum      = data_sum
-
-      # set log info
-      def set_log(self,code,user,download_time=0.0):
-          self.code          = None
-          self.server        = socket.gethostname()
-          self.user          = user
-          self.download_time = download_time
-
-      # set source info
-      def set_source(self,source,lpath):
-          self.source = source
-          self.lpath  = lpath
-
-      # set time
-      def set_time(self):
-          msec = '.%d' % (int(round(time.time() * 1000)) %1000)
-          now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
-          self.time = now
+        return True,201,'Created (Downloaded)'
 
 # ===================================
 # Seek info

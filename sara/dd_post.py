@@ -37,6 +37,28 @@ class dd_post(dd_config):
     def close(self):
         self.hc_post.close()
 
+    def configure(self):
+
+        # defaults general and proper to dd_post
+
+        self.defaults()
+
+        self.exchange = 'amq.topic'
+
+
+        # arguments from command line
+
+        self.args(self.user_args)
+
+        # config from file
+
+        self.config(self.user_config)
+
+        # verify all settings
+
+        self.check()
+
+
     def connect(self):
 
         self.hc_post      = HostConnect( logger = self.logger )
@@ -52,9 +74,6 @@ class dd_post(dd_config):
         self.pub    = Publisher(self.hc_post)
         self.pub.build()
 
-        ex = Exchange(self.hc_post,self.exchange)
-        ex.build()
-
     def help(self):
         self.logger.info("Usage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
         self.logger.info("OPTIONS:")
@@ -68,7 +87,7 @@ class dd_post(dd_config):
         self.logger.info("-l   <logpath>         default:stdout")
         self.logger.info("-p   <parts>           default:1")
         self.logger.info("-tp  <topic_prefix>    default:v02.post")
-        self.logger.info("-t   <topic>           default:'topic_prefix'.'path.of.file'")
+        self.logger.info("-sub <subtopic>        default:'path.of.file'")
         self.logger.info("-rn  <rename>          default:None")
         self.logger.info("-sum <sum>             default:d")
         self.logger.info("DEBUG:")
@@ -82,19 +101,28 @@ class dd_post(dd_config):
 
     def posting(self):
 
-        filepath = self.url.path[1:]
+        filepath = self.url.path
 
         # check abspath for filename
 
         if self.document_root != None :
-           if not self.document_root in filepath :
+           if str.find(filepath,self.document_root) != 0 :
               filepath = self.document_root + os.sep + filepath
+              filepath = filepath.replace('//','/')
 
         # verify that file exists
 
         if not os.path.isfile(filepath) and self.event != 'IN_DELETE' :
            self.logger.error("File not found %s " % filepath )
            return False
+
+        # verify part file... if it is ok
+
+        if self.partflg == 'p' :
+           ok,message = self.verify_p_file(filepath)
+           if not ok:
+              self.logger.error("partflg set to p but %s for file  %s " % (message,filepath))
+              return False
 
         # rename path given with no filename
 
@@ -107,7 +135,6 @@ class dd_post(dd_config):
 
         self.logger.debug("vhost %s  exchange %s" % (self.broker.path,self.exchange) )
 
-
         # ==============
         # delete event...
         # ==============
@@ -116,7 +143,18 @@ class dd_post(dd_config):
            self.msg.set_parts(None)
            self.msg.set_sum(None)
            self.publish()
+           return
 
+        # ==============
+        # p partflg special case
+        # ==============
+
+        if self.partflg == 'p' :
+           blocksize, block_count, remainder, current_block, sum_data = self.p_chunk
+           self.msg.set_parts('p', blocksize, block_count, remainder, current_block)
+           self.msg.set_sum(self.sumflg,sum_data)
+           self.publish()
+           return
 
         # ==============
         # Chunk set up
@@ -158,24 +196,68 @@ class dd_post(dd_config):
 
             self.publish()
 
+            i = i + 1
+
             # reconnect ?
-            if self.reconnect :
+            if self.reconnect and i<N :
                self.logger.info("Reconnect")
                self.hc_post.reconnect()
 
-            i = i + 1
-
     def publish(self):
-        self.msg.set_topic(self.topic_prefix,self.url)
+        if self.subtopic == None :
+           self.msg.set_topic_url(self.topic_prefix,self.url)
+        else :
+           self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+
         self.msg.set_notice(self.url)
         self.msg.set_event(self.event)
         self.msg.set_headers()
-        self.logger.info("Key %s" % self.msg.topic )
-        self.logger.info("Notice %s" % self.msg.notice)
-        self.logger.info("Headers %s" % self.msg.headers)
+        self.logger.info("%s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
         ok = self.pub.publish( self.msg.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
         if not ok : sys.exit(1)
         self.logger.info("published")
+
+    def verify_p_file(self,filepath):
+        filename = os.path.basename(filepath)
+        token    = filename.split('.')
+
+        if token[-1] != self.msg.part_ext : return False,'not right extension'
+
+        try :  
+                 filesize      = int(token[-5])
+                 chunksize     = int(token[-4])
+                 current_block = int(token[-3])
+                 sumflg        = token[-2]
+                 block_count  = int(filesize/chunksize)
+                 remainder    = filesize % chunksize
+                 if remainder > 0 : block_count += 1
+
+                 if filesize      <  chunksize   : return False,'filesize < chunksize'
+                 if current_block >= block_count : return False,'current block wrong'
+
+                 lstat     = os.stat(filepath)
+                 fsiz      = lstat[stat.ST_SIZE] 
+                 lastchunk = current_block == block_count-1
+
+                 if fsiz  != chunksize :
+                    if not lastchunk     : return False,'wrong file size'
+                    if remainder == 0    : return False,'wrong file size'
+                    if fsiz != remainder : return False,'wrong file size'
+
+                 self.sumflg = sumflg
+                 self.chkclass.from_list(self.sumflg)
+                 self.chksum = self.chkclass.checksum
+
+                 sum_data     = self.chksum(filepath,0,fsiz)
+                 self.p_chunk = (chunksize, block_count, remainder, current_block, sum_data)
+
+        except :
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 return False,'incorrect extension'
+
+        return True,'ok'
+                  
 
     def watching(self, fpath, event ):
 

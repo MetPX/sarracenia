@@ -66,24 +66,6 @@ class dd_config:
 
         f.close()
 
-    def configure(self):
-
-        # defaults general and proper to dd_post
-
-        self.defaults()
-
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        if hasattr(self,'check') : self.check()
-
     def defaults(self):
 
         self.debug                = False
@@ -98,12 +80,12 @@ class dd_config:
         self.logpath              = None
 
         self.instance             = 0
-        self.nbr_instances        = 0
+        self.nbr_instances        = 1
 
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        self.exchange             = 'amq.topic'
-        self.topic                = None
+        self.exchange             = None
         self.topic_prefix         = 'v02.post'
+        self.subtopic             = None
         self.url                  = None
 
         self.queue_name           = None
@@ -118,10 +100,13 @@ class dd_config:
 
         self.source_exchange      = None
 
-        self.source_queue_name    = None
+        self.source_topic         = None
 
-        self.source_topic_key     = None
+        self.user                 = None
+        self.password             = None
+        self.ssh_keyfile          = None
 
+        self.sleep                = 0
         self.strip                = 0
 
         self.parts                = '1'
@@ -141,6 +126,9 @@ class dd_config:
 
         self.exchange_key         = []
 
+
+        self.inplace              = False
+        self.overwrite            = False
         self.recompute_chksum     = False
 
 
@@ -211,6 +199,10 @@ class dd_config:
                      self.logpath = words[1]
                      n = 2
 
+                elif words[0] in ['inplace','-in','--inplace']:
+                     self.inplace = self.isTrue(words[1])
+                     n = 2
+
                 elif words[0] in ['instances','-i','--instances']:
                      self.nbr_instances = int(words[1])
                      n = 2
@@ -248,12 +240,13 @@ class dd_config:
                 elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
                      self.topic_prefix = words[1]
 
-                elif words[0] in ['topic','-t','--topic'] :
-                     self.topic = words[1]
+                elif words[0] in ['subtopic','-sub','--subtopic'] :
+                     self.subtopic = words[1]
                      n = 2
 
-                elif words[0] in ['post_url','-pu','--post_url'] :
-                     self.post_url = urllib.parse.urlparse(words[1])
+                elif words[0] in ['overwrite','-o','--overwrite'] :
+                     self.overwrite = self.isTrue(words[1])
+                     n = 2
 
                 elif words[0] in ['queue_name','-qn','--queue_name'] :
                      self.queue_name = words[1]
@@ -289,10 +282,7 @@ class dd_config:
 
 
                 elif words[0] in ['url','-u','--url']:
-                     # patch file...
-                     word1 = words[1]
-                     if 'file://' in word1 and not '/localhost/' in word1  : word1 = word1.replace('//','//localhost//')
-                     self.url = urllib.parse.urlparse(word1)
+                     self.url = urllib.parse.urlparse(words[1])
                      n = 2
 
                 elif words[0] in ['source_broker','-sb','--source_broker'] :
@@ -307,19 +297,27 @@ class dd_config:
                      self.source_exchange = words[1]
                      n = 2
 
-                elif words[0] in ['source_queue_name','-sq','--source_queue_name']:
-                     self.source_queue_name = words[1]
+                elif words[0] in ['url_user','-us','--url_user']:
+                     self.user = words[1]
+                     n = 2
+
+                elif words[0] in ['url_password','-up','--url_password']:
+                     self.password = words[1]
                      n = 2
 
                 elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
                      self.ssh_keyfile = words[1]
                      n = 2
 
-                elif words[0] in ['source_topic_key','-stk','--source_topic_key']:
-                     self.source_topic_key = words[1]
+                elif words[0] in ['source_topic','-st','--source_topic']:
+                     self.source_topic = words[1]
                      n = 2
 
-                elif words[0] in ['strip','-st','--strip']:
+                elif words[0] in ['sleep','-sleep','--sleep']:
+                     self.sleep = int(words[1])
+                     n = 2
+
+                elif words[0] in ['strip','-strip','--strip']:
                      self.strip = int(words[1])
                      n = 2
 
@@ -351,7 +349,6 @@ class dd_config:
                 pass
 
         if needexit :
-           if hasattr(self,'help') : self.help()
            sys.exit(0)
 
         return n
@@ -370,7 +367,7 @@ class dd_config:
            return
 
         if self.logpath == self.lpath :
-           if self.debug : self.logger.setLevel(logging.DEBUG)
+           if hasattr(self,'debug') and self.debug : self.logger.setLevel(logging.DEBUG)
            return
 
         if self.logpath == None :
@@ -379,17 +376,10 @@ class dd_config:
            self.setlog()
            return
 
-        logpath = self.logpath
-        logpath = logpath.replace('PGM',self.program_name)
-        logpath = logpath.replace('PID',     "%s"   % os.getpid())
-        logpath = logpath.replace('INSTANCE',"%.4d" % self.instance )
-        if self.user_config != None :
-           logpath = logpath.replace('CONFIG',self.user_config)
-
-        self.logger.debug("switching to log file %s" % logpath )
+        self.logger.debug("switching to log file %s" % self.logpath )
           
         self.lpath   = self.logpath
-        self.handler = logging.handlers.TimedRotatingFileHandler(logpath, when='midnight', interval=1, backupCount=5)
+        self.handler = logging.handlers.TimedRotatingFileHandler(self.lpath, when='midnight', interval=1, backupCount=5)
         fmt          = logging.Formatter( LOG_FORMAT )
         self.handler.setFormatter(fmt)
 
@@ -435,10 +425,10 @@ class dd_config:
 
         self.partflg = self.parts[0]
         token = self.parts.split(',')
-        if self.partflg == '1' and len(token) != 1 :
+        if self.partflg in ['1','p'] and len(token) != 1 :
            self.logger.error("parts invalid (%s)" % self.parts)
            return False
-        if self.partflg in ['p','i'] :
+        if self.partflg == 'i':
            if len(token) != 2 :
               self.logger.error("parts invalid (%s)" % self.parts)
               return False
@@ -449,10 +439,17 @@ class dd_config:
         return True
 
     def validate_sum(self):
-        if not self.sumflg[0] in ['0','n','d','c']:
-           self.logger.error("sum invalid (%s)" % self.sumflg)
-           return false
-        return True
+        if self.sumflg[0] in ['0','n','d']: return True
+        try :
+                 chkclass = Checksum()
+                 chkclass.from_list(self.sumflg)
+                 return True
+        except : 
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sum invalid (%s)" % self.sumflg)
+                 return False
+        return False
 
 
 # ===================================

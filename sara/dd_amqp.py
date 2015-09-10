@@ -172,8 +172,8 @@ class Exchange:
        self.hc.add_build(self.build)
 
    def build(self):
-       if self.name[:4] == 'amq.' : return
        self.logger.debug("building exchange %s" % self.name)
+       if self.name[:4] == 'amq.' : return
        self.hc.channel.exchange_declare(self.name, self.exchange_type, auto_delete=False)
 
 # ==========
@@ -200,6 +200,9 @@ class Publisher:
               return True
        except :
               if self.hc.loop :
+                 (stype, value, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s" % (stype, value))
+                 self.logger.error("Sleeping 5 seconds ... and reconnecting")
                  time.sleep(5)
                  self.hc.reconnect()
                  if self.hc.asleep : return False
