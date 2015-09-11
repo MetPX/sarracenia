@@ -225,8 +225,8 @@ class dd_sara(dd_instances):
               fsiz    = lstat[stat.ST_SIZE] 
               if self.imsg.offset > fsiz : return
  
-              # special locking... try avoid race condition
-              part_file_lck = part_file + '.lck'
+              # special locking insert... try avoid race condition
+              part_file_lck = part_file + '.lck_ins'
               if os.path.isfile(part_file_lck) : return
               os.link(part_file,part_file_lck)
               try    : os.unlink(part_file)
@@ -473,6 +473,10 @@ class dd_sara(dd_instances):
                         self.consumer.ack(msg)
                         continue
 
+                 # another race condition : lock writing so the part is not inserted when unfinished
+                 if self.inplace and in_part :
+                    original_target = target_file
+                    target_file += '.lck_wrt'
 
                  # proceed to download
 
@@ -506,9 +510,15 @@ class dd_sara(dd_instances):
                  if self.recompute_chksum :
                     self.force_recompute_chksum(target_file, offset, length )
 
-                 # if mode is inplace and we downloaded in part file... do not announce
+                 # if mode is inplace and we downloaded in part file...
+                 # unlock + log temporary redirection + attempt to insert
 
                  if self.inplace and in_part :
+                    try    : os.unlink(original_target)
+                    except : pass
+                    os.link(target_file,original_target)
+                    os.unlink(target_file)
+                    target_file = original_target
                     self.dual_log(True,307,'Temporary Redirect')
 
                     # try inserting it... conditions may have changed since writing
