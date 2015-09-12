@@ -121,13 +121,13 @@ class dd_instances(dd_config):
         self.file_set_int(self.statefile,self.nbr_instances)
     
     def reload_signal(self,sig,stack):
-        self.logger.info("reload")
+        self.logger.info("signal reload")
         if hasattr(self,'reload') :
            self.reload()
 
     def restart_instance(self):
         self.stop_instance()
-        time.sleep(1)
+        time.sleep(0.01)
         self.start_instance()
 
     def restart_parent(self):
@@ -240,7 +240,7 @@ class dd_instances(dd_config):
         try    : 
                  self.logger.info("%s stopping" % self.instance_str)
                  os.kill(self.pid, signal.SIGTERM)
-                 time.sleep(1)
+                 time.sleep(0.01)
                  os.kill(self.pid, signal.SIGKILL)
 
         except : pass
@@ -267,7 +267,7 @@ class dd_instances(dd_config):
         self.file_set_int(self.statefile,self.nbr_instances)
     
     def stop_signal(self, sig, stack):
-        self.logger.info("stop")
+        self.logger.info("signal stop")
         if hasattr(self,'stop') :
            self.stop()
         os._exit(0)
@@ -280,6 +280,7 @@ class test_instances(dd_instances):
      
       def __init__(self,config=None,args=None):
          dd_instances.__init__(self,config,args)
+         dd_instances.configure(self)
 
       def reload(self):
           self.logger.info("reloaded")
