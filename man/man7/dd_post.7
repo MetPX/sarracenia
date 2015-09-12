@@ -1,26 +1,34 @@
-.TH DD_post "7" "Aug 2015" "sara 0.0.1" "Sarracenia Suite"
+.TH DD_post "7" "Sep 2015" "sara 0.0.1" "Sarracenia Suite"
 .SH NAME
-dd_post \- Sarracenia format of post messages.
+dd_post \- Sarracenia protocol: format of post messages.
 .SH SYNOPSIS
 .B AMQP Topic: <version>.post.<src>.{<dir>.}*<filename>
-
+.B AMQP Headers: \fI<series of key-value pairs>\fR 
 .B Body: \fI<first line>\fR = 
-\fI<date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <flowid> <srcpath> <relpath> <newline>\fR
-
+\fI<date stamp> <srcpath> <relpath> <newline>\fR
 <\fIrest of body is reserved for future use\fR>
 
 
 .SH DESCRIPTION
 .PP
-In the SARRACENIA suite, sources post the availability and readiness of files. 
+In the Sarracenia suite, sources post the availability of files. 
 Sources use \fIdd_post\fR to create these announcements, and subscribers use \fIdd_subscribe\fR 
 to consume the post and download the file.  This manual page describes the format of 
-the messages used to announce availability.
+the messages used to announce availability.  Files are transported as pure byte streams, no metadata beyond the file contents is transported (permission bits, extended attributes, etc...) as these are not portable, and the permissions of files are upto the receiver to decide at the destination system.
 
-The messages are payloads for an AMQP message bus.  So AMQP is assumed as the underlying 
-messaging mechanism, however other protocols may be considered in future, so the use of 
-AMQP-specific features is as limited as reasonable.  Sarracenia uses topic based exchanges 
-exclusively. 
+Sarracenia messages are payloads for an Advanced Message Queuing Protocol (AMQP) message bus, 
+but file data transport is separate, using more common protocols such as SFTP, HTTP, HTTPS, 
+or FTP.  AMQP messages provide a 'control plane' for data transfers.  While each post message 
+is essentially point to point, switches can be transitively linked together to make arbitrary 
+networks.  Each posting is consumed by the next hop in the chain, and then the hop re-advertises 
+the data for later ones.  The posts flow in the same direction as the data.  Log messages 
+(see dd_log(7)) also flow through the control path, but in the opposite direction, allowing 
+sources to know the entire disposition of their products through a network.  
+
+Sarracenia uses AMQP topic based exchanges, and the UTF-8 character set exclusively. 
+
+A dd_post message consists for four parts:
+	AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.
 
 .SH AMQP TOPIC
 
@@ -30,22 +38,22 @@ pair of wildcards defined by the standard:  '*' matches a single topic, '#' matc
 the topic string. To allow for changes in the message body in the future, topic trees begin with 
 the version number of the protocol.  
 
-AMQP allows server side topic filtering using wildcards.  subscribers, can specifie topics they 
+AMQP allows server side topic filtering using wildcards.  Subscribers, can specifie topics they 
 are interested in (which correspond to directories on the server), allowing them to pare down the 
 number of notifications they receive.
 
-Bring the prefix and the filtering sub-topics together, the top of the topic tree is the version 
-specifier: "v01".  Next comes the message type specifier.  The message type for post messages 
-is "post".  After the fixed topic prefix, the remaining sub-topics are the path elements of the 
-file on the web server.  For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
-then the complete topic of the message will be:  \fI"v01.post.a.b.c.d.foo.txt"\fR
+The top of the topic tree is the version specifier: "v02".  Next comes the message type specifier.  
+These two fields define the protocol that is in use for the rest of the message.
+The message type for post messages is "post".  After the fixed topic prefix, 
+the remaining sub-topics are the path elements of the file on the web server.  
+For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
+then the complete topic of the message will be:  \fI"v02.post.a.b.c.d.foo.txt"\fR
 
 
 .SH THE FIRST LINE 
 
-In the body of a post message, on the first line, there is a series of white space 
-separated fields encoded in the UTF-8 character set.  The fields have no fixed widths, and 
-there are no optional elements.   The fields are as follows:
+the first line of a message contains all mandatory elements of an announcement.
+There is a series of white space separated fields:
 
 .nf
 
@@ -76,10 +84,32 @@ there are no optional elements.   The fields are as follows:
 
 
 <newline> signals the end of the first line of the message.
+	denoted by a single line feed character.
 
 ---------------------------
 
-In addition to the first line of the message, there are a number of key value pairs, called headers in AMQP parlance used to store transfer metadata.  
+.SH THE REST OF MESSAGE
+
+Use of only the first line of the AMQP payload is currently defined.  
+The rest of the payload body is reserved for future use.
+
+.SH AMQP HEADERS 
+In addition to the first line of the message containing all mandatory fields, optional elements are
+stored in AMQP headers (key-value pairs), included in messages when appropriate:
+
+.nf 
+
+event=<event>
+
+	<event> = 'IN_CLOSE_WRITE' | 'IN_DELETE'
+
+	The type of change which has occurred to the file.
+	indicating that a file has been either updated, or deleted.
+        no difference is made between file creation and update.
+	(see inotify(7) manual page)
+
+flow=<flow>
+   A user defined string used to group data transfers together, unused by dd-sarracenia.
 
 parts=<method>,<bsz>,<blktot>,<brem>,bno
    A header indicating the method and parameters for partitioning applied for the file.
@@ -92,8 +122,12 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
 
    <method>
 	a character field indicating the method of file partition applied.
-	p - file is partitioned.
+	p - file is partitioned, individual part files are created.
+	i - file is partitioned, but blocks are written to a single file, rather than parts.
 	1 - file is in a single part (no partitioning.)
+
+           - file segment strategy can be overridden by client. just a suggestion.
+           - analogous to rsync options: --inplace, --partial,
 
    <blocksize in bytes>: bsz
         the number of bytes in a block.
@@ -101,6 +135,7 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
 
 	when using method 1, the size of the block is the size of the file.
         remaining fields only useful for partitioned files.	
+
    <blocks in total>: blktot
         the integer total number of blocks in the file
         FIXME: (including the last block or not?)
@@ -118,66 +153,9 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
     <block#>: bno
         0 origin, the block number covered by this posting.
 
+rename=<relpath> 
 
-source=<sourceid>
-	a character field indicating the source of the data injected into the network.
-	should be unique within a switching network.  Usually is the same as the
-	account used to authenticate to the broker.
-
-sum=<method>,<value>
-	<method> - character field indicating the checksum algorithm used.
-
-        0 - no checksums (unconditional copy.)
-        d - checksum the entire data
-        n - checksum the file name
-        c=<script> - checksum with a script, named <script>
-
-                <script> should be ´registered´ in the switch network.
-                        registered means that all downstream subscribers
-                        can obtain the script to validate the checksum.
-                        there needs to be a retrieval mechanism.
-	
-	
-	the value is what was computing by applying the given method to
-	the partition being transferred.
-	
-
-
-
-<flags>: a comma-separated list of option letters, some with arguments after ´=´.
-
-        checksum setting contained in ´flags´ field, but is not the whole
-        thing.  Other letters/digits could be there to designate other things.
-        ´=´ acts as a separator of flags from arguments.
-
-        results in ´flags´ entry:
-
-
-        other possible flag values:
-
-                u - unlinked... for files that have been removed? 'r'?
-
-	watch/stop watch is used by dd_wait, and dd_wait_daemon.
-
-		w - watch the URL given.
-		x - stop watching the URL given.
-
-
-        File Segment strategy:
-		n - none only full files transferred.
-                i - inplace (do not create temporary files, just lseek
-                        within file.)
-                    may result in .ddsig file being created?
-                p - part files.  use .part files,  suffix fixed.
-                    do not know which will be default.
-
-           - file segment strategy can be overridden by client. just a suggestion.
-           - analogous to rsync options: --inplace, --partial,
-
-<flowid>
-        an arbitrary tag set by sources for application defined tracking. 
-
-<relpath> -- The relative path from the current directory in which to
+	The relative path from the current directory in which to
         place the file.
 
         Two cases based on the end being a path separator or not.
@@ -201,6 +179,30 @@ sum=<method>,<value>
         as complete, and the file is renamed on download according to the
         specification (in this case, mine.gif)
 
+
+source=<sourceid>
+	a character field indicating the source of the data injected into the network.
+	should be unique within a switching network.  Usually is the same as the
+	account used to authenticate to the broker.
+
+sum=<method>,<value>
+	<method> - character field indicating the checksum algorithm used.
+
+        0 - no checksums (unconditional copy.)
+        d - checksum the entire data
+        n - checksum the file name
+        <name> - checksum with a some other algorithm, named <name>
+
+                <name> should be ´registered´ in the switch network.
+                        registered means that all downstream subscribers
+                        can obtain the algorithm to validate the checksum.
+	
+	<value> - The value is what was computed by applying the given method to
+	the partition being transferred.
+	
+All other headers are reserved for future use. 
+
+
 .fi
 
 
@@ -211,10 +213,11 @@ sum=<method>,<value>
 
 .nf 
 
-v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> exp13 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/
+topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
+headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13
 
-        v01 - version of protocol
+        v02 - version of protocol
         post - indicates the type of message
 
         version and type together determine format of following topics and the message body.
@@ -225,7 +228,7 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
           -- block count is 1
           -- remainder is 0.
           -- block number is 0.
-          -- d - checksum was calculated on the body.
+          -- d - checksum was calculated on the body of the file.
           -- flow is an argument after the relative path.
           -- complete source URL specified (does not end in '/')
           -- relative path specified for
@@ -259,8 +262,9 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows :
 
-AMQP Topic: v01.post.20150813.guest.data.shared.products.foo
-1st line of body: 20150813161959.854 256 1 0 0 d 25d231ec0ae3c569ba27ab7a74dd72ce default sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+Topic: v02.post.20150813.guest.data.shared.products.foo
+1st line of body: 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce
 
 .fi
 SARRACENIA publishes each post on AMQP topic exchanges, meaning every message has a topic header.
@@ -270,6 +274,7 @@ current block \fI0\fR, a flag \fId\fR meaning the md5 checksum is
 performed on the data, the checksum \fI25d231ec0ae3c569ba27ab7a74dd72ce\fR,
 a tag \fIdefault\fR and finally the source url of the product in the last 2 fields.
 .fi
+
 
 .SH FURTHER READING
 
@@ -293,7 +298,7 @@ dd_subscribe(1) - the http-only download client.
 
 dd_watch(1) - the directory watching daemon.
 
-
+inotify(7) - used for file modification announcements on Linux.
 
 .PP
 .TP
