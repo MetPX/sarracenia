@@ -193,6 +193,7 @@ class dd_config:
                      n = 2
 
                 elif words[0] in ['help','-h','-help','--help']:
+                     self.help()
                      needexit = True
 
                 elif words[0] in ['log','-l','-log','--log']:

@@ -2,14 +2,14 @@
 
 import os, urllib.request, urllib.error, sys
 
-def http_download(this, msg, iuser,ipassword, target_file,offset,length) :
+def http_download( msg, iuser, ipassword ) :
 
     url       = msg.url
     urlstr    = url.geturl()
     user      = url.username
     password  = url.password
 
-    if iuser     != None : user = iuser
+    if iuser     != None : user     = iuser
     if ipassword != None : password = ipassword
 
     try :
@@ -30,7 +30,7 @@ def http_download(this, msg, iuser,ipassword, target_file,offset,length) :
                 # Now all calls to urllib2.urlopen use our opener.
                 urllib.request.install_opener(opener)
 
-            # byte range if needed
+            # set a byte range to pull from remote file
             req   = urllib.request.Request(urlstr)
             str_range = ''
             if msg.partflg == 'i' :
@@ -39,13 +39,10 @@ def http_download(this, msg, iuser,ipassword, target_file,offset,length) :
                    
             #download file
 
-            if str_range != '' :
-               this.logger.info('Inserting: %s %s %s %d %d' % (urlstr,str_range,target_file,offset,msg.length))  
-            else :
-               this.logger.info('Downloads: %s %s' % (urlstr,target_file))  
+            msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
-            ok,code,message = write_to_file(this,response,target_file,offset,msg.length)                    
+            ok,code,message = http_write(response,msg)
 
             return ok,code,message
                 
@@ -57,42 +54,22 @@ def http_download(this, msg, iuser,ipassword, target_file,offset,length) :
            (stype, svalue, tb) = sys.exc_info()
            return False,499,str(svalue)
 
+def http_write(req,msg) :
+    if not os.path.isfile(msg.local_file) :
+       fp = open(msg.local_file,'w')
+       fp.close
 
-def write_to_file(this,req,lfile,loffset,length) :
-        bufsize = 10 * 1024 * 1024
-        # file should exists
-        if not os.path.isfile(lfile) :
-           fp = open(lfile,'w')
-           fp.close()
+    fp = open(msg.local_file,'r+b')
+    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
-        # file open read/modify binary
-        fp = open(lfile,'r+b')
-        if loffset != 0 : fp.seek(loffset,0)
+    # should not worry about length...
+    # http provides exact data
 
-        nc = int(length/bufsize)
-        r  = length % bufsize
+    while True:
+          chunk = req.read(msg.bufsize)
+          if not chunk : break
+          fp.write(chunk)
 
-        # loop on bufsize if needed
-        i  = 0
-        while i < nc :
-              chunk = req.read(bufsize)
-              if len(chunk) != bufsize :
-                 this.logger.debug('length %d and bufsize = %d' % (len(chunk),bufsize))
-                 this.logger.error('source data differ from notification... abort')
-                 if i > 0 : this.logger.error('product corrupted')
-                 return False,417,'Expectation Failed'
-              fp.write(chunk)
-              i = i + 1
+    fp.close()
 
-        # remaining
-        if r > 0 :
-           chunk = req.read(r)
-           if len(chunk) != r :
-              this.logger.debug('length %d and remainder = %d' % (len(chunk),r))
-              this.logger.error('source data differ from notification... abort')
-              return False,417,'Expectation Failed'
-           fp.write(chunk)
-
-        fp.close()
-
-        return True,201,'Created (Downloaded)'
+    return True,201,'Created (Downloaded)'

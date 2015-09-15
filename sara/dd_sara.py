@@ -37,18 +37,6 @@ class dd_sara(dd_instances):
         try    : os.umask(0)
         except : pass
 
-    def checksum_match(self,local_file,offset,length):
-        if not os.path.isfile(local_file) : return False
-        if self.imsg.sumflg in ['0','n']  : return False
-
-
-        if length == 0 :
-           lstat   = os.stat(local_file)
-           fsiz    = lstat[stat.ST_SIZE] 
-
-        local_checksum = self.imsg.compute_chksum(local_file,offset,length)
-        return local_checksum == self.imsg.chksum
-
     def close(self):
         self.hc_src.close()
         self.hc_pst.close()
@@ -168,24 +156,11 @@ class dd_sara(dd_instances):
         print_severity('(%d,%s): %s %s %s',code,message,self.imsg.topic,self.imsg.notice,self.imsg.hdrstr)
         self.log.publish(self.imsg.log_exchange,self.imsg.log_topic,self.imsg.log_notice,self.imsg.log_headers)
 
-    def force_recompute_chksum(self,target_file, offset, length ):
-        fsiz = length
-        if length == 0 :
-           lstat   = os.stat(target_file)
-           fsiz    = lstat[stat.ST_SIZE] 
-
-        new_checksum = self.imsg.chksum(target_file,offset,length)
-        if new_checksum == self.imsg.checksum : return
-
-        self.imsg.set_sum(self.imsg.sumflg,new_checksum)
-        self.imsg.checksum = new_checksum
-        self.dual_log(True,205,'Reset Content : checksum')
-
     def insert_file(self,part_file):
         try :
                  bufsize = 10 * 1024 * 1024
                  fp = open(part_file,'rb')
-                 ft = open(self.local_file,'r+b')
+                 ft = open(self.imsg.target_file,'r+b')
                  ft.seek(self.imsg.offset,0)
 
                  i  = 0
@@ -209,7 +184,11 @@ class dd_sara(dd_instances):
 
     def insert_from_parts(self):
 
-        i = self.imsg.current_block + 1
+        if not os.path.isfile(self.imsg.target_file) : return
+        lstat   = os.stat(self.imsg.target_file)
+        fsiz    = lstat[stat.ST_SIZE] 
+        i       = int(fsiz /self.imsg.chunksize)
+
 
         while i < self.imsg.block_count:
               self.imsg.current_block = i
@@ -218,18 +197,19 @@ class dd_sara(dd_instances):
               self.imsg.set_parts_str(partstr)
               self.imsg.set_suffix()
 
-              part_file = self.local_file + self.imsg.suffix
+              part_file = self.imsg.target_file + self.imsg.suffix
               if not os.path.isfile(part_file) : return
 
-              lstat   = os.stat(self.local_file)
+              lstat   = os.stat(self.imsg.target_file)
               fsiz    = lstat[stat.ST_SIZE] 
               if self.imsg.offset > fsiz : return
  
               # special locking insert... try avoid race condition
               part_file_lck = part_file + '.lck_ins'
               if os.path.isfile(part_file_lck) : return
-              os.link(part_file,part_file_lck)
-              try    : os.unlink(part_file)
+              try :    os.link(part_file,part_file_lck)
+              except : return
+              try :    os.unlink(part_file)
               except : pass
 
               ok,code,message = self.insert_file(part_file_lck)
@@ -237,8 +217,8 @@ class dd_sara(dd_instances):
               if not ok : return
 
               self.imsg.set_exchange(self.exchange)
-              self.imsg.set_topic_url('v02.post',self.local_url)
-              self.imsg.set_notice(self.local_url,self.imsg.time)
+              self.imsg.set_topic_url('v02.post',self.imsg.target_url)
+              self.imsg.set_notice(self.imsg.target_url,self.imsg.time)
               self.imsg.rename  = None
               self.imsg.message = None
               self.imsg.set_headers()
@@ -252,19 +232,21 @@ class dd_sara(dd_instances):
     def lastchunk(self):
         if self.imsg.partflg == '1': return
         if not self.inplace        : return
-        if not self.imsg.lastchunk : return
+        if not self.lastchunk      : return
 
-        self.logger.debug("lastchunk local_file %s" % self.local_file)
-        lstat   = os.stat(self.local_file)
-        fsiz    = lstat[stat.ST_SIZE] 
+        try :
+                 lstat   = os.stat(self.imsg.target_file)
+                 fsiz    = lstat[stat.ST_SIZE] 
 
-        if fsiz > self.imsg.filesize :
-           fp = open(self.local_file,'r+b')
-           fp.truncate(self.imsg.filesize)
-           fp.close()
-           self.dual_log(True,205,'Reset Content %s' % 'truncated')
-        elif fsiz < self.imsg.filesize :
-           self.dual_log(False,411,'Length Requiered %s' % 'file too small')
+                 if fsiz > self.imsg.filesize :
+                    fp = open(self.imsg.target_file,'r+b')
+                    fp.truncate(self.imsg.filesize)
+                    fp.close()
+                    self.dual_log(True,205,'Reset Content %s' % 'truncated')
+                 elif fsiz < self.imsg.filesize :
+                    self.dual_log(False,411,'Length Requiered %s' % 'file too small')
+
+        except : pass
 
     def set_local(self):
 
@@ -295,88 +277,6 @@ class dd_sara(dd_instances):
         self.local_dir  = self.local_dir.replace('//','/')
         self.local_file = self.local_dir   + '/' + self.filename
         self.local_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
-
-    def set_target(self):
-
-        part = False
-
-        # file to file
-
-        if self.imsg.partflg == '1' : 
-           return (self.local_file,0,0,self.local_url,part)
-
-        # part file never inserted
-
-        if not self.inplace :
-
-           # part file stay apart
-
-           if self.imsg.partflg in ['i', 'p'] :
-              part_file = self.local_file + self.imsg.suffix
-              part_url  = urllib.parse.urlparse( self.local_url.geturl()  + self.imsg.suffix )
-              part      = True
-              return (part_file,0,0,part_url,part)
-        
-        # part file inserted
-
-        if self.inplace :
-
-           # part file inserts to file (maybe in file, maybe in part file)
-
-           if self.imsg.partflg == 'p' :
-              local_file = self.local_file.replace(self.imsg.suffix,'')
-              local_url  = urllib.parse.urlparse( self.local_url.geturl().replace(self.imsg.suffix,''))
-              part_file  = self.local_file
-              part_url   = self.local_url
-
-        
-           # file insert inserts into file (maybe in file, maybe in part file)
-
-           if self.imsg.partflg == 'i' :
-              local_file = self.local_file
-              local_url  = self.local_url
-              part_file  = self.local_file + self.imsg.suffix
-              part_url   = urllib.parse.urlparse( self.local_url.geturl() + self.imsg.suffix )
-
-        
-           # this message becomes a file insert or a temporary ?
-
-           # file exists
-           self.logger.debug("target local_file %s" % local_file)
-           if os.path.isfile(local_file) :
-              self.logger.debug("target local_file exists")
-              lstat   = os.stat(local_file)
-              fsiz    = lstat[stat.ST_SIZE] 
-
-              self.logger.debug("imsg.offset vs fsiz %d %d" % (self.imsg.offset,fsiz ))
-              # part/insert can be inserted 
-              if self.imsg.offset <= fsiz :
-                 length  = self.imsg.chunksize
-                 if self.imsg.lastchunk and self.imsg.remainder != 0 : length = self.imsg.remainder
-                 offset = self.imsg.offset
-                 if self.imsg.partflg == 'p' : self.imsg.offset = 0
-                 return (local_file,offset,length,local_url,part)
-
-              # part/insert put in temporary part file
-              part = True
-              return(part_file,0,0,part_url,part)
-
-
-           # file does not exists but first part/insert ... write directly to local_file
-           elif self.imsg.current_block == 0 :
-              self.logger.debug("not exist and first block")
-              return(local_file,0,0,local_url,part)
-
-           # file does not exists any other part/insert ... put in temporary part_file
-           else :
-              part = True
-              self.logger.debug("not exist and not first block")
-              return(part_file,0,0,part_url,part)
-                 
-        # unknow conditions
-
-        self.logger.error("bad unknown conditions")
-        return (local_file,0,0,local_url,False)
 
     def validate_file(self,target_file, offset, length):
 
@@ -436,19 +336,8 @@ class dd_sara(dd_instances):
                  # set local file :  dr + imsg.path (renamed path)
 
                  self.set_local()
-                 self.logger.debug(" local_file = %s " % self.local_file)
-                 self.logger.debug(" local_url  = %s " % self.local_url.geturl())
 
-                 # real target file depends on inplace setting and actual file state
-                 target_file,offset,length,target_url,in_part = self.set_target()
-                 self.logger.debug(" target_file = %s " % target_file)
-                 self.logger.debug(" offset      = %s " % offset)
-                 self.logger.debug(" length      = %s " % length)
-                 self.logger.debug(" target_url  = %s " % target_url.geturl())
-                 self.logger.debug(" in_part     = %s " % in_part )
-
-                 self.local_file = target_file
-                 self.local_url  = target_url
+                 self.imsg.set_local(self.inplace,self.local_file,self.local_url)
 
                  # asked to delete ?
 
@@ -464,43 +353,56 @@ class dd_sara(dd_instances):
 
                  # if overwrite is not enforced (False)
                  # verify if msg checksum and local_file checksum match
-                 # FIXME : should we republish on repost ???
+                 # FIXME : should we republish / repost ???
 
                  if not self.overwrite :
-                    if  self.checksum_match(target_file,offset,length) :
+                    if  self.imsg.checksum_match() :
                         self.dual_log(True,304,'not modified')
                         self.lastchunk()
                         self.consumer.ack(msg)
                         continue
 
                  # another race condition : lock writing so the part is not inserted when unfinished
-                 if self.inplace and in_part :
-                    original_target = target_file
-                    target_file += '.lck_wrt'
+
+                 if self.inplace and self.imsg.in_partfile :
+                    self.imsg.local_lock('.lck_wrt')
 
                  # proceed to download
+                 i = 0
+                 ok,code,message = False,503,"unable to download"
+                 while  i < 3 : 
 
-                 if   self.imsg.url.scheme == 'http' :
-                      ok,code,message = http_download(self, self.imsg, self.user, self.password, target_file, offset, length )
-                 elif self.imsg.url.scheme == 'sftp' :
-                      ok,code,message = sftp_download(self, self.imsg, self.user, self.password, self.ssh_keyfile, target_file, offset, length )
-                 elif self.imsg.url.scheme == 'file' :
-                      fp = open(self.imsg.url.path,'rb')
-                      if self.imsg.partflg == 'i' : fp.seek(self.imsg.offset,0)
-                      if length == 0 : length = self.imsg.length
-                      write_to_file(self,fp, target_file, offset, length )
-                      fp.close()
-                      ok,code,message = True,201,'Created (copied)'
-                 else :
-                      ok,code,message = False,503,"Service unavailable %s" % self.imsg.url.scheme
+                      try :
+                           if   self.imsg.url.scheme == 'http' :
+                                ok,code,message = http_download(self.imsg, self.user, self.password )
+                                break
+                           elif self.imsg.url.scheme == 'sftp' :
+                                ok,code,message = sftp_download(self.imsg, self.user, self.password, self.ssh_keyfile )
+                                break
+                           elif self.imsg.url.scheme == 'file' :
+                                fp = open(self.imsg.url.path,'rb')
+                                if self.imsg.partflg == 'i' : fp.seek(self.imsg.offset,0)
+                                write_to_file(self,fp, self.imsg.local_file, self.imsg.local_offset, self.imsg.length )
+                                fp.close()
+                                ok,code,message = True,201,'Created (copied)'
+                                break
+                           else :
+                                ok,code,message = False,503,"Service unavailable %s" % self.imsg.url.scheme
+                                break
+                      except :
+                           (stype, svalue, tb) = sys.exc_info()
+                           self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
 
+                      i = i + 1
+
+                   
                  self.dual_log(ok,code,message)
                  if not ok :
                     self.consumer.ack(msg)
                     continue
 
                  # validate file/data
-                 ok = self.validate_file(target_file, offset, length)
+                 ok = self.validate_file(self.imsg.local_file, self.imsg.local_offset, self.imsg.length)
                  if not ok :
                     self.consumer.ack(msg)
                     continue
@@ -508,21 +410,30 @@ class dd_sara(dd_instances):
                  # force recompute checksum
 
                  if self.recompute_chksum :
-                    self.force_recompute_chksum(target_file, offset, length )
+                    self.imsg.compute_local_checksum()
+                    if not self.imsg.local_checksum == self.imsg.checksum :
+                       self.imsg.set_sum(self.imsg.sumflg,self.imsg.local_checksum)
+                       self.imsg.checksum = self.imsg.local_checksum
+                       self.dual_log(True,205,'Reset Content : checksum')
+
 
                  # if mode is inplace and we downloaded in part file...
                  # unlock + log temporary redirection + attempt to insert
 
-                 if self.inplace and in_part :
-                    try    : os.unlink(original_target)
+                 if self.inplace and self.imsg.in_partfile :
+                    lock = self.imsg.local_file
+                    self.imsg.local_unlock()
+                    orig = self.imsg.local_file
+                    try    : os.unlink(orig)
                     except : pass
-                    os.link(target_file,original_target)
-                    os.unlink(target_file)
-                    target_file = original_target
+                    try    : os.link(lock,orig)
+                    except : return
+                    try    : os.unlink(lock)
+                    except : pass
                     self.dual_log(True,307,'Temporary Redirect')
 
                     # try inserting it... conditions may have changed since writing
-                    self.imsg.current_block -= 1
+
                     self.insert_from_parts()
 
                     self.consumer.ack(msg)
@@ -535,8 +446,8 @@ class dd_sara(dd_instances):
                     else            : self.imsg.change_partflg('p')
 
                  self.imsg.set_exchange(self.exchange)
-                 self.imsg.set_topic_url('v02.post',target_url)
-                 self.imsg.set_notice(target_url,self.imsg.time)
+                 self.imsg.set_topic_url('v02.post',self.imsg.local_url)
+                 self.imsg.set_notice(self.imsg.local_url,self.imsg.time)
                  self.imsg.rename  = None
                  self.imsg.message = None
                  self.imsg.set_headers()
@@ -548,12 +459,12 @@ class dd_sara(dd_instances):
                  if self.inplace :
                     self.insert_from_parts()
 
-                 
                  self.consumer.ack(msg)
 
           except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                 self.consumer.ack(msg)
 
     def reload(self):
         self.logger.info("dd_sara reload")

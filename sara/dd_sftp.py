@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import paramiko, sys
+import paramiko, os,sys
 from   paramiko import *
 
-def sftp_download(this, msg, iuser, ipassword, ssh_keyfile, target_file, offset, length ):
+def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
     url       = msg.url
     host      = url.hostname
     port      = url.port
@@ -11,13 +11,10 @@ def sftp_download(this, msg, iuser, ipassword, ssh_keyfile, target_file, offset,
     password  = url.password
     urlstr    = url.geturl()
 
-    bufsize   = 10 * 1024 * 1024
-
     if iuser     != None : user = iuser
     if ipassword != None : password = ipassword
 
     token    = url.path.split('/')
-  
     
     cdir     = '/'.join(token[:-1])
     cfile    = token[-1]
@@ -39,20 +36,22 @@ def sftp_download(this, msg, iuser, ipassword, ssh_keyfile, target_file, offset,
             sftp = paramiko.SFTP.from_transport(t)
             sftp.chdir(cdir)
 
-            #download file
             str_range = ''
-            if length == 0 :
-               this.logger.info('Downloads:  %s %s' % (urlstr,target_file))  
-               sftp.get(cfile,target_file)
-               ok      = True
-               code    = 201
-               message = 'Created (Downloaded)'
-            else :
+            if msg.partflg == 'i' :
                str_range = 'bytes=%d-%d'%(msg.offset,msg.offset+msg.length-1)
-               response  = sftp.file(cfile,'rb',bufsize)
-               if msg.offset != 0 : response.seek(msg.offset,0)
-               this.logger.info('Inserting: %s %s %s' % (urlstr,target_file,str_range))  
-               ok,code,message = write_to_file(response,target_file,offset,length)                    
+
+            #download file
+
+            msg.logger.info('Downloads: %s %s into %s %d-%d' % 
+                (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
+
+
+            response  = sftp.file(cfile,'rb',msg.bufsize)
+            if msg.partflg == 'i' :
+               response.seek(msg.offset,0)
+               ok,code,message = sftp_write_length(response,msg)
+            else :
+               ok,code,message = sftp_write(response,msg)
 
             try    : sftp.close()
             except : pass
@@ -63,33 +62,52 @@ def sftp_download(this, msg, iuser, ipassword, ssh_keyfile, target_file, offset,
             
     except:
             (stype, svalue, tb) = sys.exc_info()
-            this.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
+            msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
             return False,499,str(svalue)
 
     return False,499,''
 
-def write_to_file(this,req,lfile,loffset,length) :
-    bufsize = 10 * 1024 * 1024
+def sftp_write(req,msg):
+    if not os.path.isfile(msg.local_file) :
+       fp = open(msg.local_file,'w')
+       fp.close
+
+    fp = open(msg.local_file,'r+b')
+    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+
+    # read all file no worry
+
+    while True:
+          chunk = req.read(msg.bufsize)
+          if not chunk : break
+          fp.write(chunk)
+
+    fp.close()
+
+    return True,201,'Created (Downloaded)'
+
+
+def sftp_write_length(req,msg):
     # file should exists
-    if not os.path.isfile(lfile) :
-       fp = open(lfile,'w')
+    if not os.path.isfile(msg.local_file) :
+       fp = open(msg.local_file,'w')
        fp.close()
 
     # file open read/modify binary
-    fp = open(lfile,'r+b')
-    if loffset != 0 : fp.seek(loffset,0)
+    fp = open(msg.local_file,'r+b')
+    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
-    nc = int(length/bufsize)
-    r  = length % bufsize
+    nc = int(msg.length/msg.bufsize)
+    r  = msg.length % msg.bufsize
 
     # loop on bufsize if needed
     i  = 0
     while i < nc :
-          chunk = req.read(bufsize)
-          if len(chunk) != bufsize :
-             this.logger.debug('length %d and bufsize = %d' % (len(chunk),bufsize))
-             this.logger.error('source data differ from notification... abort')
-             if i > 0 : this.logger.error('product corrupted')
+          chunk = req.read(msg.bufsize)
+          if len(chunk) != msg.bufsize :
+             msg.logger.debug('length %d and bufsize = %d' % (len(chunk),msg.bufsize))
+             msg.logger.error('source data differ from notification... abort')
+             if i > 0 : msg.logger.error('product corrupted')
              return False,417,'Expectation Failed'
           fp.write(chunk)
           i = i + 1
@@ -98,8 +116,8 @@ def write_to_file(this,req,lfile,loffset,length) :
     if r > 0 :
        chunk = req.read(r)
        if len(chunk) != r :
-          this.logger.debug('length %d and remainder = %d' % (len(chunk),r))
-          this.logger.error('source data differ from notification... abort')
+          msg.logger.debug('length %d and remainder = %d' % (len(chunk),r))
+          msg.logger.error('source data differ from notification... abort')
           return False,417,'Expectation Failed'
        fp.write(chunk)
 

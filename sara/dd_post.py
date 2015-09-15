@@ -129,6 +129,12 @@ class dd_post(dd_config):
         rename = self.rename
         if self.rename != None and self.rename[-1] == os.sep :
            rename += os.path.basename(self.url.path)
+
+        # make sure a part file has a part name
+        if self.rename != None and self.partflg == 'p' :
+           if not self.msg.suffix in rename :
+              rename += self.msg.suffix
+
         self.msg.set_rename(rename)
 
         #
@@ -218,46 +224,12 @@ class dd_post(dd_config):
         self.logger.info("published")
 
     def verify_p_file(self,filepath):
-        filename = os.path.basename(filepath)
-        token    = filename.split('.')
+        ok,message = self.msg.verify_part_suffix(filepath)
 
-        if token[-1] != self.msg.part_ext : return False,'not right extension'
+        if ok :
+           self.p_chunk = (self.msg.chunksize, self.msg.block_count, self.msg.remainder, self.msg.current_block, self.msg.chksum)
 
-        try :  
-                 filesize      = int(token[-5])
-                 chunksize     = int(token[-4])
-                 current_block = int(token[-3])
-                 sumflg        = token[-2]
-                 block_count  = int(filesize/chunksize)
-                 remainder    = filesize % chunksize
-                 if remainder > 0 : block_count += 1
-
-                 if filesize      <  chunksize   : return False,'filesize < chunksize'
-                 if current_block >= block_count : return False,'current block wrong'
-
-                 lstat     = os.stat(filepath)
-                 fsiz      = lstat[stat.ST_SIZE] 
-                 lastchunk = current_block == block_count-1
-
-                 if fsiz  != chunksize :
-                    if not lastchunk     : return False,'wrong file size'
-                    if remainder == 0    : return False,'wrong file size'
-                    if fsiz != remainder : return False,'wrong file size'
-
-                 self.sumflg = sumflg
-                 self.chkclass.from_list(self.sumflg)
-                 self.chksum = self.chkclass.checksum
-
-                 sum_data     = self.chksum(filepath,0,fsiz)
-                 self.p_chunk = (chunksize, block_count, remainder, current_block, sum_data)
-
-        except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-                 return False,'incorrect extension'
-
-        return True,'ok'
-                  
+        return ok,message
 
     def watching(self, fpath, event ):
 

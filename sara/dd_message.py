@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import socket,time,urllib,urllib.parse
+import os,socket,sys,time,urllib,urllib.parse
 
 try :
          from dd_util         import *
@@ -29,10 +29,23 @@ class dd_message():
 
         self.chkclass      = Checksum()
 
+        self.bufsize       = 10 * 1024 * 1024
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
+
+    def checksum_match(self):
+        if not os.path.isfile(self.local_file) : return False
+        if self.sumflg in ['0','n']            : return False
+
+        self.compute_local_checksum()
+
+        return self.local_checksum == self.chksum
+
+    def compute_local_checksum(self):
+        self.local_checksum = self.compute_chksum(self.local_file,self.local_offset,self.length)
 
     def from_amqplib(self, msg ):
 
@@ -65,6 +78,14 @@ class dd_message():
 
     def get_elapse(self):
         return time.time()-self.tbegin
+
+    def local_lock(self,lock):
+        self.lock = lock
+        self.local_file += lock
+
+    def local_unlock(self):
+        self.local_file = self.local_file[:-len(self.lock)]
+        del self.lock
 
     def log(self, code, message ):
         self.log_exchange           = 'xlog'
@@ -162,7 +183,8 @@ class dd_message():
         self.set_suffix()
 
     def part_suffix(self):
-        return ".%d.%d.%d.%s.%s" % (self.filesize,self.chunksize,self.current_block,self.sumflg,self.part_ext)
+        return '.%d.%d.%d.%d.%s.%s' %\
+               (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
     def set_exchange(self,name):
         self.exchange = name
@@ -204,6 +226,108 @@ class dd_message():
         if self.message != None :
            self.headers['message'] = self.message
            self.hdrstr  += '%s=%s ' % ('message',self.message)
+
+    # Once we know the local file we want to use
+    # we can have a few flavor of it
+
+    def set_local(self,inplace,local_file,local_url):
+
+        self.local_file    = local_file
+        self.local_url     = local_url
+        self.local_offset  = 0
+        self.in_partfile   = False
+        self.local_chksum  = None
+
+        # file to file
+
+        if self.partflg == '1' : return
+
+        # part file never inserted
+
+        if not inplace :
+
+           self.in_partfile = True
+
+           # part file to part file
+
+           if self.partflg == 'p' : return
+
+           # file inserts to part file
+
+           if self.partflg == 'i' :
+              self.local_file = local_file + self.suffix
+              self.local_url  = urllib.parse.urlparse( local_url.geturl() + self.suffix )
+              return
+
+        
+        # part file inserted
+
+        if inplace :
+
+           # part file inserts to file (maybe in file, maybe in part file)
+
+           if self.partflg == 'p' :
+              self.target_file  = local_file.replace(self.suffix,'')
+              self.target_url   = urllib.parse.urlparse( local_url.geturl().replace(self.suffix,''))
+              part_file    = local_file
+              part_url     = local_url
+
+        
+           # file insert inserts into file (maybe in file, maybe in part file)
+
+           if self.partflg == 'i' :
+              self.target_file  = local_file
+              self.target_url   = local_url
+              part_file    = local_file + self.suffix
+              part_url     = urllib.parse.urlparse( local_url.geturl() + self.suffix )
+
+           # default setting : redirect to temporary part file
+
+           self.local_file  = part_file
+           self.local_url   = part_url
+           self.in_partfile = True
+        
+           # try to make this message a file insert
+
+           # file exists
+           if os.path.isfile(self.target_file) :
+              self.logger.debug("local_file exists")
+              lstat   = os.stat(self.target_file)
+              fsiz    = lstat[stat.ST_SIZE] 
+
+              self.logger.debug("offset vs fsiz %d %d" % (self.offset,fsiz ))
+              # part/insert can be inserted 
+              if self.offset <= fsiz :
+                 self.logger.debug("insert")
+                 self.local_file   = self.target_file
+                 self.local_url    = self.target_url
+                 self.local_offset = self.offset
+                 self.in_partfile  = False
+                 return
+
+              # in temporary part file
+              self.logger.debug("exist but no insert")
+              return
+
+
+           # file does not exists but first part/insert ... write directly to local_file
+           elif self.current_block == 0 :
+              self.logger.debug("not exist but first block")
+              self.local_file  = self.target_file
+              self.local_url   = self.target_url
+              self.in_partfile = False
+              return
+
+           # file does not exists any other part/insert ... put in temporary part_file
+           else :
+              self.logger.debug("not exist and not first block")
+              self.in_partfile = True
+              return
+                 
+        # unknow conditions
+
+        self.logger.error("bad unknown conditions")
+        return
 
     def set_notice(self,url,time=None):
         self.time = time
@@ -311,3 +435,44 @@ class dd_message():
 
     def start_timer(self):
         self.tbegin = time.time()
+
+    def verify_part_suffix(self,filepath):
+        filename = os.path.basename(filepath)
+        token    = filename.split('.')
+
+        try :  
+                 self.suffix = '.' + '.'.join(token[-6:])
+                 if token[-1] != self.part_ext : return False,'not right extension'
+
+                 self.chunksize     = int(token[-6])
+                 self.block_count   = int(token[-5])
+                 self.remainder     = int(token[-4])
+                 self.current_block = int(token[-3])
+                 self.sumflg        = token[-2]
+
+                 if self.current_block >= self.block_count : return False,'current block wrong'
+                 if self.remainder     >= self.chunksize   : return False,'remainder too big'
+
+                 self.length    = self.chunksize
+                 self.lastchunk = self.current_block == self.block_count-1
+                 self.filesize  = self.block_count * self.chunksize
+                 if self.remainder  > 0 :
+                    self.filesize  += self.remainder - self.chunksize
+                    if self.lastchunk : self.length  = self.remainder
+
+                 lstat     = os.stat(filepath)
+                 fsiz      = lstat[stat.ST_SIZE] 
+
+                 if fsiz  != self.length : return False,'wrong file size'
+
+                 self.chkclass.from_list(self.sumflg)
+                 self.compute_chksum = self.chkclass.checksum
+
+                 self.chksum  = self.compute_chksum(filepath,0,fsiz)
+
+        except :
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 return False,'incorrect extension'
+
+        return True,'ok'
