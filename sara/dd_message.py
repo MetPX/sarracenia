@@ -11,7 +11,10 @@ class dd_message():
 
     def __init__(self,logger):
         self.logger        = logger
+        self.amqp_log      = None
+        self.amqp_pub      = None
         self.exchange      = None
+        self.exchange_pub  = None
         self.topic         = None
         self.notice        = None
         self.headers       = {}
@@ -30,6 +33,8 @@ class dd_message():
         self.chkclass      = Checksum()
 
         self.bufsize       = 10 * 1024 * 1024
+
+        self.inplace       = True
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -51,13 +56,14 @@ class dd_message():
 
         self.start_timer()
 
+        #self.logger.debug("attributes= %s" % vars(msg))
         self.exchange  = msg.delivery_info['exchange']
         self.topic     = msg.delivery_info['routing_key']
         self.headers   = msg.properties['application_headers']
         self.notice    = msg.body
 
-        #if type(self.notice) == bytes :
-        #   self.notice = self.notice.decode("utf-8")
+        if type(self.notice) == bytes :
+           self.notice = self.notice.decode("utf-8")
   
         self.event     = None
         self.flow      = None
@@ -79,20 +85,34 @@ class dd_message():
     def get_elapse(self):
         return time.time()-self.tbegin
 
-    def local_lock(self,lock):
-        self.lock = lock
-        self.local_file += lock
+    def log_amqp(self):
+        self.log_topic    = self.topic.replace('.post.','.log.')
+        self.log_notice   = "%s %d %s %s %f" % \
+                       (self.notice,self.code,socket.gethostname(),self.headers['source'],self.get_elapse())
+        self.headers['message'] = self.message
+        self.set_headers()
 
-    def local_unlock(self):
-        self.local_file = self.local_file[:-len(self.lock)]
-        del self.lock
+        if self.amqp_log != None :
+           log_exchange = 'xlog'
+           self.amqp_log.publish(log_exchange,self.log_topic,self.log_notice,self.headers)
 
-    def log(self, code, message ):
-        self.log_exchange           = 'xlog'
-        self.log_topic              = self.topic.replace('.post.','.log.')
-        self.log_notice             = "%s %d %s %s %f" % (self.notice,code,socket.gethostname(),self.headers['source'],self.get_elapse())
-        self.log_headers            = self.headers
-        self.log_headers['message'] = message
+
+    def log_error(self):
+        self.log_amqp()
+
+        if self.logger   != None :
+           self.logger.error("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
+
+        del self.headers['message']
+
+    def log_info(self):
+        self.log_amqp()
+
+        if self.logger   != None :
+           self.set_headers()
+           self.logger.info("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
+
+        del self.headers['message']
 
     def parse_v00_post(self):
         token         = self.topic.split('.')
@@ -186,6 +206,11 @@ class dd_message():
         return '.%d.%d.%d.%d.%s.%s' %\
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
+    def publish(self):
+        if self.amqp_pub != None :
+           self.amqp_pub.publish(self.exchange_pub,self.topic,self.notice,self.headers)
+        self.log_info()
+
     def set_exchange(self,name):
         self.exchange = name
 
@@ -232,6 +257,8 @@ class dd_message():
 
     def set_local(self,inplace,local_file,local_url):
 
+        self.inplace       = inplace
+
         self.local_file    = local_file
         self.local_url     = local_url
         self.local_offset  = 0
@@ -244,7 +271,7 @@ class dd_message():
 
         # part file never inserted
 
-        if not inplace :
+        if not self.inplace :
 
            self.in_partfile = True
 
@@ -262,7 +289,7 @@ class dd_message():
         
         # part file inserted
 
-        if inplace :
+        if self.inplace :
 
            # part file inserts to file (maybe in file, maybe in part file)
 
