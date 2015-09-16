@@ -1,6 +1,12 @@
 #!/bin/ksh
 
-rm ./toto* /tmp/verif 2> /dev/null
+rm toto* 2> /dev/null
+rm dd_sara_sara_test*.log 2> /dev/null
+rm .dd_sara_sara_test*.log 2> /dev/null
+rm sara_test*.conf
+
+export USER=$1
+export PASSWORD=$2
 
 cat << EOF > toto
 0 123456789abcde
@@ -10,7 +16,29 @@ cat << EOF > toto
 4 123456789abcde
 5 123456789abcde
 6 123456789abcde
-7 123456789abcde
+7 123456
+89abcde
+8 123456789abcde
+9 123456789abcde
+a 123456789abcde
+b 123456789abcde
+c 123456789abcde
+d 123456789abcde
+e 123456789abcde
+
+EOF
+cat << EOF > toto.p0
+0 123456789abcde
+1 123456789abcde
+2 123456789abcde
+3 123456789abcde
+4 123456789abcde
+5 123456789abcde
+6 123456789abcde
+7 123456
+EOF
+cat << EOF > toto.p1
+89abcde
 8 123456789abcde
 9 123456789abcde
 a 123456789abcde
@@ -21,6 +49,28 @@ e 123456789abcde
 
 EOF
 
+cp toto    toto2
+cp toto    /var/www/test/toto
+cp toto    /apps/px/test/toto
+
+cp toto.p0 toto.128.2.0.0.d.Part
+cp toto.p0 /var/www/test/toto.128.2.0.0.d.Part
+cp toto.p0 /apps/px/test/toto.128.2.0.0.d.Part
+
+cp toto.p0 toto2.128.2.0.0.d.Part
+cp toto.p0 /var/www/test/toto2.128.2.0.0.d.Part
+cp toto.p0 /apps/px/test/toto2.128.2.0.0.d.Part
+
+cp toto.p1 toto.128.2.0.1.d.Part
+cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
+cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
+
+cp toto.p1 toto2.128.2.0.1.d.Part
+cp toto.p1 /var/www/test/toto2.128.2.0.1.d.Part
+cp toto.p1 /apps/px/test/toto2.128.2.0.1.d.Part
+
+chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
+
 cat << EOF > sara_test1.conf
 
 # source
@@ -28,6 +78,9 @@ cat << EOF > sara_test1.conf
 source_broker amqp://localhost/
 source_exchange amq.topic
 source_topic v02.post.#
+
+sftp_user $USER
+sftp_password $PASSWORD
 
 # destination
 
@@ -37,156 +90,457 @@ document_root /
 
 EOF
 
-echo ==== DIRECT FILE : INPLACE T/F ====
+cat sara_test1.conf
+
+rm -r -f ./test >/dev/null 2>&1
+mkdir ./test
+
+echo ==== INPLACE FALSE ====
 
 function test1 {
-      echo dd_sara $* start
-      ../sara/dd_sara.py $* start 
+
+      ../sara/dd_sara.py $* start   > /dev/null 2>&1
+      #======== 1
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2  > /dev/null 2>&1
+      sleep 10
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2  
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+      sleep 10
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+      sleep 10
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #parts I
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+      sleep 4
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK  ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+      sleep 6
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+      sleep 8
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+
+      #parts P
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 4
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK  ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p 
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 6
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 8
+      N=`diff toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part|wc -l`
+      N2=`diff toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part|wc -l`
+      if ((N==0 && N2==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
       
-      echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 > /dev/null 2>&1
-      
-      sleep 1
-      echo 
-      echo check !?
-      echo diff ./toto ./toto2
-      diff ./toto ./toto2
-      echo rm ./toto2
-      rm ./toto2*
-      
-      ../sara/dd_sara.py $* stop
-      echo dd_sara $* stop
+      ../sara/dd_sara.py $* stop > /dev/null 2>&1
+
 }
 
 test1 --strip 2 --url file:                ./sara_test1.conf
-test1 --strip 2 --url file: --inplace True ./sara_test1.conf
 
-echo ==== PARTS  FILE : INPLACE F   ====
+
+echo ==== INPLACE TRUE ====
 
 function test2 {
-      echo dd_sara $* start
-      ../sara/dd_sara.py $* start 
-      
-      echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128 > /dev/null 2>&1
 
+      ../sara/dd_sara.py $* start > /dev/null 2>&1
+
+      #======== 1
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
       sleep 2
-      echo dd_post -u file:${PWD}/toto2.256.128.1.d.Part -rn ${PWD}/toto3 -p p
-      echo dd_post -u file:${PWD}/toto2.256.128.0.d.Part -rn ${PWD}/toto3 -p p
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.1.d.Part -rn ${PWD}/toto3 -p p > /dev/null 2>&1
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.0.d.Part -rn ${PWD}/toto3 -p p > /dev/null 2>&1
-      
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2  
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+      sleep 3
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+      sleep 4
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2
+         exit 1
+      fi
+      rm   ./test/toto2*
       sleep 2
-      echo 
-      echo check !?
-      echo diff ./toto2.256.128.0.d.Part ./toto3.256.128.0.d.Part
-      echo diff ./toto2.256.128.1.d.Part ./toto3.256.128.1.d.Part
-      diff ./toto2.256.128.0.d.Part ./toto3.256.128.0.d.Part
-      diff ./toto2.256.128.1.d.Part ./toto3.256.128.1.d.Part
-      
-      ../sara/dd_sara.py $* stop
-      echo dd_sara $* stop
+
+      #parts I
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128  > /dev/null 2>&1
+      sleep 4
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK  ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+      sleep 6
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+      sleep 8
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+
+      #parts P
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 6
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK  ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p 
+      else
+         echo ERROR ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 6
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+      else
+         echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      sleep 8
+      N=`diff toto ./test/toto2|wc -l`
+      if ((N==0)) ; then
+         echo OK ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+      else
+         echo ERROR ../sara/dd_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto2 -p p
+         exit 1
+      fi
+      rm   ./test/toto2*
+
+      ../sara/dd_sara.py $* stop > /dev/null 2>&1
+
 }
 
-test2 --strip 2 --url file:           ./sara_test1.conf
+test2 --strip 2 --url file: --inplace True ./sara_test1.conf
 
-rm ./toto2*
-
-echo ==== PARTS  FILE : INPLACE T   ====
+echo ==== INPLACE FALSE NOT MODIFIED ====
 
 function test3 {
-      echo dd_sara $* start
-      ../sara/dd_sara.py $* start 
+
+      cp ./toto ./test/toto2
+      cp ./toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part
+      cp ./toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part
+
+      ../sara/dd_sara.py $* start > /dev/null 2>&1
+      #======== 1
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2  > /dev/null 2>&1
+
+      #======== 1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+
+      #======== 1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 > /dev/null 2>&1
+
+      #parts I
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128 > /dev/null 2>&1
+
+
+      #parts P
+
+      #======== 2
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+
+      #======== 2
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      #======== 2
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+      ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p > /dev/null 2>&1
+
       
-      echo creation toto2
-      echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128 > /dev/null 2>&1
+      sleep 10
 
-      sleep 3
-      echo diff ./toto ./toto2
-      diff ./toto ./toto2
-      
-      echo repost i flag for toto2  NO DIFF
-      echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128 > /dev/null 2>&1
+      ../sara/dd_sara.py $* stop > /dev/null 2>&1
 
-      sleep 3
-      echo diff ./toto ./toto2
-      diff ./toto ./toto2
+      N=`grep modified dd_sara_sara_test1_0001.log  | wc -l`
+      if ((N==15)) ; then
+         echo OK  not modified in all cases
+      else
+         echo ERROR should have 15 cases of unmodified files
+         exit 1
+      fi
+      rm   ./test/toto2*
+ 
 
-      echo repost d flag for toto2  NO DIFF
-      echo dd_post -u file:${PWD}/toto2.256.128.1.d.Part -p p
-      echo dd_post -u file:${PWD}/toto2.256.128.0.d.Part -p p
-      cp ./toto3.256.128.1.d.Part ./toto2.256.128.1.d.Part
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.1.d.Part -p p > /dev/null 2>&1
-      cp ./toto3.256.128.0.d.Part ./toto2.256.128.0.d.Part
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.0.d.Part -p p > /dev/null 2>&1
-      
-      echo 
-      echo check !?
-      echo diff ./toto ./toto2
-      diff ./toto ./toto2
-      
-      echo repost i flag for toto2  WITH DIFF
-      cat ./toto2 | sed 's/12345/abcde/' > ./toto2_mod
-      mv ./toto2_mod ./toto2
-      echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,128 > /dev/null 2>&1
-
-      sleep 3
-      echo diff ./toto ./toto2
-      diff ./toto ./toto2
-
-      echo repost d flag for toto2  WITH DIFF
-      cat ./toto2 | sed 's/12345/abcde/' > ./toto2_mod
-      mv ./toto2_mod ./toto2
-      echo dd_post -u file:${PWD}/toto2.256.128.1.d.Part -p p
-      echo dd_post -u file:${PWD}/toto2.256.128.0.d.Part -p p
-      cp ./toto3.256.128.1.d.Part ./toto2.256.128.1.d.Part
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.1.d.Part -p p > /dev/null 2>&1
-      cp ./toto3.256.128.0.d.Part ./toto2.256.128.0.d.Part
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.0.d.Part -p p > /dev/null 2>&1
-
-      echo repost d flag for toto2  WITH DIFF + truncated
-      echo copie first, insert second, truncate
-      cat ./toto2 | sed 's/12345/abcde/' > ./toto2_mod
-      mv ./toto2_mod ./toto2
-      echo aaaaaaaaa >> ./toto2
-      echo dd_post -u file:${PWD}/toto2.256.128.0.d.Part -p p
-      cp ./toto3.256.128.0.d.Part ./toto2.256.128.0.d.Part
-      cp ./toto3.256.128.1.d.Part ./toto2.256.128.1.d.Part
-      ../sara/dd_post.py -u file:${PWD}/toto2.256.128.0.d.Part -p p > /dev/null 2>&1
-      
-      echo 
-      echo check !?
-      echo diff ./toto ./toto2
-
-      diff ./toto ./toto2
-      
-      ../sara/dd_sara.py $* stop
-      echo dd_sara $* stop
 }
 
-test3 --strip 2 --url file: --inplace True ./sara_test1.conf
+../sara/dd_sara.py $* stop > /dev/null 2>&1
+test3 --strip 2 --url file:                ./sara_test1.conf
 
-echo ==== Instances Part files : INPLACE T   ====
+echo ==== INSTANCES AND INSERTS ====
+
+function test4 {
+
+         ../sara/dd_sara.py $* ./sara_test1.conf start > /dev/null 2>&1
+
+         ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,1  > /dev/null 2>&1
+         ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,1  > /dev/null 2>&1
+
+               sleep 20
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK file:   INSTANCES/INSERTS
+               else
+                  echo ERROR file:   INSTANCES/INSERTS
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+         ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,1 > /dev/null 2>&1
+         ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,1 > /dev/null 2>&1
+
+               sleep 30
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK http:   INSTANCES/INSERTS
+               else
+                  echo ERROR http:   INSTANCES/INSERTS
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+         ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,1 > /dev/null 2>&1
+         ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,1 > /dev/null 2>&1
+         
+               sleep 40
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK sftp:   INSTANCES/INSERTS
+               else
+                  echo ERROR sftp:   INSTANCES/INSERTS
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+         ../sara/dd_sara.py $* ./sara_test1.conf stop
+         sleep 10
+
+}
+
+test4 --strip 2 --url file: --inplace true --instances 100
 
 
-../sara/dd_sara.py --instances 100 --strip 2 --url file: --inplace True ./sara_test1.conf start
+echo ==== INSTANCES AND INSERTS AND TRUNCATE ====
 
-rm ./toto2*
+function test5 {
 
-echo dd_post -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,1 -r
-../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/toto2 -p i,1 -r > /dev/null 2>&1
+         ../sara/dd_sara.py $* ./sara_test1.conf start > /dev/null 2>&1
 
-sleep 10
-echo diff ./toto ./toto2
-diff ./toto ./toto2
+         cat toto | sed 's/12345/abcde/' > ./test/toto2
+         echo abc >> ./test/toto2
 
-../sara/dd_sara.py --instances 100 --strip 2 --url file: --inplace True ./sara_test1.conf stop
+         ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,11 -r  > /dev/null 2>&1
 
-rm ./dd_sara_sara_test1_0*log
-rm ./.dd_sara_sara_test1.state 
-rm ./toto*
-rm ./sara_test1.conf 
+               sleep 20
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK file:   INSERTS and TRUNCATED
+               else
+                  echo ERROR file:   INSERTS and TRUNCATED
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+
+         cat toto | sed 's/12345/abcde/' > ./test/toto2
+         echo abc >> ./test/toto2
+
+         ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,11 -r > /dev/null 2>&1
+
+               sleep 30
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK http:   INSERTS and TRUNCATED
+               else
+                  echo ERROR http:   INSERTS and TRUNCATED
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+
+         cat toto | sed 's/12345/abcde/' > ./test/toto2
+         echo abc >> ./test/toto2
+
+         ../sara/dd_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,11 -r > /dev/null 2>&1
+         
+               sleep 60
+               ls -al toto ./test/toto2
+               N=`diff toto ./test/toto2|wc -l`
+               if ((N==0)) ; then
+                  echo OK sftp:   INSERTS and TRUNCATED
+               else
+                  echo ERROR sftp:   INSERTS and TRUNCATED
+                  exit 1
+               fi
+               rm   ./test/toto2*
+
+         ../sara/dd_sara.py $* ./sara_test1.conf stop
+         sleep 10
+
+}
+
+test5 --strip 2 --url file: --inplace true --instances 10
+
+rm ./dd_sara_*.log ./.dd_sara_* ./toto* ./test/t* ./sara_test1.conf > /dev/null 2>&1
+rmdir ./test > /dev/null 2>&1
 
