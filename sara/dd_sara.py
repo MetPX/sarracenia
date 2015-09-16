@@ -295,10 +295,12 @@ class dd_sara(dd_instances):
                     self.msg.code    = 304
                     self.msg.message = 'not modified'
                     self.msg.log_info()
+             
+                    # a part unmodified can make a difference
+                    if self.inplace and self.msg.in_partfile :
+                       file_reassemble(self.msg)
 
-                    # checked on exact file size of message
-                    #  perhaps it needs to be truncated
-
+                    # chksum computed on msg offset/length may need to truncate
                     file_truncate(self.msg)
                     continue
 
