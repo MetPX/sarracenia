@@ -98,45 +98,6 @@ class Chunk:
         return (self.chunksize, self.block_count, self.remainder, current_block, data_sum) 
 
 
-def write_to_file(this,req,lfile,loffset,length) :
-        bufsize = 10 * 1024 * 1024
-        # file should exists
-        if not os.path.isfile(lfile) :
-           fp = open(lfile,'w')
-           fp.close()
-
-        # file open read/modify binary
-        fp = open(lfile,'r+b')
-        if loffset != 0 : fp.seek(loffset,0)
-
-        nc = int(length/bufsize)
-        r  = length % bufsize
-
-        # loop on bufsize if needed
-        i  = 0
-        while i < nc :
-              chunk = req.read(bufsize)
-              if len(chunk) != bufsize :
-                 this.logger.debug('length %d and bufsize = %d' % (len(chunk),bufsize))
-                 this.logger.error('1 source data differ from notification... abort')
-                 if i > 0 : this.logger.error('product corrupted')
-                 return False,417,'Expectation Failed'
-              fp.write(chunk)
-              i = i + 1
-
-        # remaining
-        if r > 0 :
-           chunk = req.read(r)
-           if len(chunk) != r :
-              this.logger.debug('length %d and remainder = %d' % (len(chunk),r))
-              this.logger.error('2 source data differ from notification... abort')
-              return False,417,'Expectation Failed'
-           fp.write(chunk)
-
-        fp.close()
-
-        return True,201,'Created (Downloaded)'
-
 # ===================================
 # Seek info
 # ===================================
