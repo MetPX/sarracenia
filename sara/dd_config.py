@@ -102,9 +102,11 @@ class dd_config:
 
         self.source_topic         = None
 
-        self.user                 = None
-        self.password             = None
-        self.ssh_keyfile          = None
+        self.http_user            = None
+        self.http_password        = None
+        self.sftp_user            = None
+        self.sftp_password        = None
+        self.sftp_keyfile         = None
 
         self.sleep                = 0
         self.strip                = 0
@@ -298,16 +300,28 @@ class dd_config:
                      self.source_exchange = words[1]
                      n = 2
 
-                elif words[0] in ['url_user','-us','--url_user']:
-                     self.user = words[1]
+                elif words[0] in ['http_user','-hu','--http_user']:
+                     self.http_user = words[1]
+                     n = 2
+
+                elif words[0] in ['http_password','-hp','--http_password']:
+                     self.http_password = words[1]
                      n = 2
 
                 elif words[0] in ['url_password','-up','--url_password']:
                      self.password = words[1]
                      n = 2
 
-                elif words[0] in ['ssh_keyfile','-sk','--ssh_keyfile']:
-                     self.ssh_keyfile = words[1]
+                elif words[0] in ['sftp_user','-su','--sftp_user']:
+                     self.sftp_user = words[1]
+                     n = 2
+
+                elif words[0] in ['sftp_password','-sp','--sftp_password']:
+                     self.sftp_password = words[1]
+                     n = 2
+
+                elif words[0] in ['sftp_keyfile','-sk','--sftp_keyfile']:
+                     self.sftp_keyfile = words[1]
                      n = 2
 
                 elif words[0] in ['source_topic','-st','--source_topic']:
