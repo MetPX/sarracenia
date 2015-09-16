@@ -4,18 +4,18 @@ import os,sys,time
 
 try :    
          from dd_amqp           import *
+         from dd_file           import *
          from dd_http           import *
          from dd_instances      import *
          from dd_message        import *
          from dd_sftp           import *
-         from dd_util           import *
 except : 
          from sara.dd_amqp      import *
+         from sara.dd_file      import *
          from sara.dd_http      import *
          from sara.dd_instances import *
          from sara.dd_message   import *
          from sara.dd_sftp      import *
-         from sara.dd_util      import *
 
 class dd_sara(dd_instances):
 
@@ -29,8 +29,8 @@ class dd_sara(dd_instances):
 
         # dont want to recreate these if they exists
 
-        if not hasattr(self,'imsg') :
-           self.imsg = dd_message(self.logger)
+        if not hasattr(self,'msg') :
+           self.msg = dd_message(self.logger)
 
         # umask change for directory creation and chmod
 
@@ -76,8 +76,8 @@ class dd_sara(dd_instances):
 
         # log publisher
 
-        self.log    = Publisher(self.hc_src)
-        self.log.build()
+        self.amqp_log    = Publisher(self.hc_src)
+        self.amqp_log.build()
 
         # log exchange : make sure it exists
 
@@ -96,8 +96,8 @@ class dd_sara(dd_instances):
 
         # publisher
 
-        self.pub    = Publisher(self.hc_pst)
-        self.pub.build()
+        self.amqp_pub    = Publisher(self.hc_pst)
+        self.amqp_pub.build()
 
         # publisher exchange : make sure it exists
 
@@ -121,10 +121,40 @@ class dd_sara(dd_instances):
         self.setlog()
 
     def delete_event(self):
-        ok      = False
-        code    = 503
-        message = "Service unavailable : %s " % delete
-        self.dual_log(ok,code,message)
+        if self.msg.event != 'IN_DELETE' : return False
+
+        self.msg.code = 503
+        self.msg.message = "Service unavailable : delete"
+        self.msg.log_error()
+ 
+        return True
+
+
+    def download(self):
+
+        self.logger.info("downloading/copying into %s " % self.msg.local_file)
+
+        try :
+                if   self.msg.url.scheme == 'http' :
+                     return http_download(self.msg, self.http_user, self.http_password )
+
+                elif self.msg.url.scheme == 'sftp' :
+                     return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
+
+                elif self.msg.url.scheme == 'file' :
+                     return file_process(self.msg)
+
+        except :
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
+                msg.code    = 503
+                msg.message = "Unable to process"
+                msg.log_error()
+
+        msg.code    = 503
+        msg.message = "Service unavailable %s" % self.msg.url.scheme
+        msg.log_error()
+
 
     def help(self):
         self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
@@ -148,114 +178,14 @@ class dd_sara(dd_instances):
         self.logger.info("DEBUG:")
         self.logger.info("-debug")
 
-    def dual_log(self,ok,code,message):
-        print_severity = self.logger.info
-        if not ok : print_severity = self.logger.error
-
-        self.imsg.log(code,message)
-        print_severity('(%d,%s): %s %s %s',code,message,self.imsg.topic,self.imsg.notice,self.imsg.hdrstr)
-        self.log.publish(self.imsg.log_exchange,self.imsg.log_topic,self.imsg.log_notice,self.imsg.log_headers)
-
-    def insert_file(self,part_file):
-        try :
-                 bufsize = 10 * 1024 * 1024
-                 fp = open(part_file,'rb')
-                 ft = open(self.imsg.target_file,'r+b')
-                 ft.seek(self.imsg.offset,0)
-
-                 i  = 0
-                 while i<self.imsg.length :
-                       buf = fp.read(bufsize)
-                       ft.write(buf)
-                       i  += len(buf)
-
-                 ft.close()
-                 fp.close()
-
-                 os.unlink(part_file)
-
-                 return True,201,'Created (Inserted)'
-
-        except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 return False,499,svalue
-
-        return False,499,'Unknown'
-
-    def insert_from_parts(self):
-
-        if not os.path.isfile(self.imsg.target_file) : return
-        lstat   = os.stat(self.imsg.target_file)
-        fsiz    = lstat[stat.ST_SIZE] 
-        i       = int(fsiz /self.imsg.chunksize)
-
-
-        while i < self.imsg.block_count:
-              self.imsg.current_block = i
-              partstr = '%s,%d,%d,%d,%d' %\
-                        ('i',self.imsg.chunksize,self.imsg.block_count,self.imsg.remainder,self.imsg.current_block)
-              self.imsg.set_parts_str(partstr)
-              self.imsg.set_suffix()
-
-              part_file = self.imsg.target_file + self.imsg.suffix
-              if not os.path.isfile(part_file) : return
-
-              lstat   = os.stat(self.imsg.target_file)
-              fsiz    = lstat[stat.ST_SIZE] 
-              if self.imsg.offset > fsiz : return
- 
-              # special locking insert... try avoid race condition
-              part_file_lck = part_file + '.lck_ins'
-              if os.path.isfile(part_file_lck) : return
-              try :    os.link(part_file,part_file_lck)
-              except : return
-              try :    os.unlink(part_file)
-              except : pass
-
-              ok,code,message = self.insert_file(part_file_lck)
-              self.dual_log(ok,code,message)
-              if not ok : return
-
-              self.imsg.set_exchange(self.exchange)
-              self.imsg.set_topic_url('v02.post',self.imsg.target_url)
-              self.imsg.set_notice(self.imsg.target_url,self.imsg.time)
-              self.imsg.rename  = None
-              self.imsg.message = None
-              self.imsg.set_headers()
-              self.pub.publish(self.imsg.exchange,self.imsg.topic,self.imsg.notice,self.imsg.headers)
-              self.dual_log(True,201,'Created (Published)')
-
-              i = i + 1
-
-        self.lastchunk()
-
-    def lastchunk(self):
-        if self.imsg.partflg == '1': return
-        if not self.inplace        : return
-        if not self.lastchunk      : return
-
-        try :
-                 lstat   = os.stat(self.imsg.target_file)
-                 fsiz    = lstat[stat.ST_SIZE] 
-
-                 if fsiz > self.imsg.filesize :
-                    fp = open(self.imsg.target_file,'r+b')
-                    fp.truncate(self.imsg.filesize)
-                    fp.close()
-                    self.dual_log(True,205,'Reset Content %s' % 'truncated')
-                 elif fsiz < self.imsg.filesize :
-                    self.dual_log(False,411,'Length Requiered %s' % 'file too small')
-
-        except : pass
-
     def set_local(self):
 
         # relative path
 
         yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-        self.rel_path = '%s/%s/%s' % (yyyymmdd,self.imsg.source,self.imsg.path)
-        if self.imsg.rename != None :
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.imsg.source,self.imsg.rename)
+        self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
+        if self.msg.rename != None :
+           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.rename)
            self.rel_path = self.rel_path.replace('//','/')
 
         token = self.rel_path.split('/')
@@ -284,7 +214,10 @@ class dd_sara(dd_instances):
 
         ok, code, message = self.file_script(target_file, offset, length)
 
-        if not ok : self.dual_log(ok,code,message)
+        if not ok :
+           self.msg.code    = code
+           self.msg.message = message
+           self.msg.log_error(code,message)
 
         return ok
 
@@ -292,9 +225,12 @@ class dd_sara(dd_instances):
 
         if self.msg_script == None : return True
 
-        ok, code, message = self.msg_script(self.imsg)
+        ok, code, message = self.msg_script(self.msg)
 
-        if not ok : self.dual_log(ok,code,message)
+        if not ok :
+           self.msg.code    = code
+           self.msg.message = message
+           self.msg.log_error(code,message)
 
         return ok
 
@@ -305,46 +241,45 @@ class dd_sara(dd_instances):
 
         self.connect()
 
-        self.imsg.logger = self.logger
+        self.msg.logger       = self.logger
+        self.msg.amqp_log     = self.amqp_log
+        self.msg.amqp_pub     = self.amqp_pub
+        self.msg.exchange_pub = self.exchange
 
         #
         # loop on all message
         #
+
+        raw_msg = None
+
         while True :
 
           try  :
-                 msg = self.consumer.consume(self.queue.qname)
-                 if msg == None : continue
+                 if raw_msg != None : self.consumer.ack(raw_msg)
+
+                 raw_msg = self.consumer.consume(self.queue.qname)
+                 if raw_msg == None : continue
 
                  # make use it as a dd_message
 
-                 self.imsg.from_amqplib(msg)
-                 self.logger.info("Received %s '%s' %s" % (self.imsg.topic,self.imsg.notice,self.imsg.hdrstr))
-
-                 # testing purpose
-                 if self.sleep > 0 :
-                    self.logger.info("Sleeping %d" % self.sleep)
-                    time.sleep(self.sleep)
+                 self.msg.from_amqplib(raw_msg)
+                 self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
                  # message validation
 
-                 ok = self.validate_message()
-                 if not ok :
-                    self.consumer.ack(msg)
-                    continue
+                 if not self.validate_message() : continue
 
-                 # set local file :  dr + imsg.path (renamed path)
+                 # set local file according to sara : dr + imsg.path (or renamed path)
 
                  self.set_local()
 
-                 self.imsg.set_local(self.inplace,self.local_file,self.local_url)
+                 # set local file according to the message and sara's setting
+
+                 self.msg.set_local(self.inplace,self.local_file,self.local_url)
 
                  # asked to delete ?
 
-                 if self.imsg.event == 'IN_DELETE' :
-                    self.delete_event()
-                    self.consumer.ack(msg)
-                    continue
+                 if self.delete_event() : continue
 
                  # make sure local directory exists
                  # FIXME : logging errors...
@@ -355,116 +290,79 @@ class dd_sara(dd_instances):
                  # verify if msg checksum and local_file checksum match
                  # FIXME : should we republish / repost ???
 
-                 if not self.overwrite :
-                    if  self.imsg.checksum_match() :
-                        self.dual_log(True,304,'not modified')
-                        self.lastchunk()
-                        self.consumer.ack(msg)
-                        continue
+                 if not self.overwrite and self.msg.checksum_match() :
 
-                 # another race condition : lock writing so the part is not inserted when unfinished
+                    self.msg.code    = 304
+                    self.msg.message = 'not modified'
+                    self.msg.log_info()
 
-                 if self.inplace and self.imsg.in_partfile :
-                    self.imsg.local_lock('.lck_wrt')
+                    # checked on exact file size of message
+                    #  perhaps it needs to be truncated
 
-                 # proceed to download
-                 i = 0
-                 ok,code,message = False,503,"unable to download"
-                 while  i < 3 : 
-
-                      try :
-                           if   self.imsg.url.scheme == 'http' :
-                                ok,code,message = http_download(self.imsg, self.user, self.password )
-                                break
-                           elif self.imsg.url.scheme == 'sftp' :
-                                ok,code,message = sftp_download(self.imsg, self.user, self.password, self.ssh_keyfile )
-                                break
-                           elif self.imsg.url.scheme == 'file' :
-                                fp = open(self.imsg.url.path,'rb')
-                                if self.imsg.partflg == 'i' : fp.seek(self.imsg.offset,0)
-                                write_to_file(self,fp, self.imsg.local_file, self.imsg.local_offset, self.imsg.length )
-                                fp.close()
-                                ok,code,message = True,201,'Created (copied)'
-                                break
-                           else :
-                                ok,code,message = False,503,"Service unavailable %s" % self.imsg.url.scheme
-                                break
-                      except :
-                           (stype, svalue, tb) = sys.exc_info()
-                           self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-
-                      i = i + 1
-
-                   
-                 self.dual_log(ok,code,message)
-                 if not ok :
-                    self.consumer.ack(msg)
+                    file_truncate(self.msg)
                     continue
+
+                 # proceed to download  3 attempts
+
+                 i  = 0
+                 while i < 3 : 
+                       ok = self.download()
+                       if ok : break
+                       i = i + 1
+                 if not ok : continue
 
                  # validate file/data
-                 ok = self.validate_file(self.imsg.local_file, self.imsg.local_offset, self.imsg.length)
-                 if not ok :
-                    self.consumer.ack(msg)
-                    continue
+
+                 if not self.validate_file(self.msg.local_file, self.msg.local_offset, self.msg.length) : continue
 
                  # force recompute checksum
 
                  if self.recompute_chksum :
-                    self.imsg.compute_local_checksum()
-                    if not self.imsg.local_checksum == self.imsg.checksum :
-                       self.imsg.set_sum(self.imsg.sumflg,self.imsg.local_checksum)
-                       self.imsg.checksum = self.imsg.local_checksum
-                       self.dual_log(True,205,'Reset Content : checksum')
+                    self.msg.compute_local_checksum()
+
+                    # When downloaded, it changed from the message... 
+                    # this is weird... means the file changed in the mean time
+                    # and probably reposted...
+                    # now posting of this file will have accurate checksum
+
+                    if not self.msg.local_checksum == self.msg.checksum :
+                       self.msg.set_sum(self.msg.sumflg,self.msg.local_checksum)
+                       self.msg.code    = 205
+                       self.msg.message = 'Reset Content : checksum'
+                       self.msg.log_info()
 
 
-                 # if mode is inplace and we downloaded in part file...
-                 # unlock + log temporary redirection + attempt to insert
+                 # Delayed insertion
+                 # try reassemble the file, conditions may have changed since writing
 
-                 if self.inplace and self.imsg.in_partfile :
-                    lock = self.imsg.local_file
-                    self.imsg.local_unlock()
-                    orig = self.imsg.local_file
-                    try    : os.unlink(orig)
-                    except : pass
-                    try    : os.link(lock,orig)
-                    except : return
-                    try    : os.unlink(lock)
-                    except : pass
-                    self.dual_log(True,307,'Temporary Redirect')
-
-                    # try inserting it... conditions may have changed since writing
-
-                    self.insert_from_parts()
-
-                    self.consumer.ack(msg)
+                 if self.inplace and self.msg.in_partfile :
+                    self.msg.code    = 307
+                    self.msg.message = 'Temporary Redirect'
+                    self.msg.log_info()
+                    file_reassemble(self.msg)
                     continue
 
-                 # announcing the download
+                 # announcing the download or insert
 
-                 if self.imsg.partflg != 1 :
-                    if self.inplace : self.imsg.change_partflg('i')
-                    else            : self.imsg.change_partflg('p')
+                 if self.msg.partflg != '1' :
+                    if self.inplace : self.msg.change_partflg('i')
+                    else            : self.msg.change_partflg('p')
 
-                 self.imsg.set_exchange(self.exchange)
-                 self.imsg.set_topic_url('v02.post',self.imsg.local_url)
-                 self.imsg.set_notice(self.imsg.local_url,self.imsg.time)
-                 self.imsg.rename  = None
-                 self.imsg.message = None
-                 self.imsg.set_headers()
-                 self.pub.publish(self.imsg.exchange,self.imsg.topic,self.imsg.notice,self.imsg.headers)
-                 self.dual_log(True,201,'Created (Published)')
+                 self.msg.set_topic_url('v02.post',self.msg.local_url)
+                 self.msg.set_notice(self.msg.local_url,self.msg.time)
+                 self.msg.rename  = None
+                 self.msg.code    = 201
+                 self.msg.message = 'Published'
+                 self.msg.publish()
+              
+                 # if we inserted a part in file ... try reassemble
 
-                 # if we inserted a part in file ... perhaps others are ready
-
-                 if self.inplace :
-                    self.insert_from_parts()
-
-                 self.consumer.ack(msg)
+                 if self.inplace and self.msg.partflg != '1' :
+                    file_reassemble(self.msg)
 
           except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                 self.consumer.ack(msg)
 
     def reload(self):
         self.logger.info("dd_sara reload")
