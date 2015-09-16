@@ -49,23 +49,38 @@ def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
             response  = sftp.file(cfile,'rb',msg.bufsize)
             if msg.partflg == 'i' :
                response.seek(msg.offset,0)
-               ok,code,message = sftp_write_length(response,msg)
+               ok = sftp_write_length(response,msg)
             else :
-               ok,code,message = sftp_write(response,msg)
+               ok = sftp_write(response,msg)
 
             try    : sftp.close()
             except : pass
             try    : t.close()
             except : pass
 
-            return ok,code,message
+            return ok
             
     except:
+            try    : sftp.close()
+            except : pass
+            try    : t.close()
+            except : pass
+
             (stype, svalue, tb) = sys.exc_info()
             msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-            return False,499,str(svalue)
+            msg.code    = 499
+            msg.message = 'sftp download problem'
+            msg.log_error()
 
-    return False,499,''
+            return False
+
+    msg.code    = 499
+    msg.message = 'sftp download problem'
+    msg.log_error()
+
+    return False
+
+# read all file no worry
 
 def sftp_write(req,msg):
     if not os.path.isfile(msg.local_file) :
@@ -75,8 +90,6 @@ def sftp_write(req,msg):
     fp = open(msg.local_file,'r+b')
     if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
-    # read all file no worry
-
     while True:
           chunk = req.read(msg.bufsize)
           if not chunk : break
@@ -84,8 +97,14 @@ def sftp_write(req,msg):
 
     fp.close()
 
-    return True,201,'Created (Downloaded)'
+    msg.code    = 201
+    msg.message = 'Downloaded'
+    msg.log_info()
 
+    return True
+
+
+# read exact length
 
 def sftp_write_length(req,msg):
     # file should exists
@@ -98,30 +117,25 @@ def sftp_write_length(req,msg):
     if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
     nc = int(msg.length/msg.bufsize)
-    r  = msg.length % msg.bufsize
+    r  =     msg.length%msg.bufsize
 
-    # loop on bufsize if needed
+    # read/write bufsize "nc" times
     i  = 0
     while i < nc :
           chunk = req.read(msg.bufsize)
-          if len(chunk) != msg.bufsize :
-             msg.logger.debug('length %d and bufsize = %d' % (len(chunk),msg.bufsize))
-             msg.logger.error('source data differ from notification... abort')
-             if i > 0 : msg.logger.error('product corrupted')
-             return False,417,'Expectation Failed'
           fp.write(chunk)
           i = i + 1
 
     # remaining
     if r > 0 :
        chunk = req.read(r)
-       if len(chunk) != r :
-          msg.logger.debug('length %d and remainder = %d' % (len(chunk),r))
-          msg.logger.error('source data differ from notification... abort')
-          return False,417,'Expectation Failed'
        fp.write(chunk)
 
     fp.close()
 
-    return True,201,'Created (Downloaded)'
+    msg.code    = 201
+    msg.message = 'Downloaded'
+    msg.log_info()
+
+    return True
 
