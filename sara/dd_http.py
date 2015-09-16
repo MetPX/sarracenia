@@ -42,17 +42,26 @@ def http_download( msg, iuser, ipassword ) :
             msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
-            ok,code,message = http_write(response,msg)
+            ok       =  http_write(response,msg)
 
-            return ok,code,message
-                
+            return ok
+
     except urllib.error.HTTPError as e:
-           return False,e.code,str(e.reason)
+           msg.logger.error('Download failed %s ' % urlstr)
+           msg.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
     except urllib.error.URLError as e:
-           return False,e.code,str(e.reason)
+           msg.logger.error('Download failed %s ' % urlstr)
+           msg.logger.error('Failed to reach server. Reason: %s', e.reason)
     except:
            (stype, svalue, tb) = sys.exc_info()
-           return False,499,str(svalue)
+           msg.logger.error('Download failed %s ' % urlstr)
+           msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
+
+    msg.code    = 499
+    msg.message = 'http download problem'
+    msg.log_error()
+
+    return False
 
 def http_write(req,msg) :
     if not os.path.isfile(msg.local_file) :
@@ -72,4 +81,8 @@ def http_write(req,msg) :
 
     fp.close()
 
-    return True,201,'Created (Downloaded)'
+    msg.code    = 201
+    msg.message = 'Downloaded'
+    msg.log_info()
+
+    return True
