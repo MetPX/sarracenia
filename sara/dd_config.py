@@ -102,6 +102,10 @@ class dd_config:
 
         self.source_topic         = None
 
+        self.ftp_user             = None
+        self.ftp_password         = None
+        self.ftp_mode             = 'passive'
+        self.ftp_binary           = True
         self.http_user            = None
         self.http_password        = None
         self.sftp_user            = None
@@ -298,6 +302,25 @@ class dd_config:
 
                 elif words[0] in ['source_exchange','-se','--source_exchange']:
                      self.source_exchange = words[1]
+                     n = 2
+
+                elif words[0] in ['ftp_user','-fu','--ftp_user']:
+                     self.ftp_user = words[1]
+                     n = 2
+
+                elif words[0] in ['ftp_password','-fp','--ftp_password']:
+                     self.ftp_password = words[1]
+                     n = 2
+
+                elif words[0] in ['ftp_mode','-fm','--ftp_mode']:
+                     if not words[1] in ['active','passive'] :
+                        self.logger.error("ftp_mode is active or passive")
+                        needexit = True
+                     self.ftp_mode = words[1]
+                     n = 2
+
+                elif words[0] in ['ftp_binary','-fb','--ftp_binary']:
+                     self.ftp_binary = isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['http_user','-hu','--http_user']:

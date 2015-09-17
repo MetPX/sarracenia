@@ -5,6 +5,7 @@ import os,sys,time
 try :    
          from dd_amqp           import *
          from dd_file           import *
+         from dd_ftp            import *
          from dd_http           import *
          from dd_instances      import *
          from dd_message        import *
@@ -12,6 +13,7 @@ try :
 except : 
          from sara.dd_amqp      import *
          from sara.dd_file      import *
+         from sara.dd_ftp       import *
          from sara.dd_http      import *
          from sara.dd_instances import *
          from sara.dd_message   import *
@@ -137,6 +139,9 @@ class dd_sara(dd_instances):
         try :
                 if   self.msg.url.scheme == 'http' :
                      return http_download(self.msg, self.http_user, self.http_password )
+
+                elif self.msg.url.scheme == 'ftp' :
+                     return ftp_download(self.msg, self.ftp_user, self.ftp_password, self.ftp_mode, self.ftp_binary )
 
                 elif self.msg.url.scheme == 'sftp' :
                      return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
