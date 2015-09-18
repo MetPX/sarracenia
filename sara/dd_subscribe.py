@@ -103,8 +103,10 @@ class ConsumerX(object):
         if self.log_back :
            self.amqp_log = Publisher(self.hc)
            self.amqp_log.build()
-           xlog = Exchange(self.hc,'xlog')
-           xlog.build()
+           #xlog exchange should exists...
+           #end users will not configure/create ii
+           #xlog = Exchange(self.hc,'xlog')
+           #xlog.build()
 
     def reconnect(self):
         self.close()
