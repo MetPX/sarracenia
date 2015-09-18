@@ -152,13 +152,13 @@ class dd_sara(dd_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                msg.code    = 503
-                msg.message = "Unable to process"
-                msg.log_error()
+                self.msg.code    = 503
+                self.msg.message = "Unable to process"
+                self.msg.log_error()
 
-        msg.code    = 503
-        msg.message = "Service unavailable %s" % self.msg.url.scheme
-        msg.log_error()
+        self.msg.code    = 503
+        self.msg.message = "Service unavailable %s" % self.msg.url.scheme
+        self.msg.log_error()
 
 
     def help(self):
