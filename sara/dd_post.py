@@ -139,7 +139,8 @@ class dd_post(dd_config):
 
         #
 
-        self.logger.debug("vhost %s  exchange %s" % (self.broker.path,self.exchange) )
+        self.logger.info("broker(%s) user(%s) vhost(%s)  exchange(%s)" % \
+        (self.broker.hostname,self.broker.username,self.broker.path,self.exchange) )
 
         # ==============
         # delete event...
