@@ -65,6 +65,8 @@ class ConsumerX(object):
         
         self.config = config
         self.name   = config
+
+        self.amqp_log = None
         self.myinit()
 
         self.timex = None
@@ -110,6 +112,21 @@ class ConsumerX(object):
 
     def run(self):
 
+        if self.discard:
+           self.inplace   = False
+           self.overwrite = True
+           self.log_back  = False
+
+        if self.notify_only :
+           self.log_back  = False
+
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.host,self.amqp_user,'/') )
+        for k in self.exchange_key :
+            self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,k) )
+        if self.log_back :
+            self.logger.info("AMQP  output:    exchange(%s) topic(%s)\n" % ('xlog','v02.log.#') )
+
+
         if not self.connected : self.connect()
 
         if not hasattr(self,'msg') :
@@ -118,8 +135,6 @@ class ConsumerX(object):
         self.msg.amqp_log     = self.amqp_log
         self.msg.logger       = self.logger
 
-        if self.discard: self.inplace   = False
-        if self.discard: self.overwrite = True
 
         while True :
 
@@ -138,7 +153,6 @@ class ConsumerX(object):
                   processed = self.treat_message()
 
                   if processed :
-                     self.logger.info("ICI")
                      self.consumer.ack(raw_msg)
              except (KeyboardInterrupt, SystemExit):
                  break                 
@@ -414,7 +428,7 @@ class ConsumerX(object):
     def write_to_file(self,req,msg) :
 
         # no locking if insert
-        if msg.local_offset != 0 :
+        if msg.partflg != '1' and not msg.in_partfile :
            local_file = msg.local_file
         else :
            local_file = msg.local_file + self.lock
