@@ -6,9 +6,6 @@ killall dd_subscribe.py > /dev/null 2>&1
 rm ./dd_susbscribe*.log ./toto* ./test/t* ./subscribe_test1.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
 
-export USER=$1
-export PASSWORD=$2
-
 cat << EOF > toto
 0 123456789abcde
 1 123456789abcde
@@ -77,9 +74,12 @@ exchange_key v02.post.#
 directory ${PWD}/test
 accept .*
 
+expire 3
+
 EOF
 
 mkdir ./test
+rm ./.*.queue
 
 echo ==== INPLACE FALSE ====
 
@@ -90,7 +90,8 @@ function test1 {
 
       #======== 1
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto > /dev/null 2>&1
-      sleep 10
+      sleep 2
+      touch ./test/test_no_1
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
@@ -99,13 +100,14 @@ function test1 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
       #parts I
 
       #======== 2
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,128 > /dev/null 2>&1
-      sleep 10
+      sleep 2
+      touch ./test/test_no_2
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part|wc -l`
@@ -115,14 +117,15 @@ function test1 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,128
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
       #parts P
 
       #======== 2
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part  -p p > /dev/null 2>&1
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part  -p p > /dev/null 2>&1
-      sleep 6
+      sleep 2
+      touch ./test/test_no_3
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part|wc -l`
@@ -132,7 +135,7 @@ function test1 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part 
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
       #======== 2
       
@@ -154,7 +157,8 @@ function test2 {
 
       #======== 1
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto > /dev/null 2>&1
-      sleep 5
+      sleep 2
+      touch ./test/test_no_4
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
@@ -163,13 +167,14 @@ function test2 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto 
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
       #parts I
 
       #======== 2
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,128 > /dev/null 2>&1
-      sleep 6
+      sleep 2
+      touch ./test/test_no_5
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
@@ -178,7 +183,7 @@ function test2 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto  -p i,128
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
 
 
@@ -187,7 +192,8 @@ function test2 {
       #======== 2
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p > /dev/null 2>&1
       ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p > /dev/null 2>&1
-      sleep 6
+      sleep 2
+      touch ./test/test_no_6
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
@@ -196,7 +202,7 @@ function test2 {
          echo ERROR ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part 
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
 
       killall dd_subscribe.py
 
@@ -215,6 +221,7 @@ function test3 {
       cp ./toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part
       cp ./toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part
 
+      touch ./test/test_no_7
 
       ../sara/dd_subscribe.py $* > ./dd_subscribe_test3.log 2>&1 &
       sleep 10
@@ -244,7 +251,7 @@ function test3 {
          echo ERROR should have 4 cases of unmodified files
          exit 1
       fi
-      rm   ./test/toto*
+      rm   ./test/*
  
       killall dd_subscribe.py 
 
@@ -265,6 +272,7 @@ function test4 {
          ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,1 -r > /dev/null 2>&1
 
                sleep 30
+               touch ./test/test_no_8
                ls -al toto ./test/*
                N=`diff toto ./test/toto|wc -l`
                if ((N==0)) ; then
@@ -273,7 +281,7 @@ function test4 {
                   echo ERROR http:   INSTANCES/INSERTS
                   exit 1
                fi
-               rm   ./test/toto*
+               rm   ./test/*
 
          sleep 10
          killall dd_subscribe.py
@@ -301,6 +309,7 @@ function test5 {
          ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,11 -r > /dev/null 2>&1
 
                sleep 30
+               touch ./test/test_no_9
                ls -al toto ./test/*
                N=`diff toto ./test/toto|wc -l`
                if ((N==0)) ; then
