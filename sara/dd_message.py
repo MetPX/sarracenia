@@ -62,8 +62,8 @@ class dd_message():
         self.headers   = msg.properties['application_headers']
         self.notice    = msg.body
 
-        if type(self.notice) == bytes :
-           self.notice = self.notice.decode("utf-8")
+        if type(msg.body) == bytes :
+           self.notice = msg.body.decode("utf-8")
   
         self.event     = None
         self.flow      = None
@@ -115,36 +115,48 @@ class dd_message():
         del self.headers['message']
 
     def parse_v00_post(self):
-        token         = self.topic.split('.')
-        # v00         = token[0]
-        # dd          = token[1]
-        # notify      = token[2]
-        self.version  = 'v02'
-        self.mtype    = 'post'
+        token             = self.topic.split('.')
+        # v00             = token[0]
+        # dd              = token[1]
+        # notify          = token[2]
+        self.version      = 'v02'
+        self.mtype        = 'post'
+        self.topic_prefix = 'v02.post'
         self.subtopic = '.'.join(token[3:])
 
-        token         = self.notice.split(' ')
-        self.filename = self.headers['filename']
-        self.filesize = int(token[0])
-        self.checksum = token[1]
-        self.url      = urllib.parse.urlparse(token[2:])
-        self.path     = token[3]
+        token        = self.notice.split(' ')
+        url          = urllib.parse.urlparse(token[2]+token[3])
+        self.set_notice(url)
         
-        self.sumflg   = 'd'
-        self.sumstr   = 'd,%s' % self.checksum
+        self.checksum = token[0]
+        self.filesize = int(token[1])
 
-        self.chkclass.from_list(self.sumflg)
-        self.compute_chksum = self.chkclass.checksum
+        self.filename = self.headers['filename']
 
-        self.chunksize     = self.filesize
-        self.block_count   = 1
-        self.remainder     = 0
-        self.current_block = 0
-        self.partflg       = '1'
-        self.partstr       = '1,%d' % self.filesize
-        self.offset        = 0
-        self.length        = self.filesize
-        self.suffix        = ''
+        self.hdrstr   = ''
+
+        self.source   = 'metpx'
+        self.headers['source'] = self.source
+        self.hdrstr  += '%s=%s ' % ('source',self.source)
+
+        self.partstr = '1,%d,1,0,0' % self.filesize
+        self.headers['parts'] = self.partstr
+        self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
+
+        self.sumstr  = 'd,%s' % self.checksum
+        self.headers['sum'] = self.sumstr
+        self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
+
+        self.event   = None
+        self.flow    = None
+        self.rename  = None
+        self.message = None
+
+        self.suffix = ''
+        
+        self.set_parts_str(self.partstr)
+        self.set_sum_str(self.sumstr)
+        self.set_suffix()
 
     def parse_v02_post(self):
 
