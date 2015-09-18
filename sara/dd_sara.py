@@ -83,7 +83,7 @@ class dd_sara(dd_instances):
 
         # log exchange : make sure it exists
 
-        xlog = Exchange(self.hc_src,'xlog')
+        xlog = Exchange(self.hc_src,'xlog',durable=True)
         xlog.build()
 
         # =============

@@ -164,17 +164,18 @@ class Consumer:
 
 class Exchange:
 
-   def __init__(self,hostconnect,name):
+   def __init__(self,hostconnect,name,durable=False):
        self.hc     = hostconnect
        self.logger = self.hc.logger
        self.name   = name
+       self.durable= durable
        self.exchange_type = 'topic'
        self.hc.add_build(self.build)
 
    def build(self):
        self.logger.debug("building exchange %s" % self.name)
        if self.name[:4] == 'amq.' : return
-       self.hc.channel.exchange_declare(self.name, self.exchange_type, auto_delete=False)
+       self.hc.channel.exchange_declare(self.name, self.exchange_type, auto_delete=False,durable=self.durable)
 
 # ==========
 # Publisher
