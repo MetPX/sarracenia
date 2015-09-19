@@ -98,8 +98,9 @@ Use of only the first line of the AMQP payload is currently defined.
 The rest of the payload body is reserved for future use.
 
 .SH AMQP HEADERS 
-In addition to the first line of the message containing all mandatory fields, optional elements are
-stored in AMQP headers (key-value pairs), included in messages when appropriate:
+In addition to the first line of the message containing all mandatory fields, optional 
+elements are stored in AMQP headers (key-value pairs), included in messages when 
+appropriate:
 
 .nf 
 
@@ -190,11 +191,14 @@ source=<sourceid>
 	account used to authenticate to the broker.
 
 sum=<method>,<value>
+        The sum is a signature computed to allow receivers to determine 
+        if they have already downloaded the partition from elsewhere.
+
 	<method> - character field indicating the checksum algorithm used.
 
         0 - no checksums (unconditional copy.)
-        d - checksum the entire data
-        n - checksum the file name
+        d - checksum the entire data (md5sum FIXME: Confirm checksum algorithm used)
+        n - checksum the file name (md5sum FIXME: Confirm checksum algorithm used)
         <name> - checksum with a some other algorithm, named <name>
 
                 <name> should be ´registered´ in the switch network.
