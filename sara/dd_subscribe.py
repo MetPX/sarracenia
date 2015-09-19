@@ -98,8 +98,8 @@ class ConsumerX(object):
            sproto='amqp'
 
         for k in self.exchange_key :
-           self.logger.info('Binding %s://%s@%s exchange:%s to queue:%s with key:%s', 
-		sproto, self.amqp_user, self.host, self.exchange, self.queue, k)
+           self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s', 
+		self.queue, k, self.exchange, sproto, self.amqp_user, self.host, )
            self.msg_queue.add_binding(self.exchange, k )
 
         self.msg_queue.build()
