@@ -155,13 +155,15 @@ class ConsumerX(object):
                   raw_msg = self.consumer.consume(self.queue)
                   if raw_msg == None : continue
 
+                  self.logger.info("Received msg  %s" % vars(raw_msg))
+
                   # make use it as a dd_message
 
                   self.msg.from_amqplib(raw_msg)
 
-                  self.logger.debug("Received topic   %s" % self.msg.topic)
-                  self.logger.debug("Received notice  %s" % self.msg.notice)
-                  self.logger.debug("Received headers %s" % self.msg.hdrstr)
+                  self.logger.info("Received topic   %s" % self.msg.topic)
+                  self.logger.info("Received notice  %s" % self.msg.notice)
+                  self.logger.info("Received headers %s" % self.msg.hdrstr)
 
                   processed = self.treat_message()
 
@@ -188,6 +190,8 @@ class ConsumerX(object):
         self.exchange      = 'xpublic'
         self.exchange_type = 'topic'
         self.exchange_key  = []
+
+        self.topic_prefix  = 'v00.dd.notify.'
 
         self.http_user     = None
         self.http_passwd   = None
@@ -532,7 +536,12 @@ class ConsumerX(object):
                             self.exchange_type = words[1]
                          else :
                             self.logger.error("Problem with exchange_type %s" % words[1])
-                    elif words[0] == 'exchange_key': self.exchange_key.append(words[1])
+                    elif words[0] == 'exchange_key':
+                         self.logger.warning("exchange_key option deprecated (but still working)")
+                         self.logger.warning("should use subtopic instead")
+                         self.exchange_key.append(words[1])
+                    elif words[0] == 'topic':        self.exchange_key.append(words[1])
+                    elif words[0] == 'subtopic':     self.exchange_key.append(self.topic_prefix+words[1])
                     elif words[0] == 'http-user': self.http_user = words[1]
                     elif words[0] == 'http-password': self.http_passwd = words[1]
                     elif words[0] == 'mirror': self.mirror = isTrue(words[1])
@@ -580,9 +589,11 @@ def help():
           "\nAMQP Exchange/Queue settings:\n" +
           "\tdurable       <boolean>      (default: False)\n" +
           "\texchange      <name>         (default: xpublic)\n" +
-          "\texchange_key  <amqp pattern> (MANDATORY)\n" +
+          "\ttopic         <amqp pattern> (more words\n" +
           "\t\t* single topic wildcard (matches one word)\n" +
-          "\t\t# wildcard (matches zero or more words\n" +
+          "\t\t# wildcard (matches zero or more words at end of topic)\n" +
+          "\texchange_key  <amqp pattern> (deprecated use topic or subtopic)\n" +
+          "\tsubtopic      <amqp pattern> (topic part : dot separated directories)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
           "\texpire        <minutes>      (default: None)\n" +
