@@ -32,7 +32,9 @@ class dd_sara(dd_instances):
         # dont want to recreate these if they exists
 
         if not hasattr(self,'msg') :
-           self.msg = dd_message(self.logger)
+           self.msg      = dd_message(self.logger)
+
+        self.msg.user = self.source_broker.username
 
         # umask change for directory creation and chmod
 
