@@ -2,11 +2,15 @@
 .SH NAME
 dd_post \- Sarracenia protocol: format of post messages.
 .SH SYNOPSIS
+.nf 
+
 .B AMQP Topic: <version>.post.<src>.{<dir>.}*<filename>
 .B AMQP Headers: \fI<series of key-value pairs>\fR 
 .B Body: \fI<first line>\fR = 
 \fI<date stamp> <srcpath> <relpath> <newline>\fR
 <\fIrest of body is reserved for future use\fR>
+
+.fi
 
 
 .SH DESCRIPTION
@@ -14,7 +18,7 @@ dd_post \- Sarracenia protocol: format of post messages.
 In the Sarracenia suite, sources post the availability of files. 
 Sources use \fIdd_post\fR to create these announcements, and subscribers use \fIdd_subscribe\fR 
 to consume the post and download the file.  This manual page describes the format of 
-the messages used to announce availability.  Files are transported as pure byte streams, no metadata beyond the file contents is transported (permission bits, extended attributes, etc...) as these are not portable, and the permissions of files are upto the receiver to decide at the destination system.
+the messages used to announce availability.  Files are transported as pure byte streams, no metadata beyond the file contents is transported (permission bits, extended attributes, etc...), and the permissions of files are upto the receiver to decide at the destination system.
 
 Sarracenia messages are payloads for an Advanced Message Queuing Protocol (AMQP) message bus, 
 but file data transport is separate, using more common protocols such as SFTP, HTTP, HTTPS, 
@@ -27,7 +31,7 @@ sources to know the entire disposition of their products through a network.
 
 Sarracenia uses AMQP topic based exchanges, and the UTF-8 character set exclusively. 
 
-A dd_post message consists for four parts:
+A dd_post message consists of four parts:
 	AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.
 
 .SH AMQP TOPIC
@@ -86,7 +90,7 @@ There is a series of white space separated fields:
 <newline> signals the end of the first line of the message.
 	denoted by a single line feed character.
 
----------------------------
+.fi
 
 .SH THE REST OF MESSAGE
 
@@ -94,8 +98,9 @@ Use of only the first line of the AMQP payload is currently defined.
 The rest of the payload body is reserved for future use.
 
 .SH AMQP HEADERS 
-In addition to the first line of the message containing all mandatory fields, optional elements are
-stored in AMQP headers (key-value pairs), included in messages when appropriate:
+In addition to the first line of the message containing all mandatory fields, optional 
+elements are stored in AMQP headers (key-value pairs), included in messages when 
+appropriate:
 
 .nf 
 
@@ -186,11 +191,14 @@ source=<sourceid>
 	account used to authenticate to the broker.
 
 sum=<method>,<value>
+        The sum is a signature computed to allow receivers to determine 
+        if they have already downloaded the partition from elsewhere.
+
 	<method> - character field indicating the checksum algorithm used.
 
         0 - no checksums (unconditional copy.)
-        d - checksum the entire data
-        n - checksum the file name
+        d - checksum the entire data (md5sum FIXME: Confirm checksum algorithm used)
+        n - checksum the file name (md5sum FIXME: Confirm checksum algorithm used)
         <name> - checksum with a some other algorithm, named <name>
 
                 <name> should be ´registered´ in the switch network.

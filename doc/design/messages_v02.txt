@@ -3,9 +3,20 @@ Status: Approved-Draft2-20150825
 
 Description of the message protocol / format.
 
-This file documents final conclusions/proposals, reasoning/debates goes elsewhere.
+This file was used during design phase, but post-implementation,
+it is replaced by the dd_post(7) manual page.
 
-Messages posted include a ´topic´ and a ´body.´
+
+This file documents final conclusions/proposals, reasoning/debates 
+goes elsewhere.
+
+Messages posted include four parts:
+topic: <version>.<type>.<src>(.<dir>.)*.<filename>
+headers: series of key-value pairs, as per AMQP spec.
+1st line (whitespace separated fields):
+   <date stamp> <srcURL> <relURL><newline>
+rest of body:
+
 
 The message topic breaks down as follows:
 
@@ -31,10 +42,6 @@ The message topic breaks down as follows:
 	<source>:
 
 Rest of this document assumes version 2 (v02 topic):
-
-topic: <version>.<type>.<src>(.<dir>.)*.<filename>
-content: 1st line (whitespace separated fields):
-<date stamp> <srcURL> <relURL><newline>
 
 breaks down to:
 
@@ -83,6 +90,7 @@ breaks down to:
 	as complete, and the file is renamed on download according to the 
 	specification (in this case, mine.gif)
 
+
 AMQP provides HEADERS which are key/value pairs.
 
 
@@ -126,7 +134,7 @@ parts=<i|p>,<bsz>,<fzb>,<bno>,<remainder>
 	       -- entire files replaced.
 	       -- this is the same as rsync's --whole-file mode.
 		
-sum=<algorithm> <value>
+sum=<algorithm>,<value>
 
 	<algorithm>
 

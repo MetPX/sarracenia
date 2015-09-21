@@ -1,6 +1,9 @@
 
 Status: Pre-Draft
 
+this example is for v01.
+algorithms unchanged for v02, but representation different.
+
 afsiext:  user name assigned to us to retreive data on cmcdata server
 	client will not see this, private between source and ingest switch.
 

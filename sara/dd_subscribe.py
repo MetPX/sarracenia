@@ -94,8 +94,14 @@ class ConsumerX(object):
         if self.expire != None :
            self.msg_queue.add_expire(self.expire)
 
+        if self.ssl:
+           sproto='amqps'
+        else:
+           sproto='amqp'
+
         for k in self.exchange_key :
-           self.logger.info('Binding %s to %s with %s', self.exchange, self.queue, k)
+           self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s', 
+		self.queue, k, self.exchange, sproto, self.amqp_user, self.host, )
            self.msg_queue.add_binding(self.exchange, k )
 
         self.msg_queue.build()
@@ -463,6 +469,17 @@ class ConsumerX(object):
         currentFileOption = 'NONE' 
         self.readConfigFile(self.config,currentDir,currentFileOption)
 
+        if self.masks == [] :
+            print("Error 5: accept is missing from config file")
+            print("Try `dd_subscribe --help' for more information.")
+            sys.exit(3)
+
+        if self.exchange_key == [] :
+            print("Error 6: exchange_key is missing from config file")
+            print("Try `dd_subscribe --help' for more information.")
+            sys.exit(3)
+
+
     def readConfigFile(self,filePath,currentDir,currentFileOption):
         
         def isTrue(s):
@@ -539,14 +556,41 @@ class ConsumerX(object):
 
 def help():     
     #print chr(27)+'[1m'+'Script'+chr(27)+'[0m'
-    print("Usage: dd_subscribe [OPTION]...[CONFIG_FILE]")
-    print("dd_subscribe [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] config-file")
-    print("rabbitmq python client connects to rabbitmq server for getting notice in real time to download new files")
-    print("Examples:")    
-    print("dd_subscribe subscribe.conf  # download files and display log in stout")
+    print("\nUsage: ")
+    print("\ndd_subscribe [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] <config-file>")
+    print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
+    print("Examples:\n")    
+    print("dd_subscribe subscribe.conf  # download files and display log in stdout")
     print("dd_subscribe -d subscribe.conf  # discard files after downloaded and display log in stout")
     print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
-    print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout")        
+    print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n")
+    print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
+          "\nAMQP broker connection:\n" +
+          "\tamqp-password  <pw> (default: anonymous)\n" +
+          "\tamqp-user    <user> (default: anonymous)\n" + 
+          "\thost     <hostname> (default: dd.weather.gc.ca)\n" +
+          "\tport       <number> (default: 5672)\n" +
+          "\nAMQP Exchange/Queue settings:\n" +
+          "\tdurable       <boolean>      (default: False)\n" +
+          "\texchange      <name>         (default: xpublic)\n" +
+          "\texchange_key  <amqp pattern> (MANDATORY)\n" +
+          "\t\t* single topic wildcard (matches one word)\n" +
+          "\t\t# wildcard (matches zero or more words\n" +
+          "\tqueue         <name>         (default: None)\n" +
+          "\texpire        <minutes>      (default: None)\n" +
+          "\ttimeout       <integer>      (default: 180)\n" +
+          "\texchange_type <type>         (default: topic)\n" +
+          "\nHTTP Settings:\n" +
+          "\thttp-user   <user> (default: None)\n" +
+          "\thttp-password <pw> (default: None)\n" +
+          "\nLocal File Delivery settings:\n" +
+          "\tlock      <.string>        (default: .tmp)\n" +
+          "\tdirectory <path>           (default: .)\n" +
+          "\taccept    <regexp pattern> (MANDATORY)\n" +
+          "\treject    <regexp pattern> (optional)\n" +
+          "\tflatten   <boolean>        (default: false)\n" +
+          "\tmirror    <boolean>        (default: false)\n" +
+	  "" )
 
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
@@ -615,6 +659,7 @@ def main():
       print("Try `dd_subscribe --help' for more information.")
       sys.exit(2)            
              
+
     # logging to stdout
     LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
 
