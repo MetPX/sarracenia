@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
+import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
 
 #============================================================
 # usage example
@@ -80,7 +80,8 @@ class ConsumerX(object):
         self.hc = None
 
         self.hc = HostConnect( logger = self.logger )
-        self.hc.set_credentials(self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost)
+        self.hc.set_url(self.broker)
+        #self.hc.set_credentials(self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost)
         self.hc.connect()
 
         self.consumer = Consumer(self.hc)
@@ -180,10 +181,18 @@ class ConsumerX(object):
 
         self.protocol      = 'amqp'
         self.host          = 'dd.weather.gc.ca'
-        self.port          = '5672'
+        self.port          = 5672
         self.amqp_user     = 'anonymous'
         self.amqp_passwd   = 'anonymous'
         self.vhost         = '/'
+
+        if self.port == 5672 :
+           self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+        else:
+           self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+
         self.masks         = []             # All the masks (accept and reject)
         self.lock          = '.tmp'         # file send with extension .tmp for lock
 
@@ -521,13 +530,45 @@ class ConsumerX(object):
                     elif words[0] == 'reject':
                          cmask = re.compile(words[1])
                          self.masks.append((words[1], currentDir, currentFileOption, cmask, False))
+                    elif words[0] == 'broker': 
+                         self.broker = urllib.parse.urlparse(words[1])
+                         ok, self.broker = self.validate_amqp_url(self.broker)
+                         if not ok :
+                            self.logger.error("broker is incorrect (%s)" % words[1])
                     elif words[0] == 'directory': currentDir = words[1]
                     elif words[0] == 'protocol': self.protocol = words[1]
-                    elif words[0] == 'host': self.host = words[1]
-                    elif words[0] == 'port': self.port = int(words[1])
+                    elif words[0] == 'host':
+                         self.logger.warning("host option deprecated (but still working)")
+                         self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca/' ")
+                         self.host = words[1]
+                         if self.port == 5672 :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+                         else :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                    elif words[0] == 'port':
+                         self.logger.warning("port option deprecated (but still working)")
+                         self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca:5672/' ")
+                         self.port = int(words[1])
+                         if self.port == 5672 :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+                         else :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
                     elif words[0] == 'amqp-user': self.amqp_user = words[1]
                     elif words[0] == 'amqp-password': self.amqp_passwd = words[1]
-                    elif words[0] == 'vhost': self.vhost = words[1]
+                    elif words[0] == 'vhost':
+                         self.logger.warning("vhost option deprecated (but still working)")
+                         self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca:5672/' ")
+                         self.vhost = words[1]
+                         if self.port == 5672 :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+                         else :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
                     elif words[0] == 'lock': self.lock = words[1]
 
                     elif words[0] == 'exchange': self.exchange = words[1]
@@ -569,6 +610,32 @@ class ConsumerX(object):
                if mask[4] : return mask[1]
                return None
         return None
+
+    def validate_amqp_url(self,url):
+        if not url.scheme in ['amqp','amqps'] :
+           return False,url
+
+        user = url.username
+        pasw = url.password
+        path = url.path
+
+        rebuild = False
+        if user == None  :
+           user = self.amqp_user
+           rebuild = True
+        if pasw == None  :
+           pasw = self.amqp_passwd
+           rebuild = True
+        if path == ''  :
+           path = '/'
+           rebuild = True
+
+        if rebuild :
+           urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,url.netloc,path)
+           url  = urllib.parse.urlparse(urls)
+
+        return True,url
+
 
 def help():     
     #print chr(27)+'[1m'+'Script'+chr(27)+'[0m'
