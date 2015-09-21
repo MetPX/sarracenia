@@ -51,21 +51,32 @@ Theses options define which messages (URL notifications) the program receives.
 
 \fBexchange      <name>         (default: xpublic)\fR
 \fBexchange_type <type>         (default: topic)\fR
-\fBexchange_key  <amqp pattern> (needs to be set)\fR
+\fBexchange_key  <amqp pattern> (deprecated)\fR
+\fBtopic         <amqp pattern> (topic or subtopic need to be set)\fR
+\fBsubtopic      <amqp pattern> (topic or subtopic need to be set)\fR
 
 
 .fi
-Several exchange_key options may be declared. To give a correct value to the exchange key,
+Several topic options may be declared. To give a correct value to the exchange key,
 browse the our website \fBhttp://dd.weather.gc.ca\fR and write down all directories of interest.
 For each directories write an \fBexchange_key\fR option as follow:
 .nf
 
-\fBexchange_key  v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#\fR
+\fBtopic  v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#\fR
 
 where  v00.dd.notify.   is a mandatory prefix
        *                replaces a directory name 
        #                stands for the remaining possibilities
 
+Since the mandatory prefix v00.dd.notify concerns internal protocol version
+and may changed, the option \fBsubtopic\fR  should be prefered. With \fBsubtopic\fR
+the user can only specifies the directories of interest and the current operational
+topic prefix will be added in front automatically by \fBdd_subscribe\fR. So
+
+\fBsubtopic  directory1.*.subdirectory3.*.subdirectory5.#\fR
+
+will be modified to v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#
+and work as if declared by the option \fBtopic\fR.
 
 .fi
 
@@ -77,6 +88,7 @@ The queue is where the notifications are held on the server.
 \fBqueue         <name>         (default: None)\fR
 \fBdurable       <boolean>      (default: False)\fR
 \fBexpire        <minutes>      (default: None)\fR
+\fBmessage-ttl   <minutes>      (default: None)\fR
 
 
 .fi
@@ -86,6 +98,8 @@ The \fBqueue\fR option sets a queue name. It should always start with \fBcmc\fR.
 The \fBexpire\fR option is expressed in minutes... it sets how long should live
 a queue without connections The \fBdurable\fR option set to True, means writes the queue
 on disk if the rabbitmq server is stop or restarted...
+The \fBmessage-ttl\fR option set the time in minutes a message can live in the queue.
+Passed that time, the message is taken out of the queue by the rabbitmq server.
 .SH HTTP CREDENTIAL OPTIONS
 Theses options set all the credential information for the http site.
 It is unused for now but Environment Canada might implement some restricted
@@ -112,6 +126,7 @@ and under which name.
 \fBflatten   <boolean>        (default: false)\fR
 \fBmirror    <boolean>        (default: false)\fR
 \fBtimeout   <integer>        (default: 180)\fR
+\fBoverwrite <boolean>        (default: true)\fR
 
 .fi
 .nf
@@ -173,6 +188,12 @@ would result in the creation of the filepath :
 The \fBtimeout\fR option is use to set a time limit to the file download, avoiding network freeze.
 If a download takes more than \fBtimeout\fR seconds, the download is restarted. This looping continues
 until the file is properly downloaded... Only than, the amqp message is acknowledge.
+
+The \fBoverwrite\fR option,if set to false, avoid unnecessary downloads under these conditions :
+1- the file to be downloaded is already on the user's file system at the right place and
+2- the checksum of the amqp message matched the one of the file.
+The default is True (overwrite without checking).
+
 .fi
 .SH PRODUCT QUEUING
 When executed, \fBdd_subscribe\fR creates a queue name that should be unique.
