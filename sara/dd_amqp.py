@@ -146,6 +146,8 @@ class Consumer:
               try :
                      msg = self.channel.basic_get(queuename)
               except :
+                     (stype, value, tb) = sys.exc_info()
+                     self.logger.error("Type: %s, Value: %s" % (stype, value))
                      if self.hc.loop :
                         self.hc.reconnect()
                         self.logger.info("consume resume ok")
