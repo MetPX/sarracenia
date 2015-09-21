@@ -87,8 +87,9 @@ class ConsumerX(object):
         self.consumer.add_prefetch(1)
         self.consumer.build()
 
-        ex = Exchange(self.hc,self.exchange)
-        ex.build()
+        #should not declare exchange just use them
+        #ex = Exchange(self.hc,self.exchange)
+        #ex.build()
 
         self.msg_queue = Queue(self.hc,self.queue,durable=self.durable)
         if self.expire != None :
@@ -143,6 +144,7 @@ class ConsumerX(object):
         if not hasattr(self,'msg') :
            self.msg = dd_message(self.logger)
 
+        self.msg.user         = self.amqp_user
         self.msg.amqp_log     = self.amqp_log
         self.msg.logger       = self.logger
 

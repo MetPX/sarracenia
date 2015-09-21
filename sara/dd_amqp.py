@@ -221,13 +221,14 @@ class Publisher:
 
 class Queue:
 
-   def __init__(self,hc,qname,auto_delete=False):
+   def __init__(self,hc,qname,auto_delete=False,durable=False):
 
        self.hc          = hc
        self.logger      = self.hc.logger
        self.name        = qname
        self.qname       = qname
        self.auto_delete = False
+       self.durable     = durable
 
        self.expire      = 0
        self.message_ttl = 0
@@ -262,7 +263,7 @@ class Queue:
        # create queue
        self.qname, msg_count, consumer_count = \
        self.channel.queue_declare( self.name,
-                                   passive=False, durable=False, exclusive=False,
+                                   passive=False, durable=self.durable, exclusive=False,
                                    auto_delete=self.auto_delete,
                                    nowait=False,
                                    arguments= args )
