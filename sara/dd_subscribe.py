@@ -90,9 +90,12 @@ class ConsumerX(object):
         ex = Exchange(self.hc,self.exchange)
         ex.build()
 
-        self.msg_queue = Queue(self.hc,self.queue)
+        self.msg_queue = Queue(self.hc,self.queue,durable=self.durable)
         if self.expire != None :
            self.msg_queue.add_expire(self.expire)
+        if self.message-ttl != None :
+           self.msg_queue.add_message_ttl(self.message-ttl)
+
 
         if self.ssl:
            sproto='amqps'
@@ -194,6 +197,7 @@ class ConsumerX(object):
         self.overwrite     = True
         self.inplace       = True
         self.log_back      = True
+        self.message-ttl   = None
         
         self.readConfig()
 
@@ -540,6 +544,7 @@ class ConsumerX(object):
                     elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
+                    elif words[0] == 'message-ttl': self.message-ttl = int(words[1]) * 60 * 1000
                     else:
                         self.logger.error("Unknown configuration directive %s in %s" % (words[0], self.config))
                         print("Unknown configuration directive %s in %s" % (words[0], self.config))
@@ -576,6 +581,7 @@ def help():
           "\texchange_key  <amqp pattern> (MANDATORY)\n" +
           "\t\t* single topic wildcard (matches one word)\n" +
           "\t\t# wildcard (matches zero or more words\n" +
+          "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
           "\texpire        <minutes>      (default: None)\n" +
           "\ttimeout       <integer>      (default: 180)\n" +
