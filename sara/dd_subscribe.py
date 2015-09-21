@@ -200,7 +200,7 @@ class ConsumerX(object):
         self.exchange_type = 'topic'
         self.exchange_key  = []
 
-        self.topic_prefix  = 'v00.dd.notify.'
+        self.topic_prefix  = 'v00.dd.notify'
 
         self.http_user     = None
         self.http_passwd   = None
@@ -582,7 +582,7 @@ class ConsumerX(object):
                          self.logger.warning("should use subtopic instead")
                          self.exchange_key.append(words[1])
                     elif words[0] == 'topic':        self.exchange_key.append(words[1])
-                    elif words[0] == 'subtopic':     self.exchange_key.append(self.topic_prefix+words[1])
+                    elif words[0] == 'subtopic':     self.exchange_key.append(self.topic_prefix+'.'+words[1])
                     elif words[0] == 'http-user': self.http_user = words[1]
                     elif words[0] == 'http-password': self.http_passwd = words[1]
                     elif words[0] == 'mirror': self.mirror = isTrue(words[1])

@@ -63,9 +63,6 @@ class dd_sara(dd_instances):
         self.consumer.add_prefetch(1)
         self.consumer.build()
 
-        # consumer exchange : make sure it exists
-        ex = Exchange(self.hc_src,self.source_exchange)
-        ex.build()
 
         # consumer queue
 
@@ -83,11 +80,6 @@ class dd_sara(dd_instances):
         self.amqp_log    = Publisher(self.hc_src)
         self.amqp_log.build()
 
-        # log exchange : make sure it exists
-
-        xlog = Exchange(self.hc_src,'xlog',durable=True)
-        xlog.build()
-
         # =============
         # publisher
         # =============
@@ -102,11 +94,6 @@ class dd_sara(dd_instances):
 
         self.amqp_pub    = Publisher(self.hc_pst)
         self.amqp_pub.build()
-
-        # publisher exchange : make sure it exists
-
-        xpub = Exchange(self.hc_pst,self.exchange)
-        xpub.build()
 
     def configure(self):
 
