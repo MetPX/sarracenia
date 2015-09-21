@@ -36,6 +36,8 @@ class dd_message():
 
         self.inplace       = True
 
+        self.user          = None
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -88,7 +90,7 @@ class dd_message():
     def log_amqp(self):
         self.log_topic    = self.topic.replace('.post.','.log.')
         self.log_notice   = "%s %d %s %s %f" % \
-                       (self.notice,self.code,socket.gethostname(),self.headers['source'],self.get_elapse())
+                       (self.notice,self.code,socket.gethostname(),self.user,self.get_elapse())
         self.headers['message'] = self.message
         self.set_headers()
 
@@ -263,6 +265,11 @@ class dd_message():
         if self.message != None :
            self.headers['message'] = self.message
            self.hdrstr  += '%s=%s ' % ('message',self.message)
+
+        # added for v00 compatibility (old version of dd_subscribe)
+        # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
+        self.headers['filename'] = os.path.basename(self.url.path)
+
 
     # Once we know the local file we want to use
     # we can have a few flavor of it
