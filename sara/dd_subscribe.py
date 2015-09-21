@@ -93,8 +93,8 @@ class ConsumerX(object):
         self.msg_queue = Queue(self.hc,self.queue,durable=self.durable)
         if self.expire != None :
            self.msg_queue.add_expire(self.expire)
-        if self.message-ttl != None :
-           self.msg_queue.add_message_ttl(self.message-ttl)
+        if self.message_ttl != None :
+           self.msg_queue.add_message_ttl(self.message_ttl)
 
 
         if self.ssl:
@@ -197,7 +197,7 @@ class ConsumerX(object):
         self.overwrite     = True
         self.inplace       = True
         self.log_back      = True
-        self.message-ttl   = None
+        self.message_ttl   = None
         
         self.readConfig()
 
@@ -544,7 +544,7 @@ class ConsumerX(object):
                     elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
-                    elif words[0] == 'message-ttl': self.message-ttl = int(words[1]) * 60 * 1000
+                    elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
                     else:
                         self.logger.error("Unknown configuration directive %s in %s" % (words[0], self.config))
                         print("Unknown configuration directive %s in %s" % (words[0], self.config))
