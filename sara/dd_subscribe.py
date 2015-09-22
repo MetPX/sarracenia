@@ -116,7 +116,6 @@ class ConsumerX(object):
 
         self.hc = HostConnect( logger = self.logger )
         self.hc.set_url(self.broker)
-        #self.hc.set_credentials(self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost)
         self.hc.connect()
 
         self.consumer = Consumer(self.hc)
@@ -570,6 +569,10 @@ class ConsumerX(object):
                          ok, self.broker = self.validate_amqp_url(self.broker)
                          if not ok :
                             self.logger.error("broker is incorrect (%s)" % words[1])
+                         else :
+                              if self.broker.username != None : self.amqp_user   = self.broker.username
+                              if self.broker.password != None : self.amqp_passwd = self.broker.password
+                              if self.broker.path     != None : self.vhost       = self.broker.path
                     elif words[0] == 'directory': currentDir = words[1]
                     elif words[0] == 'protocol': self.protocol = words[1]
                     elif words[0] == 'host':
@@ -596,8 +599,22 @@ class ConsumerX(object):
                          self.logger.warning("port option deprecated (but still working)")
                          self.logger.warning("use this instead :")
                          self.logger.warning("broker %s" % self.broker.geturl())
-                    elif words[0] == 'amqp-user': self.amqp_user = words[1]
-                    elif words[0] == 'amqp-password': self.amqp_passwd = words[1]
+                    elif words[0] == 'amqp-user':
+                         self.amqp_user = words[1]
+                         if self.port == 5672 :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+                         else :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                    elif words[0] == 'amqp-password':
+                         self.amqp_passwd = words[1]
+                         if self.port == 5672 :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.vhost))
+                         else :
+                            self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
+                              (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
                     elif words[0] == 'vhost':
                          self.logger.warning("vhost option deprecated (but still working)")
                          self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca:5672/' ")
