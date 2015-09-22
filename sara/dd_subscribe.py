@@ -712,34 +712,31 @@ def help():
     print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n")
     print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker connection:\n" +
-          "\tamqp-password  <pw> (default: anonymous)\n" +
-          "\tamqp-user    <user> (default: anonymous)\n" + 
-          "\thost     <hostname> (default: dd.weather.gc.ca)\n" +
-          "\tport       <number> (default: 5672)\n" +
-          "\nAMQP Exchange/Queue settings:\n" +
+          "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
+	  "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
+          "\t\tbroken out: protocol,amqp-user,amqp-password,host,port,vhost\n" +
+          "\nAMQP Queue settings:\n" +
           "\tdurable       <boolean>      (default: False)\n" +
           "\texchange      <name>         (default: xpublic)\n" +
-          "\ttopic         <amqp pattern> (more words\n" +
-          "\t\t* single topic wildcard (matches one word)\n" +
-          "\t\t# wildcard (matches zero or more words at end of topic)\n" +
-          "\texchange_key  <amqp pattern> (deprecated use topic_prefix and subtopic)\n" +
-          "\tsubtopic      <amqp pattern> (topic part : dot separated directories)\n" +
-          "\ttopic_prefix  <amqp pattern> (unvarying topic prefix currently v00.dd.notify)\n" +
+          "\texpire        <minutes>      (default: None)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
-          "\texpire        <minutes>      (default: None)\n" +
+          "\tsubtopic      <amqp pattern> (<directory>.<directory>.<directory>...\n" +
+          "\t\t* single directory wildcard (matches one directory)\n" +
+          "\t\t# wildcard (matches rest)\n" +
           "\ttimeout       <integer>      (default: 180)\n" +
-          "\texchange_type <type>         (default: topic)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
           "\nHTTP Settings:\n" +
-          "\thttp-user   <user> (default: None)\n" +
           "\thttp-password <pw> (default: None)\n" +
+          "\thttp-user   <user> (default: None)\n" +
           "\nLocal File Delivery settings:\n" +
-          "\tlock      <.string>        (default: .tmp)\n" +
-          "\tdirectory <path>           (default: .)\n" +
           "\taccept    <regexp pattern> (MANDATORY)\n" +
-          "\treject    <regexp pattern> (optional)\n" +
+          "\tdirectory <path>           (default: .)\n" +
           "\tflatten   <boolean>        (default: false)\n" +
+          "\tlock      <.string>        (default: .tmp)\n" +
           "\tmirror    <boolean>        (default: false)\n" +
+          "\treject    <regexp pattern> (optional)\n" +
+          "\tstrip    <count> (number of directories to remove from beginning.)\n" +
 	  "" )
 
 def signal_handler(signal, frame):
