@@ -1,4 +1,39 @@
 #!/usr/bin/python3
+#
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
+# Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
+#
+# Questions or bugs report: dps-client@ec.gc.ca
+# sarracenia repository: git://git.code.sf.net/p/metpx/git
+# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+#
+# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+#                   as soon as they are made available (through amqp notifications)
+#
+#
+# Code contributed by:
+#  Michel Grenier - Shared Services Canada
+#  Jun Hu         - Shared Services Canada
+#  Last Changed   : Sep 22 10:41:32 EDT 2015
+#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#
+########################################################################
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+#
+#
 
 import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
 
@@ -106,7 +141,7 @@ class ConsumerX(object):
 
         for k in self.exchange_key :
            self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s', 
-		self.queue, k, self.exchange, sproto, self.amqp_user, self.host, )
+		self.queue, k, self.exchange, sproto, self.amqp_user, self.host )
            self.msg_queue.add_binding(self.exchange, k )
 
         self.msg_queue.build()
@@ -133,7 +168,7 @@ class ConsumerX(object):
         if self.notify_only :
            self.log_back  = False
 
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.host,self.amqp_user,'/') )
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,'/') )
         for k in self.exchange_key :
             self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,k) )
         if self.log_back :
@@ -156,7 +191,7 @@ class ConsumerX(object):
                   raw_msg = self.consumer.consume(self.queue)
                   if raw_msg == None : continue
 
-                  self.logger.info("Received msg  %s" % vars(raw_msg))
+                  self.logger.debug("Received msg  %s" % vars(raw_msg))
 
                   # make use it as a dd_message
 
@@ -164,7 +199,7 @@ class ConsumerX(object):
 
                   self.logger.info("Received topic   %s" % self.msg.topic)
                   self.logger.info("Received notice  %s" % self.msg.notice)
-                  self.logger.info("Received headers %s" % self.msg.hdrstr)
+                  self.logger.info("Received headers %s" % self.msg.headers)
 
                   processed = self.treat_message()
 
@@ -358,8 +393,8 @@ class ConsumerX(object):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.msg.local_url)
-        self.msg.set_notice(self.msg.local_url,self.msg.time)
+        #self.msg.set_topic_url('v02.post',self.msg.local_url)
+        #self.msg.set_notice(self.msg.local_url,self.msg.time)
         self.msg.code    = 201
         self.msg.message = 'Downloaded'
         self.msg.log_info()
@@ -538,8 +573,6 @@ class ConsumerX(object):
                     elif words[0] == 'directory': currentDir = words[1]
                     elif words[0] == 'protocol': self.protocol = words[1]
                     elif words[0] == 'host':
-                         self.logger.warning("host option deprecated (but still working)")
-                         self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca/' ")
                          self.host = words[1]
                          if self.port == 5672 :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
@@ -547,9 +580,11 @@ class ConsumerX(object):
                          else :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
                               (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.warning("host %s" % words[1])
+                         self.logger.warning("host option deprecated (but still working)")
+                         self.logger.warning("use this instead :")
+                         self.logger.warning("broker %s\n" % self.broker.geturl())
                     elif words[0] == 'port':
-                         self.logger.warning("port option deprecated (but still working)")
-                         self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca:5672/' ")
                          self.port = int(words[1])
                          if self.port == 5672 :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s%s'% \
@@ -557,6 +592,10 @@ class ConsumerX(object):
                          else :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
                               (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.warning("port %s" % words[1])
+                         self.logger.warning("port option deprecated (but still working)")
+                         self.logger.warning("use this instead :")
+                         self.logger.warning("broker %s" % self.broker.geturl())
                     elif words[0] == 'amqp-user': self.amqp_user = words[1]
                     elif words[0] == 'amqp-password': self.amqp_passwd = words[1]
                     elif words[0] == 'vhost':
@@ -578,10 +617,13 @@ class ConsumerX(object):
                          else :
                             self.logger.error("Problem with exchange_type %s" % words[1])
                     elif words[0] == 'exchange_key':
+                         self.logger.warning("exchange_key %s" % words[1])
                          self.logger.warning("exchange_key option deprecated (but still working)")
-                         self.logger.warning("should use subtopic instead")
+                         self.logger.warning("use this instead :")
+                         self.logger.warning("subtopic %s\n" % words[1].replace(self.topic_prefix+'.',''))
                          self.exchange_key.append(words[1])
                     elif words[0] == 'topic':        self.exchange_key.append(words[1])
+                    elif words[0] == 'topic_prefix': self.topic_prefix = words[1]
                     elif words[0] == 'subtopic':     self.exchange_key.append(self.topic_prefix+'.'+words[1])
                     elif words[0] == 'http-user': self.http_user = words[1]
                     elif words[0] == 'http-password': self.http_passwd = words[1]
@@ -659,8 +701,9 @@ def help():
           "\ttopic         <amqp pattern> (more words\n" +
           "\t\t* single topic wildcard (matches one word)\n" +
           "\t\t# wildcard (matches zero or more words at end of topic)\n" +
-          "\texchange_key  <amqp pattern> (deprecated use topic or subtopic)\n" +
+          "\texchange_key  <amqp pattern> (deprecated use topic_prefix and subtopic)\n" +
           "\tsubtopic      <amqp pattern> (topic part : dot separated directories)\n" +
+          "\ttopic_prefix  <amqp pattern> (unvarying topic prefix currently v00.dd.notify)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
           "\texpire        <minutes>      (default: None)\n" +
