@@ -616,12 +616,16 @@ class ConsumerX(object):
                             self.exchange_type = words[1]
                          else :
                             self.logger.error("Problem with exchange_type %s" % words[1])
+
                     elif words[0] == 'exchange_key':
                          self.logger.warning("exchange_key %s" % words[1])
                          self.logger.warning("exchange_key option deprecated (but still working)")
                          self.logger.warning("use this instead :")
-                         self.logger.warning("subtopic %s\n" % words[1].replace(self.topic_prefix+'.',''))
-                         self.exchange_key.append(words[1])
+                         subtopic = words[1].replace('v00.dd.notify.','')
+                         subtopic = subtopic.replace('v02.post.','')
+                         self.logger.warning("subtopic %s\n" % subtopic)
+                         self.exchange_key.append(self.topic_prefix+'.'+subtopic)
+
                     elif words[0] == 'topic':        self.exchange_key.append(words[1])
                     elif words[0] == 'topic_prefix': self.topic_prefix = words[1]
                     elif words[0] == 'subtopic':     self.exchange_key.append(self.topic_prefix+'.'+words[1])
