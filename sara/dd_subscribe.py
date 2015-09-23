@@ -721,9 +721,10 @@ def help():
           "\texpire        <minutes>      (default: None)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
-          "\tsubtopic      <amqp pattern> (<directory>.<directory>.<directory>...\n" +
-          "\t\t* single directory wildcard (matches one directory)\n" +
-          "\t\t# wildcard (matches rest)\n" +
+          "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
+          "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
+          "\t\t\t* single directory wildcard (matches one directory)\n" +
+          "\t\t\t# wildcard (matches rest)\n" +
           "\ttimeout       <integer>      (default: 180)\n" +
           "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
           "\nHTTP Settings:\n" +
