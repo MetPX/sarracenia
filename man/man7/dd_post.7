@@ -209,17 +209,19 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
  n - checksum the file name (md5sum FIXME: Confirm checksum algorithm used)
  <name> - checksum with a some other algorithm, named <name>
 
- <name> should be ´registered´ in the switch network.
-        registered means that all downstream subscribers
-        can obtain the algorithm to validate the checksum.
-	
- <value> - The value is what was computed by applying the given method to
-	the partition being transferred.
-	
-All other headers are reserved for future use. 
+.P
+
+ <name> should be \fIregistered\fR in the switch network.  registered means that all downstream subscribers can obtain the algorithm to validate the checksum.  
+
+.P
+
+ <value> - The value is what was computed by applying the given method to the partition being transferred.
+
+.P
+
+ All other headers are reserved for future use. 
 
 
-.fi
 
 
 
