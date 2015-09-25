@@ -205,17 +205,15 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
 
  0 - no checksums (unconditional copy.)
  d - checksum the entire data (md5sum FIXME: Confirm checksum algorithm used)
- D - Delete: file was deleted, rather than updated, no checksum applies.
+ R - Removed: file was removed, rather than updated, no checksum applies.
  n - checksum the file name (md5sum FIXME: Confirm checksum algorithm used)
  <name> - checksum with a some other algorithm, named <name>
 
 .P
 
  <name> should be \fIregistered\fR in the switch network.  registered means that all downstream subscribers can obtain the algorithm to validate the checksum.  
-
 .P
-
- <value> - The value is what was computed by applying the given method to the partition being transferred.
+<value> The value is what was computed by applying the given method to the partition being transferred.
 
 .P
 
@@ -304,6 +302,7 @@ to implement any features not described by this documentation.
 
 This Manual page is intended to completely specify the format of messages and their 
 intended meaning so that other producers and consumers of messages can be implemented.
+
 
 
 .SH AMQP Feature Selection
