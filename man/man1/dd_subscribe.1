@@ -1,40 +1,39 @@
-.TH DD_Subscribe "1" "Oct 2013" "px 1.0.0" "Metpx suite"
+.TH DD_Subscribe "1" "Oct 2013" "px 1.0.0" "Metpx-Sarracenia Suite"
 .SH NAME
-dd_subscribe \- Python program to select and download Environment Canada's datamart products
+dd_subscribe \- Select and download Environment Canada's Datamart products
 .SH SYNOPSIS
 .B dd_subscribe \fI[-n]\fR \fIconfigfile.conf\fR
 .SH DESCRIPTION
 .PP
-\fBdd.weather.gc.ca\fR is Environment Canada's website where a wide variety of meteorological products are
-made available to the public. The website servers publish an amqp messages
-containing 4 fields "md5sun filesize http://servername/ filepath" for each product posted as soon as 
-it is available on the website. The combination of the 2 last fields make the URL of the product.
+dd_subscribe is an efficient real-time file downloader, initially developed for \fBdd.weather.gc.ca\fR which is an Environment Canada website where a wide variety of meteorological products are
+made available to the public. The website servers publish a message for each product as 
+soon as it is available.  Clients subscribe to the notifications which use AMQP, a protocol 
+that supports publish/subscribe communications patterns without the expensive polling 
+involved in traditional ATOM/RSS schemes.
 
-\fBdd_subscribe\fR is a python program that uses python-amqplib to receive these amqp messages
-and retrieve the web products and place them in a chosen local directory.
-
-\fBdd_subscribe\fR takes one argument a configuration file. 
+\fBdd_subscribe\fR takes one argument, a configuration file. 
 If you want \fBdd_subscribe\fR not to retrieve the products but only post the URL on standard
-output, execute:   dd_subscribe -n config_file.  -n stands for "notify_only"
+output, execute:   dd_subscribe -n config_file.  -n stands for "notify_only" or "no_download"
 
 .PP
 .SH CONFIGURATION
 .PP
-The configuration file is simple.
-A comment is a line that begins with \fB#\fR. Empty lines are permitted.
-To declare or set an option you simply use one of the form :
+Options are placed in the configuration file, one per line, of the form:
 .nf
 
 \fBoption <value>\fR
 
 .fi
-The specified defaults for all defined options below are valid and working (10/2013).
+A comment is a line that begins with \fB#\fR. Empty lines are permitted.
 
 .SH RABBITMQ CREDENTIAL OPTIONS
-Theses options set all the credential information to connect to the \fBRabbitMQ\fR 
+These options set all the credential information to connect to the \fBRabbitMQ\fR 
 server.
 .nf
 
+	broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>
+		(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+		broken out: protocol,amqp-user,amqp-password,host,port,vhost
 
 \fBhost     <hostname> (default: dd.weather.gc.ca)\fR
 \fBport       <number> (default: 5672)\fR
@@ -43,45 +42,44 @@ server.
 
 
 .fi
-.SH AMQP EXCHANGE SETTINGS
-Once connected to a RabbitMQ server, the user needs to set the \fBAMQP\fR exchanges.
-Theses options define which messages (URL notifications) the program receives.
+.SH AMQP QUEUE BINDINGS
+Once connected to an AMQP broker, the user needs to create a queue and bind it
+to an exchange.  These options define which messages (URL notifications) the program receives.
 .nf
-
 
 \fBexchange      <name>         (default: xpublic)\fR
-\fBexchange_type <type>         (default: topic)\fR
-\fBexchange_key  <amqp pattern> (deprecated)\fR
-\fBtopic         <amqp pattern> (topic or subtopic need to be set)\fR
+\fBtopic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)\fR
 \fBsubtopic      <amqp pattern> (topic or subtopic need to be set)\fR
 
-
 .fi
-Several topic options may be declared. To give a correct value to the exchange key,
+Several topic options may be declared. To give a correct value to the subtopic,
 browse the our website \fBhttp://dd.weather.gc.ca\fR and write down all directories of interest.
-For each directories write an \fBexchange_key\fR option as follow:
+For each directories write an \fBsubtopic\fR option as follow:
 .nf
-
-\fBtopic  v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#\fR
-
-where  v00.dd.notify.   is a mandatory prefix
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
-
-Since the mandatory prefix v00.dd.notify concerns internal protocol version
-and may changed, the option \fBsubtopic\fR  should be prefered. With \fBsubtopic\fR
-the user can only specifies the directories of interest and the current operational
-topic prefix will be added in front automatically by \fBdd_subscribe\fR. So
 
 \fBsubtopic  directory1.*.subdirectory3.*.subdirectory5.#\fR
 
-will be modified to v00.dd.notify.directory1.*.subdirectory3.*.subdirectory5.#
-and work as if declared by the option \fBtopic\fR.
+where:  
+       *                replaces a directory name 
+       #                stands for the remaining possibilities
+
+One has the choice of filtering using \fBsubtopic\fR with only AMQP's limited wildcarding, or the 
+more powerful regular expression based \fBaccept/reject\fR mechanisms described below.  The 
+difference being that the AMQP filtering is applied by the broker itself, saving the 
+notices from being delivered to the client at all. The \fBaccept/reject\fR patterns apply to 
+messages sent by the broker to the subscriber.  In other words, \fBaccept/reject\fR are 
+client side filters, whereas \fBsubtopic\fR is server side filtering.  
+
+It is best practice to use server side filtering to winnow out products to a small superset 
+of what is relevant, and perform only a fine-tuning with the client side mechanisms, in order
+to economize bandwidth and processing for all.
+
+topic_prefix is primarily of interest during protocol version transitions, where one wishes to specify a non-default protocol version of messages to subscribe to. 
 
 .fi
 
 .SH AMQP QUEUE SETTINGS
-The queue is where the notifications are held on the server.
+The queue is where the notifications are held on the server for each subscriber.
 .nf
 
 
@@ -89,6 +87,7 @@ The queue is where the notifications are held on the server.
 \fBdurable       <boolean>      (default: False)\fR
 \fBexpire        <minutes>      (default: None)\fR
 \fBmessage-ttl   <minutes>      (default: None)\fR
+\fBtimeout   <integer>        (default: 180)\fR
 
 
 .fi
@@ -97,19 +96,14 @@ and puts it into a file .<configname>.queue, where <configname> is the config fi
 The \fBqueue\fR option sets a queue name. It should always start with \fBcmc\fR.
 The \fBexpire\fR option is expressed in minutes... it sets how long should live
 a queue without connections The \fBdurable\fR option set to True, means writes the queue
-on disk if the rabbitmq server is stop or restarted...
+on disk if the broker is restarted.
 The \fBmessage-ttl\fR option set the time in minutes a message can live in the queue.
-Passed that time, the message is taken out of the queue by the rabbitmq server.
-.SH HTTP CREDENTIAL OPTIONS
-Theses options set all the credential information for the http site.
-It is unused for now but Environment Canada might implement some restricted
-products in the future.
+Past that time, the message is taken out of the queue by the broker.
+.SH HTTP DOWNLOAD CREDENTIALS 
 .nf
-
 
 \fBhttp-user   <user> (default: None)\fR
 \fBhttp-password <pw> (default: None)\fR
-
 
 .fi
 .SH DELIVERY SPECIFICATIONS
@@ -118,15 +112,13 @@ and under which name.
 .nf
 
 
-\fBlock      <.string>        (default: .tmp)\fR
-\fBdirectory <path>           (default: .)\fR
 \fBaccept    <regexp pattern> (must be set)\fR
-\fBreject    <regexp pattern> (optional)\fR
-
+\fBdirectory <path>           (default: .)\fR
 \fBflatten   <boolean>        (default: false)\fR
+\fBlock      <.string>        (default: .tmp)\fR
 \fBmirror    <boolean>        (default: false)\fR
-\fBtimeout   <integer>        (default: 180)\fR
 \fBoverwrite <boolean>        (default: true)\fR
+\fBreject    <regexp pattern> (optional)\fR
 
 .fi
 .nf
@@ -141,7 +133,7 @@ files of interest and their directories of residence. (see the \fBmirror\fR
 option for more directory settings).
 
 
-The \fBaccept\fR and \fBreject\fR options use regexp to match URL.
+The \fBaccept\fR and \fBreject\fR options use regular expressions (regexp) to match URL.
 Theses options are processed sequentially. 
 The URL of a product that match a \fBreject\fR pattern is never downloaded.
 One that match an \fBaccept\fR pattern is downloaded into the directory
@@ -206,5 +198,17 @@ several dd_subscribe with the same configuration file.
 Queues take resources onto our servers. We are running periodicaly a queue cleaner. 
 A queue, unaccessed, for a long period (to be determined) will be destroyed.
 A queue, unaccessed, with too much products (to be determined) will be destroyed.
-.SH SARRACENIA
-Just for fun, another rare, mostly carnivorous, canadian plant... (as sundew,columbo)
+
+.SH DEPRECATED Settings
+\fBexchange_type <type>         (default: topic)\fR
+\fBexchange_key  <amqp pattern> (deprecated)\fR
+
+
+.SH NOTES
+
+SARRACENIA -- Just for fun, another rare, mostly carnivorous, canadian plant... (as sundew,columbo)
+
+\fBdd_subscribe\fR is a python program that uses python-amqplib to receive these amqp messages
+and optionally retrieve the web products and place them in a chosen local directory.
+
+http://metpx.sf.net/ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based file switch.
