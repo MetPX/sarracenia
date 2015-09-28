@@ -139,8 +139,8 @@ class ConsumerX(object):
            sproto='amqp'
 
         for k in self.exchange_key :
-           self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s', 
-		self.queue, k, self.exchange, sproto, self.amqp_user, self.host )
+           self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s%s', 
+		self.queue, k, self.exchange, self.broker.scheme, self.broker.username, self.broker.hostname,self.broker.path )
            self.msg_queue.add_binding(self.exchange, k )
 
         self.msg_queue.build()
@@ -167,7 +167,7 @@ class ConsumerX(object):
         if self.notify_only :
            self.log_back  = False
 
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,'/') )
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
         for k in self.exchange_key :
             self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,k) )
         if self.log_back :
@@ -196,9 +196,10 @@ class ConsumerX(object):
 
                   self.msg.from_amqplib(raw_msg)
 
-                  self.logger.info("Received topic   %s" % self.msg.topic)
-                  self.logger.info("Received notice  %s" % self.msg.notice)
-                  self.logger.info("Received headers %s" % self.msg.headers)
+                  if not self.notify_only :
+                     self.logger.info("Received topic   %s" % self.msg.topic)
+                     self.logger.info("Received notice  %s" % self.msg.notice)
+                     self.logger.info("Received headers %s" % self.msg.headers)
 
                   processed = self.treat_message()
 
@@ -569,10 +570,16 @@ class ConsumerX(object):
                          ok, self.broker = self.validate_amqp_url(self.broker)
                          if not ok :
                             self.logger.error("broker is incorrect (%s)" % words[1])
-                         else :
-                              if self.broker.username != None : self.amqp_user   = self.broker.username
-                              if self.broker.password != None : self.amqp_passwd = self.broker.password
-                              if self.broker.path     != None : self.vhost       = self.broker.path
+                            continue
+                         self.protocol = self.broker.scheme
+                         self.host     = self.broker.hostname
+                         if self.broker.port     != None : self.port        = int(self.broker.port)
+                         if self.broker.username != None : self.amqp_user   = self.broker.username
+                         if self.broker.password != None : self.amqp_passwd = self.broker.password
+                         if self.broker.path     != None : self.vhost       = self.broker.path
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
+
                     elif words[0] == 'directory': currentDir = words[1]
                     elif words[0] == 'protocol': self.protocol = words[1]
                     elif words[0] == 'host':
@@ -587,6 +594,8 @@ class ConsumerX(object):
                          self.logger.warning("host option deprecated (but still working)")
                          self.logger.warning("use this instead :")
                          self.logger.warning("broker %s\n" % self.broker.geturl())
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
                     elif words[0] == 'port':
                          self.port = int(words[1])
                          if self.port == 5672 :
@@ -599,6 +608,8 @@ class ConsumerX(object):
                          self.logger.warning("port option deprecated (but still working)")
                          self.logger.warning("use this instead :")
                          self.logger.warning("broker %s" % self.broker.geturl())
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
                     elif words[0] == 'amqp-user':
                          self.amqp_user = words[1]
                          if self.port == 5672 :
@@ -607,6 +618,8 @@ class ConsumerX(object):
                          else :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
                               (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
                     elif words[0] == 'amqp-password':
                          self.amqp_passwd = words[1]
                          if self.port == 5672 :
@@ -615,6 +628,8 @@ class ConsumerX(object):
                          else :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
                               (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
                     elif words[0] == 'vhost':
                          self.logger.warning("vhost option deprecated (but still working)")
                          self.logger.warning("use  option broker (default amqp://anonymous:anonymous@dd.weather.gc.ca:5672/' ")
@@ -625,6 +640,8 @@ class ConsumerX(object):
                          else :
                             self.broker     =  urllib.parse.urlparse('%s://%s:%s@%s:%d%s'%\
                               (self.protocol,self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s:%s@%s:%d%s"%(self.amqp_user,self.amqp_passwd,self.host,self.port,self.vhost))
+                         self.logger.debug("%s"%self.broker.geturl())
                     elif words[0] == 'lock': self.lock = words[1]
 
                     elif words[0] == 'exchange': self.exchange = words[1]
@@ -712,34 +729,32 @@ def help():
     print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n")
     print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker connection:\n" +
-          "\tamqp-password  <pw> (default: anonymous)\n" +
-          "\tamqp-user    <user> (default: anonymous)\n" + 
-          "\thost     <hostname> (default: dd.weather.gc.ca)\n" +
-          "\tport       <number> (default: 5672)\n" +
-          "\nAMQP Exchange/Queue settings:\n" +
+          "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
+	  "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
+          "\t\tbroken out: protocol,amqp-user,amqp-password,host,port,vhost\n" +
+          "\nAMQP Queue settings:\n" +
           "\tdurable       <boolean>      (default: False)\n" +
           "\texchange      <name>         (default: xpublic)\n" +
-          "\ttopic         <amqp pattern> (more words\n" +
-          "\t\t* single topic wildcard (matches one word)\n" +
-          "\t\t# wildcard (matches zero or more words at end of topic)\n" +
-          "\texchange_key  <amqp pattern> (deprecated use topic_prefix and subtopic)\n" +
-          "\tsubtopic      <amqp pattern> (topic part : dot separated directories)\n" +
-          "\ttopic_prefix  <amqp pattern> (unvarying topic prefix currently v00.dd.notify)\n" +
+          "\texpire        <minutes>      (default: None)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue         <name>         (default: None)\n" +
-          "\texpire        <minutes>      (default: None)\n" +
+          "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
+          "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
+          "\t\t\t* single directory wildcard (matches one directory)\n" +
+          "\t\t\t# wildcard (matches rest)\n" +
           "\ttimeout       <integer>      (default: 180)\n" +
-          "\texchange_type <type>         (default: topic)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
           "\nHTTP Settings:\n" +
-          "\thttp-user   <user> (default: None)\n" +
           "\thttp-password <pw> (default: None)\n" +
+          "\thttp-user   <user> (default: None)\n" +
           "\nLocal File Delivery settings:\n" +
-          "\tlock      <.string>        (default: .tmp)\n" +
-          "\tdirectory <path>           (default: .)\n" +
           "\taccept    <regexp pattern> (MANDATORY)\n" +
-          "\treject    <regexp pattern> (optional)\n" +
+          "\tdirectory <path>           (default: .)\n" +
           "\tflatten   <boolean>        (default: false)\n" +
+          "\tlock      <.string>        (default: .tmp)\n" +
           "\tmirror    <boolean>        (default: false)\n" +
+          "\treject    <regexp pattern> (optional)\n" +
+          "\tstrip    <count> (number of directories to remove from beginning.)\n" +
 	  "" )
 
 def signal_handler(signal, frame):
