@@ -64,12 +64,13 @@ chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
-host localhost
+broker amqp://localhost/
 amqp-user guest
 amqp-password guest
 
 exchange amq.topic
-exchange_key v02.post.#
+topic_prefix v02.post
+subtopic #
 
 directory ${PWD}/test
 accept .*
@@ -147,6 +148,7 @@ cp ./subscribe_test.conf ./subscribe_test1.conf
 echo inplace False >> ./subscribe_test1.conf
 
 test1 ./subscribe_test1.conf
+rm ./subscribe_test1.conf
 
 echo ==== INPLACE TRUE ====
 
@@ -212,6 +214,7 @@ function test2 {
 cp ./subscribe_test.conf ./subscribe_test2.conf
 echo inplace True  >> ./subscribe_test2.conf
 test2 ./subscribe_test2.conf
+rm ./subscribe_test2.conf
 
 echo ==== INPLACE FALSE NOT MODIFIED ====
 
@@ -331,6 +334,6 @@ cp ./subscribe_test.conf ./subscribe_test5.conf
 echo inplace True >> ./subscribe_test5.conf
 test5 ./subscribe_test5.conf
 
-#rm ./dd_subscribe_*.log ./.dd_subscribe_* ./toto* ./test/t* ./subscribe_test.conf > /dev/null 2>&1
-#rmdir ./test > /dev/null 2>&1
+rm ./dd_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
+rmdir ./test > /dev/null 2>&1
 
