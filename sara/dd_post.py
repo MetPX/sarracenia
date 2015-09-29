@@ -182,7 +182,7 @@ class dd_post(dd_config):
 
         if self.event == 'IN_DELETE' :
            self.msg.set_parts(None)
-           self.msg.set_sum(None)
+           self.msg.set_sum(sumflg='R')
            self.publish()
            return
 
@@ -251,7 +251,6 @@ class dd_post(dd_config):
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         self.msg.set_notice(self.url)
-        self.msg.set_event(self.event)
         self.msg.set_headers()
         self.logger.info("%s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
         ok = self.pub.publish( self.msg.exchange, self.msg.topic, self.msg.notice, self.msg.headers )

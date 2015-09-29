@@ -54,7 +54,6 @@ class dd_message():
         self.headers       = {}
 
         self.flow          = None
-        self.event         = None
         self.message       = None
         self.partstr       = None
         self.rename        = None
@@ -101,7 +100,6 @@ class dd_message():
         if type(msg.body) == bytes :
            self.notice = msg.body.decode("utf-8")
   
-        self.event     = None
         self.flow      = None
         self.message   = None
         self.partstr   = None
@@ -184,7 +182,6 @@ class dd_message():
         self.headers['sum'] = self.sumstr
         self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.event   = None
         self.flow    = None
         self.rename  = None
         self.message = None
@@ -225,11 +222,6 @@ class dd_message():
            self.sumstr   = self.headers['sum']
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.event   = None
-        if 'event'   in self.headers :
-           self.event    = self.headers['event']
-           self.hdrstr  += '%s=%s ' % ('event',self.event)
-
         self.flow    = None
         if 'flow'    in self.headers :
            self.flow     = self.headers['flow']
@@ -263,9 +255,6 @@ class dd_message():
     def set_exchange(self,name):
         self.exchange = name
 
-    def set_event(self,event=None):
-        self.event = event
-
     def set_flow(self,flow=None):
         self.flow   = flow
 
@@ -284,10 +273,6 @@ class dd_message():
         if self.sumstr  != None :
            self.headers['sum']     = self.sumstr
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
-
-        if self.event   != None :
-           self.headers['event']   = self.event
-           self.hdrstr  += '%s=%s ' % ('event',self.event)
 
         if self.flow    != None :
            self.headers['flow']    = self.flow
