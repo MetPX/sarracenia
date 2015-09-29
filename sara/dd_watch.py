@@ -65,11 +65,13 @@ def main():
     d = 'IN_DELETE'       in post.events 
     w = 'IN_CLOSE_WRITE'  in post.events 
     if d and w :
-       events = pyinotify.IN_CLOSE_WRITE|pyinotify.IN_DELETE|pyinotify.IN_DELETE_SELF
+       events = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE   | pyinotify.IN_DELETE_SELF \
+              | pyinotify.IN_ATTRIB      | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVE_SELF  
     elif d :
-       events = pyinotify.IN_DELETE|pyinotify.IN_DELETE_SELF
+       events = pyinotify.IN_DELETE      | pyinotify.IN_DELETE_SELF
     elif w :
-       events = pyinotify.IN_CLOSE_WRITE
+       events = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_ATTRIB    \
+              | pyinotify.IN_MOVED_TO    | pyinotify.IN_MOVE_SELF 
 
     # =========================================
     # setup pyinotify watching
@@ -78,7 +80,17 @@ def main():
     wm         = pyinotify.WatchManager()
 
     class EventHandler(pyinotify.ProcessEvent):
+          def process_IN_ATTRIB(self,event):
+              # Files we don't want to touch
+              basename = os.path.basename(event.pathname)
+              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
+                 return
+              post.watching(event.pathname,'IN_CLOSE_WRITE')
           def process_IN_CLOSE_WRITE(self,event):
+              # Files we don't want to touch
+              basename = os.path.basename(event.pathname)
+              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
+                 return
               post.watching(event.pathname,'IN_CLOSE_WRITE')
           def process_IN_DELETE(self,event):
               post.watching(event.pathname,'IN_DELETE')
@@ -86,9 +98,23 @@ def main():
               post.watching(event.pathname,'IN_DELETE')
               post.logger.info("exiting")
               os._exit(0)
+          def process_IN_MOVED_TO(self,event):
+              # Files we don't want to touch
+              basename = os.path.basename(event.pathname)
+              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
+                 return
+              post.watching(event.pathname,'IN_CLOSE_WRITE')
+          def process_IN_MOVE_SELF(self,event):
+              # Files we don't want to touch
+              basename = os.path.basename(event.pathname)
+              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
+                 os._exit(0)
+              post.watching(event.pathname,'IN_CLOSE_WRITE')
 
     notifier   = pyinotify.AsyncNotifier(wm,EventHandler())
-    wdd = wm.add_watch(watch_path, events, rec=True)
+    wdd = wm.add_watch(watch_path, events, rec=post.recursive, auto_add=post.recursive)
+    #  more options/defaults : proc_fun=None, do_glob=False, quiet=True, exclude_filter=None):
+
 
     # =========================================
     # signal reload

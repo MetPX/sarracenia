@@ -107,7 +107,7 @@ class dd_config:
         self.document_root        = None
 
         self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
-        self.event                = 'IN_CLOSE_WRITE'
+        self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
 
         self.flow                 = None
 
@@ -127,6 +127,8 @@ class dd_config:
         self.randomize            = False
 
         self.reconnect            = False
+
+        self.recursive            = False
 
         self.rename               = None
 
@@ -315,6 +317,14 @@ class dd_config:
                         n = 1
                      else :
                         self.reconnect = self.isTrue(words[1])
+                        n = 2
+
+                elif words[0] in ['recursive','-rec','--recursive']:
+                     if words[0][0:1] == '-' : 
+                        self.recursive = True
+                        n = 1
+                     else :
+                        self.recursive = self.isTrue(words[1])
                         n = 2
 
                 elif words[0] in ['rename','-rn','--rename']:
