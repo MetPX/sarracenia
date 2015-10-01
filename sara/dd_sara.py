@@ -147,7 +147,7 @@ class dd_sara(dd_instances):
         self.setlog()
 
     def delete_event(self):
-        if self.msg.event != 'IN_DELETE' : return False
+        if self.msg.sumflg != 'R' : return False
 
         self.msg.code = 503
         self.msg.message = "Service unavailable : delete"
