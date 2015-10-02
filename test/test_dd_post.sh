@@ -19,9 +19,9 @@ e 123456789abcde
 
 EOF
 
-echo dd_post -h
+echo dd_post --help
 
-../sara/dd_post.py -h
+../sara/dd_post.py --help
 
 echo
 
@@ -135,11 +135,23 @@ python3 ./exchange.py user_exchange add
 
 echo
 
-cp ./toto ./toto.1024.256.1.d.Part
-echo dd_post -u file:${PWD}/toto.1024.256.1.d.Part -p p
+cp ./toto ./toto.256.12.0.1.d.Part
+echo dd_post -u file:${PWD}/toto.256.12.0.1.d.Part -p p
 
-../sara/dd_post.py -u file:${PWD}/toto.1024.256.1.d.Part -p p
-rm ./toto.1024.256.1.d.Part
+../sara/dd_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -p p
+
+
+echo dd_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/name -p p
+
+../sara/dd_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/name -p p
+
+
+echo dd_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/dir/ -p p
+
+../sara/dd_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/dir -p p
+
+
+rm ./toto.256.12.0.1.d.Part
 
 echo
 
