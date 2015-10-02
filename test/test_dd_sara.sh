@@ -274,6 +274,8 @@ function test1 {
 
 }
 
+python3 ./exchange.py xpublic add > /dev/null 2>&1
+
 test1 --strip 2 --url file:                ./sara_test1.conf
 
 mv dd_sara_sara_test1_0001.log dd_sara_sara_test1_0001.log_INPLACE_FALSE
@@ -680,6 +682,9 @@ function test5 {
 }
 
 test5 --strip 2 --url file: --inplace true --instances 10
+
+python3 ./exchange.py xpublic del > /dev/null 2>&1
+
 cat dd_sara_sara_test1_*.log >> dd_sara_sara_test1_0001.log_INSTANCES_INSERT_TRUNCATE
 rm dd_sara_sara_test1_*.log
 
