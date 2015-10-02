@@ -1,5 +1,11 @@
 #!/bin/ksh
 
+if [[ $# != 2 ]]; then
+   echo $0 user password
+   exit 1
+fi
+
+
 echo killall dd_sara.py
 
 killall dd_sara.py > /dev/null 2>&1
@@ -593,7 +599,7 @@ function test4 {
                fi
                rm   ./test/toto_29*
 
-         ../sara/dd_sara.py $* ./sara_test1.conf stop
+         ../sara/dd_sara.py $* ./sara_test1.conf stop > /dev/null 2>&1
          sleep 10
 
 }
@@ -677,7 +683,7 @@ function test5 {
                rm   ./test/toto_33*
 
          sleep 10
-         ../sara/dd_sara.py $* ./sara_test1.conf stop
+         ../sara/dd_sara.py $* ./sara_test1.conf stop > /dev/null 2>&1
 
 }
 
