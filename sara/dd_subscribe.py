@@ -496,7 +496,7 @@ class ConsumerX(object):
            local_file = msg.local_file + self.lock
            if self.lock == '.' :
               token = msg.local_file.split(os.sep)
-              local_file = os.sep.join(token[-1]) + os.sep + '.' + token[-1]
+              local_file = os.sep.join(token[:-1]) + os.sep + '.' + token[-1]
               self.logger.debug("lock file = %s" % local_file)
            
         # download/write
