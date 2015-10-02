@@ -11,7 +11,7 @@ except :
          from sara.dd_config    import *
 
 
-broker = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+broker = urllib.parse.urlparse(sys.argv[1])
 
 cf = dd_config(args=sys.argv)
 
@@ -19,12 +19,7 @@ hc = HostConnect(cf.logger)
 hc.set_url( broker )
 hc.connect()
 
-# consumer exchange : make sure it exists
-if sys.argv[2] == 'add' :
-   ex = Exchange(hc,sys.argv[1],durable= len(sys.argv) > 3 and sys.argv[3]=='durable')
-   ex.build()
-if sys.argv[2] == 'del' :
-   ch = hc.new_channel()
-   ch.exchange_delete(sys.argv[1])
+hc.channel.exchange_declare(sys.argv[2], 'topic', passive=False, durable=True,
+        auto_delete=False, internal=False, nowait=False)
 
 hc.close()
