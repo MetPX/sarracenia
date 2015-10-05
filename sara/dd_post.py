@@ -261,7 +261,7 @@ class dd_post(dd_config):
         ok,message = self.msg.verify_part_suffix(filepath)
 
         if ok :
-           self.p_chunk = (self.msg.chunksize, self.msg.block_count, self.msg.remainder, self.msg.current_block, self.msg.chksum)
+           self.p_chunk = (self.msg.chunksize, self.msg.block_count, self.msg.remainder, self.msg.current_block, self.msg.checksum)
 
         return ok,message
 
