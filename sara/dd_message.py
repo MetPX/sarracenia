@@ -290,7 +290,7 @@ class dd_message():
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
-        self.headers['filename'] = os.path.basename(self.url.path)
+        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0]
 
 
     # Once we know the local file we want to use
