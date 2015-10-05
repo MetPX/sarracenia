@@ -71,6 +71,8 @@ class dd_message():
 
         self.user          = None
 
+        self.host          = socket.gethostname()
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -122,7 +124,7 @@ class dd_message():
     def log_amqp(self):
         self.log_topic    = self.topic.replace('.post.','.log.')
         self.log_notice   = "%s %d %s %s %f" % \
-                       (self.notice,self.code,socket.gethostname(),self.user,self.get_elapse())
+                       (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.headers['message'] = self.message
         self.set_headers()
 
