@@ -84,7 +84,7 @@ class dd_message():
 
         self.compute_local_checksum()
 
-        return self.local_checksum == self.chksum
+        return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
         self.local_checksum = self.compute_chksum(self.local_file,self.local_offset,self.length)
@@ -304,7 +304,7 @@ class dd_message():
         self.local_url     = local_url
         self.local_offset  = 0
         self.in_partfile   = False
-        self.local_chksum  = None
+        self.local_checksum= None
 
         # file to file
 
@@ -474,7 +474,7 @@ class dd_message():
 
         token        = self.sumstr.split(',')
         self.sumflg  = token[0]
-        self.chksum  = token[1]
+        self.checksum= token[1]
 
         self.chkclass.from_list(self.sumflg)
         self.compute_chksum = self.chkclass.checksum
@@ -536,7 +536,7 @@ class dd_message():
                  self.chkclass.from_list(self.sumflg)
                  self.compute_chksum = self.chkclass.checksum
 
-                 self.chksum  = self.compute_chksum(filepath,0,fsiz)
+                 self.checksum  = self.compute_chksum(filepath,0,fsiz)
 
         except :
                  (stype, svalue, tb) = sys.exc_info()
