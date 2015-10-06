@@ -476,10 +476,15 @@ class dd_message():
         self.sumflg  = token[0]
         self.checksum= token[1]
 
+        # file was removed
+        if self.sumflg == 'R' : return
+
         self.chkclass.from_list(self.sumflg)
         self.compute_chksum = self.chkclass.checksum
 
     def set_suffix(self):
+        if self.partstr == None : return
+        if self.sumstr  == None or self.sumflg == 'R' : return
         self.suffix = self.part_suffix()
 
     def set_time(self):

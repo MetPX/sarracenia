@@ -320,6 +320,11 @@ class ConsumerX(object):
         if self.notify_only :
            self.logger.info("%s %s" % (self.msg.notice,self.msg.hdrstr))
            return True
+
+        # remove flag not supported
+        if self.msg.sumflg == 'R' :
+           self.logger.info("Remove flag not supported")
+           return True
         
         # root directory should exists
         if not os.path.isdir(odir) :

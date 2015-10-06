@@ -680,7 +680,6 @@ class dd_message():
         self.headers       = {}
 
         self.flow          = None
-        self.event         = None
         self.message       = None
         self.partstr       = None
         self.rename        = None
@@ -698,6 +697,8 @@ class dd_message():
 
         self.user          = None
 
+        self.host          = socket.gethostname()
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -709,7 +710,7 @@ class dd_message():
 
         self.compute_local_checksum()
 
-        return self.local_checksum == self.chksum
+        return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
         self.local_checksum = self.compute_chksum(self.local_file,self.local_offset,self.length)
@@ -727,7 +728,6 @@ class dd_message():
         if type(msg.body) == bytes :
            self.notice = msg.body.decode("utf-8")
   
-        self.event     = None
         self.flow      = None
         self.message   = None
         self.partstr   = None
@@ -750,7 +750,7 @@ class dd_message():
     def log_amqp(self):
         self.log_topic    = self.topic.replace('.post.','.log.')
         self.log_notice   = "%s %d %s %s %f" % \
-                       (self.notice,self.code,socket.gethostname(),self.user,self.get_elapse())
+                       (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.headers['message'] = self.message
         self.set_headers()
 
@@ -810,7 +810,6 @@ class dd_message():
         self.headers['sum'] = self.sumstr
         self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.event   = None
         self.flow    = None
         self.rename  = None
         self.message = None
@@ -851,11 +850,6 @@ class dd_message():
            self.sumstr   = self.headers['sum']
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.event   = None
-        if 'event'   in self.headers :
-           self.event    = self.headers['event']
-           self.hdrstr  += '%s=%s ' % ('event',self.event)
-
         self.flow    = None
         if 'flow'    in self.headers :
            self.flow     = self.headers['flow']
@@ -889,9 +883,6 @@ class dd_message():
     def set_exchange(self,name):
         self.exchange = name
 
-    def set_event(self,event=None):
-        self.event = event
-
     def set_flow(self,flow=None):
         self.flow   = flow
 
@@ -911,10 +902,6 @@ class dd_message():
            self.headers['sum']     = self.sumstr
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        if self.event   != None :
-           self.headers['event']   = self.event
-           self.hdrstr  += '%s=%s ' % ('event',self.event)
-
         if self.flow    != None :
            self.headers['flow']    = self.flow
            self.hdrstr  += '%s=%s ' % ('flow',self.flow)
@@ -929,7 +916,7 @@ class dd_message():
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
-        self.headers['filename'] = os.path.basename(self.url.path)
+        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0]
 
 
     # Once we know the local file we want to use
@@ -943,7 +930,7 @@ class dd_message():
         self.local_url     = local_url
         self.local_offset  = 0
         self.in_partfile   = False
-        self.local_chksum  = None
+        self.local_checksum= None
 
         # file to file
 
@@ -1113,12 +1100,17 @@ class dd_message():
 
         token        = self.sumstr.split(',')
         self.sumflg  = token[0]
-        self.chksum  = token[1]
+        self.checksum= token[1]
+
+        # file was removed
+        if self.sumflg == 'R' : return
 
         self.chkclass.from_list(self.sumflg)
         self.compute_chksum = self.chkclass.checksum
 
     def set_suffix(self):
+        if self.partstr == None : return
+        if self.sumstr  == None or self.sumflg == 'R' : return
         self.suffix = self.part_suffix()
 
     def set_time(self):
@@ -1175,7 +1167,7 @@ class dd_message():
                  self.chkclass.from_list(self.sumflg)
                  self.compute_chksum = self.chkclass.checksum
 
-                 self.chksum  = self.compute_chksum(filepath,0,fsiz)
+                 self.checksum  = self.compute_chksum(filepath,0,fsiz)
 
         except :
                  (stype, svalue, tb) = sys.exc_info()
@@ -1183,7 +1175,6 @@ class dd_message():
                  return False,'incorrect extension'
 
         return True,'ok'
-
 
 #############################################################################################
 # Class AlarmTimeout
@@ -1448,6 +1439,11 @@ class ConsumerX(object):
         # notify_only mode : print out received message
         if self.notify_only :
            self.logger.info("%s %s" % (self.msg.notice,self.msg.hdrstr))
+           return True
+
+        # remove flag not supported
+        if self.msg.sumflg == 'R' :
+           self.logger.info("Remove flag not supported")
            return True
         
         # root directory should exists
