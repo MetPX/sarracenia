@@ -194,12 +194,16 @@ class ConsumerX(object):
 
                   # make use it as a dd_message
 
-                  self.msg.from_amqplib(raw_msg)
+                  try :
+                           self.msg.from_amqplib(raw_msg)
+                  except :
+                           self.msg.code    = 417
+                           self.msg.message = "Expectation Failed : sumflg or partflg"
+                           self.msg.log_error()
+                           self.consumer.ack(raw_msg)
+                           continue
 
-                  if not self.notify_only :
-                     self.logger.info("Received topic   %s" % self.msg.topic)
-                     self.logger.info("Received notice  %s" % self.msg.notice)
-                     self.logger.info("Received headers %s" % self.msg.headers)
+                  # process message
 
                   processed = self.treat_message()
 
@@ -320,6 +324,11 @@ class ConsumerX(object):
         if self.notify_only :
            self.logger.info("%s %s" % (self.msg.notice,self.msg.hdrstr))
            return True
+        # log what is selected
+        else :
+           self.logger.info("Received topic   %s" % self.msg.topic)
+           self.logger.info("Received notice  %s" % self.msg.notice)
+           self.logger.info("Received headers %s" % self.msg.headers)
 
         # remove flag not supported
         if self.msg.sumflg == 'R' :
