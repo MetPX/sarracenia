@@ -69,6 +69,31 @@ The above are the fields taken from the dd_post(7) format.  There are additional
 
 \fI<statuscode>\fR  a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616) 
 
+
+.TS
+box;
+l l.
+201|Download successful. (Downloaded, Inserted, Published, Copied, or Linked)
+205|T{
+Reset Content: truncated. file is shorter than originally expected (changed length during transfer) 
+This only arises during multi-part transfers.  
+Reset Content: checksum recalculated on receipt.
+T}
+304|not modified (Checksum validated, unchanged, so no download resulted.)
+307|insertion deferred (writing to temporary part file for the moment.)
+417|Expectation Failed: invalid message (corrupt headers)
+499|Failure: Not Copied. SFTP/FTP/HTTP download problem
+503|T{
+Service unavailable. delete (File removal not currently supported.) 
+Unable to process: Service unavailable, 
+unsupported transport protocol specified in posting.
+T}
+.TE
+
+In the case of message and file validation scripts, log messages with script dependent codes and messages 
+may be generated.
+
+
 \fI<consuminghost>\fR  hostname from which the retrieval was initiated.
 
 \fI<consuminguser>\fR  switch username from which the retrieval was initiated.

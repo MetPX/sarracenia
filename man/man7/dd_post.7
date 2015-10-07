@@ -148,9 +148,7 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
 .P
 
  <blocks in total>: blktot
- the integer total number of blocks in the file
- FIXME: (including the last block or not?)
- if set to 1.
+ the integer total number of blocks in the file (last block may be partial)
 
 .P
  <remainder>: brem
@@ -204,9 +202,9 @@ parts=<method>,<bsz>,<blktot>,<brem>,bno
  <method> - character field indicating the checksum algorithm used.
 
  0 - no checksums (unconditional copy.)
- d - checksum the entire data (md5sum FIXME: Confirm checksum algorithm used)
+ d - checksum the entire data (MD-5 as per IETF RFC 1321)
  R - Removed: file was removed, rather than updated, no checksum applies.
- n - checksum the file name (md5sum FIXME: Confirm checksum algorithm used)
+ n - checksum the file name (MD-5 as per IETF RFC 1321)
  <name> - checksum with a some other algorithm, named <name>
 
 .P
@@ -322,13 +320,11 @@ and as the 1.0 standard is relatively controversial, this protocol assumes a pre
 as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
 0.9 brokers are also likely to inter-operate well.
 
-In AMQP may different actors can define communications, with an intent to create a clearer
+In AMQP, many different actors can define communication parameters. To create a clearer
 security model, sarracenia constrains that model: dd_post clients are not expected to declare 
 Exchanges.  All clients are expected to use existing exchanges which have been declared by 
 broker administrators.  Client permissions are limited to creating queues for their own use,
-using agreed upon naming schemes.
-
-FIXME: what is the agreed upon naming scheme?  qs_<user>.????
+using agreed upon naming schemes.  Queue for client: qc_<user>.????
 
 Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
 but dd_post have the topic sent in order to support server side filtering by using topic 
@@ -354,7 +350,6 @@ blocks of large files are announced independently. and blocks can follow differe
 between initial switch and final delivery.
 
 
-FIXME
 
 
 .SH FURTHER READING

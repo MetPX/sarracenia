@@ -4,7 +4,7 @@
 #Guide.rtf:   Guide.latex
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
-MANPAGES= dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html
+MANPAGES= dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html dd_log.7.html
 
 TARGETS= $(MANPAGES)
 
@@ -33,6 +33,9 @@ dd_post.1.html: ../../man/man1/dd_post.1
 
 dd_post.7.html: ../../man/man7/dd_post.7
 	groff -Thtml -man ../../man/man7/dd_post.7 >dd_post.7.html
+
+dd_log.7.html: ../../man/man7/dd_log.7
+	groff -Thtml -man ../../man/man7/dd_log.7 >dd_log.7.html
 
 clean: 
 	rm -f $(TARGETS) *.png 
