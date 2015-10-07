@@ -237,7 +237,7 @@ class ConsumerX(object):
         self.exchange_type = 'topic'
         self.exchange_key  = []
 
-        self.topic_prefix  = 'v00.dd.notify'
+        self.topic_prefix  = 'v02.post'
 
         self.http_user     = None
         self.http_passwd   = None
