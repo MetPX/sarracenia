@@ -47,12 +47,10 @@ import urllib, logging, logging.handlers, os, random, re, signal, string, sys, t
 try :    
          from dd_amqp           import *
          from dd_file           import *
-         from dd_http           import *
          from dd_message        import *
 except : 
          from sara.dd_amqp      import *
          from sara.dd_file      import *
-         from sara.dd_http      import *
          from sara.dd_message   import *
 
 

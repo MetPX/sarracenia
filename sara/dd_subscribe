@@ -36,6 +36,11 @@
 #
 
 import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
+import calendar,socket,urllib.parse
+import urllib.request, urllib.error
+import stat
+import amqplib.client_0_8 as amqp
+from   hashlib import md5
 
 #============================================================
 # usage example
@@ -43,8 +48,6 @@ import urllib, logging, logging.handlers, os, random, re, signal, string, sys, t
 # python dd_subscribe.py configfile.conf
 
 #============================================================
-
-import amqplib.client_0_8 as amqp
 
 # ==========
 # HostConnect
@@ -317,10 +320,6 @@ class Queue:
        for exchange_name,exchange_key in self.bindings:
            self.bind(exchange_name, exchange_key )
 
-
-
-import stat
-
 def file_insert( msg ) :
 
     # file must exists
@@ -388,7 +387,9 @@ def file_insert_part(msg,part_file):
     msg.message = 'Inserted'
     msg.log_info()
 
-    # publish now that it is inserted
+    # publish now, if needed, that it is inserted
+
+    if msg.amqp_pub == None : return True
 
     msg.set_topic_url('v02.post',msg.target_url)
     msg.set_notice(msg.target_url,msg.time)
@@ -417,7 +418,7 @@ def file_process( msg ) :
     # try link if no inserts
 
     if msg.partflg == '1' or \
-       msg.partflg == 'p' and  msg.in_partfile  :
+       (msg.partflg == 'p' and  msg.in_partfile) :
        ok = file_link(msg)
        if ok : return ok
 
@@ -551,9 +552,6 @@ def file_truncate(msg):
 
     except : pass
 
-import socket,urllib.parse
-
-from hashlib import md5
 
 # ===================================
 # Checksum class
@@ -697,7 +695,7 @@ class dd_message():
 
         self.user          = None
 
-        self.host          = socket.gethostname()
+        self.host          = socket.getfqdn()
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -870,6 +868,7 @@ class dd_message():
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
+        self.set_msg_time()
 
     def part_suffix(self):
         return '.%d.%d.%d.%d.%s.%s' %\
@@ -1023,6 +1022,12 @@ class dd_message():
         self.logger.error("bad unknown conditions")
         return
 
+    def set_msg_time(self):
+        parts       = self.time.split('.')
+        ts          = time.strptime(parts[0], "%Y%m%d%H%M%S" )
+        ep_msg      = calendar.timegm(ts)
+        self.tbegin = ep_msg + int(parts[1]) / 1000.0
+
     def set_notice(self,url,time=None):
         self.time = time
         if time  == None : self.set_time()
@@ -1175,7 +1180,6 @@ class dd_message():
                  return False,'incorrect extension'
 
         return True,'ok'
-
 #############################################################################################
 # Class AlarmTimeout
 
@@ -1314,12 +1318,16 @@ class ConsumerX(object):
 
                   # make use it as a dd_message
 
-                  self.msg.from_amqplib(raw_msg)
+                  try :
+                           self.msg.from_amqplib(raw_msg)
+                  except :
+                           self.msg.code    = 417
+                           self.msg.message = "Expectation Failed : sumflg or partflg"
+                           self.msg.log_error()
+                           self.consumer.ack(raw_msg)
+                           continue
 
-                  if not self.notify_only :
-                     self.logger.info("Received topic   %s" % self.msg.topic)
-                     self.logger.info("Received notice  %s" % self.msg.notice)
-                     self.logger.info("Received headers %s" % self.msg.headers)
+                  # process message
 
                   processed = self.treat_message()
 
@@ -1440,6 +1448,11 @@ class ConsumerX(object):
         if self.notify_only :
            self.logger.info("%s %s" % (self.msg.notice,self.msg.hdrstr))
            return True
+        # log what is selected
+        else :
+           self.logger.info("Received topic   %s" % self.msg.topic)
+           self.logger.info("Received notice  %s" % self.msg.notice)
+           self.logger.info("Received headers %s" % self.msg.headers)
 
         # remove flag not supported
         if self.msg.sumflg == 'R' :
