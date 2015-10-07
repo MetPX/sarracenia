@@ -45,17 +45,17 @@ you started.  The config files may contain :
 
               exchange            default  exchange      xpublic
               exchange_type       default  exchange_type topic
-              exchange_key        no default ... 
+              subtopic            no default ... 
                                   
-         - several exchange_key options may be declared
-         - to arrive at a valid exchange key, browse the datamart (http://dd.weather.gc.ca)
+         - subtopic replaces amqp exchange_key options
+         - several subtopic options may be declared
+         - to arrive at a valid subtopic, browse the datamart (http://dd.weather.gc.ca)
            and pick any directories where the products are interesting for you. For each
-           directory, create an exchange_key as follows:
+           directory, create a subtopicas follows:
 
-                 exchange_key  v00.dd.notify.directory1.subdirectory2.*.subdirectory4.#
+                 subtopic directory1.subdirectory2.*.subdirectory4.#
 
-                 where     v00.dd.notify. is a mandatory prefix
-                           *              replace a directory name (one * per directory)
+                 where     *              replace a directory name (one * per directory)
                            #              stands for the remaining possibilities
 
       c) amqp queue settings to be able to queue the desired notifications (URL)
@@ -175,18 +175,18 @@ commencer.
 
               exchange            default  exchange      xpublic
               exchange_type       default  exchange_type topic
-              exchange_key        no default ... 
+              subtopic            no default ... 
                                   
-         - il est permi de déclarer plusieurs clés d'échanges (exchange_key)
-         - Pour déterminer une valeur correcte pour une clé d'échange, explorez le dépôt
+         - le subtopic replace les clés d'échanges amqp (exchange_key)
+         - il est permi de déclarer plusieurs subtopic
+         - Pour déterminer une valeur correcte pour un subtopic, explorez le dépôt
            http://dd.weather.gc.ca et choisissez n'importe quel répertoire contenant des
            produits qui sont d'intérêt pour vous. Pour chacun de ces répertoires, spécifiez
-           la clé comme suit:
+           le subtopic comme suit:
 
-                 exchange_key  v00.dd.notify.directory1.subdirectory2.*.subdirectory4.#
+                 subtopic directory1.subdirectory2.*.subdirectory4.#
 
-                 where     v00.dd.notify. is a mandatory prefix
-                           *              caractère de remplacement (wildcard) 
+                 ou        *              caractère de remplacement (wildcard) 
                                           (un seul '*' per par répertoire)
                            #              signifie les possibilités restantes
 
