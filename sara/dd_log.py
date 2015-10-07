@@ -98,7 +98,7 @@ class dd_log(dd_config):
         # consumer host
 
         self.hc_src = HostConnect( logger = self.logger )
-        self.hc_src.set_url( self.source_broker )
+        self.hc_src.set_url( self.broker )
         self.hc_src.connect()
 
         # consumer  add_prefetch(1) allows queue sharing between instances
