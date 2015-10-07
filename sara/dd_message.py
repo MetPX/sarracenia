@@ -34,7 +34,7 @@
 #
 #
 
-import os,socket,sys,time,urllib,urllib.parse
+import calendar,os,socket,sys,time,urllib,urllib.parse
 
 try :
          from dd_util         import *
@@ -71,7 +71,7 @@ class dd_message():
 
         self.user          = None
 
-        self.host          = socket.gethostname()
+        self.host          = socket.getfqdn()
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -244,6 +244,7 @@ class dd_message():
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
+        self.set_msg_time()
 
     def part_suffix(self):
         return '.%d.%d.%d.%d.%s.%s' %\
@@ -396,6 +397,12 @@ class dd_message():
 
         self.logger.error("bad unknown conditions")
         return
+
+    def set_msg_time(self):
+        parts       = self.time.split('.')
+        ts          = time.strptime(parts[0], "%Y%m%d%H%M%S" )
+        ep_msg      = calendar.timegm(ts)
+        self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
     def set_notice(self,url,time=None):
         self.time = time
