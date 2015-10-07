@@ -103,7 +103,9 @@ def file_insert_part(msg,part_file):
     msg.message = 'Inserted'
     msg.log_info()
 
-    # publish now that it is inserted
+    # publish now, if needed, that it is inserted
+
+    if msg.amqp_pub == None : return True
 
     msg.set_topic_url('v02.post',msg.target_url)
     msg.set_notice(msg.target_url,msg.time)
@@ -132,7 +134,7 @@ def file_process( msg ) :
     # try link if no inserts
 
     if msg.partflg == '1' or \
-       msg.partflg == 'p' and  msg.in_partfile  :
+       (msg.partflg == 'p' and  msg.in_partfile) :
        ok = file_link(msg)
        if ok : return ok
 
