@@ -5,9 +5,19 @@ Status: Pre-Draft
  Discussion of File Modification Propagation
 ==============================================
 
-for files that change:
+This was early thinking about how to deal with file updates.
+The early versions of the protocol only concerned itself with entire files.
+when the file sets are large enough, partial updates become very desirable.
+Also, when the size of individual files is large enough, and when traversing
+WAN links, one can obtain substantial practical advantage by sending sending
+data using multiple streams, rather than just one.
 
-algorithm assumed:
+So in v02 there is a header 'parts' which indicates the partitioning method
+used for a given transfer, and the conclusion about the format/protocol
+is now documented in the dd_post(7) man page.  This file contains early
+discussions & notes.
+
+Algorithm used (regardless of tool):
 	- for each ´block´ (blocksize interesting) generate a signature.
 	- when a subscriber reads an announcement, it includes the signature.
 	- he compares the signatures on the file he already has, and updates it to match.
@@ -103,9 +113,8 @@ anyways when you run out of contiguous parts, you stop.
 if the last contiguous block received includes the end of the file, then
 do the file completion logic.
 
-
-how to pick chunksize...
-------------------------
+How to Select Chunksize
+-----------------------
 
 	- source choice?
 	- we impose our own on ddsr?
@@ -163,11 +172,10 @@ in which chase it would be:
 if there is validation on the blocking size, needs to be a way to deal with it.
 
 
-digression about zsync 
+Digression about ZSync 
 ----------------------
 
-zsync is available in repositories.  
-and zsync(1) is the existing download client.  
+zsync is available in repositories  and zsync(1) is the existing download client.  
 zsyncmake(1) builds the signatures, with a programmable block size. 
 
 It looks ike zsync is usable as is?
@@ -180,26 +188,22 @@ downside:  portability.
 we send the signatures in the announcements, rather than posting on the site.
 If we set the blocksize high, then for files < 1 block, there is no signature.
 
-should dd_sara post the signature to the site, for zsync compatibility?
-	-- write a .zsync file?
+should dd_sara post the signature to the site, for zsync compatibility? 
 
-I hate forking...  don´t want to be forking zsyncmake for every product...
+Do not want to be forking zsyncmake for every product...
 even if we do not use zsync itself, might want to be compatible... so use
 a third party format and have a comparable.  1st implementation would do
 forking, 2nd version might replicate the algorithm internally.
 
 perhaps we have a threshold, if the file is less than a megabyte, we just send
-the new one. if it is bigger, 
-zs
+the new one.  The intent is not to replicate source trees, but large data sets.  
 
-The intent is not to replicate source trees, but large data sets.  
 	- for most cases (when writing a new file) we do not want extra overhead.
 	- target is large files that change, for small ones, transfer again, is not a big deal.
 	- want to minimize signature size (as will travel with notifications.)
 	- so set a block size to really large.
 
-
-perhaps build the zsync client into dd_subscribe, but use zsync make on the server side ?
+Perhaps build the zsync client into dd_subscribe, but use zsync make on the server side ?
 or when the file is big enough, forking a zsync is no big deal? but mac & win...
 
 
@@ -215,4 +219,3 @@ in SFTP/python/paramiko...
 	-- there is readv( ... ) which allows to read subsets of a file.
 	-- the read command in SFTP PROTOCOL spec has offset as a standard argument of read
 	
-

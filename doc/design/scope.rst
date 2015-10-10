@@ -1,7 +1,10 @@
 
 Status: Pre-Draft
 
-scope is the logical name of a switching cluster, which must be unique in a network.
+SCOPE
+=====
+
+Scope is the logical name of a switching cluster, which must be unique in a network.
 Each cluster has channels to connect to either other scopes, or single accounts.
 account is the logical name of a source and/or client, which must be unique in a network.
 
@@ -12,6 +15,7 @@ account2scope.conf: -- maps accounts to scopes.
   not sure how this is maintained, likely by spying on post messages
   as they go by?
 
+  If we just do our routing by scopes, maybe we do not need to map channels?
 
 scope2channel.conf -- maps scopes to channels
   <channel/scope> <scope>,<scope>,...
@@ -41,7 +45,8 @@ for an inter-cluster/inter-scope/inter-switch channel:
    The log2src process consults these files and determines where to route log messages.
 
 
------ forget scopes, just use account names to stand for 'everyone' ? ------------------------
+forget scopes, just use account names to stand for 'everyone' ?
+---------------------------------------------------------------
 
 Switch looks for a given user on it's own account, it does not find it,
 but then it sees that that user is accessible (via account2scope) and posts to that scope.
@@ -63,13 +68,8 @@ might have cases where many accounts should be given access, does this inevitabl
 to 'groups'?
 
 
------ /forget scopes, just use account names for everyone? -----------------------------------
-
-
-
-
-
--------------- earlier stuff.
+Earlier Stuff
+-------------
 
 NOTe: SCOPE ... permanent dd.
     permanent URL´s for use in DOI´s.  archiving? backups?
@@ -146,7 +146,9 @@ scope corresponds to an exchange to which a given switch posts (outputs of valid
 		are there scope permissions ? some source can only send to 
 
 
--------- inter scope channel -------------------
+Inter Scope Channel 
+-------------------
+
 to go from scope A to scope B, on scope A.
 
 set up a an exchange:
@@ -181,37 +183,29 @@ The dd_sender on A will then re-announce... where?
 if a dd_subscribe on b does the transfer, then it is logged as
 ddB on B. 
 
--------- inter scope channel  -------------------
-
--------- scope as priority mechanism -------------------
+Scope as Priority Mechanism
+---------------------------
 
     If we create a wxwarn scope, then warnings go through that scope.
     i think this is not good.  have a priority mechanism per source.
 
--------- scope as priority mechanism -------------------
-
     if send to a warning scope it might just set the priority when copied to the
     common exchange, not requiring separate exchanges downstream.
 
--------- scope as username of switching layer -----------------
+scope as username of switching layer 
+------------------------------------
 
-try:
-	is scope the username of each switching layer?  ssc_ddsr, ssc_ddi, ssc_dd
-	each scope has an exchange scope_ssc_ddsr, scope_ssc_ddi, scope_ssc_dd.
-	what about warnings?
-
--------- scope as username of switching layer -----------------
+is scope the username of each switching layer?  ssc_ddsr, ssc_ddi, ssc_dd
+each scope has an exchange scope_ssc_ddsr, scope_ssc_ddi, scope_ssc_dd.
+what about warnings?
 
 
-
-
-
-Scenarios:
+Scenarios
+---------
 
 
 want to transport a really large file (terabytes.)
 	target scope of ddsr (the parallel switching array.)
-
 
 
 why check scope/distribution?
@@ -223,7 +217,7 @@ why check scope/distribution?
 	if we have a 'warnings' scope, then limit who can post to it.
 	
 
-transitivity
+transitivity:
 	there is an switch in EC that hands off to a switch in SSC an sr,
 	that hands off to a public facing switch.
 

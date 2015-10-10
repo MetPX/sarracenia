@@ -6,7 +6,7 @@ Thinking about post messages
 ----------------------------
 
 Text here is just notes, not settled, looking at different considerations, constraints, requirements.
-All the different angles discussed here.  Conclusions graduate to messages.txt which contains
+Many different angles discussed here.  Conclusions graduate to dd_post.1 man page which contains
 only net result of discussions.
 
 
@@ -24,28 +24,27 @@ There should be only one type, but maybe it is clearer to have two?
 v01.post: flag syntax 
 ---------------------
 
-how to represent flags in post messages.  there a flags with arguments and without.
+how to represent flags in post messages.  There are flags with arguments and without.
 
-for illustration assume the following flags:
+For illustration assume the following flags:
 
 	o - a boolean flag
 	k - a flag that has 'karg' as a value.
 	j - a flag that has 'jarg' as a value.
 
-Look at different ways of representing those flags::
+Look at different ways of representing those flags:
 
- ++ prefer a single space-separated field within a dd.post message for unix filter command compatibility.
-    post syntax is re-used by log messages 
-    (logs are just post messages with a suffix, and a different topic)
- ++ Assume default value is false when k omitted, true when present.
- ++ cannot have spaces or other things that need to be URL encoded %20% ?
-    aim is to ensure that all flags fit as a single field in a space separated line.
- ++ assume that one letter flags is all we need.  
- ++ Since this will show up in every post, and posts are very common, there is some interest in
-    minimizing the size of them in bytes.
- ++ do we need nesting?  (flags with lists as values?) give a +mark for ones that do support that.
-
- ++ get a net score for options by adding all the +&-s to get a net number.
+ - prefer a single space-separated field within a dd.post message for unix filter command compatibility.
+   post syntax is re-used by log messages 
+   (logs are just post messages with a suffix, and a different topic)
+ - Assume default value is false when k omitted, true when present.
+ - cannot have spaces or other things that need to be URL encoded %20% ?
+   aim is to ensure that all flags fit as a single field in a space separated line.
+ - assume that one letter flags is all we need.  
+ - Since this will show up in every post, and posts are very common, there is some interest in
+   minimizing the size of them in bytes.
+ - do we need nesting?  (flags with lists as values?) give a +mark for ones that do support that.
+ - get a net score for options by adding all the +&-s to get a net number.
 
 Syntax options so far:
 
@@ -78,7 +77,8 @@ AMQP headers:
 	++ easy (no parsing)
 	+ supports nesting, can use brackets, etc...
 	+ extensible for flags >1 letter.
-	--- not visible to grep/awk etc... unless we do something on print.
+	+ most elegant possibility of use of header based exchanges.
+	+ not visible to grep/awk etc... unless we do something on print.
 	net: +1
 
 
@@ -198,16 +198,16 @@ per line is easier to parse.
 Fields that needs to be there:
 
 startdate <date-time> of transfer...
-	-- perhaps just indicate duration of transfer in seconds, rather than 
+	- perhaps just indicate duration of transfer in seconds, rather than 
 	   two dates.  saves few bytes.
 
 Enddate <date-time> of transfer ... 
 
 status 
-	-- ok or error code> ... use http ones?
+	- ok or error code> ... use http ones?
 		lots of good ones on wikipedia.
 
-	-- should topic include status?  v01.log.200..... (then do not need it in the body...)
+	- should topic include status?  v01.log.200..... (then do not need it in the body...)
 	   cant subscribe only to errors? likely not useful as too 
 	   many errors to subscribe to.  perhaps just 200 for success, 
            and 400 for failure?  
@@ -215,28 +215,28 @@ status
 	   No, think it is a pain. just leave it in body.
 
 flow 
-	-- application determined flow id, so the application can relate it to their processing.
-        -- flow is a display field, unchanged/untouched by sarracenia.
+	- application determined flow id, so the application can relate it to their processing.
+        - flow is a display field, unchanged/untouched by sarracenia.
 
 consumer 
-	-- talk to the data source, and determine what is a good label to 
-	   share.  This is analogous to a company, or organization, and is 
-	   likely not be unique to a single flow.
-	-- subscriber chosen significant id, so that source can understand 
-           who has received it.
-	-- often subscriber will be on s12124.rogers.net ... not terribly 
-           significant.
-	-- client id is essentially a display field... based unchanged to 
-           source.
+	- talk to the data source, and determine what is a good label to 
+	  share.  This is analogous to a company, or organization, and is 
+	  likely not be unique to a single flow.
+	- subscriber chosen significant id, so that source can understand 
+          who has received it.
+	- often subscriber will be on s12124.rogers.net ... not terribly 
+          significant.
+	- client id is essentially a display field... based unchanged to 
+          source.
 
-	-- so only sources and clients need to negotiate the id´s,  we 
-           just need to pass it in both directions transparently, and use 
-           the identifier that they both know whenever appropriate.
+	- so only sources and clients need to negotiate the id´s,  we 
+          just need to pass it in both directions transparently, and use 
+          the identifier that they both know whenever appropriate.
 
 is client the username used to connect to the broker and httpd instance?
-	-- in which case, it is no longer transparent to the switches, 
-	   and we have to say something about it.
-              so the client will see it, and it is a ''monitoring unit''
+	- in which case, it is no longer transparent to the switches, 
+	  and we have to say something about it.
+          so the client will see it, and it is a ''monitoring unit''
 
 system each ddi/ddsr instance will be defined as an internal client, so internal vs. actual deliveries
 are easily distinguished... does that mean each layer of switches has an amqp username?
