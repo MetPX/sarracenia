@@ -88,7 +88,7 @@ and seem helpful.  We should get rid of any that are not helpful.
 
 4.  Log is data.
 
-   "It is not enough for justice to be done.  Justice must be seen to be done."
+    *It is not enough for justice to be done.  Justice must be seen to be done.*
 
     It is not enough for data to be delivered.  That delivery must be logged,
     and that log must be returned to the source.
@@ -97,18 +97,18 @@ and seem helpful.  We should get rid of any that are not helpful.
 
 5.  This is a data distribution tool, not a file tree replicator.
 
-    -- we do not need to know what linux uid/gid owned it originally.
-    -- we do not care when it was modified.
-    -- we do not care about it's original permission bits.
-    -- we do not care what ACL's it has (they aren't relevant on the destination.)
-    -- we do not care about extended attributes. (portability, win,mac,lin,netapp?)
+    - we do not need to know what linux uid/gid owned it originally.
+    - we do not care when it was modified.
+    - we do not care about it's original permission bits.
+    - we do not care what ACL's it has (they aren't relevant on the destination.)
+    - we do not care about extended attributes. (portability, win,mac,lin,netapp?)
 
     again doubtful about this one.  Does it help?
 
 
 
 6. Not worried about performance in phase 1
-    -- performance is enabled by the scalability of the design::
+    - performance is enabled by the scalability of the design::
 
           -- segmentation/re-assembly provides multi-threading.
           -- segmentation means bigger files transfer with greater parallelism.
@@ -116,20 +116,18 @@ and seem helpful.  We should get rid of any that are not helpful.
              when that makes sense.
           -- validation provides source bandwidth limiting.
 
-    -- need to prove all the moving parts work together first.
+    - need to prove all the moving parts work together first.
 
-    -- much later, may return to see how to make each transfer engine
-       go faster.  
+    - much later, may return to see how to make each transfer engine
+      go faster.  
 
 
 
 7. This is not a web application, this is not an FTP server.
 
-   this is an application that uses HTTP as one of the transport protocols, but
-   that's all.  It is not trying to be a web site, any more than it is trying
-   to be an sftp server.  it is something else.  dunno what exactly.
-
-   
+   This application uses HTTP as one of the transport protocols, that's all.  
+   It is not trying to be a web site, any more than it is trying to be an sftp server.  
+  
 
 8. Common management not needed, just pass logs around.
 
