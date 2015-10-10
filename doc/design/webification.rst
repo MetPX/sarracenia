@@ -49,6 +49,9 @@ fabric8 on openshift?
 
 there is also another approach hinted at in the 'Scaling rabbitmq to 11' deck
 http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
+
+::
+
 	vorpal bunny
 		https://github.com/MeetMe/VorpalBunny
 	which introduces a php layer...fab...

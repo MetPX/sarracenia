@@ -1,8 +1,13 @@
 
-Background Reading Material.
+=============================
+Background Reading for Design
+=============================
 
 
-some references:
+
+General References
+------------------
+
 	CAP theorem -- http://en.wikipedia.org/wiki/CAP_theorem
 
 	basically:
@@ -28,31 +33,30 @@ some references:
 
 
 
-HPC oriented practical advice:
+HPC oriented practical advice
+-----------------------------
 
-	http://moo.nac.uci.edu/~hjm/HOWTO_move_data.html
+  - http://moo.nac.uci.edu/~hjm/HOWTO_move_data.html
 
-	http://connect.ed-diamond.com/GNU-Linux-Magazine/GLMF-164/Parallelisez-vos-transferts-de-fichiers
+  - http://connect.ed-diamond.com/GNU-Linux-Magazine/GLMF-164/Parallelisez-vos-transferts-de-fichiers
 
-	http://fileutils.io
+  - http://fileutils.io
 
+  - review of jlafon.io/parallel-file-treewalk*.html
+    partitions the entire file to assigne to n processors.  also has to pick n.
+    it takes a partitioning approach, so that scheduling is a problem.
+    if you take opportunistic queueing, assuming availability of a broker, then the problem 
+    is completely different.  The broker is too slow for use in real HPC parallel codes,
+    but if you just make a work queue that is shared, you have the problem of serializing access
+    to the queue, but partitioning goes away.  if we assume we are i/o bound (most of the time
+    spent reading/writing data to network or disk.) then synchronization penalty for queue 
+    access is perhaps not significant.
 
+    On the other hand... libcircle, and the implementation of distributed termination
+    might be helpful to us, in figuring out when transfers are finished.
+    but we probably do not need something that elaborate.
 
-review of jlafon.io/parallel-file-treewalk*.html
-	- partitions the entire file to assigne to n processors.  also has to pick n.
-          it takes a partitioning approach, so that scheduling is a problem.
-          if you take opportunistic queueing, assuming availability of a broker, then the problem 
-	  is completely different.  The broker is too slow for use in real HPC parallel codes,
-	  but if you just make a work queue that is shared, you have the problem of serializing access
-          to the queue, but partitioning goes away.  if we assume we are i/o bound (most of the time
-	  spent reading/writing data to network or disk.) then synchronization penalty for queue 
-	  access is perhaps not significant.
-
-	  On the other hand... libcircle, an the implementation of distributed termination
-          might be helpful to us, in figuring out when transfers are finished.
-          but we probably do not need something that elaborate.
-
-          the sarra approach still makes sense (wide area transfers... lower speeds, not local focus)
+    The sarra approach still makes sense (wide area transfers... lower speeds, not local focus)
 
 
 

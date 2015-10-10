@@ -1,0 +1,83 @@
+
+status: Pre-Draft
+
+Figure out packaging? 
+---------------------
+
+	- audit source to ensure full copyright headers applied.
+	- the real command line interface.... uptil now was just working stuff.
+	- what documentation should be available.
+	- what packages should be built.
+
+
+Goals
+-----
+
+Can we make it really easy to build a ddsr node for techies to deploy a server ?
+so it is easy for others to adopt.   Recipe for a standlone single node config.
+
+	- this would be linux only,
+	- either a dpkg
+	- a docker container?
+
+Make it easy for mortals to install the client.
+need self-contained windows install (an .exe) folks can download.
+because many clients in various departments use windows as clients,
+and many data sources may use windows also.
+
+
+how to do languages & messaging
+-------------------------------
+
+need English & French 
+just keep it in code, no natural language?
+There's fabulous ones: http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+metpx-sarracenia-server
+	- depends: rabbitmq.
+	- configuration sugar, to create a working/secure default to just start using.
+	- dd_sara, and all the other components...
+		log, and whatever.
+		
+
+metpx-sarracenia-client
+	- dd_subscribe  -
+		should dd_subscribe accept it's config file on standard input?
+	- dd_post
+	- dd_watch
+	- dd_send...
+
+
+there might be a meta-client... one that invokes the others appropriately...
+	dd_cp -broker amqp://mygroup@ddsr/ -threads 5  <operation>  <source> [<srcurl>] <dest>
+		-broker says what the URL of the AMQP broker is.
+		-threads says how many local instances to start.::
+
+		<operation>
+
+                post4pickup  -- dd_post, and the switch is expected to pull
+                	-- requires <srcurl> to show URL remote will use to fetch.
+                        fires off: just the dd_post -threads ignored.
+
+                post2send    -- dd_post, then have local threads to send to sftp destination.
+                        sftp destination is likely a 'source' for the switch, triggering further fwding ...
+                        fires off: 1 dd_post and a 5 dd_sends, as appropriate.
+
+                subscribe    -- dd_subscribe, but with n local instances.
+                        fires off: 5 dd_sends, as appropriate.
+
+                       fires off 5 dd_subscribes, or 
+		
+		
+	
+start making other packages?
+	redhat/centos?
+	windows?
+
+	do we make it 'pip' compatible?
+		so on windows they install python, then pip pulls in deps?
+
+
+Dunno. We probably need to try a bunch out and see what sticks?
+
+

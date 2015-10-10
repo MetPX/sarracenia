@@ -1,11 +1,11 @@
 
 Status: Approved-Draft2-20150825
 
-Description of the message protocol / format.
+Description of the message protocol / format
+--------------------------------------------
 
-This file was used during design phase, but post-implementation,
+This file was used during the design phase, but post-implementation,
 it is replaced by the dd_post(7) manual page.
-
 
 This file documents final conclusions/proposals, reasoning/debates 
 goes elsewhere.
@@ -13,8 +13,7 @@ goes elsewhere.
 Messages posted include four parts:
 topic: <version>.<type>.<src>(.<dir>.)*.<filename>
 headers: series of key-value pairs, as per AMQP spec.
-1st line (whitespace separated fields):
-   <date stamp> <srcURL> <relURL><newline>
+1st line (whitespace separated fields): <date stamp> <srcURL> <relURL><newline>
 rest of body:
 
 
@@ -102,14 +101,15 @@ parts=1,sz
 parts=<i|p>,<bsz>,<fzb>,<bno>,<remainder>
 	-- multipart fetch.
 
-        File Segment strategy:        
-		i - inplace (do not create temporary files, just lseek
-			within file.)
+        -- File Segment strategy::
+
+		i - inplace (do not create temporary files, just lseek within file.)
 		    may result in .ddsig file being created?
 		p - part files.  use .part files,  suffix fixed.
 		    do not know which will be default.
-	   - file segment strategy can be overridden by client. just a suggestion.
-	   - analogous to rsync options: --inplace, --partial, 
+
+	-- file segment strategy can be overridden by client. just a suggestion.
+	-- analogous to rsync options: --inplace, --partial, 
 
 
 <blocksize in bytes>: bsz
@@ -225,10 +225,8 @@ parts=i,457,0,0,1,0
 sum=d,<md5sum>
 flow=exp13
 
-=============================================================================
 wait case.
 
 wait=on/off
 
-=============================================================================
 

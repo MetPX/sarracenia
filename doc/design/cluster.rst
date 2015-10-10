@@ -1,15 +1,29 @@
 
 Status: Pre-Draft
 
-What does a cluster look like?
+================================
+ What does a cluster look like?
+================================
 
-determine the topologies.
+Questions... There are many choices for cluster layout. One can do simple H/A on a pair of nodes, simple active/passive? 
+one can go to scalable designs on an array of nodes, which requires a load balancer ahead of the processing nodes.
+The disks of a cluster can be shared or individual to the processing nodes, as can broker state.  Exploring whether
+to support any/all configurations, or to determine if there is a particular design pattern that can be applied
+generally.
 
-  standalone:
+
+Topologies
+----------
+
+Name the topologies so they can be referred to easily in further discussions.
+
+  - standalone::
+
 	router, sftp and apache on one node.
 
 
-  switching/routing configuration:
+  - switching/routing configuration::
+
 	- ddsr
 		one broker per node? 
 		just one broker?
@@ -28,31 +42,38 @@ determine the topologies.
 		do we need a load balancer?
 
 
-  data dissemination configuration.
-    on a switching/router:
-	Once delivery has occurred to all contexts, can you delete the file?
-	just watch the log files and tick off as each scope confirms receipt.
-	when last one confirmed, delete. (makes re-xmit difficult ;-)
+  - data dissemination configuration ::
 
-	based on a file size threshold? if the file is too big, don´t keep it around?
+        on a switching/router:
+        Once delivery has occurred to all contexts, can you delete the file?
+        just watch the log files and tick off as each scope confirms receipt.
+        when last one confirmed, delete. (makes re-xmit difficult ;-)
+
+        based on a file size threshold? if the file is too big, don´t keep it around?
 
 
-  data dissemination configuration.
+  - data dissemination configuration ::
+
 	- multiple server nodes.  Each standalone.
 
 	- dd - load balancer, just re-directs to a dd node?
 		dd1,dd2, 
 
 		broker on dd node has connection thereafter.
-  data dissemination with a shared file system?
+
+  - shared end-point ::
+
          dd - one broker.
-	 dd1,dd2, ... all share the one big file system.
+         dd1,dd2, ... all share the one big file system.
 
 
-Use cases:
+---------
+Use cases
+---------
 
 
-universal considerations/constraints:
+universal considerations/constraints
+------------------------------------
 
    There are cluster file systems available everywhere.
 
@@ -63,7 +84,8 @@ universal considerations/constraints:
    or perform heavier scanning on those file types.
 
 
-'Use Cases' / 'Deployment Scenarios' ...
+Use Cases / Deployment Scenarios 
+--------------------------------
 
 propose some strawman problems with a variety of cluster configurations to address them.
 explore strengths and weaknesses.
@@ -96,7 +118,7 @@ Questions to examine for each:
   
    6. bandwidth/scaling.
        what are the limits to bandwidth for this configuration?
-	where will the choke points be.
+       where will the choke points be.
        where is a reasonable place to insert bandwidth controls?
 
 	
@@ -104,12 +126,12 @@ Questions to examine for each:
 
 
 
-Use Case 1: Transfer a 3 TiB file.
+Use Case 1: Transfer a 3 TiB file
+---------------------------------
 
    
         more info:
-          it will take a long time, over a wan link, latency such that single thread is slow.
-		want multiple threads.
+          it will take a long time, over a wan link, latency such that single thread is slow.  Want multiple threads.
           probably want it monitored so that someone will notice if it breaks.
 	  probably want it logged so that people can see what happenned when it breaks.
 	  bunny style, one broker for all servers.
@@ -139,6 +161,7 @@ Use Case 1: Transfer a 3 TiB file.
 
 
 Use Case 2: somebody wants rock solid, op0hr PDS/PX style service
+-----------------------------------------------------------------
 
        likely
 	   have multiple independent servers.  each have own disk.
@@ -148,10 +171,13 @@ Use Case 2: somebody wants rock solid, op0hr PDS/PX style service
 		no user code anywhere.
 
 
-Use Case 2.1: Send a weather warning.
+Use Case 2.1: Send a weather warning
+------------------------------------
   
 
 Use Case 3: Somebody wants a web server where they can see the files sent (dd style)
+------------------------------------------------------------------------------------
+
 	 data dissemination...
 
        likely:
@@ -166,6 +192,7 @@ Use Case 3: Somebody wants a web server where they can see the files sent (dd st
 
 
 Use Case 4:   somebody wants to send us a continuous feed of tiny files. (px-paz case...)
+-----------------------------------------------------------------------------------------
 
    acquisition ... not sure if this is different from pds/px case.
 
@@ -178,6 +205,7 @@ Use Case 4:   somebody wants to send us a continuous feed of tiny files. (px-paz
 
 
 Use Case 5: acquire 1 TiB file from the internet to internal..
+--------------------------------------------------------------
 
    as above, but the file is really big.
 
@@ -192,51 +220,60 @@ Name the scopes after the zones they serve?
 
 
 references:
+-----------
+
     http://spring.io/blog/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
    
     scaling rabbitmq to 11: http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
 
-interesting bits:
+    interesting bits:
 	https://www.rabbitmq.com/community-plugins.html
    
 		rabbitmq_delayed_message_exchange
 
 
 
-------------- Number of Switches --------------
+------------------
+Number of Switches 
+------------------
+
 The application is supposed to support any number of topologies, that is any number of switches S=0,1,2,3
-and do the right thing.
+may exist between origin and final delivery, and do the right thing.
 
 Why isn´t everything point to point, or when do you insert a switch?
 
-	- network topology/firewall rules sometimes require being at rest in a transfer area between two
-	  organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
-	  whenever traffic prevents initiating a connection, that indicates a store & forward switch
-	  may be needed.
+        - network topology/firewall rules sometimes require being at rest in a transfer area between two
+          organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
+          whenever traffic prevents initiating a connection, that indicates a store & forward switch
+          may be needed.
 
-	- when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
-	  care of sending it to multiple points.
+        - when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
+          care of sending it to multiple points.
 
-	- when the source data to be reliably available.  This translates to making many copies,
-	  rather than just one, so it is easier for the source to post once, and have the network
+        - when the source data to be reliably available.  This translates to making many copies,
+          rather than just one, so it is easier for the source to post once, and have the network
           take care of replication.
 
-	- for management reasons, you want to centrally observe data large transfers.
+        - for management reasons, you want to centrally observe data large transfers.
 
-	- for management reasons, to have transfers  routed a certain way.  
+        - for management reasons, to have transfers  routed a certain way.  
 
-	- for management reasons, to ensure that transfer failures are detected and escalated
-	  when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
-	  the issue.
+        - for management reasons, to ensure that transfer failures are detected and escalated
+          when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
+          the issue.
 
-	- For asynchronous transfers.  If the source has many other activities, it may want
-	  to give responsibility to another service to do potentially lengthy file transfers.
-	  the switch is inserted very near to the source, and is full store & forward. dd_post
-	  completes (nearly instant), and from then on the switching network manages transfers.
+        - For asynchronous transfers.  If the source has many other activities, it may want
+          to give responsibility to another service to do potentially lengthy file transfers.
+          the switch is inserted very near to the source, and is full store & forward. dd_post
+          completes (nearly instant), and from then on the switching network manages transfers.
 
---------------- Diagrams ----------------------
 
---------- 0
+--------
+Diagrams
+--------
+
+0
+-
 
 tic-tac-toe table.  
 	three colummns:  NRC.ca , Science,gc.ca,  EC.gc.ca
@@ -284,7 +321,8 @@ In general:
 	internal and external loads can be scaled independently.
 
 
---------- 1
+1
+-
 
     Overview:
 
@@ -298,10 +336,11 @@ In general:
 				which means he posts on the xac_earnest exchange.
 
 	now... science.gc.ca cannot initiate a connection to svrEC-Burlington (no inbound to EC)
-        so to send it, one must do:
-			dd-sender,   
-				subscribed to xac_earnest... and then sending the files
-				posting the log to xac_earnest as well.
+        so to send it, one must do::
+
+	    dd-sender,   
+		subscribed to xac_earnest... and then sending the files
+		posting the log to xac_earnest as well.
 				
    Data Layer:
 	local auth on server in EC using EC credentials and permissions.
@@ -321,7 +360,8 @@ In general:
 
 	sftp.science.gc.ca would be a collection of nodes with inbound SSH permitted.
 	this initial address is LB´d to any of N nodes for SSH service.  AMQP goes to only 1p/1s 
-	that run the broker in primary/failover mode
+	that run the broker in primary/failover mode::
+
 		- all the nodes run SSH server (which includes SFTP service)
 		- login shells or something to restrict access to file transfer only.
 		- they all access a common, shared/distributed file system.
@@ -338,10 +378,11 @@ In general:
 
 
     4. Naming/Scopes
-       there is the sftp nodes:  
-			svrsftp1, svrsftp2, .. svrsftpN,   
-			svrsftpB1, svrsftpB2 (broker nodes)  shared with sftp, or on the side?
-			svrlb1, svrlb2 -- load balancers to assign connections.
+       there is the sftp nodes::
+
+		svrsftp1, svrsftp2, .. svrsftpN,   
+		svrsftpB1, svrsftpB2 (broker nodes)  shared with sftp, or on the side?
+		svrlb1, svrlb2 -- load balancers to assign connections.
 
 		the whole scope is called ´sftp´ ?	
 
@@ -376,7 +417,8 @@ In general:
 	similar to bbcp/gridftp
 
 
---------- 2
+2
+-
 
     Overview:
 	Gerald @ Genetech has produced a sequence from a sample provided by Norman @ NRC.
@@ -411,7 +453,7 @@ In general:
 	account.
 
 
-    AMQP layer:
+    AMQP layer::
 
 	.1 dd_post to xac_Gerald
 	   dd_send sends the file 
@@ -440,7 +482,10 @@ In general:
     6. bandwidth/scaling
     Observations:
 
----------- 3
+
+3
+-
+
     Overview:
 	Edmond from Environment Canada, from the climate research wants to make data available both to the public
 	and colleagues within government in a reliable way (24x7)
@@ -466,9 +511,9 @@ In general:
 			or as amqp user udd  ?
 
 
-    Data Layer:
+    Data Layer::
 	
-          .1 switch in EC
+        .1 switch in EC
 	ddsr initiates an sftp retrieval from the EC to Science system 
 		(will not work, blocked by fw)
 		this does work if there is a switching level within EC.
@@ -539,7 +584,11 @@ FIXME:
 
 
 
----------- 4
+4
+-
+
+::
+
     Overview:
     AMQP layer:
     Data Layer:
@@ -551,7 +600,12 @@ FIXME:
     5. Retention/Quota strategy.
     6. bandwidth/scaling
     Observations:
----------- 5
+
+5
+-
+
+::
+
     Overview:
     AMQP layer:
     Data Layer:
@@ -563,7 +617,12 @@ FIXME:
     5. Retention/Quota strategy.
     6. bandwidth/scaling
     Observations:
----------- 6
+
+6
+-
+
+::
+
     Overview:
     AMQP layer:
     Data Layer:
@@ -575,7 +634,12 @@ FIXME:
     5. Retention/Quota strategy.
     6. bandwidth/scaling
     Observations:
----------- 7
+
+7
+-
+
+::
+
     Overview:
     AMQP layer:
     Data Layer:
@@ -587,65 +651,5 @@ FIXME:
     5. Retention/Quota strategy.
     6. bandwidth/scaling
     Observations:
-----------
-    Overview:
-    AMQP layer:
-    Data Layer:
-    Log Layer:
-    1. Storage Distribution
-    2. Server s/w Distribution.
-    3. Authentication Distribution.
-    4. Naming/Scopes
-    5. Retention/Quota strategy.
-    6. bandwidth/scaling
-    Observations:
-----------
-    Overview:
-    AMQP layer:
-    Data Layer:
-    Log Layer:
-    1. Storage Distribution
-    2. Server s/w Distribution.
-    3. Authentication Distribution.
-    4. Naming/Scopes
-    5. Retention/Quota strategy.
-    6. bandwidth/scaling
-    Observations:
-----------
-    Overview:
-    AMQP layer:
-    Data Layer:
-    Log Layer:
-    1. Storage Distribution
-    2. Server s/w Distribution.
-    3. Authentication Distribution.
-    4. Naming/Scopes
-    5. Retention/Quota strategy.
-    6. bandwidth/scaling
-    Observations:
-----------
-    Overview:
-    AMQP layer:
-    Data Layer:
-    Log Layer:
-    1. Storage Distribution
-    2. Server s/w Distribution.
-    3. Authentication Distribution.
-    4. Naming/Scopes
-    5. Retention/Quota strategy.
-    6. bandwidth/scaling
-    Observations:
-----------
-    Overview:
-    AMQP layer:
-    Data Layer:
-    Log Layer:
-    1. Storage Distribution
-    2. Server s/w Distribution.
-    3. Authentication Distribution.
-    4. Naming/Scopes
-    5. Retention/Quota strategy.
-    6. bandwidth/scaling
-    Observations:
-----------
+
 

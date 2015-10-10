@@ -1,7 +1,9 @@
 
 Status: Pre-Draft
 
-notes about monitoring...
+======================
+Notes about Monitoring
+======================
 
 Questions: 
 	is dd_log just dd_subscribe, or is it different?
@@ -48,8 +50,7 @@ FIXME: defined speedos
 
 -- to feed into "speedometers"
 	web site? or app, taps into log feed.
-	dd_speedo... looks at the flows generates stats each <interval> seconds.
-	    interval is configurable.
+	dd_speedo... looks at the flows generates stats each <interval> seconds.  interval is configurable.
 
 	format: 
 		<datetime> <goodcount> <errorcount> <goodbytecount> <badbytecount?> <bytes/interval> <files/interval> <interval>
@@ -82,10 +83,10 @@ FIXME: defined speedos
 
 	would accumulate statistics per source and per client:
 		-- counters...
-		-- t ... thresholds per client and per source...
+		-- t ... thresholds per client and per source ::
+
 		   td - deadline for no deliverie in td time.
-		   tminr - minimum rate of message ack to be considered 'up'
-			-- no ack from client in t seconds... signal?
+		   tminr - minimum rate of message ack to be considered 'up', no ack from client in t seconds... signal?
 			
 
 		-- perhaps nagios checks every minute, and just reports how many clients' t's are 

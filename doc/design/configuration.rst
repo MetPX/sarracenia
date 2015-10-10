@@ -1,13 +1,18 @@
 
 Status: Pre-Draft
 
---------------- Configuration / Administration
+==============================
+Configuration / Administration
+==============================
+
 
 Asymmetric... can use wget request to a static directory for configuration?
-	-- this doesn´t work in S > 1. need to pass results back as messages.
-	-- does work for ´public´ info like bin, checksum scripts, include
+
+ -- this doesn´t work in S > 1. need to pass results back as messages.
+ -- does work for ´public´ info like bin, checksum scripts, include
 
 What is the tree:
+
 
 	cfg/
            .htaccess
@@ -27,8 +32,11 @@ What is the tree:
 			the <source user> and <the cluster admin user> and <monitors?>
 
 		  users.conf - user setting for default viewing permissions.
-		  limits.conf - quota in K and # files?
-			      - set per source, per scope.
+		  limits.conf:: 
+
+                       - quota in K and # files?
+                       - set per source, per scope.
+
 		  <dir>/<dir>/<dir>/
 				   users.conf -- per directory settings. 
 
@@ -44,7 +52,9 @@ but the scope is not specified.
 	v01.cfg.<source>.<scope>.limits.conf
 
 
-Things I want to set:
+Things to set
+-------------
+
 	per scope:
 		per directory: permissions to read (used to create .htaccess file)
 		and re-create every day, as the day directories roll over.
@@ -59,7 +69,9 @@ Things I want to set:
 
 	that means file deletion needs to work.
 
-Things that I think sources will want to set:
+
+Things sources will want to set
+-------------------------------
 
     - this sets default, which can still be over-ridden by command-line settings.
 	- destination list (in scopes and perhaps accounts)
@@ -74,7 +86,9 @@ Things that I think sources will want to set:
 	you have contacted a broker and asked for your settings.
     
 
------------- pxpush, built in? ---------------------------------
+pxpush, built in? 
+-----------------
+
 use amqp to push config changes around.
 
 there are admin exchanges... no sources can post to them.
@@ -139,7 +153,9 @@ success in obtaining the file.
 
 
 
-------------------- command line arguments and config files -----------------------------
+command line arguments and config files 
+---------------------------------------
+
 low priority...
 
 
@@ -199,10 +215,11 @@ I dunno, it looks so complicated, that maybe it just isn't worth it, and stick w
 just the config file.
 
 need to look at all the config options needed, the URL notation saves a lot.
-------------------- command line arguments and config files -----------------------------
 
 
-------------------- store client config files on switch? -----------------------------
+Store Client Config Files on Switch? 
+------------------------------------
+
 just have enough configuration to query the switch.   amqp://user@ddsr
 then most other options just stored on the switch?
 
@@ -214,9 +231,9 @@ Admins could know exactly what the config file is,...
 	- if clients want to provide configs, email works.
 	- is there a real value?
 
-------------------- store config files -----------------------------
 
----------- checksum scripts --------------------
+Checksum scripts 
+----------------
 
 v01.cfg.register.checksum.<script>
 body of file is the indicated script.  to be pushed to all nodes in the cluster
@@ -227,6 +244,7 @@ v01.cfg.get.checksum.<script>
 nah... just issue a wget... see ´client updates.´
 retrieve request transfer of the checksum script named <script> from the network.
 these scripts:
+
   - are public
   - have global scope everywhere where a script is mentioned it should refer
     to the same script.
@@ -234,10 +252,9 @@ these scripts:
   - expected to be invoked within process, not forked.
 
 
----------- /checksum scripts --------------------
+public client updates 
+---------------------
 
-
----------- public client updates --------------------
 Is this something we want... a self-updating network? like OTA...
 
 This avoids a lot of ´adm.get´ commands... 
@@ -261,10 +278,8 @@ once in a while...  retrieve the latest versions of client components:
 dd_subscribe, dd_sara, dd_sender ?
 
 
----------- /public client updates --------------------
-
-
----------- sensitive client updates --------------------
+sensitive client updates 
+------------------------
 
 	scopes_account.conf -- this might be sensitive?
 	each line:
@@ -276,9 +291,8 @@ dd_subscribe, dd_sara, dd_sender ?
 	which scope/user combos are visible.
 
 
----------- /sensitive client updates --------------------
-
-------------------- can ask for the node list  -----------------------------
+Can ask for the node list 
+-------------------------
 
 somebody, like a dd_sender, or a dd_subscribe, connects to a central switch (dd)
 and asks how many nodes there are (dd1, dd2),  fire up transfer engines for
@@ -287,4 +301,3 @@ they
 
 does this help or make sense?
 
-------------------- /can ask for the node list  -----------------------------

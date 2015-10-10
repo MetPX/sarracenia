@@ -1,6 +1,10 @@
 
 Status: Pre-Draft
 
+==============================================
+ Discussion of File Modification Propagation
+==============================================
+
 for files that change:
 
 algorithm assumed:
@@ -11,7 +15,9 @@ algorithm assumed:
 the zsync algorithm is the right idea, can perhaps use it directly.
 
 
------------ what if each notification is for a block, not a file ?--------------
+What if each notification is for a block, not a file ?
+------------------------------------------------------
+
 gedanken experiment... per block messages, rather than entire files ?
 what if the messages we send are all per block?
 
@@ -72,7 +78,9 @@ suffixed .dd§1 when it receives a file, and there is a .dd§ it checks the size
 of the file, if the current part is contiguous, it just appends (via lseek & write) 
 the data to the .dd§ file.  If not, it creates a separate .dd§<blocknum>
 
------------ .dd§ suffix ---
+.dd§ suffix 
+-----------
+
 but that means they advertise the parts... hmm... the names now mean something, 
 We use the Section Character instead of part.  to avoid that, pick a name that 
 is more unusual that .part something like .dd§partnum (using utf-8 interesting 
@@ -81,7 +89,6 @@ characters, because no-one else uses them, so unlikely to clash.
 
 what is someone advertises a .dd§ file? what does it mean? do we need to
 detect it?
--------------
  
 Then it looks in the directory to see if a .dd§<blocknum +1> exists, and appends
 it if it does, and loops until all contiguous parts are appended (the corresponding
@@ -95,9 +102,11 @@ anyways when you run out of contiguous parts, you stop.
 
 if the last contiguous block received includes the end of the file, then
 do the file completion logic.
---------------------------------------------
+
 
 how to pick chunksize...
+------------------------
+
 	- source choice?
 	- we impose our own on ddsr?
 	
@@ -131,8 +140,10 @@ Aesthetically, need to choose a size that dwarfs the overhead.
 
 
 
----------- if we do blockwise cksums, path from v00 ----------------------
-compatibility... uprading...
+if we do blockwise cksums, path from v00 
+----------------------------------------
+
+compatibility... upgrading...
 v00.notify alerts boil down to:
 
 v01.post could be:
@@ -151,12 +162,10 @@ in which chase it would be:
 
 if there is validation on the blocking size, needs to be a way to deal with it.
 
----------- if we do blockwise cksums ... ----------------------------
 
----------- What if each ... ---------------------------------------------
+digression about zsync 
+----------------------
 
-
------------ digression about zsync ------------------
 zsync is available in repositories.  
 and zsync(1) is the existing download client.  
 zsyncmake(1) builds the signatures, with a programmable block size. 
@@ -192,11 +201,10 @@ The intent is not to replicate source trees, but large data sets.
 
 perhaps build the zsync client into dd_subscribe, but use zsync make on the server side ?
 or when the file is big enough, forking a zsync is no big deal? but mac & win...
---------digression about zsync --------------------------------------------------------
 
 
-
-server/protocol considerations.
+Server/Protocol Considerations
+------------------------------
 
 HTTP:
 	-- uses byte range feature of HTTP.
@@ -205,7 +213,6 @@ HTTP:
 
 in SFTP/python/paramiko...
 	-- there is readv( ... ) which allows to read subsets of a file.
-	-- the read command in SFTP PROTOCOL spec has offset as a standard 
-		argument of read
+	-- the read command in SFTP PROTOCOL spec has offset as a standard argument of read
 	
 

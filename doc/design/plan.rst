@@ -1,38 +1,55 @@
 
 Status: approved-Draft1-20150608
 
-Implementation plan, basically 
-	-- 1 iteration per month.
-	-- at least a .dpkg produced per iteration.
-	-- run stuff once per iteration on windows to see it vaguely works.
-	   (don't package it, just try it out.)
-	   if it doesn't work on windows, note the problem, that's all.
-		until we get to packaging...
-	-- Design work needs to run one iteration ahead.
-	   features of iteration 3 need to be firmed up in iteration 2.
-	-- at the beginning of the month, the initial focus documents are agreed.
-	   through the month, they evolve.
-	-- at the end of the month, features corresponding to the focus documents 
-	   have been implemented, and the focus documents updated to reflect them.
-	-- at end of each phase, revise plan.txt
+===================
+Implementation Plan
+===================
 
-focus documents go through:
-	pre-draft  -- document being create/modified, not ready for review.
-	draft1 -- document ready for review.
-	approved-draft1 -- document reviewed and approved.
+
+Overview
+--------
+
+  - 1 iteration per month.
+
+  - at least a .dpkg produced per iteration.
+
+  - run stuff once per iteration on windows to see it vaguely works.
+    (don't package it, just try it out.)
+    if it doesn't work on windows, note the problem, that's all.
+    until we get to packaging...
+
+  - Design work needs to run one iteration ahead.
+    features of iteration 3 need to be firmed up in iteration 2.
+
+  - at the beginning of the month, the initial focus documents are agreed.
+    through the month, they evolve.
+
+  - at the end of the month, features corresponding to the focus documents 
+    have been implemented, and the focus documents updated to reflect them.
+
+  - at end of each phase, revise plan.txt
+
+focus documents go through status:
+
+  - pre-draft  - document being create/modified, not ready for review.
+  - draft1 - document ready for review.
+  - approved-draft1 - document reviewed and approved.
 
 	draft1...N
 	
 
 
-------------- Iteration 0 -------------------------
+Iteration 0 
+-----------
+
 focus: Outline.txt, the glossy design.vsd
 
 initial versions of all the focus documents, and plan.txt
 
 
 
-------------- Iteration 1: block-oriented transfers and logs   -- June.
+Iteration 1: block-oriented transfers and logs: June
+----------------------------------------------------
 
 focus: deltas.txt, logmessages.txt, dd_post_sample.txt
 
@@ -43,16 +60,18 @@ focus: deltas.txt, logmessages.txt, dd_post_sample.txt
    implements v01.notice, and v01.log
    maintains compatibility with v00 (so subscribe can read v00.)
    
-   -- does blockwise checksums.
-   -- does just enough validation to do the YMD/<source> thing.
-   -- dd_post should not do validation (so easier to test psychotic settings
-	like 1 byte blocks.)
+   - does blockwise checksums.
+
+   - does just enough validation to do the YMD/<source> thing.
+
+   - dd_post should not do validation (so easier to test psychotic settings
+      like 1 byte blocks.)
 
    post to a switch, sara build a site, dd_subscribe pulls from it.
 	             logs build                      logs pull
 
-   -- use a single exchange (no source exchanges etc...)
-   -- logs just go to log exchange.
+   - use a single exchange (no source exchanges etc...)
+   - logs just go to log exchange.
 
 HW: whatever is lying around.
 
@@ -62,7 +81,8 @@ HW: whatever is lying around.
 
 
 
------------- Iteration 2: directory watch.   -- July
+Iteration 2: directory watch: July
+----------------------------------
 
    focus: cluster.txt
 	- because then we need to get hw implemented next iteration.
@@ -89,12 +109,14 @@ HW: whatever is lying around.
 
 
 
-------------- Iteration 3:  Security/Authentication, Transition Strategy -- August.
+Iteration 3:  Security/Authentication, Transition Strategy:  August
+-------------------------------------------------------------------
+
    focus: validation.txt, accounts.txt, 
 
-   -- now start using the exchanges correctly.
+   - now start using the exchanges correctly.
 
-   -- LDAP realms are ready.
+   - LDAP realms are ready.
 	design is done.
 	user mirroring.
 
@@ -109,7 +131,7 @@ HW: whatever is lying around.
    validation of same 
 
    create .htaccess files using sara and subscribe
-	-- re-create them each day
+	- re-create them each day
 
 
  understand the situation with new PX, old PX, px-inter.
@@ -126,12 +148,13 @@ HW:  initial config... in ec.gc.ca  or science.gc.ca ?
     use existing ddi and dd.beta... eventually dd
 
 
------------ Iteration 4: Management.	-- September
+Iteration 4: Management: September
+----------------------------------
 
 focus: configuration.txt, monitoring.txt, scope.txt, packaging.txt
 
 add operator monitoring (read-only at first)
-	-- nagios based on speedos?
+	- nagios based on speedos?
 
 add configuration settings / management.
 
@@ -148,7 +171,8 @@ Figure out how to get users created (UVL? something else?)
 
 
 
------------ Iteration 5: Operations for Science.gc.ca.  -- October
+Iteration 5: Operations for Science.gc.ca.: October
+---------------------------------------------------
 
 
 	all the science ones should be AMQP/SSL.
@@ -176,7 +200,8 @@ HW:
     do logs make it back from science to urp ?	yes it just shovels from it's own echange
     on ddsr to it's own and it keeps going back to urp. cool.
 
--------------- Iteration 6: Packaging & Acquisition from outside. -- November.
+Iteration 6: Packaging & Acquisition from outside: November
+-----------------------------------------------------------
 
 So far it's all sources that are inside, and we are pushing internal or to outside.
 what about accepting data from outside?
@@ -196,9 +221,10 @@ start making other packages?
 	do we make it 'pip' compatible?
 		so on windows they install python, then pip pulls in deps?
 
+
+End of Phase 1
 --------------
 
-End of Phase 1.
      Success criteria:
 	operating di.science.gc.ca cluster.
 	operating dd.science.gc.ca cluster.
@@ -215,31 +241,32 @@ End of Phase 1.
         move transition forward.
 
 Phase 2:  (Next FY)
+-------------------
      
-     migration of systems.
+     - migration of systems.
 
-     performance tuning/accelleration.
-	see if there is some obvious 'go faster' stuff.
-	   do we want to support bbcp, or is per block threading better anyways?
-	   setsockopts/buffers, etc... probably a whole year there.
-	   but need some deployments to see issues, and address pain points,
-	   rather than guessing.
+     - performance tuning/accelleration.
+       see if there is some obvious 'go faster' stuff.
+       do we want to support bbcp, or is per block threading better anyways?
+       setsockopts/buffers, etc... probably a whole year there.
+       but need some deployments to see issues, and address pain points,
+       rather than guessing.
 
-     migrate from AMQP/s to https websockets (every broker runs a gateway.)
-     to eliminate firewalling issue. 
-     focus document: webification.txt
-	   all the AMQP functionality used in phase1 remains unchanged.
-           the only change is that the client programs might use a websocket:
-           to initiate their AMQP connections tunnelled through ws:
-           this will remove the need to permit AMQP protocol connections,
-           making firewall stuff easier.
-	   if we do ws:, then it would web socket over SSL, and we no longer
-	   need AMQP/S,
-	   Kazaa provides this, but it's commercial... free one might not be 
-           jwebsocket.org looks promising...
-	   hard (ie. hardcode proxy to localhost.)
+     - migrate from AMQP/s to https websockets (every broker runs a gateway.)
+       to eliminate firewalling issue. 
+       focus document: webification.txt
+       all the AMQP functionality used in phase1 remains unchanged.
+       the only change is that the client programs might use a websocket:
+       to initiate their AMQP connections tunnelled through ws:
+       this will remove the need to permit AMQP protocol connections,
+       making firewall stuff easier.
+       if we do ws:, then it would web socket over SSL, and we no longer
+       need AMQP/S,
+       Kazaa provides this, but it's commercial... free one might not be 
+       jwebsocket.org looks promising...
+       hard (ie. hardcode proxy to localhost.)
 
-     GUI'ish enablement ?
+     - GUI'ish enablement ?
 	   TBD.
 
 

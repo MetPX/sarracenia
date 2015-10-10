@@ -95,10 +95,8 @@ answer: it feels like listing multiple scopes ensures that the data
 is only transferred once from origin.
 
 
-Each account has a home 'scope' which is the only place they can 
-insert messages in.
-	- do not want common passwords used on inside and outside 
-          (hence single scope for insertion.)
+Each account has a home 'scope' which is the only place they can insert messages in.  
+Do not want common passwords used on inside and outside (hence single scope for insertion.)
 
 
 when receiving a log message, it will be sent to the appropriate 
@@ -167,7 +165,8 @@ and does the data transfer.
 
 The dd_sender on A will then re-announce... where?
 	as B(!) on from_A ? on B ??
-	as A on from_A ? ?? <-- makes more sense.
+	as A on from_A ? ?? <-- makes more sense::
+
 		then a SARA (with no fetch, since the file is delivered)
 		picks it up from exchange from_A and posts to xPublic
 

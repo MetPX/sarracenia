@@ -1,8 +1,11 @@
 
 Status: Pre-Draft
 
-this example is for v01.
-algorithms unchanged for v02, but representation different.
+------------------------------------------
+Example of a Post message, with Discussion
+------------------------------------------
+
+This example is for v01 syntax.  Algorithms materially unchanged for v02, but representation is different.
 
 afsiext:  user name assigned to us to retreive data on cmcdata server
 	client will not see this, private between source and ingest switch.
@@ -16,7 +19,7 @@ file is 457 bytes, blocksize is 0.
 flow is 'exp13' (by default, would be 'default')  user settable, just passes through. 
 DMS guys will appreciate this, for labelling warning flows.
 checksum is done on actual data, not the file name, or a script
-	- this is default behaviour.
+This is default behaviour.
 
 
 dd_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
@@ -28,12 +31,14 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 
 v01 - version of protocol
 post - indicates the type of message (defines format of following topics and body)
-	message types:
-	post - announce or notify that a new product block is available.
+
+	message types::
+
+	  post - announce or notify that a new product block is available.
 	       possible strings: post,ann(ounce), not(ify)
-	log  - report status of operations.
-	adm  - change settings 
-		´admin´, ´config´, etc...
+	  log  - report status of operations.
+	  adm  - change settings 
+	         'admin´, ´config´, etc...
 
   -- blocksize is 457  (== file size)
   -- block count is 1

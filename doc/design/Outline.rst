@@ -1,7 +1,9 @@
 
 Status: Approved-Draft1-20150608
 
-Overview:
+Overview
+--------
+
 MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
 standard technologies (sftp and web servers and AMQP brokers) to achieve real-time message 
 delivery and end to end transparency in file transfers.  Whereas in Sundew, each 
@@ -61,7 +63,8 @@ and seem helpful.  We should get rid of any that are not helpful.
     The source is in charge of the data they provide.
 
     The source determines the distribution (scope, and permissions)
-    The source can obtain any information about themselves.
+    The source can obtain any information about themselves::
+
 	- when status changed:  start,stop,drop.
 	- when announcements are accepted.
 	- when data is pulled by a consumer (a scope layer, or a end point.)
@@ -105,12 +108,13 @@ and seem helpful.  We should get rid of any that are not helpful.
 
 
 6. Not worried about performance in phase 1
-    -- performance is enabled by the scalability of the design.
+    -- performance is enabled by the scalability of the design::
+
           -- segmentation/re-assembly provides multi-threading.
-	  -- segmentation means bigger files transfer with greater parallelism.
-	     adds multiple streams when that is worthwhile, uses a single stream
-	     when that makes sense.
-	  -- validation provides source bandwidth limiting.
+          -- segmentation means bigger files transfer with greater parallelism.
+             adds multiple streams when that is worthwhile, uses a single stream
+             when that makes sense.
+          -- validation provides source bandwidth limiting.
 
     -- need to prove all the moving parts work together first.
 
