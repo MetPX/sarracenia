@@ -1,0 +1,388 @@
+
+=========
+ DD_post 
+=========
+
+-------------------------------------------
+Sarracenia v02 Post Message Format/Protocol
+-------------------------------------------
+
+:Manual section: 7
+:Date: Sep 2015
+:Version: 0.0.1 
+:Manual group: Metpx Sarracenia Suite
+
+SYNOPSIS
+--------
+
+A dd_post message consists of four parts:
+
+	**AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
+
+**AMQP Topic: <version>.post.<src>.{<dir>.}*<filename>**
+
+**AMQP Headers:** *<series of key-value pairs>*
+
+**Body:** *<first line> = <date stamp> <srcpath> <relpath> <newline>*
+
+<*rest of body is reserved for future use*>
+
+
+
+DESCRIPTION
+-----------
+
+Sources create messages in the *dd_post* format to announce file changes. Subscribers 
+read the post to decide whether a download of the content being announced is warranted.  This manual 
+page completely describes the format of the messages used to announce file changes.  
+dd_post messages are payloads for an Advanced Message Queuing Protocol (AMQP) message bus, 
+but file data transport is separate, using more common protocols such as SFTP, HTTP, HTTPS, 
+or FTP.  Files are transported as pure byte streams, no metadata beyond the file contents is 
+transported (permission bits, extended attributes, etc...), and the permissions of files 
+are upto the receiver to decide at the destination system.
+
+AMQP messages provide a 'control plane' for data transfers.  While each post message 
+is essentially point to point, data switches can be transitively linked together to make arbitrary 
+networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
+(creates a new post for) the data for later hops.  The posts flow in the same direction as the 
+data.  Log messages (see dd_log(7)) also flow through the control path, but in the opposite 
+direction, allowing sources to know the entire disposition of their products through a network.  
+
+
+AMQP TOPIC
+----------
+
+In topic based AMQP exchanges, every message has a topic header.  AMQP defines the '.' character 
+as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
+pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
+the topic string. To allow for changes in the message body in the future, topic trees begin with 
+the version number of the protocol.  
+
+AMQP allows server side topic filtering using wildcards.  Subscribers specify topics of 
+interest (which correspond to directories on the server), allowing them to pare down the 
+number of notifications sent from server to client.
+
+The root of the topic tree is the version specifier: "v02".  Next comes the message type specifier.  
+These two fields define the protocol that is in use for the rest of the message.
+The message type for post messages is "post".  After the fixed topic prefix, 
+the remaining sub-topics are the path elements of the file on the web server.  
+For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
+then the complete topic of the message will be:  *"v02.post.a.b.c.d.foo.txt"*
+
+
+THE FIRST LINE 
+--------------
+
+the first line of a message contains all mandatory elements of an announcement.
+There is a series of white space separated fields:
+
+*<date stamp>*: the date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
+ Note: The datestamp is always in UTC timezone.
+
+*<srcpath>* -- the base URL used to retrieve the data.
+
+This should be the URL consumers will use to download the data.  Example of a complete URL:
+
+ sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
+
+In the case where the URL does not end with a path separator ('/'), the src path is taken to 
+be the complete source of the file to retrieve.
+
+ Static URL: sftp://afsiext@cmcdataserver/
+
+If the URL ends with a path separator ('/'), then the src URL is considered a prefix for the 
+variable part of the retrieval URL.
+
+
+*<relativepath>*  the variable part of the URL, usually appended to *srcpath*.
+
+
+*<newline>* signals the end of the first line of the message and is denoted by a single line feed character.
+
+THE REST OF MESSAGE
+-------------------
+
+Use of only the first line of the AMQP payload is currently defined.  
+The rest of the payload body is reserved for future use.
+
+AMQP HEADERS 
+------------
+
+In addition to the first line of the message containing all mandatory fields, optional 
+elements are stored in AMQP headers (key-value pairs), included in messages when 
+appropriate.   Headers are a mandatory element included in later versions of the AMQP protocol.
+
+
+
+**flow=<flow>**
+
+   A user defined string used to group data transfers together, unused by the protocol.
+
+**parts=<method>,<bsz>,<blktot>,<brem>,bno**
+
+ A header indicating the method and parameters for partitioning applied for the file.
+ Partitioning is used to send a single file as a collection of segments, rather than as
+ a single entity.  Partitioning is used to accellerate transfers of large data sets by using
+ multiple streams, and/or to reduce storage use for extremely large files.
+
+ when transferring partitioned files, each partition is advertised and potentially transported
+ independently across a switching network.
+
+ *<method>*
+ 
+ Indicates what partitioning method, if any, was used in transmission. 
+
+ +-----------+---------------------------------------------------------------------+
+ +   Method  + Description                                                         +
+ +-----------+---------------------------------------------------------------------+
+ +    p      + File is partitioned, individual part files are created.             +
+ +-----------+---------------------------------------------------------------------+
+ +    i      + file is partitioned, but blocks are written to a single file,       |
+ +           + rather than parts. File is re-assembled on receipt.                 +
+ +-----------+---------------------------------------------------------------------+
+ +    1      + file is in a single part (no partitioning)                          +
+ +-----------+---------------------------------------------------------------------+
+
+ - file segment strategy can be overridden by client. just a suggestion.
+ - analogous to rsync options: --inplace, --partial,
+
+ *<blocksize in bytes>: bsz*
+
+ The number of bytes in a block.  When using method 1, the size of the block is the size of the file.  
+ Remaining fields only useful for partitioned files.	
+
+ *<blocks in total>: blktot*
+ the integer total number of blocks in the file (last block may be partial)
+
+ *<remainder>: brem*
+ normally 0, on the last block, remaining bytes in the file
+ to transfer.
+
+        -- if (fzb=1 and brem=0)
+               then bsz=fsz in bytes in bytes.
+               -- entire files replaced.
+               -- this is the same as rsync's --whole-file mode.
+
+ *<block#>: bno*
+ 0 origin, the block number covered by this posting.
+
+**rename=<relpath>** 
+
+ The relative path from the current directory in which to
+ place the file.
+
+ Two cases based on the end being a path separator or not.
+
+ case 1: NURP/GIF/
+
+ based on the current working directory of the downloading client,
+ create a subdirectory called URP, and within that, a subdirectory
+ called GIF will be created.  The file name will be taken from the
+ srcpath.
+
+ if the srcpath ends in pathsep, then the relpath here will be
+ concatenated to the srcpath, forming the complete retrieval URL.
+
+ case 2: NRP/GIF/mine.gif
+
+ if the  srcpath ends in pathsep, then the relpath will be concatenated
+ to srcpath for form the complete retrieval URL.
+
+ if the src path does not end in pathsep, then the src URL is taken
+ as complete, and the file is renamed on download according to the
+ specification (in this case, mine.gif)
+
+
+**source=<sourceid>**
+ a character field indicating the source of the data injected into the network.
+ should be unique within a switching network.  Usually is the same as the
+ account used to authenticate to the broker.
+
+**sum=<method>,<value>**
+ The sum is a signature computed to allow receivers to determine 
+ if they have already downloaded the partition from elsewhere.
+
+ *<method>* - character field indicating the checksum algorithm used.
+
+ +-----------+---------------------------------------------------------------------+
+ +   Method  + Description                                                         +
+ +-----------+---------------------------------------------------------------------+
+ |     0     + no checksums (unconditional copy.)                                  |
+ +-----------+---------------------------------------------------------------------+
+ |     d     | checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ +-----------+---------------------------------------------------------------------+
+ |     R     | Removed: file was removed, rather than updated, no checksum applies.|
+ +-----------+---------------------------------------------------------------------+
+ |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ +-----------+---------------------------------------------------------------------+
+ |  *<name>* | checksum with a some other algorithm, named *<name>*                |
+ |           | *<name>* should be *registered* in the switch network.              |
+ |           | registered means that all downstream subscribers can obtain the     |
+ |           | algorithm to validate the checksum.                                 |
+ +-----------+---------------------------------------------------------------------+
+
+ *<value>* The value is computed by applying the given method to the partition being transferred.
+
+All other headers are reserved for future use. 
+
+
+EXAMPLE
+-------
+
+:: 
+
+ topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+ first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
+ headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13
+
+        v02 - version of protocol
+        post - indicates the type of message
+
+        version and type together determine format of following topics and the message body.
+
+        ec_cmc - the account used to issue the post (unique in a network).
+
+          -- blocksize is 457  (== file size)
+          -- block count is 1
+          -- remainder is 0.
+          -- block number is 0.
+          -- d - checksum was calculated on the body of the file.
+          -- flow is an argument after the relative path.
+          -- complete source URL specified (does not end in '/')
+          -- relative path specified for
+
+        pull from:
+                sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
+
+        complete relative download path:
+                NRDPS/GIF/NRDPS_HiRes_000.gif
+
+                -- takes file name from srcpath.
+                -- may be modified by validation process.
+
+
+Another example
+---------------
+
+The post resulting from the following dd_watch command, noticing creation of the file 'foor':
+
+dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+
+Here, *dd_watch* checks if the file /data/shared/products/foo is modified.
+When it happens, *dd_watch*  reads the file /data/shared/products/foo and calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
+
+A subscriber can download the file /data/shared/products/foo  by logging as user stanley
+on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+
+The output of the command is as follows ::
+
+  Topic: v02.post.20150813.guest.data.shared.products.foo
+  1st line of body: 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
+  Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce
+
+Posts are published on AMQP topic exchanges, meaning every message has a topic header.
+The body consists of a time *20150813161959.854*, a size in bytes *256*,
+the number of block of that size *1*, the remaining bytes *0*, the
+current block *0*, a flag *d* meaning the md5 checksum is
+performed on the data, the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*,
+a tag *default* and finally the source url of the product in the last 2 fields.
+
+MetPX-Sarracenia
+----------------
+
+The Metpx project ( http://metpx.sf.net ) has a sub-project called Sarracenia which is intended
+as a testbed and reference implementation for this protocol.  This implementation is licensed
+using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
+confirm interoperability with any other implementations that may arise.   While Sarracenia
+itself is expected to be very usable in a variety of contexts, there is no intent for it
+to implement any features not described by this documentation.  
+
+This Manual page is intended to completely specify the format of messages and their 
+intended meaning so that other producers and consumers of messages can be implemented.
+
+
+
+AMQP Feature Selection
+----------------------
+
+AMQP is a universal message passing protocol with many different 
+options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a 
+small subset of AMQP patterns.  Indeed an important element of sarracenia development was to 
+select from the many possibilities a small subset of methods are general and easily understood, 
+in order to maximize potential for interoperability.
+
+Similar to the use of FTP alone as a transfer protocol is insufficient to specify a complete data 
+transfer procedure, use of AMQP, without more information, is incomplete.  
+
+AMQP 1.0 standardizes the on the wire protocol, but leaves out many features of broker interaction.   
+As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
+and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
+as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
+0.9 brokers are also likely to inter-operate well.
+
+In AMQP, many different actors can define communication parameters. To create a clearer
+security model, sarracenia constrains that model: dd_post clients are not expected to declare 
+Exchanges.  All clients are expected to use existing exchanges which have been declared by 
+broker administrators.  Client permissions are limited to creating queues for their own use,
+using agreed upon naming schemes.  Queue for client: qc_<user>.????
+
+Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
+but dd_post have the topic sent in order to support server side filtering by using topic 
+based filtering.  The topics mirror the path of the files being announced, allowing 
+straight-forward server-side filtering, to be augmented by client-side filtering on 
+message reception.
+
+The root of the topic tree is the version of the message payload.  This allows single brokers 
+to easily support multiple versions of the protocol at the same time during transitions.  v02
+is the third iteration of the protocol and existing servers routinely support previous versions 
+simultaneously in this way.  The second topic in the topic tree defines the type of message.
+at the time of writing:  v02.post is the topic prefix for current post messages.
+
+The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes 
+small messages.  Keeping the messages small allows for maximum message throughtput and permits
+clients to use priority mechanisms based on transfer of data, rather than the announcements.
+Accomodating large messages would create many practical complications, and inevitably require 
+the definition of a maximum file size to be included in the message itself, resulting in
+complexity to cover multiple cases. 
+
+dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+blocks of large files are announced independently. and blocks can follow different paths
+between initial switch and final delivery.
+
+
+CHARACTER SET & ENCODING
+------------------------
+
+All messages are expected to use the UNICODE character set (ISO 10646), 
+represented by UTF-8 encoding (IETF RFC 3629.)
+URL encoding, as per IETF RFC 1738, is used to escape unsafe characters, where appropriate.
+
+
+FURTHER READING
+---------------
+
+http://metpx.sf.net - home page of metpx-sarracenia
+
+http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
+
+SEE ALSO
+--------
+
+**dd_get(1)** - the multi-protocol download client.
+
+**dd_log(7)** - the format of log messages.
+
+**dd_log2source(1)** - copy log messages from the switch log bus to upstream destination.
+
+**dd_sara(1)** - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+
+**dd_post(1)** - the individual file posting client.
+
+**dd_subscribe(1)** - the http-only download client.
+
+**dd_watch(1)** - the directory watching daemon.
+
+**inotify(7)** - used for file modification announcements on Linux.
+
