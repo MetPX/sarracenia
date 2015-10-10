@@ -1,5 +1,5 @@
 
-Le français suit (recherchez FRANCAIS)
+Le franÃ§ais suit (recherchez FRANCAIS)
 
 Sarracenia/dd_subscribe release notes
 
@@ -129,40 +129,40 @@ FRANCAIS
 
 Notes de publication pour sarracenia/dd_subscribe
 
-1- dd.weather.gc.ca (le datamart du SMC) est le dépôt public de
-données météorologiques d'Environnement Canada
+1- dd.weather.gc.ca (le datamart du SMC) est le dÃ©pÃ´t public de
+donnÃ©es mÃ©tÃ©orologiques d'Environnement Canada
 
 2- Chaque fois qu'un produit arrive dans le datamart, un message AMQP
-est immédiatement transmis. Ce message a la forme :
+est immÃ©diatement transmis. Ce message a la forme :
 "md5sum taillefichier http://servername/ filepath".
-Le URL du produit est décrit par les deux derniers chanps.
-Toute application capable de s'abonner à un service AMQP
-peut recevoir les notifications des produits en qui sont publiés et
-les récupérer en temps réel par HTTP. Il existe un grand nombre de
-langages et de plateformes qui peuvent être utilisées pour mettre en
-oeuvre cette procédure. Vous trouverez ici un script de démonstration
-simple, "dd_subscribe". Le script est écrit en Python.
+Le URL du produit est dÃ©crit par les deux derniers chanps.
+Toute application capable de s'abonner Ã  un service AMQP
+peut recevoir les notifications des produits en qui sont publiÃ©s et
+les rÃ©cupÃ©rer en temps rÃ©el par HTTP. Il existe un grand nombre de
+langages et de plateformes qui peuvent Ãªtre utilisÃ©es pour mettre en
+oeuvre cette procÃ©dure. Vous trouverez ici un script de dÃ©monstration
+simple, "dd_subscribe". Le script est Ã©crit en Python.
 
 3- dd_subscribe est un programme en python, utilisant python-amqplib pour
-recevoir les notification AMQP, récupérer les produits sur le datamart
-par HTTP et les placer dans un répertoire local choisi par l'usager.
+recevoir les notification AMQP, rÃ©cupÃ©rer les produits sur le datamart
+par HTTP et les placer dans un rÃ©pertoire local choisi par l'usager.
 
 
 4- L'utilisation du programme: dd_subscribe [-n] [-l logdir] fichier_config.
-Par défaut, le programme télécharge immédiatement le
-produit lorsqu'une notification est reçue. Si vous voulez simplement
-afficher les notifications sans effectuer de téléchargement, utilisez
-l'option "-n". L'option "-l" quand a elle, définit un répertoire de
-logging et un fichier nomme "fichier_config_PID.log" sera écrit.
+Par dÃ©faut, le programme tÃ©lÃ©charge immÃ©diatement le
+produit lorsqu'une notification est reÃ§ue. Si vous voulez simplement
+afficher les notifications sans effectuer de tÃ©lÃ©chargement, utilisez
+l'option "-n". L'option "-l" quand a elle, dÃ©finit un rÃ©pertoire de
+logging et un fichier nomme "fichier_config_PID.log" sera Ã©crit.
 (PID est le ID du process)
 
 
 5- Le fichier de configuration est simple (voir le manpage pour
 dd_subscribe). Pour faciliter encore les choses, les exemples de
 fichiers de configurations qui sont fournis avec le programme
-contiennent des paramètres valides qui devraient suffire pour
+contiennent des paramÃ¨tres valides qui devraient suffire pour
 commencer.
-      a) identifiants pour le serveur rabbitmq. Ces paramètres sont: 
+      a) identifiants pour le serveur rabbitmq. Ces paramÃ¨tres sont: 
 
                host               default  host          dd.weather.gc.ca
                port               default  port          5672
@@ -170,48 +170,48 @@ commencer.
                amqp-password      default  amqp-password anonymous
 
 
-      b) réglages d'échanges amqp permettant de recevoir les notifications (indiquant
+      b) rÃ©glages d'Ã©changes amqp permettant de recevoir les notifications (indiquant
          l'URL du produit)
 
               exchange            default  exchange      xpublic
               exchange_type       default  exchange_type topic
               subtopic            no default ... 
                                   
-         - le subtopic replace les clés d'échanges amqp (exchange_key)
-         - il est permi de déclarer plusieurs subtopic
-         - Pour déterminer une valeur correcte pour un subtopic, explorez le dépôt
-           http://dd.weather.gc.ca et choisissez n'importe quel répertoire contenant des
-           produits qui sont d'intérêt pour vous. Pour chacun de ces répertoires, spécifiez
+         - le subtopic replace les clÃ©s d'Ã©changes amqp (exchange_key)
+         - il est permi de dÃ©clarer plusieurs subtopic
+         - Pour dÃ©terminer une valeur correcte pour un subtopic, explorez le dÃ©pÃ´t
+           http://dd.weather.gc.ca et choisissez n'importe quel rÃ©pertoire contenant des
+           produits qui sont d'intÃ©rÃªt pour vous. Pour chacun de ces rÃ©pertoires, spÃ©cifiez
            le subtopic comme suit:
 
                  subtopic directory1.subdirectory2.*.subdirectory4.#
 
-                 ou        *              caractère de remplacement (wildcard) 
-                                          (un seul '*' per par répertoire)
-                           #              signifie les possibilités restantes
+                 ou        *              caractÃ¨re de remplacement (wildcard) 
+                                          (un seul '*' per par rÃ©pertoire)
+                           #              signifie les possibilitÃ©s restantes
 
-      c) réglages de la queue amqp permettant de recevoir les notifications
+      c) rÃ©glages de la queue amqp permettant de recevoir les notifications
 
                queue              default  None        
                durable            default  False         
                expire             default  None
 
-         - queue défini le nom de la queue, qui commence toujours avec cmc. Par défaut un nom de queue
-           au hazard est créé et conserver dans un fichier nomme .fichier_config.queue
-         - expire est un nombre de minutes... qui déclare la longueur de la vie d'une queue sans connection
-         - durable permet d'écrire la queue sur disque si le serveur rabbitmq est arrêté ou redemarré
-         - par defaut, dd_subscribe crée un nom de queue qui devrait être unique et l'enregistre dans
-           un fichier nommé .<configname>.queue où <configname> est le nom du fichier de configuration.
+         - queue dÃ©fini le nom de la queue, qui commence toujours avec cmc. Par dÃ©faut un nom de queue
+           au hazard est crÃ©Ã© et conserver dans un fichier nomme .fichier_config.queue
+         - expire est un nombre de minutes... qui dÃ©clare la longueur de la vie d'une queue sans connection
+         - durable permet d'Ã©crire la queue sur disque si le serveur rabbitmq est arrÃªtÃ© ou redemarrÃ©
+         - par defaut, dd_subscribe crÃ©e un nom de queue qui devrait Ãªtre unique et l'enregistre dans
+           un fichier nommÃ© .<configname>.queue oÃ¹ <configname> est le nom du fichier de configuration.
 
 
-      d) identifiant http (non utilisé en ce moment, pourrait l'être pour des produits
-         à distribution restreinte)
+      d) identifiant http (non utilisÃ© en ce moment, pourrait l'Ãªtre pour des produits
+         Ã  distribution restreinte)
 
                http-user          default  http-user     None
                http-password      default  http-password None
 
 
-      e) paramètres de livraison
+      e) paramÃ¨tres de livraison
 
                lock               default  lock          .tmp
                directory          default  directory     .
@@ -222,22 +222,22 @@ commencer.
                timeout            default  timeout       180 
 
         
-         - Le paramètre 'lock' contrôle le suffixe qui sera donné au
-           fichier pendant le téléchargement qui sera retiré une fois la
-           tâche complétée.  Par ce moyen, le fichier en cours de
-           téléchargement ne sera pas traité prématurément.
+         - Le paramÃ¨tre 'lock' contrÃ´le le suffixe qui sera donnÃ© au
+           fichier pendant le tÃ©lÃ©chargement qui sera retirÃ© une fois la
+           tÃ¢che complÃ©tÃ©e.  Par ce moyen, le fichier en cours de
+           tÃ©lÃ©chargement ne sera pas traitÃ© prÃ©maturÃ©ment.
 
-         - Le paramètre 'directory' contrôle le répertoire où seront
-           reçues les données sur votre serveur.  En combinaison avec
-           'accept/reject' vous pouvez gérer les fichiers qui sont
-           téléchargés et leur répertoire de résidence.
+         - Le paramÃ¨tre 'directory' contrÃ´le le rÃ©pertoire oÃ¹ seront
+           reÃ§ues les donnÃ©es sur votre serveur.  En combinaison avec
+           'accept/reject' vous pouvez gÃ©rer les fichiers qui sont
+           tÃ©lÃ©chargÃ©s et leur rÃ©pertoire de rÃ©sidence.
 
-           Ces paramètres sont traités séquentiellement. Un produit
-           rejeté n'est jamais téléchargé.  Les produits acceptés sont
-           placés dans le répertoire le plus récent qui ait été
-           déclaré au-dessus du paramètre accept qui a été utilisé
-           pour le sélectionner.  Les paramètres accept et reject
-           acceptent des expressions régulières pour la reconnaissance
+           Ces paramÃ¨tres sont traitÃ©s sÃ©quentiellement. Un produit
+           rejetÃ© n'est jamais tÃ©lÃ©chargÃ©.  Les produits acceptÃ©s sont
+           placÃ©s dans le rÃ©pertoire le plus rÃ©cent qui ait Ã©tÃ©
+           dÃ©clarÃ© au-dessus du paramÃ¨tre accept qui a Ã©tÃ© utilisÃ©
+           pour le sÃ©lectionner.  Les paramÃ¨tres accept et reject
+           acceptent des expressions rÃ©guliÃ¨res pour la reconnaissance
            des URL.
 
            ex.     directory /home/steve/myradars
@@ -247,29 +247,29 @@ commencer.
                    reject    .*Reg.*
                    accept    .*GRIB.*
            
-         - Si vous donnez au paramètre 'mirror' la valeur 'True', les
-	   fichiers seront placés dans une structure de répertoires
-	   similaire à celle qui existe sur dd.weather.gc.ca. La racine
-	   de la structure sera le répertoire indiqué par le paramètre
+         - Si vous donnez au paramÃ¨tre 'mirror' la valeur 'True', les
+	   fichiers seront placÃ©s dans une structure de rÃ©pertoires
+	   similaire Ã  celle qui existe sur dd.weather.gc.ca. La racine
+	   de la structure sera le rÃ©pertoire indiquÃ© par le paramÃ¨tre
 	   'directory'.
            
-         - Le paramètre 'flatten' permet de spécifier un caractère qui
-	   sera utilisé pour renommer le fichier d'après son chemin sur
-	   dd.weather.gc.ca, en remplaçant les '/' par le caractère
-	   choisi. Le fichier sera placé avec ce nom étendu dans le
-	   répertoire défini par le paramètre 'directory'.
+         - Le paramÃ¨tre 'flatten' permet de spÃ©cifier un caractÃ¨re qui
+	   sera utilisÃ© pour renommer le fichier d'aprÃ¨s son chemin sur
+	   dd.weather.gc.ca, en remplaÃ§ant les '/' par le caractÃ¨re
+	   choisi. Le fichier sera placÃ© avec ce nom Ã©tendu dans le
+	   rÃ©pertoire dÃ©fini par le paramÃ¨tre 'directory'.
            
-         - L'option 'timeout' défini une limite en seconds pour le temps ou le fichier
-           est téléchargé et placé dans le répertoire/nom approprié... Si le timeout
-           est dépassé, le download est repris... jusqu'à ce qu'il soit un succès.
+         - L'option 'timeout' dÃ©fini une limite en seconds pour le temps ou le fichier
+           est tÃ©lÃ©chargÃ© et placÃ© dans le rÃ©pertoire/nom appropriÃ©... Si le timeout
+           est dÃ©passÃ©, le download est repris... jusqu'Ã  ce qu'il soit un succÃ¨s.
 
-6- Dans le répertoire samples/config vous trouverez des fichiers de
+6- Dans le rÃ©pertoire samples/config vous trouverez des fichiers de
 configuration qui devraient fonctionner tels quels (sans
 garantie). Sous samples/program vous trouverez d'autres programmes
-avec lesquels nous avons expérimenté.
+avec lesquels nous avons expÃ©rimentÃ©.
 
-7- Détail distrayant: sarracenia est le nom latin de la sarracène, une
-plante canadienne rare et à prédominance carnivore (au même titre que la
-droséra et la columbo).
+7- DÃ©tail distrayant: sarracenia est le nom latin de la sarracÃ¨ne, une
+plante canadienne rare et Ã  prÃ©dominance carnivore (au mÃªme titre que la
+drosÃ©ra et la columbo).
 
 
