@@ -33,21 +33,66 @@ DESCRIPTION
 -----------
 
 Sources create messages in the *dd_post* format to announce file changes. Subscribers 
-read the post to decide whether a download of the content being announced is warranted.  This manual 
-page completely describes the format of the messages used to announce file changes.  
+read the post to decide whether a download of the content being announced is warranted.  This 
+manual page completely describes the format of the messages used to announce file changes.  
 dd_post messages are payloads for an Advanced Message Queuing Protocol (AMQP) message bus, 
 but file data transport is separate, using more common protocols such as SFTP, HTTP, HTTPS, 
 or FTP.  Files are transported as pure byte streams, no metadata beyond the file contents is 
 transported (permission bits, extended attributes, etc...), and the permissions of files 
 are upto the receiver to decide at the destination system.
 
-AMQP messages provide a 'control plane' for data transfers.  While each post message 
+With this method, AMQP messages provide a 'control plane' for data transfers.  While each post message 
 is essentially point to point, data switches can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
-data.  Log messages (see dd_log(7)) also flow through the control path, but in the opposite 
-direction, allowing sources to know the entire disposition of their products through a network.  
+data.  If consumers permit it, log messages (see dd_log(7)) also flow through the control path, 
+but in the opposite direction, allowing sources to know the entire disposition of their 
+products through a network.  
 
+The format of post messages is a minimal layer on top of AMQP needed to provide data exchange.
+The minimal layer over raw AMQP is primarily the following: 
+
+Source Filtering (use of `AMQP TOPIC`_ exchanges)
+   The messages make use of *topic exchanges* from AMQP, where topics are hierarchies
+   meant to represent subjects of interest to a consumer.  A consumer may upload the 
+   selection criteria to the broker so that only a small subset of postings
+   are forwarded to the client.  When there are many users interested in only small subsets
+   of data, the ability to reduce traffic at source is crucial.
+
+Segmentation (the parts_ Header)
+   In any store and forward switch network that transports entire files limits the maximum
+   file size to the minimum available on any intervening node.  To avoid defining a maximum 
+   file size, a segmentation standard is specified.  
+
+Fingerprint Winnowing (the sum_ header)
+   Each product has a checksum and size intended to identify it uniquely, referred to as
+   a *fingerprint*.  If two products have the same fingerprint, they are considered
+   equivalent.  In cases where multiple sources of equivalent data are available but 
+   downstream consumers would prefer to receive single announcements
+   of products, intermediate processes may elect to publish notifications of the first 
+   product with a given fingerprint, and ignore subsequent ones. 
+   Propagating only the first occurrence of a datum received downstream, based on
+   its fingerprint is termed: *Fingerprint Winnowing*.
+
+   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  setting up
+   multiple sources for the same data, consumers accept announcements from all of them, but only
+   forwarding the first one received downstream.  In normal operation, one source may be faster 
+   than the others, and so the second source's products are usually 'winnowed'. When one source
+   disappears, the other sources' data is automatically selected, as the fingerprints
+   are now *fresh* and used, until a faster source becomes available.
+
+   The advantage of this method for high availability is that no A/B decision is required.
+   The time to *switchover* is zero.  Other strategies are subject to considerable delays
+   in making the decision to switchover, and pathologies one could summarize as flapping,
+   and/or deadlocks.  
+
+   *Fingerprint Winnowing* also permits *mesh-like*, or *any to any* networks, where one simply 
+   interconnects a node with others, and messages propagate.  Their specific path through the 
+   network is not defined, but each participant will download each new datum from the first
+   node that makes it available to them.  Keeping the messages small and separate from data 
+   is optimal for this usage.
+ 
+   
 
 AMQP TOPIC
 ----------
@@ -77,15 +122,15 @@ the first line of a message contains all mandatory elements of an announcement.
 There is a series of white space separated fields:
 
 *<date stamp>*: the date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
- Note: The datestamp is always in UTC timezone.
+ Note: The datestamp is always in the UTC timezone.
 
 *<srcpath>* -- the base URL used to retrieve the data.
 
-This should be the URL consumers will use to download the data.  Example of a complete URL:
+The URL consumers will use to download the data.  Example of a complete URL:
 
  sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
 
-In the case where the URL does not end with a path separator ('/'), the src path is taken to 
+Where the URL does not end with a path separator ('/'), the src path is taken to 
 be the complete source of the file to retrieve.
 
  Static URL: sftp://afsiext@cmcdataserver/
@@ -99,11 +144,13 @@ variable part of the retrieval URL.
 
 *<newline>* signals the end of the first line of the message and is denoted by a single line feed character.
 
+
 THE REST OF MESSAGE
 -------------------
 
 Use of only the first line of the AMQP payload is currently defined.  
 The rest of the payload body is reserved for future use.
+
 
 AMQP HEADERS 
 ------------
@@ -113,10 +160,11 @@ elements are stored in AMQP headers (key-value pairs), included in messages when
 appropriate.   Headers are a mandatory element included in later versions of the AMQP protocol.
 
 
-
 **flow=<flow>**
 
    A user defined string used to group data transfers together, unused by the protocol.
+
+.. _parts:
 
 **parts=<method>,<bsz>,<blktot>,<brem>,bno**
 
@@ -198,7 +246,10 @@ appropriate.   Headers are a mandatory element included in later versions of the
  should be unique within a switching network.  Usually is the same as the
  account used to authenticate to the broker.
 
+.. _sum:
+
 **sum=<method>,<value>**
+
  The sum is a signature computed to allow receivers to determine 
  if they have already downloaded the partition from elsewhere.
 
@@ -289,6 +340,7 @@ current block *0*, a flag *d* meaning the md5 checksum is
 performed on the data, the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*,
 a tag *default* and finally the source url of the product in the last 2 fields.
 
+
 MetPX-Sarracenia
 ----------------
 
@@ -313,8 +365,19 @@ small subset of AMQP patterns.  Indeed an important element of sarracenia develo
 select from the many possibilities a small subset of methods are general and easily understood, 
 in order to maximize potential for interoperability.
 
-Similar to the use of FTP alone as a transfer protocol is insufficient to specify a complete data 
-transfer procedure, use of AMQP, without more information, is incomplete.  
+Specifying the use of a protocol alone may be insufficient to provide enough information for
+data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
+need to be made above and beyond the protocol.
+
+        - authenticated or anonymous use?
+        - how to signal that a file transfer has completed (permission bits? suffix? prefix?)
+        - naming convention.
+        - text or binary transfer.
+
+Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.  Similar to the use 
+of FTP alone as a transfer protocol is insufficient to specify a complete data transfer 
+procedure, use of AMQP, without more information, is incomplete.   The intent of the conventions
+layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.
 
 AMQP 1.0 standardizes the on the wire protocol, but leaves out many features of broker interaction.   
 As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
@@ -323,10 +386,12 @@ as is provided by many free brokers, such as rabbitmq, often referred to as 0.8,
 0.9 brokers are also likely to inter-operate well.
 
 In AMQP, many different actors can define communication parameters. To create a clearer
-security model, sarracenia constrains that model: dd_post clients are not expected to declare 
+security model, sarracenia constrains AMQP: dd_post clients are not permitted to declare 
 Exchanges.  All clients are expected to use existing exchanges which have been declared by 
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
+
+FIXME: other connection parameters: persistence, etc..
 
 Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
 but dd_post have the topic sent in order to support server side filtering by using topic 

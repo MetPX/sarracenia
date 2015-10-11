@@ -8,8 +8,8 @@ Status: Pre-Draft
 .. section-numbering::
 
 This document should define/reflect the current design at a more detailed level that the outline
-document.  In order to explore functionality and make configuration choices, one needs to make assumptions
-and work through them to determine whether the choices are a reasonable basis for further actions.
+document.  See Outline for an overview of the design requirements.  In order to explore functionality 
+and make configuration choices and work through them to determine whether the choices are reasonable.
 
 ===========
 Application 
@@ -17,16 +17,90 @@ Application
 
 Description of application logic relevant to discussion.
 
-All users are authenticated but *anonymous* is may be a valid user in some configurations.
+
+To simplify discussions, names will be selected with a prefix things according to the type
+of entity: 
+
+ - exchanges start with x.
+ - queues start with q.
+ - users start with u. users are also referred to as *sources*
+ - servers start with svr
+ - clusters start with c
 
 
-Queues & Exchange 
------------------
+AMQP vhosts are not used.  
+
+AMQP Feature Selection
+----------------------
+
+AMQP is a universal message passing protocol with many different
+options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a
+small subset of AMQP patterns.  Indeed an important element of sarracenia development was to
+select from the many possibilities a small subset of methods are general and easily understood,
+in order to maximize potential for interoperability.
+
+Specifying the use of a protocol alone may be insufficient to provide enough information for
+data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
+need to be made above and beyond the protocol.
+
+	- authenticated or anonymous use?
+	- how to signal that a file transfer has completed (permission bits? suffix? prefix?)
+	- naming convention.
+	- text or binary transfer.
+
+Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.
+
+Similar to the use of FTP alone as a transfer protocol is insufficient to specify a complete data
+transfer procedure, use of AMQP, without more information, is incomplete.
+
+AMQP 1.0 standardizes the on the wire protocol, but leaves out many features of broker interaction.
+As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards,
+and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker,
+as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
+0.9 brokers are also likely to inter-operate well.
+
+In AMQP, many different actors can define communication parameters. To create a clearer
+security model, sarracenia constrains that model: dd_post clients are not expected to declare
+Exchanges.  All clients are expected to use existing exchanges which have been declared by
+broker administrators.  Client permissions are limited to creating queues for their own use,
+using agreed upon naming schemes.  Queue for client: qc_<user>.????
+
+Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges,
+but dd_post have the topic sent in order to support server side filtering by using topic
+based filtering.  The topics mirror the path of the files being announced, allowing
+straight-forward server-side filtering, to be augmented by client-side filtering on
+message reception.
+
+The root of the topic tree is the version of the message payload.  This allows single brokers
+to easily support multiple versions of the protocol at the same time during transitions.  v02
+is the third iteration of the protocol and existing servers routinely support previous versions
+simultaneously in this way.  The second topic in the topic tree defines the type of message.
+at the time of writing:  v02.post is the topic prefix for current post messages.
+
+The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes
+small messages.  Keeping the messages small allows for maximum message throughtput and permits
+clients to use priority mechanisms based on transfer of data, rather than the announcements.
+Accomodating large messages would create many practical complications, and inevitably require
+the definition of a maximum file size to be included in the message itself, resulting in
+complexity to cover multiple cases.
+
+dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+blocks of large files are announced independently. and blocks can follow different paths
+between initial switch and final delivery.
+
+
+
+Users, Queues & Exchanges 
+-------------------------
+
+ - Each group or person that transfers files needs a user name.
+ - All users are authenticated (but *anonymous* is a valid user in most configurations.)
+ - users authenticate to local cluster only.
 
 Each user Alice on a server to which she has access:
-
- - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
+ - has an exchange xs_Alice, where she writes her postings, and reads her logs from. 
  - has an exchange xl_Alice, where she writes her log messages.
+ - can create queues qs_Alice_.* to bind to exchanges.
 
 
 Security Model
@@ -37,6 +111,15 @@ Security Model
  - Exchanges are managed by the administrator, and not any user.
  - Alice can only post data that she is publishing (it will refer back to her) 
 
+Pre-Validation
+--------------
+
+ - when a post message arrives on xs_Alice, it is read by FIXME  
+ - FIXME overwrites the source to be Alice, and sets the cluster header.
+	- source=Alice
+	- cluster=
+ - That process validates copies the posting to xFIXME2
+ - It adds the header
 
 ==========
 Topologies
@@ -492,13 +575,6 @@ control.
 The ->| sign shows traffic going from the left to the right, but not the other direction.
 unidirectional flows which are staples for network zoning.
 
-To simplify discussions, names will be selected with a prefix things according to the type
-of entity: 
-
-	- exchanges start with x.
-	- queues start with q.
-	- users start with u.
-	- servers start with svr
 
 As a rule:
 
