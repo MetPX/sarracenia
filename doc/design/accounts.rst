@@ -17,7 +17,7 @@ clashes in practice and fixing them.
 So an Account is allocated for
 ------------------------------
 
- - Each Source. (Alice)::
+ - Each Source. (Alice)
    each source gets a source_<sourcename> exchange ... source_Alice. 
    on the posting switch (and the logging switch if different.)
 
@@ -38,13 +38,13 @@ So an Account is allocated for
    - see below sections for each.
    
 
- - Each Client (Bob)::
+ - Each Client (Bob)
 
     Client gets permission to access files (http level)
     Client gets permission to post log messages to log exchange 
-	on the server that is sending them announcements.
+    on the server that is sending them announcements.
     only exists in AMQP on the end broker.
-	they authenticate to broker to get messages.
+    they authenticate to broker to get messages.
 
     also in apache at end server.
     All sources will see the client name in their logs.
