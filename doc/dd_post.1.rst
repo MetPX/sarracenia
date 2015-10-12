@@ -21,10 +21,11 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**dd_post** posts the availability of a file, by creating the announcment.
-Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to consume the post and 
-download the file.  To make them available to subscribes, **dd_post** sends them 
-to an AMQP server, also called a broker.  Format of argument to the *broker* option:: 
+**dd_post** posts the availability of a file by creating an announcment.
+Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to consume the announcement and 
+download the file.  To make files available to subscribers, **dd_post** sends 
+the announcements to an AMQP server, also called a broker.  Format of argument 
+to the *broker* option:: 
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 

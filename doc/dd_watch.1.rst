@@ -70,7 +70,7 @@ post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
 it is made of a  *topic_prefix*  by default : version  *V02* , an action  *post* ,
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo* 
 
-The second line information is the post notification.  Here it consists of a time  *20150813161959.854* , 
+After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* , 
 and the source url of the file in the last 2 fields.
 
 The remaining line gives informations that are placed in the amqp message header.
@@ -80,6 +80,9 @@ gives the number of block, the remaining in bytes and the current
 block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
 here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de* 
 is the checksum value.  The  *event=IN_CLOSE_WRITE*  means, in our case, that the file was modified.
+
+.. NOTE::
+   FIXME: reference to event... remove?
 
 Another example watching a file::
 
