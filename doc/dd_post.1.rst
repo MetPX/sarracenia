@@ -130,7 +130,7 @@ ARGUMENTS AND OPTIONS
   An arbitrary label that allows the user to identify a specific flow.
   The flow string is sets in the amqp message header.  By default, there is no flow.
 
-**[-h|-help|--helpa**
+**[-h|-help|--help**
 
   Display program options.
 
