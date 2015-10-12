@@ -8,25 +8,46 @@ Sarracenia v02 Post Message Format/Protocol
 -------------------------------------------
 
 :Manual section: 7
-:Date: Sep 2015
+:Date: 2015-10-11
 :Version: 0.0.1 
 :Manual group: Metpx Sarracenia Suite
 
 SYNOPSIS
 --------
 
-A dd_post message consists of four parts:
+The format of file change announcements for dd_post.  
 
-	**AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
+A dd_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
 
-**AMQP Topic: <version>.post.<src>.{<dir>.}*<filename>**
+**AMQP Topic:** *<version>.post.<src>.{<dir>.}*<filename>*
+
+::
+
+           <version> = "v02" the version of the protocol or format.
+           "post" = the type of message within the protocol.
+           <src> = the user who posted the file.
+           <dir> = a sub-directory leading to the file (perhaps many directories deep)
+           <filename> = the name of the file on the server.
 
 **AMQP Headers:** *<series of key-value pairs>*
 
+::
+
+           "flow" = (optional) user defined tag.
+           "parts" = size and partitioning information.
+           "sum" = checksum algorithm and value.
+
 **Body:** *<first line> = <date stamp> <srcpath> <relpath> <newline>*
 
-<*rest of body is reserved for future use*>
 
+::
+
+          <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
+          <srcpath>    - root of the url to download.
+          <relpath>    - relative path perhaps catenated to <srcpath>
+                         may instead be a rename.
+
+<*rest of body is reserved for future use*>
 
 
 DESCRIPTION
@@ -34,12 +55,12 @@ DESCRIPTION
 
 Sources create messages in the *dd_post* format to announce file changes. Subscribers 
 read the post to decide whether a download of the content being announced is warranted.  This 
-manual page completely describes the format of the messages used to announce file changes.  
-dd_post messages are payloads for an Advanced Message Queuing Protocol (AMQP) message bus, 
-but file data transport is separate, using more common protocols such as SFTP, HTTP, HTTPS, 
-or FTP.  Files are transported as pure byte streams, no metadata beyond the file contents is 
-transported (permission bits, extended attributes, etc...), and the permissions of files 
-are upto the receiver to decide at the destination system.
+manual page completely describes the format of those messages.  The messages are payloads 
+for an Advanced Message Queuing Protocol (AMQP) message bus, but file data transport 
+is separate, using more common protocols such as SFTP, HTTP, HTTPS, or FTP (or other?)
+Files are transported as pure byte streams, no metadata beyond the file contents is 
+transported (permission bits, extended attributes, etc...) Permissions of files 
+on the destination system are upto the receiver to decide.
 
 With this method, AMQP messages provide a 'control plane' for data transfers.  While each post message 
 is essentially point to point, data switches can be transitively linked together to make arbitrary 
@@ -57,14 +78,9 @@ Source Filtering (use of `AMQP TOPIC`_ exchanges)
    meant to represent subjects of interest to a consumer.  A consumer may upload the 
    selection criteria to the broker so that only a small subset of postings
    are forwarded to the client.  When there are many users interested in only small subsets
-   of data, the ability to reduce traffic at source is crucial.
+   of data, the savings in traffic are large.
 
-Segmentation (the parts_ Header)
-   In any store and forward switch network that transports entire files limits the maximum
-   file size to the minimum available on any intervening node.  To avoid defining a maximum 
-   file size, a segmentation standard is specified.  
-
-Fingerprint Winnowing (the sum_ header)
+Fingerprint Winnowing (use of the sum_ header)
    Each product has a checksum and size intended to identify it uniquely, referred to as
    a *fingerprint*.  If two products have the same fingerprint, they are considered
    equivalent.  In cases where multiple sources of equivalent data are available but 
@@ -72,7 +88,7 @@ Fingerprint Winnowing (the sum_ header)
    of products, intermediate processes may elect to publish notifications of the first 
    product with a given fingerprint, and ignore subsequent ones. 
    Propagating only the first occurrence of a datum received downstream, based on
-   its fingerprint is termed: *Fingerprint Winnowing*.
+   its fingerprint, is termed: *Fingerprint Winnowing*.
 
    *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  setting up
    multiple sources for the same data, consumers accept announcements from all of them, but only
@@ -92,6 +108,16 @@ Fingerprint Winnowing (the sum_ header)
    node that makes it available to them.  Keeping the messages small and separate from data 
    is optimal for this usage.
  
+Partitioning (use of the parts_ Header)
+   In any store and forward switch network that transports entire files limits the maximum
+   file size to the minimum available on any intervening node.  To avoid defining a maximum 
+   file size, a segmentation standard is specified, allowing intervening nodes to hold
+   only segments of the file, and forward them as they are received, rather than being
+   forced to hold the entire file.
+
+   Partitioning also permits multiple streams to transfer portions of the file in parallel. 
+   Multiple streams can provide an effective optimization over long links.
+
    
 
 AMQP TOPIC
@@ -282,9 +308,9 @@ EXAMPLE
 
 :: 
 
- topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+ Topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
- headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13
+ Headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13
 
         v02 - version of protocol
         post - indicates the type of message
@@ -355,7 +381,6 @@ This Manual page is intended to completely specify the format of messages and th
 intended meaning so that other producers and consumers of messages can be implemented.
 
 
-
 AMQP Feature Selection
 ----------------------
 
@@ -414,7 +439,9 @@ complexity to cover multiple cases.
 
 dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
-between initial switch and final delivery.
+between initial switch and final delivery.  The protocol is unidirectional, in that there 
+is no dialogue between publisher and subscriber.  Each post is a stand-alone item that 
+is one message in a stream, which on receipt may be spread over a number of nodes. 
 
 
 CHARACTER SET & ENCODING
@@ -432,22 +459,23 @@ http://metpx.sf.net - home page of metpx-sarracenia
 
 http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
+
 SEE ALSO
---------
+========
 
-**dd_get(1)** - the multi-protocol download client.
+`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
 
-**dd_log(7)** - the format of log messages.
+`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
 
-**dd_log2source(1)** - copy log messages from the switch log bus to upstream destination.
+`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
 
-**dd_sara(1)** - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
-**dd_post(1)** - the individual file posting client.
+`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
 
-**dd_subscribe(1)** - the http-only download client.
+`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
 
-**dd_watch(1)** - the directory watching daemon.
+`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
 
 **inotify(7)** - used for file modification announcements on Linux.
 

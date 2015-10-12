@@ -190,22 +190,23 @@ http://metpx.sf.net - home page of metpx-sarracenia
 
 http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
+
 SEE ALSO
 ========
 
-**dd_get(1)** - the multi-protocol download client.
+`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
 
-**dd_log2source(1)** - copy log messages from the switch log bus to upstream destination.
+`dd_log(1) <dd_log.1.html>`_ - the format of log messages.
 
-**dd_sara(1)** - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
 
-**dd_post(1)** - the individual file posting client.
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
-**dd_post(7)** - the format of log messages.
+`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
 
-**dd_subscribe(1)** - the http-only download client.
+`dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
 
-**dd_watch(1)** - the directory watching daemon.
+`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
 
-**inotify(7)** - used for file modification announcements on Linux.
+`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
 

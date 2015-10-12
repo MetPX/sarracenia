@@ -256,3 +256,22 @@ Active if  *-rc|--reconnect*  appears in the command line... or *reconnect*  is
 set to True in the configuration file used.  If there are several posts because 
 the file is posted by block because the  *blocksize*  option was set, there is a
 reconnection to the broker every time a post is to be sent.
+
+SEE ALSO
+========
+
+`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
+
+`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+
+`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
+
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+
+`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+
+`dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
+
+`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+
+
