@@ -116,7 +116,9 @@ to economize bandwidth and processing for all.
 topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
 specify a non-default protocol version of messages to subscribe to. 
 
-FIXME: no mention of the use of exchange
+.. NOTE:: 
+  FIXME: no mention of the use of exchange argument.
+
 
 AMQP QUEUE SETTINGS
 -------------------
@@ -293,13 +295,7 @@ These settings pertain to previous versions of the client, and have been superce
 SEE ALSO
 --------
 
-`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
-
 `dd_log(7) <dd_log.7.html>`_ - the format of log messages.
-
-`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
-
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
 `dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
 

@@ -94,14 +94,17 @@ Users, Queues & Exchanges
 -------------------------
 
  - Each group or person that transfers files needs a user name.
- - All users are authenticated (but *anonymous* is a valid user in most configurations.)
+ - All users are authenticated 
+ -  *anonymous* is a valid user in many configurations.
  - users authenticate to local cluster only.
+ - switches represent users by forwarding files on their behalf.
 
 Each user Alice on a server to which she has access:
  - has an exchange xs_Alice, where she writes her postings, and reads her logs from. 
  - has an exchange xl_Alice, where she writes her log messages.
  - can create queues qs_Alice_.* to bind to exchanges.
 
+Switches connect with one another and 
 
 Security Model
 --------------

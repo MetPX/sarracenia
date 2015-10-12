@@ -9,7 +9,7 @@ watch a directory and post messages when files in it change
 :Manual section: 1 
 :Date: Aug 2015
 :Version: 0.0.1
-:Manual group: Metpx-Sarracenia suite
+:Manual group: MetPX-Sarracenia
 
 SYNOPSIS
 ========
@@ -19,43 +19,32 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-In the SARRACENIA suite, the main goal is to post the availability and readiness
-of one's file product. Subscribers use  *dd_subscribe*  to consume the post and
-download the product::
+Watches a directory and publishes posts when files in the directory change
+(are added, modified, or deleted.) Its arguments are very similar to  `dd_post <dd_post.1.html>`_.
+In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
+of one's files. Subscribers use  *dd_subscribe*  to consume the post and download the files.
 
- *dd_watch*  watches a directory (or a file) and publishes posts when they change.
-             arguments are very similar to  *dd_post* .
-
-
-The [ *-u|--url url* ] option specifies the location to download from which the product
-can be downloaded by subscribers.  There is usually one posting per product.
-
-If the product is included in the  *url* ,  *dd_watch*  watches that file.
-If the  *url*  ends at a directory level,  *dd_watch*  posts any file in
-that directory that is created, modified or deleted.
-
-The destination of the post is an AMQP server, also called a broker.
-The user specifies it with the option [ *-b|--broker broker_url* ]. 
-
-The URL form of the  *source_url*  are to watch a product ::
-
-       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/product_name
-       or
-       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the/product_name
-       or
-       file://absolute_path_to_the/product_name
-
-The URL form of the  *source_url*  are to watch a directory ::
-
-       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the
-       or
-       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the
-       or
-       file://absolute_path_to_the_file
-
-The URL form of the  *broker_url*  ::
+Posts are sent to an AMQP server, also called a broker, specified with the option [ *-b|--broker broker_url* ]. 
+Format of argument to the *broker* option:: 
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
+
+The [*-u|--url url*] option specifies the location from which subscribers 
+will download the product.  There is usually one post per product.
+If the URL specifies a directory, *dd_watches* create a posts for any time
+a file in that directory that is created, modified or deleted. 
+If the *url* specifies a file,  *dd_watch*  watches that only that file.
+
+format of argument to the *url* option::
+
+       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to/what_to_watch
+       or
+       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to/what_to_watch
+       or
+       file://absolute_path_to/what_to_watch
+
+The double-slash at the beginning of the path marks it as absolute, whereas a single
+slash is relative to a *document_root* provided as another option.
 
 An example of an excution of  *dd_watch*  checking a product::
 
@@ -75,9 +64,9 @@ The output of the command is as follows ::
  [INFO] v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
        source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de event=IN_CLOSE_WRITE
 
-In SARRACENIA each post is published under a certain topic.
+In MetPX-Sarracenia, each post is published under a certain topic.
 After the '[INFO]' the next information gives the \fBtopic*  of the
-post. Topics in  *AMQP*  are fields separated by dot. In SARRACENIA 
+post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia 
 it is made of a  *topic_prefix*  by default : version  *V02* , an action  *post* ,
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo* 
 
@@ -151,6 +140,10 @@ By default, the events for dd_watch are IN_CLOSE_WRITE|IN_DELETE.
 If you want to consider only one of these simply use the  *events*  option
 and set it to IN_CLOSE_WRITE for creation/modification or  IN_DELETE for deletion.
 
+.. NOTE:: 
+    FIXME: events listing default is wrong... now have links and renames also by default.
+    Do we want to just remove the **events** option and let dd_watch worry which events needed?
+
 **[-ex|--exchange <exchange>]**
 
 By default, the exchange used is amq.topic. This exchange is provided on broker
@@ -197,13 +190,20 @@ ADVANCED OPTIONS
 
 **[-p|--parts <value>]**
 
-The user can suggest how to download a file.
-By default it suggests to download the entire file.
-In this case, the amqp message header will have an
+Select how to announce changes to a file.
+The default is to create a single announcment for
+the entire file.  In this case, the amqp message header will have an
 entry parts with value '1,filesize_in_bytes'.
-To suggest to download a file in blocksize of 10Mb,
+
+For large files, when an update occurs, a large amount of the file 
+may be unchanged, so announcing blocks gives the subscriber to option
+to download only the parts of the file that have changed.
+Also, by announcing parts of the file separately, they can be downloaded
+in parallel.
+
+To post announcements of a file with a blocksize of 10Mb,
 the user can specify  *-p i,10M* .  *i*  stands for
-"inplace" and means to put the part directly into the file.
+"inplace" and means write the parts directly into the file.
 * -p p,10M*  suggests the same blocksize but to put the part
 in a separate filepart. If the  *blocksize*  is bigger than
 the filesize, the program will fall back to the default.
@@ -220,6 +220,14 @@ for : *p*  suggesting part, a blocksize in bytes  *256* ,
 the number of block of that size  *12* , the remaining bytes  *11* ,
 and the current block  *4* ,
 
+.. NOTE::
+   FIXME:  likely the dd_post/dd_watch default values for parts should change.
+   There should be a threshold, so that above a certain file size, parts is used by default.
+   I think picking a threshold like 50M is likely a good size. It should avoid the
+   *Capybara effect*  and making it the default intelligent means that users 
+   do not have to be aware of this setting for it to work at reasonable performance.
+   Do not know whether i or p is an issue.
+
 **[-sum|--sum <string>]**
 
 All product posts include a checksum.  It is placed in the amqp message header will have as an
@@ -232,6 +240,17 @@ Valid checksum flags are ::
           n : do checksum on filename
           d : do md5sum on file content
 
+FILES IGNORED
+=============
+
+In order to avoid alerting for partially written (usually temporary) files, *dd_watch* does not post
+events for changes to files with certain names:
+
+ - files whose names begin with a dot **.**
+ - files whose names end in .tmp
+
+.. NOTE::
+   FIXME: is this right?  need better does it ignore part files? should it?
 
 DEVELOPER SPECIFIC OPTIONS
 ==========================

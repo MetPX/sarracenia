@@ -10,7 +10,7 @@ Sarracenia v02 Post Message Format/Protocol
 :Manual section: 7
 :Date: 2015-10-11
 :Version: 0.0.1 
-:Manual group: Metpx Sarracenia Suite
+:Manual group: MetPX-Sarracenia
 
 SYNOPSIS
 --------
@@ -70,8 +70,7 @@ data.  If consumers permit it, log messages (see dd_log(7)) also flow through th
 but in the opposite direction, allowing sources to know the entire disposition of their 
 products through a network.  
 
-The format of post messages is a minimal layer on top of AMQP needed to provide data exchange.
-The minimal layer over raw AMQP is primarily the following: 
+The minimal layer over raw AMQP provides more complete file transfer functionality:
 
 Source Filtering (use of `AMQP TOPIC`_ exchanges)
    The messages make use of *topic exchanges* from AMQP, where topics are hierarchies
@@ -90,10 +89,10 @@ Fingerprint Winnowing (use of the sum_ header)
    Propagating only the first occurrence of a datum received downstream, based on
    its fingerprint, is termed: *Fingerprint Winnowing*.
 
-   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  setting up
+   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  Setting up
    multiple sources for the same data, consumers accept announcements from all of them, but only
    forwarding the first one received downstream.  In normal operation, one source may be faster 
-   than the others, and so the second source's products are usually 'winnowed'. When one source
+   than the others, and so the other sources' products are usually 'winnowed'. When one source
    disappears, the other sources' data is automatically selected, as the fingerprints
    are now *fresh* and used, until a faster source becomes available.
 
@@ -416,7 +415,8 @@ Exchanges.  All clients are expected to use existing exchanges which have been d
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
 
-FIXME: other connection parameters: persistence, etc..
+.. NOTE::
+   FIXME: other connection parameters: persistence, etc..
 
 Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
 but dd_post have the topic sent in order to support server side filtering by using topic 
@@ -463,19 +463,11 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
-
 `dd_log(7) <dd_log.7.html>`_ - the format of log messages.
-
-`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
-
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
 `dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
 
 `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
 
 `dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
-
-**inotify(7)** - used for file modification announcements on Linux.
 

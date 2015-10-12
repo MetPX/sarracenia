@@ -21,18 +21,19 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-In the SARRACENIA suite, the main goal is to post the availability and readiness
-of one's file product. Subscribers use *dd_subscribe* to consume the post and
-download the product.
-
-*dd_post* posts a product. The [*-u|--url url*] option specifies
-the location to download from which the product can be downloaded by subscribers.
-There is usually one posting per product.
+post the availability and readiness of one's file product, by creating the announcment
+and sending it to a broker.  Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to 
+consume the post and download the product.
 
 The destination of the post is an AMQP server, also called a broker.
-The user specifies it with the option [*-b|--broker broker*]. 
+Format of argument to the *broker* option:: 
 
-The URL form of the *url* are ::
+       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
+
+*dd_post* posts a product. The [*-u|--url url*] option specifies the location 
+from which subscribers will download the product.  There is usually one post per product.
+
+Format of argument to the *url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/product_name
        or
@@ -40,11 +41,10 @@ The URL form of the *url* are ::
        or
        file://absolute_path_to_the/product_name
 
-The URL form of the *broker* ::
+The double-slash at the beginning of the path marks it as absolute, whereas a single
+slash is relative to a *document_root* provided as another option.
 
-       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
-
-An example of an excution of *dd_post*::
+An example invocation of *dd_post*::
 
  dd_post -u sftp://stanley@mysftpserver.com//data/shared/products/foo -b amqp://broker.com
 
@@ -52,30 +52,33 @@ By default, dd_post reads the file /data/shared/products/foo and calculates its 
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange 'amq.topic'.
 
-A subscriber can download the file /data/shared/products/foo  by logging as user stanley
-on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
+on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 
 The output of the command is as follows ::
 
  [INFO] v02.post.data.shared.products.foo  '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
               source=guest sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
-In SARRACENIA each post is published under a certain topic.
+In SARRACENIA, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
-post. Topics in *AMQP* are fields separated by dot. In SARRACENIA 
-it is made of a topic_prefix (see option)  version *V02*, an action *post*,
+post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
+a topic_prefix (see option)  version *V02*, an action *post*,
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*
 
-The second field in the log line is the message notice.
-It consists of a time *20150813161959.854*, and the source url of the product in the last 2 fields.
+.. NOTE::
+  FIXME: the topic does not contain the user?  Should it contain the source user? some docs say yes.
 
-The other log informations come the amqp message header.
-In this case, it consists of *source=guest* the amqp user.
-*sum=d,82edc8eb735fd99598a1fe04541f558d* mentions checksum information,
-here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
-is the checksum value. And *parts=1,4574,1,0,0* suggest to download the file in 1 part of 4574 bytes
-(the actual filesize),  the remaining 1,0,0 gives the number of block, the remaining in bytes and the current block.
+The second field in the log line is the message notice.  It consists of a time 
+stamp *20150813161959.854*, and the source url of the product in the last 2 fields.
+
+the rest of the information comes message headers, consisting of key-value pairs.
+the first header should is *source=guest* indicating the user used to authenticate to the broker.
+The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives product fingerprint (or checksum
+) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
+is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes
+(the filesize.)  The remaining *1,0,0* is not used for transfers of files with only one part.
 
 Another example::
 
@@ -94,51 +97,55 @@ ARGUMENTS AND OPTIONS
 
 **[-b|--broker <broker>]**
 
-*broker* is the broker to connect to to send the post.
+  the broker to which the post is sent.
 
 **[-c|--config <configfile>]**
 
-Any command line arguments has a corresponding long version starting with '--'.
-For example *-u* has the long form *--url*. You can also specify
-this option in a configuration file shall you need it. To do so, you simply
-use the long form without the '--', and put its value separated by a space.
-In a configuration file the right syntax to set the url is :
+  Any command line arguments has a corresponding long version starting with '--'.
+  For example *-u* has the long form *--url*. You can also specify
+  this option in a configuration file shall you need it. To do so, you simply
+  use the long form without the '--', and put its value separated by a space.
+  In a configuration file the right syntax to set the url is :
 
 **url <url>** 
 
-The *config* option is no exception... and if used the content of this
-other specified file will have its options processed.
+  The *config* option is no exception... and if used the content of this
+  other specified file will have its options processed.
 
 **[-dr|--document_root <path>]**
 
-The *document_root* option supplies the directory path that,
-when combined with the relative one from *url*, 
-gives the local absolute path to the data file to be posted.
+  The *document_root* option supplies the directory path that,
+  when combined with the relative one from *url*, 
+  gives the local absolute path to the data file to be posted.
 
 **[-ex|--exchange <exchange>]**
 
-By default, the exchange used is amq.topic. This exchange is provided on broker
-for general usage. It can be overwritten with this *exchange* option
+  By default, the exchange used is amq.topic. This exchange is provided on broker
+  for general usage. It can be overwritten with this *exchange* option
+
+.. NOTE::
+   FIXME: default is wrong?  figure out how often used?
 
 **[-f|--flow <string>]**
 
-*flow* is an arbitrary label that allows the user to identify a specific flow.
-The flow string is sets in the amqp message header.  By default there is no flow.
+  An arbitrary label that allows the user to identify a specific flow.
+  The flow string is sets in the amqp message header.  By default, there is no flow.
 
 **[-h|-help|--helpa**
 
-Display program options.
+  Display program options.
 
 **[-rn|--rename <path>]**
 
-With the *rename*  option, the user can suggest a destination path to its products. If the given
-path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+  With the *rename*  option, the user can suggest a destination path to its products. If the given
+  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
 **[-tp|--topic_prefix <key>]**
 
-By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
-followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-You can overwrite the topic_prefix by setting this option.
+  *Not usually used*
+  By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
+  followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+  You can overwrite the topic_prefix by setting this option.
 
 **[-sub|--subtopic <key>]**
 
@@ -217,10 +224,6 @@ SEE ALSO
 `dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
 
 `dd_log(7) <dd_log.7.html>`_ - the format of log messages.
-
-`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
-
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
 `dd_post(7) <dd_post.7.html>`_ - the format of announcement messages.
 

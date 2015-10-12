@@ -194,15 +194,11 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
+`dd_log(1) <dd_log.1.html>`_ - view log messages.
 
-`dd_log(1) <dd_log.1.html>`_ - the format of log messages.
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream and daisy-chain posting client.
 
-`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
-
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
-
-`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+`dd_post(1) <dd_post.1.html>`_ - post announcements of specific files.
 
 `dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
 
