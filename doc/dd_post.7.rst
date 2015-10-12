@@ -68,7 +68,7 @@ networks.  Each posting is consumed by the next hop in the chain. Each hop re-ad
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
 data.  If consumers permit it, log messages (see dd_log(7)) also flow through the control path, 
 but in the opposite direction, allowing sources to know the entire disposition of their 
-products through a network.  
+files through a network.  
 
 The minimal layer over raw AMQP provides more complete file transfer functionality:
 
@@ -81,10 +81,10 @@ Source Filtering (use of `AMQP TOPIC`_ exchanges)
 
 Fingerprint Winnowing (use of the sum_ header)
    Each product has a checksum and size intended to identify it uniquely, referred to as
-   a *fingerprint*.  If two products have the same fingerprint, they are considered
+   a *fingerprint*.  If two files have the same fingerprint, they are considered
    equivalent.  In cases where multiple sources of equivalent data are available but 
    downstream consumers would prefer to receive single announcements
-   of products, intermediate processes may elect to publish notifications of the first 
+   of files, intermediate processes may elect to publish notifications of the first 
    product with a given fingerprint, and ignore subsequent ones. 
    Propagating only the first occurrence of a datum received downstream, based on
    its fingerprint, is termed: *Fingerprint Winnowing*.
@@ -92,7 +92,7 @@ Fingerprint Winnowing (use of the sum_ header)
    *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  Setting up
    multiple sources for the same data, consumers accept announcements from all of them, but only
    forwarding the first one received downstream.  In normal operation, one source may be faster 
-   than the others, and so the other sources' products are usually 'winnowed'. When one source
+   than the others, and so the other sources' files are usually 'winnowed'. When one source
    disappears, the other sources' data is automatically selected, as the fingerprints
    are now *fresh* and used, until a faster source becomes available.
 

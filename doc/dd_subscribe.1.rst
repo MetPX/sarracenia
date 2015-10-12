@@ -24,7 +24,7 @@ DESCRIPTION
 
 dd_subscribe is a program to efficiently download files from websites or file servers 
 that provide `dd_post(7) <dd_post.7.html>`_ protocol notifications.  Such sites 
-publish a message for each product as soon as it is available.  Clients connect to a
+publish a message for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *dd_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
@@ -109,9 +109,9 @@ notices from being delivered to the client at all. The  **accept/reject**  patte
 messages sent by the broker to the subscriber.  In other words,  **accept/reject**  are 
 client side filters, whereas  **subtopic**  is server side filtering.  
 
-It is best practice to use server side filtering to reduce the number of products to a small 
-superset of what is relevant, and perform only a fine-tuning with the client side mechanisms, 
-to economize bandwidth and processing for all.
+It is best practice to use server side filtering to reduce the number of announcements sent
+to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
+client side mechanisms, saving bandwidth and processing for all.
 
 topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
 specify a non-default protocol version of messages to subscribe to. 
@@ -153,7 +153,7 @@ HTTP DOWNLOAD CREDENTIALS
 DELIVERY SPECIFICATIONS
 -----------------------
 
-Theses options set what products the user wants and where it will be placed,
+Theses options set what files the user wants and where it will be placed,
 and under which name.
 
 ::
@@ -178,7 +178,7 @@ option for more directory settings).
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
 Theses options are processed sequentially. 
-The URL of a product that match a  **reject**  pattern is never downloaded.
+The URL of a file that matches a  **reject**  pattern is never downloaded.
 One that match an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept**  option.
 
@@ -191,9 +191,9 @@ declared by the closest  **directory**  option above the matching  **accept**  o
         reject    .*Reg.*
         accept    .*GRIB.*
 
-The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the products.
+The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
 If set to  **True**  the directory given by the  **directory**  option
-will be the basename of a tree. Accepted products under that directory will be
+will be the basename of a tree. Accepted files under that directory will be
 placed under the subdirectory tree leaf where it resides under dd.weather.gc.ca.
 For example retrieving the following url, with options::
 
@@ -243,7 +243,7 @@ Here is a short complete example configuration file::
 
 This above file will connect to the dd.weather.gc.ca broker, connecting as
 anonymous with password anonymous (defaults) to obtain announcements about
-products in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
+files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
 All files which arrive in that directory or below it will be downloaded 
 into the current directory (or just printed to standard output if -n option 
 was specified.) 
@@ -278,7 +278,7 @@ and that download stream can be multi-streamed as well.
   While the brokers keep the queues available for some time, Queues take resources on 
   brokers, and are cleaned up from time to time.  A queue which is not accessed for 
   a long (implementation dependent) period will be destroyed.  A queue which is not
-  accessed and has too many (implementation defined) products queued will be destroyed.
+  accessed and has too many (implementation defined) files queued will be destroyed.
   Processes which die should be restarted within a reasonable period of time to avoid
   loss of notifications.
 

@@ -21,29 +21,25 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-post the availability and readiness of one's file product, by creating the announcment
-and sending it to a broker.  Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to 
-consume the post and download the product.
-
-The destination of the post is an AMQP server, also called a broker.
-Format of argument to the *broker* option:: 
+**dd_post** posts the availability of a file, by creating the announcment.
+Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to consume the post and 
+download the file.  To make them available to subscribes, **dd_post** sends them 
+to an AMQP server, also called a broker.  Format of argument to the *broker* option:: 
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
-*dd_post* posts a product. The [*-u|--url url*] option specifies the location 
-from which subscribers will download the product.  There is usually one post per product.
-
+The [*-u|--url url*] option specifies the location 
+from which subscribers will download the file.  There is usually one post per file.
 Format of argument to the *url* option::
 
-       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/product_name
+       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/filename
        or
-       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the/product_name
+       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the/filename
        or
-       file://absolute_path_to_the/product_name
+       file://absolute_path_to_the/filename
 
 The double-slash at the beginning of the path marks it as absolute, whereas a single
 slash is relative to a *document_root* provided as another option.
-
 An example invocation of *dd_post*::
 
  dd_post -u sftp://stanley@mysftpserver.com//data/shared/products/foo -b amqp://broker.com
@@ -51,16 +47,14 @@ An example invocation of *dd_post*::
 By default, dd_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange 'amq.topic'.
-
 A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
-
 The output of the command is as follows ::
 
  [INFO] v02.post.data.shared.products.foo  '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
               source=guest sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
-In SARRACENIA, each post is published under a certain topic.
+In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
 post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
 a topic_prefix (see option)  version *V02*, an action *post*,
@@ -71,11 +65,11 @@ followed by a subtopic (see option) here the default, the file path separated wi
   FIXME: the topic does not contain the user?  Should it contain the source user? some docs say yes.
 
 The second field in the log line is the message notice.  It consists of a time 
-stamp *20150813161959.854*, and the source url of the product in the last 2 fields.
+stamp *20150813161959.854*, and the source url of the file in the last 2 fields.
 
 the rest of the information comes message headers, consisting of key-value pairs.
 the first header should is *source=guest* indicating the user used to authenticate to the broker.
-The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives product fingerprint (or checksum
+The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
 ) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
 is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes
 (the filesize.)  The remaining *1,0,0* is not used for transfers of files with only one part.
@@ -91,6 +85,10 @@ and calculates its checksum. It then builds a post message, logs into broker.com
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
+
+.. NOTE::
+  FIXME: the amq.topic ... is this correct? xpublic? validate.
+
 
 ARGUMENTS AND OPTIONS
 =====================
@@ -137,7 +135,7 @@ ARGUMENTS AND OPTIONS
 
 **[-rn|--rename <path>]**
 
-  With the *rename*  option, the user can suggest a destination path to its products. If the given
+  With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
 **[-tp|--topic_prefix <key>]**
@@ -179,7 +177,7 @@ and the current block *4*,
 
 **[-sum|--sum <string>]**
 
-All product posts include a checksum.  It is placed in the amqp message header will have as an
+All file posts include a checksum.  It is placed in the amqp message header will have as an
 entry *sum* with default value 'd,md5_checksum_on_data'.
 The *sum* option tell the program how to calculate the checksum.
 It is a comma separated string.  Valid checksum flags are ::
@@ -220,8 +218,6 @@ reconnection to the broker everytime a post is to be sent.
 
 SEE ALSO
 ========
-
-`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
 
 `dd_log(7) <dd_log.7.html>`_ - the format of log messages.
 

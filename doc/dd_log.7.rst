@@ -10,7 +10,7 @@ Sarracenia v02 Log Message Format/Protocol
 :Date: 2015-10-16
 :Version: 0.0.1
 :Manual section: 7
-:Manual group: Sarracenia Suite
+:Manual group: MetPX-Sarracenia
 
 
 
@@ -84,6 +84,11 @@ As per the RFC, any code returned should be interpreted as follows:
 	* 3xx indicates further action is required to complete the operation.
 	* 4xx indicates a permanent error on the client prevented a successful operation.
 	* 5xx indicates a problem on the server prevented successful operation.
+
+.. NOTE::
+   FIXME: need to validate whether our use of error codes co-incides with the general intent
+   expressed above... does a 3xx mean we expect the client to do something? does 5xx mean
+   that the failure was on the broker/server side?
 
 The specific error codes returned, and their meaning are implementation dependent.
 For the sarracenia implementation, the following codes are defined:
@@ -193,10 +198,6 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
 SEE ALSO
 ========
-
-`dd_log(1) <dd_log.1.html>`_ - view log messages.
-
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream and daisy-chain posting client.
 
 `dd_post(1) <dd_post.1.html>`_ - post announcements of specific files.
 

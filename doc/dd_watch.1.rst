@@ -30,7 +30,7 @@ Format of argument to the *broker* option::
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
 The [*-u|--url url*] option specifies the location from which subscribers 
-will download the product.  There is usually one post per product.
+will download the file.  There is usually one post per file.
 If the URL specifies a directory, *dd_watches* create a posts for any time
 a file in that directory that is created, modified or deleted. 
 If the *url* specifies a file,  *dd_watch*  watches that only that file.
@@ -46,7 +46,7 @@ format of argument to the *url* option::
 The double-slash at the beginning of the path marks it as absolute, whereas a single
 slash is relative to a *document_root* provided as another option.
 
-An example of an excution of  *dd_watch*  checking a product::
+An example of an excution of  *dd_watch*  checking a file::
 
  dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
@@ -71,7 +71,7 @@ it is made of a  *topic_prefix*  by default : version  *V02* , an action  *post*
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo* 
 
 The second line information is the post notification.  Here it consists of a time  *20150813161959.854* , 
-and the source url of the product in the last 2 fields.
+and the source url of the file in the last 2 fields.
 
 The remaining line gives informations that are placed in the amqp message header.
 Here it consists of  *source=guest* , which is the amqp user,  *parts=1,256,0,0,1* ,
@@ -81,7 +81,7 @@ block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
 here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de* 
 is the checksum value.  The  *event=IN_CLOSE_WRITE*  means, in our case, that the file was modified.
 
-Another example checking a product::
+Another example watching a file::
 
  dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
 
@@ -167,7 +167,7 @@ Logfile will rotate at 'midnight' and kept for an history of 5 files.
 **[-rn|--rename <path>]**
 
 With the  *rename*   option, the user can
-suggest a destination path to its products. If the given
+suggest a destination path for its files. If the given
 path ends with '/' it suggests a directory path... 
 If it doesn't, the option specifies a file renaming.
 
@@ -230,7 +230,7 @@ and the current block  *4* ,
 
 **[-sum|--sum <string>]**
 
-All product posts include a checksum.  It is placed in the amqp message header will have as an
+All file posts include a checksum.  It is placed in the amqp message header will have as an
 entry  *sum*  with default value 'd,md5_checksum_on_data'.  The  *sum*  option tells the 
 subscriber how to calculate the checksum.  It is a comma separated string.
 Valid checksum flags are ::
