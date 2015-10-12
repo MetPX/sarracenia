@@ -23,12 +23,11 @@ DESCRIPTION
 
 
 dd_subscribe is a program to efficiently download files from websites or file servers 
-that provide *dd_post* notifications.  Sites that support 
-the `dd_post(7) <dd_post.7.html>`_ protocol
+that provide `dd_post(7) <dd_post.7.html>`_ protocol notifications.  Such sites 
 publish a message for each product as soon as it is available.  Clients connect to a
-*broker* (often the same as the server itself) and subscribe to AMQP notifications.
-The *dd_post* notifications, providing true push notices for web-accessible folders (WAF),
-are far more efficient than either periodic polling of directories, or ATOM/RSS style 
+*broker* (often the same as the server itself) and subscribe to the notifications.
+The *dd_post* notifications provide true push notices for web-accessible folders (WAF),
+and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications.
 
 **dd_subscribe** can also be used for purposes other than downloading, (such as for 
@@ -268,14 +267,16 @@ the same queue.  The processes will share the queue and each download
 part of what has been selected.  Simply launch multiple instances
 of dd_subscribe in the same user/directory using the same configuration file, 
 
-You can also run several dd_subscribe with different configuration files.
+You can also run several dd_subscribe with different configuration files to
+have multiple download streams delivering into the the same directory,
+and that download stream can be multi-streamed as well.
 
 .. Note::
 
   While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are therefore cleaned up from time to time.  A queue which is unaccessed for 
-  a long (implementation dependent) period will be destroyed.  A queue which is unaccessed 
-  and has too many (implementation defined) products queued will be destroyed.
+  brokers, and are cleaned up from time to time.  A queue which is not accessed for 
+  a long (implementation dependent) period will be destroyed.  A queue which is not
+  accessed and has too many (implementation defined) products queued will be destroyed.
   Processes which die should be restarted within a reasonable period of time to avoid
   loss of notifications.
 
