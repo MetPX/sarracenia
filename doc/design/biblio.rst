@@ -59,8 +59,24 @@ HPC oriented practical advice
     The sarra approach still makes sense (wide area transfers... lower speeds, not local focus)
 
 
+Scaling RabbitMQ
+----------------
 
-Meta information about AMQP:
+    http://spring.io/blog/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
+
+    http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
+
+    interesting bits:
+        https://www.rabbitmq.com/community-plugins.html
+
+    rabbitmq_delayed_message_exchange
+
+
+
+
+about AMQP
+----------
+
 	http://blogs.digitar.com/jjww/2009/01/rabbits-and-warrens/ - from 2009
 		introduction to amqp, with a slant towards rabbitmq and python
 

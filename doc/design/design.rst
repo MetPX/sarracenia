@@ -12,41 +12,102 @@ document.  See `Outline <Outline.html>`_ for an overview of the design requireme
 See `use-cases <use-cases.html>`_ for an exploration of functionality of how
 this design works in different situations.
 
-===========
-Application 
-===========
 
-Description of application logic relevant to discussion.
+=======================
+Assumptions/Constraints
+=======================
 
-To simplify discussions, names will be selected with a prefix things according to the type
-of entity: 
+ - Are there cluster file systems available everywhere?
 
- - exchanges start with x.
- - queues start with q.
- - users start with u. users are also referred to as *sources*
- - servers start with svr
- - clusters start with c
+ - an operational team might want to monitor/alert when certain transfers esperience difficulty.
+
+ - security may want to run different scanning on different traffic (each block?)
+   security might want us to refuse certain file types, so they go through heavier scanning.
+   or perform heavier scanning on those file types.
+
+ - extranet zones cannot initiate connections to internal zones.  
+   extranet zones receive inbound connections from anywhere.
+
+ - Government operations zones can initiate connections anywhere.
+   however, Science is considered a sort of extranet to all the partners.
+
+ - No-one can initiate connections into partner networks, but all partner departments can initiate
+   connections into science.gc.ca zone.  Within the science zones, there is the shared file system
+   area, where servers access a common cluster oriented file system, as well as some small restricted
+   zones, where very limited access is afforded to ensure availability.
+
+ - Within NRC, there are labs with equipment which cannot be maintained, software-wise,
+   to address disclosed vulnerabilities because of excessive testing dependencies (ie. certifying
+   that a train shaker still works after applying a patch.)  These systems are not given access
+   to the internet, only to a few other systems on the site.
+
+ - collaborators are academic, other-governmental, or commercial entities which which government
+   scientists exchange data.
+
+ - collaborators connect to extranet resources from their own networks.  Similarly to partners,
+   (subject to exceptions) no connections can be initiated into any collaborator network.
+
+ - There are no proxies, no systems in the extranet are given exceptional permissions to
+   initiate inbound connections.  File storage protocols etc... are completely isolated between
+   them.  There are no file systems available from OperationsOZ to CollabXRZ
+
+ - One method of improving service reliability is to use internal services for internal use
+   and reserve public facing services for external users.  Isolated services on the inside
+   are completely impervious to internet ´weather´ (DDOS of various forms, load, etc...)
+   internal and external loads can be scaled independently.
 
 
-AMQP vhosts are not used.  
+Number of Switches 
+------------------
+
+The application is supposed to support any number of topologies, that is any number of switches S=0,1,2,3
+may exist between origin and final delivery, and do the right thing.
+
+Why isn´t everything point to point, or when do you insert a switch?
+
+        - network topology/firewall rules sometimes require being at rest in a transfer area between two
+          organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
+          whenever traffic prevents initiating a connection, that indicates a store & forward switch
+          may be needed.
+
+        - when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
+          care of sending it to multiple points.
+
+        - when the source data to be reliably available.  This translates to making many copies,
+          rather than just one, so it is easier for the source to post once, and have the network
+          take care of replication.
+
+        - for management reasons, you want to centrally observe data large transfers.
+
+        - for management reasons, to have transfers  routed a certain way.
+
+        - for management reasons, to ensure that transfer failures are detected and escalated
+          when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
+          the issue.
+
+        - For asynchronous transfers.  If the source has many other activities, it may want
+          to give responsibility to another service to do potentially lengthy file transfers.
+          the switch is inserted very near to the source, and is full store & forward. dd_post
+          completes (nearly instant), and from then on the switching network manages transfers.
+
 
 AMQP Feature Selection
 ----------------------
 
-AMQP is a universal message passing protocol with many different
-options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a
-small subset of AMQP patterns.  Indeed an important element of sarracenia development was to
-select from the many possibilities a small subset of methods are general and easily understood,
-in order to maximize potential for interoperability.
+AMQP is a universal message passing protocol with many different options to support many 
+different messaging patterns.  MetPX-sarracenia specifies and uses a small subset of AMQP 
+patterns.  Indeed an important element of sarracenia development was to select from the 
+many possibilities a small subset of methods are general and easily understood, in order 
+to maximize potential for interoperability.
 
 Specifying the use of a protocol alone may be insufficient to provide enough information for
 data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
 need to be made above and beyond the protocol.
 
-	- authenticated or anonymous use?
-	- how to signal that a file transfer has completed (permission bits? suffix? prefix?)
-	- naming convention.
-	- text or binary transfer.
+ - authenticated or anonymous use?
+ - how to signal that a file transfer has completed (permission bits? suffix? prefix?)
+ - naming convention.
+ - text or binary transfer.
 
 Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.
 
@@ -87,6 +148,32 @@ complexity to cover multiple cases.
 dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
 between initial switch and final delivery.
+
+AMQP vhosts are not used.  Never saw any need for them. The commands support their optional 
+use, but there was no visible purpose to using them is apparent.
+
+
+===========
+Application 
+===========
+
+Description of application logic relevant to discussion.
+
+
+
+Conventions
+-----------
+
+To simplify discussions, names will be selected with a prefix things according to the type
+of entity: 
+
+ - exchanges start with x.
+ - queues start with q.
+ - users start with u. users are also referred to as *sources*
+ - servers start with svr
+ - clusters start with c
+
+
 
 
 
