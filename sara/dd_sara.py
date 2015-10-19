@@ -211,8 +211,11 @@ class dd_sara(dd_instances):
 
         # relative path
 
-        yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
+        #yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
+
+        yyyymmdd = self.msg.time[:8]
         self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
+
         if self.msg.rename != None :
            self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.rename)
            self.rel_path = self.rel_path.replace('//','/')
@@ -246,7 +249,7 @@ class dd_sara(dd_instances):
         if not ok :
            self.msg.code    = code
            self.msg.message = message
-           self.msg.log_error(code,message)
+           self.msg.log_error()
 
         return ok
 
@@ -259,7 +262,7 @@ class dd_sara(dd_instances):
         if not ok :
            self.msg.code    = code
            self.msg.message = message
-           self.msg.log_error(code,message)
+           self.msg.log_error()
 
         return ok
 
