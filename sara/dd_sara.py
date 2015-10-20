@@ -209,19 +209,27 @@ class dd_sara(dd_instances):
 
     def set_local(self):
 
-        # relative path
+        # relative path by default mirror 
 
-        #yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-
-        yyyymmdd = self.msg.time[:8]
-        self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
-
+        self.rel_path = '%s' % self.msg.path
         if self.msg.rename != None :
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.rename)
-           self.rel_path = self.rel_path.replace('//','/')
+           self.rel_path = '%s' % self.msg.rename
+
+        # if we dont mirror force  yyyymmdd/source in front
+
+        if not self.mirror :
+           yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
+           #yyyymmdd  = self.msg.time[:8]
+           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
+
+           if self.msg.rename != None :
+              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.rename)
+              self.rel_path = self.rel_path.replace('//','/')
 
         token = self.rel_path.split('/')
         self.filename = token[-1]
+
+        # if strip is used... strip N heading directories
 
         if self.strip > 0 :
            if self.strip > len(token) : token = [token[-1]]
