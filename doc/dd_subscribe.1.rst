@@ -88,7 +88,7 @@ to an exchange.  These options define which messages (URL notifications) the pro
 
  - **exchange      <name>         (default: xpublic)** 
  - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
- - **subtopic      <amqp pattern> (topic or subtopic need to be set)** 
+ - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Several topic options may be declared. To give a correct value to the subtopic,
 browse the our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
@@ -131,7 +131,6 @@ The queue is where the notifications are held on the server for each subscriber.
 **durable       <boolean>      (default: False)** 
 **expire        <minutes>      (default: None)** 
 **message-ttl   <minutes>      (default: None)** 
-**timeout   <integer>        (default: 180)** 
 
 By default, dd_subscribe creates a queue name that should be unique and starts with  **cmc** 
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
@@ -205,6 +204,20 @@ For example retrieving the following url, with options::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+
+You can modify the mirrored directoties with the option **strip**  .
+If set to N  (an integer) the first 'N' directories are withdrawn.
+For example :
+
+ http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+
+   mirror    True
+   strip     3
+   directory /mylocaldirectory
+   accept    .*RADAR.*
+
+would result in the creation of the directories and the file
+/mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
 The  **flatten**  option is use to set a separator character. This character
 will be used to replace the '/' in the url directory and create a "flatten" filename
@@ -282,6 +295,16 @@ and that download stream can be multi-streamed as well.
   Processes which die should be restarted within a reasonable period of time to avoid
   loss of notifications.
 
+
+RABBITMQ LOGGING
+----------------
+
+For each download, an amqp log message is sent back to the broker.
+Should you want to turned them off the option is :
+
+**log_back <boolean>        (default: true)** 
+
+
 DEPRECATED SETTINGS
 -------------------
 
@@ -289,8 +312,10 @@ These settings pertain to previous versions of the client, and have been superce
 
 ::
 
+ **topic         <amqp pattern> (deprecated)** 
  **exchange_type <type>         (default: topic)** 
  **exchange_key  <amqp pattern> (deprecated)** 
+ **timeout       <integer(180)> (deprecated)** 
 
 SEE ALSO
 --------
