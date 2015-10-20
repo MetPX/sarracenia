@@ -1180,26 +1180,6 @@ class dd_message():
                  return False,'incorrect extension'
 
         return True,'ok'
-#############################################################################################
-# Class AlarmTimeout
-
-class TimeoutException(Exception):
-    """Classe d'exception specialises au timeout"""
-    pass
-
-class AlarmTimeout:
-      def __init__(self, message ):
-          self.state   = False
-          self.message = message
-      def sigalarm(self, n, f):
-          raise TimeoutException(self.message)
-      def alarm(self, time):
-          self.state = True
-          signal.signal(signal.SIGALRM, self.sigalarm)
-          signal.alarm(time)
-      def cancel(self):
-          signal.alarm(0)
-          self.state = False
 
 #============================================================
 
@@ -1227,8 +1207,6 @@ class ConsumerX(object):
 
         self.amqp_log = None
         self.myinit()
-
-        self.timex = None
 
     def close(self):
        self.hc.close()
@@ -1559,8 +1537,6 @@ class ConsumerX(object):
         nb_try = 0
         while nb_try < 3:
             nb_try = nb_try + 1
-            # gives self.timeout seconds to get the product       
-            if self.timex != None:self.timex.alarm(self.timeout)
             try :
                 # create a password manager                
                 if user != None :                          
@@ -1604,7 +1580,6 @@ class ConsumerX(object):
                 else:
                     self.logger.info('Local file created: %s', self.msg.local_file)
                     
-                if self.timex != None:self.timex.cancel()
                 break
             except (KeyboardInterrupt, SystemExit):
                  break                     
@@ -1621,7 +1596,6 @@ class ConsumerX(object):
                 self.logger.error('Download failed: %s', url )
                 self.logger.error('Uexpected error')              
                 
-            if self.timex != None:self.timex.cancel()
             self.logger.info('Retry in 3 seconds...')
             time.sleep(3)
 
@@ -1688,8 +1662,6 @@ class ConsumerX(object):
             (type, value, tb) = sys.exc_info()
             print("Type: %s, Value: %s" % (type, value))
             return 
-
-        self.timeout = 180
 
         for line in config.readlines():
             words = line.split()
@@ -1805,13 +1777,13 @@ class ConsumerX(object):
                     elif words[0] == 'http-password': self.http_passwd = words[1]
                     elif words[0] == 'mirror': self.mirror = isTrue(words[1])
                     elif words[0] == 'flatten': self.flatten = words[1]
-                    elif words[0] == 'timeout': self.timeout = int(words[1])
 
                     elif words[0] == 'durable': self.durable = isTrue(words[1])
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'strip': self.strip = int(words[1])
                     elif words[0] == 'overwrite': self.overwrite = isTrue(words[1])
-                    elif words[0] == 'inplace': self.inplace = isTrue(words[1])
+                    #default is file is reassemble at dd_subscribe level
+                    #elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
                     elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
@@ -1880,7 +1852,6 @@ def help():
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
           "\t\t\t* single directory wildcard (matches one directory)\n" +
           "\t\t\t# wildcard (matches rest)\n" +
-          "\ttimeout       <integer>      (default: 180)\n" +
           "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
           "\nHTTP Settings:\n" +
           "\thttp-password <pw> (default: None)\n" +
@@ -1919,11 +1890,10 @@ def main():
     notice_only = False
     discard = False
     config = None
-    timex = None
     
     #get options arguments
     try:
-      opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','timeout','no-download'])
+      opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','no-download'])
     except getopt.GetoptError as err:    
       print("Error 1: %s" %err)
       print("Try `dd_subscribe --help' for more information.")
@@ -1993,7 +1963,6 @@ def main():
     consumer = ConsumerX(config,LOGGER)
     consumer.notify_only = notice_only
     consumer.discard = discard
-    consumer.timex = timex
     
     consumer.run()
     """
