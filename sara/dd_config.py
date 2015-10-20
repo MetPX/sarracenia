@@ -34,7 +34,7 @@
 #
 #
 
-import os,re,sys
+import os,re,socket,sys
 import urllib,urllib.parse
 
 try :    from dd_util      import *
@@ -56,6 +56,10 @@ class dd_config:
         # set logging to printit until we are fixed with it
 
         self.setlog()
+
+        # installation general configurations and settings
+
+        self.general()
         
         # check arguments
 
@@ -122,6 +126,8 @@ class dd_config:
         self.subtopic             = None
         self.url                  = None
 
+        self.mirror               = True
+
         self.queue_name           = None
 
         self.randomize            = False
@@ -172,6 +178,59 @@ class dd_config:
         self.inplace              = False
         self.overwrite            = False
         self.recompute_chksum     = False
+
+    def general(self):
+        homedir = os.path.expanduser("~")
+        confdir = homedir + '/.config/sara/'
+
+        # read in provided credentials
+        credent = confdir + 'credentials.conf'
+        self.credentials = []
+        try :
+                 f = open(credent,'r')
+                 lines = f.readlines()
+                 f.close
+                 for line in lines :
+                     line = line.strip()
+                     if len(line) == 0 or line[0] == '#' : continue
+                     parts = line.split()
+                     url   = urllib.parse.urlparse(parts[0])
+                     # fixme parts[1] ssh keyfile for sftp should be an option
+                     self.credentials.append(url)
+
+        # credential file is not mandatory
+        except : pass
+        self.logger.debug("credentials = %s\n" % self.credentials)
+
+        # read in provided cluster infos
+        cluster = confdir + 'clusters.conf'
+        self.clusters = {}
+        try :
+                 f = open(cluster,'r')
+                 lines = f.readlines()
+                 f.close
+                 for line in lines :
+                     line = line.strip()
+                     if len(line) == 0 or line[0] == '#' : continue
+                     parts = line.split()
+                     if parts[0] == 'self' :
+                       self.clustername = parts[1]
+                       continue
+                     name  = parts[0]
+                     u     = urllib.parse.urlparse(parts[1])
+                     ok, url = self.validate_amqp_url(u)
+                     if not ok :
+                        self.logger.error("problem with %s" % parts[1])
+                     # fixme parts[2] exchange should be optional
+                     exch  = parts[2]
+                     self.clusters[name] = (url,exch)
+
+        # cluster file is not mandatory
+        except : pass
+        if not hasattr(self,'clustername') :
+           self.clustername = socket.gethostname()
+        self.logger.debug("clusters = %s\n" % self.clusters)
+        self.logger.debug("clustername = %s\n" % self.clustername)
 
 
     def isTrue(self,s):
@@ -367,6 +426,10 @@ class dd_config:
                      self.ftp_binary = isTrue(words[1])
                      n = 2
 
+                elif words[0] in ['mirror','-mirror','--mirror']:
+                     self.mirror = isTrue(words[1])
+                     n = 2
+
                 elif words[0] in ['http_user','-hu','--http_user']:
                      self.http_user = words[1]
                      n = 2
@@ -478,24 +541,48 @@ class dd_config:
         if not url.scheme in ['amqp','amqps'] :
            return False,url
 
-        user = url.username
-        pasw = url.password
-        path = url.path
+        return self.validate_url(url)
+
+    # check url and add credentials if needed from credential file
+
+    def validate_url(self,url):
 
         rebuild = False
-        if user == None  :
-           user = 'guest'
-           rebuild = True
-        if pasw == None  :
-           pasw = 'guest'
-           rebuild = True
-        if path == ''  :
-           path = '/'
-           rebuild = True
+        user    = url.username
+        pasw    = url.password
 
+        # default vhost is '/'
+        if url.scheme in ['amqp','amqps'] :
+           path = url.path
+           if path == None or path == '' :
+              path = '/'
+              rebuild = True
+
+        if user == None or pasw == None :
+           for u in self.credentials :
+               if url.scheme    != u.scheme  : continue
+               if url.hostname  != u.hostname: continue
+               if url.port      != u.port    : continue
+               if user and user != u.username: continue
+               user = u.username
+               pasw = u.password
+               rebuild = True
+               break
+
+        if url.scheme in ['amqp','amqps'] :
+           if user == None :
+              user = 'guest'
+              rebuild = True
+           if pasw == None :
+              pasw = 'guest'
+              rebuild = True
+               
+        if path == None : path = ''
 
         if rebuild :
-           urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,url.netloc,path)
+           netloc = url.hostname
+           if url.port != None : netloc += ':%d'%url.port
+           urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,netloc,path)
            url  = urllib.parse.urlparse(urls)
 
         return True,url
