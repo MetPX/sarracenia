@@ -50,6 +50,32 @@ Comment lines begins with **#**.
 Empty lines are skipped.
 
 
+INSTANCES
+---------
+
+It is possible that one instance of dd_sara using a certain config
+is not enough to process/downloads all available notifications.
+
+**instances      <integer>     (default:1)**
+
+dd_sara "configname" start   will fork  N instances of dd_sara using that config.
+.dd_sara_configname_$instance.pid  are created and contain the PID  of $instance process.
+ dd_sara_configname_$instance.log  are created and contain the logs of $instance process.
+
+The logs can be written in another directory than the current one with option :
+
+**log            <directory logpath>  (default:$PWD)**
+
+
+.. NOTE:: 
+  FIXME: standard installation/setup explanations ...
+  FIXME: a standard place where all configs ?
+  FIXME: a standard place where all the logs ?
+  FIXME: a standard place where all the pid files ?
+  FIXME: a dd process starting all sara configs of various kind.
+
+
+
 SOURCE NOTIFICATION OPTIONS
 ---------------------------
 
