@@ -135,6 +135,17 @@ The queue is where the notifications are held on the server for each subscriber.
 By default, dd_subscribe creates a queue name that should be unique and starts with  **cmc** 
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
 The  **queue**  option sets a queue name. It should always start with  **cmc** .
+
+.. NOTE::
+   FIXME: is this **cmc** default correct?  Has it changed to something less cmc centric?
+   makes things easier to clean up if exchanges and queues are associated with login users.
+   I think the correct default might be something like: qs_Alice for user 'Alice' for the 
+   sx_Alice exchange, and ql_Alice for the sl_Alice exchange.  Is that right?
+   have to be able to permit people to create only the queues they should... 
+   so. Alice would only be able to create queues ^q._Alice.* ... and Bob only q._Bob.*$
+   does it matter to differentiate s vs. l? or just use same queue names for all (q_Alice?)
+
+
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
 on disk if the broker is restarted.
@@ -164,6 +175,7 @@ and under which name.
 **mirror    <boolean>        (default: false)** 
 **overwrite <boolean>        (default: true)** 
 **reject    <regexp pattern> (optional)** 
+**strip     <count>         (default: 0)**
 
 The  **lock**  option is a suffix given to the file during the download
 and taken away when it is completed... If  **lock**  is set to  **.** 

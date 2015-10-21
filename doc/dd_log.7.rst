@@ -18,7 +18,7 @@ Sarracenia v02 Log Message Format/Protocol
 SYNOPSIS
 ========
 
-**AMQP Topic: <version>.log.<src>.{<dir>.}*<filename>**
+**AMQP Topic: <version>.log.{<dir>.}*<filename>**
 
 **AMQP Headers:** *<series of key-value pairs>*
 
@@ -155,9 +155,9 @@ EXAMPLE
 
 ::
 
- topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+ topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 201 castor anonymous 0.0006767 
- headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded
+ headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded source=ec_cmc
 
    v02 - version of protocol
    post - indicates the type of message
