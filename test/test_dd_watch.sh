@@ -1,5 +1,28 @@
 #!/bin/ksh
 
+# This test suppose rabbitmq server installed
+# with default configuration  guest,guest administrator
+
+# getting rabbitmqadmin
+
+wget http://localhost:15672/cli/rabbitmqadmin
+chmod 755 rabbitmqadmin
+
+# configuring tester user as sara requieres
+
+./rabbitmqadmin -u guest -p guest declare user \
+     name=tester password=testerpw tags=
+
+./rabbitmqadmin -u guest -p guest declare permission \
+     vhost=/  user=tester \
+     configure='^q_tester.*$' write='xs_tester' read='^q_tester.*$|^xl_tester$'
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_tester type=topic auto_delete=false durable=true
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_guest type=topic auto_delete=false durable=true
+
 cat << EOF > toto
 0 123456789abcde
 1 123456789abcde
@@ -29,10 +52,10 @@ touch ./toto
 sleep 2
 kill -9 $PID
 
-echo
+echo ========================================
 
 echo dd_watch -u file:${PWD}/ -e IN_CLOSE_WRITE
-echo rm ./toto
+echo touch ./toto
 
 ../sara/dd_watch.py -u file:${PWD}/ -e IN_CLOSE_WRITE &
 PID=$!
@@ -41,9 +64,7 @@ touch ./toto
 sleep 2
 kill -9 $PID
 
-echo
-
-
+echo ========================================
 
 echo dd_watch -u file:${PWD}/
 echo rm ./toto
@@ -58,6 +79,7 @@ kill -9 $PID
 
 echo
 
+echo ========================================
 echo dd_watch -u file:${PWD}/ -e IN_DELETE
 echo rm ./toto
 
