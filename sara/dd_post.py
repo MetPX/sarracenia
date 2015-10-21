@@ -63,6 +63,12 @@ class dd_post(dd_config):
         self.chkclass.from_list(self.sumflg)
         self.chksum = self.chkclass.checksum
 
+        # sara exchange default value is xs_username
+        # username being the broker's
+
+        if self.exchange == None :
+           self.exchange = 'xs_%s' % self.broker.username
+
         self.msg = dd_message(self.logger)
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
@@ -76,9 +82,6 @@ class dd_post(dd_config):
         # defaults general and proper to dd_post
 
         self.defaults()
-
-        self.exchange = 'amq.topic'
-
 
         # arguments from command line
 
