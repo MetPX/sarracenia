@@ -19,13 +19,12 @@ The format of file change announcements for dd_post.
 
 A dd_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
 
-**AMQP Topic:** *<version>.post.<src>.{<dir>.}*<filename>*
+**AMQP Topic:** *<version>.post.{<dir>.}*<filename>*
 
 ::
 
            <version> = "v02" the version of the protocol or format.
            "post" = the type of message within the protocol.
-           <src> = the user who posted the file.
            <dir> = a sub-directory leading to the file (perhaps many directories deep)
            <filename> = the name of the file on the server.
 
@@ -307,25 +306,22 @@ EXAMPLE
 
 :: 
 
- Topic: v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+ Topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
- Headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13
+ Headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 source=ec_cmc
 
-        v02 - version of protocol
-        post - indicates the type of message
+        - v02 - version of protocol
+        - post - indicates the type of message
+        - version and type together determine format of following topics and the message body.
 
-        version and type together determine format of following topics and the message body.
-
-        ec_cmc - the account used to issue the post (unique in a network).
-
-          -- blocksize is 457  (== file size)
-          -- block count is 1
-          -- remainder is 0.
-          -- block number is 0.
-          -- d - checksum was calculated on the body of the file.
-          -- flow is an argument after the relative path.
-          -- complete source URL specified (does not end in '/')
-          -- relative path specified for
+        - blocksize is 457  (== file size)
+        - block count is 1
+        - remainder is 0.
+        - block number is 0.
+        - d - checksum was calculated on the body of the file.
+        - flow is an argument after the relative path.
+        - complete source URL specified (does not end in '/')
+        - relative path specified for
 
         pull from:
                 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
@@ -354,9 +350,9 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
-  Topic: v02.post.20150813.guest.data.shared.products.foo
+  Topic: v02.post.20150813.data.shared.products.foo
   1st line of body: 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
-  Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce
+  Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce source=guest
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
 The body consists of a time *20150813161959.854*, a size in bytes *256*,

@@ -200,6 +200,8 @@ HW:
     do logs make it back from science to urp ?	yes it just shovels from it's own echange
     on ddsr to it's own and it keeps going back to urp. cool.
 
+
+
 Iteration 6: Packaging & Acquisition from outside: November
 -----------------------------------------------------------
 
@@ -239,6 +241,7 @@ End of Phase 1
      November to March...
 	clean up from phase 1.
         move transition forward.
+
 
 Phase 2:  (Next FY)
 -------------------
