@@ -23,6 +23,8 @@ chmod 755 rabbitmqadmin
 ./rabbitmqadmin -u guest -p guest declare exchange \
      name=xs_guest type=topic auto_delete=false durable=true
 
+rm ~/.config/sara/credentials.conf 2>/dev/null
+
 cat << EOF > toto
 0 123456789abcde
 1 123456789abcde
@@ -79,12 +81,19 @@ kill -9 $PID
 
 echo
 
+
+mkdir -p ~/.config/sara 2> /dev/null
+cat << EOF > ~/.config/sara/credentials.conf
+amqp://tester:testerpw@localhost
+EOF
+
 echo ========================================
-echo dd_watch -u file:${PWD}/ -e IN_DELETE
+echo credential file
+echo dd_watch -u file:${PWD}/ -e IN_DELETE -b amqp://localhost
 echo rm ./toto
 
 mv toto2 toto
-../sara/dd_watch.py -u file:${PWD}/ -e IN_DELETE &
+../sara/dd_watch.py -u file:${PWD}/ -e IN_DELETE -b amqp://localhost&
 PID=$!
 sleep 2
 rm ./toto
@@ -92,5 +101,4 @@ sleep 2
 kill -9 $PID
 
 echo
-
 
