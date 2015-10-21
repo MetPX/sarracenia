@@ -1,5 +1,31 @@
 #!/bin/ksh
 
+# This test suppose rabbitmq server installed
+# with default configuration  guest,guest administrator
+
+# getting rabbitmqadmin
+
+wget http://localhost:15672/cli/rabbitmqadmin
+chmod 755 rabbitmqadmin
+
+# configuring tester user as sara requieres
+
+./rabbitmqadmin -u guest -p guest declare user \
+     name=tester password=testerpw tags=
+
+./rabbitmqadmin -u guest -p guest declare permission \
+     vhost=/  user=tester \
+     configure='^q_tester.*$' write='xs_tester' read='^q_tester.*$|^xl_tester$'
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_tester type=topic auto_delete=false durable=true
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_guest type=topic auto_delete=false durable=true
+
+
+export PYTHONPATH=../sara
+
 cat << EOF > toto
 0 123456789abcde
 1 123456789abcde
@@ -19,15 +45,40 @@ e 123456789abcde
 
 EOF
 
+rm ~/.config/sara/credentials.conf 2>/dev/null
+
 echo dd_post --help
 
 ../sara/dd_post.py --help
+echo
+
+echo default broker + default exchange
+echo dd_post -u file:${PWD}/toto 
+
+../sara/dd_post.py -u file:${PWD}/toto
+echo
 
 echo
 
-echo dd_post -u file:${PWD}/toto
+echo default broker + exchange amq.topic
+echo dd_post -u file:${PWD}/toto -ex amq.topic
 
-../sara/dd_post.py -u file:${PWD}/toto
+../sara/dd_post.py -u file:${PWD}/toto -ex amq.topic
+echo
+
+
+echo default guest user and vhost /
+echo dd_post -u file:${PWD}/toto -b amqp://localhost
+
+../sara/dd_post.py -u file:${PWD}/toto -b amqp://localhost
+
+echo
+
+
+echo new broker user
+echo dd_post -u file:${PWD}/toto -b amqp://tester:testerpw@localhost
+
+../sara/dd_post.py -u file:${PWD}/toto -b amqp://tester:testerpw@localhost
 
 echo
 
@@ -39,17 +90,31 @@ EOF
 echo cat dd_post.conf
 cat dd_post.conf
 echo
-echo dd_post -c ${PWD}/dd_post.conf
+echo dd_post -c ${PWD}/dd_post.conf -b amqp://tester:testerpw@localhost
 
-../sara/dd_post.py -c ${PWD}/dd_post.conf
+../sara/dd_post.py -c ${PWD}/dd_post.conf -b amqp://tester:testerpw@localhost
 
 rm dd_post.conf
 echo
 
-echo dd_post -u file:${PWD}/toto -l ./toto.log
+
+mkdir -p ~/.config/sara 2> /dev/null
+cat << EOF > ~/.config/sara/credentials.conf
+amqp://tester:testerpw@localhost
+EOF
+
+echo dd_post using ~/.config/sara/credentials.conf
+echo dd_post -u file:${PWD}/toto -b amqp://localhost
+
+../sara/dd_post.py -u file:${PWD}/toto -b amqp://localhost
+
+echo
+
+
+echo dd_post -u file:${PWD}/toto -l ./toto.log -b amqp://localhost
 echo cat ./toto.log
 
-../sara/dd_post.py -u file:${PWD}/toto -l ./toto.log
+../sara/dd_post.py -u file:${PWD}/toto -l ./toto.log -b amqp://localhost
 cat ./toto.log
 rm  ./toto.log
 echo
@@ -60,51 +125,55 @@ echo dd_post -u file:${PWD}/toto -b amqp://localhost/
 
 echo
 
-echo dd_post -dr ${PWD} -u file://toto
+echo dd_post -dr ${PWD} -u file://toto -b amqp://localhost/
 
-../sara/dd_post.py -dr ${PWD} -u file:/toto
-
-echo
-
-echo dd_post -u file:${PWD}/toto -f my_flow
-
-../sara/dd_post.py -u file:${PWD}/toto -f my_flow
+../sara/dd_post.py -dr ${PWD} -u file:/toto -b amqp://localhost/
 
 echo
 
-echo dd_post -u file:${PWD}/toto -tp v05.test
+echo dd_post -u file:${PWD}/toto -f my_flow -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -tp v05.test
+../sara/dd_post.py -u file:${PWD}/toto -f my_flow -b amqp://localhost/
 
-echo
-
-echo dd_post -u file:${PWD}/toto -sub imposed.sub.topic
-
-../sara/dd_post.py -u file:${PWD}/toto -sub imposed.sub.topic
 
 echo
 
-echo dd_post -u file:${PWD}/toto -rn /this/new/name
+echo dd_post -u file:${PWD}/toto -tp v05.test -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -rn /this/new/name
+../sara/dd_post.py -u file:${PWD}/toto -tp v05.test -b amqp://localhost/
 
-echo
-
-echo dd_post -u file:${PWD}/toto -rn /this/new/dir/
-
-../sara/dd_post.py -u file:${PWD}/toto -rn /this/new/dir/
 
 echo
 
-echo dd_post -u file:${PWD}/toto -sum 0
+echo dd_post -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -sum 0
+../sara/dd_post.py -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/
 
 echo
 
-echo dd_post -u file:${PWD}/toto -sum n
+echo dd_post -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -sum n
+../sara/dd_post.py -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/
+
+
+echo
+
+echo dd_post -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/
+
+../sara/dd_post.py -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/
+
+echo
+
+echo dd_post -u file:${PWD}/toto -sum 0 -b amqp://localhost/
+
+../sara/dd_post.py -u file:${PWD}/toto -sum 0 -b amqp://localhost/
+
+echo
+
+echo dd_post -u file:${PWD}/toto -sum n -b amqp://localhost/
+
+../sara/dd_post.py -u file:${PWD}/toto -sum n -b amqp://localhost/
+
 
 echo
 
@@ -120,17 +189,20 @@ new_check = checksum_AHAH()
 self.checksum = new_check.checksum
 EOF
 
-echo dd_post -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py
+echo dd_post -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py
+../sara/dd_post.py -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/
+
 
 rm ${PWD}/checksum_AHAH.py
 echo
 
-echo ./exchange.py user_exchange add
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=user_exchange type=topic auto_delete=false durable=true
+
+echo user_exchange 
 echo dd_post -u file:${PWD}/toto -ex user_exchange
 
-python3 ./exchange.py user_exchange add
 ../sara/dd_post.py -u file:${PWD}/toto -ex user_exchange
 
 echo
@@ -234,10 +306,10 @@ echo dd_post -u file:${PWD}/toto -sum x
 echo
 
 echo ERROR wrong exchange
-echo ./exchange.py user_exchange del
+echo rabbitmqadmin delete exchange name=user_exchange
 echo dd_post -u file:${PWD}/toto -ex user_exchange
 
-./exchange.py user_exchange del
+./rabbitmqadmin -u guest -p guest delete exchange name=user_exchange
 ../sara/dd_post.py -u file:${PWD}/toto -ex user_exchange
 
 echo
@@ -307,3 +379,4 @@ echo dd_post -u file:${PWD}/toto -p d,a
 echo
 
 rm ./toto
+rm ~/.config/sara/credentials.conf
