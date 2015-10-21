@@ -247,10 +247,6 @@ would result in the creation of the filepath ::
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
 
-The  **timeout**  option is use to set a time limit to the file download, avoiding network freeze.
-If a download takes more than  **timeout**  seconds, the download is restarted. This looping continues
-until the file is properly downloaded... Only than, the amqp message is acknowledge.
-
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 1- the file to be downloaded is already on the user's file system at the right place and
 2- the checksum of the amqp message matched the one of the file.
@@ -327,7 +323,6 @@ These settings pertain to previous versions of the client, and have been superce
  **topic         <amqp pattern> (deprecated)** 
  **exchange_type <type>         (default: topic)** 
  **exchange_key  <amqp pattern> (deprecated)** 
- **timeout       <integer(180)> (deprecated)** 
 
 SEE ALSO
 --------
