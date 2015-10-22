@@ -4,7 +4,7 @@
 #Guide.rtf:   Guide.latex
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
-MANPAGES= dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html dd_log.7.html
+MANPAGES= dd_sara.1.html dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html dd_log.7.html
 
 TARGETS= $(MANPAGES)
 
@@ -22,6 +22,9 @@ default: $(TARGETS)
 #         -- add an explicit target here.
 #         -- add a link from index.html.
 #
+dd_sara.1.html: ../dd_sara.1.rst
+	rst2html ../dd_sara.1.rst >dd_sara.1.html
+
 dd_subscribe.1.html: ../dd_subscribe.1.rst
 	rst2html ../dd_subscribe.1.rst >dd_subscribe.1.html
 

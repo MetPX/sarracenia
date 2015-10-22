@@ -333,6 +333,8 @@ SEE ALSO
 
 `dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
 
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+
 `dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based file switch.

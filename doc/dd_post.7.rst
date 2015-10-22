@@ -319,7 +319,7 @@ EXAMPLE
         - remainder is 0.
         - block number is 0.
         - d - checksum was calculated on the body of the file.
-        - flow is an argument after the relative path.
+        - flow is exp13
         - complete source URL specified (does not end in '/')
         - relative path specified for
 
@@ -462,6 +462,8 @@ SEE ALSO
 `dd_log(7) <dd_log.7.html>`_ - the format of log messages.
 
 `dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
 

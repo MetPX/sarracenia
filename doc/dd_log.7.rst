@@ -203,6 +203,8 @@ SEE ALSO
 
 `dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
 
+`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+
 `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
 
 `dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.

@@ -3,9 +3,9 @@
  DD_Sara
 =========
 
-------------------------------------------------
-Subscribe acquire and reannounce products
-------------------------------------------------
+------------------------------------------
+Subscribe, Acquire and ReAnnounce Products
+------------------------------------------
 
 :Manual section: 1 
 :Date: Oct 2015
@@ -21,20 +21,20 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**dd_sara** is a program that listens to file notifications, 
-acquire the files and reannounce them at their new locations.
+**dd_sara** is a program that Subscribes to file notifications, 
+Acquires the files and ReAnnounces them at their new locations.
 
 The notification protocol is defined here `dd_post(7) <dd_post.7.html>`_
 
 **dd_sara** connects to a *source_broker* (often the same as the remote file server 
 itself) and subscribes to the notifications of interest. It uses the 
 notification information to download the file on the local server its running on. 
-After, it notifies the file on a broker (usually on the local server).
+After, it produces a new notification for the local file on a broker (usually on the local server).
 
 
 **dd_sara** can be used to acquire files from `dd_post(1) <dd_post.1.html>`_
 or `dd_watch(1) <dd_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
-that notifies its products.
+that announce its' products.
 
 The **dd_sara** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
@@ -54,13 +54,13 @@ INSTANCES
 ---------
 
 It is possible that one instance of dd_sara using a certain config
-is not enough to process/downloads all available notifications.
+is not enough to process & download all available notifications.
 
 **instances      <integer>     (default:1)**
 
 dd_sara "configname" start   will fork  N instances of dd_sara using that config.
 .dd_sara_configname_$instance.pid  are created and contain the PID  of $instance process.
- dd_sara_configname_$instance.log  are created and contain the logs of $instance process.
+dd_sara_configname_$instance.log  are created and contain the logs of $instance process.
 
 The logs can be written in another directory than the current one with option :
 
@@ -80,9 +80,10 @@ SOURCE NOTIFICATION OPTIONS
 ---------------------------
 
 First, the program needs to set all the rabbitmq configurations for a source broker.
+The source_broker option sets all the credential information to connect to the **AMQP** server <F3> 
 
-The source_broker option sets all the credential information to connect to the
-  **RabbitMQ** server <F3> 
+.. NOTE:: 
+   FIXME: what is <F3> ?
 
 **source_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -97,6 +98,11 @@ to an exchange.  These options define which messages (URL notifications) the pro
  - **source_exchange      <name>         (default: amq.topic)** 
  - **source_topic         <amqp pattern> (default: v02.post.#)**
  - **queue_name           <name>         (default: dd_sara.config_name)** 
+
+.. NOTE::
+  FIXME: queue_name is dd_sara.config_name? is that the file that contains the queue name?
+  FIXME: probably should be "queue_info_file" ? is there other stuff in there other than the name?
+  FIXME: queue_name is supposed to be q_guest (assuming default auth.)
 
 To give a correct value to the subtopic, browse the remote server and
 write down v02.post plus the directory of interest separated by a dot
@@ -168,9 +174,11 @@ once inserted in the file, is notified to the destination broker.
 
 
 .. NOTE:: 
-  FIXME: lock option    : should it support file locking (.tmp, . prefix) ?
-  FIXME: destfn script  : should it support a destination script
-  FIXME: renamer script : should it support a file renamer script
+  - FIXME: lock option    : should it support file locking (.tmp, . prefix) ?
+  - FIXME: destfn script  : should it support a destination script
+  - FIXME: renamer script : should it support a file renamer script
+  - FIXME: working_directory ? .. should this be a config option to name where the queue_name, and other? state files live?
+
 
 
 DOWNLOAD CREDENTIALS 
@@ -180,8 +188,8 @@ DOWNLOAD CREDENTIALS
 
 .. NOTE::
   FIXME: usage of ~/.conf/sara/credentials.conf to be coded
-         supports of various ftp/sftp... etc credentials at the same time
-         *** much more easy for users and less restrictions on notifications
+  support of various ftp/sftp... etc credentials at the same time
+  much easier for users and less restrictions on notifications
 
 
 OUTPUT NOTIFICATION OPTIONS
@@ -198,32 +206,37 @@ The broker option sets all the credential information to connect to the
 
       (default: amqp://guest:guest@localhost/ ) 
 
-Once connected to an AMQP broker, the program will build the notifications after
-the download of the file has occured. To build the notification and send it to
-the broker the user sets these options :
+Once connected to the source AMQP broker, the program builds notifications after
+the download of a file has occured. To build the notification and send it to
+the next hop broker, the user sets these options :
 
  - **url               <url>          (needs to be set)**
  - **recompute_chksum  <boolean>      (False)** 
  - **exchange          <name>         (default: amq.topic)** 
 
-The **url** option sets how to get the file... it defined the protocol,
-host, port, and optionnaly the credentials. It is a good practice not to 
-notify the credentials and  inform the end users about it.
+The **url** option sets how to get the file... it defines the protocol,
+host, port, and optionally, the credentials. It is a good practice not to 
+notify the credentials and separately inform the consumers about it.
 
 If **recompute_chksum** is set to True, the checksum will be recomputed
-on the download file and the resulting value will overwrite the one in the
-amqp message.  This might be usefull if a file gets modified quickly keeping
-the same name... The download of the file may occur after the file is overwritten
-but with its old notification... If the notification contains inexact information
-about the file, this could lead to message/download looping.
+on file download and value will overwrite the one from the incoming amqp message.  
+If a file is repeatedly modified, the download may occur after the file is overwritten
+but with its old notification... resulting in a checksum mismatch and potential
+looping in a network of switches.
+
+.. NOTE::
+   FIXME:  this is pathological case.  It ignores the incoming checksum.
+   so data is forwarded in spite of checksum mismatch. We should think more about this.
+   not sure this option is a good thing.
+
 
 The **exchange** option set under which exchange the new notification will be posted.
 
 
-QUALITY INSURANCE
+QUALITY ASSURANCE
 -----------------
 
-Theses options can be used for quality insurance.
+These options can be used for quality assurance.
 
 ::
 
@@ -231,30 +244,31 @@ Theses options can be used for quality insurance.
 **file_validation_script       <script_path> (used if set)** 
 
 The  **message_validation_script**  receives a dd_message instance
-containing all the amqp informations. The user can write checks on
-any of the dd_message value.  Should it not comply to the checks,
+containing all the amqp information. The user can write checks on
+any of the dd_message values.  Should it not comply to the checks,
 a log message (and an amqp log message) will posted, the message will be
- acknowledge with out any further processing...  Only valid messages
-will be treated. 
+acknowledged with out any further processing...  Only valid messages
+will be processed further. 
 
 .. NOTE:: 
   FIXME: where should we put these scripts
   FIXME: details missing in doc on returned values
+
 The return values of this script are :
 OK,code,message    <boolean,integer,string>   accepted?,error code, error message
 
 
 The  **file_validation_script**  receives the file path.
-The user run any kind of file validation on the path.
-Should the file not comply to the checks... 
-a log message (and an amqp log message) will posted,
-the message will be acknowledge with out any further processing... 
-Only valid files are reannounce.
+The user may run any kind of validation on the path.
+Should the file not comply to the checks, a log message (and an amqp log message) will posted,
+the message will be acknowledged without any further processing... 
+Only valid files are reannounced.
 
 .. NOTE:: 
   FIXME: where should we put these scripts
   FIXME: what should we do with rejected files ... validation script removes it ?
   FIXME: details missing in doc on returned values
+
 The return values of this script are :
 OK,code,message    <boolean,integer,string>   accepted?,error code, error message
 
@@ -262,3 +276,20 @@ OK,code,message    <boolean,integer,string>   accepted?,error code, error messag
 
 .. NOTE:: 
   FIXME: accept/reject should be coded... and documented
+  not sure if we need accept/reject... interesting...
+  work on other stuff first...
+
+SEE ALSO
+========
+
+`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+
+`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+
+`dd_post(7) <dd_post.7.html>`_ - The format of announcements.
+
+`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+
+`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
+
+
