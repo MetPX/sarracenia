@@ -405,12 +405,25 @@ class dd_message():
         self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
     def set_notice(self,url,time=None):
-        self.time = time
-        if time  == None : self.set_time()
         self.url    = url
-        path        = url.path
+        self.time   = time
+        if time    == None : self.set_time()
+        path        = url.path.strip('/')
+
+        if url.scheme == 'file' :
+           self.notice = '%s %s %s' % (self.time,'file:','/'+path)
+           return
+
         urlstr      = url.geturl()
-        static_part = urlstr.replace(path,'')
+        static_part = urlstr.replace(url.path,'') + '/'
+
+        if url.scheme == 'http' :
+           self.notice = '%s %s %s' % (self.time,static_part,path)
+           return
+
+        if url.scheme[-3:] == 'ftp'  :
+           if url.path[:2] == '//'   : path = '/' + path
+
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
     def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
