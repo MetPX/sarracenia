@@ -138,10 +138,18 @@ class dd_post(dd_config):
 
     def posting(self):
 
-        filepath = self.url.path
+        filepath = '/' + self.url.path.strip('/')
+
+        # urllib keeps useless repetitive '/' so rebuild url smartly
+        if filepath != self.url.path :
+           if self.document_root == None and self.url.scheme[-3:] == 'ftp' :
+              filepath = '/' + filepath
+           urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
+           self.url = urllib.parse.urlparse(urlstr)
 
         # check abspath for filename
 
+        filepath = self.url.path
         if self.document_root != None :
            if str.find(filepath,self.document_root) != 0 :
               filepath = self.document_root + os.sep + filepath
