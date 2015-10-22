@@ -80,10 +80,7 @@ SOURCE NOTIFICATION OPTIONS
 ---------------------------
 
 First, the program needs to set all the rabbitmq configurations for a source broker.
-The source_broker option sets all the credential information to connect to the **AMQP** server <F3> 
-
-.. NOTE:: 
-   FIXME: what is <F3> ?
+The source_broker option sets all the credential information to connect to the **AMQP** server 
 
 **source_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -198,7 +195,7 @@ OUTPUT NOTIFICATION OPTIONS
 The program needs to set all the rabbitmq configurations for an output broker.
 
 The broker option sets all the credential information to connect to the
-  output **RabbitMQ** server <F3> 
+  output **RabbitMQ** server 
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 

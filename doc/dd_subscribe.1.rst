@@ -50,7 +50,7 @@ Comment lines begins with **#**.
 RABBITMQ CREDENTIAL OPTIONS
 ---------------------------
 
-The broker option sets all the credential information to connect to the  **RabbitMQ** server <F3> 
+The broker option sets all the credential information to connect to the  **RabbitMQ** server 
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
