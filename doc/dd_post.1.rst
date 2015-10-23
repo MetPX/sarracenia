@@ -47,13 +47,14 @@ An example invocation of *dd_post*::
 
 By default, dd_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post  to defaults vhost '/' and default exchange 'amq.topic'.
+and sends the post  to defaults vhost '/' and default exchange. The default exchange 
+is the prefix 'xs_' followed by the broker username, hence defaulting to 'xs_guest'.
 A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 The output of the command is as follows ::
 
  [INFO] v02.post.data.shared.products.foo  '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
-              source=guest sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
+              sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
@@ -63,13 +64,12 @@ followed by a subtopic (see option) here the default, the file path separated wi
 *data.shared.products.foo*
 
 .. NOTE::
-  FIXME: the topic does not contain the user?  Should it contain the source user? some docs say yes.
+  FIXME: the topic does not contain the user?  Should it contain the source user? some docs say yes.  (MG... this is no longer the case... source being in amqp headers)
 
 The second field in the log line is the message notice.  It consists of a time 
 stamp *20150813161959.854*, and the source url of the file in the last 2 fields.
 
 the rest of the information comes message headers, consisting of key-value pairs.
-the first header should is *source=guest* indicating the user used to authenticate to the broker.
 The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
 ) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
 is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes
@@ -82,13 +82,10 @@ Another example::
 By default, dd_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to defaults vhost '/' and exchange 'amq.topic'
+(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
-
-.. NOTE::
-  FIXME: the amq.topic ... is this correct? xpublic? validate.
 
 
 ARGUMENTS AND OPTIONS
@@ -119,11 +116,9 @@ ARGUMENTS AND OPTIONS
 
 **[-ex|--exchange <exchange>]**
 
-  By default, the exchange used is amq.topic. This exchange is provided on broker
-  for general usage. It can be overwritten with this *exchange* option
-
-.. NOTE::
-   FIXME: default is wrong?  figure out how often used?
+  By default, the exchange used is xs_"broker_username".
+  This exchange must be previously created on broker by its administrator.
+  The default can be overwritten with this *exchange* option.
 
 **[-f|--flow <string>]**
 
