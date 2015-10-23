@@ -72,7 +72,6 @@ class dd_post(dd_config):
         self.msg = dd_message(self.logger)
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
-        self.msg.set_source(self.broker.username)
 
     def close(self):
         self.hc_post.close()
@@ -118,7 +117,7 @@ class dd_post(dd_config):
         self.logger.info("-c   <config_file>")
         self.logger.info("-dr  <document_root>   default:None")
         if self.program_name == 'dd_watch' : self.logger.info("-e   <events>          default:IN_CLOSE_WRITE\n")
-        self.logger.info("-ex  <exchange>        default:amq.topic")
+        self.logger.info("-ex  <exchange>        default:xs_\"broker.username\"")
         self.logger.info("-f   <flow>            default:None\n")
         self.logger.info("-h|--help\n")
         self.logger.info("-l   <logpath>         default:stdout")
