@@ -86,6 +86,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      in the opposite direction (flowing from consumers back to sources.)
      This is accomplished by ensuring that log messages for consumption are sent
      back throught the switching network to get to where the source can view them.
+
+     criteria:  log message inserted at one switch is routed correctly to a source
+     which inserted the relevant post into another switch.
  
   6. ( *Waiting* ) **source data routing (over multiple switches).**
      Currently, routing through multiple switches is done manually by admins.
@@ -183,11 +186,24 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      put all the logs in a common place, the configs in one place, start up ten different
      configurations together...
 
+     Depends on: Config File Paths.
+
  15. ( *Waiting* ) **Bandwidth Limiting**
      Need to be able to avoid saturating long links by limiting bandwidth usage.
      This needs to work over multiple nodes in DDSR, or SEP topologies.
      Suspect best path is to throttle message posting out of pre-validation?
 
+ 16. ( *InProgress* ) **Config File Paths**
+     Not baked yet.
+     Look in ~ then /etc ?   ~/.conf/sarracenia/?
+
+ 17. ( *InProgress* ) **Credential Store**
+
+     This one is only in ~/.conf/sarracenia/credentials.conf
+     Have a file format where passwords, and pointers to other credentials (keys) 
+     are stored, so that tools just refer to user@cluster, and look them up here.
+     Otherwise credentials end up on command-line, which is bad.
+     just a full URL + priv_key=
 
 
 Parking Lot For Initial Release
@@ -233,6 +249,14 @@ specific time line.
      So sources could move directories around, and just publish updated configurations to
      reflect the change.
      
+ 26. ( *Waiting* ) **ability to change password**
+     This might be tough...
+
+ 18. ( *Waiting* ) **Directory Integration**
+
+     Need to be able to use ActiveDirectory as the source for user info.
+     Not sure if this means being able to use Kerberos or not.
+     This is important to several NRC use cases, may be skewered if not present.
 
 Critical Deployment Elements
 ----------------------------

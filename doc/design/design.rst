@@ -177,11 +177,32 @@ Aspects of AMQP use can be either constraints or features:
 Application 
 ===========
 
-Description of application logic relevant to discussion.
+Description of application logic relevant to discussion.  There is a ´control plane´ where posts about new data available are made, and log messages reporting status of transfers of the same data are routed among control plane users and switches.  A switch is an AMQP broker, and users authenticate to the broker.  Data may (most of the time does) have a different other authentication method.  
 
-There are two very different use cases for file transfer:
- 1. **Public Dissemination** data is being produced, whose confidentiality is not an issue, the purpose is to disseminate to all who are interested as quickly and reliably as possible, potentially involving many copies. 
- 2. **Private Transfer** proprietary data is being generated, and needs to be moved to somewhere where it can be archived and/or processed effectively, or shared with specific collaborators. 
+There are very different security use cases for file transfer:
+
+ 1. **Public Dissemination** data is being produced, whose confidentiality is not an issue, the purpose is to 
+    disseminate to all who are interested as quickly and reliably as possible, potentially involving many 
+    copies.  The data authentication is typically null for this case.  Users just issue HTTP GET requests with 
+    no authentication.  for AMQP authentication, it can be done as anonymous, with no ability for providers to
+    monitor.  If there is to be support from the data source, then the source would assign a non-anonymous user
+    for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and alert
+    when problems arise.
+
+ 2. **Private Transfer** proprietary data is being generated, and needs to be moved to somewhere where it can be 
+    archived and/or processed effectively, or shared with specific collaborators.  AMQP and HTTP traffic must
+    be encrypted with SSL/TLS.  Authentication is typically common between AMQP and HTTPS. For Apache httpd
+    servers, the htpasswd/htaccess method will need to be continuously configured by the delivery system.
+    These transfers can have requirements for be high availability. 
+
+ 3. **Third Party Transfer** the control plane is explicitly used only to control the transfer, authentication
+    at both ends is done separately.  Users authenticate to the data-less, or SEP switch with AMQP, but the
+    authentication at both ends is outside sarracenia control.  Third-party transfer is limited to S=0.
+    If the data does not cross the switch, it cannot be forwarded. So no routing is relevant to this case.
+    Also dependent on the availability of the two end points throughout, so more difficult to assure in practice.
+
+Both public and private transfers are intended to support arbitrary chains of switches between *source* and *consumer*.
+The cases depend on routing of posts and log messages. 
 
 .. NOTE::
    forward routing...  Private and Public transfers... not yet clear, still considering.
@@ -245,7 +266,7 @@ For Public data, *feeders* for downstream switches connect to xPublic.
 They look at the to_clust Header in each message, and consult a post2cluster.conf file.
 post2cluster.conf is just a list of cluster names configured by the administrator::
 
-	ddi.cmc.ec.gc.ca
+        ddi.cmc.ec.gc.ca
         dd.weather.gc.ca
         ddi.science.gc.ca 
 
@@ -428,7 +449,20 @@ users are given access to these messages.
 For SEP topologies (see Topologies) things are much simpler as end users can just use mode bits.
 
 
+HTTPS Private Access
+~~~~~~~~~~~~~~~~~~~~
 
+.. NOTE:: 
+   FIXME: Not designed yet.
+   Really not baked yet.  For https, need to create/manage .htaccess (canned but generated every day) 
+   and .htpasswd (generated every day) files.  
+ 
+Need some kind of adm message that sources can send N switches later to alter the contents of .htpasswd
+CRUD? or just overwrite every time?  query?
+
+Sara likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.
+
+How to change passwords
 
 
 ==========
