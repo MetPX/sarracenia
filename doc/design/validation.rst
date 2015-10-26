@@ -43,30 +43,30 @@ This could be done, either as a distinct component or a pre-fetch script from dd
 ---
 postfetch:
 
-    malware scan.
-    probably do a demontration configuration with clamAV.
-	run a virus scan or other tool against the block obtained.
-	if an alert is triggerred, refuse to re-announce.	
+malware scan.
+probably do a demontration configuration with clamAV.
+run a virus scan or other tool against the block obtained.
+if an alert is triggerred, refuse to re-announce.	
 
-    security guys worry: 
-      splitting files up means some malware split on boundary, so it gets missed.
-      Do you interchange last nth of one part, with first nth of next part
-      to trigger a boundary scan?  worst case n=2.
+security guys worry: 
+splitting files up means some malware split on boundary, so it gets missed.
+Do you interchange last nth of one part, with first nth of next part
+to trigger a boundary scan?  worst case n=2.
 
-      ugh:
-      now you need to associate each pair of parts... 
-	triger exchange between them... 
-  
-      defer this ... 
+ugh:
+now you need to associate each pair of parts... 
+triger exchange between them... 
 
-    problem:  what to do if something fails the scan?
-        -- discard?
-        -- log and wait for a 'force' from the source?
-             aka quarantine...
-	-- consult a setting, that says 'let it go...'
-		administrator can set 'do not scan' on per source basis.
+defer this ... 
 
-	-- can set file size threshold for scanning.
+problem:  what to do if something fails the scan?
+ - discard?
+ - log and wait for a 'force' from the source?
+   aka quarantine...
+ - consult a setting, that says 'let it go...'
+   administrator can set 'do not scan' on per source basis.
+
+ - can set file size threshold for scanning.
 
 
 ---

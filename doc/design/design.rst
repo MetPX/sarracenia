@@ -7,19 +7,21 @@ Status: Pre-Draft
 
 .. section-numbering::
 
-This document reflects the current design at a more detailed level that the outline
-document.  See `Outline <Outline.html>`_ for an overview of the design requirements.  
-See `use-cases <use-cases.html>`_ for an exploration of functionality of how
-this design works in different situations.
+This document reflects the current design resulting from discussions and thinking
+at a more detailed level that the outline document.  See `Outline <Outline.html>`_ 
+for an overview of the design requirements.  See `use-cases <use-cases.html>`_ for 
+an exploration of functionality of how this design works in different situations.
+The way to make progress towards a working implementation is described in `plan <plan.html>`_.
 
+.. contents::
 
 =======================
 Assumptions/Constraints
 =======================
 
- - Are there cluster file systems available everywhere?
+ - Are there cluster file systems available everywhere? No.
 
- - an operational team might want to monitor/alert when certain transfers esperience difficulty.
+ - an operational team might want to monitor/alert when certain transfers experience difficulty.
 
  - security may want to run different scanning on different traffic (each block?)
    security might want us to refuse certain file types, so they go through heavier scanning.
@@ -49,7 +51,7 @@ Assumptions/Constraints
 
  - There are no proxies, no systems in the extranet are given exceptional permissions to
    initiate inbound connections.  File storage protocols etc... are completely isolated between
-   them.  There are no file systems available from OperationsOZ to CollabXRZ
+   them.  There are no file systems that cross network zone boundaries. 
 
  - One method of improving service reliability is to use internal services for internal use
    and reserve public facing services for external users.  Isolated services on the inside
@@ -65,30 +67,33 @@ may exist between origin and final delivery, and do the right thing.
 
 Why isn´t everything point to point, or when do you insert a switch?
 
-        - network topology/firewall rules sometimes require being at rest in a transfer area between two
-          organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
-          whenever traffic prevents initiating a connection, that indicates a store & forward switch
-          may be needed.
+ - network topology/firewall rules sometimes require being at rest in a transfer area between two
+   organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
+   whenever traffic prevents initiating a connection, that indicates a store & forward switch
+   may be needed.
 
-        - when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
-          care of sending it to multiple points.
+ - physical topology.  While connectivity may be present, optimal bandwidth use may involve 
+   not taking the default path from A to B, but perhaps passing through C.
 
-        - when the source data to be reliably available.  This translates to making many copies,
-          rather than just one, so it is easier for the source to post once, and have the network
-          take care of replication.
+ - when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
+   care of sending it to multiple points.
 
-        - for management reasons, you want to centrally observe data large transfers.
+ - when the source data needs to be reliably available.  This translates to making many copies,
+   rather than just one, so it is easier for the source to post once, and have the network
+   take care of replication.
 
-        - for management reasons, to have transfers  routed a certain way.
+ - for management reasons, you want to centrally observe data large transfers.
 
-        - for management reasons, to ensure that transfer failures are detected and escalated
-          when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
-          the issue.
+ - for management reasons, to have transfers  routed a certain way.
 
-        - For asynchronous transfers.  If the source has many other activities, it may want
-          to give responsibility to another service to do potentially lengthy file transfers.
-          the switch is inserted very near to the source, and is full store & forward. dd_post
-          completes (nearly instant), and from then on the switching network manages transfers.
+ - for management reasons, to ensure that transfer failures are detected and escalated
+   when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
+   the issue.
+
+ - For asynchronous transfers.  If the source has many other activities, it may want
+   to give responsibility to another service to do potentially lengthy file transfers.
+   the switch is inserted very near to the source, and is full store & forward. dd_post
+   completes (nearly instant), and from then on the switching network manages transfers.
 
 
 AMQP Feature Selection
@@ -102,7 +107,7 @@ to maximize potential for interoperability.
 
 Specifying the use of a protocol alone may be insufficient to provide enough information for
 data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
-need to be made above and beyond the protocol.
+need to be made above and beyond the basic protocol.
 
  - authenticated or anonymous use?
  - how to signal that a file transfer has completed (permission bits? suffix? prefix?)
@@ -152,6 +157,21 @@ between initial switch and final delivery.
 AMQP vhosts are not used.  Never saw any need for them. The commands support their optional 
 use, but there was no visible purpose to using them is apparent.
 
+Aspects of AMQP use can be either constraints or features:
+
+ - interaction with a broker are always authenticated.
+
+ - We define the *anonymous* for use in many configurations.
+
+ - users authenticate to local cluster only. We don´t impose any sort of credential or identity propagation
+   or federation, or distributed trust.  
+
+ - switches represent users by forwarding files on their behalf, there is no need to include
+   information about the source users later on in the network. 
+
+ - This means that if user A from S0 is defined, and a user is given the same name on S1, then they may 
+   collide. sad. Accepted as a limitation.
+
 
 ===========
 Application 
@@ -159,10 +179,13 @@ Application
 
 Description of application logic relevant to discussion.
 
+There are two very different use cases for file transfer:
+ 1. **Public Dissemination** data is being produced, whose confidentiality is not an issue, the purpose is to disseminate to all who are interested as quickly and reliably as possible, potentially involving many copies. 
+ 2. **Private Transfer** proprietary data is being generated, and needs to be moved to somewhere where it can be archived and/or processed effectively, or shared with specific collaborators. 
 
-
-Conventions
------------
+.. NOTE::
+   forward routing...  Private and Public transfers... not yet clear, still considering.
+   what is written here on that subject is tentative.
 
 To simplify discussions, names will be selected with a prefix things according to the type
 of entity: 
@@ -172,44 +195,241 @@ of entity:
  - users start with u. users are also referred to as *sources*
  - servers start with svr
  - clusters start with c
+ - ´switches´ is used as a synonym for cluster, and they start with S (capital S.): S0, S1, S2...
+
+on switches:
+ - users that switches used to authenticate to each other are **interswitch accounts**. Another word: **feeder** , **concierge**  ?
+ - users that inject data into the network are called **sources**.
+ - users that subscribe to data are called **consumers**.
 
 
+Routing
+-------
+
+There are two distinct flows to route: posts, and logs. 
+The following header in messages relate to routing, which are set in all messages.
+
+ - *source* - the user that injected the original post.
+ - *source_cluster* - the cluster where the source injected the post.
+ - *to_clust* - the comma separated list of destination clusters.
+ - *private* - the flag to indicate whether the data is private or public.
+
+An important goal of post routing is that the *source* decides where posts go, so 
+switching of individual products must be done only on the contents of the posts, not
+some administrator configuration.
+
+Administrators configure the inter switch connections (via SARA and other components)
+to align with network topologies, but once set up, all data should flow properly with 
+only source initiated routing commands. Some configuration may be needed on all switches
+whenever a new switch is added to the network.
 
 
+Routing Posts
+~~~~~~~~~~~~~
 
-Users, Queues & Exchanges 
--------------------------
+Post routing is the routing of the post messages announced by data *sources*.
+The data corresponding to the source follows the same sequence of switches as the posts
+themselves.  When a post is processed on a switch, it is downloaded, and then the posting
+is modified to reflect that´s availability from the next-hop switch.
 
- - Each group or person that transfers files needs a user name.
- - All users are authenticated 
- -  *anonymous* is a valid user in many configurations.
- - users authenticate to local cluster only.
- - switches represent users by forwarding files on their behalf.
+Post messages are defined in the dd_post(7) man page.  They are initially emitted by *sources*,
+published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to 
+either xPrivate or xPublic.
 
-Each user Alice on a server to which she has access:
- - has an exchange xs_Alice, where she writes her postings, and reads her logs from. 
- - has an exchange xl_Alice, where she writes her log messages.
- - can create queues qs_Alice_.* to bind to exchanges.
+.. note::
+   FIXME: Tentative!?
+   if not separate exchange, then anyone can see any post (not the data, but yes the post)
+   I think that´s not good.
 
-Switches connect with one another and 
+For Public data, *feeders* for downstream switches connect to xPublic.
+They look at the to_clust Header in each message, and consult a post2cluster.conf file.
+post2cluster.conf is just a list of cluster names configured by the administrator::
+
+	ddi.cmc.ec.gc.ca
+        dd.weather.gc.ca
+        ddi.science.gc.ca 
+
+This list of clusters is supposed to be the clusters that are reachable by traversing
+this switch.  If any cluster in post2cluster.conf is listed in the to_clust of the 
+message field, then the data needs to tr
+
+Separate Downstream *feeders* connect to xPrivate for private data.  Only *feeders* are
+allowed to connect to xprivate.
+
+.. Note::
+   FIXME: perhaps feed specific private exchanges for each feeder?  x2ddiedm, x2ddidor, x2ddisci ?
+   using one xPrivate means switches can see messages they may not be allowed to download
+   (lesser issue than with xPublic, but depends how trusted downstream switch is.)
+
+Routing Logs
+~~~~~~~~~~~~
+
+Log messages are defined in the dd_log(7) man page.  They are emitted by *consumers* at the end, 
+as well as *feeders* as the messages traverse switches.  log messages are posted to 
+the xl_<user> exchange, and after log validation queued for the xlog exchange.
+
+Messages in xlog destined for other clusters are routed to destinations by 
+log2cluster component using log2cluster.conf configuration file.  log2cluster.conf 
+uses space separated fields: First field is the cluster name (set as per soclust in 
+post messages, the second is the destination to send the log messages for posting 
+originating from that cluster to) Sample, log2cluster.conf::
+
+      clustername amqp://user@broker/vhost exchange=xlog
+
+Where message destination is the local cluster, log2user (log2source?) will copy
+the messages where source=<user> to sx_<user>.
+
+When a user wants to view their messages, they connect to sx_<user>. and subscribe.
+this can be done using *dd_subscribe -n  --topic_prefix=v02.log* or the equivalent *dd_log*.
+
 
 Security Model
 --------------
 
+
+
+Users, Queues & Exchanges 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user Alice, on a broker to which she has access:
+ - has an exchange xs_Alice, where she writes her postings, and reads her logs from. 
+ - has an exchange xl_Alice, where she writes her log messages.
+ - can create queues qs_Alice\_.* to bind to exchanges.
+
+Switches connect with one another using inter-exchange accounts.
  - Alice can create and destroy her own queues, but no-one else's.  
  - Alice can only write to her xs_exchange, 
  - Exchanges are managed by the administrator, and not any user.
  - Alice can only post data that she is publishing (it will refer back to her) 
 
-Pre-Validation
---------------
 
- - when a post message arrives on xs_Alice, it is read by FIXME  
- - FIXME overwrites the source to be Alice, and sets the cluster header.
-	- source=Alice
-	- cluster=
- - That process validates copies the posting to xFIXME2
- - It adds the header
+Pre-Validation
+~~~~~~~~~~~~~~
+
+Pre-Validation refers to security and correctness checks performed on 
+the information provided by the post message before the data itself is downloaded.
+Some tools may refer to this as *message validation*
+
+ - input sanitizing (looking for errors/malicious input.)
+ - an undefined number of checks that need to be configurable (script?)
+ - vary per configuration, and installation (sizes)
+
+When reading from a source:
+ - a post message arrives on xs_Alice, from a user logged in as Alice.
+ - overwrites the source to be Alice: source=Alice ... or reject?
+ - sets some headers that we do not trust users to do: cluster=
+ - set cluster header to local one.
+
+Reading from a feeder:
+ - source doesn´t matter. (feeders can represent other users)
+ - do not overwrite source.
+ - ensure cluster is not local cluster (as that would be a lie.) ?
+
+Regardless:
+ - check the partitioning size, if it exceeds switch maximum, Reject.
+ - check the bandwidth limitations in place. If exceeded, Hold.
+ - check the disk usage limit in place. If exceeded, Hold.
+ - If the private flag is set, then accept by copying to xPrivate
+ - If the private flag is not set, then accept by copy to xPublic
+
+Results:
+ - Accept means: queue the message to another exchange (xinput) for downloading.
+ - Reject means: do not copy message (still accept & ack so it leaves queue) product log message.
+ - Hold means:  do not consume... but sleep for a while.
+
+Hold is for temporary failure type reasons, such as bandwidth of disk space reasons. 
+as these reasons are independent of the particular message, hold applies for
+the entire queue, not just the message.
+
+After Pre-Processing, a component like dd_sara assumes the post message is good,
+and just processes it.  That means it will fetch the data from the posting source.
+Once the data is downloaded, it goes through Post-Validation.
+
+
+Post-Validation
+~~~~~~~~~~~~~~~
+ 
+When a file is downloaded, before re-announcing it for later hops it goes
+through some analysis.  The tools may call this *file validation*:
+
+ - when a file is downloaded, it goes through post-validation,
+ - invoke one or more virus scanners chosen by security  
+ - the scanners will not be the same everywhere, even different locations within
+   same org, may have different scanning standards (function on security zone.)
+
+ - Accept means:  it is OK to send this data to further hops in the network.
+ - Reject menas:  do not forward this data (potentially delete local copy.) Essentially *quarantine*
+
+
+Log Validation
+~~~~~~~~~~~~~~
+
+When a client like sara or subscribe completes an operation, it creates a log message 
+corresponding to the result of the operation.  (This is much lower granularity than a 
+local log files.) It is important for one client not to be able to impersonate another
+in creating log messages.  
+
+ - Messages in exchanges have no reliable means of determining who inserted them.
+ - so users publish their log messages to sl_<user> exchange.
+ - For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see dd_log(7) for user field
+ - sl_* are write-only for all users, they cannot read their own posts for that.
+ - is there some check about consuminghost?
+ - Accepting a log message means publishing on the xlog exchange.
+ - Only admin functions can read from xlog.
+ - downstream processing is from xlog exchange which is assumed clean.
+ - Rejecting a log message means not copying it anywhere. 
+
+ - sourcce check does not make sense when channels are used for inter-switch log routing.
+   Essentially, all downstream switches can do is forward to the source cluster.
+   The switches receiving the log messages must not convert the consuminguser on those links.
+   evidence of need of some sort of setting: user vs. inter-switch setting.
+
+... NOTE::
+   FIXME: if you reject a log message, does it generate a log message?
+   Denial of service potential by just generating infinite bogs log messages.
+   It is sad that if a connection is mis-configured as a user one, when it is inter-switch,
+   that will cause messages to be dropped.  how to detect configuration error?
+
+
+Private vs. Public Data Transfer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Transfers in the past have been public, just a matter of sharing public information.
+A crucial requirement of the package is to support private data copies, where the
+ends of the transfer are not sharing with arbitrary others.
+
+.. NOTE::
+   FIXME: This section is a half-baked idea! not sure how things will turn out.
+   basic problem:  Alice connecting to S1 wants to share with Bob, who has an
+   account on S3.  To get from S1 to S3, one needs to traverse S2.  the normal
+   way such routing is done is via a dd_sara subscription to xpublic on S1, and
+   S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
+   unless the http permissions are set to deny on S1 and S2. Eve should not have
+   access.  Implement via http/auth permitting inter-switch accounts on S2
+   to access S1/<private> and S3 account to S2/<private>. then permit bob on
+   S3.
+
+There are two modes of sending products through a network, private vs. public.
+With public sending, the information transmitted is assumed to be public and available
+to all comers,  If someone sees the data on an intervening switch, then they are likely
+to be able to download it at will without further arrangements.  public data is posted
+for inter-switch copies using the xPublic exchange, which all users may access as well.
+
+Private data is only made available to those who are explicitly permitted access.
+private data is made available only on the xPrivate exchange.  Only Interswitch channel
+users are given access to these messages.
+
+.. NOTE::
+   - Is two exchanges needed, or is setting permissions enough?
+   - if nobody on B is permitted, then only C is able to download from B, which just works.
+   - This only works with http because setting sftp permissions is going to be hell.  
+   - If only using http, then Even can still see all postings, just not get data, unless xprivate happens.
+
+For SEP topologies (see Topologies) things are much simpler as end users can just use mode bits.
+
+
+
+
 
 ==========
 Topologies
@@ -285,16 +505,15 @@ of DDSR's are essentially other sarracenia instances.
 There are still multiple options available within this configuration pattern.
 ddsr one broker per node?  (or just one broker ( clustered,logical ) broker?)
 
-on a switching/router, once delivery has occurred to all contexts, can you delete the file?
+On a switching/router, once delivery has occurred to all contexts, can you delete the file?
 Just watch the log files and tick off as each scope confirms receipt.
 when last one confirmed, delete. (makes re-xmit difficult ;-)
 
-based on a file size threshold? if the file is too big, don´t keep it around?
+Based on a file size threshold? if the file is too big, don´t keep it around?
 
 The intended purpose has a number of implementation options, which must be further sub-divided for analysis.
 
 
-----------------
 Independent DDSR 
 ----------------
 
@@ -319,7 +538,6 @@ with trigger it.
 CONFIRM: Maximum performance for a single transfer is limited to a single node.
 
 
-------------------
 Shared Broker DDSR
 ------------------
 
@@ -348,8 +566,8 @@ Broker clustering is considered mature technology, and therefore relatively trus
 
 
 
-DD: Data Dissemination Configuration
-------------------------------------
+DD: Data Dissemination Configuration (AKA: Data Mart)
+-----------------------------------------------------
 
 The dd deployment configuration is more of an end-point configuration.  Each node is expected to
 have a complete copy of all the data downloaded by all the nodes.   Giving a unified view makes
@@ -371,92 +589,94 @@ connection requests to a node for processing.
 
    broker on dd node has connection thereafter.
 
---------------
+
 Independent DD
 --------------
 
-- The load balancer hands the incoming requests to multiple Standalone_ configurations. 
+ - The load balancer hands the incoming requests to multiple Standalone_ configurations. 
 
-- Each node downloads all data.  Disk space requirements for nodes in this configuration 
-  are far larger than for DDSR nodes, where each node only has 1/n of the data.
+ - Each node downloads all data.  Disk space requirements for nodes in this configuration 
+   are far larger than for DDSR nodes, where each node only has 1/n of the data.
 
-- Each node announces each product that it has downloaded, using it's own node name, because
-  it does not know if other nodes have that product.
+ - Each node announces each product that it has downloaded, using it's own node name, because
+   it does not know if other nodes have that product.
 
-- Once a connection is established, the client will communicate exclusively with that node.
-  ultimate performance is limited by the individual node performance.
+ - Once a connection is established, the client will communicate exclusively with that node.
+   ultimate performance is limited by the individual node performance.
 
-- The data movers can (for maximum reliability) be configured independently, but if inputs 
-  are across the WAN, one can reduce bandwidth usage N times by havng N nodes 
-  share queues for distant sources and then have local transfers between the nodes.
+ - The data movers can (for maximum reliability) be configured independently, but if inputs 
+   are across the WAN, one can reduce bandwidth usage N times by havng N nodes 
+   share queues for distant sources and then have local transfers between the nodes.
 
-  CONFIRM: is *Fingerprint Winnowing* required for intra-cluster copies?
+   CONFIRM: is *Fingerprint Winnowing* required for intra-cluster copies?
 
-  When a single node fails, it ceases to download, and the other n-1 nodes continue transferring.
+   When a single node fails, it ceases to download, and the other n-1 nodes continue transferring.
+
+.. NOTE::
+  FIXME: shared broker and shared file system... hmm...  Could use second broker
+  instance to do cooperating download via fingerpring winnowing. 
 
 
 
-----------------
 Shared-Broker DD
 ----------------
 
-- a single clustered broker is shared by all nodes.
+ - a single clustered broker is shared by all nodes.
 
-- Each node downloads all data.  Disk space requirements for nodes in this configuration 
-  are far larger than for DDSR nodes, where each node only has 1/n of the data.
+ - Each node downloads all data.  Disk space requirements for nodes in this configuration 
+   are far larger than for DDSR nodes, where each node only has 1/n of the data.
 
-- clients connect to a cluster-wide broker instance, so the download links can be from any
-  node in the cluster.
+ - clients connect to a cluster-wide broker instance, so the download links can be from any
+   node in the cluster.
 
-- if the clustered broker fails, the service is down. (should be reliable)
+ - if the clustered broker fails, the service is down. (should be reliable)
 
-- A node cannot announce each product that it has downloaded, using it's own node name, because
-  it does not know if other nodes have that product.   (announce as dd1 vs. dd)
+ - A node cannot announce each product that it has downloaded, using it's own node name, because
+   it does not know if other nodes have that product.   (announce as dd1 vs. dd)
 
-- Either:
+ - Either:
 
     -- Can only announce a product once it is clear that every active node has the product.
-    -- 1st come, 1st serve:  apply fingerprint winnowing. Announce only node that got the data 
-       first. 
+    -- 1st come, 1st serve:  apply fingerprint winnowing. Announce only node that got the data first. 
   
 
-- as in the independent configuration, nodes share queues and download a fraction upstream data.
-  They therefore need to exchange data amongst each other, but that means using a non-clustered
-  broker. So likely there will be two brokers access by the nodes, one node local, and one shared.
+ - as in the independent configuration, nodes share queues and download a fraction upstream data.
+   They therefore need to exchange data amongst each other, but that means using a non-clustered
+   broker. So likely there will be two brokers access by the nodes, one node local, and one shared.
 
-- this is more complicated, but avoids the need for a clustered file system. hmm... pick your poison.
-  demo both?
+ - this is more complicated, but avoids the need for a clustered file system. hmm... pick your poison.
+   demo both?
 
---------------
 Shared-Data DD
 --------------
 
-- The load balancer hands the incoming request to multiple nodes.
+ - The load balancer hands the incoming request to multiple nodes.
 
-- Each node has read/write access to a shared/cluster file system.
+ - Each node has read/write access to a shared/cluster file system.
 
-- clustered broker configuration, all nodes see the same broker.
+ - clustered broker configuration, all nodes see the same broker.
 
-- downloaded once means available everywhere (written to a shared disk)
+ - downloaded once means available everywhere (written to a shared disk)
 
-- so can advertise immediately with shared host spec (dd vs. dd1)
+ - so can advertise immediately with shared host spec (dd vs. dd1)
 
-- if the clustered broker fails, the service is down. (should be reliable)
+ - if the clustered broker fails, the service is down. (should be reliable)
 
-- if the clustered file system fails, the service is down. (??)
+ - if the clustered file system fails, the service is down. (??)
 
 
 
 SEP: Shared End-Point Configuration
 -----------------------------------
 
-In this configuration, all of the mover nodes are directly accessible to users.
-The broker does not provide data mover service, just a pure message broker.
+The SEP configuration, all of the mover nodes are directly accessible to users.
+The broker does not provide data service, just a pure message broker. Can be called
+*data-less* switch, or a *bunny*.
 
-The broker is run clustered, and all of the mover nodes have access to the same
-cluster file systems.  subscribers and watchers can be started up by anyone on
-any collection of nodes, and all data visible from any node.
+The broker is run clustered, and nothing can be said about the mover nodes.
+Consumers and watchers can be started up by anyone on any collection of nodes, 
+and all data visible from any node where cluster file systems provide that benefit.
 
-disk space administration is entirely a user configuration setting, not in
+Disk space administration is entirely a user configuration setting, not in
 control of the application (users set ordinary quotas for their file systems directly)
 
