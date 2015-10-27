@@ -55,7 +55,8 @@ class dd_instances(dd_config):
 
     def build_parent(self):
         self.logpath    = None
-        self.basic_name = self.program_name + '_' + self.config_name 
+        self.basic_name = self.program_name
+        if self.config_name : self.basic_name += '_' + self.config_name 
         self.statefile  = self.exedir + os.sep + '.' + self.basic_name + '.state'
         self.last_nbr_instances = self.file_get_int(self.statefile)
         if self.last_nbr_instances == None : self.last_nbr_instances = 0
@@ -63,7 +64,7 @@ class dd_instances(dd_config):
     def build_instance(self,i):
         self.instance      = i
         self.instance_name = self.basic_name + '_%.4d'%i
-        self.instance_str  = self.program_name + ' ' + self.config_name + ' (%.4d)'%i
+        self.instance_str  = self.instance_name.replace('_',' ')
         self.pidfile       = self.exedir + os.sep + '.' + self.instance_name + '.pid'
         self.logpath       = self.logdir + os.sep +       self.instance_name + '.log'
 
