@@ -109,7 +109,6 @@ def file_insert_part(msg,part_file):
 
     msg.set_topic_url('v02.post',msg.target_url)
     msg.set_notice(msg.target_url,msg.time)
-    msg.rename  = None
     msg.code    = 201
     msg.message = 'Published'
     msg.publish()
@@ -261,7 +260,6 @@ def file_truncate(msg):
 
                 msg.set_topic_url('v02.post',msg.target_url)
                 msg.set_notice(msg.target_url,msg.time)
-                msg.rename  = None
                 msg.code    = 205
                 msg.message = 'Reset Content :truncated'
                 msg.log_info()
