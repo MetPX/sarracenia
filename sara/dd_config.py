@@ -57,10 +57,6 @@ class dd_config:
 
         self.setlog()
 
-        # installation general configurations and settings
-
-        self.general()
-        
         # check arguments
 
         if args == [] : args = None
@@ -144,6 +140,10 @@ class dd_config:
 
         self.source_topic         = None
 
+        self.source_from_exchange = False
+        self.from_cluster         = None
+        self.to_clusters          = []
+
         self.ftp_user             = None
         self.ftp_password         = None
         self.ftp_mode             = 'passive'
@@ -183,6 +183,10 @@ class dd_config:
         homedir = os.path.expanduser("~")
         confdir = homedir + '/.config/sara/'
 
+        # sara.conf ... defaults for the server
+        sara = homedir + '/.config/sara/sara.conf'
+        if os.path.isfile(sara) : self.config(sara)
+
         # read in provided credentials
         credent = confdir + 'credentials.conf'
         self.credentials = []
@@ -203,8 +207,9 @@ class dd_config:
         self.logger.debug("credentials = %s\n" % self.credentials)
 
         # read in provided cluster infos
-        cluster = confdir + 'clusters.conf'
-        self.clusters = {}
+        cluster = confdir + 'log_routing.conf'
+        self.log_clusters = {}
+        i = 0
         try :
                  f = open(cluster,'r')
                  lines = f.readlines()
@@ -213,9 +218,6 @@ class dd_config:
                      line = line.strip()
                      if len(line) == 0 or line[0] == '#' : continue
                      parts = line.split()
-                     if parts[0] == 'self' :
-                       self.clustername = parts[1]
-                       continue
                      name  = parts[0]
                      u     = urllib.parse.urlparse(parts[1])
                      ok, url = self.validate_amqp_url(u)
@@ -223,14 +225,12 @@ class dd_config:
                         self.logger.error("problem with %s" % parts[1])
                      # fixme parts[2] exchange should be optional
                      exch  = parts[2]
-                     self.clusters[name] = (url,exch)
+                     self.log_clusters[i] = (name,url,exch)
+                     i = i + 1
 
         # cluster file is not mandatory
         except : pass
-        if not hasattr(self,'clustername') :
-           self.clustername = socket.gethostname()
-        self.logger.debug("clusters = %s\n" % self.clusters)
-        self.logger.debug("clustername = %s\n" % self.clustername)
+        self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
 
     def isTrue(self,s):
@@ -287,6 +287,15 @@ class dd_config:
                         ok = False
 
                      if not ok : needexit = True
+                     n = 2
+
+                elif words[0] in ['from_cluster','-fc','--from_cluster']:
+                     self.from_cluster = words[1] 
+                     n = 2
+
+                elif words[0] in ['to_clusters','-tc','--to_clusters']:
+                     w = words[1].strip(',')
+                     self.to_clusters.extend(w.split(','))
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:
@@ -406,6 +415,14 @@ class dd_config:
                 elif words[0] in ['source_exchange','-se','--source_exchange']:
                      self.source_exchange = words[1]
                      n = 2
+
+                elif words[0] in ['source_from_exchange','-sfe','--source_from_exchange']:
+                     if words[0][0:1] == '-' : 
+                        self.source_from_exchange = True
+                        n = 1
+                     else :
+                        self.source_from_exchange = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['ftp_user','-fu','--ftp_user']:
                      self.ftp_user = words[1]
