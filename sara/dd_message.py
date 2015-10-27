@@ -53,11 +53,7 @@ class dd_message():
         self.notice        = None
         self.headers       = {}
 
-        self.flow          = None
-        self.message       = None
         self.partstr       = None
-        self.rename        = None
-        self.source        = None
         self.sumstr        = None
         self.sumflg        = None
 
@@ -102,11 +98,7 @@ class dd_message():
         if type(msg.body) == bytes :
            self.notice = msg.body.decode("utf-8")
   
-        self.flow      = None
-        self.message   = None
         self.partstr   = None
-        self.rename    = None
-        self.source    = None
         self.sumstr    = None
 
         token        = self.topic.split('.')
@@ -126,7 +118,6 @@ class dd_message():
         self.log_notice   = "%s %d %s %s %f" % \
                        (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.headers['message'] = self.message
-        self.set_headers()
 
         if self.amqp_log != None :
            log_exchange = 'xlog'
@@ -137,6 +128,7 @@ class dd_message():
         self.log_amqp()
 
         if self.logger   != None :
+           self.set_hdrstr()
            self.logger.error("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
 
         del self.headers['message']
@@ -145,7 +137,7 @@ class dd_message():
         self.log_amqp()
 
         if self.logger   != None :
-           self.set_headers()
+           self.set_hdrstr()
            self.logger.info("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
 
         del self.headers['message']
@@ -170,29 +162,20 @@ class dd_message():
 
         self.filename = self.headers['filename']
 
-        self.hdrstr   = ''
-
-        self.source   = 'metpx'
-        self.headers['source'] = self.source
-        self.hdrstr  += '%s=%s ' % ('source',self.source)
+        self.headers['source'] = 'metpx'
 
         self.partstr = '1,%d,1,0,0' % self.filesize
         self.headers['parts'] = self.partstr
-        self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
 
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
-        self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
-
-        self.flow    = None
-        self.rename  = None
-        self.message = None
 
         self.suffix = ''
         
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
+        self.set_hdrstr()
 
     def parse_v02_post(self):
 
@@ -207,37 +190,13 @@ class dd_message():
         self.url     = urllib.parse.urlparse(token[1]+token[2])
         self.path    = token[2]
 
-        self.hdrstr  = ''
-
-        self.source  = None
-        if 'source'  in self.headers :
-           self.source   = self.headers['source']
-           self.hdrstr  += '%s=%s ' % ('source',self.source)
-
         self.partstr = None
         if 'parts'   in self.headers :
            self.partstr  = self.headers['parts']
-           self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
 
         self.sumstr  = None
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
-           self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
-
-        self.flow    = None
-        if 'flow'    in self.headers :
-           self.flow     = self.headers['flow']
-           self.hdrstr  += '%s=%s ' % ('flow',self.flow)
-
-        self.rename  = None
-        if 'rename'  in self.headers :
-           self.rename   = self.headers['rename']
-           self.hdrstr  += '%s=%s ' % ('rename',self.rename)
-
-        self.message = None
-        if 'message' in self.headers :
-           self.message  = self.headers['message']
-           self.hdrstr  += '%s=%s ' % ('message',self.message)
 
         self.suffix = ''
 
@@ -245,6 +204,7 @@ class dd_message():
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
+        self.set_hdrstr()
 
     def part_suffix(self):
         return '.%d.%d.%d.%d.%s.%s' %\
@@ -255,19 +215,23 @@ class dd_message():
            self.amqp_pub.publish(self.exchange_pub,self.topic,self.notice,self.headers)
         self.log_info()
 
+    def set_from_cluster(self,from_cluster=None):
+        if from_cluster != None :
+           self.headers['from_cluster'] = from_cluster
+        elif 'from_cluster' in self.headers :
+           del self.headers['from_cluster']
+
     def set_exchange(self,name):
         self.exchange = name
 
     def set_flow(self,flow=None):
-        self.flow   = flow
+        if flow != None :
+           self.headers['flow'] = flow
+        elif 'flow' in self.headers :
+           del self.headers['flow']
 
-    def set_headers(self):
-        self.headers = {}
+    def set_hdrstr(self):
         self.hdrstr  = ''
-
-        if self.source  != None :
-           self.headers['source']  = self.source
-           self.hdrstr  += '%s=%s ' % ('source',self.source)
 
         if self.partstr != None :
            self.headers['parts']   = self.partstr
@@ -277,17 +241,27 @@ class dd_message():
            self.headers['sum']     = self.sumstr
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        if self.flow    != None :
-           self.headers['flow']    = self.flow
-           self.hdrstr  += '%s=%s ' % ('flow',self.flow)
+        if 'from_cluster' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('from_cluster',self.headers['from_cluster'])
 
-        if self.rename  != None :
-           self.headers['rename']  = self.rename
-           self.hdrstr  += '%s=%s ' % ('rename',self.rename)
+        if 'source' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
 
-        if self.message != None :
-           self.headers['message'] = self.message
-           self.hdrstr  += '%s=%s ' % ('message',self.message)
+        if 'to_clusters' in self.headers :
+           self.hdrstr  += 'to_clusters='
+           for c in self.headers['to_clusters']:
+               self.hdrstr  += '%s' % c
+               if c != self.headers['to_clusters'][-1] : self.hdrstr += ','
+           self.hdrstr += ' '
+
+        if 'flow' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
+
+        if 'rename' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('rename',self.headers['rename'])
+
+        if 'message' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('message',self.headers['message'])
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
@@ -474,11 +448,17 @@ class dd_message():
            self.filesize  += self.remainder   - self.chunksize
            if self.lastchunk : self.length    = self.remainder
 
-    def set_rename(self,rename):
-        self.rename = rename
+    def set_rename(self,rename=None):
+        if rename != None :
+           self.headers['rename'] = rename
+        elif 'rename' in self.headers :
+           del self.headers['rename']
 
-    def set_source(self,source):
-        self.source = source
+    def set_source(self,source=None):
+        if source != None :
+           self.headers['source'] = source
+        elif 'source' in self.headers :
+           del self.headers['source']
 
     def set_sum(self,sumflg='d',checksum=0):
         self.sumflg    =  sumflg
@@ -511,6 +491,13 @@ class dd_message():
         msec = '.%d' % (int(round(time.time() * 1000)) %1000)
         now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
         self.time = now
+
+    def set_to_clusters(self,to_clusters=None):
+        if to_clusters == None or len(to_clusters) == 0 :
+           if 'to_clusters' in self.headers :
+              del self.headers['to_clusters']
+           return
+        self.headers['to_clusters'] = to_clusters
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
