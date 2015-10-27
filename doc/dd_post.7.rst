@@ -188,6 +188,12 @@ appropriate.   Headers are a mandatory element included in later versions of the
 
    A user defined string used to group data transfers together, unused by the protocol.
 
+
+**from_cluster=<cluster_name>**
+ The from_cluster defines the name of the source cluster where the data was introduced into the network.
+ The cluster name should be unique within all exchanging rabbitmq clusters.
+ It is used to return the logs back to the cluster whenever its products are used.
+
 .. _parts:
 
 **parts=<method>,<bsz>,<blktot>,<brem>,bno**
@@ -297,6 +303,13 @@ appropriate.   Headers are a mandatory element included in later versions of the
  +-----------+---------------------------------------------------------------------+
 
  *<value>* The value is computed by applying the given method to the partition being transferred.
+
+
+**to_clusters=<cluster_name1,cluster_name2,...>**
+ The to_clusters defines a list of destination clusters where the data should go into the network.
+ Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
+ of the products and their notices through the exchanging clusters.
+
 
 All other headers are reserved for future use. 
 
