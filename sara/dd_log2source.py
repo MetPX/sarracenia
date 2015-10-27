@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_log2source.py : python3 program allowing sarracenia logs to be written back to 
-#                    the source user's exchange
+# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+#                   as soon as they are made available (through amqp notifications)
 #
 #
 # Code contributed by:
@@ -35,157 +35,208 @@
 #
 #
 
-import amqplib.client_0_8 as amqp
-import logging,logging.handlers
-import getopt, os, sys, time
+import signal
 
-try :    from dd_amqp      import *
-except : from sara.dd_amqp import *
+#============================================================
+# usage example
+#
+# dd_log2source -b broker -i 1
 
-# ==========
-# MAIN
-# ==========
+#============================================================
 
-def help():
-    print("Usage: %s [-h] [-l logdir] host user password")
-
-def main():
-
-    # default options
-
-    ldir     = None
-    host     = 'localhost'
-    user     = 'guest'
-    password = 'guest'
-
-    # options from arguments
-
-    try:
-           opts, args = getopt.getopt(sys.argv[1:],'hl:',['help','log-dir='])
-    except getopt.GetoptError as err:    
-           help()
-           sys.exit(2)                    
-    
-    #validate options
-    if opts == [] and args == []:
-      help()  
-      sys.exit(2)
-
-    for o, a in opts:
-        if o in ('-h','--help'):
-           help()
-           sys.exit(0)
-        elif o in ('-l','--log-dir'):
-           ldir = a       
-           if not os.path.exists(ldir) :
-              print("Error 2: specified logging directory does not exist.")
-              help()
-              sys.exit(3)
-        
-    #validate arguments
-    if len(args) == 2:
-       user   = args[0]
-       passwd = args[1]
-
-    if len(args) == 3:
-       host   = args[0]
-       user   = args[1]
-       passwd = args[2]
-
-    if len(args) == 1 or len(args) > 3:
-      help()  
-      sys.exit(4)
-
-    # logging to stdout
-    LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-
-    if ldir == None :
-       logger = logging.getLogger(__name__)
-       logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-
-    # user wants to logging in a directory/file
-    else :
-       lfn    = "dd_log2source.log"
-       lfile  = ldir + os.sep + lfn
-
-       # Standard error is redirected in the log
-       sys.stderr = open(lfile, 'a')
-
-       # python logging
-       logger = None
-       fmt    = logging.Formatter( LOG_FORMAT )
-       hdlr   = logging.handlers.TimedRotatingFileHandler(lfile, when='midnight', interval=1, backupCount=5) 
-       hdlr.setFormatter(fmt)
-       logger = logging.getLogger(lfn)
-       logger.setLevel(logging.INFO)
-       logger.addHandler(hdlr)
-
-    # =========================
-    # consuming log part
-    # =========================
-
-    # consuming connection
-
-    hc_con = HostConnect( host, None, user, passwd, ssl = False, logger = logger, loop=True)
-    hc_con.connect()
-
-    # will use log exchange
-    e  = Exchange(hc_con,'log')
-    e.build()
-
-    # will use a log queue
-    q  = Queue(hc_con,'cmc.dd_log2source')
-    q.add_binding('log','v01.log.#')
-    q.build()
-
-    
-    # will consume from that queue
-    c = Consumer(hc_con)
-    c.build()
+try :    
+         from dd_amqp           import *
+         from dd_instances      import *
+         from dd_message        import *
+except : 
+         from sara.dd_amqp      import *
+         from sara.dd_instances import *
+         from sara.dd_message   import *
 
 
-    # =========================
-    # publishing part
-    # =========================
+class dd_log2source(dd_instances):
 
-    hc_pub = hc_con
+    def __init__(self,config=None,args=None):
+        dd_instances.__init__(self,config,args)
+        self.defaults()
+        self.exchange = 'xlog'
+        self.topic    = 'v02.log.#'
+        self.broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.configure()
 
-    # will publish 
 
-    p = Publisher(hc_pub)
-    p.build()
+    def check(self):
+        # dont want to recreate these if they exists
+        if not hasattr(self,'msg') :
+           self.msg = dd_message(self.logger)
 
-    # loop on all logs entries
+    def close(self):
+        self.hc.close()
 
-    while True :
+    def configure(self):
+
+        # installation general configurations and settings
+
+        self.general()
+
+        # arguments from command line
+
+        self.args(self.user_args)
+
+        # config from file
+
+        self.config(self.user_config)
+
+        # verify all settings
+
+        self.check()
+        self.logger.info("nbr_instances %d"% self.nbr_instances)
+
+
+    def connect(self):
+
+        # =============
+        # consumer
+        # =============
+
+        # consumer host
+
+        self.hc = HostConnect( logger = self.logger )
+        self.hc.set_url( self.broker )
+        self.hc.connect()
+
+        # consumer  add_prefetch(1) allows queue sharing between instances
+
+        self.consumer  = Consumer(self.hc)
+        self.consumer.build()
+
+        # consumer queue
+
+        name  = 'q_' + self.broker.username + '.' + self.program_name
+        if self.queue_name != None :
+           name = 'q_' + self.source_broker.username + '.' + self.queue_name
+
+        self.queue = Queue(self.hc,name)
+        self.queue.add_binding(self.exchange,self.topic)
+        self.queue.build()
+
+        # publisher
+
+        self.pub = Publisher(self.hc)
+        self.pub.build()
+
+
+    def help(self):
+        self.logger.info("Usage: %s -b <broker> -i <instances> [start|stop|restart|reload|status]  \n" % self.program_name )
+        self.logger.info("OPTIONS:")
+        self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
+        self.logger.info("-i   <instances> default:1")
+
+    def run(self):
+
+        self.logger.info("dd_log2source run")
+
+        self.connect()
+
+        self.msg.logger       = self.logger
+        self.msg.amqp_log     = None
+        self.msg.amqp_pub     = None
+
+        #
+        # loop on all message
+        #
+
+        raw_msg = None
+
+        while True :
 
           try  :
-                 msg = c.consume(q.qname)
-                 if msg == None : continue
+                 if raw_msg != None : self.consumer.ack(raw_msg)
 
-                 body   = msg.body
-                 parts  = body.split()
-                 md5sum = parts[0]
+                 raw_msg = self.consumer.consume(self.queue.qname)
+                 if raw_msg == None : continue
 
-                 hdr = msg.properties['application_headers']
-                 key = msg.delivery_info['routing_key']
-                 fn  = hdr['filename']
+                 # make use it as a dd_message
 
-                 parts = key.split('.')
-                 exchange_name = 'sx_' + parts[3]
+                 self.msg.from_amqplib(raw_msg)
 
-                 logger.info(" exchange_name = %s" % exchange_name)
-                 logger.info(" key  = %s" % key)
-                 logger.info(" body = %s" % body)
-                 p.publish(exchange_name,key,body + ' x',fn)
-                 c.ack(msg)
+                 self.logger.info("Received topic   %s" % self.msg.topic)
+                 self.logger.info("Received notice  %s" % self.msg.notice)
+                 self.logger.info("Received headers %s\n" % self.msg.hdrstr)
+
+                 # check for  from_cluster and source in headers
+
+                 if not 'from_cluster' in self.msg.headers :
+                    self.logger.info("skipped : no from_cluster in message headers")
+                    continue
+
+                 if not 'source' in self.msg.headers :
+                    self.logger.info("skipped : no source in message headers")
+                    continue
+
+                 # skip if from_cluster is not self.broker.hostname
+
+                 if self.msg.headers['from_cluster'] != self.broker.hostname :
+                    self.logger.info("not for this cluster %s\n" % self.broker.hostname )
+                    continue
+
+                 # ok ship it back to the user exchange 
+
+                 user_exchange = 'xl_' + self.msg.headers['source']
+
+                 ok = self.pub.publish( user_exchange, self.msg.topic, self.msg.notice, self.msg.headers )
+                 if ok : self.logger.info("published to %s" % user_exchange)
+
 
           except :
                  (type, value, tb) = sys.exc_info()
-                 logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
-    hc_con.close()
-    hc_pub.close()
+    def reload(self):
+        self.logger.info("dd_log2source reload")
+        self.close()
+        self.configure()
+        self.run()
+
+    def start(self):
+        self.configure()
+        self.logger.info("dd_log2source start")
+        self.run()
+
+    def stop(self):
+        self.logger.info("dd_log2source stop")
+        self.close()
+        os._exit(0)
+                 
+
+# ===================================
+# MAIN
+# ===================================
+
+def main():
+
+    action = None
+    args   = None
+    config = None
+
+    if len(sys.argv) >= 3 :
+       action = sys.argv[-1]
+       if len(sys.argv) > 3: args = sys.argv[1:-1]
+
+    log2source = dd_log2source(config,args)
+
+    if   action == 'reload' : log2source.reload_parent()
+    elif action == 'restart': log2source.restart_parent()
+    elif action == 'start'  : log2source.start_parent()
+    elif action == 'stop'   : log2source.stop_parent()
+    elif action == 'status' : log2source.status_parent()
+    else :
+           log2source.logger.error("action unknown %s" % action)
+           sys.exit(1)
+
+    sys.exit(0)
+
+
 
 # =========================================
 # direct invocation
