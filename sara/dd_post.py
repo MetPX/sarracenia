@@ -72,11 +72,17 @@ class dd_post(dd_config):
         self.msg = dd_message(self.logger)
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
+        self.msg.set_flow(self.flow)
+        self.msg.set_to_clusters(self.to_clusters)
 
     def close(self):
         self.hc_post.close()
 
     def configure(self):
+
+        # installation general configurations and settings
+
+        self.general()
 
         # defaults general and proper to dd_post
 
@@ -122,6 +128,7 @@ class dd_post(dd_config):
         self.logger.info("-h|--help\n")
         self.logger.info("-l   <logpath>         default:stdout")
         self.logger.info("-p   <parts>           default:1")
+        self.logger.info("-tc  <to_clusters>     default:None")
         self.logger.info("-tp  <topic_prefix>    default:v02.post")
         self.logger.info("-sub <subtopic>        default:'path.of.file'")
         self.logger.info("-rn  <rename>          default:None")
@@ -261,7 +268,7 @@ class dd_post(dd_config):
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         self.msg.set_notice(self.url)
-        self.msg.set_headers()
+        self.msg.set_hdrstr()
         self.logger.info("%s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
         ok = self.pub.publish( self.msg.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
         if not ok : sys.exit(1)
