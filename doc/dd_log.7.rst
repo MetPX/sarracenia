@@ -157,7 +157,8 @@ EXAMPLE
 
  topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 201 castor anonymous 0.0006767 
- headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded source=ec_cmc
+ headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded source=ec_cmc from_cluster=ddi.cmc.ec.gc.ca to_clusters=ddi.science.gc.ca,bunny.nrcan.gc.ca
+
 
    v02 - version of protocol
    post - indicates the type of message
@@ -165,6 +166,10 @@ EXAMPLE
         version and type together indicate the format of the message.
 
    ec_cmc - the account used to issue the post (unique in a network).
+
+   ddi.cmc.ec.gc.ca - the originating cluster for that product
+
+   ddi.science.gc.ca,bunny.nrcan.gc.ca - the destination clusters for that product
 
           -- blocksize is 457  (== file size)
           -- block count is 1
