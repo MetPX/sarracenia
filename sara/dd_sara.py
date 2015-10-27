@@ -98,13 +98,10 @@ class dd_sara(dd_instances):
         self.consumer.add_prefetch(1)
         self.consumer.build()
 
-
         # consumer queue
-
-        # OPTION ON QUEUE NAME ?
-        name  = 'cmc.' + self.program_name + '.' + self.config_name
+        name  = 'q_' + self.source_broker.username + '.' + self.program_name + '.' + self.config_name
         if self.queue_name != None :
-           name = self.queue_name
+           name = 'q_' + self.source_broker.username + '.' + self.queue_name
 
         self.queue = Queue(self.hc_src,name)
         self.queue.add_binding(self.source_exchange,self.source_topic)
@@ -131,6 +128,10 @@ class dd_sara(dd_instances):
         self.amqp_pub.build()
 
     def configure(self):
+
+        # installation general configurations and settings
+
+        self.general()
 
         # arguments from command line
 
@@ -196,7 +197,8 @@ class dd_sara(dd_instances):
         self.logger.info("-sb  <source_broker>         default amqp://guest:guest@localhost/")
         self.logger.info("-se  <source_exchange>       default amq.topic")
         self.logger.info("-st  <source_topic>          default v02.post.#")
-        self.logger.info("-qn  <queue_name>            default dd_sara.config_name")
+        self.logger.info("-qn  <queue_name>            default q_username.config_name")
+        self.logger.info("-m   <mirror>                default True")
         self.logger.info("-ms  <message_validation_script>")
         self.logger.info("-fs  <file_validation_script>")
         self.logger.info("-sk  <ssh_keyfile>")
@@ -212,18 +214,17 @@ class dd_sara(dd_instances):
         # relative path by default mirror 
 
         self.rel_path = '%s' % self.msg.path
-        if self.msg.rename != None :
-           self.rel_path = '%s' % self.msg.rename
+        if 'rename' in self.msg.headers :
+           self.rel_path = '%s' % self.msg.headers['rename']
 
         # if we dont mirror force  yyyymmdd/source in front
 
         if not self.mirror :
            yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-           #yyyymmdd  = self.msg.time[:8]
            self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
 
-           if self.msg.rename != None :
-              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.rename)
+           if 'rename' in self.msg.headers :
+              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.headers['rename'])
               self.rel_path = self.rel_path.replace('//','/')
 
         token = self.rel_path.split('/')
@@ -236,6 +237,7 @@ class dd_sara(dd_instances):
            else :                       token = token[self.strip:]
            self.rel_path = '/'.join(token)
 
+
         self.local_dir  = ''
         if self.document_root != None :
            self.local_dir = self.document_root 
@@ -247,6 +249,9 @@ class dd_sara(dd_instances):
         self.local_dir  = self.local_dir.replace('//','/')
         self.local_file = self.local_dir   + '/' + self.filename
         self.local_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
+
+        # we dont propagate renaming... once used get rid of it
+        if 'rename' in self.msg.headers : del self.msg.headers['rename']
 
     def validate_file(self,target_file, offset, length):
 
@@ -304,6 +309,18 @@ class dd_sara(dd_instances):
 
                  self.msg.from_amqplib(raw_msg)
                  self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+
+                 # setting source from exchange 
+
+                 if self.source_from_exchange :
+                    ok = self.set_source()
+                    if not ok : continue
+
+                 # setting cluster if not defined
+
+                 if not 'from_cluster' in self.msg.headers :
+                    ok = self.set_from_cluster()
+                    if not ok : continue
 
                  # message validation
 
@@ -392,7 +409,6 @@ class dd_sara(dd_instances):
 
                  self.msg.set_topic_url('v02.post',self.msg.local_url)
                  self.msg.set_notice(self.msg.local_url,self.msg.time)
-                 self.msg.rename  = None
                  self.msg.code    = 201
                  self.msg.message = 'Published'
                  self.msg.publish()
@@ -405,6 +421,33 @@ class dd_sara(dd_instances):
           except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+
+    def set_from_cluster(self):
+        if self.from_cluster == None :
+           self.msg.code    = 403
+           self.msg.message = "Forbidden : message without cluster"
+           self.msg.log_error()
+           return False
+
+        self.msg.set_from_cluster(self.from_cluster)
+        self.msg.code = 205
+        self.msg.message = "Reset content : message from_cluster to %s" % self.from_cluster
+        self.msg.log_info()
+        return True
+
+    def set_source(self):
+        if self.msg.exchange[:3] != 'xs_' :
+           self.msg.code    = 403
+           self.msg.message = "Forbidden : message without source"
+           self.msg.log_error()
+           return False
+
+        source = self.msg.exchange[3:]
+        self.msg.set_source(source)
+        self.msg.code = 205
+        self.msg.message = "Reset content : message source to %s" % source
+        self.msg.log_info()
+        return True
 
     def reload(self):
         self.logger.info("dd_sara reload")
