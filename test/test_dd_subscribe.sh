@@ -1,8 +1,11 @@
 #!/bin/ksh
 
-echo killall dd_subscribe.py
+DD_SUBSCRIBE=../sara/dd_subscribe
 
-killall dd_subscribe.py > /dev/null 2>&1
+echo killall ${DD_SUBSCRIBE##.*/}
+
+
+killall ${DD_SUBSCRIBE##.*/} > /dev/null 2>&1
 rm ./dd_susbscribe*.log ./toto* ./test/t* ./subscribe_test1.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
 
@@ -86,7 +89,7 @@ echo ==== INPLACE FALSE ====
 
 function test1 {
 
-      ../sara/dd_subscribe.py $* > ./dd_subscribe_test1.log 2>&1 &
+      $DD_SUBSCRIBE $* > ./dd_subscribe_test1.log 2>&1 &
       sleep 10
 
       #======== 1
@@ -140,7 +143,7 @@ function test1 {
 
       #======== 2
       
-      killall dd_subscribe.py
+      killall ${DD_SUBSCRIBE##.*/}
 
 }
 
@@ -154,7 +157,8 @@ echo ==== INPLACE TRUE ====
 
 function test2 {
 
-      ../sara/dd_subscribe.py $* > ./dd_subscribe_test2.log 2>&1 &
+      $DD_SUBSCRIBE $* > ./dd_subscribe_test2.log 2>&1 &
+
       sleep 10
 
       #======== 1
@@ -206,7 +210,7 @@ function test2 {
       fi
       rm   ./test/*
 
-      killall dd_subscribe.py
+      killall ${DD_SUBSCRIBE##.*/}
 
 }
 
@@ -226,7 +230,7 @@ function test3 {
 
       touch ./test/test_no_7
 
-      ../sara/dd_subscribe.py $* > ./dd_subscribe_test3.log 2>&1 &
+      $DD_SUBSCRIBE $* > ./dd_subscribe_test3.log 2>&1 &
       sleep 10
 
       #======== 1
@@ -256,7 +260,7 @@ function test3 {
       fi
       rm   ./test/*
  
-      killall dd_subscribe.py 
+      killall ${DD_SUBSCRIBE##.*/}
 
 }
 
@@ -269,7 +273,7 @@ echo ==== INSTANCES AND INSERTS ====
 
 function test4 {
 
-          ../sara/dd_subscribe.py $* > ./dd_subscribe_test4.log 2>&1 &
+          $DD_SUBSCRIBE $* > ./dd_subscribe_test4.log 2>&1 &
           sleep 10
 
          ../sara/dd_post.py -dr /var/www -u http://localhost/test/toto -p i,1 -r > /dev/null 2>&1
@@ -287,7 +291,7 @@ function test4 {
                rm   ./test/*
 
          sleep 10
-         killall dd_subscribe.py
+         killall ${DD_SUBSCRIBE##.*/}
 
 }
 
@@ -302,7 +306,7 @@ echo ==== INSTANCES AND INSERTS AND TRUNCATE ====
 function test5 {
 
 
-          ../sara/dd_subscribe.py $* > ./dd_subscribe_test5.log 2>&1 &
+          $DD_SUBSCRIBE $* > ./dd_subscribe_test5.log 2>&1 &
           sleep 10
 
 
@@ -325,7 +329,7 @@ function test5 {
 
 
          sleep 10
-         killall dd_subscribe.py
+         killall ${DD_SUBSCRIBE##.*/}
 
 
 }
@@ -334,6 +338,6 @@ cp ./subscribe_test.conf ./subscribe_test5.conf
 echo inplace True >> ./subscribe_test5.conf
 test5 ./subscribe_test5.conf
 
-rm ./dd_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
-rmdir ./test > /dev/null 2>&1
+#rm ./dd_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
+#rmdir ./test > /dev/null 2>&1
 

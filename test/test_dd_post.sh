@@ -160,7 +160,7 @@ echo
 
 echo dd_post -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/
 
-../sara/dd_post.py -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/
+../sara/dd_post.py -u file:${PWD}/toto -rn "/this/new/dir/" -b amqp://localhost/
 
 echo
 
@@ -220,7 +220,7 @@ echo dd_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/name -p p
 
 echo dd_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/dir/ -p p
 
-../sara/dd_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/dir -p p
+../sara/dd_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/dir/ -p p
 
 
 rm ./toto.256.12.0.1.d.Part
@@ -242,6 +242,12 @@ echo
 echo dd_post -u file:${PWD}/toto -p i,64 -rr
 
 ../sara/dd_post.py -u file:${PWD}/toto -p i,64 -rr
+
+echo
+
+echo dd_post -u file:${PWD}/toto -tc cluster1,cluster2,cluster3
+
+../sara/dd_post.py -u file:${PWD}/toto -tc cluster1,cluster2,cluster3
 
 echo
 

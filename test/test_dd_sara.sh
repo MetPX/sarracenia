@@ -1,10 +1,38 @@
 #!/bin/ksh
 
+
+# This test suppose rabbitmq server installed
+# with default configuration  guest,guest administrator
+
+# getting rabbitmqadmin
+
+wget http://localhost:15672/cli/rabbitmqadmin
+chmod 755 rabbitmqadmin
+
+# configuring tester user as sara requieres
+
+./rabbitmqadmin -u guest -p guest declare user \
+     name=tester password=testerpw tags=
+
+./rabbitmqadmin -u guest -p guest declare permission \
+     vhost=/  user=tester \
+     configure='^q_tester.*$' write='xs_tester' read='^q_tester.*$|^xl_tester$'
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_tester type=topic auto_delete=false durable=true
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xs_guest type=topic auto_delete=false durable=true
+
+./rabbitmqadmin -u guest -p guest declare exchange \
+     name=xpublic type=topic auto_delete=false durable=true
+
+echo $#
+
 if [[ $# != 2 ]]; then
    echo $0 user password
    exit 1
 fi
-
 
 echo killall dd_sara.py
 
@@ -75,8 +103,8 @@ cat << EOF > sara_test1.conf
 
 # source
 
-source_broker amqp://localhost/
-source_exchange amq.topic
+source_broker amqp://guest@localhost/
+source_exchange xs_guest
 source_topic v02.post.#
 
 sftp_user $USER
@@ -85,9 +113,14 @@ sftp_password $PASSWORD
 ftp_user $USER
 ftp_password $PASSWORD
 
+queue_name q_guest.dd_sara.test
+
+source_from_exchange True
+from_cluster localhost
+
 # destination
 
-broker amqp://localhost/
+broker amqp://guest@localhost/
 exchange xpublic
 document_root /
 
@@ -101,7 +134,7 @@ function test1 {
 
       ../sara/dd_sara.py $* start   > /dev/null 2>&1
       #======== 1
-      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02  > /dev/null 2>&1
+      ../sara/dd_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -tc cluster1,cluster2,cluster3  > /dev/null 2>&1
       sleep 10
       ls -al toto ./test/*
       N=`diff toto ./test/toto_02|wc -l`
@@ -280,9 +313,7 @@ function test1 {
 
 }
 
-python3 ./exchange.py xpublic add > /dev/null 2>&1
-
-test1 --strip 2 --url file:                ./sara_test1.conf
+test1 --url file:                ./sara_test1.conf
 
 mv dd_sara_sara_test1_0001.log dd_sara_sara_test1_0001.log_INPLACE_FALSE
 
@@ -464,7 +495,7 @@ function test2 {
 
 }
 
-test2 --strip 2 --url file: --inplace True ./sara_test1.conf
+test2 --mirror --url file: --inplace True ./sara_test1.conf
 mv dd_sara_sara_test1_0001.log dd_sara_sara_test1_0001.log_INPLACE_TRUE
 
 echo ==== INPLACE FALSE NOT MODIFIED ====
@@ -538,7 +569,7 @@ function test3 {
 
 }
 
-test3 --strip 2 --url file:                ./sara_test1.conf
+test3 --mirror --url file:                ./sara_test1.conf
 mv dd_sara_sara_test1_0001.log dd_sara_sara_test1_0001.log_INPLACE_FALSE_NOT_MODIFIED
 
 echo ==== INSTANCES AND INSERTS ====
@@ -599,12 +630,12 @@ function test4 {
                fi
                rm   ./test/toto_29*
 
-         ../sara/dd_sara.py $* ./sara_test1.conf stop > /dev/null 2>&1
+         ../sara/dd_sara.py $* ./sara_test1.conf stop  > /dev/null 2>&1
          sleep 10
 
 }
 
-test4 --strip 2 --url file: --inplace true --instances 100
+test4 --mirror --url file: --inplace true --instances 100 
 
 cat dd_sara_sara_test1_*.log >> dd_sara_sara_test1_0001.log_INSTANCES_INSERT
 rm dd_sara_sara_test1_*.log
@@ -687,13 +718,10 @@ function test5 {
 
 }
 
-test5 --strip 2 --url file: --inplace true --instances 10
-
-python3 ./exchange.py xpublic del > /dev/null 2>&1
-
+test5 --mirror --url file: --inplace true --instances 10
 cat dd_sara_sara_test1_*.log >> dd_sara_sara_test1_0001.log_INSTANCES_INSERT_TRUNCATE
 rm dd_sara_sara_test1_*.log
 
-#rm ./dd_sara_*.log ./.dd_sara_* ./toto* ./test/t* ./sara_test1.conf > /dev/null 2>&1
-#rmdir ./test > /dev/null 2>&1
+rm ./dd_sara_*.log ./.dd_sara_* ./toto* ./test/t* ./sara_test1.conf > /dev/null 2>&1
+rmdir ./test > /dev/null 2>&1
 
