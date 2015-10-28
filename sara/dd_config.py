@@ -142,7 +142,7 @@ class dd_config:
 
         self.source_from_exchange = False
         self.from_cluster         = None
-        self.to_clusters          = []
+        self.to_clusters          = None
 
         self.ftp_user             = None
         self.ftp_password         = None
@@ -294,8 +294,7 @@ class dd_config:
                      n = 2
 
                 elif words[0] in ['to_clusters','-tc','--to_clusters']:
-                     w = words[1].strip(',')
-                     self.to_clusters.extend(w.split(','))
+                     self.to_clusters = words[1]
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:

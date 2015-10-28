@@ -101,6 +101,8 @@ class dd_message():
         self.partstr   = None
         self.sumstr    = None
 
+        self.to_clusters_list = None
+
         token        = self.topic.split('.')
         self.version = token[0]
 
@@ -171,6 +173,7 @@ class dd_message():
         self.headers['sum'] = self.sumstr
 
         self.suffix = ''
+        self.to_clusters_list = None
         
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
@@ -197,6 +200,10 @@ class dd_message():
         self.sumstr  = None
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
+
+        self.to_clusters_list = None
+        if 'to_clusters'     in self.headers :
+           self.to_clusters_list   = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
@@ -248,11 +255,7 @@ class dd_message():
            self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
 
         if 'to_clusters' in self.headers :
-           self.hdrstr  += 'to_clusters='
-           for c in self.headers['to_clusters']:
-               self.hdrstr  += '%s' % c
-               if c != self.headers['to_clusters'][-1] : self.hdrstr += ','
-           self.hdrstr += ' '
+           self.hdrstr  += '%s=%s ' % ('to_clusters',self.headers['to_clusters'])
 
         if 'flow' in self.headers :
            self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
@@ -493,11 +496,12 @@ class dd_message():
         self.time = now
 
     def set_to_clusters(self,to_clusters=None):
-        if to_clusters == None or len(to_clusters) == 0 :
-           if 'to_clusters' in self.headers :
-              del self.headers['to_clusters']
-           return
-        self.headers['to_clusters'] = to_clusters
+        if to_clusters != None :
+           self.headers['to_clusters'] = to_clusters
+           self.to_clusters_list = to_clusters.split(',')
+        elif 'to_clusters' in self.headers :
+           del self.headers['to_clusters']
+           self.to_clusters_list = None
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
