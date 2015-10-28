@@ -58,21 +58,26 @@ class dd_log(dd_config):
 
     def __init__(self,config=None,args=None):
         dd_config.__init__(self,config,args)
-        self.configure()
 
     def check(self):
         self.msg = dd_message(self.logger)
+
+        if self.exchange == None :
+           self.exchange = 'xl_' + self.broker.username
 
     def close(self):
         self.hc_src.close()
 
     def configure(self):
 
+        # installation general configurations and settings
+
+        self.general()
+
         # defaults general and proper to dd_post
 
         self.defaults()
 
-        self.exchange = 'xlog'
         self.topic    = 'v02.log.#'
         self.broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
@@ -109,9 +114,11 @@ class dd_log(dd_config):
         # consumer queue
 
         # OPTION ON QUEUE NAME ?
-        name  = 'cmc.' + self.program_name + '.' + self.exchange
+        name  = 'q_' + self.broker.username + '.' 
         if self.queue_name != None :
-           name = self.queue_name
+           name += self.queue_name
+        else :
+           name += self.program_name + '.' + self.exchange
 
         self.queue = Queue(self.hc_src,name)
         self.queue.add_binding(self.exchange,self.topic)
@@ -126,6 +133,8 @@ class dd_log(dd_config):
     def run(self):
 
         self.logger.info("dd_log run")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
+        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
 
         self.connect()
 
@@ -163,7 +172,6 @@ def main():
 
     dlog = dd_log(config=None,args=sys.argv)
     dlog.configure()
-    dlog.connect()
 
     # =========================================
     # signal stop

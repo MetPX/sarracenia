@@ -50,6 +50,9 @@ class dd_config:
         self.exedir       = os.getcwd()
         self.logdir       = os.getcwd()
 
+        self.credentials  = []
+        self.log_clusters = {}
+
         if config != None :
            self.config_name = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
 
@@ -183,13 +186,8 @@ class dd_config:
         homedir = os.path.expanduser("~")
         confdir = homedir + '/.config/sara/'
 
-        # sara.conf ... defaults for the server
-        sara = homedir + '/.config/sara/sara.conf'
-        if os.path.isfile(sara) : self.config(sara)
-
         # read in provided credentials
         credent = confdir + 'credentials.conf'
-        self.credentials = []
         try :
                  f = open(credent,'r')
                  lines = f.readlines()
@@ -203,12 +201,13 @@ class dd_config:
                      self.credentials.append(url)
 
         # credential file is not mandatory
-        except : pass
+        except : 
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("credentials = %s\n" % self.credentials)
 
         # read in provided cluster infos
         cluster = confdir + 'log_routing.conf'
-        self.log_clusters = {}
         i = 0
         try :
                  f = open(cluster,'r')
@@ -229,8 +228,14 @@ class dd_config:
                      i = i + 1
 
         # cluster file is not mandatory
-        except : pass
+        except : 
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
+
+        # sara.conf ... defaults for the server
+        sara = homedir + '/.config/sara/sara.conf'
+        if os.path.isfile(sara) : self.config(sara)
 
 
     def isTrue(self,s):
