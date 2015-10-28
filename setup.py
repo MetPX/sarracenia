@@ -22,23 +22,25 @@ setup(
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
-    url='http://metpx.sf.net',
+    url='https://github.com/petersilva/metpx.git/sarracenia',
     license='LGPL',
     author='Dads',
-    author_email='peter_silva@sourceforge.net',
+    author_email='peter.silva@ssc-spc.gc.ca',
     packages=find_packages(),
     entry_points={
         "console_scripts":[
               "dd_post=sara.dd_post:main",
+              "dd_log=sara.dd_log:main",
               "dd_sara=sara.dd_sara:main",
               "dd_sender=sara.dd_sender:main",
               "dd_watch=sara.dd_watch:main",
               "dd_subscribe=sara.dd_subscribe:main",
               "dd_log2source=sara.dd_log2source:main"
+              "dd_log2clusters=sara.dd_log2clusters:main"
               ]
     },
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: MIT License',
