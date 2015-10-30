@@ -315,7 +315,14 @@ class test_instances(dd_instances):
      
       def __init__(self,config=None,args=None):
          dd_instances.__init__(self,config,args)
-         dd_instances.configure(self)
+         self.configure()
+
+      def configure(self):
+          self.general()
+          self.defaults()
+          self.args(self.user_args)
+          self.config(self.user_config)
+          self.setlog()
 
       def reload(self):
           self.logger.info("reloaded")
