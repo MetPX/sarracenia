@@ -114,7 +114,7 @@ class dd_log2source(dd_instances):
 
         name  = 'q_' + self.broker.username + '.' + self.program_name
         if self.queue_name != None :
-           name = 'q_' + self.source_broker.username + '.' + self.queue_name
+           name = 'q_' + self.broker.username + '.' + self.queue_name
 
         self.queue = Queue(self.hc,name)
         self.queue.add_binding(self.exchange,self.topic)
@@ -135,6 +135,10 @@ class dd_log2source(dd_instances):
     def run(self):
 
         self.logger.info("dd_log2source run")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
+        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
+
+
 
         self.connect()
 
