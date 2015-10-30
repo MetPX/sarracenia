@@ -1,7 +1,10 @@
 
 Status: Pre-Draft
 
-when a source posts an announcement, the switch must validate that it is proper,
+This is a discussion about validation.  
+It mentions many points, but the design to implement is in design.rst.
+
+When a source posts an announcement, the switch must validate that it is proper,
 
 examples of validation. 
 	might not need them all, and there may be others, this just gives an idea.
