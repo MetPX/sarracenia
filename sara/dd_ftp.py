@@ -86,7 +86,7 @@ def ftp_download( msg, iuser, ipassword, iftp_mode, ibinary ):
     if iuser     != None : user = iuser
     if ipassword != None : password = ipassword
 
-    token       = url.path.split('/')
+    token       = url.path[1:].split('/')
     cdir        = '/'.join(token[:-1])
     remote_file = token[-1]
 

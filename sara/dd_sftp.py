@@ -48,7 +48,7 @@ def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
     if iuser     != None : user = iuser
     if ipassword != None : password = ipassword
 
-    token    = url.path.split('/')
+    token    = url.path[1:].split('/')
     
     cdir     = '/'.join(token[:-1])
     cfile    = token[-1]
