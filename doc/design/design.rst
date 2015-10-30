@@ -1,5 +1,5 @@
 
-Status: Pre-Draft
+Status: Draft
 
 =================
  Strawman Design
@@ -177,7 +177,10 @@ Aspects of AMQP use can be either constraints or features:
 Application 
 ===========
 
-Description of application logic relevant to discussion.  There is a ´control plane´ where posts about new data available are made, and log messages reporting status of transfers of the same data are routed among control plane users and switches.  A switch is an AMQP broker, and users authenticate to the broker.  Data may (most of the time does) have a different other authentication method.  
+Description of application logic relevant to discussion.  There is a ´control plane´ where posts about new 
+data available are made, and log messages reporting status of transfers of the same data are routed among 
+control plane users and switches.  A switch is an AMQP broker, and users authenticate to the broker.  Data 
+may (most of the time does) have a different other authentication method.  
 
 There are very different security use cases for file transfer:
 
@@ -186,8 +189,8 @@ There are very different security use cases for file transfer:
     copies.  The data authentication is typically null for this case.  Users just issue HTTP GET requests with 
     no authentication.  for AMQP authentication, it can be done as anonymous, with no ability for providers to
     monitor.  If there is to be support from the data source, then the source would assign a non-anonymous user
-    for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and alert
-    when problems arise.
+    for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and 
+    alert when problems arise.
 
  2. **Private Transfer** proprietary data is being generated, and needs to be moved to somewhere where it can be 
     archived and/or processed effectively, or shared with specific collaborators.  AMQP and HTTP traffic must
@@ -206,7 +209,8 @@ The cases depend on routing of posts and log messages.
 
 .. NOTE::
    forward routing...  Private and Public transfers... not yet clear, still considering.
-   what is written here on that subject is tentative.
+   what is written here on that subject is tentative. wondering if split, and do public
+   first, then private later?
 
 To simplify discussions, names will be selected with a prefix things according to the type
 of entity: 

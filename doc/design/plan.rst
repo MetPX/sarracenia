@@ -1,5 +1,5 @@
 
-Status: Pre-Draft2
+Status: Draft2
 
 ===================
 Implementation Plan
@@ -12,12 +12,17 @@ Overview
 
 focus documents go through status:
 
-  - pre-draft  - document being create/modified, not ready for review.
+  - successive drafts are numbered: draft1...N. 
+  - pre-draft1  - document being create/modified, not ready for review.
   - draft1 - document ready for review.
   - approved-draft1 - document reviewed and approved.
 
-	draft1...N
-	
+
+Revision Record
+---------------
+
+ - Draft1 approved in June 2015
+
 
 Design Principles
 -----------------
@@ -210,7 +215,8 @@ Parking Lot For Initial Release
 -------------------------------
 
 Items which can be deferred past initial deployment. Items which are *Waiting* will need
-to be initiated as quickly as possible after initial release.  *Deferred* issues have no
+to be initiated as quickly as possible after initial release.  They were only deferred to limit
+scope and accellerate initial version.  *Deferred* issues have no
 specific time line.
 
 (offset numbering to keep separate from initial ones.)
@@ -258,12 +264,28 @@ specific time line.
      Not sure if this means being able to use Kerberos or not.
      This is important to several NRC use cases, may be skewered if not present.
 
+
 Critical Deployment Elements
 ----------------------------
 
 The initial release does not just need to be ready, it needs to be deployed.  Deployment and development are linked, in that we do not encounter difficulties unless something is deployed, and we do not achieve business deliverables unless we deploy.  So there is an iterative loop, and we expect to upgrade frequently since the package is so young.
 
 To upgrade frequently, we need to reduce the friction to producing upgrades.
+
+
+sftp.science.gc.ca
+~~~~~~~~~~~~~~~~~~
+
+An S=0 (data-less) switching service. The switching nodes access the site-wide file systems
+available to science.gc.ca. So authentication is what is on the systems.
+likely characteristics:
+ - bunny style clustered single broker instance shared among sftp1 and sftp2.
+ - ssh configured to not accept passwords.  Key-files mandatory.
+ - keys can be put in place by logging into interactive nodes.
+ - privacy is OK, because it is from user to user space on each side,
+ - only the messages might be intercepted?
+
+
 
 ddi.cmc.ec.gc.ca
 ~~~~~~~~~~~~~~~~
@@ -372,6 +394,9 @@ initial versions of all the focus documents, and plan.txt
 Iteration 1: Block-oriented Transfers and Logs: June
 ----------------------------------------------------
 
+For the first iteration, things were completed pretty much on time.
+This is all done.
+
 focus: deltas.txt, logmessages.txt, dd_post_sample.txt
 
    dd_post, dd_sara, and dd_subscribe 
@@ -405,24 +430,30 @@ HW: whatever is lying around.
 Iteration 2: Directory Watch: July
 ----------------------------------
 
-   focus: cluster.txt
-	- because then we need to get hw implemented next iteration.
 
+focus: cluster.txt
+  - because then we need to get hw implemented next iteration.
+  *This is still not done*
+  Have a look at clusters.rst
 
-   watch a directory, and post what is there (flat)
-	- using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
-	- only needs to work for a flat directory at first.
+watch a directory, and post what is there (flat)
+  - using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
+  - only needs to work for a flat directory at first.
+  *done on time for flat tree, but configs were hard-coded*
 
-   deferred: windows version of dd_watch (no inotify available.)
+  deferred: windows version of dd_watch (no inotify available.)
 	question, if this is built as inotifywait calling dd_post (or something like that.)
 	then there is an inotify-win.  just introduces a dependency... but makes it easy.
-
+   *nope, not done.*
 
    base user-facing delivery function done.
+   *nope*
 
    do speedos (see monitoring.txt)
+   *nope*
 
    figure out whether we need a dd_log, or if dd_subscribe is enough.
+   *yes, we need dd_log, there is one, but it isn´t quite right yet*
     
    testing, testing, testing...
 
@@ -432,6 +463,8 @@ HW: whatever is lying around.
 
 Iteration 3:  Security/Authentication, Transition Strategy:  August
 -------------------------------------------------------------------
+
+   *this is about where we are now... figuring out accounts and auth.*
 
    focus: validation.txt, accounts.txt, 
 
