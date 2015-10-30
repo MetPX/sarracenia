@@ -323,6 +323,12 @@ Switches connect with one another using inter-exchange accounts.
  - Exchanges are managed by the administrator, and not any user.
  - Alice can only post data that she is publishing (it will refer back to her) 
 
+..NOTE:: 
+   tester  ^q_tester.*     ^q_tester.*|xs_tester   ^q_tester.*|^xl_tester$
+   leaving all permissions for queues for an amqp users also gives the permission
+   do create/configure/write any amqp objects with a name starting with q_tester
+   in this example.
+
 
 Pre-Validation
 ~~~~~~~~~~~~~~
