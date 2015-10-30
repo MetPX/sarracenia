@@ -146,6 +146,7 @@ class dd_sara(dd_instances):
         self.check()
 
         self.setlog()
+        self.logger.info("user_config = %d %s" % (self.instance,self.user_config))
 
     def delete_event(self):
         if self.msg.sumflg != 'R' : return False
@@ -221,10 +222,10 @@ class dd_sara(dd_instances):
 
         if not self.mirror :
            yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.path)
+           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.path)
 
            if 'rename' in self.msg.headers :
-              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.source,self.msg.headers['rename'])
+              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.headers['rename'])
               self.rel_path = self.rel_path.replace('//','/')
 
         token = self.rel_path.split('/')
@@ -430,9 +431,6 @@ class dd_sara(dd_instances):
            return False
 
         self.msg.set_from_cluster(self.from_cluster)
-        self.msg.code = 205
-        self.msg.message = "Reset content : message from_cluster to %s" % self.from_cluster
-        self.msg.log_info()
         return True
 
     def set_source(self):
@@ -444,9 +442,6 @@ class dd_sara(dd_instances):
 
         source = self.msg.exchange[3:]
         self.msg.set_source(source)
-        self.msg.code = 205
-        self.msg.message = "Reset content : message source to %s" % source
-        self.msg.log_info()
         return True
 
     def reload(self):
