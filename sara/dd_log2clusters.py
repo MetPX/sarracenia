@@ -40,7 +40,7 @@ import signal
 #============================================================
 # usage example
 #
-# dd_log2clusters -b broker -i 1
+# dd_log2clusters -b broker
 
 #============================================================
 
@@ -115,12 +115,12 @@ class dd_log2clusters(dd_instances):
 
         # consumer queue
 
-        name  = 'q_' + self.broker.username
+        name  = 'q_' + self.source_broker.username
         if self.queue_name != None :
            name += '.' + self.queue_name
         else :
            name += '.' + self.program_name
-        name += '.' + self.broker.hostname + '.' + self.exchange
+        name += '.' + self.source_broker.hostname + '.' + self.source_exchange
 
         self.queue = Queue(self.hc_src,name)
         self.queue.add_binding(self.source_exchange,self.source_topic)
@@ -149,7 +149,12 @@ class dd_log2clusters(dd_instances):
     def run(self):
 
         self.logger.info("dd_log2clusters run")
+        self.logger.info("AMQP  input broker(%s) user(%s) vhost(%s)" % (self.source_broker.hostname,self.source_broker.username,self.source_broker.path) )
+        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.source_exchange,self.source_topic) )
         self.logger.info("checking for %s" % self.cluster)
+        self.logger.info("AMQP output broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
+        self.logger.info("AMQP  input :    exchange(%s)" % (self.exchange) )
+
 
         self.connect()
 
