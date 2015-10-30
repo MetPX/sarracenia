@@ -34,6 +34,7 @@
 #
 #
 
+import logging
 import os,re,socket,sys
 import urllib,urllib.parse
 
@@ -59,6 +60,7 @@ class dd_config:
         # set logging to printit until we are fixed with it
 
         self.setlog()
+        self.logger.debug("dd_config __init__")
 
         # check arguments
 
@@ -77,6 +79,8 @@ class dd_config:
 
     def args(self,args):
 
+        self.logger.debug("dd_config args")
+
         if args == None : return
 
         i = 0
@@ -86,6 +90,7 @@ class dd_config:
               i = i + n
 
     def config(self,path):
+        self.logger.debug("dd_config config")
 
         if path == None : return
 
@@ -104,6 +109,7 @@ class dd_config:
         f.close()
 
     def defaults(self):
+        self.logger.debug("dd_config defaults")
 
         self.debug                = False
 
@@ -183,6 +189,8 @@ class dd_config:
         self.recompute_chksum     = False
 
     def general(self):
+        self.logger.debug("dd_config general")
+
         homedir = os.path.expanduser("~")
         confdir = homedir + '/.config/sara/'
 
@@ -248,6 +256,7 @@ class dd_config:
 
 
     def option(self,words):
+        self.logger.debug("dd_config option %s" % words[0])
 
         needexit = False
         n        = 0
@@ -444,11 +453,11 @@ class dd_config:
                      n = 2
 
                 elif words[0] in ['ftp_binary','-fb','--ftp_binary']:
-                     self.ftp_binary = isTrue(words[1])
+                     self.ftp_binary = self.isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['mirror','-mirror','--mirror']:
-                     self.mirror = isTrue(words[1])
+                     self.mirror = self.isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['http_user','-hu','--http_user']:
@@ -512,7 +521,8 @@ class dd_config:
 
 
         except:
-                pass
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
 
         if needexit :
            sys.exit(0)
@@ -521,7 +531,6 @@ class dd_config:
 
     def setlog(self):
 
-        import logging
         import logging.handlers
 
         LOG_FORMAT  = ('%(asctime)s [%(levelname)s] %(message)s')
@@ -530,9 +539,11 @@ class dd_config:
            logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
            self.logger = logging.getLogger()
            self.lpath  = None
+           self.logger.debug("dd_config setlog 1")
            return
 
         if self.logpath == self.lpath :
+           self.logger.debug("dd_config setlog 2")
            if hasattr(self,'debug') and self.debug : self.logger.setLevel(logging.DEBUG)
            return
 
@@ -648,7 +659,24 @@ class dd_config:
 
 def main():
 
-    cfg = dd_config(None,sys.argv[1:])
+    if len(sys.argv) == 1 :
+       print(" None None")
+       cfg = dd_config(None,None)
+    elif os.path.isfile(sys.argv[1]):
+       args = None
+       if len(sys.argv) > 2 : args = sys.argv[2:]
+       print(" Conf %s" % args)
+       cfg = dd_config(sys.argv[1],args)
+    else :
+       print(" None %s" % sys.argv[1:])
+       cfg = dd_config(None,sys.argv[1:])
+    cfg.defaults()
+    #to get more details
+    #cfg.debug = True
+    #cfg.setlog()
+    cfg.general()
+    cfg.args(cfg.user_args)
+    cfg.config(cfg.user_config)
     sys.exit(0)
 
 # =========================================
@@ -657,4 +685,3 @@ def main():
 
 if __name__=="__main__":
    main()
-
