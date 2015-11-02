@@ -8,8 +8,8 @@ Configuration / Administration
 
 Asymmetric... can use wget request to a static directory for configuration?
 
- -- this doesn´t work in S > 1. need to pass results back as messages.
- -- does work for ´public´ info like bin, checksum scripts, include
+ - this doesn´t work in S > 1. need to pass results back as messages.
+ - does work for ´public´ info like bin, checksum scripts, include
 
 What is the tree:
 

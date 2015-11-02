@@ -351,6 +351,31 @@ All of the feeds for dd that currently use sundew as the *bootstrap* to create i
 data sources for the dd/ddi ´
 
 
+Deferred Deployment Elements
+----------------------------
+
+This functionality will not be present initially, but needs to figure into later plans.
+
+
+dd_box
+~~~~~~
+
+Essentially DropBox functionality, provided over the sarracenia switching infrastructure.
+This is a wrapper around the the components built in earlier iterations to provide
+dropbox emulation.
+
+- dd_subscribe reproduces remote writes
+- dd_watch posts local writes (while ignoring dd_subscribe ones)
+- something (to do the writes to the switch from local.) probably just fire off a dd_sender.
+  or will switch have dd_sara lying around, so no need? what about firewalls?
+- default switch (sftp.science.gc.ca ?)
+- encfs provides privacy layer (dropbox is default private, dd is default public)
+
+There is little to no code to implement this functionality, but a lot of configuration.
+Need to make it plug & play before offering it.
+
+
+
 
 Iterations
 ==========

@@ -1,0 +1,30 @@
+
+===========================
+ dd_Sarracenia Design Docs
+===========================
+
+Current information: 
+
+ - `Outline.html <Outline.html>`_
+ - `design.html <design.html>`_
+ - `plan.html <plan.html>`_
+
+
+ - `biblio.html <biblio.html>`_ -- bibliography.
+
+The rest are just notes which are likely out of date:
+
+ - `accounts.html <accounts.html>`_
+ - `components.html <components.html>`_ some initial guesses of necessary components.
+ - `configuration.html <configuration.html>`_
+ - `deltas.html <deltas.html>`_ Implementation supercedes this.
+ - `dd_post_sample.html <dd_post_sample.html>`_  This is what the initial implementation was based on.
+ - `message_considerations.html <message_considerations.html>`_ Implementation supercedes this.
+ - `messages_v02.html <messages_v02.html>`_  superceded by dd_post.7
+ - `monitoring.html <monitoring.html>`_  
+ - `packaging.html <packaging.html>`_ 
+ - `private.html <private.html>`_
+ - `scope.html <scope.html>`_  the background information that evolved into to_cluster
+ - `validation.html <validation.html>`_  early implementation in dd_sara... more to come.
+ - `webification.html <webification.html>`_ pipe dream downstream...
+

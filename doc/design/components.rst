@@ -11,19 +11,19 @@ dd_ingest
 
 ::
 
-	--broker amqp://<account>@<broker>/
+ --broker amqp://<account>@<broker>/
 		
 
-	-  kind of local version of SARA, just the RA part...
-	-  subscribe to the xac_<account> exchange written by the user.
-	-  read log messages there of the form v01.log.<account>.<account> 200
-	   which indicates a successful delivery of the file to this system.
-	-  trigger pre-fetch and post-fetch verifications of the file.
-		if it fails validation, then log error. done.
+ -  kind of local version of SARA, just the RA part...
+ -  subscribe to the xac_<account> exchange written by the user.
+ -  read log messages there of the form v01.log.<account>.<account> 200
+    which indicates a successful delivery of the file to this system.
+ -  trigger pre-fetch and post-fetch verifications of the file.
+    if it fails validation, then log error. done.
 
-	-  assuming it is OK, move it to a system area?
-		or something, it stays here? huh? user can delete?
-	-  re-announce to downstream-broker
+ -  assuming it is OK, move it to a system area?
+    or something, it stays here? huh? user can delete?
+ -  re-announce to downstream-broker
 
 
 
@@ -34,15 +34,15 @@ dd_log2src
 
         --broker amqp://<swuser>@<broker>/
 
-        authenticate to broker as swuser, read log messages on the xlog exchange 
-        of the form v01.log.<account>.<whatever>
-        copy them to xac_<account> exchange so the user can pick them up.
-        on the same broker... 
+authenticate to broker as swuser, read log messages on the xlog exchange 
+of the form v01.log.<account>.<whatever>
+copy them to xac_<account> exchange so the user can pick them up.
+on the same broker... 
 
-        in some cases, <account> will not be a local account.  look up account
-        in a table (acc2src table) to identify which source to send the messages to.
+in some cases, <account> will not be a local account.  look up account
+in a table (acc2src table) to identify which source to send the messages to.
 
-        dunno: run one for all accounts, or one per account?
+dunno: run one for all accounts, or one per account?
 
 
 
@@ -53,7 +53,8 @@ dd_post
 ::
 
         args...   -b blocksize -w tag [basedir] <source-url> <destination-url>
-	destination url == --broker amqp://<source>@<broker>/<relativepath?>
+
+destination url == --broker amqp://<source>@<broker>/<relativepath?>
 
 
 
