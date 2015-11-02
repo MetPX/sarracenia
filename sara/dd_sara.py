@@ -210,6 +210,17 @@ class dd_sara(dd_instances):
         self.logger.info("DEBUG:")
         self.logger.info("-debug")
 
+    def is_gateway_to_clusters(self):
+
+        # one of the target cluster is this cluster so ok :
+        if self.from_cluster in self.msg.to_clusters : return True
+
+        # this cluster is the gateway to clusters in self.route_clusters
+        for cluster in self.route_clusters : 
+            if cluster in self.msg.to_clusters : return True
+
+        return False
+
     def set_local(self):
 
         # relative path by default mirror 
@@ -311,13 +322,20 @@ class dd_sara(dd_instances):
                  self.msg.from_amqplib(raw_msg)
                  self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
+                 # if message defines destinations
+
+                 if 'to_clusters' in self.msg.headers :
+                    ok = self.is_gateway_to_clusters()
+                    self.logger.debug("Should this message being processed by current cluster : %s" % ok )
+                    if not ok : continue
+
                  # setting source from exchange 
 
                  if self.source_from_exchange :
                     ok = self.set_source()
                     if not ok : continue
 
-                 # setting cluster if not defined
+                 # setting originating cluster if not defined
 
                  if not 'from_cluster' in self.msg.headers :
                     ok = self.set_from_cluster()

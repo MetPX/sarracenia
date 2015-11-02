@@ -45,14 +45,15 @@ class dd_config:
 
     def __init__(self,config=None,args=None):
 
-        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
-        self.config_name  = config
-        self.etcdir       = os.getcwd()
-        self.exedir       = os.getcwd()
-        self.logdir       = os.getcwd()
+        self.program_name   = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.config_name    = config
+        self.etcdir         = os.getcwd()
+        self.exedir         = os.getcwd()
+        self.logdir         = os.getcwd()
 
-        self.credentials  = []
-        self.log_clusters = {}
+        self.credentials    = []
+        self.log_clusters   = {}
+        self.route_clusters = {}
 
         if config != None :
            self.config_name = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
@@ -214,11 +215,11 @@ class dd_config:
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("credentials = %s\n" % self.credentials)
 
-        # read in provided cluster infos
-        cluster = confdir + 'log_routing.conf'
+        # read in provided log cluster infos
+        log_cluster = confdir + 'log_routing.conf'
         i = 0
         try :
-                 f = open(cluster,'r')
+                 f = open(log_cluster,'r')
                  lines = f.readlines()
                  f.close
                  for line in lines :
@@ -240,6 +241,31 @@ class dd_config:
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
+
+        # read in provided destination cluster infos
+        route_cluster = confdir + 'to_clusters.conf'
+        i = 0
+        try :
+                 f = open(route_cluster,'r')
+                 lines = f.readlines()
+                 f.close
+                 for line in lines :
+                     sline = line.strip()
+                     if len(sline) == 0 or line[0] == '#' : continue
+                     parts = sline.split()
+                     name  = parts[0]
+                     ok = len(parts) == 1
+                     if not ok :
+                        self.logger.error("problem with %s" % line)
+                     # fixme parts[2] exchange should be optional
+                     self.route_clusters[i] = name
+                     i = i + 1
+
+        # cluster file is not mandatory
+        except : 
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
+        self.logger.debug("route_clusters = %s\n" % self.route_clusters)
 
         # sara.conf ... defaults for the server
         sara = homedir + '/.config/sara/sara.conf'
@@ -672,11 +698,12 @@ def main():
        cfg = dd_config(None,sys.argv[1:])
     cfg.defaults()
     #to get more details
-    #cfg.debug = True
-    #cfg.setlog()
+    cfg.debug = True
+    cfg.setlog()
     cfg.general()
     cfg.args(cfg.user_args)
     cfg.config(cfg.user_config)
+    print("  %s" % cfg.source_from_exchange)
     sys.exit(0)
 
 # =========================================
