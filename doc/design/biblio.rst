@@ -91,6 +91,8 @@ about AMQP
 
 
 Why not DDS?
+------------
+
 	- http://portals.omg.org/dds/
 	- #1 there are no free implementations, client or server.
 	- #2 it is very complicated.  Many layers of standards to navigate.

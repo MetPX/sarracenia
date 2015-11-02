@@ -81,3 +81,24 @@ start making other packages?
 Dunno. We probably need to try a bunch out and see what sticks?
 
 
+windows
+~~~~~~~
+
+Packaging for windows has particular issues because of a clash between the source 
+distribution norm on open source, vs. the binary distribution norm on windows.   In 
+python packages this bites because, PyCrypto has portions of it implemented in C, so standard installation means compiling that portion of the module, which creates a depdency on a C-compiler for every installation.  Given the lack of consistency in build environments on windows, one needs to obtain the build environment that matches what was used to build the python interpreter.  google search ´install pycrypto windows´ for more ample discussion.  
+
+Lack of dependency management also bites, too much assembly required (install amqplib, paramiko, etc...)  this is all easily taken care of on linux, but beyond the ability of non-technical users on windows.
+
+
+One way around it, use nuitka, to compile all depedendencies into a single binary package, put that in an MSI.
+
+That does not solve the pycrypto compilation problem though.
+
+One could modify paramiko to use a pure python implementation of pycrypto:
+
+https://github.com/doegox/python-cryptoplus
+
+compile that with nuitka.  to give a full package.
+
+

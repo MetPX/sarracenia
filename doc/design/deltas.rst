@@ -1,6 +1,7 @@
 
 Status: Pre-Draft
 
+
 ==============================================
  Discussion of File Modification Propagation
 ==============================================
@@ -25,7 +26,7 @@ Algorithm used (regardless of tool):
 the zsync algorithm is the right idea, can perhaps use it directly.
 
 
-What if each notification is for a block, not a file ?
+What If Each Notification is for a Block, not a File ?
 ------------------------------------------------------
 
 gedanken experiment... per block messages, rather than entire files ?
@@ -33,27 +34,27 @@ what if the messages we send are all per block?
 
 Why is this really cool?  
 
-   -- It does the gridftp thing, splitting out single file transfers 
-      into parallel streams.
+ - It does the gridftp thing, splitting out single file transfers 
+   into parallel streams.
 
-   -- For large files, the ddsr's might have a whole bunch of part files, 
-      instead of the complete ones, because the transfer is split over
-      multiple nodes, no problem, as long as later stages are subscribed 
-      to all ddsr's.
+ - For large files, the ddsr's might have a whole bunch of part files, 
+   instead of the complete ones, because the transfer is split over
+   multiple nodes, no problem, as long as later stages are subscribed 
+   to all ddsr's.
 
-   -- intervening switches do not need to store the largest file
-      that can be transferred, only some number of the largest chunks.
-      eliminates the maximum file size problem. 
+ - intervening switches do not need to store the largest file
+   that can be transferred, only some number of the largest chunks.
+   eliminates the maximum file size problem. 
 
-   -- This also deals with files that are written over time, without waiting
-      until they are complete before hitting send.
+ - This also deals with files that are written over time, without waiting
+   until they are complete before hitting send.
 
-   -- for the client to do multi-threaded send, they just start up
-      any number of dd_senders listening to their own input exchange.
-      sharing the subscription, just like dd_subscribe does.
+ - for the client to do multi-threaded send, they just start up
+   any number of dd_senders listening to their own input exchange.
+   sharing the subscription, just like dd_subscribe does.
 
-   -- for large files, you can see progress reports sources receive
-      confirmation of each switching layer receiving each chunk.
+ - for large files, you can see progress reports sources receive
+   confirmation of each switching layer receiving each chunk.
 
 say we set a blocksize of 10MB, and we checksum that block, noting the offset, then
 continue?
