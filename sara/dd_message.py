@@ -100,8 +100,7 @@ class dd_message():
   
         self.partstr   = None
         self.sumstr    = None
-
-        self.to_clusters_list = None
+        self.to_list   = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -172,8 +171,10 @@ class dd_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.suffix = ''
-        self.to_clusters_list = None
+        self.to      = 'ALL'
+        self.to_list = [ self.to ]
+
+        self.suffix  = ''
         
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
@@ -201,9 +202,9 @@ class dd_message():
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
 
-        self.to_clusters_list = None
-        if 'to_clusters'     in self.headers :
-           self.to_clusters_list   = self.headers['to_clusters'].split(',')
+        self.to_list = None
+        if 'to'     in self.headers :
+           self.to_list  = self.headers['to'].split(',')
 
         self.suffix = ''
 
@@ -254,8 +255,8 @@ class dd_message():
         if 'source' in self.headers :
            self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
 
-        if 'to_clusters' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('to_clusters',self.headers['to_clusters'])
+        if 'to' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('to',self.headers['to'])
 
         if 'flow' in self.headers :
            self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
@@ -495,13 +496,13 @@ class dd_message():
         now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
         self.time = now
 
-    def set_to_clusters(self,to_clusters=None):
-        if to_clusters != None :
-           self.headers['to_clusters'] = to_clusters
-           self.to_clusters_list = to_clusters.split(',')
-        elif 'to_clusters' in self.headers :
-           del self.headers['to_clusters']
-           self.to_clusters_list = None
+    def set_to(self,to=None):
+        if to != None :
+           self.headers['to'] = to
+           self.to_list = to.split(',')
+        elif 'to' in self.headers :
+           del self.headers['to']
+           self.to_list = None
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix

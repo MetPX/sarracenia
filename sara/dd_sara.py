@@ -212,12 +212,29 @@ class dd_sara(dd_instances):
 
     def is_gateway_to_clusters(self):
 
-        # one of the target cluster is this cluster so ok :
-        if self.from_cluster in self.msg.to_clusters : return True
+        if not 'to' in self.msg.headers :
+           self.msg.code    = 403
+           self.msg.message = "Forbidden : message without destination amqp header['to']"
+           self.msg.log_error()
+           return False
 
-        # this cluster is the gateway to clusters in self.route_clusters
-        for cluster in self.route_clusters : 
-            if cluster in self.msg.to_clusters : return True
+        for target in self.msg.to_list :
+
+           # target is this cluster
+           if target == self.from_cluster : return True
+
+           # target is this cluster's defined route
+           if target == self.route : return True
+
+           # target is an alias ... use its expand list
+           if not cluster in self.aliases : continue
+
+           for target2 in self.aliases[cluster] :
+               if target2 == self.from_cluster : return True
+               if target2 in self.route        : return True
+
+        # nope this one is not for this cluster
+        self.logger.warning("skipped : not for this cluster...")
 
         return False
 
@@ -324,10 +341,8 @@ class dd_sara(dd_instances):
 
                  # if message defines destinations
 
-                 if 'to_clusters' in self.msg.headers :
-                    ok = self.is_gateway_to_clusters()
-                    self.logger.debug("Should this message being processed by current cluster : %s" % ok )
-                    if not ok : continue
+                 ok = self.is_gateway_to_clusters()
+                 if not ok : continue
 
                  # setting source from exchange 
 

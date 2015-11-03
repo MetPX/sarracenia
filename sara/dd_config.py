@@ -53,7 +53,6 @@ class dd_config:
 
         self.credentials    = []
         self.log_clusters   = {}
-        self.route_clusters = {}
 
         if config != None :
            self.config_name = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
@@ -151,8 +150,12 @@ class dd_config:
         self.source_topic         = None
 
         self.source_from_exchange = False
+
+        # cluster stuff
+        self.aliases              = {}
         self.from_cluster         = None
-        self.to_clusters          = None
+        self.to                   = None
+        self.route                = []
 
         self.ftp_user             = None
         self.ftp_password         = None
@@ -216,7 +219,7 @@ class dd_config:
         self.logger.debug("credentials = %s\n" % self.credentials)
 
         # read in provided log cluster infos
-        log_cluster = confdir + 'log_routing.conf'
+        log_cluster = confdir + 'log2clusters.conf'
         i = 0
         try :
                  f = open(log_cluster,'r')
@@ -242,30 +245,39 @@ class dd_config:
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
-        # read in provided destination cluster infos
-        route_cluster = confdir + 'to_clusters.conf'
-        i = 0
+        # aliases
         try :
-                 f = open(route_cluster,'r')
+                 #import urllib,urllib.request
+                 #req  = urllib.request.Request('http://dd.weather.gc.ca/doc/sara/aliases.txt')
+                 #sock = urllib.request.urlopen(req)
+                 #lines = sock.readlines(1000000)
+                 alias = confdir + 'aliases.conf'
+                 f = open(alias,'r')
                  lines = f.readlines()
                  f.close
+ 
+                 # parse aliases
                  for line in lines :
-                     sline = line.strip()
-                     if len(sline) == 0 or line[0] == '#' : continue
-                     parts = sline.split()
-                     name  = parts[0]
-                     ok = len(parts) == 1
-                     if not ok :
-                        self.logger.error("problem with %s" % line)
-                     # fixme parts[2] exchange should be optional
-                     self.route_clusters[i] = name
-                     i = i + 1
+                     line = line.strip()
+                     if len(line) == 0 or line[0] == '#' : continue
+                     parts = line.split()
+
+                     if not parts[0] in self.aliases :
+                        self.aliases[parts[0]] = []
+
+                     for p in parts[1].split(',') :
+                         try    : self.aliases[parts[0]].index[p]
+                         except : 
+                                  if p in self.aliases :
+                                         self.aliases[parts[0]].extend(self.aliases[p])
+                                  else :
+                                         self.aliases[parts[0]].append(p)
 
         # cluster file is not mandatory
         except : 
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("route_clusters = %s\n" % self.route_clusters)
+        self.logger.debug("aliases = %s\n" % self.aliases)
 
         # sara.conf ... defaults for the server
         sara = homedir + '/.config/sara/sara.conf'
@@ -333,10 +345,6 @@ class dd_config:
                      self.from_cluster = words[1] 
                      n = 2
 
-                elif words[0] in ['to_clusters','-tc','--to_clusters']:
-                     self.to_clusters = words[1]
-                     n = 2
-
                 elif words[0] in ['flow','-f','--flow']:
                      self.flow = words[1] 
                      n = 2
@@ -385,6 +393,10 @@ class dd_config:
 
                 elif words[0] in ['exchange','-ex','--exchange'] :
                      self.exchange = words[1]
+                     n = 2
+
+                elif words[0] in ['to','-to','--to']:
+                     self.to = words[1]
                      n = 2
 
                 elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
@@ -436,6 +448,19 @@ class dd_config:
 
                 elif words[0] in ['rename','-rn','--rename']:
                      self.rename = words[1]
+                     n = 2
+
+                elif words[0] in ['route','-rt','--route']:
+                     self.route.extend[ words[1].split(',') ]
+                     # expand route aliases
+                     lst = list(self.route)
+                     for alias in self.route :
+                         if not alias in self.aliases : continue
+                         lst.remove[alias]
+                         clusters = self.aliases[alias]
+                         lst.expand[clusters]
+                     self.route = lst
+                     self.logger.debug("route = %s" % self.route)
                      n = 2
 
 
