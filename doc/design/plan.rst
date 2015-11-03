@@ -374,6 +374,9 @@ dropbox emulation.
 There is little to no code to implement this functionality, but a lot of configuration.
 Need to make it plug & play before offering it.
 
+Would be interesting to do a shared folder this way.  need to do some renaming (source)
+hmm... interesting though.
+
 
 
 
