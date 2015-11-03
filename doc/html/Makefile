@@ -4,7 +4,7 @@
 #Guide.rtf:   Guide.latex
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
-MANPAGES= dd_sara.1.html dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html dd_log.7.html
+MANPAGES= dd_sara.1.html dd_subscribe.1.html dd_watch.1.html dd_post.1.html dd_post.7.html dd_log.7.html dd_log2clusters.8.html dd_log2source.8.html
 
 TARGETS= $(MANPAGES)
 
@@ -12,6 +12,10 @@ default: $(TARGETS)
 
 .dia.png:
 	dia -t png $*.dia
+
+.rst.html:
+	rst2html $*.rst >$*.html
+
 
 
 # there should be a way to make an implicit rule for the man pages,
@@ -36,6 +40,12 @@ dd_post.1.html: ../dd_post.1.rst
 
 dd_post.7.html: ../dd_post.7.rst
 	rst2html ../dd_post.7.rst >dd_post.7.html
+
+dd_log2clusters.8.html: ../dd_log2clusters.8.rst
+	rst2html ../dd_log2clusters.8.rst >dd_log2clusters.8.html
+
+dd_log2source.8.html: ../dd_log2source.8.rst
+	rst2html ../dd_log2source.8.rst >dd_log2source.8.html
 
 dd_log.7.html: ../dd_log.7.rst
 	rst2html ../dd_log.7.rst >dd_log.7.html
