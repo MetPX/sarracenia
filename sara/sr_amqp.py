@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_amqp.py : python3 utility tools from python's amqplib
+# sr_amqp.py : python3 utility tools from python's amqplib
 #
 #
 # Code contributed by:

@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_util.py : python3 utility mostly for checksum and file part
+# sr_util.py : python3 utility mostly for checksum and file part
 #
 #
 # Code contributed by:

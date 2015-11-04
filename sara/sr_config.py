@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_config.py : python3 utility tool to configure sarracenia programs
+# sr_config.py : python3 utility tool to configure sarracenia programs
 #
 #
 # Code contributed by:
@@ -38,10 +38,10 @@ import logging
 import os,re,socket,sys
 import urllib,urllib.parse
 
-try :    from dd_util      import *
-except : from sara.dd_util import *
+try :    from sr_util      import *
+except : from sara.sr_util import *
 
-class dd_config:
+class sr_config:
 
     def __init__(self,config=None,args=None):
 
@@ -61,7 +61,7 @@ class dd_config:
         # set logging to printit until we are fixed with it
 
         self.setlog()
-        self.logger.debug("dd_config __init__")
+        self.logger.debug("sr_config __init__")
 
         # check arguments
 
@@ -80,7 +80,7 @@ class dd_config:
 
     def args(self,args):
 
-        self.logger.debug("dd_config args")
+        self.logger.debug("sr_config args")
 
         if args == None : return
 
@@ -91,7 +91,7 @@ class dd_config:
               i = i + n
 
     def config(self,path):
-        self.logger.debug("dd_config config")
+        self.logger.debug("sr_config config")
 
         if path == None : return
 
@@ -110,7 +110,7 @@ class dd_config:
         f.close()
 
     def defaults(self):
-        self.logger.debug("dd_config defaults")
+        self.logger.debug("sr_config defaults")
 
         self.debug                = False
 
@@ -193,7 +193,7 @@ class dd_config:
         self.recompute_chksum     = False
 
     def general(self):
-        self.logger.debug("dd_config general")
+        self.logger.debug("sr_config general")
 
         homedir = os.path.expanduser("~")
         confdir = homedir + '/.config/sara/'
@@ -294,7 +294,7 @@ class dd_config:
 
 
     def option(self,words):
-        self.logger.debug("dd_config option %s" % words[0])
+        self.logger.debug("sr_config option %s" % words[0])
 
         needexit = False
         n        = 0
@@ -590,11 +590,11 @@ class dd_config:
            logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
            self.logger = logging.getLogger()
            self.lpath  = None
-           self.logger.debug("dd_config setlog 1")
+           self.logger.debug("sr_config setlog 1")
            return
 
         if self.logpath == self.lpath :
-           self.logger.debug("dd_config setlog 2")
+           self.logger.debug("sr_config setlog 2")
            if hasattr(self,'debug') and self.debug : self.logger.setLevel(logging.DEBUG)
            return
 
@@ -712,15 +712,15 @@ def main():
 
     if len(sys.argv) == 1 :
        print(" None None")
-       cfg = dd_config(None,None)
+       cfg = sr_config(None,None)
     elif os.path.isfile(sys.argv[1]):
        args = None
        if len(sys.argv) > 2 : args = sys.argv[2:]
        print(" Conf %s" % args)
-       cfg = dd_config(sys.argv[1],args)
+       cfg = sr_config(sys.argv[1],args)
     else :
        print(" None %s" % sys.argv[1:])
-       cfg = dd_config(None,sys.argv[1:])
+       cfg = sr_config(None,sys.argv[1:])
     cfg.defaults()
     #to get more details
     cfg.debug = True

@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_ftp.py : python3 utility tools for ftp usage in sarracenia
+# sr_ftp.py : python3 utility tools for ftp usage in sarracenia
 #
 #
 # Code contributed by:

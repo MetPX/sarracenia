@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_post.py : python3 program allowing users to post an available product
+# sr_post.py : python3 program allowing users to post an available product
 #
 #
 # Code contributed by:
@@ -37,20 +37,20 @@
 import os,random,sys
 
 try :
-         from dd_amqp         import *
-         from dd_config       import *
-         from dd_message      import *
-         from dd_util         import *
+         from sr_amqp         import *
+         from sr_config       import *
+         from sr_message      import *
+         from sr_util         import *
 except :
-         from sara.dd_amqp    import *
-         from sara.dd_config  import *
-         from sara.dd_message import *
-         from sara.dd_util    import *
+         from sara.sr_amqp    import *
+         from sara.sr_config  import *
+         from sara.sr_message import *
+         from sara.sr_util    import *
 
-class dd_post(dd_config):
+class sr_post(sr_config):
 
     def __init__(self,config=None,args=None):
-        dd_config.__init__(self,config,args)
+        sr_config.__init__(self,config,args)
         self.configure()
 
     def check(self):
@@ -69,7 +69,7 @@ class dd_post(dd_config):
         if self.exchange == None :
            self.exchange = 'xs_%s' % self.broker.username
 
-        self.msg = dd_message(self.logger)
+        self.msg = sr_message(self.logger)
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
         self.msg.set_flow(self.flow)
@@ -88,7 +88,7 @@ class dd_post(dd_config):
 
         self.general()
 
-        # defaults general and proper to dd_post
+        # defaults general and proper to sr_post
 
         self.defaults()
 
@@ -110,9 +110,9 @@ class dd_post(dd_config):
         self.hc_post      = HostConnect( logger = self.logger )
         self.hc_post.set_url( self.broker )
 
-        # dd_post : no loop to reconnect to broker
+        # sr_post : no loop to reconnect to broker
 
-        if self.program_name == 'dd_post' :
+        if self.program_name == 'sr_post' :
            self.hc_post.loop = False
                                    
         self.hc_post.connect()
@@ -126,7 +126,7 @@ class dd_post(dd_config):
         self.logger.info("-b   <broker>          default:amqp://guest:guest@localhost/")
         self.logger.info("-c   <config_file>")
         self.logger.info("-dr  <document_root>   default:None")
-        if self.program_name == 'dd_watch' : self.logger.info("-e   <events>          default:IN_CLOSE_WRITE\n")
+        if self.program_name == 'sr_watch' : self.logger.info("-e   <events>          default:IN_CLOSE_WRITE\n")
         self.logger.info("-ex  <exchange>        default:xs_\"broker.username\"")
         self.logger.info("-f   <flow>            default:None\n")
         self.logger.info("-h|--help\n")
@@ -331,7 +331,7 @@ class dd_post(dd_config):
 
 def main():
 
-    post = dd_post(config=None,args=sys.argv[1:])
+    post = sr_post(config=None,args=sys.argv[1:])
 
     try :
              post.instantiate()

@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_message.py : python3 utility tools for sarracenia amqp message processing
+# sr_message.py : python3 utility tools for sarracenia amqp message processing
 #
 #
 # Code contributed by:
@@ -37,11 +37,11 @@
 import calendar,os,socket,sys,time,urllib,urllib.parse
 
 try :
-         from dd_util         import *
+         from sr_util         import *
 except :
-         from sara.dd_util    import *
+         from sara.sr_util    import *
 
-class dd_message():
+class sr_message():
 
     def __init__(self,logger):
         self.logger        = logger
@@ -267,8 +267,8 @@ class dd_message():
         if 'message' in self.headers :
            self.hdrstr  += '%s=%s ' % ('message',self.headers['message'])
 
-        # added for v00 compatibility (old version of dd_subscribe)
-        # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
+        # added for v00 compatibility (old version of sr_subscribe)
+        # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
         self.headers['filename'] = os.path.basename(self.url.path).split(':')[0]
 
 

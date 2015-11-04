@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
-#                   as soon as they are made available (through amqp notifications)
+# sr_log.py : python3 program allowing users to receive all log messages
+#             generated from his products
 #
 #
 # Code contributed by:
@@ -40,27 +40,27 @@ import signal
 #============================================================
 # usage example
 #
-# dd_log -b broker
+# sr_log -b broker
 
 #============================================================
 
 try :    
-         from dd_amqp           import *
-         from dd_config       import *
-         from dd_message        import *
+         from sr_amqp           import *
+         from sr_config       import *
+         from sr_message        import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_config  import *
-         from sara.dd_message   import *
+         from sara.sr_amqp      import *
+         from sara.sr_config  import *
+         from sara.sr_message   import *
 
 
-class dd_log(dd_config):
+class sr_log(sr_config):
 
     def __init__(self,config=None,args=None):
-        dd_config.__init__(self,config,args)
+        sr_config.__init__(self,config,args)
 
     def check(self):
-        self.msg = dd_message(self.logger)
+        self.msg = sr_message(self.logger)
 
         if self.exchange == None :
            self.exchange = 'xl_' + self.broker.username
@@ -74,7 +74,7 @@ class dd_log(dd_config):
 
         self.general()
 
-        # defaults general and proper to dd_post
+        # defaults general and proper to sr_post
 
         self.defaults()
 
@@ -132,7 +132,7 @@ class dd_log(dd_config):
 
     def run(self):
 
-        self.logger.info("dd_log run")
+        self.logger.info("sr_log run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
         self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
 
@@ -154,7 +154,7 @@ class dd_log(dd_config):
                  raw_msg = self.consumer.consume(self.queue.qname)
                  if raw_msg == None : continue
 
-                 # make use it as a dd_message
+                 # make use it as a sr_message
 
                  self.msg.from_amqplib(raw_msg)
 
@@ -170,7 +170,7 @@ class dd_log(dd_config):
 
 def main():
 
-    dlog = dd_log(config=None,args=sys.argv)
+    dlog = sr_log(config=None,args=sys.argv)
     dlog.configure()
 
     # =========================================

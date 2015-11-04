@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
-#                   as soon as they are made available (through amqp notifications)
+# sr_log2clusters.py : python3 program uses log2clusters.conf to repost all log messages
+#                      to the proper cluster
 #
 #
 # Code contributed by:
@@ -40,24 +40,24 @@ import signal
 #============================================================
 # usage example
 #
-# dd_log2clusters -b broker
+# sr_log2clusters -b broker
 
 #============================================================
 
 try :    
-         from dd_amqp           import *
-         from dd_instances      import *
-         from dd_message        import *
+         from sr_amqp           import *
+         from sr_instances      import *
+         from sr_message        import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_instances import *
-         from sara.dd_message   import *
+         from sara.sr_amqp      import *
+         from sara.sr_instances import *
+         from sara.sr_message   import *
 
 
-class dd_log2clusters(dd_instances):
+class sr_log2clusters(sr_instances):
 
     def __init__(self,config=None,args=None):
-        dd_instances.__init__(self,config,args)
+        sr_instances.__init__(self,config,args)
         self.defaults()
         self.source_exchange = 'xlog'
         self.source_broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
@@ -69,7 +69,7 @@ class dd_log2clusters(dd_instances):
     def check(self):
         # dont want to recreate these if they exists
         if not hasattr(self,'msg') :
-           self.msg = dd_message(self.logger)
+           self.msg = sr_message(self.logger)
 
     def close(self):
         self.hc_src.close()
@@ -148,7 +148,7 @@ class dd_log2clusters(dd_instances):
 
     def run(self):
 
-        self.logger.info("dd_log2clusters run")
+        self.logger.info("sr_log2clusters run")
         self.logger.info("AMQP  input broker(%s) user(%s) vhost(%s)" % (self.source_broker.hostname,self.source_broker.username,self.source_broker.path) )
         self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.source_exchange,self.source_topic) )
         self.logger.info("checking for %s" % self.cluster)
@@ -174,7 +174,7 @@ class dd_log2clusters(dd_instances):
                  raw_msg = self.consumer.consume(self.queue.qname)
                  if raw_msg == None : continue
 
-                 # make use it as a dd_message
+                 # make use it as a sr_message
 
                  self.msg.from_amqplib(raw_msg)
 
@@ -208,20 +208,20 @@ class dd_log2clusters(dd_instances):
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
     def reload(self):
-        self.logger.info("dd_log2clusters reload")
+        self.logger.info("sr_log2clusters reload")
         self.close()
         self.index = self.instance - 1
         self.configure()
         self.run()
 
     def start(self):
-        self.logger.info("dd_log2clusters start")
+        self.logger.info("sr_log2clusters start")
         self.index = self.instance - 1
         self.configure()
         self.run()
 
     def stop(self):
-        self.logger.info("dd_log2clusters stop")
+        self.logger.info("sr_log2clusters stop")
         self.close()
         os._exit(0)
                  
@@ -240,7 +240,7 @@ def main():
        action = sys.argv[-1]
        if len(sys.argv) > 3: args = sys.argv[1:-1]
 
-    log2clusters = dd_log2clusters(config,args)
+    log2clusters = sr_log2clusters(config,args)
 
     if   action == 'reload' : log2clusters.reload_parent()
     elif action == 'restart': log2clusters.restart_parent()

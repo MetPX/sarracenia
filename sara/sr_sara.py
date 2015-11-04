@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_sara.py : python3 program allowing users to listen and download product from
-#              another sarracenia server or from user posting (dd_post/dd_watch)
+# sr_sara.py : python3 program allowing users to listen and download product from
+#              another sarracenia server or from user posting (sr_post/sr_watch)
 #
 #
 # Code contributed by:
@@ -38,26 +38,26 @@
 import os,sys,time
 
 try :    
-         from dd_amqp           import *
-         from dd_file           import *
-         from dd_ftp            import *
-         from dd_http           import *
-         from dd_instances      import *
-         from dd_message        import *
-         from dd_sftp           import *
+         from sr_amqp           import *
+         from sr_file           import *
+         from sr_ftp            import *
+         from sr_http           import *
+         from sr_instances      import *
+         from sr_message        import *
+         from sr_sftp           import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_file      import *
-         from sara.dd_ftp       import *
-         from sara.dd_http      import *
-         from sara.dd_instances import *
-         from sara.dd_message   import *
-         from sara.dd_sftp      import *
+         from sara.sr_amqp      import *
+         from sara.sr_file      import *
+         from sara.sr_ftp       import *
+         from sara.sr_http      import *
+         from sara.sr_instances import *
+         from sara.sr_message   import *
+         from sara.sr_sftp      import *
 
-class dd_sara(dd_instances):
+class sr_sara(sr_instances):
 
     def __init__(self,config=None,args=None):
-        dd_instances.__init__(self,config,args)
+        sr_instances.__init__(self,config,args)
         self.defaults()
         self.exchange = 'xpublic'
         self.configure()
@@ -67,7 +67,7 @@ class dd_sara(dd_instances):
         # dont want to recreate these if they exists
 
         if not hasattr(self,'msg') :
-           self.msg      = dd_message(self.logger)
+           self.msg      = sr_message(self.logger)
 
         self.msg.user = self.source_broker.username
 
@@ -311,7 +311,7 @@ class dd_sara(dd_instances):
 
     def run(self):
 
-        self.logger.info("dd_sara run")
+        self.logger.info("sr_sara run")
 
         self.connect()
 
@@ -334,7 +334,7 @@ class dd_sara(dd_instances):
                  raw_msg = self.consumer.consume(self.queue.qname)
                  if raw_msg == None : continue
 
-                 # make use it as a dd_message
+                 # make use it as a sr_message
 
                  self.msg.from_amqplib(raw_msg)
                  self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
@@ -478,18 +478,18 @@ class dd_sara(dd_instances):
         return True
 
     def reload(self):
-        self.logger.info("dd_sara reload")
+        self.logger.info("sr_sara reload")
         self.close()
         self.configure()
         self.run()
 
     def start(self):
         self.configure()
-        self.logger.info("dd_sara start")
+        self.logger.info("sr_sara start")
         self.run()
 
     def stop(self):
-        self.logger.info("dd_sara stop")
+        self.logger.info("sr_sara stop")
         self.close()
         os._exit(0)
 
@@ -509,7 +509,7 @@ def main():
        config = sys.argv[-2]
        if len(sys.argv) > 3: args = sys.argv[1:-2]
 
-    sara = dd_sara(config,args)
+    sara = sr_sara(config,args)
 
     if   action == 'reload' : sara.reload_parent()
     elif action == 'restart': sara.restart_parent()

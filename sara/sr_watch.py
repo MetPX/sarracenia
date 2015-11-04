@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_watch.py : python3 program allowing users to watch a directory or a file and
+# sr_watch.py : python3 program allowing users to watch a directory or a file and
 #               emit a sarracenia amqp message when the file is created,modified or deleted
 #
 #
@@ -40,8 +40,8 @@ import os, signal, sys, time
 import asyncore 
 import pyinotify 
 
-try :    from dd_post      import *
-except : from sara.dd_post import *
+try :    from sr_post      import *
+except : from sara.sr_post import *
 
 # ===================================
 # MAIN
@@ -50,7 +50,7 @@ except : from sara.dd_post import *
 
 def main():
 
-    post = dd_post(config=None,args=sys.argv[1:])
+    post = sr_post(config=None,args=sys.argv[1:])
     post.configure()
     post.instantiate()
     post.connect()

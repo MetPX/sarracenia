@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_file.py : python3 utility tools for file processing
+# sr_file.py : python3 utility tools for file processing
 #
 #
 # Code contributed by:

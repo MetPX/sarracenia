@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_instances.py : python3 utility tools to manage N instances of a program
+# sr_instances.py : python3 utility tools to manage N instances of a program
 #
 #
 # Code contributed by:
@@ -37,17 +37,17 @@
 import logging,os,psutil,signal,sys
 
 try :
-         from dd_config      import *
+         from sr_config      import *
 except :
-         from sara.dd_config import *
+         from sara.sr_config import *
 
-class dd_instances(dd_config):
+class sr_instances(sr_config):
 
     def __init__(self,config=None,args=None):
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
         signal.signal(signal.SIGHUP, self.reload_signal)
-        dd_config.__init__(self,config,args)
+        sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
         #self.configure()
         self.build_parent()
@@ -311,10 +311,10 @@ class dd_instances(dd_config):
 # MAIN
 # ===================================
 
-class test_instances(dd_instances):
+class test_instances(sr_instances):
      
       def __init__(self,config=None,args=None):
-         dd_instances.__init__(self,config,args)
+         sr_instances.__init__(self,config,args)
          self.configure()
 
       def configure(self):

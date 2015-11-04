@@ -5,17 +5,17 @@ import paramiko
 from   paramiko import *
 
 try :    
-         from dd_amqp           import *
-         from dd_config         import *
-         from dd_transfert      import *
-         from dd_util           import *
+         from sr_amqp           import *
+         from sr_config         import *
+         from sr_transfert      import *
+         from sr_util           import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_config    import *
-         from sara.dd_transfert import *
-         from sara.dd_util      import *
+         from sara.sr_amqp      import *
+         from sara.sr_config    import *
+         from sara.sr_transfert import *
+         from sara.sr_util      import *
 
-class dd_sender(dd_config):
+class sr_sender(sr_config):
 
     def __init__(self,logger,config=None,args=None):
 
@@ -112,7 +112,7 @@ class dd_sender(dd_config):
 
         key   = self.exchange_key[0]
         if key[-2:] == '.#' : key = key[:-2]
-        name  = 'cmc.dd_sender' + '.' + self.conf + '.' + self.src_exchange + '.' + key
+        name  = 'cmc.sr_sender' + '.' + self.conf + '.' + self.src_exchange + '.' + key
         self.queue = Queue(self.hc_src,name)
         self.queue.add_binding(self.src_exchange,self.exchange_key[0])
         self.queue.build()
@@ -411,7 +411,7 @@ def main():
 
     # user wants to logging in a directory/file
     else :
-       fn     = 'dd_sender'
+       fn     = 'sr_sender'
        lfn    = fn + '_' + sys.argv[1] + "_%s" % os.getpid() + ".log"
        lfile  = logdir + os.sep + lfn
 
@@ -428,7 +428,7 @@ def main():
        logger.addHandler(hdlr)
 
 
-    sender = dd_sender(logger,config=sys.argv[1],args=sys.argv)
+    sender = sr_sender(logger,config=sys.argv[1],args=sys.argv)
 
     sender.connect()
 

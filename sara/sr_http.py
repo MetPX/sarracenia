@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_http.py : python3 utility tools for http usage in sarracenia
+# sr_http.py : python3 utility tools for http usage in sarracenia
 #
 #
 # Code contributed by:

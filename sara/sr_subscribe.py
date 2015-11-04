@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+# sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
 #                   as soon as they are made available (through amqp notifications)
 #
 #
@@ -40,18 +40,18 @@ import urllib, logging, logging.handlers, os, random, re, signal, string, sys, t
 #============================================================
 # usage example
 #
-# python dd_subscribe.py configfile.conf
+# python sr_subscribe.py configfile.conf
 
 #============================================================
 
 try :    
-         from dd_amqp           import *
-         from dd_file           import *
-         from dd_message        import *
+         from sr_amqp           import *
+         from sr_file           import *
+         from sr_message        import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_file      import *
-         from sara.dd_message   import *
+         from sara.sr_amqp      import *
+         from sara.sr_file      import *
+         from sara.sr_message   import *
 
 
 #============================================================
@@ -59,6 +59,7 @@ except :
 class ConsumerX(object):
 
     def __init__(self,config,logger):
+        self.pgm        = os.path.basename(sys.argv[0])
         self.logger     = logger
 
         self.connected  = False
@@ -152,7 +153,7 @@ class ConsumerX(object):
         if not self.connected : self.connect()
 
         if not hasattr(self,'msg') :
-           self.msg = dd_message(self.logger)
+           self.msg = sr_message(self.logger)
 
         self.msg.user         = self.amqp_user
         self.msg.amqp_log     = self.amqp_log
@@ -167,7 +168,7 @@ class ConsumerX(object):
 
                   self.logger.debug("Received msg  %s" % vars(raw_msg))
 
-                  # make use it as a dd_message
+                  # make use it as a sr_message
 
                   try :
                            self.msg.from_amqplib(raw_msg)
@@ -510,12 +511,12 @@ class ConsumerX(object):
 
         if self.masks == [] :
             print("Error 5: accept is missing from config file")
-            print("Try `dd_subscribe --help' for more information.")
+            print("Try '%s --help' for more information." % self.pgm)
             sys.exit(3)
 
         if self.exchange_key == [] :
             print("Error 6: exchange_key is missing from config file")
-            print("Try `dd_subscribe --help' for more information.")
+            print("Try '%s --help' for more information." % self.pgm)
             sys.exit(3)
 
 
@@ -655,7 +656,7 @@ class ConsumerX(object):
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'strip': self.strip = int(words[1])
                     elif words[0] == 'overwrite': self.overwrite = isTrue(words[1])
-                    #default is file is reassemble at dd_subscribe level
+                    #default is file is reassemble at subscribe level
                     #elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
@@ -701,15 +702,16 @@ class ConsumerX(object):
 
 
 def help():     
+    pgm = os.path.basename(sys.argv[0])
     #print chr(27)+'[1m'+'Script'+chr(27)+'[0m'
     print("\nUsage: ")
-    print("\ndd_subscribe [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] <config-file>")
+    print("\n%s [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] <config-file>" % pgm)
     print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
     print("Examples:\n")    
-    print("dd_subscribe subscribe.conf  # download files and display log in stdout")
-    print("dd_subscribe -d subscribe.conf  # discard files after downloaded and display log in stout")
-    print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
-    print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n")
+    print("%s subscribe.conf  # download files and display log in stdout" % pgm)
+    print("%s -d subscribe.conf  # discard files after downloaded and display log in stout" % pgm)
+    print("%s -l /tmp subscribe.conf  # download files,write log file in directory /tmp" % pgm)
+    print("%s -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n" % pgm)
     print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker connection:\n" +
           "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
@@ -769,7 +771,7 @@ def main():
       opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','no-download'])
     except getopt.GetoptError as err:    
       print("Error 1: %s" %err)
-      print("Try `dd_subscribe --help' for more information.")
+      print("Try '%s --help' for more information." % os.path.basename(sys.argv[0]))
       sys.exit(2)                    
     
     #validate options
@@ -786,7 +788,7 @@ def main():
         ldir = a       
         if not os.path.exists(ldir) :
           print("Error 2: specified logging directory does not exist.")
-          print("Try `dd_subscribe --help' for more information.")
+          print("Try '%s --help' for more information."% os.path.basename(sys.argv[0]))
           sys.exit(2)
       elif o in ('-d','--download-and-discard'):
         discard = True        
@@ -802,7 +804,7 @@ def main():
       sys.exit(1)
     else:      
       print("Error 4: too many arguments given: %s." %' '.join(args))
-      print("Try `dd_subscribe --help' for more information.")
+      print("Try '%s --help' for more information." % os.path.basename(sys.argv[0]))
       sys.exit(2)            
              
 

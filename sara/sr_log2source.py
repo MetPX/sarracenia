@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
-#                   as soon as they are made available (through amqp notifications)
+# sr_log2source.py : python3 program takes all log messages and repost them to the
+#                    log exchange of the source user
 #
 #
 # Code contributed by:
@@ -40,24 +40,24 @@ import signal
 #============================================================
 # usage example
 #
-# dd_log2source -b broker -i 1
+# sr_log2source -b broker -i 1
 
 #============================================================
 
 try :    
-         from dd_amqp           import *
-         from dd_instances      import *
-         from dd_message        import *
+         from sr_amqp           import *
+         from sr_instances      import *
+         from sr_message        import *
 except : 
-         from sara.dd_amqp      import *
-         from sara.dd_instances import *
-         from sara.dd_message   import *
+         from sara.sr_amqp      import *
+         from sara.sr_instances import *
+         from sara.sr_message   import *
 
 
-class dd_log2source(dd_instances):
+class sr_log2source(sr_instances):
 
     def __init__(self,config=None,args=None):
-        dd_instances.__init__(self,config,args)
+        sr_instances.__init__(self,config,args)
         self.defaults()
         self.exchange = 'xlog'
         self.topic    = 'v02.log.#'
@@ -68,7 +68,7 @@ class dd_log2source(dd_instances):
     def check(self):
         # dont want to recreate these if they exists
         if not hasattr(self,'msg') :
-           self.msg = dd_message(self.logger)
+           self.msg = sr_message(self.logger)
 
     def close(self):
         self.hc.close()
@@ -134,7 +134,7 @@ class dd_log2source(dd_instances):
 
     def run(self):
 
-        self.logger.info("dd_log2source run")
+        self.logger.info("sr_log2source run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
         self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
 
@@ -160,7 +160,7 @@ class dd_log2source(dd_instances):
                  raw_msg = self.consumer.consume(self.queue.qname)
                  if raw_msg == None : continue
 
-                 # make use it as a dd_message
+                 # make use it as a sr_message
 
                  self.msg.from_amqplib(raw_msg)
 
@@ -197,18 +197,18 @@ class dd_log2source(dd_instances):
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
     def reload(self):
-        self.logger.info("dd_log2source reload")
+        self.logger.info("sr_log2source reload")
         self.close()
         self.configure()
         self.run()
 
     def start(self):
         self.configure()
-        self.logger.info("dd_log2source start")
+        self.logger.info("sr_log2source start")
         self.run()
 
     def stop(self):
-        self.logger.info("dd_log2source stop")
+        self.logger.info("sr_log2source stop")
         self.close()
         os._exit(0)
                  
@@ -227,7 +227,7 @@ def main():
        action = sys.argv[-1]
        if len(sys.argv) > 3: args = sys.argv[1:-1]
 
-    log2source = dd_log2source(config,args)
+    log2source = sr_log2source(config,args)
 
     if   action == 'reload' : log2source.reload_parent()
     elif action == 'restart': log2source.restart_parent()
