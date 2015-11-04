@@ -48,7 +48,7 @@ An example invocation of *sr_post*::
 By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange. The default exchange 
-is the prefix 'xs_' followed by the broker username, hence defaulting to 'xs_guest'.
+is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
 A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 The output of the command is as follows ::
@@ -116,7 +116,7 @@ ARGUMENTS AND OPTIONS
 
 **[-ex|--exchange <exchange>]**
 
-  By default, the exchange used is xs_"broker_username".
+  By default, the exchange used is *xs_*"broker_username".
   This exchange must be previously created on broker by its administrator.
   The default can be overwritten with this *exchange* option.
 
