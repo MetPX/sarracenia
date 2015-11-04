@@ -1,53 +1,5 @@
-#!/usr/bin/make -f 
-# Uncomment this to turn on verbose mode.
+#!/usr/bin/make -f
+# -*- makefile -*-
 
-export DH_VERBOSE=1
-
-build: build-stamp
-
-build-stamp:
-	dh_testdir
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -rf build-stamp build
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
-
-	# install the binary files in /usr/bin
-	for f in `find bin/ \( ! -regex '.*/\..*' \)`; \
-	     do if [ -f $$f ]; then \
-	            install -m 755 $$f debian/metpx-sarracenia/usr/bin; \
-	        fi; \
-	done
-	
-# Build architecture-independent files here.
-binary-indep: build install
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir 
-	dh_testroot 
-	dh_installdocs  --exclude=".svn"
-	dh_installchangelogs 
-	#dh_installcron
-	dh_strip 
-	dh_fixperms
-	dh_python 
-	dh_installman
-	dh_installdeb 
-	dh_compress 
-	dh_shlibdeps 
-	dh_gencontrol 
-	dh_md5sums 
-	dh_builddeb 
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary
+%:
+	dh $@ --with python3

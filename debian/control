@@ -2,10 +2,13 @@ Source: metpx-sarracenia
 Section: misc 
 Priority: optional
 Maintainer: Michel Grenier <michel.grenier@ec.gc.ca>
+Build-Depends: debhelper ( >= 4.2.32 )
+Vcs-Git: http://git.code.sf.net/p/metpx/git
 
 Package: metpx-sarracenia
 Architecture: all 
-Depends: python, python-amqplib
+Depends: ${misc:Depends}, ${python:Depends}, python-amqplib
+Homepage: http://metpx.sf.net
 Description:A utility tool that consumes AMQP message containing
  URL of newly posted products on http://dd.weather.gc.ca and
  downloads them in specified directories. Both products and directories
