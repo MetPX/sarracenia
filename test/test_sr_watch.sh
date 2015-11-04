@@ -44,10 +44,10 @@ e 123456789abcde
 
 EOF
 
-echo dd_watch -u file:${PWD}/
+echo sr_watch -u file:${PWD}/
 echo touch ./toto
 
-../sara/dd_watch.py -u file:${PWD}/ &
+../sara/sr_watch.py -u file:${PWD}/ &
 PID=$!
 sleep 2
 touch ./toto
@@ -56,10 +56,10 @@ kill -9 $PID
 
 echo ========================================
 
-echo dd_watch -u file:${PWD}/ -e IN_CLOSE_WRITE
+echo sr_watch -u file:${PWD}/ -e IN_CLOSE_WRITE
 echo touch ./toto
 
-../sara/dd_watch.py -u file:${PWD}/ -e IN_CLOSE_WRITE &
+../sara/sr_watch.py -u file:${PWD}/ -e IN_CLOSE_WRITE &
 PID=$!
 sleep 2
 touch ./toto
@@ -68,11 +68,11 @@ kill -9 $PID
 
 echo ========================================
 
-echo dd_watch -u file:${PWD}/
+echo sr_watch -u file:${PWD}/
 echo rm ./toto
 
 cp toto toto2
-../sara/dd_watch.py -u file:${PWD}/ &
+../sara/sr_watch.py -u file:${PWD}/ &
 PID=$!
 sleep 2
 rm ./toto
@@ -89,11 +89,11 @@ EOF
 
 echo ========================================
 echo credential file
-echo dd_watch -u file:${PWD}/ -e IN_DELETE -b amqp://localhost
+echo sr_watch -u file:${PWD}/ -e IN_DELETE -b amqp://localhost
 echo rm ./toto
 
 mv toto2 toto
-../sara/dd_watch.py -u file:${PWD}/ -e IN_DELETE -b amqp://localhost&
+../sara/sr_watch.py -u file:${PWD}/ -e IN_DELETE -b amqp://localhost&
 PID=$!
 sleep 2
 rm ./toto
