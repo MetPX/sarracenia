@@ -269,6 +269,7 @@ class sr_config:
                          try    : self.aliases[parts[0]].index[p]
                          except : 
                                   if p in self.aliases :
+                                         self.aliases[parts[0]].append(p)
                                          self.aliases[parts[0]].extend(self.aliases[p])
                                   else :
                                          self.aliases[parts[0]].append(p)
@@ -452,11 +453,10 @@ class sr_config:
 
                 elif words[0] in ['route','-rt','--route']:
                      self.route.extend[ words[1].split(',') ]
-                     # expand route aliases
+                     # expand route aliases, keep alias'name and add alias'cluters
                      lst = list(self.route)
                      for alias in self.route :
                          if not alias in self.aliases : continue
-                         lst.remove[alias]
                          clusters = self.aliases[alias]
                          lst.expand[clusters]
                      self.route = lst
