@@ -51,7 +51,7 @@ Questions to examine for each:
 
 .. include:: uc001_3TiBTransfer.rst
 .. include:: uc002_RockSolidop0hr.rst
-.. include:: uc003_ddStyle.rst
+.. include:: uc003_srStyle.rst
 .. include:: uc004_pxpaz.rst
 .. include:: uc005_Acqui1TiBfromInternet.rst
 .. include:: uc006_LocalFileNotification.rst

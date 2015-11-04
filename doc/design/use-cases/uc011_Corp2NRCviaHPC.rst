@@ -12,20 +12,20 @@ Corp2NRCviaHPC
 
 	variations:
 
-	.1 Gerald uses dd_post/dd_send
+	.1 Gerald uses sr_post/sr_send
 
-	.2 Gerald uses dd_post (no send) we fetch via 
+	.2 Gerald uses sr_post (no send) we fetch via 
 
-	.3 Gerald just sftp´s it in, and we use dd_watch.
+	.3 Gerald just sftp´s it in, and we use sr_watch.
 
 
 	once it is on dd.collab, it is announced ...
 
-	inside, user uNor001 is running a dd_subscribe to dd.collab,
+	inside, user uNor001 is running a sr_subscribe to dd.collab,
 	sees the data is available, and downloads it directly to his
 	file system.  
 
-	he could use dd_sara to do , in which case it will re-announce 
+	he could use sr_sara to do , in which case it will re-announce 
 	the file on sftp for availability from his nrc account.
 
 	this is good because within his file space he has total control
@@ -38,11 +38,11 @@ Corp2NRCviaHPC
 
     AMQP layer::
 
-	.1 dd_post to xac_Gerald
-	   dd_send sends the file 
+	.1 sr_post to xac_Gerald
+	   sr_send sends the file 
 		when done it emits  v01.log.uGerald.uGerald ...
 
-	   dd_something ...  dd_ingest?  
+	   sr_something ...  sr_ingest?  
 		notices the log.u.u.
 		does pre&post validation check on the file received.
 		moves (day and client subtree, for example)
@@ -50,7 +50,7 @@ Corp2NRCviaHPC
 		then re-announces it to downstream-broker.
 
 	
-	.2 dd_post
+	.2 sr_post
 
 
     Data Layer:

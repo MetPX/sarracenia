@@ -7,8 +7,8 @@ Use Case 4:   send a continuous feed of tiny files. (px-paz case...)
 
    someone (outside org) wants to send us data.
 	- using straight sftp.
-	- using dd_aware method.
-	- using dd_watch.
+	- using sr_aware method.
+	- using sr_watch.
 
    someone inside Gov. wants to do same.
 

@@ -8,8 +8,8 @@ HPC2Internet+GOC+24x7
 	and colleagues within government in a reliable way (24x7)
 
     AMQP layer:
-        dd_post to ddsr.science.gc.ca to xclimate_research
-		dd_sara/validates & dispatch.
+        sr_post to ddsr.science.gc.ca to xclimate_research
+		sr_sara/validates & dispatch.
 		
 		svrddsr1 fetchs a file via sftp to post on local http svr.
 			(assuming possible ... see data layer)
@@ -20,7 +20,7 @@ HPC2Internet+GOC+24x7
 
 		ddi1, ddi2, are subscribed to xto_ddi, and they pull the data down.
 
-		dd_sender is subscribed to put the files on dd.collab.
+		sr_sender is subscribed to put the files on dd.collab.
 			posts to xfrom_ddsr on dd.collab ?
 				or just straight to xPublic?
 				as amqp user uddsr?
@@ -36,7 +36,7 @@ HPC2Internet+GOC+24x7
 		this does work if there is a switching level within EC.
 
 	  .0 no switching layer within EC:
-		EC user uses dd_send to upload.
+		EC user uses sr_send to upload.
 
         once on svrDDSRx
 		ddiX will pull via http from svrDDSRx
@@ -76,7 +76,7 @@ FIXME:
 		<this needs to move to a ´trusted´ area (ie. www visible.)
 
     2. Server s/w Distribution.
-	remote host has dd-sarracenia clients, dd_post (.0) and dd_send (.1)
+	remote host has sr-sarracenia clients, sr_post (.0) and sr_send (.1)
 	ddsr needs sftp server, and one (H/A) rabbit per cluster?
 	 
 

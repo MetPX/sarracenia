@@ -10,14 +10,14 @@ Transfer from EC to Science
 	wants to transfer a file to the high performance computing science.gc.ca 
 	
     AMQP layer:
-	So Earnest fires up dd-post on server svrEC-Burlington...  
+	So Earnest fires up sr-post on server svrEC-Burlington...  
 			broker target: amqp://uearnest@svrsftp.science.gc.ca/
 				which means he posts on the xac_earnest exchange.
 
 	now... science.gc.ca cannot initiate a connection to svrEC-Burlington (no inbound to EC)
         so to send it, one must do::
 
-	    dd-sender,   
+	    sr-sender,   
 		subscribed to xac_earnest... and then sending the files
 		posting the log to xac_earnest as well.
 				
@@ -28,13 +28,13 @@ Transfer from EC to Science
 
 
    log layer:
-        log messages posted to xac_earnest... copied to system-wide xlog.   dd-src2log  ?
+        log messages posted to xac_earnest... copied to system-wide xlog.   sr-src2log  ?
 
    1. Storage Distribution
         The storage is on the two end servers, and is normal user space no server specific storage.
 
    2. Server s/w Distribution.
-        the user would have dd-sarracenia available to run the dd_post, and dd_sender binaries.
+        the user would have sr-sarracenia available to run the sr_post, and sr_sender binaries.
         it would upload using SFTP.
 
 	sftp.science.gc.ca would be a collection of nodes with inbound SSH permitted.
@@ -50,7 +50,7 @@ Transfer from EC to Science
 	The user has partner:
 		 authentication on their own system.
 
-	do dd-post they authenticate to the sftp´s rabbitmq server.
+	do sr-post they authenticate to the sftp´s rabbitmq server.
 		username  u
  
         so Earnest has  uNRCernest@nrc.ca,  ucloudmech@sftpsw? for the broker, and ear001@science.
@@ -75,7 +75,7 @@ Transfer from EC to Science
 
 
      6. bandwidth/scaling
-	If you fire up n-dd_senders, they will initiate n connections to sftp. the lb´s with
+	If you fire up n-sr_senders, they will initiate n connections to sftp. the lb´s with
 	assign them to different nodes.
 
 
