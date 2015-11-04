@@ -378,6 +378,14 @@ Would be interesting to do a shared folder this way.  need to do some renaming (
 hmm... interesting though.
 
 
+Pull Distribution
+~~~~~~~~~~~~~~~~~
+
+If someone specifies ANY as to_clusters, does that mean we need to push that data to all
+switches?  Is there a bit-torrent-style demand element to propagation?  what if announcements
+we processed by creating ''symbolic links'' on the next element of the chain, so that the
+copy does not actually happen until someone actually asks for it?
+
 
 
 Iterations

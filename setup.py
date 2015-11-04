@@ -35,7 +35,7 @@ setup(
               "dd_sender=sara.dd_sender:main",
               "dd_watch=sara.dd_watch:main",
               "dd_subscribe=sara.dd_subscribe:main",
-              "dd_log2source=sara.dd_log2source:main"
+              "dd_log2source=sara.dd_log2source:main",
               "dd_log2clusters=sara.dd_log2clusters:main"
               ]
     },
