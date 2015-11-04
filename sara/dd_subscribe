@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# dd_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+# sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
 #                   as soon as they are made available (through amqp notifications)
 #
 #
@@ -45,7 +45,7 @@ from   hashlib import md5
 #============================================================
 # usage example
 #
-# python dd_subscribe.py configfile.conf
+# python sr_subscribe.py configfile.conf
 
 #============================================================
 
@@ -665,7 +665,7 @@ def Seekinfo( chunksize, block_count, remainder, current_block ):
 
     return offset,length,fsiz
 
-class dd_message():
+class sr_message():
 
     def __init__(self,logger):
         self.logger        = logger
@@ -913,8 +913,8 @@ class dd_message():
            self.headers['message'] = self.message
            self.hdrstr  += '%s=%s ' % ('message',self.message)
 
-        # added for v00 compatibility (old version of dd_subscribe)
-        # can be taken off when v02 will be fully deployed and end user uses new dd_subscribe
+        # added for v00 compatibility (old version of sr_subscribe)
+        # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
         self.headers['filename'] = os.path.basename(self.url.path).split(':')[0]
 
 
@@ -1279,7 +1279,7 @@ class ConsumerX(object):
         if not self.connected : self.connect()
 
         if not hasattr(self,'msg') :
-           self.msg = dd_message(self.logger)
+           self.msg = sr_message(self.logger)
 
         self.msg.user         = self.amqp_user
         self.msg.amqp_log     = self.amqp_log
@@ -1294,7 +1294,7 @@ class ConsumerX(object):
 
                   self.logger.debug("Received msg  %s" % vars(raw_msg))
 
-                  # make use it as a dd_message
+                  # make use it as a sr_message
 
                   try :
                            self.msg.from_amqplib(raw_msg)
@@ -1782,7 +1782,7 @@ class ConsumerX(object):
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'strip': self.strip = int(words[1])
                     elif words[0] == 'overwrite': self.overwrite = isTrue(words[1])
-                    #default is file is reassemble at dd_subscribe level
+                    #default is file is reassemble at sr_subscribe level
                     #elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
