@@ -51,6 +51,7 @@ class dd_config:
         self.exedir         = os.getcwd()
         self.logdir         = os.getcwd()
 
+        self.aliases        = {}
         self.credentials    = []
         self.log_clusters   = {}
 
@@ -152,7 +153,6 @@ class dd_config:
         self.source_from_exchange = False
 
         # cluster stuff
-        self.aliases              = {}
         self.from_cluster         = None
         self.to                   = None
         self.route                = []

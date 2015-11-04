@@ -73,7 +73,11 @@ class dd_post(dd_config):
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
         self.msg.set_flow(self.flow)
-        self.msg.set_to_clusters(self.to_clusters)
+        self.msg.set_to(self.to)
+        if self.to == None :
+           self.logger.error("-to option is mandatory\n")
+           self.help()
+           sys.exit(1)
 
     def close(self):
         self.hc_post.close()
@@ -128,7 +132,7 @@ class dd_post(dd_config):
         self.logger.info("-h|--help\n")
         self.logger.info("-l   <logpath>         default:stdout")
         self.logger.info("-p   <parts>           default:1")
-        self.logger.info("-tc  <to_clusters>     default:None")
+        self.logger.info("-to  <name1,name2,...> defines target clusters, mandatory")
         self.logger.info("-tp  <topic_prefix>    default:v02.post")
         self.logger.info("-sub <subtopic>        default:'path.of.file'")
         self.logger.info("-rn  <rename>          default:None")
