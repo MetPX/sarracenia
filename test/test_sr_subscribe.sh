@@ -72,99 +72,31 @@ broker amqp://localhost/
 amqp-user guest
 amqp-password guest
 
-exchange amq.topic
+exchange xs_guest
 topic_prefix v02.post
 subtopic #
 
 directory ${PWD}/test
 accept .*
 
-expire 3
+expire 300
 
 EOF
 
 mkdir ./test
 rm ./.*.queue
 
-echo ==== INPLACE FALSE ====
-
-function test1 {
-
-      $DD_SUBSCRIBE $* > ./sr_subscribe_test1.log 2>&1 &
-      sleep 10
-
-      #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
-      sleep 2
-      touch ./test/test_no_1
-      ls -al toto ./test/*
-      N=`diff toto ./test/toto|wc -l`
-      if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
-      else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
-         exit 1
-      fi
-      rm   ./test/*
-
-      #parts I
-
-      #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
-      sleep 2
-      touch ./test/test_no_2
-      ls -al toto ./test/*
-      N=`diff toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part|wc -l`
-      N2=`diff toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part|wc -l`
-      if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta
-      else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta
-         exit 1
-      fi
-      rm   ./test/*
-
-      #parts P
-
-      #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part  -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part  -p p -to alta > /dev/null 2>&1
-      sleep 2
-      touch ./test/test_no_3
-      ls -al toto ./test/*
-      N=`diff toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part|wc -l`
-      N2=`diff toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part|wc -l`
-      if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
-      else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part  -to alta
-         exit 1
-      fi
-      rm   ./test/*
-
-      #======== 2
-      
-      killall ${DD_SUBSCRIBE##.*/}
-
-}
-
-cp ./subscribe_test.conf ./subscribe_test1.conf
-echo inplace False >> ./subscribe_test1.conf
-
-test1 ./subscribe_test1.conf
-rm ./subscribe_test1.conf
-
-echo ==== INPLACE TRUE ====
+echo ==== INPLACE ====
 
 function test2 {
 
       $DD_SUBSCRIBE $* > ./sr_subscribe_test2.log 2>&1 &
 
-      sleep 10
+      sleep 5
 
       #======== 1
       ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
-      sleep 2
+      sleep 5
       touch ./test/test_no_4
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
@@ -180,7 +112,7 @@ function test2 {
 
       #======== 2
       ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
-      sleep 2
+      sleep 5
       touch ./test/test_no_5
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
@@ -197,9 +129,9 @@ function test2 {
       #parts P
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta> /dev/null 2>&1
+      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
       ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
-      sleep 2
+      sleep 5
       touch ./test/test_no_6
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
@@ -216,59 +148,7 @@ function test2 {
 }
 
 
-cp ./subscribe_test.conf ./subscribe_test2.conf
-echo inplace True  >> ./subscribe_test2.conf
-test2 ./subscribe_test2.conf
-rm ./subscribe_test2.conf
-
-echo ==== INPLACE FALSE NOT MODIFIED ====
-
-function test3 {
-
-      cp ./toto ./test/toto
-      cp ./toto.128.2.0.0.d.Part ./test/toto.128.2.0.0.d.Part
-      cp ./toto.128.2.0.1.d.Part ./test/toto.128.2.0.1.d.Part
-
-      touch ./test/test_no_7
-
-      $DD_SUBSCRIBE $* > ./sr_subscribe_test3.log 2>&1 &
-      sleep 10
-
-      #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
-
-      #parts I
-
-      #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta> /dev/null 2>&1
-
-      #parts P
-
-      #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
-      
-      sleep 10
-      ls -al toto ./test/*
-
-
-      N=`grep modified ./sr_subscribe_test3.log  | wc -l`
-      if ((N==4)) ; then
-         echo OK  not modified in all cases
-      else
-         echo ERROR should have 4 cases of unmodified files
-         exit 1
-      fi
-      rm   ./test/*
- 
-      killall ${DD_SUBSCRIBE##.*/}
-
-}
-
-cp ./subscribe_test.conf ./subscribe_test3.conf
-echo inplace False >> ./subscribe_test3.conf
-echo overwrite False >> ./subscribe_test3.conf
-test3 ./subscribe_test3.conf
+test2 ./subscribe_test.conf
 
 echo ==== INSTANCES AND INSERTS ====
 
@@ -297,9 +177,7 @@ function test4 {
 }
 
 
-cp ./subscribe_test.conf ./subscribe_test4.conf
-echo inplace True >> ./subscribe_test4.conf
-test4 ./subscribe_test4.conf
+test4 ./subscribe_test.conf
 
 
 echo ==== INSTANCES AND INSERTS AND TRUNCATE ====
@@ -335,10 +213,8 @@ function test5 {
 
 }
 
-cp ./subscribe_test.conf ./subscribe_test5.conf
-echo inplace True >> ./subscribe_test5.conf
-test5 ./subscribe_test5.conf
+test5 ./subscribe_test.conf
 
-#rm ./sr_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
-#rmdir ./test > /dev/null 2>&1
+rm ./sr_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
+rmdir ./test > /dev/null 2>&1
 
