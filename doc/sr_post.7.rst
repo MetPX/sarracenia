@@ -1,6 +1,6 @@
 
 =========
- DD_post 
+ SR_post 
 =========
 
 -------------------------------------------
@@ -15,9 +15,9 @@ Sarracenia v02 Post Message Format/Protocol
 SYNOPSIS
 --------
 
-The format of file change announcements for dd_post.  
+The format of file change announcements for sr_post.  
 
-A dd_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
+A sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
 
 **AMQP Topic:** *<version>.post.{<dir>.}*<filename>*
 
@@ -52,7 +52,7 @@ A dd_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mess
 DESCRIPTION
 -----------
 
-Sources create messages in the *dd_post* format to announce file changes. Subscribers 
+Sources create messages in the *sr_post* format to announce file changes. Subscribers 
 read the post to decide whether a download of the content being announced is warranted.  This 
 manual page completely describes the format of those messages.  The messages are payloads 
 for an Advanced Message Queuing Protocol (AMQP) message bus, but file data transport 
@@ -65,7 +65,7 @@ With this method, AMQP messages provide a 'control plane' for data transfers.  W
 is essentially point to point, data switches can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
-data.  If consumers permit it, log messages (see dd_log(7)) also flow through the control path, 
+data.  If consumers permit it, log messages (see sr_log(7)) also flow through the control path, 
 but in the opposite direction, allowing sources to know the entire disposition of their 
 files through a network.  
 
@@ -349,12 +349,12 @@ EXAMPLE
 Another example
 ---------------
 
-The post resulting from the following dd_watch command, noticing creation of the file 'foor':
+The post resulting from the following sr_watch command, noticing creation of the file 'foor':
 
-dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
-Here, *dd_watch* checks if the file /data/shared/products/foo is modified.
-When it happens, *dd_watch*  reads the file /data/shared/products/foo and calculates its checksum.
+Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
+When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
 
@@ -419,7 +419,7 @@ as is provided by many free brokers, such as rabbitmq, often referred to as 0.8,
 0.9 brokers are also likely to inter-operate well.
 
 In AMQP, many different actors can define communication parameters. To create a clearer
-security model, sarracenia constrains AMQP: dd_post clients are not permitted to declare 
+security model, sarracenia constrains AMQP: sr_post clients are not permitted to declare 
 Exchanges.  All clients are expected to use existing exchanges which have been declared by 
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
@@ -428,7 +428,7 @@ using agreed upon naming schemes.  Queue for client: qc_<user>.????
    FIXME: other connection parameters: persistence, etc..
 
 Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
-but dd_post have the topic sent in order to support server side filtering by using topic 
+but sr_post have the topic sent in order to support server side filtering by using topic 
 based filtering.  The topics mirror the path of the files being announced, allowing 
 straight-forward server-side filtering, to be augmented by client-side filtering on 
 message reception.
@@ -446,7 +446,7 @@ Accomodating large messages would create many practical complications, and inevi
 the definition of a maximum file size to be included in the message itself, resulting in
 complexity to cover multiple cases. 
 
-dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
 between initial switch and final delivery.  The protocol is unidirectional, in that there 
 is no dialogue between publisher and subscriber.  Each post is a stand-alone item that 
@@ -472,13 +472,14 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
-
-`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
-

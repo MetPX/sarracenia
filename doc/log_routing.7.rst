@@ -31,10 +31,10 @@ CLUSTER_NAME
 ------------
 
 First, the cluster_Name is a string interpreted as a cluster name.
-When an **AMQP** message is processed by  `dd_sara(1) <dd_sara.1.html>`_
+When an **AMQP** message is processed by  `sr_sara(1) <sr_sara.1.html>`_
 its headers is extended with the pair  headers['from_cluster'] = cluster_Name.
 The value of 'from_cluster' can be set with option  **from_cluster cluster_Name**
-in **dd_sara**'s config file, or for the whole server if set in
+in **sr_sara**'s config file, or for the whole server if set in
 ~/.config/sara/sara.conf.
 
 
@@ -64,5 +64,5 @@ all logs messages related to **cluster_Name** will be delivered.
 SEE ALSO
 ========
 
-`dd_log2clusters(1) <dd_log2clusters.1.html>`_ - routing logs back to some clusters.
+`sr_log2clusters(1) <sr_log2clusters.1.html>`_ - routing logs back to some clusters.
 

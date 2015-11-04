@@ -25,7 +25,7 @@ cat >rawall.conf <<EOT
 
 host localhost
 
-# AMQP exchange to connect to, dd_post creates it named after the user it uses to log in.
+# AMQP exchange to connect to, sr_post creates it named after the user it uses to log in.
 exchange guest
 
 amqp-user guest
@@ -51,16 +51,16 @@ bin/dd_subscribe -n all.conf
 2.3.  
 Start a second shell in a second window, cd to the same folder.
 
-python3 bin/dd_post  -b 12 `pwd` http://localhost/RELEASE_NOTES amqp://guest:guest@localhost/
+python3 bin/sr_post  -b 12 `pwd` http://localhost/RELEASE_NOTES amqp://guest:guest@localhost/
 
 
 3. Result.
 
-dd_subscribe will display the raw notices received from dd_post.
+dd_subscribe will display the raw notices received from sr_post.
  
 
 4. add http server.
 
-will do this once the dd_sub2 works with the v01 announcements.
+will do this once the sr_sub2 works with the v01 announcements.
 
 

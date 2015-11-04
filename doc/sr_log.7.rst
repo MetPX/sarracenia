@@ -1,6 +1,6 @@
 
 ========
- dd_log
+ sr_log
 ========
 
 ------------------------------------------
@@ -32,27 +32,27 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Sources create messages in the *dd_post* format to announce file changes. Subscribers 
+Sources create messages in the *sr_post* format to announce file changes. Subscribers 
 read the post to decide whether a download of the content being announced is warranted.  
 Subscribers may provide information to sources by sending a log message indicating the result 
 of processing a post.  The log message format, described by this specification, is the posting echoed 
-back to the source with a few small changes. Please consult the dd_post(7) man page for
+back to the source with a few small changes. Please consult the sr_post(7) man page for
 a full explanation of the fields which are shared with the posting format.
 
-A dd_log message consists of four parts::
+A sr_log message consists of four parts::
 
 	AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.
 
 AMQP TOPIC
 ==========
 
-The topic of a log message is similar to dd_post except that the second sub-topic is 'log' rather than 'post'.
+The topic of a log message is similar to sr_post except that the second sub-topic is 'log' rather than 'post'.
 
 
 THE FIRST LINE 
 ==============
 
-the first line of a message contains all mandatory elements of an dd_post(7) announcement.
+the first line of a message contains all mandatory elements of an sr_post(7) announcement.
 There is a series of white space separated fields::
 
   *<date stamp>* : the date the posting was emitted.  
@@ -73,7 +73,7 @@ If the URL ends with a path separator ('/'), then the src URL is considered a pr
 
 *<relativepath>* :  the variable part of the URL, usually appended to *<srcpath>*
 
-The above are the fields taken from the dd_post(7) format.  There are additional fields in the dd_log:
+The above are the fields taken from the sr_post(7) format.  There are additional fields in the sr_log:
 
 
 *<statuscode>*  a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616) 
@@ -142,7 +142,7 @@ AMQP HEADERS
 
 In addition to the first line of the message containing all mandatory fields, optional 
 elements are stored in AMQP headers (key-value pairs), included in messages when 
-appropriate.   In addition to the headers specified in the dd_post(7) manual page, the following log-specific headers are defined:
+appropriate.   In addition to the headers specified in the sr_post(7) manual page, the following log-specific headers are defined:
 
 message=<msgstring>
 
@@ -204,13 +204,13 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`dd_post(1) <dd_post.1.html>`_ - post announcements of specific files.
+`sr_post(1) <sr_post.1.html>`_ - post announcements of specific files.
 
-`dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 
-`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 

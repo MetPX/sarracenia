@@ -1,6 +1,6 @@
 
 =========
- DD_Sara
+ SR_Sara
 =========
 
 ------------------------------------------
@@ -16,27 +16,27 @@ Subscribe, Acquire and ReAnnounce Products
 SYNOPSIS
 ========
 
-**dd_sara** configfile start|stop|restart|reload|status
+**sr_sara** configfile start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
 
-**dd_sara** is a program that Subscribes to file notifications, 
+**sr_sara** is a program that Subscribes to file notifications, 
 Acquires the files and ReAnnounces them at their new locations.
 
-The notification protocol is defined here `dd_post(7) <dd_post.7.html>`_
+The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
-**dd_sara** connects to a *source_broker* (often the same as the remote file server 
+**sr_sara** connects to a *source_broker* (often the same as the remote file server 
 itself) and subscribes to the notifications of interest. It uses the 
 notification information to download the file on the local server its running on. 
 After, it produces a new notification for the local file on a broker (usually on the local server).
 
 
-**dd_sara** can be used to acquire files from `dd_post(1) <dd_post.1.html>`_
-or `dd_watch(1) <dd_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
+**sr_sara** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
+or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
 that announce its' products.
 
-The **dd_sara** command takes two argument: a configuration file described below,
+The **sr_sara** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
 
 CONFIGURATION
@@ -53,14 +53,14 @@ Empty lines are skipped.
 INSTANCES
 ---------
 
-It is possible that one instance of dd_sara using a certain config
+It is possible that one instance of sr_sara using a certain config
 is not enough to process & download all available notifications.
 
 **instances      <integer>     (default:1)**
 
-dd_sara "configname" start   will fork  N instances of dd_sara using that config.
-.dd_sara_configname_$instance.pid  are created and contain the PID  of $instance process.
-dd_sara_configname_$instance.log  are created and contain the logs of $instance process.
+sr_sara "configname" start   will fork  N instances of sr_sara using that config.
+.sr_sara_configname_$instance.pid  are created and contain the PID  of $instance process.
+sr_sara_configname_$instance.log  are created and contain the logs of $instance process.
 
 The logs can be written in another directory than the current one with option :
 
@@ -72,7 +72,7 @@ The logs can be written in another directory than the current one with option :
   FIXME: a standard place where all configs ?
   FIXME: a standard place where all the logs ?
   FIXME: a standard place where all the pid files ?
-  FIXME: a dd process starting all sara configs of various kind.
+  FIXME: a sr process starting all sara configs of various kind.
 
 
 
@@ -94,10 +94,10 @@ to an exchange.  These options define which messages (URL notifications) the pro
 
  - **source_exchange      <name>         (default: amq.topic)** 
  - **source_topic         <amqp pattern> (default: v02.post.#)**
- - **queue_name           <name>         (default: dd_sara.config_name)** 
+ - **queue_name           <name>         (default: sr_sara.config_name)** 
 
 .. NOTE::
-  FIXME: queue_name is dd_sara.config_name? is that the file that contains the queue name?
+  FIXME: queue_name is sr_sara.config_name? is that the file that contains the queue name?
   FIXME: probably should be "queue_info_file" ? is there other stuff in there other than the name?
   FIXME: queue_name is supposed to be q_guest (assuming default auth.)
 
@@ -144,7 +144,7 @@ By default, **mirror** option is True, the default path for a file is :
 
 path = document_root + 'notification filepath'
 
-**dd_sara** expects the notification filepath to start with YYYYMMDD/sourceid.
+**sr_sara** expects the notification filepath to start with YYYYMMDD/sourceid.
 The user will set **mirror** to False, if it is not the case. The path
 for the file becomes :
 
@@ -240,9 +240,9 @@ These options can be used for quality assurance.
 **message_validation_script    <script_path> (used if set)** 
 **file_validation_script       <script_path> (used if set)** 
 
-The  **message_validation_script**  receives a dd_message instance
+The  **message_validation_script**  receives a sr_message instance
 containing all the amqp information. The user can write checks on
-any of the dd_message values.  Should it not comply to the checks,
+any of the sr_message values.  Should it not comply to the checks,
 a log message (and an amqp log message) will posted, the message will be
 acknowledged with out any further processing...  Only valid messages
 will be processed further. 
@@ -279,14 +279,14 @@ OK,code,message    <boolean,integer,string>   accepted?,error code, error messag
 SEE ALSO
 ========
 
-`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`dd_post(7) <dd_post.7.html>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.html>`_ - The format of announcements.
+
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
-
-`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
-
-

@@ -23,10 +23,10 @@ DESCRIPTION
 
 
 dd_subscribe is a program to efficiently download files from websites or file servers 
-that provide `dd_post(7) <dd_post.7.html>`_ protocol notifications.  Such sites 
+that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
 publish a message for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
-The *dd_post* notifications provide true push notices for web-accessible folders (WAF),
+The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications.
 
@@ -327,15 +327,15 @@ These settings pertain to previous versions of the client, and have been superce
 SEE ALSO
 --------
 
-`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based file switch.
 
@@ -345,7 +345,7 @@ HISTORY
 
 dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
+the name of this site that the sarracenia suite takes the sr\_ prefix for it's tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.
 

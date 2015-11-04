@@ -1,5 +1,5 @@
 ==========
- DD_Watch 
+ SR_Watch 
 ==========
 
 -----------------------------------------------------------
@@ -14,13 +14,13 @@ watch a directory and post messages when files in it change
 SYNOPSIS
 ========
 
-**dd_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *OPTIONS* ]
+**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *OPTIONS* ]
 
 DESCRIPTION
 ===========
 
 Watches a directory and publishes posts when files in the directory change
-(are added, modified, or deleted.) Its arguments are very similar to  `dd_post <dd_post.1.html>`_.
+(are added, modified, or deleted.) Its arguments are very similar to  `sr_post <sr_post.1.html>`_.
 In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
 of one's files. Subscribers use  *dd_subscribe*  to consume the post and download the files.
 
@@ -31,9 +31,9 @@ Format of argument to the *broker* option::
 
 The [*-u|--url url*] option specifies the location from which subscribers 
 will download the file.  There is usually one post per file.
-If the URL specifies a directory, *dd_watches* create a posts for any time
+If the URL specifies a directory, *sr_watches* create a posts for any time
 a file in that directory that is created, modified or deleted. 
-If the *url* specifies a file,  *dd_watch*  watches that only that file.
+If the *url* specifies a file,  *sr_watch*  watches that only that file.
 
 format of argument to the *url* option::
 
@@ -46,13 +46,13 @@ format of argument to the *url* option::
 The double-slash at the beginning of the path marks it as absolute, whereas a single
 slash is relative to a *document_root* provided as another option.
 
-An example of an excution of  *dd_watch*  checking a file::
+An example of an excution of  *sr_watch*  checking a file::
 
- dd_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+ sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
-Here,  *dd_watch*  checks events on the file /data/shared/products/foo.
+Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
 Default events settings reports if the file the file is modified or deleted.
-When the file gets modified,  *dd_watch*  reads the file /data/shared/products/foo
+When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
 and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and exchange 'amq.topic' (default exchange)
 
@@ -86,9 +86,9 @@ is the checksum value.  The  *event=IN_CLOSE_WRITE*  means, in our case, that th
 
 Another example watching a file::
 
- dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
 
-By default, dd_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path).
 If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
@@ -98,11 +98,11 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- dd_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric -pb amqp://broker.com
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric -pb amqp://broker.com
 
-Here, dd_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
+Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the document_root and relative path of the source url to obtain the directory path).
-If the file SACN32_CWAO_123456 is being created in that directory, dd_watch calculates its checksum.
+If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' 
 (default credentials) and sends the post to exchange 'amq.topic' (default exchange)
 
@@ -139,13 +139,13 @@ gives the local absolute path to the data file to be posted.
 
 **[-e|--events <exchange>]**
 
-By default, the events for dd_watch are IN_CLOSE_WRITE|IN_DELETE.
+By default, the events for sr_watch are IN_CLOSE_WRITE|IN_DELETE.
 If you want to consider only one of these simply use the  *events*  option
 and set it to IN_CLOSE_WRITE for creation/modification or  IN_DELETE for deletion.
 
 .. NOTE:: 
     FIXME: events listing default is wrong... now have links and renames also by default.
-    Do we want to just remove the **events** option and let dd_watch worry which events needed?
+    Do we want to just remove the **events** option and let sr_watch worry which events needed?
 
 **[-ex|--exchange <exchange>]**
 
@@ -224,7 +224,7 @@ the number of block of that size  *12* , the remaining bytes  *11* ,
 and the current block  *4* ,
 
 .. NOTE::
-   FIXME:  likely the dd_post/dd_watch default values for parts should change.
+   FIXME:  likely the sr_post/sr_watch default values for parts should change.
    There should be a threshold, so that above a certain file size, parts is used by default.
    I think picking a threshold like 50M is likely a good size. It should avoid the
    *Capybara effect*  and making it the default intelligent means that users 
@@ -246,7 +246,7 @@ Valid checksum flags are ::
 FILES IGNORED
 =============
 
-In order to avoid alerting for partially written (usually temporary) files, *dd_watch* does not post
+In order to avoid alerting for partially written (usually temporary) files, *sr_watch* does not post
 events for changes to files with certain names:
 
  - files whose names begin with a dot **.**
@@ -282,20 +282,20 @@ reconnection to the broker every time a post is to be sent.
 SEE ALSO
 ========
 
-`dd_get(1) <dd_get.1.html>`_ - the multi-protocol download client.
+`sr_get(1) <sr_get.1.html>`_ - the multi-protocol download client.
 
-`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`dd_log2source(1) <dd_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
+`sr_log2source(1) <sr_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
-`dd_post(1) <dd_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`dd_post(7) <dd_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 
 

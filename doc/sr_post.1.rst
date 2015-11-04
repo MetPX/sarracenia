@@ -1,6 +1,6 @@
 
 =========
- DD_Post
+ SR_Post
 =========
 
 ------------------------------------------------
@@ -16,16 +16,16 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**dd_post** [ *-u|--url url* ] [ *-b|--broker broker* ]...[ *OPTIONS* ]
+**sr_post** [ *-u|--url url* ] [ *-b|--broker broker* ]...[ *OPTIONS* ]
 
 DESCRIPTION
 ===========
 
-**dd_post** posts the availability of a file by creating an announcment.
-Subscribers use `dd_subscribe <dd_subscribe.1.html>`_ to consume the announcement and 
-download the file.  To make files available to subscribers, **dd_post** sends 
-the announcements to an AMQP server, also called a broker.  Format of argument 
-to the *broker* option:: 
+**sr_post** posts the availability of a file by creating an announcment.
+Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  or `dd_subscribe <dd_subscribe.1.html>`_
+to consume the announcement and download the file.  To make files available 
+to subscribers, **sr_post** sends the announcements to an AMQP server, 
+also called a broker.  Format of argument to the *broker* option:: 
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
@@ -41,11 +41,11 @@ Format of argument to the *url* option::
 
 The double-slash at the beginning of the path marks it as absolute, whereas a single
 slash is relative to a *document_root* provided as another option.
-An example invocation of *dd_post*::
+An example invocation of *sr_post*::
 
- dd_post -u sftp://stanley@mysftpserver.com//data/shared/products/foo -b amqp://broker.com
+ sr_post -u sftp://stanley@mysftpserver.com//data/shared/products/foo -b amqp://broker.com
 
-By default, dd_post reads the file /data/shared/products/foo and calculates its checksum.
+By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange. The default exchange 
 is the prefix 'xs_' followed by the broker username, hence defaulting to 'xs_guest'.
@@ -77,9 +77,9 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- dd_post -dr /data/web/public_data -u http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com
+ sr_post -dr /data/web/public_data -u http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com
 
-By default, dd_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'
@@ -215,15 +215,15 @@ reconnection to the broker everytime a post is to be sent.
 SEE ALSO
 ========
 
-`dd_log(7) <dd_log.7.html>`_ - the format of log messages.
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`dd_post(7) <dd_post.7.html>`_ - the format of announcement messages.
+`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
 
-`dd_sara(1) <dd_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 
-`dd_watch(1) <dd_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 
 
