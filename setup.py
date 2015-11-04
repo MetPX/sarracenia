@@ -29,14 +29,14 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts":[
-              "dd_post=sara.dd_post:main",
-              "dd_log=sara.dd_log:main",
-              "dd_sara=sara.dd_sara:main",
-              "dd_sender=sara.dd_sender:main",
-              "dd_watch=sara.dd_watch:main",
-              "dd_subscribe=sara.dd_subscribe:main",
-              "dd_log2source=sara.dd_log2source:main",
-              "dd_log2clusters=sara.dd_log2clusters:main"
+              "sr_post=sara.sr_post:main",
+              "sr_log=sara.sr_log:main",
+              "sr_sara=sara.sr_sara:main",
+              "sr_sender=sara.sr_sender:main",
+              "sr_watch=sara.sr_watch:main",
+              "sr_subscribe=sara.sr_subscribe:main",
+              "sr_log2source=sara.sr_log2source:main",
+              "sr_log2clusters=sara.sr_log2clusters:main"
               ]
     },
     classifiers=[
