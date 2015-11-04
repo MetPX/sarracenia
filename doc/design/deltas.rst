@@ -15,7 +15,7 @@ data using multiple streams, rather than just one.
 
 So in v02 there is a header 'parts' which indicates the partitioning method
 used for a given transfer, and the conclusion about the format/protocol
-is now documented in the dd_post(7) man page.  This file contains early
+is now documented in the sr_post(7) man page.  This file contains early
 discussions & notes.
 
 Algorithm used (regardless of tool):
@@ -50,8 +50,8 @@ Why is this really cool?
    until they are complete before hitting send.
 
  - for the client to do multi-threaded send, they just start up
-   any number of dd_senders listening to their own input exchange.
-   sharing the subscription, just like dd_subscribe does.
+   any number of sr_senders listening to their own input exchange.
+   sharing the subscription, just like sr_subscribe (dd_subscribe) does.
 
  - for large files, you can see progress reports sources receive
    confirmation of each switching layer receiving each chunk.
@@ -74,7 +74,7 @@ So you calculating the checksum for each block you send off a message with the b
 
 this way, for large files, the transfer can be split over a large number of nodes.
 but then re-assembly is a bit of a puzzle.  will each node of ddsr have only
-fractional (aka sparse) large files?   as long as the dd_sub is to both ddsr's, it should
+fractional (aka sparse) large files?   as long as the sr_sub is to both ddsr's, it should
 get everything.   what happens with sparse  files?
 
 https://administratosphere.wordpress.com/2008/05/23/sparse-files-what-why-and-how/
@@ -84,29 +84,29 @@ it would work, on linux, but it's a bit strange, and would like cause confusion 
 practice.  Besides, how do we know when we are done?
 
 --- Re-assembly ---
-How about the following.  when dd_subscribe writes files, it writes to a file
-suffixed .dd§1 when it receives a file, and there is a .dd§ it checks the size
+How about the following.  when sr_subscribe(dd_subscribe) writes files, it writes to a file
+suffixed .sr§1 when it receives a file, and there is a .sr§ it checks the size
 of the file, if the current part is contiguous, it just appends (via lseek & write) 
-the data to the .dd§ file.  If not, it creates a separate .dd§<blocknum>
+the data to the .sr§ file.  If not, it creates a separate .sr§<blocknum>
 
-.dd§ suffix 
+.sr§ suffix 
 -----------
 
 but that means they advertise the parts... hmm... the names now mean something, 
 We use the Section Character instead of part.  to avoid that, pick a name that 
-is more unusual that .part something like .dd§partnum (using utf-8 interesting 
+is more unusual that .part something like .sr§partnum (using utf-8 interesting 
 to see what url-encoding will do to that.)  It is good to use UTF special 
 characters, because no-one else uses them, so unlikely to clash.
 
-what is someone advertises a .dd§ file? what does it mean? do we need to
+what is someone advertises a .sr§ file? what does it mean? do we need to
 detect it?
  
-Then it looks in the directory to see if a .dd§<blocknum +1> exists, and appends
+Then it looks in the directory to see if a .sr§<blocknum +1> exists, and appends
 it if it does, and loops until all contiguous parts are appended (the corresponding
 files deleted.)  
 
-NOTE: Do not use append writing .dd§, but always lseek and write.  This prevents 
-race conditions from causing havoc.  If there are multiple dd_subscribes writing 
+NOTE: Do not use append writing .sr§, but always lseek and write.  This prevents 
+race conditions from causing havoc.  If there are multiple sr_subscribe (dd_subscribes) writing 
 the file they will just both write the same data multiple times (worst case.)
 
 anyways when you run out of contiguous parts, you stop.
@@ -189,7 +189,7 @@ downside:  portability.
 we send the signatures in the announcements, rather than posting on the site.
 If we set the blocksize high, then for files < 1 block, there is no signature.
 
-should dd_sara post the signature to the site, for zsync compatibility? 
+should sr_sara post the signature to the site, for zsync compatibility? 
 
 Do not want to be forking zsyncmake for every product...
 even if we do not use zsync itself, might want to be compatible... so use
@@ -204,7 +204,7 @@ the new one.  The intent is not to replicate source trees, but large data sets.
 	- want to minimize signature size (as will travel with notifications.)
 	- so set a block size to really large.
 
-Perhaps build the zsync client into dd_subscribe, but use zsync make on the server side ?
+Perhaps build the zsync client into sr_subscribe (dd_subscribe), but use zsync make on the server side ?
 or when the file is big enough, forking a zsync is no big deal? but mac & win...
 
 

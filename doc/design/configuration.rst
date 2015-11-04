@@ -19,7 +19,7 @@ What is the tree:
 		<valid user>
 
 	    bin/ 
-                dd-<clients>
+                sr-<clients>
 
 	    include/
 		   some standard patterns set by admins.
@@ -94,7 +94,7 @@ use amqp to push config changes around.
 there are admin exchanges... no sources can post to them.
 only admin users can.
 
-dd_admin Alice stop.
+sr_admin Alice stop.
 	sends a v01.cfg.<source>.stop  message around and admin bus.
 			-- stop ingesting messages coming from <source> 
 			-- likely implemented in validation code.
@@ -123,10 +123,10 @@ dd_admin Alice stop.
 
 
 
-Alice can send a dd_admin Alice stop, and it should work.
+Alice can send a sr_admin Alice stop, and it should work.
 
 
-Bob (client> can send an dd_admin Bob drop... ? ) ... not sure...
+Bob (client> can send an sr_admin Bob drop... ? ) ... not sure...
 
 v01.cfg.<source>.queue  ?
 returns the number of files which have not yet been validated.... (1st line)
@@ -168,7 +168,7 @@ We have positional significance (config file options apply from top down in file
 MetPX-sarracenia, is intended to be more user facing and interactive.
 User facing commands ought to have robust command line parsing.
 
-dd_subscribe and dd_post, might be candidates for this.
+sr_subscribe (dd_subscribe) and sr_post, might be candidates for this.
 
 How to do this is not obvious...
 
@@ -177,9 +177,9 @@ It would appear that optparse, want to do it elegantly.
 
 read options from 
 
-	$DD_ROOT (default if not present, /etc/dd/ )
-	~/.dd
-	.dd
+	$DD_ROOT (default if not present, /etc/sr/ )
+	~/.sr
+	.sr
 	commandline
 
 have them work together.
@@ -206,7 +206,7 @@ then you don't ...
 so it looks like it is just incompatible.  maybe just have a series of keywords on the command line 
 with a line separator?
 
-dd_subscribe directives='directory /home/cc;reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
+sr_subscribe (dd_subscribe) directives='directory /home/cc;reject ^x.z;reject ^x.w;accept ^x;accept ^z;'
 
 have to deal with escaping the separator, then just split on ; and run 
 it through the same parser?
@@ -264,18 +264,18 @@ the initial client is a wrapper that just invokes a request to pull down
 current code.
 inspired by: dropbox, minecraft.
 
-just have a standard tree on any dd where latest clients can be retrieved...
+just have a standard tree on any sr where latest clients can be retrieved...
 
 say we have a public http accessible static tree on every switch...
-	dd/bin has clients
-	dd/lib/checksums has the checksum scripts.
+	sr/bin has clients
+	sr/lib/checksums has the checksum scripts.
 
 
 so just do a wget -r on the tree to update.
 	- usually, caching protocol says it has not changed.
 
 once in a while...  retrieve the latest versions of client components:
-dd_subscribe, dd_sara, dd_sender ?
+sr_subscribe (dd_subscribe), sr_sara, sr_sender ?
 
 
 sensitive client updates 
@@ -294,7 +294,7 @@ sensitive client updates
 Can ask for the node list 
 -------------------------
 
-somebody, like a dd_sender, or a dd_subscribe, connects to a central switch (dd)
+somebody, like a sr_sender, or a sr_subscribe, connects to a central switch (sr)
 and asks how many nodes there are (dd1, dd2),  fire up transfer engines for
 both.  if someone adds a node, a log message alerts them to a change in list, and
 they 

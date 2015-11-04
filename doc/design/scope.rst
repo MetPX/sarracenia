@@ -162,10 +162,10 @@ SARA places the announcement on xto_B.
 
 If A ´knows´ that C is reachable through B, then also put on xto_B.
 
-either a dd_sender on A or a dd_subscribe on B is subscribed to xto_B
+either a sr_sender on A or a sr_subscribe on B is subscribed to xto_B
 and does the data transfer. 
 
-The dd_sender on A will then re-announce... where?
+The sr_sender on A will then re-announce... where?
 	as B(!) on from_A ? on B ??
 	as A on from_A ? ?? <-- makes more sense::
 
@@ -178,9 +178,9 @@ The dd_sender on A will then re-announce... where?
 		scope A should only be able to post to from_A...
 
 		so admin/sender user on <scope> would be something 
-		like dd<scope>.  ddA.
+		like sr<scope>.  ddA.
 
-if a dd_subscribe on b does the transfer, then it is logged as
+if a sr_subscribe on b does the transfer, then it is logged as
 ddB on B. 
 
 Scope as Priority Mechanism

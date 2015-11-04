@@ -6,7 +6,7 @@ Thinking about post messages
 ----------------------------
 
 Text here is just notes, not settled, looking at different considerations, constraints, requirements.
-Many different angles discussed here.  Conclusions graduate to dd_post.1 man page which contains
+Many different angles discussed here.  Conclusions graduate to sr_post.1 man page which contains
 only net result of discussions.
 
 
@@ -34,7 +34,7 @@ For illustration assume the following flags:
 
 Look at different ways of representing those flags:
 
- - prefer a single space-separated field within a dd.post message for unix filter command compatibility.
+ - prefer a single space-separated field within a sr.post message for unix filter command compatibility.
    post syntax is re-used by log messages 
    (logs are just post messages with a suffix, and a different topic)
  - Assume default value is false when k omitted, true when present.

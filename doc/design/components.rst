@@ -6,7 +6,7 @@
 in alphabetical order.
 
 
-dd_ingest 
+sr_ingest 
 ---------
 
 ::
@@ -27,7 +27,7 @@ dd_ingest
 
 
 
-dd_log2src 
+sr_log2src 
 ----------
 
 ::
@@ -47,7 +47,7 @@ dunno: run one for all accounts, or one per account?
 
 
 
-dd_post 
+sr_post 
 -------
 
 ::
@@ -59,16 +59,16 @@ destination url == --broker amqp://<source>@<broker>/<relativepath?>
 
 
 
-dd_sara 
+sr_sara 
 -------
 
 ::
 
 	--broker,--source-broker,--upstream-broker ? ??
-	subscribe to a given exchange on a given broker for  dd.post messages.
+	subscribe to a given exchange on a given broker for  sr.post messages.
 	--prefetch-script <prescript>
 
-	run prescript, based on the dd.post to see if it is OK to download.
+	run prescript, based on the sr.post to see if it is OK to download.
 	if not, log an error.
 	if so, download it.
 
@@ -81,7 +81,7 @@ dd_sara
 	--repost-broker, --downstream-broker
 	
 
-dd_sender 
+sr_sender 
 ---------
 
 :: 
@@ -89,24 +89,25 @@ dd_sender
         [--broker] [--downstream-broker=<url>] 
         --broker,--source-broker,--upstream-broker ? ??
 
-        subscribe to a given exchange on a given broker for  dd.post messages.
+        subscribe to a given exchange on a given broker for  sr.post messages.
 
         re-post to a destination exchange that refers to the local server.
         --repost-broker, --downstream-broker
 
 
 
+sr_subscribe 
 dd_subscribe 
 ------------
 
 ::
 
         [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] config-file
-        this command line is from v00 dd_subscribe... 
+        this command line is from v00 sr_subscribe... 
 
         --broker amqp://<account>@<broker>/
 
-        will cause dd_subscribe to connect to <broker> and authenticate as <account>
+        will cause sr_subscribe to connect to <broker> and authenticate as <account>
         it will then subscribe to xac_<account> and look for v01.post.!<account> messages
         (to avoid loops.) 
 

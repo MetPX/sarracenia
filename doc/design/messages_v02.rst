@@ -5,7 +5,7 @@ Description of the message protocol / format
 --------------------------------------------
 
 This file was used during the design phase, but post-implementation,
-it is replaced by the dd_post(7) manual page.
+it is replaced by the sr_post(7) manual page.
 
 This file documents final conclusions/proposals, reasoning/debates 
 goes elsewhere.
@@ -104,7 +104,7 @@ parts=<i|p>,<bsz>,<fzb>,<bno>,<remainder>
         -- File Segment strategy::
 
 		i - inplace (do not create temporary files, just lseek within file.)
-		    may result in .ddsig file being created?
+		    may result in .srsig file being created?
 		p - part files.  use .part files,  suffix fixed.
 		    do not know which will be default.
 

@@ -122,7 +122,7 @@ Alice where he is, so she can ´Reply´ to him encrypted.
 
 Bob needs to know a to_cluster to get to Alice.
 
-dd-post   
+sr-post   
 to_cluster=Alice@ddsrcmc
 <Bob´s public key is the payload of his message>
 

@@ -13,7 +13,7 @@ afsiext:  user name assigned to us to retreive data on cmcdata server
 ec_cmc:   Account assigned for AMQP access. (rabbitmq username)
 	clients will see this... it is a public label for the source.
 
-dd_post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
+sr_post -w exp13 NRDPS_HiRes_000.gif sftp://afsiext@cmcdataserver/data/NRDPS/outputs amqp://ec_cmc@ddi/NRDPS/GIF/
 
 file is 457 bytes, blocksize is 0.
 flow is 'exp13' (by default, would be 'default')  user settable, just passes through. 
@@ -22,7 +22,7 @@ checksum is done on actual data, not the file name, or a script
 This is default behaviour.
 
 
-dd_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
+sr_post connects to the 'ec_cmc' exchange with the ec_cmc username on bunny-op
 
 posting is:
 
@@ -48,7 +48,7 @@ post - indicates the type of message (defines format of following topics and bod
   -- Relative used to store relative destination directory
   -- flow is an argument after the relative path.
 
-dd_validate is subscribed to bunny-op  (dd_validate is perhaps just dd_sara with --prefetch )
+sr_validate is subscribed to bunny-op  (sr_validate is perhaps just sr_sara with --prefetch )
 	- checks that the block-size is legal.
 	- modifies the destination directory to YYYYMMDD/ec_cmc/NRDPS/GIF/
 	- runs validscript on the data.
@@ -72,9 +72,9 @@ other options:
 		
 based on the v01.post above the log one..., 
 
-then dd_sara pulls the file in, and puts it on a local disk, in 
-	/apps/dd/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
-	and it knows the root of the web tree is /apps/dd/... ?
+then sr_sara pulls the file in, and puts it on a local disk, in 
+	/apps/sr/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
+	and it knows the root of the web tree is /apps/sr/... ?
 
 then it needs to re-announce:
 
@@ -83,7 +83,7 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 
 ?
 
-dd_sara then emits a log entry:
+sr_sara then emits a log entry:
 v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011358.345 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 
@@ -94,7 +94,7 @@ v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 	- on whose behalf (ssc_ddsr account is AMQP user used on ddsr, one per layer of switching ?) 
 	- duration of transfer in seconds.
 	
-then a client with dd_subscribe pulls it down, based on the post above.
+then a client with sr_subscribe pulls it down, based on the post above.
 
 then there is another hop, similar to the above, to get to dd1.weather.gc.ca
 

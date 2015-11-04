@@ -29,7 +29,7 @@ Design Principles
 
  - The switching software knows as little as possible about the data being transferred.
    no data parsing should be necessary for the software.  The only data parsed is
-   what is defined in the dd_post(7) and dd_log(7) manual pages, and the various 
+   what is defined in the sr_post(7) and sr_log(7) manual pages, and the various 
    configuration files.
 
 
@@ -48,8 +48,8 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      The message format to support new features must be implemented.
      (progressed through v01, and v02 designs.) 
  
-     criteria:  dd_* tools produce and process v02 messages as described by 
-     dd_post.7 man page. 
+     criteria:  sr_* tools produce and process v02 messages as described by 
+     sr_post.7 man page. 
  
   2. ( *Done* ) **multi-part segmentation/re-assembly** 
      There must be no limitation on maximum file size that can traverse the network.
@@ -61,7 +61,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      for high performance transfers, a simple speedup is to send the data as multiple
      streams.  segmentation/reassembly enables this easy-win speed up over longhaul links.
  
-     criteria: implementation of parts header in dd_post(7), successful transfer
+     criteria: implementation of parts header in sr_post(7), successful transfer
      of multi-part files across a single hop.
  
   3. ( *Waiting* ) **multi-part completion triggering.**
@@ -83,7 +83,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Instead of relying on traditional log files, the records of delivery are a flow
      of individual messages which can be granularly routed.
  
-     criteria: log messages created, read with dd_subscribe.
+     criteria: log messages created, read with sr_subscribe.
  
  
   5. ( *InProgress* ) **user-centric multi-switch log message routing.**
@@ -120,7 +120,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      After a product is received, users must be able to configure scripts to
      trigger their procesing activities.
       
-     criteria: dd_subscribe called with a scipt that does a tail on the file received.
+     criteria: sr_subscribe called with a scipt that does a tail on the file received.
      so you can see that the complete file is there before it runs. or run a checksum
      or something.
  
@@ -135,10 +135,10 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      install documentation and examples also in standard locations.
  
   
- 10. ( *Waiting* ) **Manual dd_subscribe windows package**
-     A build environment with several windows vm's to build and test dd_subscribe packages.
+ 10. ( *Waiting* ) **Manual sr_subscribe windows package**
+     A build environment with several windows vm's to build and test sr_subscribe packages.
      require an .msi package containing a nuitka compiled binary.
-     a documented in a guide for building a dd_subscribe package manually.
+     a documented in a guide for building a sr_subscribe package manually.
 	
      
  11. ( *Waiting* ) **User Initiated HTTPS Private Transfers: Alice to Bob**
@@ -154,10 +154,10 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Pending Dependencies: Multi-User Support, Source Data Routing.
 
      Criteria:  
-     dd\_?? command issued on one switch, triggers htpasswd restriction
+     sr\_?? command issued on one switch, triggers htpasswd restriction
      on another switch.
      Alice is on SwitchA, Bob has access to SwitchC, data goes from A to C via SwitchB.
-     Eve running dd_sub on SwitchB should not be able to intercept.
+     Eve running sr_sub on SwitchB should not be able to intercept.
 
  12. ( *Waiting* ) **Admin Guide/Functions**
      Need to document all the steps in setting up a switch in whatever cluster configurations
@@ -227,14 +227,14 @@ specific time line.
 
  21. ( *Waiting* ) **Automated Windows client builds & packaging**
      It is very much expected that a number of uses will want to obtain data from windows
-     laptops or servers.  the dd-subscribe command is the minimum tool needed to
+     laptops or servers.  the sr_subscribe command is the minimum tool needed to
      do that effectively.
 
      Configuring python as a dependency is rather complicated on windows.
-     Simplified dd_subscribe client (http-only) can be compiled using nuitka and then rolled
+     Simplified sr_subscribe client (http-only) can be compiled using nuitka and then rolled
      into an MSI.  Need to put in place an automated process to build those.
     
-     Criteria:  dd_subscribe package for windows built automatically (daily?) 
+     Criteria:  sr_subscribe package for windows built automatically (daily?) 
 
  22. ( *Waiting* ) **Redhat Linux Packaging**
      Add to the automated build something that builds rpm packages for centos/redhat/scil.
@@ -245,7 +245,7 @@ specific time line.
      the control traffic would occur over a web connection.  One could implement
      clients directly in a browser.
 
- 24. ( *Deferred* ) **GUI for dd_subscribe configuration**
+ 24. ( *Deferred* ) **GUI for sr_subscribe configuration**
      Graphical user interface to create configuration files might be handy for end users.
      Not clear how useful/important this is.  
    
@@ -311,7 +311,7 @@ The Edmonton version of ddi is the test bed for the ´next´ layout of data.
  - Provides source for Fingerprint Winnowing for Storm Prediction Centres
 
 
-Convert urp to dd_post ?
+Convert urp to sr_post ?
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 FIXME: Is this a good dog-fooding exercise?  The URP people are asking about this.
@@ -328,7 +328,7 @@ version of posting via Sundew scripting.   What is reasonable in the time availa
 The ambitious plan:
  - Measure the difference in arrival time, SPC vs. CMC?
  - Can move 2nd feed to Edmonton? volume scans cross network twice?
- - use sarracenia methods both ways: dd_subscribe with Fingerprint winnonwing
+ - use sarracenia methods both ways: sr_subscribe with Fingerprint winnonwing
  - How many vm´s/SPC one or two?
 
 
@@ -357,17 +357,17 @@ Deferred Deployment Elements
 This functionality will not be present initially, but needs to figure into later plans.
 
 
-dd_box
+sr_box
 ~~~~~~
 
 Essentially DropBox functionality, provided over the sarracenia switching infrastructure.
 This is a wrapper around the the components built in earlier iterations to provide
 dropbox emulation.
 
-- dd_subscribe reproduces remote writes
-- dd_watch posts local writes (while ignoring dd_subscribe ones)
-- something (to do the writes to the switch from local.) probably just fire off a dd_sender.
-  or will switch have dd_sara lying around, so no need? what about firewalls?
+- sr_subscribe reproduces remote writes
+- sr_watch posts local writes (while ignoring sr_subscribe ones)
+- something (to do the writes to the switch from local.) probably just fire off a sr_sender.
+  or will switch have sr_sara lying around, so no need? what about firewalls?
 - default switch (sftp.science.gc.ca ?)
 - encfs provides privacy layer (dropbox is default private, dd is default public)
 
@@ -433,9 +433,9 @@ Iteration 1: Block-oriented Transfers and Logs: June
 For the first iteration, things were completed pretty much on time.
 This is all done.
 
-focus: deltas.txt, logmessages.txt, dd_post_sample.txt
+focus: deltas.txt, logmessages.txt, sr_post_sample.txt
 
-   dd_post, dd_sara, and dd_subscribe 
+   sr_post, sr_sara, and sr_subscribe 
 
    validate that AMQP over SSL works, because it will all need to be there.
 
@@ -446,10 +446,10 @@ focus: deltas.txt, logmessages.txt, dd_post_sample.txt
 
    - does just enough validation to do the YMD/<source> thing.
 
-   - dd_post should not do validation (so easier to test psychotic settings
+   - sr_post should not do validation (so easier to test psychotic settings
       like 1 byte blocks.)
 
-   post to a switch, sara build a site, dd_subscribe pulls from it.
+   post to a switch, sara build a site, sr_subscribe pulls from it.
 	             logs build                      logs pull
 
    - use a single exchange (no source exchanges etc...)
@@ -477,8 +477,8 @@ watch a directory, and post what is there (flat)
   - only needs to work for a flat directory at first.
   *done on time for flat tree, but configs were hard-coded*
 
-  deferred: windows version of dd_watch (no inotify available.)
-	question, if this is built as inotifywait calling dd_post (or something like that.)
+  deferred: windows version of sr_watch (no inotify available.)
+	question, if this is built as inotifywait calling sr_post (or something like that.)
 	then there is an inotify-win.  just introduces a dependency... but makes it easy.
    *nope, not done.*
 
@@ -488,8 +488,8 @@ watch a directory, and post what is there (flat)
    do speedos (see monitoring.txt)
    *nope*
 
-   figure out whether we need a dd_log, or if dd_subscribe is enough.
-   *yes, we need dd_log, there is one, but it isn´t quite right yet*
+   figure out whether we need a sr_log, or if sr_subscribe is enough.
+   *yes, we need sr_log, there is one, but it isn´t quite right yet*
     
    testing, testing, testing...
 

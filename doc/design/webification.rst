@@ -59,7 +59,7 @@ http://www.slideshare.net/gavinmroy/scaling-rabbitmq-to-11
 
 some approaches:
 	1. try to hook up ws4py and amqplib somehow.
-	2. write new javascript versions of dd_post, dd_send, and dd_subscribe clients.
+	2. write new javascript versions of sr_post, sr_send, and sr_subscribe clients.
 	3. try to write a new ws2amqp gateway in python.
 		to work with something created in 1.
 	4. try out the vorpal bunny on the server, write a python client for it, or

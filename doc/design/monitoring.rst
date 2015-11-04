@@ -6,7 +6,7 @@ Notes about Monitoring
 ======================
 
 Questions: 
-	is dd_log just dd_subscribe, or is it different?
+	is sr_log just sr_subscribe, or is it different?
 
 likely do not need federation, just ''shovel'' rabbitmq_shovel_management
 
@@ -16,7 +16,7 @@ then the log message needs to propagate that back to the source.
 Sources need to see the log messages for their sources.
 Admin and monitoring needs to see all the messages. 
 
-dd_log just dumps log messages (might be just dd_subscribe -n.)
+sr_log just dumps log messages (might be just sr_subscribe -n.)
 
 -- the CFS runs a subscribe to pull the logs in in real-time, no cron required 
    (but queue if it goes down?)
@@ -29,20 +29,20 @@ dd_log just dumps log messages (might be just dd_subscribe -n.)
 -- process on log broker looks at mesages and routes them to per source log exchanges. ?
    source exchange permissions decide who can read those messages.
 
-   new component:  dd_log2source
+   new component:  sr_log2source
 	-- looks at the topic, and just copies the message from the general log to the per 
 	   source log.
 	
 
-dd_log use cases:
+sr_log use cases:
 
 -- by sources to see the consumption of their products.
-	-- dd_subscribe 
+	-- sr_subscribe 
 		logs in as <source> and binds to the exchange named log_<source>  
 		each exchange is only readable by <source> and admin users.
 
-FIXME: difference between dd_log and dd_sub!
-	dd_log, when catenating, should inclued topic, where dd_subscribe will not.? 
+FIXME: difference between sr_log and sr_sub!
+	sr_log, when catenating, should inclued topic, where sr_subscribe will not.? 
 		for speedos vs. logs.... hmm...
 
 
@@ -50,7 +50,7 @@ FIXME: defined speedos
 
 -- to feed into "speedometers"
 	web site? or app, taps into log feed.
-	dd_speedo... looks at the flows generates stats each <interval> seconds.  interval is configurable.
+	sr_speedo... looks at the flows generates stats each <interval> seconds.  interval is configurable.
 
 	format: 
 		<datetime> <goodcount> <errorcount> <goodbytecount> <badbytecount?> <bytes/interval> <files/interval> <interval>
@@ -60,7 +60,7 @@ FIXME: defined speedos
 	v01.speedo.source.<source> (ends)
 		gives a rate of 200's and 4xx/s per second. 
 	
-	posted to 'log', and log_<source> exchanges. (perhaps two dd_speedos running, one per exch.)
+	posted to 'log', and log_<source> exchanges. (perhaps two sr_speedos running, one per exch.)
 
 	likely the 'all' one will have an interval of 1. but most sources much longer, like 60.
 	v01.speedo.client.all <overall stats>
@@ -74,10 +74,10 @@ FIXME: defined speedos
 
 	when needed, they can likely do (command line)
 
-	dd_log <pattern>
+	sr_log <pattern>
 		<source> or <client>
 
-	which does a dd_subscribe with an include of the given string.
+	which does a sr_subscribe with an include of the given string.
 		analysts could also do that.
 
 
@@ -104,7 +104,7 @@ FIXME: defined speedos
        to get traceability just grep the logs... using either...
 		source id, file name, flow id, client id, ... 
 
-	dd_log <source> thing above is fun also.
+	sr_log <source> thing above is fun also.
 
 
 -- by the CFS to capture significant logs directly .. so
@@ -112,9 +112,9 @@ FIXME: defined speedos
 	do we use this for real-time logs? not sure, CFS would need to be more up.
 
 
--- when a node fails... dd_watchdog? 
-       if dd_sara emitted a log when it started a transfer, and another when it finished.
-       then dd_watchdog could be subscribed to them and know what products were in flight
+-- when a node fails... sr_watchdog? 
+       if sr_sara emitted a log when it started a transfer, and another when it finished.
+       then sr_watchdog could be subscribed to them and know what products were in flight
        on every node at any time.
 
 

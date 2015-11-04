@@ -36,37 +36,37 @@ There's fabulous ones: http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 metpx-sarracenia-server
 	- depends: rabbitmq.
 	- configuration sugar, to create a working/secure default to just start using.
-	- dd_sara, and all the other components...
+	- sr_sara, and all the other components...
 		log, and whatever.
 		
 
 metpx-sarracenia-client
-	- dd_subscribe  -
-		should dd_subscribe accept it's config file on standard input?
-	- dd_post
-	- dd_watch
-	- dd_send...
+	- sr_subscribe (dd_subscribe)  -
+		should sr_subscribe accept it's config file on standard input?
+	- sr_post
+	- sr_watch
+	- sr_send...
 
 
 there might be a meta-client... one that invokes the others appropriately...
-	dd_cp -broker amqp://mygroup@ddsr/ -threads 5  <operation>  <source> [<srcurl>] <dest>
+	sr_cp -broker amqp://mygroup@ddsr/ -threads 5  <operation>  <source> [<srcurl>] <dest>
 		-broker says what the URL of the AMQP broker is.
 		-threads says how many local instances to start.::
 
 		<operation>
 
-                post4pickup  -- dd_post, and the switch is expected to pull
+                post4pickup  -- sr_post, and the switch is expected to pull
                 	-- requires <srcurl> to show URL remote will use to fetch.
-                        fires off: just the dd_post -threads ignored.
+                        fires off: just the sr_post -threads ignored.
 
-                post2send    -- dd_post, then have local threads to send to sftp destination.
+                post2send    -- sr_post, then have local threads to send to sftp destination.
                         sftp destination is likely a 'source' for the switch, triggering further fwding ...
-                        fires off: 1 dd_post and a 5 dd_sends, as appropriate.
+                        fires off: 1 sr_post and a 5 sr_sends, as appropriate.
 
-                subscribe    -- dd_subscribe, but with n local instances.
-                        fires off: 5 dd_sends, as appropriate.
+                subscribe    -- sr_subscribe, but with n local instances.
+                        fires off: 5 sr_sends, as appropriate.
 
-                       fires off 5 dd_subscribes, or 
+                       fires off 5 sr_subscribes, or 
 		
 		
 	

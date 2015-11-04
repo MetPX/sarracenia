@@ -11,7 +11,7 @@ examples of validation.
 
 ---
 prefetch:
-This could be done, either as a distinct component or a pre-fetch script from dd_sara
+This could be done, either as a distinct component or a pre-fetch script from sr_sara
 
 	- if the source is stopped,
 		waitloop.
@@ -78,7 +78,7 @@ problem:  what to do if something fails the scan?
 Scenarios:
 
 why rate-limit:
-	dd_post of a file that is 1 TiB.
+	sr_post of a file that is 1 TiB.
 	with 500MB chunks that will create 2000 block notifies.
 	if validation does no rate limiting, then the 2000 blocks will get 
 	fed into the queue in one go, and that transfer will take over.

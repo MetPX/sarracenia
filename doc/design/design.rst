@@ -92,7 +92,7 @@ Why isn´t everything point to point, or when do you insert a switch?
 
  - For asynchronous transfers.  If the source has many other activities, it may want
    to give responsibility to another service to do potentially lengthy file transfers.
-   the switch is inserted very near to the source, and is full store & forward. dd_post
+   the switch is inserted very near to the source, and is full store & forward. sr_post
    completes (nearly instant), and from then on the switching network manages transfers.
 
 
@@ -126,13 +126,13 @@ as is provided by many free brokers, such as rabbitmq, often referred to as 0.8,
 0.9 brokers are also likely to inter-operate well.
 
 In AMQP, many different actors can define communication parameters. To create a clearer
-security model, sarracenia constrains that model: dd_post clients are not expected to declare
+security model, sarracenia constrains that model: sr_post clients are not expected to declare
 Exchanges.  All clients are expected to use existing exchanges which have been declared by
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
 
 Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges,
-but dd_post have the topic sent in order to support server side filtering by using topic
+but sr_post have the topic sent in order to support server side filtering by using topic
 based filtering.  The topics mirror the path of the files being announced, allowing
 straight-forward server-side filtering, to be augmented by client-side filtering on
 message reception.
@@ -150,7 +150,7 @@ Accomodating large messages would create many practical complications, and inevi
 the definition of a maximum file size to be included in the message itself, resulting in
 complexity to cover multiple cases.
 
-dd_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
 between initial switch and final delivery.
 
@@ -257,7 +257,7 @@ The data corresponding to the source follows the same sequence of switches as th
 themselves.  When a post is processed on a switch, it is downloaded, and then the posting
 is modified to reflect that´s availability from the next-hop switch.
 
-Post messages are defined in the dd_post(7) man page.  They are initially emitted by *sources*,
+Post messages are defined in the sr_post(7) man page.  They are initially emitted by *sources*,
 published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to 
 either xPrivate or xPublic.
 
@@ -289,7 +289,7 @@ allowed to connect to xprivate.
 Routing Logs
 ~~~~~~~~~~~~
 
-Log messages are defined in the dd_log(7) man page.  They are emitted by *consumers* at the end, 
+Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end, 
 as well as *feeders* as the messages traverse switches.  log messages are posted to 
 the xl_<user> exchange, and after log validation queued for the xlog exchange.
 
@@ -305,7 +305,7 @@ Where message destination is the local cluster, log2user (log2source?) will copy
 the messages where source=<user> to sx_<user>.
 
 When a user wants to view their messages, they connect to sx_<user>. and subscribe.
-this can be done using *dd_subscribe -n  --topic_prefix=v02.log* or the equivalent *dd_log*.
+this can be done using *sr_subscribe -n  --topic_prefix=v02.log* or the equivalent *sr_log*.
 
 
 Security Model
@@ -372,7 +372,7 @@ Hold is for temporary failure type reasons, such as bandwidth of disk space reas
 as these reasons are independent of the particular message, hold applies for
 the entire queue, not just the message.
 
-After Pre-Processing, a component like dd_sara assumes the post message is good,
+After Pre-Processing, a component like sr_sara assumes the post message is good,
 and just processes it.  That means it will fetch the data from the posting source.
 Once the data is downloaded, it goes through Post-Validation.
 
@@ -402,7 +402,7 @@ in creating log messages.
 
  - Messages in exchanges have no reliable means of determining who inserted them.
  - so users publish their log messages to sl_<user> exchange.
- - For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see dd_log(7) for user field
+ - For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see sr_log(7) for user field
  - sl_* are write-only for all users, they cannot read their own posts for that.
  - is there some check about consuminghost?
  - Accepting a log message means publishing on the xlog exchange.
@@ -433,7 +433,7 @@ ends of the transfer are not sharing with arbitrary others.
    FIXME: This section is a half-baked idea! not sure how things will turn out.
    basic problem:  Alice connecting to S1 wants to share with Bob, who has an
    account on S3.  To get from S1 to S3, one needs to traverse S2.  the normal
-   way such routing is done is via a dd_sara subscription to xpublic on S1, and
+   way such routing is done is via a sr_sara subscription to xpublic on S1, and
    S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
    unless the http permissions are set to deny on S1 and S2. Eve should not have
    access.  Implement via http/auth permitting inter-switch accounts on S2
@@ -613,7 +613,7 @@ Broker clustering is considered mature technology, and therefore relatively trus
 DD: Data Dissemination Configuration (AKA: Data Mart)
 -----------------------------------------------------
 
-The dd deployment configuration is more of an end-point configuration.  Each node is expected to
+The sr deployment configuration is more of an end-point configuration.  Each node is expected to
 have a complete copy of all the data downloaded by all the nodes.   Giving a unified view makes
 it much more compatible with a variety of access methods, such as a file browser (over http,
 or sftp) rather than being limited to AMQP posts.  This is the type of view presented by
@@ -628,10 +628,10 @@ connection requests to a node for processing.
 
  - multiple server nodes.  Each standalone.
 
- - dd - load balancer, just re-directs to a dd node?
+ - sr - load balancer, just re-directs to a sr node?
    dd1,dd2, 
 
-   broker on dd node has connection thereafter.
+   broker on sr node has connection thereafter.
 
 
 Independent DD
