@@ -79,7 +79,7 @@ trust Alice either.
 
 So the pumps forward the data to B, and Bob picks it up from there.
 
-cue: +D2Bvector,+D2E,+BobgetsfromB,-tAC
+cue: +D2Bvector,+D2E,+D2F,+BobgetsfromB,-tAC
 
 But what if Pump E has a problem?
 
@@ -88,7 +88,7 @@ cue: +Eboom,-BobgetfromB,-E2B,-D2Evector
 Alice really wanted to make sure Bob got her folder, so she sent it to
 B AND F. 
 
-cue: +D2F,BobfromF
+cue: +BobfromF
 
 Bob does not have to decide which pump is the primary, and which is the backup.
 Look, B is not even in trouble here, it just is not getting any data from
