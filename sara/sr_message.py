@@ -98,9 +98,8 @@ class sr_message():
         if type(msg.body) == bytes :
            self.notice = msg.body.decode("utf-8")
   
-        self.partstr   = None
-        self.sumstr    = None
-        self.to_list   = None
+        self.partstr     = None
+        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -171,8 +170,8 @@ class sr_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.to      = 'ALL'
-        self.to_list = [ self.to ]
+        self.to_clusters = ['ALL']
+        self.headers['to_clusters'] = 'ALL'
 
         self.suffix  = ''
         
@@ -202,9 +201,9 @@ class sr_message():
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
 
-        self.to_list = None
-        if 'to'     in self.headers :
-           self.to_list  = self.headers['to'].split(',')
+        self.to_clusters = []
+        if 'to_clusters' in self.headers :
+           self.to_clusters  = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
@@ -255,8 +254,8 @@ class sr_message():
         if 'source' in self.headers :
            self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
 
-        if 'to' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('to',self.headers['to'])
+        if 'to_clusters' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('to_clusters',self.headers['to_clusters'])
 
         if 'flow' in self.headers :
            self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
@@ -496,13 +495,13 @@ class sr_message():
         now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
         self.time = now
 
-    def set_to(self,to=None):
-        if to != None :
-           self.headers['to'] = to
-           self.to_list = to.split(',')
-        elif 'to' in self.headers :
-           del self.headers['to']
-           self.to_list = None
+    def set_to_clusters(self,to_clusters=None):
+        if to_clusters != None :
+           self.headers['to_clusters'] = to_clusters
+           self.to_clusters = to_clusters.split(',')
+        elif 'to_clusters' in self.headers :
+           del self.headers['to_clusters']
+           self.to_clusters = []
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
