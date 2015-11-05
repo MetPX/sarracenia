@@ -98,3 +98,6 @@ and will see that Bob got the file through Pump F.
 
 -- cover local file notifications?
 
+-- how it is really meant for dissemination (feeding web accessible folders?)
+
+-- walk through dd?
