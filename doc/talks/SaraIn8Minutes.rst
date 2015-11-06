@@ -25,6 +25,10 @@ Alice could try to send it directly to Bob, but it turns out:
 
 cue: +Firewalls
 
+.. NOTE::
+    FIXME want a circuitious route in the diagram, and a Turtle, rather than just
+    a bunch of firewalls.
+
  - there are firewalls in the way, stopping direct transfers,
  - Even if direct transfers work, it might not take the fastest path,
  - Even if it takes the right path, the transfer tools available to Alice and Bob
@@ -39,7 +43,7 @@ cue: +pumps,-firewalls,
 Each pump posts messages to for the next one using the Advanced Message 
 Queueing Protocol, a very mature internet standard for messaging middleware. 
 Once a pump knows it wants some data, it copies it from it's neighbour
-using normal transfer methods like HTTP or SFTP.  This is set up
+using normal transfer methods.  This is set up
 in advance by administrators so that optimal paths and methods are used.
 
 So Alice only needs to talk to the data pump nearest her, that would be 
@@ -65,7 +69,7 @@ the way to B and F, it acquires the folder from A, and then announces to
 anyone listening that Alice's folder is on C, and trying to get to B and F.  
 This process repeats.
 
-cue: -tal2ax,+tAC,+A2Dvector
+cue: -tal2ax,+tAC,+A2Dvector,+D2F
 
 Blue represents using HTTP instead of SFTP to transfer the data. Pumps 
 may use different tools, but Alice does not worry about it. The forwarding
@@ -90,7 +94,7 @@ B AND F.
 
 cue: +BobfromF
 
-Bob does not have to decide which pump is the primary, and which is the backup.
+How does Bob decide which pump is the primary, and which is the backup.
 Look, B is not even in trouble here, it just is not getting any data from
 E.  With Sarracenia, Bob can listen to both B and F all the time, and get 
 Alice's folder from the pump that announces it first.
