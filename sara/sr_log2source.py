@@ -180,8 +180,8 @@ class sr_log2source(sr_instances):
 
                  # skip if from_cluster is not self.broker.hostname
 
-                 if self.msg.headers['from_cluster'] != self.broker.hostname :
-                    self.logger.info("not for this cluster %s\n" % self.broker.hostname )
+                 if self.msg.headers['from_cluster'] != self.from_cluster :
+                    self.logger.info("not for this cluster %s = %s\n" % (self.broker.hostname,self.from_cluster ))
                     continue
 
                  # ok ship it back to the user exchange 

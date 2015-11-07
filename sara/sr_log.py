@@ -160,7 +160,7 @@ class sr_log(sr_config):
 
                  self.logger.info("Received topic   %s" % self.msg.topic)
                  self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s\n" % self.msg.headers)
+                 self.logger.info("Received headers %s\n" % self.msg.hdrstr)
 
                  self.consumer.ack(raw_msg)
           except :
