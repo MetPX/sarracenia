@@ -124,7 +124,7 @@ For the sarracenia implementation, the following codes are defined:
 
 *<consuminghost>*  hostname from which the retrieval was initiated.
 
-*<consuminguser>*  switch username from which the retrieval was initiated.
+*<consuminguser>*  broker username from which the retrieval was initiated.
 
 *<duration>*  how long processing took, in (decimal) seconds
 
