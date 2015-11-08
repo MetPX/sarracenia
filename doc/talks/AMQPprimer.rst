@@ -13,28 +13,45 @@ Scope
 - or just Google AMQP, rabbitmq.
 
 
-Where does AMQP Come From?
---------------------------
-
-- Open International standard from financial world.
-- seeing good adoption in monitoring and integration for HPC
-    - Intel HPC stack
-    - https://wiki.openstack.org/wiki/Heat/Vision
-    - used behind the scenes, not user visible.
-
 Why Use AMQP?
 -------------
 
- - low latency
+ - open standard, robust adoption.
+ - low latency message passing.
  - encourages asynchronous patterns/methods.
  - language, protocol & vendor neutral.
  - very reliable.
 
 
+Where does AMQP Come From?
+--------------------------
+
+- Open International standard from financial world.
+- mostly used behind the scenes, server-side processing, not user visible.
+- many web companies (soundcloud) 
+- seeing good adoption in monitoring and integration for HPC
+
+Intel/Cray HPC Stack
+--------------------
+
+`Intel/Cray HPC stack <http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html>`_ 
+
+.. image:: IntelHPCStack.png
+
+
+OpenStack
+---------
+
+`AMQP is the messaging technology chosen by the OpenStack cloud. <http://docs.openstack.org/developer/nova/rpc.html>`_
+
+
+.. image:: OpenStackArch.png
+
+
 Concepts
 --------
 
-.. image:: AMQP4Sarra.jpeg
+.. image:: AMQP4Sarra.svg
 
 - an AMQP Server is called a Broker. *Broker* is sometimes used to refer to the software,
   other times server running the broker software (same confusion as *web server*.)
