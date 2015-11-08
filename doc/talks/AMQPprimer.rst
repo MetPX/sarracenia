@@ -7,12 +7,6 @@ This is a short but rather dense briefing to explain
 the motivation for the use of AMQP by the MetPX-Sarracenia
 data pump.  Sarracenia is essentially an AMQP application,
 so some understanding AMQP is very helpful.
-
-.. contents::
-
-Scope
------
-
 AMQP is a vast and interesting topic in it's own right.  No attempt is made to explain 
 all of it here. This brief just provides a little context, and introduces only 
 background concepts needed to understand and/or use Sarracenia.  For more information 
@@ -20,74 +14,7 @@ on AMQP itself, a set of links is maintained at
 the `Metpx web site <http://metpx.sourceforge.net/#amqp>`_ but a search engine
 will also reveal a wealth of material.
 
-
-Why Use AMQP?
--------------
-
-- open standard, multiple free implementations.
-- low latency message passing.
-- encourages asynchronous patterns/methods.
-- language, protocol & vendor neutral.
-- very reliable.
-- robust adoption (next two sections as examples)
- 
-
-Where does AMQP Come From?
---------------------------
-
-- Open International standard from financial world.
-- Many proprietary similar systems exist, AMQP built to get away from lock-in. Standard is built with long experience of vendor messaging systems, and so quite mature.
-- invariably used behind the scenes as a component in server-side processing, not user visible.
-- many web companies (soundcloud) 
-- seeing good adoption in monitoring and integration for HPC
-
-Intel/Cray HPC Stack
---------------------
-
-`Intel/Cray HPC stack <http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html>`_ 
-
-.. image:: IntelHPCStack.png
-    :scale: 50%
-    :align: center
-
-
-OpenStack
----------
-
-`AMQP is the messaging technology chosen by the OpenStack cloud. <http://docs.openstack.org/developer/nova/rpc.html>`_
-
-
-.. image:: OpenStackArch.png
-    :scale: 70%
-    :align: center
-
-
-How to Adopt AMQP
------------------
-
-Adopting AMQP is more like adopting XML than it is like adopting FTP.  FTP interoperability 
-is easy as choices are limited. With XML, however you get **more palette than painting.** Many 
-different dialects, schema methods, etc...  XML will be valid and parse, but without 
-additional standardization, data exchange remains uncertain.  For real interoperabiltiy, 
-one must standardize specific dialects.  Examples:
-
-     - RSS/Atom, 
-     - Common Alerting Protocol (CAP)
-
-AMQP brokers and the client software can connect and send messages, but without 
-additional standardization, applications will not communicate.  AMQP calls 
-those additional layers *applications*.  AMQP enables every conceivable message 
-pattern, so a **well formed application is** built by eliminating features from 
-consideration, **choosing the colours to use.**
-Sarracenia is an applicaton of AMQP message passing to file transfer.
-
-As CAP narrows XML, Sarracenia narrows the scope of AMQP. This narrowing is necessary to obtain a useful result: Interoperability.  Sarracenia conventions and formats are defined in:
-
-   - `dd_post format man page <http://metpx.sf.net/dd_post.7.html>`_
-   - `dd_log format man page <http://metpx.sf.net/dd_log.7.html>`_
-
-
-
+.. contents::
 
 Mapping AMQP Concepts to Sarracenia
 -----------------------------------
@@ -180,4 +107,75 @@ messages from their queue.  Queues are *bound* to exchanges.  Sarracenia just ad
 to a web server to provide fast notifications, and uses topic exchanges to enable 
 consumers' server side filtering.  The topic tree is based on the file tree you can 
 browse if you visit the corresponding web server.
+
+
+Appendix A: Background
+----------------------
+
+Why Use AMQP?
+~~~~~~~~~~~~~
+
+- open standard, multiple free implementations.
+- low latency message passing.
+- encourages asynchronous patterns/methods.
+- language, protocol & vendor neutral.
+- very reliable.
+- robust adoption (next two sections as examples)
+ 
+
+Where does AMQP Come From?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Open International standard from financial world.
+- Many proprietary similar systems exist, AMQP built to get away from lock-in. Standard is built with long experience of vendor messaging systems, and so quite mature.
+- invariably used behind the scenes as a component in server-side processing, not user visible.
+- many web companies (soundcloud) 
+- seeing good adoption in monitoring and integration for HPC
+
+Intel/Cray HPC Stack
+~~~~~~~~~~~~~~~~~~~~
+
+`Intel/Cray HPC stack <http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html>`_ 
+
+.. image:: IntelHPCStack.png
+    :scale: 50%
+    :align: center
+
+
+OpenStack
+~~~~~~~~~
+
+`AMQP is the messaging technology chosen by the OpenStack cloud. <http://docs.openstack.org/developer/nova/rpc.html>`_
+
+
+.. image:: OpenStackArch.png
+    :scale: 70%
+    :align: center
+
+
+How to Adopt AMQP
+~~~~~~~~~~~~~~~~~
+
+Adopting AMQP is more like adopting XML than it is like adopting FTP.  FTP interoperability 
+is easy as choices are limited. With XML, however you get **more palette than painting.** Many 
+different dialects, schema methods, etc...  XML will be valid and parse, but without 
+additional standardization, data exchange remains uncertain.  For real interoperabiltiy, 
+one must standardize specific dialects.  Examples:
+
+     - RSS/Atom, 
+     - Common Alerting Protocol (CAP)
+
+AMQP brokers and the client software can connect and send messages, but without 
+additional standardization, applications will not communicate.  AMQP calls 
+those additional layers *applications*.  AMQP enables every conceivable message 
+pattern, so a **well formed application is** built by eliminating features from 
+consideration, **choosing the colours to use.**
+Sarracenia is an applicaton of AMQP message passing to file transfer.
+
+As CAP narrows XML, Sarracenia narrows the scope of AMQP. This narrowing is necessary to obtain a useful result: Interoperability.  Sarracenia conventions and formats are defined in:
+
+   - `dd_post format man page <http://metpx.sf.net/dd_post.7.html>`_
+   - `dd_log format man page <http://metpx.sf.net/dd_log.7.html>`_
+
+
 
