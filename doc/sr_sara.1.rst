@@ -219,7 +219,7 @@ If **recompute_chksum** is set to True, the checksum will be recomputed
 on file download and value will overwrite the one from the incoming amqp message.  
 If a file is repeatedly modified, the download may occur after the file is overwritten
 but with its old notification... resulting in a checksum mismatch and potential
-looping in a network of switches.
+looping in a network of pumps.
 
 .. NOTE::
    FIXME:  this is pathological case.  It ignores the incoming checksum.
