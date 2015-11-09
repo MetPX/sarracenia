@@ -36,7 +36,7 @@ There's fabulous ones: http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 metpx-sarracenia-server
 	- depends: rabbitmq.
 	- configuration sugar, to create a working/secure default to just start using.
-	- sr_sara, and all the other components...
+	- sr_sarra, and all the other components...
 		log, and whatever.
 		
 

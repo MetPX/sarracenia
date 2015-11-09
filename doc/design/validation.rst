@@ -11,7 +11,7 @@ examples of validation.
 
 ---
 prefetch:
-This could be done, either as a distinct component or a pre-fetch script from sr_sara
+This could be done, either as a distinct component or a pre-fetch script from sr_sarra
 
 	- if the source is stopped,
 		waitloop.
