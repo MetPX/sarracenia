@@ -297,7 +297,7 @@ appropriate.   Headers are a mandatory element included in later versions of the
  |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
  +-----------+---------------------------------------------------------------------+
  |  *<name>* | checksum with a some other algorithm, named *<name>*                |
- |           | *<name>* should be *registered* in the data pumping network.              |
+ |           | *<name>* should be *registered* in the data pumping network.        |
  |           | registered means that all downstream subscribers can obtain the     |
  |           | algorithm to validate the checksum.                                 |
  +-----------+---------------------------------------------------------------------+

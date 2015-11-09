@@ -174,8 +174,8 @@ Sarracenia is an applicaton of AMQP message passing to file transfer.
 
 As CAP narrows XML, Sarracenia narrows the scope of AMQP. This narrowing is necessary to obtain a useful result: Interoperability.  Sarracenia conventions and formats are defined in:
 
-   - `dd_post format man page <http://metpx.sf.net/dd_post.7.html>`_
-   - `dd_log format man page <http://metpx.sf.net/dd_log.7.html>`_
+   - `sr_post format man page <http://metpx.sf.net/sr_post.7.html>`_
+   - `sr_log format man page <http://metpx.sf.net/sr_log.7.html>`_
 
 
 
