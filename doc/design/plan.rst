@@ -170,7 +170,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Criteria:
      doc tested by someone using it to configure a standalone switch, from vanilla linux server.
      Documented method to add a user, add an interswitch connection, start up all the plumbing 
-     processes.  How to configure SARA to read from sx_user and post.  How to configure 
+     processes.  How to configure SARRA to read from sx_user and post.  How to configure 
      pre-fetch (message), and post-fetch (file) validation. 
 
  12. ( *Waiting* ) **User Guide/Functions?**

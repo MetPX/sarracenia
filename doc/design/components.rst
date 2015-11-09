@@ -14,7 +14,7 @@ sr_ingest
  --broker amqp://<account>@<broker>/
 		
 
- -  kind of local version of SARA, just the RA part...
+ -  kind of local version of SARRA, just the RA part...
  -  subscribe to the xac_<account> exchange written by the user.
  -  read log messages there of the form v01.log.<account>.<account> 200
     which indicates a successful delivery of the file to this system.
