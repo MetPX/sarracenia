@@ -10,7 +10,7 @@ rm rabbitmqadmin* 2> /dev/null
 wget http://localhost:15672/cli/rabbitmqadmin
 chmod 755 rabbitmqadmin
 
-# configuring tester user as sara requieres
+# configuring tester user as sarra requieres
 
 ./rabbitmqadmin -u guest -p guest declare user \
      name=tester password=testerpw tags=
@@ -35,10 +35,10 @@ if [[ $# != 2 ]]; then
    exit 1
 fi
 
-echo killall sr_sara.py
+echo killall sr_sarra.py
 
-killall sr_sara.py > /dev/null 2>&1
-rm ./sr_sara_*.log ./.sr_sara_* ./toto* ./test/t* ./sara_test1.conf > /dev/null 2>&1
+killall sr_sarra.py > /dev/null 2>&1
+rm ./sr_sarra_*.log ./.sr_sarra_* ./toto* ./test/t* ./sarra_test1.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
 
 export USER=$1
@@ -100,7 +100,7 @@ cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
 
 chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
 
-cat << EOF > sara_test1.conf
+cat << EOF > sarra_test1.conf
 
 # source
 
@@ -114,7 +114,7 @@ sftp_password $PASSWORD
 ftp_user $USER
 ftp_password $PASSWORD
 
-queue_name q_guest.sr_sara.test
+queue_name q_guest.sr_sarra.test
 
 source_from_exchange True
 from_cluster alta
@@ -127,8 +127,8 @@ document_root /
 
 EOF
 
-mkdir -p ~/.config/sara 2> /dev/null
-echo 'from_cluster alta' > ~/.config/sara/sara.conf
+mkdir -p ~/.config/sarra 2> /dev/null
+echo 'from_cluster alta' > ~/.config/sarra/sarra.conf
 
 mkdir ./test
 
@@ -136,56 +136,56 @@ echo ==== INPLACE FALSE ====
 
 function test1 {
 
-      ../sara/sr_sara.py $* start   > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* start   > /dev/null 2>&1
       #======== 1
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta  > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta  > /dev/null 2>&1
       sleep 10
       ls -al toto ./test/*
       N=`diff toto ./test/toto_02|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta
+         echo OK ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_02 -to cluster1,cluster2,alta
          exit 1
       fi
       rm   ./test/toto_02*
 
       #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta > /dev/null 2>&1
       sleep 10
       ls -al toto ./test/*
       N=`diff toto ./test/toto_03|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_03 -to alta
          exit 1
       fi
       rm   ./test/toto_03*
 
       #======== 1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta > /dev/null 2>&1
       sleep 10
       ls -al toto ./test/*
       N=`diff toto ./test/toto_04|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_04 -to alta
          exit 1
       fi
       rm   ./test/toto_04*
 
       #======== 1
 
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta > /dev/null 2>&1
       sleep 10
       ls -al toto ./test/*
       N=`diff toto ./test/toto_05|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_05 -to alta
          exit 1
       fi
       rm   ./test/toto_05*
@@ -193,57 +193,57 @@ function test1 {
       #parts I
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta > /dev/null 2>&1
       sleep 4
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_06.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_06.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK  ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
+         echo OK  ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_06*
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta > /dev/null 2>&1
       sleep 6
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_07.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_07*
 
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_08.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_08.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_08*
 
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_09.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_09.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_09 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_09*
@@ -252,130 +252,130 @@ function test1 {
       #parts P
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_10 -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_10 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_10 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_10 -p p -to alta > /dev/null 2>&1
       sleep 4
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_10.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_10.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK  ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_10 -p p -to alta
+         echo OK  ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_10 -p p -to alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_10 -p p -to alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_10 -p p -to alta
          exit 1
       fi
       rm   ./test/toto_10*
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_11 -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_11 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_11 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_11 -p p -to alta > /dev/null 2>&1
       sleep 6
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_11.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_11.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_11 -p p -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_11 -p p -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_11 -p p -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_11 -p p -to alta
          exit 1
       fi
       rm   ./test/toto_11*
 
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_12 -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_12 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_12 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_12 -p p -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_12.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_12.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_12 -p p -to alta
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_12 -p p -to alta
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_12 -p p -to alta
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_12 -p p -to alta
          exit 1
       fi
       rm   ./test/toto_12*
 
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_13 -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_13 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_13 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_13 -p p -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto.128.2.0.1.d.Part ./test/toto_13.128.2.0.1.d.Part|wc -l`
       N2=`diff toto.128.2.0.0.d.Part ./test/toto_13.128.2.0.0.d.Part|wc -l`
       if ((N==0 && N2==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_13 -p p -to alta
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_13 -p p -to alta
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_13 -p p -to alta
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_13 -p p -to alta
          exit 1
       fi
       rm   ./test/toto_13*
 
       
-      ../sara/sr_sara.py $* stop > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* stop > /dev/null 2>&1
 
 
 }
 
-#test1 --url file:                ./sara_test1.conf
+#test1 --url file:                ./sarra_test1.conf
 
-mv sr_sara_sara_test1_0001.log sr_sara_sara_test1_0001.log_INPLACE_FALSE
+mv sr_sarra_sarra_test1_0001.log sr_sarra_sarra_test1_0001.log_INPLACE_FALSE
 
 echo ==== INPLACE TRUE ====
 
 function test2 {
 
-      ../sara/sr_sara.py $* start > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* start > /dev/null 2>&1
 
       #======== 1
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta > /dev/null 2>&1
       sleep 2
       ls -al toto ./test/*
       N=`diff toto ./test/toto_14|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta
+         echo OK ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_14 -to alta
          exit 1
       fi
       rm   ./test/toto_14*
 
       #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta > /dev/null 2>&1
       sleep 3
       ls -al toto ./test/*
       N=`diff toto ./test/toto_15|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_15 -to alta
          exit 1
       fi
       rm   ./test/toto_15*
 
       #======== 1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta > /dev/null 2>&1
       sleep 4
       ls -al toto ./test/*
       N=`diff toto ./test/toto_16|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_16 -to alta
          exit 1
       fi
       rm   ./test/toto_16*
       sleep 2
 
       #======== 1
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta > /dev/null 2>&1
       sleep 4
       ls -al toto ./test/*
       N=`diff toto ./test/toto_17|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_17 -to alta
          exit 1
       fi
       rm   ./test/toto_17*
@@ -384,54 +384,54 @@ function test2 {
       #parts I
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta > /dev/null 2>&1
       sleep 4
       ls -al toto ./test/*
       N=`diff toto ./test/toto_18|wc -l`
       if ((N==0)) ; then
-         echo OK  ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta
+         echo OK  ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_18 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_18*
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta > /dev/null 2>&1
       sleep 6
       ls -al toto ./test/*
       N=`diff toto ./test/toto_19|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_19 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_19*
 
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto ./test/toto_20|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_20 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_20*
 
 
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto ./test/toto_21|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_21 -p i,128 -to alta
          exit 1
       fi
       rm   ./test/toto_21*
@@ -440,67 +440,67 @@ function test2 {
       #parts P
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_22 -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_22 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_22 -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_22 -p p -to alta > /dev/null 2>&1
       sleep 6
       ls -al toto ./test/*
       N=`diff toto ./test/toto_22|wc -l`
       if ((N==0)) ; then
-         echo OK  ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_22 -p p  -to alta
+         echo OK  ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_22 -p p  -to alta
       else
-         echo ERROR ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_22 -p p -to alta
+         echo ERROR ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_22 -p p -to alta
          exit 1
       fi
       rm   ./test/toto_22*
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_23 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_23 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_23 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_23 -p p  -to alta > /dev/null 2>&1
       sleep 6
       ls -al toto ./test/*
       N=`diff toto ./test/toto_23|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_23 -p p -to alta 
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_23 -p p -to alta 
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_23 -p p -to alta 
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_23 -p p -to alta 
          exit 1
       fi
       rm   ./test/toto_23*
 
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_24 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_24 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_24 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_24 -p p  -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto ./test/toto_24|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_24 -p p -to alta 
+         echo OK ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_24 -p p -to alta 
       else
-         echo ERROR ../sara/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_24 -p p -to alta 
+         echo ERROR ../sarra/sr_post.py -u sftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_24 -p p -to alta 
          exit 1
       fi
       rm   ./test/toto_24*
 
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_25 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_25 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto_25 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto_25 -p p  -to alta > /dev/null 2>&1
       sleep 8
       ls -al toto ./test/*
       N=`diff toto ./test/toto_25|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_25 -p p -to alta 
+         echo OK ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_25 -p p -to alta 
       else
-         echo ERROR ../sara/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_25 -p p -to alta 
+         echo ERROR ../sarra/sr_post.py -u ftp://px@localhost//apps/px/test/toto.128.2.0.*.d.Part -rn ${PWD}/test/toto_25 -p p -to alta 
          exit 1
       fi
       rm   ./test/toto_25*
 
-      ../sara/sr_sara.py $* stop > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* stop > /dev/null 2>&1
 
 }
 
-#test2 --mirror True --url file: --inplace True ./sara_test1.conf
-mv sr_sara_sara_test1_0001.log sr_sara_sara_test1_0001.log_INPLACE_TRUE
+#test2 --mirror True --url file: --inplace True ./sarra_test1.conf
+mv sr_sarra_sarra_test1_0001.log sr_sarra_sarra_test1_0001.log_INPLACE_TRUE
 
 echo ==== INPLACE FALSE NOT MODIFIED ====
 
@@ -510,57 +510,57 @@ function test3 {
       cp ./toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part
       cp ./toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part
 
-      ../sara/sr_sara.py $* start > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* start > /dev/null 2>&1
       #======== 1
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2   -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2   -to alta > /dev/null 2>&1
 
       #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
 
       #======== 1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
 
       #======== 1
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2  -to alta > /dev/null 2>&1
 
       #parts I
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
 
       #parts P
 
       #======== 2
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u file:${PWD}/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
       #======== 2
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
       #======== 2
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.1.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto.128.2.0.0.d.Part -rn ${PWD}/test/toto2 -p p  -to alta > /dev/null 2>&1
 
       
       sleep 10
       ls -al toto ./test/*
 
-      ../sara/sr_sara.py $* stop > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* stop > /dev/null 2>&1
 
-      N=`grep modified sr_sara_sara_test1_0001.log  | wc -l`
+      N=`grep modified sr_sarra_sarra_test1_0001.log  | wc -l`
       if ((N==20)) ; then
          echo OK  not modified in all cases
       else
@@ -569,20 +569,20 @@ function test3 {
       fi
       rm   ./test/toto2*
  
-      ../sara/sr_sara.py $* stop > /dev/null 2>&1
+      ../sarra/sr_sarra.py $* stop > /dev/null 2>&1
 
 }
 
-#test3 --mirror True --url file:                ./sara_test1.conf
-mv sr_sara_sara_test1_0001.log sr_sara_sara_test1_0001.log_INPLACE_FALSE_NOT_MODIFIED
+#test3 --mirror True --url file:                ./sarra_test1.conf
+mv sr_sarra_sarra_test1_0001.log sr_sarra_sarra_test1_0001.log_INPLACE_FALSE_NOT_MODIFIED
 
 echo ==== INSTANCES AND INSERTS ====
 
 function test4 {
 
-         ../sara/sr_sara.py $* ./sara_test1.conf start > /dev/null 2>&1
+         ../sarra/sr_sarra.py $* ./sarra_test1.conf start > /dev/null 2>&1
 
-         ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_26 -p i,1 -r   -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_26 -p i,1 -r   -to alta > /dev/null 2>&1
 
                sleep 20
                ls -al toto ./test/*
@@ -595,7 +595,7 @@ function test4 {
                fi
                rm   ./test/toto_26*
 
-         ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_27 -p i,1 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_27 -p i,1 -r  -to alta > /dev/null 2>&1
 
                sleep 30
                ls -al toto ./test/*
@@ -608,7 +608,7 @@ function test4 {
                fi
                rm   ./test/toto_27*
 
-         ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_28 -p i,1 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_28 -p i,1 -r  -to alta > /dev/null 2>&1
          
                sleep 40
                ls -al toto ./test/*
@@ -621,7 +621,7 @@ function test4 {
                fi
                rm   ./test/toto_28*
 
-         ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_29 -p i,1 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_29 -p i,1 -r  -to alta > /dev/null 2>&1
          
                sleep 40
                ls -al toto ./test/*
@@ -634,27 +634,27 @@ function test4 {
                fi
                rm   ./test/toto_29*
 
-         ../sara/sr_sara.py $* ./sara_test1.conf stop  > /dev/null 2>&1
+         ../sarra/sr_sarra.py $* ./sarra_test1.conf stop  > /dev/null 2>&1
          sleep 10
 
 }
 
 test4 --mirror True --url file: --inplace true --instances 100 
 
-cat sr_sara_sara_test1_*.log >> sr_sara_sara_test1_0001.log_INSTANCES_INSERT
-rm sr_sara_sara_test1_*.log
+cat sr_sarra_sarra_test1_*.log >> sr_sarra_sarra_test1_0001.log_INSTANCES_INSERT
+rm sr_sarra_sarra_test1_*.log
 
 
 echo ==== INSTANCES AND INSERTS AND TRUNCATE ====
 
 function test5 {
 
-         ../sara/sr_sara.py $* ./sara_test1.conf start > /dev/null 2>&1
+         ../sarra/sr_sarra.py $* ./sarra_test1.conf start > /dev/null 2>&1
 
          cat toto | sed 's/12345/abcde/' > ./test/toto_30
          echo abc >> ./test/toto_30
 
-         ../sara/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_30 -p i,11 -r  -to alta  > /dev/null 2>&1
+         ../sarra/sr_post.py -u file:${PWD}/toto -rn ${PWD}/test/toto_30 -p i,11 -r  -to alta  > /dev/null 2>&1
 
                sleep 20
                ls -al toto ./test/*
@@ -671,7 +671,7 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto_31
          echo abc >> ./test/toto_31
 
-         ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_31 -p i,11 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_31 -p i,11 -r  -to alta > /dev/null 2>&1
 
                sleep 30
                ls -al toto ./test/*
@@ -688,7 +688,7 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto_32
          echo abc >> ./test/toto_32
 
-         ../sara/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_32 -p i,11 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_32 -p i,11 -r  -to alta > /dev/null 2>&1
          
                sleep 60
                ls -al toto ./test/*
@@ -704,7 +704,7 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto_33
          echo abc >> ./test/toto_33
 
-         ../sara/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_33 -p i,11 -r  -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -u ftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_33 -p i,11 -r  -to alta > /dev/null 2>&1
          
                sleep 60
                ls -al toto ./test/*
@@ -718,14 +718,14 @@ function test5 {
                rm   ./test/toto_33*
 
          sleep 10
-         ../sara/sr_sara.py $* ./sara_test1.conf stop > /dev/null 2>&1
+         ../sarra/sr_sarra.py $* ./sarra_test1.conf stop > /dev/null 2>&1
 
 }
 
 test5 --mirror True --url file: --inplace true --instances 10
-cat sr_sara_sara_test1_*.log >> sr_sara_sara_test1_0001.log_INSTANCES_INSERT_TRUNCATE
-rm sr_sara_sara_test1_*.log
+cat sr_sarra_sarra_test1_*.log >> sr_sarra_sarra_test1_0001.log_INSTANCES_INSERT_TRUNCATE
+rm sr_sarra_sarra_test1_*.log
 
-rm ./sr_sara_*.log ./.sr_sara_* ./toto* ./test/t* ./sara_test1.conf > /dev/null 2>&1
+rm ./sr_sarra_*.log ./.sr_sarra_* ./toto* ./test/t* ./sarra_test1.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
 
