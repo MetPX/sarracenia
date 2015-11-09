@@ -16,7 +16,7 @@ packages=find_packages()
 print("packages = %s" % packages)
 
 setup(
-    name='sara',
+    name='sarra',
     version='0.1.1',
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
@@ -29,14 +29,14 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts":[
-              "sr_post=sara.sr_post:main",
-              "sr_log=sara.sr_log:main",
-              "sr_sara=sara.sr_sara:main",
-              "sr_sender=sara.sr_sender:main",
-              "sr_watch=sara.sr_watch:main",
-              "sr_subscribe=sara.sr_subscribe:main",
-              "sr_log2source=sara.sr_log2source:main",
-              "sr_log2clusters=sara.sr_log2clusters:main"
+              "sr_post=sarra.sr_post:main",
+              "sr_log=sarra.sr_log:main",
+              "sr_sarra=sarra.sr_sarra:main",
+              "sr_sender=sarra.sr_sender:main",
+              "sr_watch=sarra.sr_watch:main",
+              "sr_subscribe=sarra.sr_subscribe:main",
+              "sr_log2source=sarra.sr_log2source:main",
+              "sr_log2clusters=sarra.sr_log2clusters:main"
               ]
     },
     classifiers=[
