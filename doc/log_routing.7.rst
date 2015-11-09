@@ -16,12 +16,12 @@ Return Log of the Products to Brokers
 PLACEMENT
 =========
 
-**~/.config/sara/log_routing.conf**
+**~/.config/sarra/log_routing.conf**
 
 DESCRIPTION
 ===========
 
-The file ~/.config/sara/log_routing.conf defines where the logs, 
+The file ~/.config/sarra/log_routing.conf defines where the logs, 
 for a given cluster, must be sent to. The file has the following syntax :
 
 cluster_Name broker_Url exchange_Log
@@ -31,11 +31,11 @@ CLUSTER_NAME
 ------------
 
 First, the cluster_Name is a string interpreted as a cluster name.
-When an **AMQP** message is processed by  `sr_sara(1) <sr_sara.1.html>`_
+When an **AMQP** message is processed by  `sr_sarra(1) <sr_sarra.1.html>`_
 its headers is extended with the pair  headers['from_cluster'] = cluster_Name.
 The value of 'from_cluster' can be set with option  **from_cluster cluster_Name**
-in **sr_sara**'s config file, or for the whole server if set in
-~/.config/sara/sara.conf.
+in **sr_sarra**'s config file, or for the whole server if set in
+~/.config/sarra/sarra.conf.
 
 
 BROKER_URL

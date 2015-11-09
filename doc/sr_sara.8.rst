@@ -1,6 +1,6 @@
 
 =========
- SR_Sara
+ SR_Sarra
 =========
 
 ------------------------------------------
@@ -16,27 +16,27 @@ Subscribe, Acquire and ReAnnounce Products
 SYNOPSIS
 ========
 
-**sr_sara** configfile start|stop|restart|reload|status
+**sr_sarra** configfile start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
 
-**sr_sara** is a program that Subscribes to file notifications, 
+**sr_sarra** is a program that Subscribes to file notifications, 
 Acquires the files and ReAnnounces them at their new locations.
 
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
-**sr_sara** connects to a *source_broker* (often the same as the remote file server 
+**sr_sarra** connects to a *source_broker* (often the same as the remote file server 
 itself) and subscribes to the notifications of interest. It uses the 
 notification information to download the file on the local server its running on. 
 After, it produces a new notification for the local file on a broker (usually on the local server).
 
 
-**sr_sara** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
+**sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
 or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
 that announce its' products.
 
-The **sr_sara** command takes two argument: a configuration file described below,
+The **sr_sarra** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
 
 CONFIGURATION
@@ -53,14 +53,14 @@ Empty lines are skipped.
 INSTANCES
 ---------
 
-It is possible that one instance of sr_sara using a certain config
+It is possible that one instance of sr_sarra using a certain config
 is not enough to process & download all available notifications.
 
 **instances      <integer>     (default:1)**
 
-sr_sara "configname" start   will fork  N instances of sr_sara using that config.
-.sr_sara_configname_$instance.pid  are created and contain the PID  of $instance process.
-sr_sara_configname_$instance.log  are created and contain the logs of $instance process.
+sr_sarra "configname" start   will fork  N instances of sr_sarra using that config.
+.sr_sarra_configname_$instance.pid  are created and contain the PID  of $instance process.
+sr_sarra_configname_$instance.log  are created and contain the logs of $instance process.
 
 The logs can be written in another directory than the current one with option :
 
@@ -72,7 +72,7 @@ The logs can be written in another directory than the current one with option :
   FIXME: a standard place where all configs ?
   FIXME: a standard place where all the logs ?
   FIXME: a standard place where all the pid files ?
-  FIXME: a sr process starting all sara configs of various kind.
+  FIXME: a sr process starting all sarra configs of various kind.
 
 
 
@@ -94,10 +94,10 @@ to an exchange.  These options define which messages (URL notifications) the pro
 
  - **source_exchange      <name>         (default: amq.topic)** 
  - **source_topic         <amqp pattern> (default: v02.post.#)**
- - **queue_name           <name>         (default: sr_sara.config_name)** 
+ - **queue_name           <name>         (default: sr_sarra.config_name)** 
 
 .. NOTE::
-  FIXME: queue_name is sr_sara.config_name? is that the file that contains the queue name?
+  FIXME: queue_name is sr_sarra.config_name? is that the file that contains the queue name?
   FIXME: probably should be "queue_info_file" ? is there other stuff in there other than the name?
   FIXME: queue_name is supposed to be q_guest (assuming default auth.)
 
@@ -144,7 +144,7 @@ By default, **mirror** option is True, the default path for a file is :
 
 path = document_root + 'notification filepath'
 
-**sr_sara** expects the notification filepath to start with YYYYMMDD/sourceid.
+**sr_sarra** expects the notification filepath to start with YYYYMMDD/sourceid.
 The user will set **mirror** to False, if it is not the case. The path
 for the file becomes :
 
@@ -184,7 +184,7 @@ DOWNLOAD CREDENTIALS
 **ssh_keyfile  <filepath> (set if needed for sftp downloads)** 
 
 .. NOTE::
-  FIXME: usage of ~/.conf/sara/credentials.conf to be coded
+  FIXME: usage of ~/.conf/sarra/credentials.conf to be coded
   support of various ftp/sftp... etc credentials at the same time
   much easier for users and less restrictions on notifications
 

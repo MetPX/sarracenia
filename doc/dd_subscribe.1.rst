@@ -333,7 +333,7 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
-`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
