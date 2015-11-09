@@ -41,7 +41,7 @@ import asyncore
 import pyinotify 
 
 try :    from sr_post      import *
-except : from sara.sr_post import *
+except : from sarra.sr_post import *
 
 # ===================================
 # MAIN

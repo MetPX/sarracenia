@@ -42,10 +42,10 @@ try :
          from sr_message      import *
          from sr_util         import *
 except :
-         from sara.sr_amqp    import *
-         from sara.sr_config  import *
-         from sara.sr_message import *
-         from sara.sr_util    import *
+         from sarra.sr_amqp    import *
+         from sarra.sr_config  import *
+         from sarra.sr_message import *
+         from sarra.sr_util    import *
 
 class sr_post(sr_config):
 
@@ -63,7 +63,7 @@ class sr_post(sr_config):
         self.chkclass.from_list(self.sumflg)
         self.chksum = self.chkclass.checksum
 
-        # sara exchange default value is xs_username
+        # sarra exchange default value is xs_username
         # username being the broker's
 
         if self.exchange == None :

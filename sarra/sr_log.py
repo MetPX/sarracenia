@@ -49,9 +49,9 @@ try :
          from sr_config       import *
          from sr_message        import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_config  import *
-         from sara.sr_message   import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_config  import *
+         from sarra.sr_message   import *
 
 
 class sr_log(sr_config):

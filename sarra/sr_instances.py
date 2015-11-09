@@ -39,7 +39,7 @@ import logging,os,psutil,signal,sys
 try :
          from sr_config      import *
 except :
-         from sara.sr_config import *
+         from sarra.sr_config import *
 
 class sr_instances(sr_config):
 

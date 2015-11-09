@@ -49,9 +49,9 @@ try :
          from sr_instances      import *
          from sr_message        import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_instances import *
-         from sara.sr_message   import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
 
 
 class sr_log2clusters(sr_instances):
