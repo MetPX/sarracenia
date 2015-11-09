@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_log2clusters.py : python3 program uses log2clusters.conf to repost all log messages
 #                      to the proper cluster

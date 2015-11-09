@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_log2source.py : python3 program takes all log messages and repost them to the
 #                    log exchange of the source user

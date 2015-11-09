@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_instances.py : python3 utility tools to manage N instances of a program
 #

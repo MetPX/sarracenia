@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # dd_subscribe    : python3 program allowing users to download product from dd.weather.gc.ca
 #                   as soon as they are made available (through amqp notifications)
