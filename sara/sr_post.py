@@ -73,8 +73,8 @@ class sr_post(sr_config):
         self.msg.set_exchange(self.exchange)
         self.msg.set_flow(self.flow)
         self.msg.set_flow(self.flow)
-        self.msg.set_to(self.to)
-        if self.to == None :
+        self.msg.set_to_clusters(self.to_clusters)
+        if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
            self.help()
            sys.exit(1)

@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SaraDocumentation
 #
-# sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+# dd_subscribe    : python3 program allowing users to download product from dd.weather.gc.ca
 #                   as soon as they are made available (through amqp notifications)
 #
 #
@@ -36,11 +36,8 @@
 #
 
 import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
-import calendar,socket,urllib.parse
-import urllib.request, urllib.error
 import stat
-import amqplib.client_0_8 as amqp
-from   hashlib import md5
+import calendar,socket,urllib.parse
 
 #============================================================
 # usage example
@@ -48,6 +45,8 @@ from   hashlib import md5
 # python sr_subscribe.py configfile.conf
 
 #============================================================
+
+import amqplib.client_0_8 as amqp
 
 # ==========
 # HostConnect
@@ -320,6 +319,7 @@ class Queue:
        for exchange_name,exchange_key in self.bindings:
            self.bind(exchange_name, exchange_key )
 
+
 def file_insert( msg ) :
 
     # file must exists
@@ -393,7 +393,6 @@ def file_insert_part(msg,part_file):
 
     msg.set_topic_url('v02.post',msg.target_url)
     msg.set_notice(msg.target_url,msg.time)
-    msg.rename  = None
     msg.code    = 201
     msg.message = 'Published'
     msg.publish()
@@ -545,13 +544,13 @@ def file_truncate(msg):
 
                 msg.set_topic_url('v02.post',msg.target_url)
                 msg.set_notice(msg.target_url,msg.time)
-                msg.rename  = None
                 msg.code    = 205
                 msg.message = 'Reset Content :truncated'
                 msg.log_info()
 
     except : pass
 
+from hashlib import md5
 
 # ===================================
 # Checksum class
@@ -677,11 +676,7 @@ class sr_message():
         self.notice        = None
         self.headers       = {}
 
-        self.flow          = None
-        self.message       = None
         self.partstr       = None
-        self.rename        = None
-        self.source        = None
         self.sumstr        = None
         self.sumflg        = None
 
@@ -726,12 +721,8 @@ class sr_message():
         if type(msg.body) == bytes :
            self.notice = msg.body.decode("utf-8")
   
-        self.flow      = None
-        self.message   = None
-        self.partstr   = None
-        self.rename    = None
-        self.source    = None
-        self.sumstr    = None
+        self.partstr     = None
+        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -750,7 +741,6 @@ class sr_message():
         self.log_notice   = "%s %d %s %s %f" % \
                        (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.headers['message'] = self.message
-        self.set_headers()
 
         if self.amqp_log != None :
            log_exchange = 'xlog'
@@ -761,6 +751,7 @@ class sr_message():
         self.log_amqp()
 
         if self.logger   != None :
+           self.set_hdrstr()
            self.logger.error("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
 
         del self.headers['message']
@@ -769,7 +760,7 @@ class sr_message():
         self.log_amqp()
 
         if self.logger   != None :
-           self.set_headers()
+           self.set_hdrstr()
            self.logger.info("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
 
         del self.headers['message']
@@ -794,29 +785,23 @@ class sr_message():
 
         self.filename = self.headers['filename']
 
-        self.hdrstr   = ''
-
-        self.source   = 'metpx'
-        self.headers['source'] = self.source
-        self.hdrstr  += '%s=%s ' % ('source',self.source)
+        self.headers['source'] = 'metpx'
 
         self.partstr = '1,%d,1,0,0' % self.filesize
         self.headers['parts'] = self.partstr
-        self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
 
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
-        self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.flow    = None
-        self.rename  = None
-        self.message = None
+        self.to_clusters = ['ALL']
+        self.headers['to_clusters'] = 'ALL'
 
-        self.suffix = ''
+        self.suffix  = ''
         
         self.set_parts_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
+        self.set_hdrstr()
 
     def parse_v02_post(self):
 
@@ -831,37 +816,17 @@ class sr_message():
         self.url     = urllib.parse.urlparse(token[1]+token[2])
         self.path    = token[2]
 
-        self.hdrstr  = ''
-
-        self.source  = None
-        if 'source'  in self.headers :
-           self.source   = self.headers['source']
-           self.hdrstr  += '%s=%s ' % ('source',self.source)
-
         self.partstr = None
         if 'parts'   in self.headers :
            self.partstr  = self.headers['parts']
-           self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
 
         self.sumstr  = None
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
-           self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        self.flow    = None
-        if 'flow'    in self.headers :
-           self.flow     = self.headers['flow']
-           self.hdrstr  += '%s=%s ' % ('flow',self.flow)
-
-        self.rename  = None
-        if 'rename'  in self.headers :
-           self.rename   = self.headers['rename']
-           self.hdrstr  += '%s=%s ' % ('rename',self.rename)
-
-        self.message = None
-        if 'message' in self.headers :
-           self.message  = self.headers['message']
-           self.hdrstr  += '%s=%s ' % ('message',self.message)
+        self.to_clusters = []
+        if 'to_clusters' in self.headers :
+           self.to_clusters  = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
@@ -869,6 +834,7 @@ class sr_message():
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
+        self.set_hdrstr()
 
     def part_suffix(self):
         return '.%d.%d.%d.%d.%s.%s' %\
@@ -879,19 +845,23 @@ class sr_message():
            self.amqp_pub.publish(self.exchange_pub,self.topic,self.notice,self.headers)
         self.log_info()
 
+    def set_from_cluster(self,from_cluster=None):
+        if from_cluster != None :
+           self.headers['from_cluster'] = from_cluster
+        elif 'from_cluster' in self.headers :
+           del self.headers['from_cluster']
+
     def set_exchange(self,name):
         self.exchange = name
 
     def set_flow(self,flow=None):
-        self.flow   = flow
+        if flow != None :
+           self.headers['flow'] = flow
+        elif 'flow' in self.headers :
+           del self.headers['flow']
 
-    def set_headers(self):
-        self.headers = {}
+    def set_hdrstr(self):
         self.hdrstr  = ''
-
-        if self.source  != None :
-           self.headers['source']  = self.source
-           self.hdrstr  += '%s=%s ' % ('source',self.source)
 
         if self.partstr != None :
            self.headers['parts']   = self.partstr
@@ -901,17 +871,23 @@ class sr_message():
            self.headers['sum']     = self.sumstr
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        if self.flow    != None :
-           self.headers['flow']    = self.flow
-           self.hdrstr  += '%s=%s ' % ('flow',self.flow)
+        if 'from_cluster' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('from_cluster',self.headers['from_cluster'])
 
-        if self.rename  != None :
-           self.headers['rename']  = self.rename
-           self.hdrstr  += '%s=%s ' % ('rename',self.rename)
+        if 'source' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
 
-        if self.message != None :
-           self.headers['message'] = self.message
-           self.hdrstr  += '%s=%s ' % ('message',self.message)
+        if 'to_clusters' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('to_clusters',self.headers['to_clusters'])
+
+        if 'flow' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
+
+        if 'rename' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('rename',self.headers['rename'])
+
+        if 'message' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('message',self.headers['message'])
 
         # added for v00 compatibility (old version of sr_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
@@ -1029,12 +1005,25 @@ class sr_message():
         self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
     def set_notice(self,url,time=None):
-        self.time = time
-        if time  == None : self.set_time()
         self.url    = url
-        path        = url.path
+        self.time   = time
+        if time    == None : self.set_time()
+        path        = url.path.strip('/')
+
+        if url.scheme == 'file' :
+           self.notice = '%s %s %s' % (self.time,'file:','/'+path)
+           return
+
         urlstr      = url.geturl()
-        static_part = urlstr.replace(path,'')
+        static_part = urlstr.replace(url.path,'') + '/'
+
+        if url.scheme == 'http' :
+           self.notice = '%s %s %s' % (self.time,static_part,path)
+           return
+
+        if url.scheme[-3:] == 'ftp'  :
+           if url.path[:2] == '//'   : path = '/' + path
+
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
     def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
@@ -1085,11 +1074,17 @@ class sr_message():
            self.filesize  += self.remainder   - self.chunksize
            if self.lastchunk : self.length    = self.remainder
 
-    def set_rename(self,rename):
-        self.rename = rename
+    def set_rename(self,rename=None):
+        if rename != None :
+           self.headers['rename'] = rename
+        elif 'rename' in self.headers :
+           del self.headers['rename']
 
-    def set_source(self,source):
-        self.source = source
+    def set_source(self,source=None):
+        if source != None :
+           self.headers['source'] = source
+        elif 'source' in self.headers :
+           del self.headers['source']
 
     def set_sum(self,sumflg='d',checksum=0):
         self.sumflg    =  sumflg
@@ -1122,6 +1117,14 @@ class sr_message():
         msec = '.%d' % (int(round(time.time() * 1000)) %1000)
         now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
         self.time = now
+
+    def set_to_clusters(self,to_clusters=None):
+        if to_clusters != None :
+           self.headers['to_clusters'] = to_clusters
+           self.to_clusters = to_clusters.split(',')
+        elif 'to_clusters' in self.headers :
+           del self.headers['to_clusters']
+           self.to_clusters = []
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
@@ -1186,6 +1189,7 @@ class sr_message():
 class ConsumerX(object):
 
     def __init__(self,config,logger):
+        self.pgm        = os.path.basename(sys.argv[0])
         self.logger     = logger
 
         self.connected  = False
@@ -1250,10 +1254,6 @@ class ConsumerX(object):
         if self.log_back :
            self.amqp_log = Publisher(self.hc)
            self.amqp_log.build()
-           #xlog exchange should exists...
-           #end users will not configure/create ii
-           #xlog = Exchange(self.hc,'xlog')
-           #xlog.build()
 
     def reconnect(self):
         self.close()
@@ -1637,12 +1637,12 @@ class ConsumerX(object):
 
         if self.masks == [] :
             print("Error 5: accept is missing from config file")
-            print("Try `dd_subscribe --help' for more information.")
+            print("Try '%s --help' for more information." % self.pgm)
             sys.exit(3)
 
         if self.exchange_key == [] :
             print("Error 6: exchange_key is missing from config file")
-            print("Try `dd_subscribe --help' for more information.")
+            print("Try '%s --help' for more information." % self.pgm)
             sys.exit(3)
 
 
@@ -1782,7 +1782,7 @@ class ConsumerX(object):
                     elif words[0] == 'expire': self.expire = int(words[1]) * 60 * 1000
                     elif words[0] == 'strip': self.strip = int(words[1])
                     elif words[0] == 'overwrite': self.overwrite = isTrue(words[1])
-                    #default is file is reassemble at sr_subscribe level
+                    #default is file is reassemble at subscribe level
                     #elif words[0] == 'inplace': self.inplace = isTrue(words[1])
                     elif words[0] == 'log_back': self.log_back = isTrue(words[1])
                     elif words[0] == 'queue': self.queue = words[1] 
@@ -1828,15 +1828,16 @@ class ConsumerX(object):
 
 
 def help():     
+    pgm = os.path.basename(sys.argv[0])
     #print chr(27)+'[1m'+'Script'+chr(27)+'[0m'
     print("\nUsage: ")
-    print("\ndd_subscribe [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] <config-file>")
+    print("\n%s [-n|--no-download] [-d|--download-and-discard] [-l|--log-dir] <config-file>" % pgm)
     print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
     print("Examples:\n")    
-    print("dd_subscribe subscribe.conf  # download files and display log in stdout")
-    print("dd_subscribe -d subscribe.conf  # discard files after downloaded and display log in stout")
-    print("dd_subscribe -l /tmp subscribe.conf  # download files,write log file in directory /tmp")
-    print("dd_subscribe -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n")
+    print("%s subscribe.conf  # download files and display log in stdout" % pgm)
+    print("%s -d subscribe.conf  # discard files after downloaded and display log in stout" % pgm)
+    print("%s -l /tmp subscribe.conf  # download files,write log file in directory /tmp" % pgm)
+    print("%s -n subscribe.conf  # get notice only, no file downloaded and display log in stout\n" % pgm)
     print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker connection:\n" +
           "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
@@ -1896,7 +1897,7 @@ def main():
       opts, args = getopt.getopt(sys.argv[1:],'hl:dtn',['help','log-dir=','download-and-discard','no-download'])
     except getopt.GetoptError as err:    
       print("Error 1: %s" %err)
-      print("Try `dd_subscribe --help' for more information.")
+      print("Try '%s --help' for more information." % os.path.basename(sys.argv[0]))
       sys.exit(2)                    
     
     #validate options
@@ -1913,7 +1914,7 @@ def main():
         ldir = a       
         if not os.path.exists(ldir) :
           print("Error 2: specified logging directory does not exist.")
-          print("Try `dd_subscribe --help' for more information.")
+          print("Try '%s --help' for more information."% os.path.basename(sys.argv[0]))
           sys.exit(2)
       elif o in ('-d','--download-and-discard'):
         discard = True        
@@ -1929,7 +1930,7 @@ def main():
       sys.exit(1)
     else:      
       print("Error 4: too many arguments given: %s." %' '.join(args))
-      print("Try `dd_subscribe --help' for more information.")
+      print("Try '%s --help' for more information." % os.path.basename(sys.argv[0]))
       sys.exit(2)            
              
 

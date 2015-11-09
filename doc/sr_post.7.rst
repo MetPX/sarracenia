@@ -62,7 +62,7 @@ transported (permission bits, extended attributes, etc...) Permissions of files
 on the destination system are upto the receiver to decide.
 
 With this method, AMQP messages provide a 'control plane' for data transfers.  While each post message 
-is essentially point to point, data switches can be transitively linked together to make arbitrary 
+is essentially point to point, data pumps can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
 data.  If consumers permit it, log messages (see sr_log(7)) also flow through the control path, 
@@ -107,7 +107,7 @@ Fingerprint Winnowing (use of the sum_ header)
    is optimal for this usage.
  
 Partitioning (use of the parts_ Header)
-   In any store and forward switch network that transports entire files limits the maximum
+   In any store and forward data pumping network that transports entire files limits the maximum
    file size to the minimum available on any intervening node.  To avoid defining a maximum 
    file size, a segmentation standard is specified, allowing intervening nodes to hold
    only segments of the file, and forward them as they are received, rather than being
@@ -204,7 +204,7 @@ appropriate.   Headers are a mandatory element included in later versions of the
  multiple streams, and/or to reduce storage use for extremely large files.
 
  when transferring partitioned files, each partition is advertised and potentially transported
- independently across a switching network.
+ independently across a data pumping network.
 
  *<method>*
  
@@ -273,7 +273,7 @@ appropriate.   Headers are a mandatory element included in later versions of the
 
 **source=<sourceid>**
  a character field indicating the source of the data injected into the network.
- should be unique within a switching network.  Usually is the same as the
+ should be unique within a data pumping network.  Usually is the same as the
  account used to authenticate to the broker.
 
 .. _sum:
@@ -297,7 +297,7 @@ appropriate.   Headers are a mandatory element included in later versions of the
  |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
  +-----------+---------------------------------------------------------------------+
  |  *<name>* | checksum with a some other algorithm, named *<name>*                |
- |           | *<name>* should be *registered* in the switch network.              |
+ |           | *<name>* should be *registered* in the data pumping network.        |
  |           | registered means that all downstream subscribers can obtain the     |
  |           | algorithm to validate the checksum.                                 |
  +-----------+---------------------------------------------------------------------+
@@ -448,7 +448,7 @@ complexity to cover multiple cases.
 
 sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
-between initial switch and final delivery.  The protocol is unidirectional, in that there 
+between initial pump and final delivery.  The protocol is unidirectional, in that there 
 is no dialogue between publisher and subscriber.  Each post is a stand-alone item that 
 is one message in a stream, which on receipt may be spread over a number of nodes. 
 

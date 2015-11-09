@@ -71,13 +71,11 @@ class sr_sara(sr_instances):
 
         self.msg.user = self.source_broker.username
 
-        # expand self.from_cluster in case it is an alias
+        # make a single list for clusters that we accept message for
 
-        self.from_cluster_list = []
-        if self.from_cluster != None :
-           self.from_cluster_list.append(self.from_cluster)
-           if self.from_cluster in self.aliases :
-              self.from_cluster_list.extend(self.aliases[self.from_cluster])
+        self.accept_msg_for_clusters      = [ self.from_cluster ]
+        self.accept_msg_for_clusters.extend ( self.from_aliases )
+        self.accept_msg_for_clusters.extend ( self.gateway_for  )
 
         # umask change for directory creation and chmod
 
@@ -218,46 +216,26 @@ class sr_sara(sr_instances):
         self.logger.info("DEBUG:")
         self.logger.info("-debug")
 
-    # this sr_sara runs for cluster : self.from_cluster
-    # this sr_sara is a gateway for a list of clusters : self.route 
-    # the self.route list, is expanded... so contains aliases and their defined clusters 
-    # A message has a list of targetted clusters : self.msg.to_list
-    # There is a list of defined cluster aliases : self.aliases
-    # A message's target can be an alias.
-
-    # From all this info, this module decides if sr_sara should
-    # treat that message (return True)  or not (return False)
+    # this instances of sr_sara runs,
+    # for cluster               : self.from_cluster
+    # alias for the cluster are : self.from_aliases
+    # it is a gateway for       : self.gateway_for 
+    # all these cluster names were put in list self.accept_msg_for_clusters
+    # The message's target clusters  self.msg.to_clusters should be in
+    # the self.accept_msg_for_clusters list
 
     def route_this_message(self):
 
         # the message has not specified a destination.
-        if not 'to' in self.msg.headers :
+        if not 'to_clusters' in self.msg.headers :
            self.msg.code    = 403
-           self.msg.message = "Forbidden : message without destination amqp header['to']"
+           self.msg.message = "Forbidden : message without destination amqp header['to_clusters']"
            self.msg.log_error()
            return False
 
         # loop on all message destinations (target)
-        for target in self.msg.to_list :
-
-           # target is in this cluster
-           if target in self.from_cluster_list : return True
-
-           # target is in this cluster's defined route
-           if target in self.route : return True
-
-           # if target is not an alias ... we are done with it
-           if not target in self.aliases : continue
-
-           # loop on all alias names for this target
-
-           for target2 in self.aliases[target] :
-
-               # target2 is in this cluster
-               if target2 in self.from_cluster_list : return True
-
-               # target2 is in this cluster's defined route
-               if target2 in self.route : return True
+        for target in self.msg.to_clusters :
+           if target in self.accept_msg_for_clusters : return True
 
         # nope this one is not for this cluster
         self.logger.warning("skipped : not for this cluster...")

@@ -37,6 +37,9 @@
 import paramiko, os,sys
 from   paramiko import *
 
+import logging
+
+
 def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
     url       = msg.url
     host      = url.hostname
@@ -54,6 +57,9 @@ def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
     cfile    = token[-1]
 
     try :
+
+            paramiko.util.logging.getLogger().setLevel(logging.WARN)
+
             t = None
             if port == None : 
                t = paramiko.Transport(host)

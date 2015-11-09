@@ -51,7 +51,6 @@ class sr_config:
         self.exedir         = os.getcwd()
         self.logdir         = os.getcwd()
 
-        self.aliases        = {}
         self.credentials    = []
         self.log_clusters   = {}
 
@@ -154,8 +153,9 @@ class sr_config:
 
         # cluster stuff
         self.from_cluster         = None
-        self.to                   = None
-        self.route                = []
+        self.from_aliases         = []
+        self.to_clusters          = None
+        self.gateway_for          = []
 
         self.ftp_user             = None
         self.ftp_password         = None
@@ -245,41 +245,6 @@ class sr_config:
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
-        # aliases
-        try :
-                 #import urllib,urllib.request
-                 #req  = urllib.request.Request('http://dd.weather.gc.ca/doc/sara/aliases.txt')
-                 #sock = urllib.request.urlopen(req)
-                 #lines = sock.readlines(1000000)
-                 alias = confdir + 'aliases.conf'
-                 f = open(alias,'r')
-                 lines = f.readlines()
-                 f.close
- 
-                 # parse aliases
-                 for line in lines :
-                     line = line.strip()
-                     if len(line) == 0 or line[0] == '#' : continue
-                     parts = line.split()
-
-                     if not parts[0] in self.aliases :
-                        self.aliases[parts[0]] = []
-
-                     for p in parts[1].split(',') :
-                         try    : self.aliases[parts[0]].index[p]
-                         except : 
-                                  if p in self.aliases :
-                                         self.aliases[parts[0]].append(p)
-                                         self.aliases[parts[0]].extend(self.aliases[p])
-                                  else :
-                                         self.aliases[parts[0]].append(p)
-
-        # cluster file is not mandatory
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("aliases = %s\n" % self.aliases)
-
         # sara.conf ... defaults for the server
         sara = homedir + '/.config/sara/sara.conf'
         if os.path.isfile(sara) : self.config(sara)
@@ -342,6 +307,10 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
+                elif words[0] in ['from_aliases','-fa','--from_aliases']:
+                     self.from_aliases = words[1].split(',')
+                     n = 2
+
                 elif words[0] in ['from_cluster','-fc','--from_cluster']:
                      self.from_cluster = words[1] 
                      n = 2
@@ -397,7 +366,7 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['to','-to','--to']:
-                     self.to = words[1]
+                     self.to_clusters = words[1]
                      n = 2
 
                 elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
@@ -451,18 +420,9 @@ class sr_config:
                      self.rename = words[1]
                      n = 2
 
-                elif words[0] in ['route','-rt','--route']:
-                     self.route.extend[ words[1].split(',') ]
-                     # expand route aliases, keep alias'name and add alias'cluters
-                     lst = list(self.route)
-                     for alias in self.route :
-                         if not alias in self.aliases : continue
-                         clusters = self.aliases[alias]
-                         lst.expand[clusters]
-                     self.route = lst
-                     self.logger.debug("route = %s" % self.route)
+                elif words[0] in ['gateway_for','-gf','--gateway_for']:
+                     self.gateway_for = words[1].split(',')
                      n = 2
-
 
                 elif words[0] in ['url','-u','--url']:
                      self.url = urllib.parse.urlparse(words[1])
