@@ -286,7 +286,7 @@ SEE ALSO
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
-`sr_log2source(1) <sr_log2source.7.html>`_ - copy log messages from the switch log bus to upstream destination.
+`sr_log2source(1) <sr_log2source.7.html>`_ - copy log messages from the pump log bus to upstream destination.
 
 `sr_sara(1) <sr_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 

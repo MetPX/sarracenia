@@ -183,7 +183,7 @@ It is a comma separated string.  Valid checksum flags are ::
           n : do checksum on filename
           d : do md5sum on file content
 
-Then using a checksum script, it must be registered with the switch, so that consumers
+Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.
 
 

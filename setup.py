@@ -17,15 +17,15 @@ print("packages = %s" % packages)
 
 setup(
     name='sara',
-    version='0.0.1',
-    description='Subscribe and readvertise products.',
+    version='0.1.1',
+    description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
-    url='https://github.com/petersilva/metpx.git/sarracenia',
-    license='LGPL',
-    author='Dads',
-    author_email='peter.silva@ssc-spc.gc.ca',
+    url='http://metpx.sourceforge.net/',
+    license='GPLv2',
+    author='Shared Services Canada, Supercomputing, Data Interchange',
+    author_email='Peter.Silva@canada.ca',
     packages=find_packages(),
     entry_points={
         "console_scripts":[
@@ -40,14 +40,20 @@ setup(
               ]
     },
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: System Administrators',
         'Natural Language :: English',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Topic :: Environment :: Console',
+        'Topic :: Communications :: File Sharing',
+        'Topic :: Internet :: File Transfer Protocol',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Logging',
     ],
 )
