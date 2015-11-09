@@ -9,13 +9,12 @@ Overview
 
 MetPX-Sarracenia is a data duplication or distribution pump that leverages 
 existing standard technologies (web servers and the `AMQP <http://www.amqp.org>`_ 
-brokers) to achieve 
-real-time message delivery and end to end transparency in file transfers.  
-Data sources establish a directory structure which is carried through any 
-number of intervening pumps until they arrive at a client.  The client can 
-provide explicit acknowledgement that propagates back through the network 
-to the source.  Whereas traditional file switching is a point-to-point affair 
-where knowledge is only between each segment, in Sarracenia, information 
+brokers) to achieve real-time message delivery and end to end transparency 
+in file transfers.  Data sources establish a directory structure which is carried 
+through any number of intervening pumps until they arrive at a client.  The 
+client can provide explicit acknowledgement that propagates back through the 
+network to the source.  Whereas traditional file switching is a point-to-point 
+affair where knowledge is only between each segment, in Sarracenia, information 
 flows from end to end in both directions.
 
 At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using 
@@ -64,4 +63,8 @@ Le protocol de séquencement de messages avancés (Advanced Message Queuing Prot
 AMQP) est une approche beaucoup plus efficace pour la livraison d'annonces de 
 nouveaux produits.
 
-Sarracenia est une initiative de Services Partagés Canada ( http://ssc-spc.gc.ca )
+Sarracenia est une initiative de Services Partagés Canada ( http://ssc-spc.gc.ca ) en réponse à des besoins interne du gouvernement du Canada.
+
+portail: http://metpx.sf.net
+
+
