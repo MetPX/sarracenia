@@ -183,7 +183,7 @@ It is a comma separated string.  Valid checksum flags are ::
           n : do checksum on filename
           d : do md5sum on file content
 
-Then using a checksum script, it must be registered with the switch, so that consumers
+Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.
 
 
@@ -219,7 +219,7 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
 
-`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 

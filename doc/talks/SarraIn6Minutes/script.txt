@@ -1,0 +1,201 @@
+
+=========================
+ Sarracenia in 8 Minutes
+=========================
+
+--------------------------
+Status as of November 2015
+--------------------------
+
+.. Note::
+   This text accompanies the A2B.dia diagram, one opens the diagram, 
+   Selects view/layers, and at each *Layers* cue, change the visible layers to provide
+   animation.
+
+Layers x1: Background
+
+
+This is a quick explanation of how Sarracenia helps transferring files 
+through complicated networks.  
+
+Layers x2: Background,People
+
+Alice and Bob are scientific colleagues that work in different companies, and 
+are far away from each other.  Alice wants to send her folder of Frog DNA to Bob.
+
+Layers xx: Background,People,F0
+
+There are networks between them.
+
+Layers xx: Background,People,F0,Network,DataStraight
+
+Alice could try to send it directly to Bob, but it turns out:
+
+Layers xx: Background,People,F0,Network,Firewalls
+
+ - there are firewalls in the way, stopping direct transfers,
+
+Layers xx: Background,People,F0,Network,Firewalls,CircuitousPath
+
+ - Even if there is no firewall in the way transfers work, it might 
+   a very slow path.
+
+Layers xx: Background,People,F0,Network,Firewalls,CircuitousPath,Camel
+
+ - Even if it takes the right path, the tools common to Alice and Bob might be slow
+
+What Alice needs is for someone to figure out the best way to get her folder
+from A to B, taking into account network layout and firewalls, and placing 
+data pumps to forward the data wherever they are needed.
+
+Layers xx: Background,People,F0,Network,pumps
+
+Layers xx: Background,People,F0,Network,pumps,tAl2Aamqpdesc,Alice2Aamqp
+
+Then Alice only needs to talk to the data pump nearest her, that would be 
+Sarracenia pump A.  Alice uses the sr_post command to 
+say: "I want my frog DNA folder to go to B and F!"
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,tAl2Axfer,Al2Atransferandlog
+
+Switch A runs an sr_sara service that acquires Alice's frog DNA folder, 
+copying it onto A, and then Announces to anyone listening that 
+Alice's folder is on A, and looking for a way to get to B and F.
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors
+
+The Green arrows are the AMQP messages.  There is one from Alice to A advertising 
+the folder.  The black line is the actual data transferred using SFTP from 
+Alice's server to the pump. Once that has completed, A Tells
+Alice it has finished with a (green) AMQP log message. 
+
+Pump C is listening (or subscribed) to Pump A, and since it knows 
+the way to B and F, it acquires the folder from A, and then announces to 
+anyone listening that Alice's folder is on C, and trying to get to B and F.  
+This process repeats.
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2Evectors,D2F
+
+and repeats.
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2Evectors,D2F,E2B
+
+The arrows are blue where HTTP is used instead of SFTP to transfer the data. Pumps 
+may use different tools, but Alice does not worry about it. The forwarding
+is set up once by administrators, and works for anyone's future data going 
+through.
+
+The Sarracenia pumps are operated independently as peers, with no trust 
+relationships between them, and no central management.  They just agree to 
+pump data on each others' behalf.  And of course, Bob does not have to 
+trust Alice either. 
+
+So the pumps forward the data to B, and Bob picks it up from there.
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2Evectors,D2F,E2B,BobnotifiedB,BGetsB
+
+But what if Pump E has a problem?
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2F,EBoom
+
+
+Alice really wanted to make sure Bob got her folder, so she sent it to
+B AND F. 
+
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2F,EBoom,BobFromF
+
+How does Bob decide which pump is the primary, and which is the backup?
+Look, B is not even in trouble here, it just is not getting any data from
+E.  With Sarracenia, Bob can listen to both B and F all the time, and get 
+Alice's folder from the pump that announces it first.
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF
+
+Because of Sarracenia's logging, Alice will know each pump that got the folder,
+and will see that Bob got the folder through Pump F.  
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople
+
+If others are interested in the folder, they subscribe to it at their nearest pump
+as well.  As the folder passes through the network, they will be notified and 
+they can get it too, and Alice will know they got it.  The data only has to pass 
+through the long-haul, expensive networks once to get to everyone. 
+
+Layers xx: Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople,keys
+
+Of course, if Alice only wants to share with Bob, the folder can be encrypted 
+with a key she only shares with Bob.
+
+
+Layers xx: Background,People,F0,Network,pumps,
+
+Like a Star Trek Transporter, well perhaps High School Biology is closer,
+Sarracenia dissects the frog into slices and sends them across the
+network in parallel.
+
+Layers xx: Background,People,F0,Network,pumps,F1
+
+The parallel streams and speed are programmed by admins of each pump to match pipe capacity.
+
+Layers xx: Background,People,F0,Network,pumps,F2
+
+The people with knowledge of the nearby networks make performance decisions, and
+get the best managed performance on a mix of transfers over a network with many users.
+
+Layers xx: Background,People,F0,Network,pumps,FBob
+
+Each slice is checksummed to allow people to know what they have already received,
+so when a file in Alice's folder is changed, only that slice propagates through
+the network.  
+
+
+
+Even if you do not need to send your folder anywhere, Sarracenia can be helpful:
+
+Layers xx: Background,People,F0,Network,Alvin
+
+Sarracenia notifications are more efficient and timely than polling a directory with 'ls'.  
+Alvin could subscribe to Alice's posts on the same cluster, to get notified faster
+and with reduced load, especially if there are many Alvins.
+
+Layers xx: Background,People,
+
+You should know that Sarracenia is just a use of AMQP messaging on top of a 
+web and secure-shell server. You do not have to use the sarracenia tools to send
+or receive data.  You can view all the data with a browser or use the downloader 
+of your choice.  You just won't get your files the same second they are made 
+available, be able to use multiple streams and sources easily, or track your 
+deliveries (if you are a source.)
+
+The protocol is (we think!) fully documented in two man pages.  We consider Sarracenia 
+a de-facto 'reference implementation' and would be pleased if someone else made 
+another one.  
+
+
+Layers xx: Background,People,Wrapup
+
+So does Sarracenia actually work today?  The weather datamart has been our testbed
+for two or three years.  One client in Germany, for example, has reduced their
+usage by over 90%, while obtaining the same Canadian numerical weather modelling files
+faster than before. 
+
+The weather forecasting workstations for the 2015 Pan-am and Parapanam Games in Toronto 
+used these tools to get a full weather centre feed at the venue much more easily 
+than was possible before.
+
+We also currently use the two server reliability strategy on the National Unified 
+RADAR Processing system at the Canadian Meteorological Centre.
+
+While all of these trials were successful, and the tools have proven utterly 
+reliable, they are currently a bit complicated to set up and work is ongoing to 
+make it easier to install and use.
+
+This work is being done by the Data Interchange team to solve real-world everyday 
+problems, and is simpler than the systems it is replacing.  It would be nice
+if someone else found it useful.  
+
+If you have questions, go to the web site, or, by all means, drop me an email.
+I will be pleased to answer them. 
+
+Thanks for your time

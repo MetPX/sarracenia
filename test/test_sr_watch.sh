@@ -8,7 +8,7 @@
 wget http://localhost:15672/cli/rabbitmqadmin
 chmod 755 rabbitmqadmin
 
-# configuring tester user as sara requieres
+# configuring tester user as sarra requieres
 
 ./rabbitmqadmin -u guest -p guest declare user \
      name=tester password=testerpw tags=
@@ -23,7 +23,7 @@ chmod 755 rabbitmqadmin
 ./rabbitmqadmin -u guest -p guest declare exchange \
      name=xs_guest type=topic auto_delete=false durable=true
 
-rm ~/.config/sara/credentials.conf 2>/dev/null
+rm ~/.config/sarra/credentials.conf 2>/dev/null
 
 cat << EOF > toto
 0 123456789abcde
@@ -44,10 +44,10 @@ e 123456789abcde
 
 EOF
 
-echo sr_watch -u file:${PWD}/
+echo sr_watch -u file:${PWD}/ -to alta
 echo touch ./toto
 
-../sara/sr_watch.py -u file:${PWD}/ &
+../sarra/sr_watch.py -u file:${PWD}/ -to alta &
 PID=$!
 sleep 2
 touch ./toto
@@ -56,10 +56,10 @@ kill -9 $PID
 
 echo ========================================
 
-echo sr_watch -u file:${PWD}/ -e IN_CLOSE_WRITE
+echo sr_watch -u file:${PWD}/ -e IN_CLOSE_WRITE -to alta
 echo touch ./toto
 
-../sara/sr_watch.py -u file:${PWD}/ -e IN_CLOSE_WRITE &
+../sarra/sr_watch.py -u file:${PWD}/ -e IN_CLOSE_WRITE -to alta &
 PID=$!
 sleep 2
 touch ./toto
@@ -68,11 +68,11 @@ kill -9 $PID
 
 echo ========================================
 
-echo sr_watch -u file:${PWD}/
+echo sr_watch -u file:${PWD}/ -to alta
 echo rm ./toto
 
 cp toto toto2
-../sara/sr_watch.py -u file:${PWD}/ &
+../sarra/sr_watch.py -u file:${PWD}/ -to alta &
 PID=$!
 sleep 2
 rm ./toto
@@ -82,18 +82,18 @@ kill -9 $PID
 echo
 
 
-mkdir -p ~/.config/sara 2> /dev/null
-cat << EOF > ~/.config/sara/credentials.conf
+mkdir -p ~/.config/sarra 2> /dev/null
+cat << EOF > ~/.config/sarra/credentials.conf
 amqp://tester:testerpw@localhost
 EOF
 
 echo ========================================
 echo credential file
-echo sr_watch -u file:${PWD}/ -e IN_DELETE -b amqp://localhost
+echo sr_watch -u file:${PWD}/ -e IN_DELETE -b amqp://localhost -to alta
 echo rm ./toto
 
 mv toto2 toto
-../sara/sr_watch.py -u file:${PWD}/ -e IN_DELETE -b amqp://localhost&
+../sarra/sr_watch.py -u file:${PWD}/ -e IN_DELETE -b amqp://localhost -to alta &
 PID=$!
 sleep 2
 rm ./toto

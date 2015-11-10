@@ -189,7 +189,7 @@ downside:  portability.
 we send the signatures in the announcements, rather than posting on the site.
 If we set the blocksize high, then for files < 1 block, there is no signature.
 
-should sr_sara post the signature to the site, for zsync compatibility? 
+should sr_sarra post the signature to the site, for zsync compatibility? 
 
 Do not want to be forking zsyncmake for every product...
 even if we do not use zsync itself, might want to be compatible... so use

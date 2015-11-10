@@ -16,38 +16,44 @@ packages=find_packages()
 print("packages = %s" % packages)
 
 setup(
-    name='sara',
-    version='0.0.1',
-    description='Subscribe and readvertise products.',
+    name='sarra',
+    version='0.1.1',
+    description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
-    url='https://github.com/petersilva/metpx.git/sarracenia',
-    license='LGPL',
-    author='Dads',
-    author_email='peter.silva@ssc-spc.gc.ca',
+    url='http://metpx.sourceforge.net/',
+    license='GPLv2',
+    author='Shared Services Canada, Supercomputing, Data Interchange',
+    author_email='Peter.Silva@canada.ca',
     packages=find_packages(),
     entry_points={
         "console_scripts":[
-              "sr_post=sara.sr_post:main",
-              "sr_log=sara.sr_log:main",
-              "sr_sara=sara.sr_sara:main",
-              "sr_sender=sara.sr_sender:main",
-              "sr_watch=sara.sr_watch:main",
-              "sr_subscribe=sara.sr_subscribe:main",
-              "sr_log2source=sara.sr_log2source:main",
-              "sr_log2clusters=sara.sr_log2clusters:main"
+              "sr_post=sarra.sr_post:main",
+              "sr_log=sarra.sr_log:main",
+              "sr_sarra=sarra.sr_sarra:main",
+              "sr_sender=sarra.sr_sender:main",
+              "sr_watch=sarra.sr_watch:main",
+              "sr_subscribe=sarra.sr_subscribe:main",
+              "sr_log2source=sarra.sr_log2source:main",
+              "sr_log2clusters=sarra.sr_log2clusters:main"
               ]
     },
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: System Administrators',
         'Natural Language :: English',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Topic :: Environment :: Console',
+        'Topic :: Communications :: File Sharing',
+        'Topic :: Internet :: File Transfer Protocol',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Logging',
     ],
 )

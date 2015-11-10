@@ -372,7 +372,7 @@ Hold is for temporary failure type reasons, such as bandwidth of disk space reas
 as these reasons are independent of the particular message, hold applies for
 the entire queue, not just the message.
 
-After Pre-Processing, a component like sr_sara assumes the post message is good,
+After Pre-Processing, a component like sr_sarra assumes the post message is good,
 and just processes it.  That means it will fetch the data from the posting source.
 Once the data is downloaded, it goes through Post-Validation.
 
@@ -395,7 +395,7 @@ through some analysis.  The tools may call this *file validation*:
 Log Validation
 ~~~~~~~~~~~~~~
 
-When a client like sara or subscribe completes an operation, it creates a log message 
+When a client like sarra or subscribe completes an operation, it creates a log message 
 corresponding to the result of the operation.  (This is much lower granularity than a 
 local log files.) It is important for one client not to be able to impersonate another
 in creating log messages.  
@@ -433,7 +433,7 @@ ends of the transfer are not sharing with arbitrary others.
    FIXME: This section is a half-baked idea! not sure how things will turn out.
    basic problem:  Alice connecting to S1 wants to share with Bob, who has an
    account on S3.  To get from S1 to S3, one needs to traverse S2.  the normal
-   way such routing is done is via a sr_sara subscription to xpublic on S1, and
+   way such routing is done is via a sr_sarra subscription to xpublic on S1, and
    S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
    unless the http permissions are set to deny on S1 and S2. Eve should not have
    access.  Implement via http/auth permitting inter-switch accounts on S2
@@ -470,7 +470,7 @@ HTTPS Private Access
 Need some kind of adm message that sources can send N switches later to alter the contents of .htpasswd
 CRUD? or just overwrite every time?  query?
 
-Sara likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.
+Sarra likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.
 
 How to change passwords
 
@@ -566,7 +566,7 @@ an individual broker running on a single node.
 
 ddsr - broker 
 
-pre-fetch validation would happen on the broker.  then re-post for the sara's on the movers.
+pre-fetch validation would happen on the broker.  then re-post for the sarra's on the movers.
 
 
  - each node broker and transfer engines act independently. Highest robustness to failure.

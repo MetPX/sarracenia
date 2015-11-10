@@ -113,7 +113,7 @@ FIXME: defined speedos
 
 
 -- when a node fails... sr_watchdog? 
-       if sr_sara emitted a log when it started a transfer, and another when it finished.
+       if sr_sarra emitted a log when it started a transfer, and another when it finished.
        then sr_watchdog could be subscribed to them and know what products were in flight
        on every node at any time.
 

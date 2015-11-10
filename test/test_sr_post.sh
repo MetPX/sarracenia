@@ -8,7 +8,7 @@
 wget http://localhost:15672/cli/rabbitmqadmin
 chmod 755 rabbitmqadmin
 
-# configuring tester user as sara requieres
+# configuring tester user as sarra requieres
 
 ./rabbitmqadmin -u guest -p guest declare user \
      name=tester password=testerpw tags=
@@ -24,7 +24,7 @@ chmod 755 rabbitmqadmin
      name=xs_guest type=topic auto_delete=false durable=true
 
 
-export PYTHONPATH=../sara
+export PYTHONPATH=../sarra
 
 cat << EOF > toto
 0 123456789abcde
@@ -45,40 +45,40 @@ e 123456789abcde
 
 EOF
 
-rm ~/.config/sara/credentials.conf 2>/dev/null
+rm ~/.config/sarra/credentials.conf 2>/dev/null
 
 echo sr_post --help
 
-../sara/sr_post.py --help
+../sarra/sr_post.py --help
 echo
 
 echo default broker + default exchange
-echo sr_post -u file:${PWD}/toto 
+echo sr_post -u file:${PWD}/toto -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto
+../sarra/sr_post.py -u file:${PWD}/toto -to alta
 echo
 
 echo
 
 echo default broker + exchange amq.topic
-echo sr_post -u file:${PWD}/toto -ex amq.topic
+echo sr_post -u file:${PWD}/toto -ex amq.topic -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -ex amq.topic
+../sarra/sr_post.py -u file:${PWD}/toto -ex amq.topic -to alta
 echo
 
 
 echo default guest user and vhost /
-echo sr_post -u file:${PWD}/toto -b amqp://localhost
+echo sr_post -u file:${PWD}/toto -b amqp://localhost -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://localhost
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://localhost -to alta
 
 echo
 
 
 echo new broker user
-echo sr_post -u file:${PWD}/toto -b amqp://tester:testerpw@localhost
+echo sr_post -u file:${PWD}/toto -b amqp://tester:testerpw@localhost -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://tester:testerpw@localhost
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://tester:testerpw@localhost -to alta
 
 echo
 
@@ -92,87 +92,87 @@ cat sr_post.conf
 echo
 echo sr_post -c ${PWD}/sr_post.conf -b amqp://tester:testerpw@localhost
 
-../sara/sr_post.py -c ${PWD}/sr_post.conf -b amqp://tester:testerpw@localhost
+../sarra/sr_post.py -c ${PWD}/sr_post.conf -b amqp://tester:testerpw@localhost -to alta
 
 rm sr_post.conf
 echo
 
 
-mkdir -p ~/.config/sara 2> /dev/null
-cat << EOF > ~/.config/sara/credentials.conf
+mkdir -p ~/.config/sarra 2> /dev/null
+cat << EOF > ~/.config/sarra/credentials.conf
 amqp://tester:testerpw@localhost
 EOF
 
-echo sr_post using ~/.config/sara/credentials.conf
-echo sr_post -u file:${PWD}/toto -b amqp://localhost
+echo sr_post using ~/.config/sarra/credentials.conf
+echo sr_post -u file:${PWD}/toto -b amqp://localhost -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://localhost
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://localhost -to alta
 
 echo
 
 
-echo sr_post -u file:${PWD}/toto -l ./toto.log -b amqp://localhost
+echo sr_post -u file:${PWD}/toto -l ./toto.log -b amqp://localhost -to alta
 echo cat ./toto.log
 
-../sara/sr_post.py -u file:${PWD}/toto -l ./toto.log -b amqp://localhost
+../sarra/sr_post.py -u file:${PWD}/toto -l ./toto.log -b amqp://localhost -to alta
 cat ./toto.log
 rm  ./toto.log
 echo
 
-echo sr_post -u file:${PWD}/toto -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://localhost/
-
-echo
-
-echo sr_post -dr ${PWD} -u file://toto -b amqp://localhost/
-
-../sara/sr_post.py -dr ${PWD} -u file:/toto -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://localhost/ -to alta
 
 echo
 
-echo sr_post -u file:${PWD}/toto -f my_flow -b amqp://localhost/
+echo sr_post -dr ${PWD} -u file://toto -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -f my_flow -b amqp://localhost/
-
+../sarra/sr_post.py -dr ${PWD} -u file:/toto -b amqp://localhost/ -to alta
 
 echo
 
-echo sr_post -u file:${PWD}/toto -tp v05.test -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -f my_flow -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -tp v05.test -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -f my_flow -b amqp://localhost/ -to alta
 
 
 echo
 
-echo sr_post -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -tp v05.test -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/
-
-echo
-
-echo sr_post -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/
-
-../sara/sr_post.py -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -tp v05.test -b amqp://localhost/ -to alta
 
 
 echo
 
-echo sr_post -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -rn "/this/new/dir/" -b amqp://localhost/
-
-echo
-
-echo sr_post -u file:${PWD}/toto -sum 0 -b amqp://localhost/
-
-../sara/sr_post.py -u file:${PWD}/toto -sum 0 -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -sub imposed.sub.topic -b amqp://localhost/ -to alta
 
 echo
 
-echo sr_post -u file:${PWD}/toto -sum n -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -sum n -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -rn /this/new/name -b amqp://localhost/ -to alta
+
+
+echo
+
+echo sr_post -u file:${PWD}/toto -rn /this/new/dir/ -b amqp://localhost/ -to alta
+
+../sarra/sr_post.py -u file:${PWD}/toto -rn "/this/new/dir/" -b amqp://localhost/ -to alta
+
+echo
+
+echo sr_post -u file:${PWD}/toto -sum 0 -b amqp://localhost/ -to alta
+
+../sarra/sr_post.py -u file:${PWD}/toto -sum 0 -b amqp://localhost/ -to alta
+
+echo
+
+echo sr_post -u file:${PWD}/toto -sum n -b amqp://localhost/ -to alta
+
+../sarra/sr_post.py -u file:${PWD}/toto -sum n -b amqp://localhost/ -to alta
 
 
 echo
@@ -189,9 +189,9 @@ new_check = checksum_AHAH()
 self.checksum = new_check.checksum
 EOF
 
-echo sr_post -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/
+echo sr_post -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/ -to alta
 
 
 rm ${PWD}/checksum_AHAH.py
@@ -201,188 +201,194 @@ echo
      name=user_exchange type=topic auto_delete=false durable=true
 
 echo user_exchange 
-echo sr_post -u file:${PWD}/toto -ex user_exchange
+echo sr_post -u file:${PWD}/toto -ex user_exchange -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -ex user_exchange
+../sarra/sr_post.py -u file:${PWD}/toto -ex user_exchange -to alta
 
 echo
 
 cp ./toto ./toto.256.12.0.1.d.Part
-echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part -p p
+echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part -p p -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -p p
-
-
-echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/name -p p
-
-../sara/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/name -p p
+../sarra/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -p p -to alta
 
 
-echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/dir/ -p p
+echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/name -p p -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/dir/ -p p
+../sarra/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/name -p p -to alta
+
+
+echo sr_post -u file:${PWD}/toto.256.12.0.1.d.Part  -rn /this/new/dir/ -p p -to alta
+
+../sarra/sr_post.py -u file:${PWD}/toto.256.12.0.1.d.Part -rn /this/new/dir/ -p p -to alta
 
 
 rm ./toto.256.12.0.1.d.Part
 
 echo
 
-echo sr_post -u file:${PWD}/toto -p i,128
+echo sr_post -u file:${PWD}/toto -p i,128 -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -p i,128
-
-echo
-
-echo sr_post -u file:${PWD}/toto -p i,64 -r
-
-../sara/sr_post.py -u file:${PWD}/toto -p i,64 -r
+../sarra/sr_post.py -u file:${PWD}/toto -p i,128 -to alta
 
 echo
 
-echo sr_post -u file:${PWD}/toto -p i,64 -rr
+echo sr_post -u file:${PWD}/toto -p i,64 -r -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -p i,64 -rr
-
-echo
-
-echo sr_post -u file:${PWD}/toto -tc cluster1,cluster2,cluster3
-
-../sara/sr_post.py -u file:${PWD}/toto -tc cluster1,cluster2,cluster3
+../sarra/sr_post.py -u file:${PWD}/toto -p i,64 -r -to alta
 
 echo
 
-echo sr_post -u file:${PWD}/toto -debug
+echo sr_post -u file:${PWD}/toto -p i,64 -rr -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -debug
+../sarra/sr_post.py -u file:${PWD}/toto -p i,64 -rr -to alta
+
+echo
+
+echo sr_post -u file:${PWD}/toto -to cluster1,cluster2,cluster3
+
+../sarra/sr_post.py -u file:${PWD}/toto -to cluster1,cluster2,cluster3
+
+echo
+
+echo sr_post -u file:${PWD}/toto -debug -to alta
+
+../sarra/sr_post.py -u file:${PWD}/toto -debug -to alta
 
 echo
 
 echo ======== ERROR PART =========================
 echo
 
-echo ERROR file not found
-echo sr_post -u file:${PWD}/none_existing_file
+echo ERROR no -to arguments
+echo sr_post -u file:${PWD}/toto 
 
-../sara/sr_post.py -u file:${PWD}/none_existing_file
+../sarra/sr_post.py -u file:${PWD}/toto
+
+
+echo ERROR file not found
+echo sr_post -u file:${PWD}/none_existing_file -to alta
+
+../sarra/sr_post.py -u file:${PWD}/none_existing_file -to alta
 
 echo
 
 echo ERROR file not found
-echo sr_post -dr /fake/directory -u file:/none_existing_file
+echo sr_post -dr /fake/directory -u file:/none_existing_file -to alta
 
-../sara/sr_post.py -dr /fake/directory -u file:/none_existing_file
+../sarra/sr_post.py -dr /fake/directory -u file:/none_existing_file -to alta
 
 echo
 
 
 echo ERROR config file not found
-echo sr_post -c ${PWD}/none_existing_file.conf
+echo sr_post -c ${PWD}/none_existing_file.conf -to alta
 
-../sara/sr_post.py -c ${PWD}/none_existing_file.conf
+../sarra/sr_post.py -c ${PWD}/none_existing_file.conf -to alta
 
 echo
 
 
 echo ERROR broker not found
-echo sr_post -u file:${PWD}/toto -b amqp://mylocalhost/
+echo sr_post -u file:${PWD}/toto -b amqp://mylocalhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://mylocalhost/
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://mylocalhost/ -to alta
 
 echo
 
 echo ERROR broker credential
-echo sr_post -u file:${PWD}/toto -b amqp://toto:titi@localhost/
+echo sr_post -u file:${PWD}/toto -b amqp://toto:titi@localhost/ -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://toto:titi@localhost/
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://toto:titi@localhost/ -to alta
 
 echo
 
 echo ERROR broker vhost
-echo sr_post -u file:${PWD}/toto -b amqp://localhost/wrong_vhost
+echo sr_post -u file:${PWD}/toto -b amqp://localhost/wrong_vhost -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -b amqp://localhost/wrong_vhost
+../sarra/sr_post.py -u file:${PWD}/toto -b amqp://localhost/wrong_vhost -to alta
 
 echo
 
 echo ERROR wrong sumflg
-echo sr_post -u file:${PWD}/toto -sum x
+echo sr_post -u file:${PWD}/toto -sum x -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -sum x
+../sarra/sr_post.py -u file:${PWD}/toto -sum x -to alta
 
 echo
 
 echo ERROR wrong exchange
 echo rabbitmqadmin delete exchange name=user_exchange
-echo sr_post -u file:${PWD}/toto -ex user_exchange
+echo sr_post -u file:${PWD}/toto -ex user_exchange -to alta
 
 ./rabbitmqadmin -u guest -p guest delete exchange name=user_exchange
-../sara/sr_post.py -u file:${PWD}/toto -ex user_exchange
+../sarra/sr_post.py -u file:${PWD}/toto -ex user_exchange -to alta
 
 echo
 
 echo ERROR wrong partfile 1
 echo cp ./toto ./toto.12.256.1.d.Part
-echo sr_post -u file:${PWD}/toto.12.256.1.d.Part -p p
+echo sr_post -u file:${PWD}/toto.12.256.1.d.Part -p p -to alta
 
 cp ./toto ./toto.12.256.1.d.Part
-../sara/sr_post.py -u file:${PWD}/toto.12.256.1.d.Part -p p
+../sarra/sr_post.py -u file:${PWD}/toto.12.256.1.d.Part -p p -to alta
 rm ./toto.12.256.1.d.Part
 
 echo
 
 echo ERROR wrong partfile 2
 echo cp ./toto ./toto.1024.255.1.d.Part
-echo sr_post -u file:${PWD}/toto.1024.255.1.d.Part -p p
+echo sr_post -u file:${PWD}/toto.1024.255.1.d.Part -p p -to alta
 
 cp ./toto ./toto.1024.255.1.d.Part
-../sara/sr_post.py -u file:${PWD}/toto.1024.255.1.d.Part -p p
+../sarra/sr_post.py -u file:${PWD}/toto.1024.255.1.d.Part -p p -to alta
 rm ./toto.1024.255.1.d.Part
 
 echo
 
 echo ERROR wrong partfile 3
 echo cp ./toto ./toto.1024.256.5.d.Part
-echo sr_post -u file:${PWD}/toto.1024.256.5.d.Part -p p
+echo sr_post -u file:${PWD}/toto.1024.256.5.d.Part -p p -to alta
 
 cp ./toto ./toto.1024.256.5.d.Part
-../sara/sr_post.py -u file:${PWD}/toto.1024.256.5.d.Part -p p
+../sarra/sr_post.py -u file:${PWD}/toto.1024.256.5.d.Part -p p -to alta
 rm ./toto.1024.256.5.d.Part
 
 echo
 
 echo ERROR wrong partfile 4
 echo cp ./toto ./toto.1024.256.1.x.Part
-echo sr_post -u file:${PWD}/toto.1024.256.1.x.Part -p p
+echo sr_post -u file:${PWD}/toto.1024.256.1.x.Part -p p -to alta
 
 cp ./toto ./toto.1024.256.1.x.Part
-../sara/sr_post.py -u file:${PWD}/toto.1024.256.1.x.Part -p p
+../sarra/sr_post.py -u file:${PWD}/toto.1024.256.1.x.Part -p p -to alta
 rm ./toto.1024.256.1.x.Part
 
 echo
 
 echo ERROR wrong partfile 5
 echo cp ./toto ./toto.1024.256.1.d.bad
-echo sr_post -u file:${PWD}/toto.1024.256.1.d.bad -p p
+echo sr_post -u file:${PWD}/toto.1024.256.1.d.bad -p p -to alta
 
 cp ./toto ./toto.1024.256.1.d.bad
-../sara/sr_post.py -u file:${PWD}/toto.1024.256.1.d.bad -p p
+../sarra/sr_post.py -u file:${PWD}/toto.1024.256.1.d.bad -p p -to alta
 rm ./toto.1024.256.1.d.bad
 
 echo
 
 echo ERROR wrong partflg
-echo sr_post -u file:${PWD}/toto -p x,128
+echo sr_post -u file:${PWD}/toto -p x,128 -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -p x,128
+../sarra/sr_post.py -u file:${PWD}/toto -p x,128 -to alta
 
 echo
 
 echo ERROR wrong part chunksize
-echo sr_post -u file:${PWD}/toto -p d,a
+echo sr_post -u file:${PWD}/toto -p d,a -to alta
 
-../sara/sr_post.py -u file:${PWD}/toto -p d,a
+../sarra/sr_post.py -u file:${PWD}/toto -p d,a -to alta
 
 echo
 
 rm ./toto
-rm ~/.config/sara/credentials.conf
+rm ~/.config/sarra/credentials.conf
