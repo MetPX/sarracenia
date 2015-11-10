@@ -48,7 +48,7 @@ post - indicates the type of message (defines format of following topics and bod
   -- Relative used to store relative destination directory
   -- flow is an argument after the relative path.
 
-sr_validate is subscribed to bunny-op  (sr_validate is perhaps just sr_sara with --prefetch )
+sr_validate is subscribed to bunny-op  (sr_validate is perhaps just sr_sarra with --prefetch )
 	- checks that the block-size is legal.
 	- modifies the destination directory to YYYYMMDD/ec_cmc/NRDPS/GIF/
 	- runs validscript on the data.
@@ -72,7 +72,7 @@ other options:
 		
 based on the v01.post above the log one..., 
 
-then sr_sara pulls the file in, and puts it on a local disk, in 
+then sr_sarra pulls the file in, and puts it on a local disk, in 
 	/apps/sr/db/YYYYMMDD/ec_cmc/GIF/NRDPS_HiRes_000.gif
 	and it knows the root of the web tree is /apps/sr/... ?
 
@@ -83,7 +83,7 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 
 ?
 
-sr_sara then emits a log entry:
+sr_sarra then emits a log entry:
 v01.log.ec_cmc.ssc_ddsr.NRDPS.GIF.NRDPS_HiRes_000.gif
 201506011358.345 457 1 0 0 d <md5sum> http://ddsr1.cmc.ec.gc.ca/db YYYYMMDD/ec_cmc/NRDPS/GIF/ exp13 200 ddsr1.cmc.ec.gc.ca ssc_ddsr 0.1 
 

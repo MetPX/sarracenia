@@ -6,10 +6,10 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log2clusters.py : python3 program uses log2clusters.conf to repost all log messages
-#                      to the proper cluster
+# sr_log2source.py : python3 program takes all log messages and repost them to the
+#                    log exchange of the source user
 #
 #
 # Code contributed by:
@@ -40,7 +40,7 @@ import signal
 #============================================================
 # usage example
 #
-# sr_log2clusters -b broker
+# sr_log2source -b broker -i 1
 
 #============================================================
 
@@ -49,22 +49,21 @@ try :
          from sr_instances      import *
          from sr_message        import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_instances import *
-         from sara.sr_message   import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
 
 
-class sr_log2clusters(sr_instances):
+class sr_log2source(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-        self.source_exchange = 'xlog'
-        self.source_broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        self.source_topic    = 'v02.log.#'
-        self.index           = 0
+        self.exchange = 'xlog'
+        self.topic    = 'v02.log.#'
+        self.broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.configure()
-        self.nbr_instances   = len(self.log_clusters)
+
 
     def check(self):
         # dont want to recreate these if they exists
@@ -72,8 +71,7 @@ class sr_log2clusters(sr_instances):
            self.msg = sr_message(self.logger)
 
     def close(self):
-        self.hc_src.close()
-        self.hc_pst.close()
+        self.hc.close()
 
     def configure(self):
 
@@ -92,8 +90,8 @@ class sr_log2clusters(sr_instances):
         # verify all settings
 
         self.check()
+        self.logger.info("nbr_instances %d"% self.nbr_instances)
 
-        self.cluster, self.broker, self.exchange = self.log_clusters[self.index]
 
     def connect(self):
 
@@ -103,62 +101,50 @@ class sr_log2clusters(sr_instances):
 
         # consumer host
 
-        self.hc_src = HostConnect( logger = self.logger )
-        self.hc_src.set_url( self.source_broker )
-        self.hc_src.connect()
+        self.hc = HostConnect( logger = self.logger )
+        self.hc.set_url( self.broker )
+        self.hc.connect()
 
         # consumer  add_prefetch(1) allows queue sharing between instances
 
-        self.consumer  = Consumer(self.hc_src)
-        self.consumer.add_prefetch(1)
+        self.consumer  = Consumer(self.hc)
         self.consumer.build()
 
         # consumer queue
 
-        name  = 'q_' + self.source_broker.username
+        name  = 'q_' + self.broker.username + '.' + self.program_name
         if self.queue_name != None :
-           name += '.' + self.queue_name
-        else :
-           name += '.' + self.program_name
-        name += '.' + self.source_broker.hostname + '.' + self.source_exchange
+           name = 'q_' + self.broker.username + '.' + self.queue_name
 
-        self.queue = Queue(self.hc_src,name)
-        self.queue.add_binding(self.source_exchange,self.source_topic)
+        self.queue = Queue(self.hc,name)
+        self.queue.add_binding(self.exchange,self.topic)
         self.queue.build()
 
-        # =============
-        # publisher
-        # =============
-
-        # publisher host
-
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.broker )
-        self.hc_pst.connect()
-
         # publisher
 
-        self.pub    = Publisher(self.hc_pst)
+        self.pub = Publisher(self.hc)
         self.pub.build()
 
+
     def help(self):
-        self.logger.info("Usage: %s -b <broker> [start|stop|restart|reload|status]  \n" % self.program_name )
+        self.logger.info("Usage: %s -b <broker> -i <instances> [start|stop|restart|reload|status]  \n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
+        self.logger.info("-i   <instances> default:1")
 
     def run(self):
 
-        self.logger.info("sr_log2clusters run")
-        self.logger.info("AMQP  input broker(%s) user(%s) vhost(%s)" % (self.source_broker.hostname,self.source_broker.username,self.source_broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.source_exchange,self.source_topic) )
-        self.logger.info("checking for %s" % self.cluster)
-        self.logger.info("AMQP output broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s)" % (self.exchange) )
+        self.logger.info("sr_log2source run")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
+        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
+
 
 
         self.connect()
 
         self.msg.logger       = self.logger
+        self.msg.amqp_log     = None
+        self.msg.amqp_pub     = None
 
         #
         # loop on all message
@@ -188,40 +174,41 @@ class sr_log2clusters(sr_instances):
                     self.logger.info("skipped : no from_cluster in message headers")
                     continue
 
+                 if not 'source' in self.msg.headers :
+                    self.logger.info("skipped : no source in message headers")
+                    continue
+
                  # skip if from_cluster is not self.broker.hostname
 
-                 if self.msg.headers['from_cluster'] == self.from_cluster :
-                    self.logger.info("on current cluster %s\n" % self.from_cluster )
+                 if self.msg.headers['from_cluster'] != self.from_cluster :
+                    self.logger.info("not for this cluster %s = %s\n" % (self.broker.hostname,self.from_cluster ))
                     continue
 
-                 # ok ship log to appropriate log_cluster
+                 # ok ship it back to the user exchange 
 
-                 if self.cluster != self.msg.headers['from_cluster']:
-                    self.logger.info("not processing cluster %s in this process\n" % self.from_cluster )
-                    continue
+                 user_exchange = 'xl_' + self.msg.headers['source']
 
-                 ok = self.pub.publish( self.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
-                 if ok : self.logger.info("published to %s %s" % (self.broker.geturl(),self.exchange))
+                 ok = self.pub.publish( user_exchange, self.msg.topic, self.msg.notice, self.msg.headers )
+                 if ok : self.logger.info("published to %s" % user_exchange)
+
 
           except :
                  (type, value, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
     def reload(self):
-        self.logger.info("sr_log2clusters reload")
+        self.logger.info("sr_log2source reload")
         self.close()
-        self.index = self.instance - 1
         self.configure()
         self.run()
 
     def start(self):
-        self.logger.info("sr_log2clusters start")
-        self.index = self.instance - 1
         self.configure()
+        self.logger.info("sr_log2source start")
         self.run()
 
     def stop(self):
-        self.logger.info("sr_log2clusters stop")
+        self.logger.info("sr_log2source stop")
         self.close()
         os._exit(0)
                  
@@ -240,15 +227,15 @@ def main():
        action = sys.argv[-1]
        if len(sys.argv) > 3: args = sys.argv[1:-1]
 
-    log2clusters = sr_log2clusters(config,args)
+    log2source = sr_log2source(config,args)
 
-    if   action == 'reload' : log2clusters.reload_parent()
-    elif action == 'restart': log2clusters.restart_parent()
-    elif action == 'start'  : log2clusters.start_parent()
-    elif action == 'stop'   : log2clusters.stop_parent()
-    elif action == 'status' : log2clusters.status_parent()
+    if   action == 'reload' : log2source.reload_parent()
+    elif action == 'restart': log2source.restart_parent()
+    elif action == 'start'  : log2source.start_parent()
+    elif action == 'stop'   : log2source.stop_parent()
+    elif action == 'status' : log2source.status_parent()
     else :
-           log2clusters.logger.error("action unknown %s" % action)
+           log2source.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

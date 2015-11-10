@@ -1,7 +1,7 @@
 #!/bin/ksh
 
-DD_SUBSCRIBE=../sara/sr_subscribe.py
-#DD_SUBSCRIBE=../sara/dd_subscribe
+DD_SUBSCRIBE=../sarra/sr_subscribe.py
+#DD_SUBSCRIBE=../sarra/dd_subscribe
 
 echo killall ${DD_SUBSCRIBE##.*/}
 
@@ -95,15 +95,15 @@ function test2 {
       sleep 5
 
       #======== 1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_4
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
          exit 1
       fi
       rm   ./test/*
@@ -111,15 +111,15 @@ function test2 {
       #parts I
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_5
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
          exit 1
       fi
       rm   ./test/*
@@ -129,16 +129,16 @@ function test2 {
       #parts P
 
       #======== 2
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
-      ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
+      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_6
       ls -al toto ./test/*
       N=`diff toto ./test/toto|wc -l`
       if ((N==0)) ; then
-         echo OK ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
+         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
       else
-         echo ERROR ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
+         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
          exit 1
       fi
       rm   ./test/*
@@ -157,7 +157,7 @@ function test4 {
           $DD_SUBSCRIBE $* > ./sr_subscribe_test4.log 2>&1 &
           sleep 10
 
-         ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,1 -r -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,1 -r -to alta > /dev/null 2>&1
 
                sleep 30
                touch ./test/test_no_8
@@ -192,7 +192,7 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto
          echo abc >> ./test/toto
 
-         ../sara/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,11 -r -to alta > /dev/null 2>&1
+         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,11 -r -to alta > /dev/null 2>&1
 
                sleep 30
                touch ./test/test_no_9

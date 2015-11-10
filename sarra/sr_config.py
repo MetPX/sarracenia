@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_config.py : python3 utility tool to configure sarracenia programs
 #
@@ -39,7 +39,7 @@ import os,re,socket,sys
 import urllib,urllib.parse
 
 try :    from sr_util      import *
-except : from sara.sr_util import *
+except : from sarra.sr_util import *
 
 class sr_config:
 
@@ -196,7 +196,7 @@ class sr_config:
         self.logger.debug("sr_config general")
 
         homedir = os.path.expanduser("~")
-        confdir = homedir + '/.config/sara/'
+        confdir = homedir + '/.config/sarra/'
 
         # read in provided credentials
         credent = confdir + 'credentials.conf'
@@ -245,9 +245,9 @@ class sr_config:
                  self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
-        # sara.conf ... defaults for the server
-        sara = homedir + '/.config/sara/sara.conf'
-        if os.path.isfile(sara) : self.config(sara)
+        # sarra.conf ... defaults for the server
+        sarra = homedir + '/.config/sarra/sarra.conf'
+        if os.path.isfile(sarra) : self.config(sarra)
 
 
     def isTrue(self,s):

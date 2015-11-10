@@ -367,7 +367,7 @@ dropbox emulation.
 - sr_subscribe reproduces remote writes
 - sr_watch posts local writes (while ignoring sr_subscribe ones)
 - something (to do the writes to the switch from local.) probably just fire off a sr_sender.
-  or will switch have sr_sara lying around, so no need? what about firewalls?
+  or will switch have sr_sarra lying around, so no need? what about firewalls?
 - default switch (sftp.science.gc.ca ?)
 - encfs provides privacy layer (dropbox is default private, dd is default public)
 
@@ -435,7 +435,7 @@ This is all done.
 
 focus: deltas.txt, logmessages.txt, sr_post_sample.txt
 
-   sr_post, sr_sara, and sr_subscribe 
+   sr_post, sr_sarra, and sr_subscribe 
 
    validate that AMQP over SSL works, because it will all need to be there.
 
@@ -449,7 +449,7 @@ focus: deltas.txt, logmessages.txt, sr_post_sample.txt
    - sr_post should not do validation (so easier to test psychotic settings
       like 1 byte blocks.)
 
-   post to a switch, sara build a site, sr_subscribe pulls from it.
+   post to a switch, sarra build a site, sr_subscribe pulls from it.
 	             logs build                      logs pull
 
    - use a single exchange (no source exchanges etc...)
@@ -520,7 +520,7 @@ Iteration 3:  Security/Authentication, Transition Strategy:  August
    move all the of amqp traffic to SSL.
    validation of same 
 
-   create .htaccess files using sara and subscribe
+   create .htaccess files using sarra and subscribe
 	- re-create them each day
 
 

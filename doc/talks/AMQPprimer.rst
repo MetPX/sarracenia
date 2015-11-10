@@ -42,7 +42,7 @@ An *exchange* is a matchmaker between *publisher* and *consumer* queues.
    - message is routed to interested *consumer queues*, or dropped if there aren't any.
    
 - Multiple processes can share a *queue*, they just take turns removing messages from it.
-   - This is used heavily for sr_sara and sr_subcribe multiple instances.
+   - This is used heavily for sr_sarra and sr_subcribe multiple instances.
 
 - *Queues* can be *durable*, so even if your subscription process dies, 
   if you come back in a reasonable time and you use the same queue, 

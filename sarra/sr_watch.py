@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_watch.py : python3 program allowing users to watch a directory or a file and
 #               emit a sarracenia amqp message when the file is created,modified or deleted
@@ -41,7 +41,7 @@ import asyncore
 import pyinotify 
 
 try :    from sr_post      import *
-except : from sara.sr_post import *
+except : from sarra.sr_post import *
 
 # ===================================
 # MAIN

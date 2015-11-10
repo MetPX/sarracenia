@@ -6,9 +6,9 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_sara.py : python3 program allowing users to listen and download product from
+# sr_sarra.py : python3 program allowing users to listen and download product from
 #              another sarracenia server or from user posting (sr_post/sr_watch)
 #
 #
@@ -46,15 +46,15 @@ try :
          from sr_message        import *
          from sr_sftp           import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_file      import *
-         from sara.sr_ftp       import *
-         from sara.sr_http      import *
-         from sara.sr_instances import *
-         from sara.sr_message   import *
-         from sara.sr_sftp      import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_file      import *
+         from sarra.sr_ftp       import *
+         from sarra.sr_http      import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
+         from sarra.sr_sftp      import *
 
-class sr_sara(sr_instances):
+class sr_sarra(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
@@ -216,7 +216,7 @@ class sr_sara(sr_instances):
         self.logger.info("DEBUG:")
         self.logger.info("-debug")
 
-    # this instances of sr_sara runs,
+    # this instances of sr_sarra runs,
     # for cluster               : self.from_cluster
     # alias for the cluster are : self.from_aliases
     # it is a gateway for       : self.gateway_for 
@@ -315,7 +315,7 @@ class sr_sara(sr_instances):
 
     def run(self):
 
-        self.logger.info("sr_sara run")
+        self.logger.info("sr_sarra run")
 
         self.connect()
 
@@ -364,11 +364,11 @@ class sr_sara(sr_instances):
 
                  if not self.validate_message() : continue
 
-                 # set local file according to sara : dr + imsg.path (or renamed path)
+                 # set local file according to sarra : dr + imsg.path (or renamed path)
 
                  self.set_local()
 
-                 # set local file according to the message and sara's setting
+                 # set local file according to the message and sarra's setting
 
                  self.msg.set_local(self.inplace,self.local_file,self.local_url)
 
@@ -482,18 +482,18 @@ class sr_sara(sr_instances):
         return True
 
     def reload(self):
-        self.logger.info("sr_sara reload")
+        self.logger.info("sr_sarra reload")
         self.close()
         self.configure()
         self.run()
 
     def start(self):
         self.configure()
-        self.logger.info("sr_sara start")
+        self.logger.info("sr_sarra start")
         self.run()
 
     def stop(self):
-        self.logger.info("sr_sara stop")
+        self.logger.info("sr_sarra stop")
         self.close()
         os._exit(0)
 
@@ -513,15 +513,15 @@ def main():
        config = sys.argv[-2]
        if len(sys.argv) > 3: args = sys.argv[1:-2]
 
-    sara = sr_sara(config,args)
+    sarra = sr_sarra(config,args)
 
-    if   action == 'reload' : sara.reload_parent()
-    elif action == 'restart': sara.restart_parent()
-    elif action == 'start'  : sara.start_parent()
-    elif action == 'stop'   : sara.stop_parent()
-    elif action == 'status' : sara.status_parent()
+    if   action == 'reload' : sarra.reload_parent()
+    elif action == 'restart': sarra.restart_parent()
+    elif action == 'start'  : sarra.start_parent()
+    elif action == 'stop'   : sarra.stop_parent()
+    elif action == 'status' : sarra.status_parent()
     else :
-           sara.logger.error("action unknown %s" % action)
+           sarra.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

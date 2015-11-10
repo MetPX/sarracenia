@@ -275,7 +275,7 @@ so just do a wget -r on the tree to update.
 	- usually, caching protocol says it has not changed.
 
 once in a while...  retrieve the latest versions of client components:
-sr_subscribe (dd_subscribe), sr_sara, sr_sender ?
+sr_subscribe (dd_subscribe), sr_sarra, sr_sender ?
 
 
 sensitive client updates 

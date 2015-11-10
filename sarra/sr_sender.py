@@ -10,10 +10,10 @@ try :
          from sr_transfert      import *
          from sr_util           import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_config    import *
-         from sara.sr_transfert import *
-         from sara.sr_util      import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_config    import *
+         from sarra.sr_transfert import *
+         from sarra.sr_util      import *
 
 class sr_sender(sr_config):
 

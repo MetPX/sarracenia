@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_message.py : python3 utility tools for sarracenia amqp message processing
 #
@@ -39,7 +39,7 @@ import calendar,os,socket,sys,time,urllib,urllib.parse
 try :
          from sr_util         import *
 except :
-         from sara.sr_util    import *
+         from sarra.sr_util    import *
 
 class sr_message():
 

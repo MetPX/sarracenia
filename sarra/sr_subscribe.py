@@ -6,7 +6,7 @@
 #
 # Questions or bugs report: dps-client@ec.gc.ca
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SaraDocumentation
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
 #                   as soon as they are made available (through amqp notifications)
@@ -49,9 +49,9 @@ try :
          from sr_file           import *
          from sr_message        import *
 except : 
-         from sara.sr_amqp      import *
-         from sara.sr_file      import *
-         from sara.sr_message   import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_file      import *
+         from sarra.sr_message   import *
 
 
 #============================================================

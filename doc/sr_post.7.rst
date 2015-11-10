@@ -476,7 +476,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
 

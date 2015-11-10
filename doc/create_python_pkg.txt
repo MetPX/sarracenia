@@ -8,5 +8,5 @@ python3 setup.py bdist_wheel
 
 # to cleanup all things after
 
-rm -r -f  ./build ./dist ./sara.egg-info
+rm -r -f  ./build ./dist ./sarra.egg-info
 

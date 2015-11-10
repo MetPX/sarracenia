@@ -59,7 +59,7 @@ destination url == --broker amqp://<source>@<broker>/<relativepath?>
 
 
 
-sr_sara 
+sr_sarra 
 -------
 
 ::

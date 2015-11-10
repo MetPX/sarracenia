@@ -118,7 +118,7 @@ Distribution/Scope:
 Authorization:
 --------------
 
-	when sara picks up permit messages, it needs to route them to 
+	when sarra picks up permit messages, it needs to route them to 
 	a separate exchange, that only specific users will be able to see,
 	rather than a public one.
 
@@ -129,7 +129,7 @@ Authorization:
 	create an htaccess file with the users in it, but because of the date rollover,
 	every day the directories are re-created, so it is not enough to
 	create the htaccess once.  You need to remember the directory hierarchy
-	and subscribe or sara's mkdir needs to recreate the .htaccess before
+	and subscribe or sarra's mkdir needs to recreate the .htaccess before
 	writing any files there.
 
 	if the file is empty, then remove the .htaccess file.

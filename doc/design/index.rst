@@ -25,6 +25,6 @@ The rest are just notes which are likely out of date:
  - `packaging.html <packaging.html>`_ 
  - `private.html <private.html>`_
  - `scope.html <scope.html>`_  the background information that evolved into to_cluster
- - `validation.html <validation.html>`_  early implementation in sr_sara... more to come.
+ - `validation.html <validation.html>`_  early implementation in sr_sarra... more to come.
  - `webification.html <webification.html>`_ pipe dream downstream...
 

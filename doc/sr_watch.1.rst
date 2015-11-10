@@ -288,13 +288,13 @@ SEE ALSO
 
 `sr_log2source(1) <sr_log2source.7.html>`_ - copy log messages from the pump log bus to upstream destination.
 
-`sr_sara(1) <sr_sara.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
 `sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
-`sr_sara(1) <sr_sara.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 
