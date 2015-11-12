@@ -1,26 +1,34 @@
 
-On Alice's Server:
+This is not exactly the AAA example in the talk, but it is quite similar.
+It uses http throughout, which is simpler because there is less authentication.
 
-echo sr_post -u sftp://pumpAadmin@AliceServer//home/alice/frogdna -b amqps://alice@pumpA/ -to A
-
-# Alice has given access the administrator of PumpA on her server to be able to read her files.
-# 
+#In this example, rather than Alice & Bob, inspiration is taken from the World Meteorological
+#Organizations' (WMO) Information System (WIS) In the WIS, there are about a dozen Global
+#Information Service Centres which all have to exchange the last 24 hours of weather data from
+#around the world.  So any one country injects data into the nearest GISC site, and the
+#information needs to propagate to all the others from there.
 #
-# FIXME: how does Alice know what public key to put in her account?
-#        how does she know what key pumpA will use?
+#Canada, as a Data Collection and Processing Centre, would indicate it's files
+#are ready for ingest by it's designated GISC, Washington, like so:
+#
+#On Montreal's Server:
 
-# PumpA:
+echo sr_watch -u http://pumpAadmin@AliceServer//home/CWAO -b amqps://Montreal@pumpWashington/ -to GISC_cache -dr /var/www/???? FIXME
 
-cat >pumpAingest_sara.conf <<EOT
+# Montreal has a web server running that permits anyone to download the data, including the
+# administrator of pumpWashington.
+#
+
+cat >pumpCanadaIngest_sara.conf <<EOT
 
 # read posts from Alice:
-source_broker amqps://pumpAadmin@pumpA/
-source_exchange xs_alice
+source_broker amqps://WashingtonAdmin@pumpWashington/
+source_exchange xs_Montreal
 
 # posting information.
-url sftp://anyone@pumpA
-document_root /home/anyone
-broker http://pumpAadmin@pumpA/
+url http://pumpwashington/
+document_root /var/www
+broker http://WashingtonAdmin@pumpWashington/
 exchange xpublic
 
 EOT
@@ -42,6 +50,10 @@ EOT
 # for each R to which L is subscribed...
 
 NODES="Beijing Washington Exeter Jeddah Toulouse Offenbach Moscow Casablanca Tehran Tokyo Melbourne Brasilia Seoul NewDelhi Pretoria"
+
+#
+# FIXME, script for rabbitmqadmin to create each pump admin user?
+#
 
 for L in $NODES; do 
    cat >pump${L}_config_sarra.conf <<EOT
@@ -74,4 +86,13 @@ EOT
 
 done
 done
+
+
+------------------------------------------------------------
+Earlier phase would be for each GISC to upload to a meta-gisc using the existing
+FTP mechanisms.  but download from all others would be a single download
+via sr_subscribe 
+
+
+
 
