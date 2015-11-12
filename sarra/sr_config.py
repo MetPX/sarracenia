@@ -154,7 +154,7 @@ class sr_config:
 
         # cluster stuff
         self.cluster              = None
-        self.from_aliases         = []
+        self.cluster_aliases      = []
         self.to_clusters          = None
         self.gateway_for          = []
 
@@ -316,8 +316,8 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['from_aliases','-fa','--from_aliases']:
-                     self.from_aliases = words[1].split(',')
+                elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
+                     self.cluster_aliases = words[1].split(',')
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:

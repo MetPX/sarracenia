@@ -74,7 +74,7 @@ class sr_sarra(sr_instances):
         # make a single list for clusters that we accept message for
 
         self.accept_msg_for_clusters      = [ self.cluster ]
-        self.accept_msg_for_clusters.extend ( self.from_aliases )
+        self.accept_msg_for_clusters.extend ( self.cluster_aliases )
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
 
         # umask change for directory creation and chmod
@@ -218,7 +218,7 @@ class sr_sarra(sr_instances):
 
     # this instances of sr_sarra runs,
     # for cluster               : self.cluster
-    # alias for the cluster are : self.from_aliases
+    # alias for the cluster are : self.cluster_aliases
     # it is a gateway for       : self.gateway_for 
     # all these cluster names were put in list self.accept_msg_for_clusters
     # The message's target clusters  self.msg.to_clusters should be in
