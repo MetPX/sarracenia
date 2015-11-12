@@ -222,11 +222,11 @@ class sr_message():
            self.amqp_pub.publish(self.exchange_pub,self.topic,self.notice,self.headers)
         self.log_info()
 
-    def set_from_cluster(self,from_cluster=None):
-        if from_cluster != None :
-           self.headers['from_cluster'] = from_cluster
-        elif 'from_cluster' in self.headers :
-           del self.headers['from_cluster']
+    def set_cluster(self,cluster=None):
+        if cluster != None :
+           self.headers['cluster'] = cluster
+        elif 'cluster' in self.headers :
+           del self.headers['cluster']
 
     def set_exchange(self,name):
         self.exchange = name
@@ -248,8 +248,8 @@ class sr_message():
            self.headers['sum']     = self.sumstr
            self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
 
-        if 'from_cluster' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('from_cluster',self.headers['from_cluster'])
+        if 'cluster' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('cluster',self.headers['cluster'])
 
         if 'source' in self.headers :
            self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])

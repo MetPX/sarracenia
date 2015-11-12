@@ -73,7 +73,7 @@ class sr_sarra(sr_instances):
 
         # make a single list for clusters that we accept message for
 
-        self.accept_msg_for_clusters      = [ self.from_cluster ]
+        self.accept_msg_for_clusters      = [ self.cluster ]
         self.accept_msg_for_clusters.extend ( self.from_aliases )
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
 
@@ -217,7 +217,7 @@ class sr_sarra(sr_instances):
         self.logger.info("-debug")
 
     # this instances of sr_sarra runs,
-    # for cluster               : self.from_cluster
+    # for cluster               : self.cluster
     # alias for the cluster are : self.from_aliases
     # it is a gateway for       : self.gateway_for 
     # all these cluster names were put in list self.accept_msg_for_clusters
@@ -356,8 +356,8 @@ class sr_sarra(sr_instances):
 
                  # setting originating cluster if not defined
 
-                 if not 'from_cluster' in self.msg.headers :
-                    ok = self.set_from_cluster()
+                 if not 'cluster' in self.msg.headers :
+                    ok = self.set_cluster()
                     if not ok : continue
 
                  # message validation
@@ -460,14 +460,14 @@ class sr_sarra(sr_instances):
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-    def set_from_cluster(self):
-        if self.from_cluster == None :
+    def set_cluster(self):
+        if self.cluster == None :
            self.msg.code    = 403
            self.msg.message = "Forbidden : message without cluster"
            self.msg.log_error()
            return False
 
-        self.msg.set_from_cluster(self.from_cluster)
+        self.msg.set_cluster(self.cluster)
         return True
 
     def set_source(self):

@@ -93,7 +93,7 @@ class sr_log2clusters(sr_instances):
 
         self.check()
 
-        self.cluster, self.broker, self.exchange = self.log_clusters[self.index]
+        self.cluster_index, self.broker, self.exchange = self.log_clusters[self.index]
 
     def connect(self):
 
@@ -151,7 +151,7 @@ class sr_log2clusters(sr_instances):
         self.logger.info("sr_log2clusters run")
         self.logger.info("AMQP  input broker(%s) user(%s) vhost(%s)" % (self.source_broker.hostname,self.source_broker.username,self.source_broker.path) )
         self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.source_exchange,self.source_topic) )
-        self.logger.info("checking for %s" % self.cluster)
+        self.logger.info("checking for %s" % self.cluster_index)
         self.logger.info("AMQP output broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
         self.logger.info("AMQP  input :    exchange(%s)" % (self.exchange) )
 
@@ -182,22 +182,22 @@ class sr_log2clusters(sr_instances):
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s\n" % self.msg.hdrstr)
 
-                 # check for  from_cluster and source in headers
+                 # check for  cluster and source in headers
 
-                 if not 'from_cluster' in self.msg.headers :
-                    self.logger.info("skipped : no from_cluster in message headers")
+                 if not 'cluster' in self.msg.headers :
+                    self.logger.info("skipped : no cluster in message headers")
                     continue
 
-                 # skip if from_cluster is not self.broker.hostname
+                 # skip if cluster is not self.broker.hostname
 
-                 if self.msg.headers['from_cluster'] == self.from_cluster :
-                    self.logger.info("on current cluster %s\n" % self.from_cluster )
+                 if self.msg.headers['cluster'] == self.cluster :
+                    self.logger.info("on current cluster %s\n" % self.cluster )
                     continue
 
                  # ok ship log to appropriate log_cluster
 
-                 if self.cluster != self.msg.headers['from_cluster']:
-                    self.logger.info("not processing cluster %s in this process\n" % self.from_cluster )
+                 if self.cluster_index != self.msg.headers['cluster']:
+                    self.logger.info("not processing cluster %s in this process\n" % self.cluster )
                     continue
 
                  ok = self.pub.publish( self.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
