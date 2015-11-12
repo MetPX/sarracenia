@@ -1,0 +1,77 @@
+
+On Alice's Server:
+
+echo sr_post -u sftp://pumpAadmin@AliceServer//home/alice/frogdna -b amqps://alice@pumpA/ -to A
+
+# Alice has given access the administrator of PumpA on her server to be able to read her files.
+# 
+#
+# FIXME: how does Alice know what public key to put in her account?
+#        how does she know what key pumpA will use?
+
+# PumpA:
+
+cat >pumpAingest_sara.conf <<EOT
+
+# read posts from Alice:
+source_broker amqps://pumpAadmin@pumpA/
+source_exchange xs_alice
+
+# posting information.
+url sftp://anyone@pumpA
+document_root /home/anyone
+broker http://pumpAadmin@pumpA/
+exchange xpublic
+
+EOT
+
+# On All pumps, there are sarra http channels between them.  
+#
+# the following loop builds configurations for pump nodes named after major cities.
+# In this case, I suggest using anonymous as the amqp user, and http for downloads
+# as the data is assumed public, and authentication is sort of inappropriate if everyone
+# can have the data.
+
+# While the configurations for a full mesh are built, only a fraction of them need to work
+# to achieve full mesh.
+
+# For any channel, call one pump 'left' (L) and the other 'right' (R)
+# where Pump L is ingesting data from Pump R:
+
+# The configuration on Pump L's Sara will be:
+# for each R to which L is subscribed...
+
+NODES="Beijing Washington Exeter Jeddah Toulouse Offenbach Moscow Casablanca Tehran Tokyo Melbourne Brasilia Seoul NewDelhi Pretoria"
+
+for L in $NODES; do 
+   cat >pump${L}_config_sarra.conf <<EOT
+# look for all data for 'A'
+from_cluster ${L}
+from_aliases A
+EOT
+  cat >pump${L}_config_credentials.conf <<EOT
+amqp://pump${L}admin:myrealpassword@pump${L}
+EOT
+
+  
+  for R in $NODES; do
+     if [ "$L" = "$R" ]; then
+         continue;
+     fi
+     cat >pump${R}2${L}_sara.conf <<EOT
+
+# listen to Pump${R}'s feed.
+source_broker amqp://anonymous:anonymous@pump${R}/
+source_exchange xpublic
+
+# posting to local after download:
+broker amqps://pump${L}admin@pump${L}/
+exchange xpublic
+url http://pump${L}/
+document_root /var/www
+
+EOT
+
+done
+done
+
