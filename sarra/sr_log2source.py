@@ -168,9 +168,9 @@ class sr_log2source(sr_instances):
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s\n" % self.msg.hdrstr)
 
-                 # check for  cluster and source in headers
+                 # check for  from_cluster and source in headers
 
-                 if not 'cluster' in self.msg.headers :
+                 if not 'from_cluster' in self.msg.headers :
                     self.logger.info("skipped : no cluster in message headers")
                     continue
 
@@ -180,7 +180,7 @@ class sr_log2source(sr_instances):
 
                  # skip if cluster is not self.broker.hostname
 
-                 if self.msg.headers['cluster'] != self.cluster :
+                 if self.msg.headers['from_cluster'] != self.cluster :
                     self.logger.info("not for this cluster %s = %s\n" % (self.broker.hostname,self.cluster ))
                     continue
 

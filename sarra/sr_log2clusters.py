@@ -182,22 +182,22 @@ class sr_log2clusters(sr_instances):
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s\n" % self.msg.hdrstr)
 
-                 # check for  cluster and source in headers
+                 # check for  from_cluster and source in headers
 
-                 if not 'cluster' in self.msg.headers :
+                 if not 'from_cluster' in self.msg.headers :
                     self.logger.info("skipped : no cluster in message headers")
                     continue
 
                  # skip if cluster is not self.broker.hostname
 
-                 if self.msg.headers['cluster'] == self.cluster :
+                 if self.msg.headers['from_cluster'] == self.cluster :
                     self.logger.info("on current cluster %s\n" % self.cluster )
                     continue
 
                  # ok ship log to appropriate log_cluster
 
-                 if self.cluster_index != self.msg.headers['cluster']:
-                    self.logger.info("not processing cluster %s in this process\n" % self.cluster )
+                 if self.cluster_index != self.msg.headers['from_cluster']:
+                    self.logger.info("not processing cluster %s in this process\n" % self.cluster_index )
                     continue
 
                  ok = self.pub.publish( self.exchange, self.msg.topic, self.msg.notice, self.msg.headers )

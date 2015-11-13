@@ -356,7 +356,7 @@ class sr_sarra(sr_instances):
 
                  # setting originating cluster if not defined
 
-                 if not 'cluster' in self.msg.headers :
+                 if not 'from_cluster' in self.msg.headers :
                     ok = self.set_cluster()
                     if not ok : continue
 
@@ -467,7 +467,7 @@ class sr_sarra(sr_instances):
            self.msg.log_error()
            return False
 
-        self.msg.set_cluster(self.cluster)
+        self.msg.set_from_cluster(self.cluster)
         return True
 
     def set_source(self):
