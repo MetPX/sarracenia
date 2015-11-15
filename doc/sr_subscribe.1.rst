@@ -127,12 +127,13 @@ The queue is where the notifications are held on the server for each subscriber.
 
 ::
 
-**queue         <name>         (default: None)** 
+**queue         <name>         (default: q_<amqp-user>)** 
 **durable       <boolean>      (default: False)** 
 **expire        <minutes>      (default: None)** 
 **message-ttl   <minutes>      (default: None)** 
 
-By default, dd_subscribe creates a queue name that should be unique and starts with  **cmc** 
+By default, dd_subscribe creates a queue name that should be unique and starts with  **q_** 
+and is usually followe
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
 The  **queue**  option sets a queue name. It should always start with  **cmc** .
 
