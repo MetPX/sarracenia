@@ -1,5 +1,5 @@
 
-Status: Draft2
+Status: Pre-Draft3
 
 ===================
 Implementation Plan
@@ -22,16 +22,24 @@ Revision Record
 ---------------
 
  - Draft1 approved in June 2015
+ - Draft2 circulated in prior to November 4th internal meeting.
 
+
+.. contents::
 
 Design Principles
 -----------------
 
- - The switching software knows as little as possible about the data being transferred.
-   no data parsing should be necessary for the software.  The only data parsed is
-   what is defined in the sr_post(7) and sr_log(7) manual pages, and the various 
-   configuration files.
+- The switching software knows as little as possible about the data being transferred.
+  no data parsing should be necessary for the software.  The only data parsed is
+  what is defined in the sr_post(7) and sr_log(7) manual pages, and the various 
+  configuration files.
 
+- Minimize the need for nudging by administrators of data in flight. It is 
+  best if the source can define where they want the data to go.
+
+- if the client did not get a log message that something happenned, it might as well
+  not have happenned.  Client specific logging is a critical element of the application.
 
 
 Critical Features for Initial Release
@@ -43,8 +51,10 @@ to minimal number of systems to have test beds.  It is important for the initial
 release to have sufficient maturity to be usable.  Usable means it would pass 
 various hurdles, such as acceptable security, coverage of use cases, etc...
 
-
   1. ( *Done* ) **post messages updated**
+
+     Assigned to: Michel Grenier
+
      The message format to support new features must be implemented.
      (progressed through v01, and v02 designs.) 
  
@@ -52,6 +62,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      sr_post.7 man page. 
  
   2. ( *Done* ) **multi-part segmentation/re-assembly** 
+
+     Assigned to: Michel Grenier
+
      There must be no limitation on maximum file size that can traverse the network.
      Eliminating file size restrictions is accomplished by sending parts of the
      file through the network at a time, so that no intervenining switch is required
@@ -65,6 +78,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      of multi-part files across a single hop.
  
   3. ( *Waiting* ) **multi-part completion triggering.**
+
+     Assigned to: Michel Grenier
+
      When a file is segmented (because it is large), the pieces may arrive in arbitrary order.
      Data users need to know when all of the pieces have arrived, so that they can start their
      processing.  Not clear how to do that yet.  Addressing other features while thinking
@@ -75,6 +91,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
  
  
   4. ( *Done* ) **log message creation.**
+
+     Assigned to: Michel Grenier
+
      It isn't enough to deliver data to clients.  Sources must know which clients received
      which data.  Delivery logs are information that data sources are very interested in
      and needs to be granularly deliverable (ie. if Alice injects a product, she can know
@@ -87,6 +106,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
  
  
   5. ( *InProgress* ) **user-centric multi-switch log message routing.**
+
+     Assigned to: Michel Grenier
+
      Using the same mechanisms as the announcements (AMQP messages) but conceptually 
      in the opposite direction (flowing from consumers back to sources.)
      This is accomplished by ensuring that log messages for consumption are sent
@@ -95,7 +117,10 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      criteria:  log message inserted at one switch is routed correctly to a source
      which inserted the relevant post into another switch.
  
-  6. ( *Waiting* ) **source data routing (over multiple switches).**
+  6. ( *Done* ) **source data routing (over multiple switches).**
+
+     Assigned to: Michel Grenier
+
      Currently, routing through multiple switches is done manually by admins.
      Admins manually configure each intervening switch for each data set's routing needs.
      
@@ -105,6 +130,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      of their data.  This is to be addressed after log message routing.
  
   7. ( *InProgress* ) **multi-user support.**
+
+     Assigned to: Michel Grenier
+
      In previous iterations, all product insertion was trusted (done by administrators)
      In this version, sources are distinct from adminsitrators, and so a lower
      level of familiarity with the system is expected, greater simplicity is needed,
@@ -117,6 +145,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
  
  
   8. ( *Waiting* ) **Triggering**
+
+     Assigned to: Michel Grenier
+
      After a product is received, users must be able to configure scripts to
      trigger their procesing activities.
       
@@ -125,6 +156,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      or something.
  
   9. ( *Waiting* ) **Automated Linux Builds & Packaging**
+
+     Assigned to: Khosrow Ebrahimpour
+
      It should not be separate work to produce packages to/from pypi and for debian/ubuntu. 
      to make packages.  Need to offload packaging to someone else, and have it automated
      so that the process is trivially simple, and so that others have packages they 
@@ -136,12 +170,18 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
  
   
  10. ( *Waiting* ) **Manual sr_subscribe windows package**
+
+     Assigned to: Stéphane Charlebois
+
      A build environment with several windows vm's to build and test sr_subscribe packages.
      require an .msi package containing a nuitka compiled binary.
      a documented in a guide for building a sr_subscribe package manually.
 	
      
  11. ( *Waiting* ) **User Initiated HTTPS Private Transfers: Alice to Bob**
+
+     Assigned to: Michel Grenier
+
      In Contrast to weather data which is mostly public, in NRC, it would appear that
      most data transfers of interest are relatively private.  Just providing unrestricted
      access to data on a web server will not sufficient.
@@ -160,6 +200,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Eve running sr_sub on SwitchB should not be able to intercept.
 
  12. ( *Waiting* ) **Admin Guide/Functions**
+
+     Assigned to: ??
+
      Need to document all the steps in setting up a switch in whatever cluster configurations
      are deemed appropriate (standalone first, then perhaps ddsr, and others.)
      Perhaps easier to build simple commands, than complicated documentation.
@@ -174,6 +217,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      pre-fetch (message), and post-fetch (file) validation. 
 
  12. ( *Waiting* ) **User Guide/Functions?**
+
+     Assigned to: ??
+
      Walk through some use cases, to show how to apply the tool to a variety of problems
      at hand.  Perhaps just beef up the use cases?  Perhaps some demos?
 
@@ -181,11 +227,17 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
         someone manages to set up a file transfer using only the guides.
         Example...
 
- 13. ( *Done* ) **End-User Operating Mode**
+ 13. ( *InProgress* ) **End-User Operating Mode**
+
+     Assigned to: ??
+
      Should be easy to use in a way where no cron jobs or other accessories are required, 
      just set the config files and go.  One user just invokes it, like rsync or scp.
 
  14. ( *Waiting* ) **Service Provider Operating Mode**
+
+     Assigned to: ??
+
      Ability to start up the configuration of a whole series of components together.
      Stop them together. like what was done for Sundew, cups, nqs, etc...
      put all the logs in a common place, the configs in one place, start up ten different
@@ -194,21 +246,42 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Depends on: Config File Paths.
 
  15. ( *Waiting* ) **Bandwidth Limiting**
+
+     Assigned to: ??
+
      Need to be able to avoid saturating long links by limiting bandwidth usage.
      This needs to work over multiple nodes in DDSR, or SEP topologies.
      Suspect best path is to throttle message posting out of pre-validation?
 
  16. ( *InProgress* ) **Config File Paths**
+
+     Assigned to: Michel Grenier
+
      Not baked yet.
-     Look in ~ then /etc ?   ~/.conf/sarracenia/?
+     ~/.config/sarra/  ... sarra.conf, and credentials
 
  17. ( *InProgress* ) **Credential Store**
 
-     This one is only in ~/.conf/sarracenia/credentials.conf
+     Assigned to: Michel Grenier
+
+     This one is only in ~/.conf/sarra/credentials.conf
      Have a file format where passwords, and pointers to other credentials (keys) 
      are stored, so that tools just refer to user@cluster, and look them up here.
      Otherwise credentials end up on command-line, which is bad.
      just a full URL + priv_key=
+
+ 18. ( *InProgress* ) **Apache Access Control**
+
+     Assigned to: Khosrow Ebrahimpour
+
+     have permissions (htaccess files in apache) so that
+     control to folders is implemented as sara writes the file.
+     creation of admin messages to control the content of the htaccess files.
+     this feature does not require setting passwords or directory integration,
+     just creations and modification of htaccess files.
+
+     perhaps in two steps:  1st under admin control.  2nd: define v02.adm messages
+     so that sources can set their own access control.
 
 
 Parking Lot For Initial Release
@@ -221,11 +294,11 @@ specific time line.
 
 (offset numbering to keep separate from initial ones.)
 
- 20. ( *Waiting* ) Nagios integration, via speedos?
+ 50. ( *Waiting* ) Nagios integration, via speedos?
      If we get the thing running, once there are users, this becomes important, but
      for initial release, not clear that this is critical.
 
- 21. ( *Waiting* ) **Automated Windows client builds & packaging**
+ 51. ( *Waiting* ) **Automated Windows client builds & packaging**
      It is very much expected that a number of uses will want to obtain data from windows
      laptops or servers.  the sr_subscribe command is the minimum tool needed to
      do that effectively.
@@ -236,39 +309,96 @@ specific time line.
     
      Criteria:  sr_subscribe package for windows built automatically (daily?) 
 
- 22. ( *Waiting* ) **Redhat Linux Packaging**
+ 52. ( *Waiting* ) **Redhat Linux Packaging**
      Add to the automated build something that builds rpm packages for centos/redhat/scil.
 
- 23. ( *Deferred* ) **Websocket Gateway**
+ 53. ( *Deferred* ) **Websocket Gateway**
      Using Kazaa or some other technology to make connections possible from web sockets.
      This would remove the need for a separate protocol (AMQP, usually port 5672) as all
      the control traffic would occur over a web connection.  One could implement
      clients directly in a browser.
 
- 24. ( *Deferred* ) **GUI for sr_subscribe configuration**
+ 54. ( *Deferred* ) **GUI for sr_subscribe configuration**
      Graphical user interface to create configuration files might be handy for end users.
      Not clear how useful/important this is.  
    
- 25. ( *Waiting* ) **web config file inclusion**
+ 55. ( *Waiting* ) **web config file inclusion**
      Ideally, sources could provide configuration snippets for their data types that could
      be on the switches, and directly referenced on the web sites by config files.
      So sources could move directories around, and just publish updated configurations to
      reflect the change.
      
- 26. ( *Waiting* ) **ability to change password**
+ 56. ( *Waiting* ) **ability to change password**
      This might be tough...
 
- 18. ( *Waiting* ) **Directory Integration**
+ 57. ( *Waiting* ) **Directory Integration**
 
      Need to be able to use ActiveDirectory as the source for user info.
      Not sure if this means being able to use Kerberos or not.
      This is important to several NRC use cases, may be skewered if not present.
 
+Known Gaps
+~~~~~~~~~~
+
+101. ( *Critical?* ) If a firewall prevents SARA from pulling data from an sr_post,
+     there is no simple sr_* ish way to send the data to a switch.  *sr_put* is 
+     conceived as a program that uses instances to start up a bunch of streams
+     and round-robins sending to the switch... on the switch, normal SARRA picks it up.
+
+102. ( *Critical* ) Not clear how file receipt/ingest works.
+     users need to write to a private area, scanning/validation happens, then it
+     gets moved to a ´public´ tree. can we do that with links?
+
+103. ( *interesting* ) sr_winnow that takes care of links.
+     When a product arrives and it is already known, if the path is the
+     same, then just drop it by not copying anywhere.  If the path is
+     different (defining *different* is a discussion), then perhaps
+     create a ´LINK´ post, so that rather than downloading, downstream
+     consumers can link.
+  
+     What happens if a downstream consumer has accept/reject that made it not
+     download the original? hmm... likely want to download it now...
+     if it was downloaded, then just link, do not download.
+
+     hard links or symbolic... concerns:
+    
+     - reduces to a single file system. 
+     - windows portability
+     - makes it easier for clients to transition (multiple posts of products)
+          
+104. ( *important* ) lack of .adm. messages
+     likely Khosrow will hit this first.  many needs, not explored yet
+     role of source vs. switch admin permissions.
+
+     - setting quotas?
+     - setting access permissions.
+
+105. ( *Important* ) Quota Measurement/Enforcement.
+     Whenever Sarra writes to a tree, the space needs to be counted towards
+     a quota... clearly counts for a source, but also perhaps the from_cluster?
+     so have a quota that combines source@from_cluster ? but defaults to just
+     the cluster if source quota not assigned.
+
+     whenever a write will cause a quota to be exceeded, sara write should fail.
+     and message returned.
+
+106. ( *Important* ) Failure Recover Strategy.
+
+     need to explore understand better how to deal with various issues.
+     When to discard vs. queue, sample issues:
+
+     - disk quota exceeded, just drop the message ( permanent, need to re-post to fix. )
+     - bandwidth exceeded, leave it on the queue and sleep.   (send it later?)
+
+
 
 Critical Deployment Elements
 ----------------------------
 
-The initial release does not just need to be ready, it needs to be deployed.  Deployment and development are linked, in that we do not encounter difficulties unless something is deployed, and we do not achieve business deliverables unless we deploy.  So there is an iterative loop, and we expect to upgrade frequently since the package is so young.
+The initial release does not just need to be ready, it needs to be deployed.  Deployment and 
+development are linked, in that we do not encounter difficulties unless something is deployed, 
+and we do not achieve business deliverables unless we deploy.  So there is an iterative loop, 
+and we expect to upgrade frequently since the package is so young.
 
 To upgrade frequently, we need to reduce the friction to producing upgrades.
 
@@ -276,9 +406,12 @@ To upgrade frequently, we need to reduce the friction to producing upgrades.
 sftp.science.gc.ca
 ~~~~~~~~~~~~~~~~~~
 
+*Assigned to:* Michel Grenier (Jun Hu3)
+
 An S=0 (data-less) switching service. The switching nodes access the site-wide file systems
 available to science.gc.ca. So authentication is what is on the systems.
 likely characteristics:
+
  - bunny style clustered single broker instance shared among sftp1 and sftp2.
  - ssh configured to not accept passwords.  Key-files mandatory.
  - keys can be put in place by logging into interactive nodes.
@@ -289,6 +422,8 @@ likely characteristics:
 
 ddi.cmc.ec.gc.ca
 ~~~~~~~~~~~~~~~~
+
+*Assigned to:*  Michel Grenier (Jun Hu?)
 
 The Dorval ddi (Data Distribution - Internal) needs to be compatible with the existing
 public dd (Data Distribution, aka Data Mart) but also provide a model from which copies
@@ -304,6 +439,11 @@ The root directory of ddi.cmc.ec.gc.ca
 ddi.edm.ec.gc.ca
 ~~~~~~~~~~~~~~~~
 
+*Assigned to:*  Michel Grenier (Jun Hu?)
+
+The the two ddi's are Michel's testbeds, he needs them as part of 
+dog fooding.  Anne-Marie needs them to do the new DMS feeds.
+
 The Edmonton version of ddi is the test bed for the ´next´ layout of data.
 
  - Demonstrates Independent DD Topology. 
@@ -311,15 +451,58 @@ The Edmonton version of ddi is the test bed for the ´next´ layout of data.
  - Provides source for Fingerprint Winnowing for Storm Prediction Centres
 
 
-Convert urp to sr_post ?
+Convert URP to sr_post ? 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-FIXME: Is this a good dog-fooding exercise?  The URP people are asking about this.
+*Assigned to:*  Wayne McNaughton ( Murray Rennie )
+
+This a good dog-fooding exercise?  The URP people are asking about this.
 We need to figure out if/when data feed methods will change.
+This is about outputs from URP (how products are shipped out.)
+For how URP acquires data, see next point.
+
+A result of this should be *sr_winnow* and conventions around how
+the multi-source reliability feeds are dealt with.  Peter´s opening
+guess:
+
+each urp has a username (say urp1 and urp2), each one posts to
+xs_urp1, and xs_urp2.  sr_reduce maintains a table of path
+and checksums it has already seen.  When it sees a new checksum
+it enters it and the corresponding path into the table. 
+
+If the checksum is new, then the source is re-written (sr_reduce
+output_source config option?) so that it appears to come from the
+*urp* source, and is posted to xs_urp.   A Normal sr_sarra processes
+the xs_urp exchange normally.
+
+
+
+Questions/Comments:  
+
+- Peter is thinking that we don´t want three copies of everything
+  on each site (a1, a2, and a), but just one (a).  If the sources
+  a really different, you want multiples, but if they are identical, no.
+
+- should the exchanges subject to reduction be named
+  differently, so that _sarra pays attention to all xs_* and reduce
+  pays attention to all xr_* ?  perhaps cleaner? but if someone 
+  really wants to see urp1 outputs?
+
+- should we just put a broker on each URP cluster, have a shovel
+  from xpublic on each urp to xs_urpX on a switch, and the
+  processing is unchanged after that.  Someone wants access
+  to urp1 output just connects to either cluster directly.
+  is that pointless? 
+
+
+how to talk about this stuff... over distance...
+
 
 
 Figure our URP 2.9.2 Data Feed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*Assigned to:*  Wayne McNaughton 
 
 URP people are asking questions about data feeds.  SPC´s using FTP today, inbound
 and outbound.  NURP is using FTP inbound, but fingerprint winnowing and a prototype
@@ -329,7 +512,7 @@ The ambitious plan:
  - Measure the difference in arrival time, SPC vs. CMC?
  - Can move 2nd feed to Edmonton? volume scans cross network twice?
  - use sarracenia methods both ways: sr_subscribe with Fingerprint winnonwing
- - How many vm´s/SPC one or two?
+ - How many vm´s per SPC one or two?
 
 
 The conservative plan:
@@ -347,14 +530,40 @@ in between plan:
 Someone Other Than Michel Feed Sundew->DD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+*Assigned to:*  Michel Grenier ( Jun Hu )
+
 All of the feeds for dd that currently use sundew as the *bootstrap* to create initial
 data sources for the dd/ddi ´
+
+
+The Queue of Small Changes
+--------------------------
+
+List of small things, to not forget...
+
+- change default queue: cmc.xxx -> q_user.xxxx
+  change sr_subscribe code and man page.
+- adjust access controls: https://www.rabbitmq.com/access-control.html
+  to ensure no ordinary users can declare or delete exchanges. only admin users.
+- sr_sarra move 'recompute_chksum' to Developer options
+- sr_sarra man page says default exchange is amq.topic. hmm.. that is wrong.
+- force permissions to 600 on credentials.conf
+- police_cron to flag weird stuff
+  exchanges that do not start with x (and ar not built-in.)
+  queues that do not start with q\_
+  perhaps delete them? or just report?
+
+
+
+
 
 
 Deferred Deployment Elements
 ----------------------------
 
 This functionality will not be present initially, but needs to figure into later plans.
+
+
 
 
 sr_box
@@ -468,19 +677,20 @@ Iteration 2: Directory Watch: July
 
 
 focus: cluster.txt
+
   - because then we need to get hw implemented next iteration.
-  *This is still not done*
-  Have a look at clusters.rst
+    *This is still not done*
+    Have a look at clusters.rst
 
 watch a directory, and post what is there (flat)
   - using inotify (kernel feature), or perhaps inotifywait (as a wrapper process.)
   - only needs to work for a flat directory at first.
-  *done on time for flat tree, but configs were hard-coded*
+    *done on time for flat tree, but configs were hard-coded*
 
   deferred: windows version of sr_watch (no inotify available.)
 	question, if this is built as inotifywait calling sr_post (or something like that.)
 	then there is an inotify-win.  just introduces a dependency... but makes it easy.
-   *nope, not done.*
+        *nope, not done.*
 
    base user-facing delivery function done.
    *nope*
