@@ -16,71 +16,54 @@ Status as of November 2015
    awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e a2b_%02d.png -L %s A2B.dia \n", s, $2; }; ' script.txt | sh -x
 
 
-Layers: Background
+Layers: Background,Features
 
 
-This is a quick explanation of how Sarracenia helps transferring files 
-through complicated networks.  
+Hi there!
+I'm Peter Silva and I work for Shared Services Canada's Supercomputing group.
+One of the tools we are using ourselves and offering to scientists is the 
+Sarracenia Data Pump.  Let's see why it's useful.
 
 Layers Background,People
 
-Alice and Bob are scientific colleagues that work in different companies, and 
-are far away from each other.  Alice wants to send her folder containing the genetic 
-sequence of a special Frog, it's complete DNA, to Bob.  This is a large data set.
+Meet Alice and Bob!
+
+Alice and Bob are colleagues in different companies, far away from each other.  Alice 
+has sequenced the genetic code of a special frog, and wants to send the complete sequence
+to Bob.
 
 Layers Background,People,F0
 
-There are networks between them.
+When Alice tries to send the files, she might find that they are stopped by a firewall.
+slowed by a strange route, or because there is no good tool they can both use.
 
 Layers Background,People,F0,Network
 
-Alice could try to send it directly to Bob, 
-
-Layers Background,People,F0,Network,DataStraight
-
-but it turns out:
-
-Layers Background,People,F0,Network,Firewalls
-
- - there are firewalls in the way, stopping direct transfers,
-
-Layers Background,People,F0,Network,CircuitousPath
-
- - Even if there is no firewall in the way transfers work, it might 
-   a very slow path.
-
 Layers Background,People,F0,Network,Camel
 
- - Even if it takes the right path, the tools common to Alice and Bob might be slow
-
-What Alice needs is for someone to figure out the best way to get her folder
-from A to B, taking into account network layout and firewalls, and placing 
-data pumps to forward the data wherever they are needed.
+It would be easier if Alice could just hand her file tree off to 
+a data pump close to her network, configured by admins to use 
+the best placement, methods and routes.  The pumps can forward files to 
+eachother to get them to Bob. 
 
 Layers Background,People,F0,Network,pumps
 
 Layers Background,People,F0,Network,pumps,tAl2Aamqpdesc,Alice2Aamqp
 
-Then Alice only needs to talk to the data pump nearest her, that would be 
-Sarracenia pump A.  Alice uses the sr_post command to 
-say: "I want my frog DNA folder to go to B and F!"
+Alice uses the sr_post command to say: "I want my frog DNA folder to go to B and F!"
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,tAl2Axfer,Al2Atransferandlog
 
-Switch A runs an sr_sara service that acquires Alice's frog DNA folder, 
-copying it onto A, and then Announces to anyone listening that 
-Alice's folder is on A, and looking for a way to get to B and F.
+The green arrows are AMQP messages from Alice to pump A for each file in Alice's tree, 
+Alice's local pump uses sr_sarra to fetch Alice's folder (in black), and then announces to 
+anyone listening that Alice's folder is on A, and looking for a way to get to B and F.
+PumpA tells Alice that it has done it's job by sending log messges back (the other Green ones.)
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors
 
-The Green arrows are the AMQP messages.  There is one from Alice to A advertising 
-the folder.  The black line is the actual data transferred using SFTP from 
-Alice's server to the pump. Once that has completed, A Tells
-Alice it has finished with a (green) AMQP log message. 
-
 Pump C is listening (or subscribed) to Pump A, and since it knows 
-the way to B and F, it acquires the folder from A, and then announces to 
-anyone listening that Alice's folder is on C, and trying to get to B and F.  
+the way to B and F, it fetches the folder from A, and then lets its neighbours
+know that Alice's folder is on C, and trying to get to B and F.  
 This process repeats.
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F
@@ -94,10 +77,9 @@ may use different tools, but Alice does not worry about it. The forwarding
 is set up once by administrators, and works for anyone's future data going 
 through.
 
-The Sarracenia pumps are operated independently as peers, with no trust 
-relationships between them, and no central management.  They just agree to 
-pump data on each others' behalf.  And of course, Bob does not have to 
-trust Alice either. 
+About Trust, the pumps are independent peers, with no trust between them or central management.  
+They just agree to pump data on each others' behalf.  And of course, Bob does not 
+have to trust Alice either. 
 
 So the pumps forward the data to B, and Bob picks it up from there.
 
@@ -121,15 +103,15 @@ Alice's folder from the pump that announces it first.
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF
 
-Because of Sarracenia's logging, Alice will know each pump that got the folder,
-and will see that Bob got the folder through Pump F.  
+With Sarracenia's logging, Alice can know when each pump got the folder,
+and that Bob still got it through Pump F, even though it never went through B.
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople
 
-If others are interested in the folder, they subscribe to it at their nearest pump
-as well.  As the folder passes through the network, they will be notified and 
-they can get it too, and Alice will know they got it.  The data only has to pass 
-through the long-haul, expensive networks once to get to everyone. 
+If others are interested in the folder, they subscribe to it from their nearest pump
+They will get the folder as it passes through their pumps on it's way to B and F,
+so everyone gets it with only one pass through the long-haul, expensive network.
+Alice will get log messages for each subscriber each file is delivered to.
 
 Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople,keys
 
@@ -140,23 +122,21 @@ with a key she only shares with Bob.
 Layers Background,People,F0,Network,pumps,
 
 Like a Star Trek Transporter, well perhaps High School Biology is closer,
-Sarracenia dissects the frog into slices and sends them across the
-network in parallel.
+Sarracenia dissects the frog into slices and sends them across the network in parallel.
 
 Layers Background,People,F0,Network,pumps,F1
 
-The parallel streams and speed are programmed by admins of each pump to match pipe capacity.
+Admins along the way set the number streams and speed to match capacity of each pipe 
+in order to obtain the best managed performance on a mix of transfers on a network 
+with many users.
 
 Layers Background,People,F0,Network,pumps,F1,F2
-
-The people with knowledge of the nearby networks make performance decisions, and
-get the best managed performance on a mix of transfers over a network with many users.
 
 Layers Background,People,F0,Network,pumps,F2,FFBob
 
 Each slice is fingerprinted (or checksummed) to allow pumps to know what they have 
 already received, so when a file in Alice's folder is changed, only that 
-slice propagates through the network.  
+slice crosses the network again.
 
 Layers Background,People,F0,Network,pumps,FBob
 
@@ -269,22 +249,20 @@ and have better monitoring of transfers.
 
 Layers Background,People,F0,Wrapup
 
-While these deployments were all successful, and the tools have proven utterly 
-reliable, they are currently a bit complicated to set up and work is ongoing to 
-make it easier to install and use.  
+While the tools are already faster than what we used before.
+Work done so far has been on correctness, not performance.
 
-While good performance arises naturally from the design, work so far 
-has been on correctness, with no effort has been made on optimization.
+These deployments have worked very well, and the reliability is 
+terrific, but it is a bit of a challenge to explain, and set up.
+We need to reduce the amount of assembly required.
 
 This work is being done by the Data Interchange team to solve real-world everyday 
-problems, and is simpler than the systems it is replacing.  It would be nice
-if someone else found it useful.  
+problems, and is simpler than the systems it is replacing.  
 
-This is not the simplest, or most obvious way to transfer files.  
+Still, it is not the most obvious way to transfer files.  
 It takes a little getting used to, but I hope I have shown that there 
-are good reasons to make the effort to understand it.
+are good reasons to make the effort.
 
 If you have questions, go to the web site, or, by all means, drop me an email.
-I will be pleased to answer them. 
 
 Thanks for your time
