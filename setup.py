@@ -2,10 +2,37 @@ import codecs
 import os
 import re
 import sys
+# import distutils
 
-from setuptools import setup,find_packages
+#from setuptools import setup,find_packages
+from setuptools import find_packages
+from distutils.core import setup
+from distutils.command.clean import clean
+from distutils.command.build import build
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+class CustomClean(clean):
+    """Regular clean and clean documentation"""
+    def run(self):
+        # call regular clean command
+        clean.run(self)
+        os.chdir(os.path.join("doc"))
+        if not self.dry_run:
+            if os.system("make clean") != 0:
+                print("'make clean' failed!")
+                raise SystemExit(1)
+
+class CustomBuild(build):
+    """Regular build along with build of all docs"""
+    def run(self):
+        # call the regular build
+        build.run(self)
+        os.chdir(os.path.join("doc"))
+        if not self.dry_run:
+            if os.system("make all") != 0:
+                print ("'make all' failed!")
+                raise SystemExit(1)
 
 def read(*parts):
     # intentionally *not* adding an encoding option to open, See:
@@ -56,4 +83,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Logging',
     ],
+    cmdclass={ "clean": CustomClean, "build": CustomBuild }
 )
