@@ -1,0 +1,268 @@
+
+=========================
+ Sarracenia in 8 Minutes
+=========================
+
+--------------------------
+Status as of November 2015
+--------------------------
+
+.. Note::
+   This text accompanies the A2B.dia diagram, one opens the diagram, 
+   Selects view/layers, and at each *Layers* cue, change the visible layers to provide
+   animation.
+
+   Generate the slides with:
+   awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e a2b_%02d.png -L %s A2B.dia \n", s, $2; }; ' script.txt | sh -x
+
+
+Layers: Background,Features
+
+
+Hi there!
+I'm Peter Silva and I work for Shared Services Canada's Supercomputing group.
+One of the tools we are using ourselves and offering to scientists is the 
+Sarracenia Data Pump.  Let's see why it's useful.
+
+Layers Background,People
+
+Meet Alice and Bob!
+
+Alice and Bob are colleagues in different companies, far away from each other.  Alice 
+has sequenced the genetic code of a special frog, and wants to send the complete sequence
+to Bob.
+
+Layers Background,People,F0
+
+When Alice tries to send the files, she might find that they are stopped by a firewall.
+slowed by a strange route, or because there is no good tool they can both use.
+
+Layers Background,People,F0,Network
+
+Layers Background,People,F0,Network,Camel
+
+It would be easier if Alice could just hand her file tree off to 
+a data pump close to her network, configured by admins to use 
+the best placement, methods and routes.  The pumps can forward files to 
+eachother to get them to Bob. 
+
+Layers Background,People,F0,Network,pumps
+
+Layers Background,People,F0,Network,pumps,tAl2Aamqpdesc,Alice2Aamqp
+
+Alice uses the sr_post command to say: "I want my frog DNA folder to go to B and F!"
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,tAl2Axfer,Al2Atransferandlog
+
+The green arrows are AMQP messages from Alice to pump A for each file in Alice's tree, 
+Alice's local pump uses sr_sarra to fetch Alice's folder (in black), and then announces to 
+anyone listening that Alice's folder is on A, and looking for a way to get to B and F.
+PumpA tells Alice that it has done it's job by sending log messges back (the other Green ones.)
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors
+
+Pump C is listening (or subscribed) to Pump A, and since it knows 
+the way to B and F, it fetches the folder from A, and then lets its neighbours
+know that Alice's folder is on C, and trying to get to B and F.  
+This process repeats.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F
+
+and repeats.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B
+
+The arrows are blue where HTTP is used instead of SFTP to transfer the data. Pumps 
+may use different tools, but Alice does not worry about it. The forwarding
+is set up once by administrators, and works for anyone's future data going 
+through.
+
+About Trust, the pumps are independent peers, with no trust between them or central management.  
+They just agree to pump data on each others' behalf.  And of course, Bob does not 
+have to trust Alice either. 
+
+So the pumps forward the data to B, and Bob picks it up from there.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B,BobnotifiedB,BGetsB
+
+But what if Pump E has a problem?
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom
+
+
+Alice really wanted to make sure Bob got her folder, so she sent it to
+B AND F. 
+
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobFromF
+
+How does Bob decide which pump is the primary, and which is the backup?
+Look, B is not even in trouble here, it just is not getting any data from
+E.  With Sarracenia, Bob can listen to both B and F all the time, and get 
+Alice's folder from the pump that announces it first.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF
+
+With Sarracenia's logging, Alice can know when each pump got the folder,
+and that Bob still got it through Pump F, even though it never went through B.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople
+
+If others are interested in the folder, they subscribe to it from their nearest pump
+They will get the folder as it passes through their pumps on it's way to B and F,
+so everyone gets it with only one pass through the long-haul, expensive network.
+Alice will get log messages for each subscriber each file is delivered to.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople,keys
+
+Of course, if Alice only wants to share with Bob, the folder can be encrypted 
+with a key she only shares with Bob.
+
+
+Layers Background,People,F0,Network,pumps,
+
+Like a Star Trek Transporter, well perhaps High School Biology is closer,
+Sarracenia dissects the frog into slices and sends them across the network in parallel.
+
+Layers Background,People,F0,Network,pumps,F1
+
+Admins along the way set the number streams and speed to match capacity of each pipe 
+in order to obtain the best managed performance on a mix of transfers on a network 
+with many users.
+
+Layers Background,People,F0,Network,pumps,F1,F2
+
+Layers Background,People,F0,Network,pumps,F2,FFBob
+
+Each slice is fingerprinted (or checksummed) to allow pumps to know what they have 
+already received, so when a file in Alice's folder is changed, only that 
+slice crosses the network again.
+
+Layers Background,People,F0,Network,pumps,FBob
+
+
+Layers Background,People,F0,Network,GISCPeers
+
+Fingerprints also help if one needs data replicated over a large network of pumps,
+such as for very high reliability applications.  In Sarracenia, pumps can answer to 
+more than one name.  In this diagram, all the pumps answer to A as an alias.  if Alice 
+posts to "A", The folder will go to all pumps.  Each pump just announces for it's 
+neighbours, and propagates from pump to pump.
+
+Layers Background,People,F0,Network,GISCPeers,G0Ring
+
+The switches just have to be connected somehow for full replication to occur.
+With a single ring, the data will be crossing seven hops on average.  Dual ring
+is better, but the precise arrangement does not matter. 
+
+Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections
+
+In general, the more links are added, the fewer hops are needed to cover all 
+the pumps.  Copies happen from the first neighbour to get the data, and flows 
+naturally over the fastest paths, going wherever it hasn't reached like water 
+into a bucket.  Fingerprints stop the replication by identifying when data
+has already been received.  
+
+In this mesh, for example, you can see it takes three hops.
+
+Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0
+Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1
+Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1,R2
+Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1,R2,R3
+
+
+As the configuration of Sarra links is very straight-forward, and even though it 
+would be a very ugly diagram, it is reasonable to set up a full mesh for total redundancy,
+and guaranteed hop count of 1.
+
+
+Even if you do not need to send your folder anywhere, Sarracenia can be helpful:
+
+Layers Background,People,F0,Network,pumps,Alvin
+
+Sarracenia notifications are more efficient and timely than polling a directory with 'ls'.  
+Alvin could subscribe to Alice's posts on the same cluster, to get notified faster
+and with reduced load, especially if there are many Alvins.
+
+Layers Background,People,F0,Tech
+
+Sarracenia is just a thin layer over mature industry standard technologies.
+You do not have to use its tools to send or receive data.  A browser
+or a wide variety of downloaders can be used to send, browse or download the data.
+
+What will you be missing? you won't be notified of the arrival of your files as quickly, 
+be able to use multiple streams and or download from redundant sources as easily, 
+nor will Data publishers be able to easily track who received their products.
+
+.. NOTE ::
+   FIXME!
+
+The protocol to support these patterns is pretty simple: The AMQP messages 
+we send just include: slice, fingerprint, and address information. 
+It is documented in two man pages.  
+Sarracenia is a 'reference implementation' and we would be 
+pleased if there were others.
+
+
+
+Layers Background,Successes
+
+So does Sarracenia actually work today?  The weather datamart has been our testbed
+for two or three years.  
+
+Layers Background,Successes,SGermans
+
+One client in Germans, for example, has reduced their more than twenty times, 
+while obtaining the same Canadian numerical weather modelling files
+faster than before. 
+
+
+Layers Background,Successes,SGermans,Spanam
+
+
+The weather forecasting workstations for the 2015 Pan-am and Parapanam Games in Toronto 
+used these tools to get a full weather centre feed at the venue much more easily 
+than was possible before.
+
+Layers Background,Successes,SGermans,Spanam,SNURP
+
+We also currently use the two server reliability strategy on the National Unified 
+RADAR Processing system at the Canadian Meteorological Centre.  We substantially
+reduced the number of overtime calls for issues with that system.
+
+
+Layers Background,Features
+
+A Quick Review:
+
+Data sources inject their tree once and see exactly where it goes. 
+
+Consumers get their data faster, with less infrastructure and can 
+modify their feeds themselves.
+
+The same small mechanism supports a variety of very useful patterns,
+for higher reliability, elegance, and performace.
+
+Administrators see a reduced load on their data pumps from more efficient
+transfers, have less setup for each source, can place pumps more easily,
+and have better monitoring of transfers. 
+
+Layers Background,People,F0,Wrapup
+
+While the tools are already faster than what we used before.
+Work done so far has been on correctness, not performance.
+
+These deployments have worked very well, and the reliability is 
+terrific, but it is a bit of a challenge to explain, and set up.
+We need to reduce the amount of assembly required.
+
+This work is being done by the Data Interchange team to solve real-world everyday 
+problems, and is simpler than the systems it is replacing.  
+
+Still, it is not the most obvious way to transfer files.  
+It takes a little getting used to, but I hope I have shown that there 
+are good reasons to make the effort.
+
+If you have questions, go to the web site, or, by all means, drop me an email.
+
+Thanks for your time

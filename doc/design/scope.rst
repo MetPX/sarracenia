@@ -158,7 +158,7 @@ on B, the complementary exchanges are established:
 xto_A and xfrom_A
 
 If the source has specified ´B´ as a destination scope, then
-SARA places the announcement on xto_B.
+SARRA places the announcement on xto_B.
 
 If A ´knows´ that C is reachable through B, then also put on xto_B.
 
@@ -169,7 +169,7 @@ The sr_sender on A will then re-announce... where?
 	as B(!) on from_A ? on B ??
 	as A on from_A ? ?? <-- makes more sense::
 
-		then a SARA (with no fetch, since the file is delivered)
+		then a SARRA (with no fetch, since the file is delivered)
 		picks it up from exchange from_A and posts to xPublic
 
 		(since this is a destination scope for the message)
