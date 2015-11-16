@@ -5,6 +5,12 @@
 
 in alphabetical order.
 
+sr_get
+------
+
+same as sr_subscribe, but supporting sftp, as opposed to just http/s.
+also supporting instances?
+
 
 sr_ingest 
 ---------
@@ -26,6 +32,12 @@ sr_ingest
  -  re-announce to downstream-broker
 
 
+sr_log2cluster 
+--------------
+
+look at the xlog exchange, check the *cluster* header of each message (which
+indicates where the corresponding product was injected.) Consult log2cluster.conf,
+Send the log message to the indicated cluster.
 
 sr_log2src 
 ----------
@@ -34,9 +46,10 @@ sr_log2src
 
         --broker amqp://<swuser>@<broker>/
 
+swuser is an admin user with rights to read xlog
 authenticate to broker as swuser, read log messages on the xlog exchange 
 of the form v01.log.<account>.<whatever>
-copy them to xac_<account> exchange so the user can pick them up.
+copy them to xs_<account> exchange so the user can pick them up.
 on the same broker... 
 
 in some cases, <account> will not be a local account.  look up account
@@ -57,10 +70,19 @@ sr_post
 destination url == --broker amqp://<source>@<broker>/<relativepath?>
 
 
+sr_put 
+------
 
+like sr_sender but dispatches on this side....
+for use when a firewall prevents sr_sara from retrieving data from
+the source.  The source initiates multiple streams and distributes
+slices among them. They upload each slice, and post as it finishes.
+
+also support instances?
+ 
 
 sr_sarra 
--------
+~-------
 
 ::
 
@@ -96,9 +118,8 @@ sr_sender
 
 
 
-sr_subscribe 
-dd_subscribe 
-------------
+dd/sr_subscribe 
+---------------
 
 ::
 
@@ -111,3 +132,10 @@ dd_subscribe
         it will then subscribe to xac_<account> and look for v01.post.!<account> messages
         (to avoid loops.) 
 
+
+sr_winnow 
+---------
+
+::
+
+	scripted version of NURP reduction of multiple sources to one.
