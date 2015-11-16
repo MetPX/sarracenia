@@ -180,7 +180,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      
  11. ( *Waiting* ) **User Initiated HTTPS Private Transfers: Alice to Bob**
 
-     Assigned to: Michel Grenier
+     Assigned to: ??
 
      In Contrast to weather data which is mostly public, in NRC, it would appear that
      most data transfers of interest are relatively private.  Just providing unrestricted
@@ -340,6 +340,10 @@ specific time line.
 Known Gaps
 ~~~~~~~~~~
 
+Things we need to keep in mind... solutions are perhaps not fully determined yet.
+These items will graduate to features at some point.
+
+
 101. ( *Critical?* ) If a firewall prevents SARA from pulling data from an sr_post,
      there is no simple sr_* ish way to send the data to a switch.  *sr_put* is 
      conceived as a program that uses instances to start up a bunch of streams
@@ -365,6 +369,7 @@ Known Gaps
      - reduces to a single file system. 
      - windows portability
      - makes it easier for clients to transition (multiple posts of products)
+     - perhaps an option setting True/False?
           
 104. ( *important* ) lack of .adm. messages
      likely Khosrow will hit this first.  many needs, not explored yet
@@ -390,6 +395,14 @@ Known Gaps
      - disk quota exceeded, just drop the message ( permanent, need to re-post to fix. )
      - bandwidth exceeded, leave it on the queue and sleep.   (send it later?)
 
+107. ( *Important* ) file writing without closing.
+     Currently, sr_watch only triggers posting of a file when it is closed (after
+     writing has completed.) if a very large file is sequentially written over 
+     a number of hours, it will only trigger transfer at the end, losing all 
+     the time to transfer the older parts of the file.  One could sr_post the
+     file at intervals, and the identical parts would get suppressed, but the
+     new ones would be transferred.  Perhaps perk this up once an hour? 
+     part of sr_watch, or not?
 
 
 Critical Deployment Elements
@@ -403,8 +416,8 @@ and we expect to upgrade frequently since the package is so young.
 To upgrade frequently, we need to reduce the friction to producing upgrades.
 
 
-sftp.science.gc.ca
-~~~~~~~~~~~~~~~~~~
+sftp.science.gc.ca Server
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *Assigned to:* Michel Grenier (Jun Hu3)
 
@@ -418,6 +431,20 @@ likely characteristics:
  - privacy is OK, because it is from user to user space on each side,
  - only the messages might be intercepted?
 
+Initial Delivery: January 2016
+
+sftp.science.gc.ca Windows Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*Assigned to:* Stéphane Charlebois 
+
+In order for NRC clients to be able to use the sr_* tools, they need
+access to a client. Need to assess methods of providing it. and
+create at least an package.  This could develop from initially
+being just instructions on a few options (how to install Python3, 
+MS-vis studio 2012, and then the python deps) to an MSI.
+
+Initial Delivery: End January 2016, likely at monthly intervals afterward.
 
 
 ddi.cmc.ec.gc.ca
@@ -434,6 +461,7 @@ The root directory of ddi.cmc.ec.gc.ca
  - Demonstrates cross-feed DD Topology.
  - Provides source for Fingerprint Winnowing for Storm Prediction Centres
 
+Initial Delivery: Done. Maintenance/usage continues
 
 
 ddi.edm.ec.gc.ca
@@ -449,6 +477,8 @@ The Edmonton version of ddi is the test bed for the ´next´ layout of data.
  - Demonstrates Independent DD Topology. 
  - Demonstrates cross-feed DD Topology.
  - Provides source for Fingerprint Winnowing for Storm Prediction Centres
+
+Initial Delivery: Done. Maintenance/usage continues
 
 
 Convert URP to sr_post ? 
@@ -466,15 +496,16 @@ the multi-source reliability feeds are dealt with.  Peter´s opening
 guess:
 
 each urp has a username (say urp1 and urp2), each one posts to
-xs_urp1, and xs_urp2.  sr_reduce maintains a table of path
+xs_urp1, and xs_urp2.  sr_winnow maintains a table of path
 and checksums it has already seen.  When it sees a new checksum
 it enters it and the corresponding path into the table. 
 
-If the checksum is new, then the source is re-written (sr_reduce
+If the checksum is new, then the source is re-written (sr_winnow
 output_source config option?) so that it appears to come from the
 *urp* source, and is posted to xs_urp.   A Normal sr_sarra processes
 the xs_urp exchange normally.
 
+Initial Delivery:  March 31st 2016 
 
 
 Questions/Comments:  
@@ -483,9 +514,9 @@ Questions/Comments:
   on each site (a1, a2, and a), but just one (a).  If the sources
   a really different, you want multiples, but if they are identical, no.
 
-- should the exchanges subject to reduction be named
-  differently, so that _sarra pays attention to all xs_* and reduce
-  pays attention to all xr_* ?  perhaps cleaner? but if someone 
+- should the exchanges subject to winnowing be named
+  differently, so that _sarra pays attention to all xs_* and winnow
+  pays attention to all xw_* ?  perhaps cleaner? but if someone 
   really wants to see urp1 outputs?
 
 - should we just put a broker on each URP cluster, have a shovel
@@ -552,7 +583,10 @@ List of small things, to not forget...
   exchanges that do not start with x (and ar not built-in.)
   queues that do not start with q\_
   perhaps delete them? or just report?
-
+  or figure out how to set rabbitmq permissions to prevent misuse.
+- adjust apache indexing to put date directories in descending order. - Khosrow.
+  access pattern is that most people want the latest data, so makes little sense
+  to have nearly everyone read the entire directory.
 
 
 
@@ -585,6 +619,15 @@ Need to make it plug & play before offering it.
 
 Would be interesting to do a shared folder this way.  need to do some renaming (source)
 hmm... interesting though.
+
+
+sr_share
+~~~~~~~~
+
+Like sr_box, except different people use the same amqp username so that there are
+different people writing to the same share (amqp user with same name exists on different
+shares.) not sure if this is any different from sr_box.
+
 
 
 Pull Distribution
