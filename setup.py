@@ -2,9 +2,7 @@ import codecs
 import os
 import re
 import sys
-# import distutils
 
-#from setuptools import setup,find_packages
 from setuptools import find_packages
 from distutils.core import setup
 from distutils.command.clean import clean
