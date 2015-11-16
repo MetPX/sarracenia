@@ -1,0 +1,16 @@
+
+The simplest way to transfer a file. If Bob trusts Alice, he gives puts her ssh public 
+key in his ~/.ssh/authorized_keys On AliceServer, 
+
+sftp -r frogdna bob@bobserver:.
+
+or:
+
+rsync -av frogdna bob@bobserver:.
+
+# This might not work if there are firewall between Alice's and Bob's servers, or
+# if the routing is poorly configured, or 
+# if bob Doesn't have a server, or if 
+# Bob doesn't have access to sftp or rsync.
+# It also requires a certain level of trust between Alice & Bob.
+

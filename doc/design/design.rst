@@ -243,7 +243,7 @@ An important goal of post routing is that the *source* decides where posts go, s
 switching of individual products must be done only on the contents of the posts, not
 some administrator configuration.
 
-Administrators configure the inter switch connections (via SARA and other components)
+Administrators configure the inter switch connections (via SARRA and other components)
 to align with network topologies, but once set up, all data should flow properly with 
 only source initiated routing commands. Some configuration may be needed on all switches
 whenever a new switch is added to the network.

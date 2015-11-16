@@ -193,6 +193,12 @@ class sr_message():
         self.url     = urllib.parse.urlparse(token[1]+token[2])
         self.path    = token[2]
 
+        if self.mtype == 'log' :
+           self.log_code   = int(token[3])
+           self.log_host   = token[4]
+           self.log_user   = token[5]
+           self.log_elapse = float(token[6])
+
         self.partstr = None
         if 'parts'   in self.headers :
            self.partstr  = self.headers['parts']

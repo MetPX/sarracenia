@@ -51,6 +51,7 @@ class sr_config:
         self.exedir         = os.getcwd()
         self.logdir         = os.getcwd()
 
+        self.cache_url      = {}
         self.credentials    = []
         self.log_clusters   = {}
 
@@ -152,8 +153,8 @@ class sr_config:
         self.source_from_exchange = False
 
         # cluster stuff
-        self.from_cluster         = None
-        self.from_aliases         = []
+        self.cluster              = None
+        self.cluster_aliases      = []
         self.to_clusters          = None
         self.gateway_for          = []
 
@@ -209,8 +210,11 @@ class sr_config:
                      if len(line) == 0 or line[0] == '#' : continue
                      parts = line.split()
                      url   = urllib.parse.urlparse(parts[0])
-                     # fixme parts[1] ssh keyfile for sftp should be an option
-                     self.credentials.append(url)
+                     key   = None
+                     # for sftp only, a second field may be added, the path to the ssh_keyfile
+                     if url.scheme == 'sftp' and len(parts) > 1 :
+                        key = parts[1]
+                     self.credentials.append((url,key))
 
         # credential file is not mandatory
         except : 
@@ -231,7 +235,8 @@ class sr_config:
                      parts = line.split()
                      name  = parts[0]
                      u     = urllib.parse.urlparse(parts[1])
-                     ok, url = self.validate_amqp_url(u)
+                     ok, tup  = self.validate_amqp_url(u)
+                     url, key = tup
                      if not ok :
                         self.logger.error("problem with %s" % parts[1])
                      # fixme parts[2] exchange should be optional
@@ -267,6 +272,10 @@ class sr_config:
         try:
                 if words[0] in ['config','-c','--config']:
                      self.config(words[1])
+                     n = 2
+
+                elif words[0] in ['cluster','-cl','--cluster']:
+                     self.cluster = words[1] 
                      n = 2
 
                 elif words[0] in ['debug','-debug','--debug']:
@@ -307,12 +316,8 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['from_aliases','-fa','--from_aliases']:
-                     self.from_aliases = words[1].split(',')
-                     n = 2
-
-                elif words[0] in ['from_cluster','-fc','--from_cluster']:
-                     self.from_cluster = words[1] 
+                elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
+                     self.cluster_aliases = words[1].split(',')
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:
@@ -355,7 +360,8 @@ class sr_config:
 
                 elif words[0] in ['broker','-b','--broker'] :
                      self.broker = urllib.parse.urlparse(words[1])
-                     ok, self.broker = self.validate_amqp_url(self.broker)
+                     ok, tup  = self.validate_amqp_url(self.broker)
+                     self.broker, key = tup
                      if not ok :
                         self.logger.error("broker has wrong protocol (%s)" % self.broker.scheme)
                         needexit = True
@@ -430,7 +436,8 @@ class sr_config:
 
                 elif words[0] in ['source_broker','-sb','--source_broker'] :
                      self.source_broker = urllib.parse.urlparse(words[1])
-                     ok, self.source_broker = self.validate_amqp_url(self.source_broker)
+                     ok, tup  = self.validate_amqp_url(self.source_broker)
+                     self.source_broker, key = tup
                      if not ok :
                         self.logger.error("source_broker has wrong protocol (%s)" % self.source_broker.scheme)
                         needexit = True
@@ -582,7 +589,7 @@ class sr_config:
 
     def validate_amqp_url(self,url):
         if not url.scheme in ['amqp','amqps'] :
-           return False,url
+           return False,(url,None)
 
         return self.validate_url(url)
 
@@ -590,9 +597,13 @@ class sr_config:
 
     def validate_url(self,url):
 
+        if url in self.cache_url :
+           return True, self.cache_url[url]
+
         rebuild = False
         user    = url.username
         pasw    = url.password
+        key     = None
 
         # default vhost is '/'
         if url.scheme in ['amqp','amqps'] :
@@ -602,13 +613,14 @@ class sr_config:
               rebuild = True
 
         if user == None or pasw == None :
-           for u in self.credentials :
+           for u,k in self.credentials :
                if url.scheme    != u.scheme  : continue
                if url.hostname  != u.hostname: continue
                if url.port      != u.port    : continue
                if user and user != u.username: continue
                user = u.username
                pasw = u.password
+               key  = k
                rebuild = True
                break
 
@@ -625,10 +637,12 @@ class sr_config:
         if rebuild :
            netloc = url.hostname
            if url.port != None : netloc += ':%d'%url.port
-           urls = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,netloc,path)
-           url  = urllib.parse.urlparse(urls)
+           urls   = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,netloc,path)
+           newurl = urllib.parse.urlparse(urls)
+           self.cache_url[url] = (newurl,key)
+           return True, self.cache_url[url]
 
-        return True,url
+        return True,(url,None)
 
     def validate_parts(self):
         if not self.parts[0] in ['1','p','i']:
