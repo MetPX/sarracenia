@@ -347,27 +347,28 @@ HISTORY
 
 dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the sr\_ prefix for it's tools.  The initial
+the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.
 
 In 2007, when the MetPX was originally open sourced, the staff responsible were part of
 Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
-of disapearing species which are not furry (the furry ones get all the attention) and
+of disappearing species which are not furry (the furry ones get all the attention) and
 because search engines will find references to names which are more unusual more easily, 
 the original MetPX WMO switch was named after a carnivorous plant on the Species At
 Risk Registry:  The *Thread-leaved Sundew*.  
 
 The organization behind metpx have since moved to Shared Services Canada, but when
 it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: Sarracenia. We like plants
-that eat!  
+chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
+of insectivorous pitcher plants. We like plants that eat!  
+
 
 dd_subscribe Renaming
 ~~~~~~~~~~~~~~~~~~~~~
 
-As the new module (MetPX-sarracenia) has many components, is used for more than 
+The new module (MetPX-Sarracenia) has many components, is used for more than 
 distribution, and more than one web site, and causes confusion for sys-admins thinking
-it is associated with the dd(1) command (to convert and copy files), we switched
+it is associated with the dd(1) command (to convert and copy files).  So, we switched
 all the components to use the sr\_ prefix.
 
