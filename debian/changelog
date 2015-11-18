@@ -1,3 +1,10 @@
+metpx-sarracenia (0.1.1) unstable; urgency=low
+
+  [ Khosrow Ebrahimpour ]
+  * resetting the version number on the package
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Wed, 18 Nov 2015 14:36:31 +0000
+
 metpx-sarracenia (0.8-precise) unstable; urgency=low
 
   [ Michel Grenier ]
