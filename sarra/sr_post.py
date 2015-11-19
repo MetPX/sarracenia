@@ -84,13 +84,13 @@ class sr_post(sr_config):
 
     def configure(self):
 
-        # installation general configurations and settings
-
-        self.general()
-
         # defaults general and proper to sr_post
 
         self.defaults()
+
+        # installation general configurations and settings
+
+        self.general()
 
         # arguments from command line
 
