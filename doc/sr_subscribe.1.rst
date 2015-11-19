@@ -1,5 +1,5 @@
 ==============
- DD_Subscribe 
+ SR_Subscribe 
 ==============
 
 -----------------------------------------------
@@ -16,13 +16,14 @@ Select and Conditionally Download Posted Files
 SYNOPSIS
 ========
 
- **dd_subscribe** *[-n] configfile.conf*
+ **sr_subscribe** *[-n] configfile.conf*
+ (formerly **dd_subscribe** )
 
 DESCRIPTION
 ===========
 
 
-dd_subscribe is a program to efficiently download files from websites or file servers 
+sr_subscribe is a program to efficiently download files from websites or file servers 
 that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
 publish a message for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
@@ -30,12 +31,12 @@ The *sr_post* notifications provide true push notices for web-accessible folders
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications.
 
-**dd_subscribe** can also be used for purposes other than downloading, (such as for 
+**sr_subscribe** can also be used for purposes other than downloading, (such as for 
 supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.
 
-The **dd_subscribe** command takes one argument: a configuration file described below.
+The **sr_subscribe** command takes one argument: a configuration file described below.
 
 CONFIGURATION
 =============
@@ -132,7 +133,7 @@ The queue is where the notifications are held on the server for each subscriber.
 **expire        <minutes>      (default: None)** 
 **message-ttl   <minutes>      (default: None)** 
 
-By default, dd_subscribe creates a queue name that should be unique and starts with  **q_** 
+By default, sr_subscribe** creates a queue name that should be unique and starts with  **q_** 
 and is usually followe
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
 The  **queue**  option sets a queue name. It should always start with  **cmc** .
@@ -279,19 +280,19 @@ A variety of example configuration files are available here:
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-When executed,  **dd_subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to dd_subcribe
+When executed,  **sr_subscribe**  chooses a queue name, which it writes
+to a file named after the configuration file given as an argument to sr_subscribe**
 with a .queue suffix ( ."configfile".queue). 
-If dd_subscribe is stopped, the posted messages continue to accumulate on the 
+If sr_subscribe is stopped, the posted messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, it uses the queuename 
 stored in that file to connect to the same queue, and not lose any messages.
 
-File downloads can be parallelized by running multiple dd_subscribe using
+File downloads can be parallelized by running multiple sr_subscribes using
 the same queue.  The processes will share the queue and each download 
 part of what has been selected.  Simply launch multiple instances
-of dd_subscribe in the same user/directory using the same configuration file, 
+of sr_subscribe in the same user/directory using the same configuration file, 
 
-You can also run several dd_subscribe with different configuration files to
+You can also run several sr_subscribe with different configuration files to
 have multiple download streams delivering into the the same directory,
 and that download stream can be multi-streamed as well.
 
@@ -338,7 +339,7 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
-`http://metpx.sf.net/ <http://metpx.sf.net/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
+`http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 
 
 HISTORY
@@ -346,11 +347,28 @@ HISTORY
 
 dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the sr\_ prefix for it's tools.  The initial
+the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.
 
-Sarracenia 
-   Just for fun, a rare, mostly carnivorous, plant found in Canada.  The *Thread-leaved Sundew*
-   is another one, and the source of the name of the earlier MetPX file switching project.
+In 2007, when the MetPX was originally open sourced, the staff responsible were part of
+Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
+of disappearing species which are not furry (the furry ones get all the attention) and
+because search engines will find references to names which are more unusual more easily, 
+the original MetPX WMO switch was named after a carnivorous plant on the Species At
+Risk Registry:  The *Thread-leaved Sundew*.  
+
+The organization behind metpx have since moved to Shared Services Canada, but when
+it came time to name a new module, we kept with a theme of carnivorous plants, and 
+chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
+of insectivorous pitcher plants. We like plants that eat!  
+
+
+dd_subscribe Renaming
+~~~~~~~~~~~~~~~~~~~~~
+
+The new module (MetPX-Sarracenia) has many components, is used for more than 
+distribution, and more than one web site, and causes confusion for sys-admins thinking
+it is associated with the dd(1) command (to convert and copy files).  So, we switched
+all the components to use the sr\_ prefix.
 
