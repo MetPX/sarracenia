@@ -189,7 +189,12 @@ class Consumer:
        else:
               time.sleep(5)
 
-       if msg == None : time.sleep(0.25)
+       # when no message sleep for 1 sec. (value taken from old metpx)
+       # *** value 0.01 was tested and would simply raise cpu usage of broker
+       # to unacceptable level with very fews processes (~20) trying to consume messages
+       # remember that instances and broker sharing messages add up to a lot of consumers
+
+       if msg == None : time.sleep(1.0)
        if msg != None : self.logger.debug("--------------> GOT")
 
        return msg
