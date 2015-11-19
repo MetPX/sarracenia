@@ -189,7 +189,7 @@ class Consumer:
        else:
               time.sleep(5)
 
-       if msg == None : time.sleep(0.01)
+       if msg == None : time.sleep(0.25)
        if msg != None : self.logger.debug("--------------> GOT")
 
        return msg
