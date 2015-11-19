@@ -192,24 +192,16 @@ class sr_source2log(sr_instances):
                     self.logger.info("skipped : no source in message headers")
                     continue
 
-                 # skip if cluster is not self.broker.hostname
-
-                 if self.msg.headers['from_cluster'] != self.cluster :
-                    self.logger.info("not for this cluster %s = %s\n" % (self.broker.hostname,self.cluster ))
-                    continue
-
                  # error if source is different from exchange user
 
-                 if self.msg.headers['source'] != self.exchange[3:] :
-                    self.logger.error("source %s in message in wrong exchange %s"%(self.msg.headers['source'],self.exchange))
+                 if self.msg.headers['log_user'] != self.exchange[3:] :
+                    self.logger.error("log_user %s in message in wrong exchange %s"%(self.msg.headers['log_user'],self.exchange))
                     continue
 
-                 # ok ship it back to the user exchange 
+                 # ok accepted,  ship it to the xlog exchange 
 
-                 user_exchange = 'xl_' + self.msg.headers['source']
-
-                 ok = self.pub.publish( user_exchange, self.msg.topic, self.msg.notice, self.msg.headers )
-                 if ok : self.logger.info("published to %s" % user_exchange)
+                 ok = self.pub.publish( 'xlog', self.msg.topic, self.msg.notice, self.msg.headers )
+                 if ok : self.logger.info("published to xlog")
 
 
           except :
