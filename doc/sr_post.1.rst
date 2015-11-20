@@ -22,7 +22,7 @@ DESCRIPTION
 ===========
 
 **sr_post** posts the availability of a file by creating an announcment.
-Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  or `dd_subscribe <dd_subscribe.1.html>`_
+Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
 to consume the announcement and download the file.  To make files available 
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
 also called a broker.  Format of argument to the *broker* option:: 

@@ -16,7 +16,7 @@ Status as of November 2015
    awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e a2b_%02d.png -L %s A2B.dia \n", s, $2; }; ' script.txt | sh -x
 
 
-Layers: Background,Features
+Layers Background,Features
 
 
 Hi there!
@@ -34,12 +34,22 @@ to Bob.
 
 Layers Background,People,F0
 
-When Alice tries to send the files, she might find that they are stopped by a firewall.
-slowed by a strange route, or because there is no good tool they can both use.
+When Alice tries to send the files, 
+Layers Background,People,F0,Network,DataStraight
 
-Layers Background,People,F0,Network
+she might find that they are stopped by a firewall.
+
+Layers Background,People,F0,Network,Firewalls
+
+slowed by a strange route, 
+
+Layers Background,People,F0,Network,CircuitousPath
+
+or because there is no good tool they can both use.
 
 Layers Background,People,F0,Network,Camel
+
+Layers Background,People,F0,Network
 
 It would be easier if Alice could just hand her file tree off to 
 a data pump close to her network, configured by admins to use 
@@ -76,6 +86,8 @@ The arrows are blue where HTTP is used instead of SFTP to transfer the data. Pum
 may use different tools, but Alice does not worry about it. The forwarding
 is set up once by administrators, and works for anyone's future data going 
 through.
+
+Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B,SepMGT
 
 About Trust, the pumps are independent peers, with no trust between them or central management.  
 They just agree to pump data on each others' behalf.  And of course, Bob does not 
