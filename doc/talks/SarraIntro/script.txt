@@ -1,22 +1,17 @@
 
-=========================
- Sarracenia in 8 Minutes
-=========================
+==========================
+ Sarracenia in 10 Minutes
+==========================
 
 --------------------------
 Status as of November 2015
 --------------------------
 
-.. Note::
-   This text accompanies the A2B.dia diagram, one opens the diagram, 
-   Selects view/layers, and at each *Layers* cue, change the visible layers to provide
-   animation.
+.. contents::
 
-   Generate the slides with:
-   awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e a2b_%02d.png -L %s A2B.dia \n", s, $2; }; ' script.txt | sh -x
-
-
-Layers Background,Features
+Intro
+-----
+Layers Bkg,Features
 
 
 Hi there!
@@ -24,7 +19,7 @@ I'm Peter Silva and I work for Shared Services Canada's Supercomputing group.
 One of the tools we are using ourselves and offering to scientists is the 
 Sarracenia Data Pump.  Let's see why it's useful.
 
-Layers Background,People
+Layers Bkg,People
 
 Meet Alice and Bob!
 
@@ -32,62 +27,73 @@ Alice and Bob are colleagues in different companies, far away from each other.  
 has sequenced the genetic code of a special frog, and wants to send the complete sequence
 to Bob.
 
-Layers Background,People,F0
+Layers Bkg,People,F0
 
 When Alice tries to send the files, 
-Layers Background,People,F0,Network,DataStraight
+Layers Bkg,People,F0,Net,DataStraight
 
 she might find that they are stopped by a firewall.
 
-Layers Background,People,F0,Network,Firewalls
+Layers Bkg,People,F0,Net,Firewalls
 
 slowed by a strange route, 
 
-Layers Background,People,F0,Network,CircuitousPath
+Layers Bkg,People,F0,Net,CircuitousPath
 
 or because there is no good tool they can both use.
 
-Layers Background,People,F0,Network,Camel
+Layers Bkg,People,F0,Net,Camel
 
-Layers Background,People,F0,Network
+Layers Bkg,People,F0,Net
+
+
+Pumps
+-----
 
 It would be easier if Alice could just hand her file tree off to 
 a data pump close to her network, configured by admins to use 
 the best placement, methods and routes.  The pumps can forward files to 
 eachother to get them to Bob. 
 
-Layers Background,People,F0,Network,pumps
+Layers Bkg,People,F0,Net,Pumps
 
-Layers Background,People,F0,Network,pumps,tAl2Aamqpdesc,Alice2Aamqp
+Layers Bkg,People,F0,Net,Pumps,tAl2Aamqpdesc,Al2Aa
 
 Alice uses the sr_post command to say: "I want my frog DNA folder to go to B and F!"
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,tAl2Axfer,Al2Atransferandlog
+Layers Bkg,People,F0,Net,Pumps,Al2Aa,tAl2Axfer,Al2Axl
 
 The green arrows are AMQP messages from Alice to pump A for each file in Alice's tree, 
 Alice's local pump uses sr_sarra to fetch Alice's folder (in black), and then announces to 
 anyone listening that Alice's folder is on A, and looking for a way to get to B and F.
 PumpA tells Alice that it has done it's job by sending log messges back (the other Green ones.)
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,tAC,A2Dvectors
+Layers Bkg,People,F0,Net,Pumps,tAC,ACv
 
 Pump C is listening (or subscribed) to Pump A, and since it knows 
 the way to B and F, it fetches the folder from A, and then lets its neighbours
 know that Alice's folder is on C, and trying to get to B and F.  
 This process repeats.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F
+Layers Bkg,People,F0,Net,Pumps,CDv
 
 and repeats.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B
+Layers Bkg,People,F0,Net,Pumps,D2Ev,D2F
+
+and repeats.
+
+Layers Bkg,People,F0,Net,Pumps,D2Ev,D2F,E2B
 
 The arrows are blue where HTTP is used instead of SFTP to transfer the data. Pumps 
 may use different tools, but Alice does not worry about it. The forwarding
 is set up once by administrators, and works for anyone's future data going 
 through.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B,SepMGT
+Trust
+-----
+
+Layers Bkg,People,F0,Net,Pumps,SepMGT
 
 About Trust, the pumps are independent peers, with no trust between them or central management.  
 They just agree to pump data on each others' behalf.  And of course, Bob does not 
@@ -95,65 +101,80 @@ have to trust Alice either.
 
 So the pumps forward the data to B, and Bob picks it up from there.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2Evectors,D2F,E2B,BobnotifiedB,BGetsB
+Layers Bkg,People,F0,Net,Pumps,Al2Aa,Al2Axl,ACv,CDv,D2Ev,D2F,E2B,BtoldBob
 
 But what if Pump E has a problem?
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom
+Layers Bkg,People,F0,Net,Pumps,Al2Aa,Al2Axl,ACv,CDv,D2F,EBoom
 
+
+Redundant Subscriptions
+-----------------------
 
 Alice really wanted to make sure Bob got her folder, so she sent it to
 B AND F. 
 
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobFromF
+Layers Bkg,People,F0,Net,Pumps,Al2Aa,Al2Axl,ACv,CDv,D2F,EBoom,BobFromF
 
 How does Bob decide which pump is the primary, and which is the backup?
 Look, B is not even in trouble here, it just is not getting any data from
-E.  With Sarracenia, Bob can listen to both B and F all the time, and get 
+E.  
+
+Layers Bkg,People,F0,Net,Pumps,Al2Aa,Al2Axl,ACv,CDv,D2F,EBoom,BtoldBob,BobFromF
+
+With Sarracenia, Bob can listen to both B and F all the time, and get 
 Alice's folder from the pump that announces it first.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF
+Layers Bkg,People,F0,Net,Pumps,EBoom,Others
 
 With Sarracenia's logging, Alice can know when each pump got the folder,
 and that Bob still got it through Pump F, even though it never went through B.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople
+Layers Bkg,People,F0,Net,Pumps,EBoom,Others,OGotIt
+
+Distribution
+------------
 
 If others are interested in the folder, they subscribe to it from their nearest pump
 They will get the folder as it passes through their pumps on it's way to B and F,
 so everyone gets it with only one pass through the long-haul, expensive network.
 Alice will get log messages for each subscriber each file is delivered to.
 
-Layers Background,People,F0,Network,pumps,Alice2Aamqp,Al2Atransferandlog,A2Dvectors,D2F,EBoom,BobnotifiedB,BobFromF,OtherPeople,keys
+Layers Bkg,People,F0,Net,Pumps,EBoom,Others,keys
 
 Of course, if Alice only wants to share with Bob, the folder can be encrypted 
 with a key she only shares with Bob.
 
 
-Layers Background,People,F0,Network,pumps,
+Segmentation
+------------
+
+Layers Bkg,People,F0,Net,Pumps
 
 Like a Star Trek Transporter, well perhaps High School Biology is closer,
 Sarracenia dissects the frog into slices and sends them across the network in parallel.
 
-Layers Background,People,F0,Network,pumps,F1
+Layers Bkg,People,F0,Net,Pumps,F1
 
 Admins along the way set the number streams and speed to match capacity of each pipe 
 in order to obtain the best managed performance on a mix of transfers on a network 
 with many users.
 
-Layers Background,People,F0,Network,pumps,F1,F2
+Layers Bkg,People,F0,Net,Pumps,F1,F2
 
-Layers Background,People,F0,Network,pumps,F2,FFBob
+Layers Bkg,People,F0,Net,Pumps,F2,FFBob
 
 Each slice is fingerprinted (or checksummed) to allow pumps to know what they have 
 already received, so when a file in Alice's folder is changed, only that 
 slice crosses the network again.
 
-Layers Background,People,F0,Network,pumps,FBob
+Layers Bkg,People,F0,Net,Pumps,FBob
 
+Routing to Groups 
+-----------------
 
-Layers Background,People,F0,Network,GISCPeers
+Layers Bkg,People,F0,Net,GISCPeers
 
 Fingerprints also help if one needs data replicated over a large network of pumps,
 such as for very high reliability applications.  In Sarracenia, pumps can answer to 
@@ -161,13 +182,13 @@ more than one name.  In this diagram, all the pumps answer to A as an alias.  if
 posts to "A", The folder will go to all pumps.  Each pump just announces for it's 
 neighbours, and propagates from pump to pump.
 
-Layers Background,People,F0,Network,GISCPeers,G0Ring
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring
 
 The switches just have to be connected somehow for full replication to occur.
 With a single ring, the data will be crossing seven hops on average.  Dual ring
 is better, but the precise arrangement does not matter. 
 
-Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring,Bisections
 
 In general, the more links are added, the fewer hops are needed to cover all 
 the pumps.  Copies happen from the first neighbour to get the data, and flows 
@@ -177,26 +198,20 @@ has already been received.
 
 In this mesh, for example, you can see it takes three hops.
 
-Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0
-Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1
-Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1,R2
-Layers Background,People,F0,Network,GISCPeers,G0Ring,Bisections,R0,R1,R2,R3
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring,Bisections,R0
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring,Bisections,R0,R1
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring,Bisections,R0,R1,R2
+Layers Bkg,People,F0,Net,GISCPeers,G0Ring,Bisections,R0,R1,R2,R3
 
 
 As the configuration of Sarra links is very straight-forward, and even though it 
 would be a very ugly diagram, it is reasonable to set up a full mesh for total redundancy,
 and guaranteed hop count of 1.
 
+Technological Basis
+-------------------
 
-Even if you do not need to send your folder anywhere, Sarracenia can be helpful:
-
-Layers Background,People,F0,Network,pumps,Alvin
-
-Sarracenia notifications are more efficient and timely than polling a directory with 'ls'.  
-Alvin could subscribe to Alice's posts on the same cluster, to get notified faster
-and with reduced load, especially if there are many Alvins.
-
-Layers Background,People,F0,Tech
+Layers Bkg,Tech
 
 Sarracenia is just a thin layer over mature industry standard technologies.
 You do not have to use its tools to send or receive data.  A browser
@@ -206,8 +221,7 @@ What will you be missing? you won't be notified of the arrival of your files as 
 be able to use multiple streams and or download from redundant sources as easily, 
 nor will Data publishers be able to easily track who received their products.
 
-.. NOTE ::
-   FIXME!
+Layers Bkg,Tech,Message
 
 The protocol to support these patterns is pretty simple: The AMQP messages 
 we send just include: slice, fingerprint, and address information. 
@@ -216,36 +230,128 @@ Sarracenia is a 'reference implementation' and we would be
 pleased if there were others.
 
 
+Local Alerting
+--------------
 
-Layers Background,Successes
+Even if you do not need to send your folder anywhere, Sarracenia can be helpful:
 
-So does Sarracenia actually work today?  The weather datamart has been our testbed
-for two or three years.  
+Layers Bkg,People,F0,Net,Pumps,Alvin
 
-Layers Background,Successes,SGermans
-
-One client in Germans, for example, has reduced their more than twenty times, 
-while obtaining the same Canadian numerical weather modelling files
-faster than before. 
-
-
-Layers Background,Successes,SGermans,Spanam
+Sarracenia notifications are more efficient and timely than polling a directory with 'ls'.  
+Alvin could subscribe to Alice's posts on the same cluster, to get notified faster
+and with reduced load, especially if there are many Alvins.
 
 
-The weather forecasting workstations for the 2015 Pan-am and Parapanam Games in Toronto 
-used these tools to get a full weather centre feed at the venue much more easily 
-than was possible before.
+Layers Bkg,Successes
 
-Layers Background,Successes,SGermans,Spanam,SNURP
-
-We also currently use the two server reliability strategy on the National Unified 
-RADAR Processing system at the Canadian Meteorological Centre.  We substantially
-reduced the number of overtime calls for issues with that system.
+Does Sarracenia Actually Work Today?  
+------------------------------------
 
 
-Layers Background,Features
+This is a part of the data switching network for Environment Canada.  Our existing central data 
+pumps, or Product Exchangers, use our older stack, and while it is a bit more complicated,
+it does let us try out bits of sarracenia.
 
-A Quick Review:
+
+National Unified Radar Processing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Layers Bkg,Successes,SNURP
+
+In this hybrid environment, we have demonstrated the dual server reliability strategy with
+The National Unified Radar Processing (NURP) servers.   Two servers runs independently, and the
+first product available is pulled into the pumps for distribution.  This is much
+simpler to run than High-Availability strategies with shared disk and such, and has resulted
+in a drop in the rate of calls for NURP availability issues from once or twice a month to zero.
+
+Layers Bkg,Successes,SNURP,SN-B
+
+GRIB to Germany
+~~~~~~~~~~~~~~~
+
+For distribution, products are sent out to one data pump for consumers inside Environment Canada, 
+and a second one for the public.  
+
+Layers Bkg,Successes,SGermans
+
+Last Spring, a German company adopted the new methods. They went from 15 million requests/day on the 
+web server to 150 thousand, a 99% reduction.  All that polling traffic consumed about 30 
+GBytes/day.  Now they are only using 60 GBytes/day, the size of the data actually want, and 
+they are getting it faster.
+
+PanAM Games
+~~~~~~~~~~~
+
+Layers Bkg,Successes,Spanam
+
+For the 2015 Pan-AM games in Toronto. We needed to set up temporary offices, one inside
+Environment, and the other completely outside our networks.  The old stack requires an ftp 
+server (and a reachable address) at each temporary site.  For multiple desks, one would 
+need to install another layer of distribution to get them to share the same feed.
+
+Layers Bkg,Successes,Spanam,SP1
+
+Sarracenia, on the other hand, leverages any WAN optimizer, 
+eliminating the need for custom re-distribution.
+ 
+The Games venue was a temporary office, with a typical client network permitting no inbound 
+connections.  With Sarracenia,  The consumers just subscribe to the pump.  
+They do not need a server.  Much simpler!  
+
+Layers Bkg,Successes,Spanam,SP1,SP2
+
+In last generation systems, the central switch adminstrators need to program every 
+product delivered.  With Sarracenia, the consumers can adjust the feeds themselves, so 
+fine-tuning is much simpler as well.
+
+
+What's Next?
+------------
+
+Layers Bkg,NxtStp
+
+We will start introducing the tools to data sources gradually. 
+
+Project Alta
+~~~~~~~~~~~~
+
+With Project Alta, we are contributing to Environment Canada's MSC Renewal.
+When it makes sense, we apply the new methods to projects.  As improvement, 
+is demonstrated, it becomes official and The data sent by old methods is gradually 
+reduced.
+
+Layers Bkg,NxtStp,N0
+
+The First way we are tackling this is by splitting international data acquisition links
+among the two sites.  So when one data centre goes down, the other one continues
+to obtain some data.  
+
+Layers Bkg,NxtStp,N0,N0_5
+
+We are also bringing up services like DMS and NURP to the Edmonton Data Pump,
+increasing its independence over time.
+
+Layers Bkg,NxtStp,N0,N0_5,N1
+
+A third angle is to re-arrange data collection, such as RADAR, by having them
+feed both data centres.
+
+HPC aka Science.gc.ca
+~~~~~~~~~~~~~~~~~~~~~
+
+Layers Bkg,ResDA
+
+Another application over the next year or two will be as one data transfer service
+available for the Canadian Government's supercomputing infrastructure being deployed
+collaboratively with the National Research Council as our first partner.  It will 
+be offerred for use in Data Acquisition from instruments or third parties, as well
+as for general purpose usage.
+
+
+Layers Bkg,Features
+
+A Quick Review
+--------------
 
 Data sources inject their tree once and see exactly where it goes. 
 
@@ -259,7 +365,11 @@ Administrators see a reduced load on their data pumps from more efficient
 transfers, have less setup for each source, can place pumps more easily,
 and have better monitoring of transfers. 
 
-Layers Background,People,F0,Wrapup
+
+Wrapping Up
+-----------
+
+Layers Bkg,People,F0,Wrapup
 
 While the tools are already faster than what we used before.
 Work done so far has been on correctness, not performance.
@@ -278,3 +388,4 @@ are good reasons to make the effort.
 If you have questions, go to the web site, or, by all means, drop me an email.
 
 Thanks for your time
+
