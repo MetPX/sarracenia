@@ -21,6 +21,11 @@ What commands are needed to perform a release:
 Debian/Ubuntu
 -------------
 
+- check the **build-depends** line in *debian/control* for requirements to build from source.
+- The following steps will build sarracenia but not sign the changes or the source package::
+
+    cd metpx/sarracenia
+    dpkg-buildpacakge -uc -us
 
 
 RPM
