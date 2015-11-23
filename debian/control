@@ -8,8 +8,8 @@ Vcs-Git: http://git.code.sf.net/p/metpx/git
 
 Package: metpx-sarracenia
 Architecture: all 
-Depends: ${misc:Depends}, rabbitmq-server (>= 3.3.5), ${python:Depends}, python3-pkg-resources, python3-amqplib, python3-pyinotify, python3-psutil, python3-urllib3
-Recommends: python3-paramiko
+Depends: ${misc:Depends}, ${python:Depends}, python3-pkg-resources, python3-amqplib, python3-pyinotify, python3-psutil, python3-urllib3
+Recommends: python3-paramiko, rabbitmq-server
 Homepage: http://metpx.sourceforge.net
 Description: Meteorological Product Exchanger
  A utility that consumes AMQP message containing

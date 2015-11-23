@@ -50,6 +50,7 @@ Release Process
 ---------------
 
 What we need is a first procedure that walks through making packages:
+
 - git branch (create a release branch off of master....)
 - Makefile sets the versioning information from the branch (git query?)
   puts that in the man pages, and somewhere the python can get to.
