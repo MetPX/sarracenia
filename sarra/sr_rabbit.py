@@ -27,7 +27,7 @@ def rabbitmq_broker_get_exchanges( url, ssl_key_file=None, ssl_cert_file=None ):
 
         resp   = conn.getresponse()
         answer = resp.read()
-        if b'error' in answer :
+        if b'error' in answer[:5] :
            print(answer)
            return []
 
@@ -42,6 +42,6 @@ def rabbitmq_broker_get_exchanges( url, ssl_key_file=None, ssl_cert_file=None ):
         return exchanges
 
 if __name__ == "__main__":
-    url = urllib.parse.urlparse("amqp://root:r00t4rabbitmq@grogne2.cmc.ec.gc.ca/")
-    #url = urllib.parse.urlparse("amqp://feeder:feeder@grogne2.cmc.ec.gc.ca/")
+    print(sys.argv[1])
+    url = urllib.parse.urlparse(sys.argv[1])
     print(rabbitmq_broker_get_exchanges(url))

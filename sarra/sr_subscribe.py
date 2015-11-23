@@ -154,7 +154,7 @@ class ConsumerX(object):
         self.msg.user         = self.amqp_user
         self.msg.amqp_log     = self.amqp_log
         self.msg.logger       = self.logger
-
+        self.msg.exchange_log = 'xs_' + self.amqp_user
 
         while True :
 

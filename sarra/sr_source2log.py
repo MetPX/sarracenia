@@ -128,7 +128,7 @@ class sr_source2log(sr_instances):
 
         # consumer queue
 
-        name  = 'q_' + self.broker.username + '.' + self.program_name
+        name  = 'q_' + self.broker.username + '.' + self.program_name + '.' + self.exchange
         if self.queue_name != None :
            name = 'q_' + self.broker.username + '.' + self.queue_name
 
