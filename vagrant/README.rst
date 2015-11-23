@@ -16,7 +16,19 @@ Prerequisites
 
 The various different setups are listed below.  
 
-Sarra Server
+Server
 ------------
 
-Install a basic sarra server attempts 
+Installs a basic sarra server in order to test ```sr_sarra``` using the script ```test/test_sr_sarra.sh```. The ```Vagrantfile``` is setup to provision a server running:
+
+- vsftpd
+- rabbitmq-server
+- apache2
+- metpx-sarra (installed from deb)
+
+Example::
+
+    cd metpx/sarra/vagrant/server
+    vagrant up
+    vagrant ssh
+    ./test_sr_sarrah.sh
