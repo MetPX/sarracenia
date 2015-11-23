@@ -1,0 +1,6 @@
+*.egg
+*.egg-info
+.vagrant
+.pybuild
+*.debhelper
+*.debhelper.log

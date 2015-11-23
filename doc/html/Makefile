@@ -4,9 +4,11 @@
 #Guide.rtf:   Guide.latex
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
+GUIDES= Dev.html Admin.html
+
 MANPAGES= sr_sarra.8.html sr_subscribe.1.html dd_subscribe.1.html sr_watch.1.html sr_post.1.html sr_post.7.html sr_log.7.html sr_log2clusters.8.html sr_log2source.8.html
 
-TARGETS= $(MANPAGES)
+TARGETS= $(MANPAGES) $(GUIDES)
 
 default: $(TARGETS) 
 
@@ -26,6 +28,7 @@ default: $(TARGETS)
 #         -- add an explicit target here.
 #         -- add a link from index.html.
 #
+
 sr_sarra.8.html: ../sr_sarra.8.rst
 	rst2html ../sr_sarra.8.rst >sr_sarra.8.html
 
@@ -52,6 +55,12 @@ sr_log2source.8.html: ../sr_log2source.8.rst
 
 sr_log.7.html: ../sr_log.7.rst
 	rst2html ../sr_log.7.rst >sr_log.7.html
+
+Dev.html: ../Dev.rst
+	rst2html ../Dev.rst >Dev.html
+
+Admin.html: ../Admin.rst
+	rst2html ../Admin.rst >Admin.html
 
 clean: 
 	rm -f $(TARGETS) *.png 

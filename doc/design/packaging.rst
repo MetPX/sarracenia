@@ -17,7 +17,7 @@ Can we make it really easy to build a ddsr node for techies to deploy a server ?
 so it is easy for others to adopt.   Recipe for a standlone single node config.
 
 	- this would be linux only,
-	- either a dpkg
+	- either a dpkg or two (client & server?)
 	- a docker container?
 
 Make it easy for mortals to install the client.
@@ -25,11 +25,46 @@ need self-contained windows install (an .exe) folks can download.
 because many clients in various departments use windows as clients,
 and many data sources may use windows also.
 
+client package, if separate, would be just sr_post, sr_subscribe, sr_log...
+sr_watch... hmm... server package would have a dep on rabbit? but client no.
 
-how to do languages & messaging
+pythonistas would probably find pypi the easiest. (on an installed python, just run:
+
+    pypi install metpx-sarracenia
+
+For internal use, ubuntu debs are the obvious choice.
+    apt-get install metpx-sarracenia-server
+
+for NRC, many users of Centos, so need RPMS.
+    yum install metpx-sarracenia-server
+
+The repositories likely are best placed on the internet, because we cannot depend
+on clients being in locations accessible to Econet.
+
+for Windows... need to talk with Stef, perhaps just document the complicated
+baseline procedure, and improve over time.
+
+
+
+Release Process
+---------------
+
+What we need is a first procedure that walks through making packages:
+
+- git branch (create a release branch off of master....)
+- Makefile sets the versioning information from the branch (git query?)
+  puts that in the man pages, and somewhere the python can get to.
+- apparently python setup has an ''upload'' so once it is registered
+  on Pypi, python3 setup.py sdist upload will do id.
+- using the same setup.py, Khosrow already built a dpkg builder.
+  user
+
+
+
+How to do Languages & Messaging
 -------------------------------
 
-need English & French 
+Need English & French 
 just keep it in code, no natural language?
 There's fabulous ones: http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 
@@ -70,14 +105,6 @@ there might be a meta-client... one that invokes the others appropriately...
 		
 		
 	
-start making other packages?
-	redhat/centos?
-	windows?
-
-	do we make it 'pip' compatible?
-		so on windows they install python, then pip pulls in deps?
-
-
 Dunno. We probably need to try a bunch out and see what sticks?
 
 
