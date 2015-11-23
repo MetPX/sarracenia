@@ -49,6 +49,7 @@ class sr_message():
         self.amqp_pub      = None
         self.exchange      = None
         self.exchange_pub  = None
+        self.exchange_log  = 'xlog'
         self.topic         = None
         self.notice        = None
         self.headers       = {}
@@ -120,8 +121,7 @@ class sr_message():
         self.headers['message'] = self.message
 
         if self.amqp_log != None :
-           log_exchange = 'xlog'
-           self.amqp_log.publish(log_exchange,self.log_topic,self.log_notice,self.headers)
+           self.amqp_log.publish(self.exchange_log,self.log_topic,self.log_notice,self.headers)
 
 
     def log_error(self):
