@@ -156,6 +156,11 @@ class Consumer:
 
       self.hc.add_build(self.build)
 
+      # total = 1 sec span than .5 for other iteration
+      self.sleep_list = [0.01,0.03,0.06,0.15,0.25,0.5]
+      self.sleep_idx  = 0
+      self.sleep_max  = 5
+
    def add_prefetch(self,prefetch):
        self.prefetch = prefetch
 
@@ -194,8 +199,14 @@ class Consumer:
        # to unacceptable level with very fews processes (~20) trying to consume messages
        # remember that instances and broker sharing messages add up to a lot of consumers
 
-       if msg == None : time.sleep(1.0)
-       if msg != None : self.logger.debug("--------------> GOT")
+       if msg == None : 
+          self.logger.debug(" sleeping for %f" % self.sleep_list[self.sleep_idx])
+          time.sleep(self.sleep_list[self.sleep_idx])
+          self.sleep_idx = self.sleep_idx + 1
+          if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
+       if msg != None :
+          self.sleep_idx = 0
+          self.logger.debug("--------------> GOT")
 
        return msg
 
