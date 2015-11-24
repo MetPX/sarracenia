@@ -78,8 +78,10 @@ class sr_log(sr_config):
 
         self.defaults()
 
-        self.topic    = 'v02.log.#'
-        self.broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.topic_prefix = 'v02.log'
+        self.subtopic     = '#'
+
+        self.broker       = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
         # arguments from command line
 
@@ -121,6 +123,7 @@ class sr_log(sr_config):
            name += self.program_name + '.' + self.exchange
 
         self.queue = Queue(self.hc_src,name)
+        self.topic = self.topic_prefix + '.' + self.subtopic
         self.queue.add_binding(self.exchange,self.topic)
         self.queue.build()
 
