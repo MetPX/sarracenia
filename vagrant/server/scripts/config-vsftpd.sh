@@ -1,6 +1,6 @@
 #!/bin/sh
 sudo mkdir /apps
-sudo useradd -b /apps -m 
+sudo useradd -b /apps -m px
 echo "px:test" | sudo chpasswd
 sudo mkdir /apps/px/test
 sudo chown px.px /apps/px/test
