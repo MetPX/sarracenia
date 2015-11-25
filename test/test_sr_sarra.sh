@@ -237,43 +237,85 @@ function test1 {
       #parts I
 
       #======== 2
+      echo -n -e "\tRunning toto_06 test ... "
       $SARRA_PATH/sr_post -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta > /dev/null 2>&1
       sleep 4
-      ls -al toto ./test/*
-      N=`diff toto.128.2.0.1.d.Part ./test/toto_06.128.2.0.1.d.Part|wc -l`
-      N2=`diff toto.128.2.0.0.d.Part ./test/toto_06.128.2.0.0.d.Part|wc -l`
-      if ((N==0 && N2==0)) ; then
-         echo OK  sr_post -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
+      # ls -al toto ./test/*
+      DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_06.128.2.0.1.d.Part`
+      if [[ $? != 0 ]] ; then
+         N=-1
       else
-         echo ERROR sr_post -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
+         N=`diff toto.128.2.0.1.d.Part ./test/toto_06.128.2.0.1.d.Part|wc -l`
+      fi
+
+      DIFF2=`diff toto.128.2.0.0.d.Part ./test/toto_06.128.2.0.0.d.Part`
+      if [[ $? != 0 ]] ; then
+         N2=-1
+      else
+         N2=`diff toto.128.2.0.0.d.Part ./test/toto_06.128.2.0.0.d.Part|wc -l`
+      fi
+
+      if ((N==0 && N2==0)) ; then
+         echo OK  #sr_post -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta
+      else
+         echo ERROR 
+         echo -e "\tFailed command: sr_post -u file:${PWD}/toto -rn ${PWD}/test/toto_06 -p i,128 -to alta"
          exit 1
       fi
       rm   ./test/toto_06*
 
       #======== 2
+      echo -n -e "\tRunning toto_07 test ... "
       $SARRA_PATH/sr_post -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta > /dev/null 2>&1
       sleep 6
-      ls -al toto ./test/*
-      N=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part|wc -l`
-      N2=`diff toto.128.2.0.0.d.Part ./test/toto_07.128.2.0.0.d.Part|wc -l`
-      if ((N==0 && N2==0)) ; then
-         echo OK sr_post -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
+      # ls -al toto ./test/*
+      DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part`
+      if [[ $? != 0 ]] ; then
+         N=-1
       else
-         echo ERROR sr_post -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
+         N=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part|wc -l`
+      fi   
+
+      DIFF2=`diff toto.128.2.0.0.d.Part ./test/toto_07.128.2.0.0.d.Part`
+      if [[ $? != 0 ]] ; then
+         N2=-1
+      else     
+         N2=`diff toto.128.2.0.0.d.Part ./test/toto_07.128.2.0.0.d.Part|wc -l`
+      fi
+
+      if ((N==0 && N2==0)) ; then
+         echo OK # sr_post -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta
+      else
+         echo ERROR 
+         echo -e "\tFailed command: sr_post -dr /var/www -u http://localhost/test/toto -rn ${PWD}/test/toto_07 -p i,128 -to alta"
          exit 1
       fi
       rm   ./test/toto_07*
 
       #======== 2
+      echo -n -e "\tRunning toto_08 test ... "
       $SARRA_PATH/sr_post -u sftp://localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta > /dev/null 2>&1
       sleep 8
-      ls -al toto ./test/*
-      N=`diff toto.128.2.0.1.d.Part ./test/toto_08.128.2.0.1.d.Part|wc -l`
-      N2=`diff toto.128.2.0.0.d.Part ./test/toto_08.128.2.0.0.d.Part|wc -l`
-      if ((N==0 && N2==0)) ; then
-         echo OK sr_post -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
+      # ls -al toto ./test/*
+      DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_08.128.2.0.1.d.Part`
+      if [[ $? != 0 ]] ; then
+         N=-1
       else
-         echo ERROR sr_post -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
+         N=`diff toto.128.2.0.1.d.Part ./test/toto_08.128.2.0.1.d.Part|wc -l`
+      fi
+
+      DIFF2=`diff toto.128.2.0.0.d.Part ./test/toto_08.128.2.0.0.d.Part`
+      if [[ $? != 0 ]] ; then
+         N2=-1
+      else
+         N2=`diff toto.128.2.0.0.d.Part ./test/toto_08.128.2.0.0.d.Part|wc -l`
+      fi
+      
+      if ((N==0 && N2==0)) ; then
+         echo OK #sr_post -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta
+      else
+         echo ERROR 
+         echo -e "\tFailed command: sr_post -u sftp://px@localhost//apps/px/test/toto -rn ${PWD}/test/toto_08 -p i,128 -to alta"
          exit 1
       fi
       rm   ./test/toto_08*
