@@ -76,7 +76,8 @@ Vagrant.configure(2) do |config|
   config.vm.provision "file", source: "./config/rabbitmq/enabled_plugins", 
                                destination: "rabbitmq/enabled_plugins"
    
-   config.vm.provision "Installing Depengencies", type: "shell", path: "scripts/install-deps.sh"
-   config.vm.provision "Configuring Apache", type: "shell", path: "scripts/config-apache.sh"
-   config.vm.provision "Configuring vsftpd", type: "shell", path: "scripts/config-vsftpd.sh"
+   config.vm.provision "Install Dependencies", type: "shell", path: "scripts/install-deps.sh"
+   config.vm.provision "Configure Apache", type: "shell", path: "scripts/config-apache.sh"
+   config.vm.provision "Configure vsftpd", type: "shell", path: "scripts/config-vsftpd.sh"
+   config.vm.provision "Configure rabbitmq-server", type: "shell", path: "scripts/config-rabbitmq.sh"
 end
