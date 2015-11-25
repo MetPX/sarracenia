@@ -56,10 +56,14 @@ sr_log2source.8.html: ../sr_log2source.8.rst
 sr_log.7.html: ../sr_log.7.rst
 	rst2html ../sr_log.7.rst >sr_log.7.html
 
+AMQP4Sarra.svg: ../AMQP4Sarra.dia
+	dia -t svg  -e $@ ../AMQP4Sarra.dia
+
+
 Dev.html: ../Dev.rst
 	rst2html ../Dev.rst >Dev.html
 
-Admin.html: ../Admin.rst
+Admin.html: ../Admin.rst AMQP4Sarra.svg
 	rst2html ../Admin.rst >Admin.html
 
 clean: 
