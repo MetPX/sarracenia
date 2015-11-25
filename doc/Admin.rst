@@ -185,10 +185,26 @@ When subscriber (sr_subscribe,dd_subscribe) only, permissions are (conf,write,re
 
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xpublic$"
 
-When provider (sr_post,sr_watch...) persmissions are :
+When provider (sr_post,sr_watch...) permissions are :
 
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
 
+A functional user with all permissions should be used on sarracenia broker...
+
+  rabbitmqctl add_user feeder <password>
+  rabbitmqctl set_permissions -p / Alice   ".*" ".*" ".*"
+
+By default an installation of a rabbitmq-server makes user guest the administrator... with password guest
+This should be changed for operational implementations... To void the guest user we suggest
+
+  rabbitmqctl set_user_tags guest
+  rabbitmqctl list_user_permissions guest
+  rabbitmqctl change_password guest ************
+
+And another administrator should be defined... we usually call it root...
+
+  rabbitmqctl add_user root   *********
+  rabbitmqctl set_user_tags root administrator
 
 Then you need to do the same work for sftp and or apache servers as required.
 
