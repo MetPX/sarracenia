@@ -33,7 +33,16 @@ URLS['wxo-b3.cmc.ec.gc.ca' ] = 'http://dd3.weather.gc.ca/'
 URLS['wxo-b2.cmc.ec.gc.ca' ] = 'http://dd2.weather.gc.ca/'
 URLS['wxo-b1.cmc.ec.gc.ca' ] = 'http://dd1.weather.gc.ca/'
 
+clusters = {}
+clusters['wxod-b5.cmc.ec.gc.ca'] = 'dd.wxod-dev.cmc.ec.gc.ca'
+clusters['wxos-b4.cmc.ec.gc.ca'] = 'dd.wxod-stage.cmc.ec.gc.ca'
+clusters['wxos-b3.cmc.ec.gc.ca'] = 'dd.wxod-stage.cmc.ec.gc.ca'
+clusters['wxo-b3.cmc.ec.gc.ca' ] = 'dd.weather.gc.ca'
+clusters['wxo-b2.cmc.ec.gc.ca' ] = 'dd.weather.gc.ca'
+clusters['wxo-b1.cmc.ec.gc.ca' ] = 'dd.weather.gc.ca'
+
 URL = URLS[HOST]
+cluster = clusters[HOST]
 
 # source  and  urldir
 
@@ -64,6 +73,8 @@ class Publisher:
        self.exchange_name = 'xpublic'
        self.exchange_type = 'topic'
        self.exchange_key  = None
+
+       self.cluster       = cluster
 
        self.connect()
 
@@ -103,7 +114,7 @@ class Publisher:
        self.close()
        self.connect()
 
-   def publish(self,message,exchange_key,filename):
+   def old_publish(self,message,exchange_key,filename):
        try :
               hdr = {'filename': filename }
               msg = amqp.Message(message, content_type= 'text/plain',application_headers=hdr)
@@ -115,7 +126,44 @@ class Publisher:
               print("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
               time.sleep(5)
               self.reconnect()
-              self.publish(message,exchange_key,filename)
+              self.old_publish(message,exchange_key,filename)
+
+
+   def publish(self,parts,message,exchange_key,filename):
+             import amqplib.client_0_8 as amqp
+             try :
+                 msec     = '.%d' % (int(round(time.time() * 1000)) %1000)
+                 now      = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
+                 v02_msg  = "%s %s %s" % (now,parts[-2],parts[-1])
+
+                 filesize = parts[1]
+                 partstr  = '1,%s,1,0,0' % filesize
+
+                 checksum = parts[0]
+                 sumstr   = 'd,%s' % checksum
+
+                 hdr = {}
+                 hdr['source'] = 'dd-xml-inotify'
+                 hdr['parts']  =  partstr
+                 hdr['sum']    =  sumstr
+                 hdr['from_cluster'] = self.cluster
+
+                 # filename is added for backward compatibility
+                 hdr['filename'] =  os.path.basename(filename)
+
+                 print("\nkey    = %s"% exchange_key)
+                 print("notice = %s"% v02_msg)
+                 print("header = %s"% hdr)
+
+                 msg = amqp.Message(v02_msg, content_type= 'text/plain',application_headers=hdr)
+                 self.channel.basic_publish(msg, self.exchange_name, exchange_key )
+             except :
+                 (type, value, tb) = sys.exc_info()
+                 print("AMQP cound not publish...reconnecting" )
+                 print("Type: %s, Value: %s, Sleeping 5 seconds ..." % (type, value))
+                 time.sleep(5)
+                 self.reconnect()
+                 self.publish(parts,message,exchange_key,filename)
 
 
             
@@ -132,10 +180,14 @@ publisher = Publisher(HOST)
 class EventHandler(pyinotify.ProcessEvent):
   def process_IN_CLOSE_WRITE(self,event):
       for spath in SRC :
-          if not spath in event.pathname : continue
+          if not spath in event.pathname   : continue
+          if event.pathname[-4:] == '.tmp' : continue
 
           filepath = event.pathname
-          checksum = md5sum(filepath).hexdigest()
+          f = open(filepath,'rb')
+          data = f.read()
+          f.close()
+          checksum = md5sum(data).hexdigest()
 
           lstat = os.stat(filepath)
           fsiz  = lstat[stat.ST_SIZE]
@@ -148,17 +200,21 @@ class EventHandler(pyinotify.ProcessEvent):
           filename  = 'msg_' + parts[-1] + ':WXO:LOCAL:FILE:XML'
           key_final = '.'.join(parts[3:])
 
+          token  = msg.split()
+          exchange_key = 'v02.post.' + key_final
+          publisher.publish(token,msg,exchange_key,filename)
+
           # publish old message and exchange_key
 
           exchange_key = 'exp.dd.notify.' + key_final
-          publisher.publish(url,exchange_key,filename)
+          publisher.old_publish(url,exchange_key,filename)
 
-          # publish new message and exchange_key
+          # publish old message and exchange_key
 
           exchange_key = 'v00.dd.notify.' + key_final
-          publisher.publish(msg,exchange_key,filename)
+          publisher.old_publish(msg,exchange_key,filename)
 
-          break
+
 
 # start inotify engine
 
