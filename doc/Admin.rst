@@ -177,16 +177,9 @@ Stuff that should be running on a broker ::
 Add User
 ~~~~~~~~
 
-Adding a user at the broker level  
+Adding a user at the broker level  and its permission (conf,write,read):
 
   rabbitmqctl add_user Alice <password>
-
-When subscriber (sr_subscribe,dd_subscribe) only, permissions are (conf,write,read):
-
-  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xpublic$"
-
-When provider (sr_post,sr_watch...) permissions are :
-
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
 
 A functional user with all permissions should be used on sarracenia broker...
@@ -272,6 +265,14 @@ then run a bunch of configuration commands::
 
   rabbitmq-plugins enable rabbitmq_management
   /etc/init.d/rabbitmq-server restart
+
+  # within sarracenia,  the creation of exchanges is done by the broker administrator
+  # mandatory exchanges should be created (xpublic, xlog)
+
+  wget http://broker.domain.com:15672/cli/rabbitmqadmin
+  chmod 755 rabbitmqadmin
+  rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xpublic type=topic auto_delete=false durable=true
+  rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xlog    type=topic auto_delete=false durable=true
 
 
 Clustered Broker 
