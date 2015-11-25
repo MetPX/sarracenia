@@ -177,10 +177,18 @@ Stuff that should be running on a broker ::
 Add User
 ~~~~~~~~
 
-Adding a user at the broker level::
+Adding a user at the broker level  
 
   rabbitmqctl add_user Alice <password>
-  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$"     "^q_Alice.*$"    "^xpublic|xl_Alice.*$"
+
+When subscriber (sr_subscribe,dd_subscribe) only, permissions are (conf,write,read):
+
+  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xpublic$"
+
+When provider (sr_post,sr_watch...) persmissions are :
+
+  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
+
 
 Then you need to do the same work for sftp and or apache servers as required.
 
@@ -237,7 +245,7 @@ then run a bunch of configuration commands::
   # takeaway administrator privileges from guest
   rabbitmqctl set_user_tags guest
   rabbitmqctl list_user_permissions guest
-  rabbitmqctl change_password guest unf0rgettable
+  rabbitmqctl change_password guest ************
 
   # list users
   rabbitmqctl list_users
@@ -248,24 +256,6 @@ then run a bunch of configuration commands::
 
   rabbitmq-plugins enable rabbitmq_management
   /etc/init.d/rabbitmq-server restart
-
-
-        /var/lib/rabbitmq/.erlang.cookie  same on all nodes
-
-        on each node restart  /etc/init.d/rabbitmq-server stop/start
-
-        on one of the node
-
-        rabbitmqctl stop_app
-        rabbitmqctl join_cluster rabbit@"other node"
-        rabbitmqctl start_app
-        rabbitmqctl cluster_status
-
-
-       # having high availability queue...
-       # here all queues that starts with "cmc." will be highly available on all the cluster nodes
-
-       rabbitmqctl set_policy ha-all "^cmc\." '{"ha-mode":"all"}'
 
 
 Clustered Broker 
@@ -415,7 +405,7 @@ The answer I got from the Rabbitmq gurus ::
 Hooks from Sundew
 -----------------
 
-The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. It assumes a deep understanding of MetPX-Sundew.
+The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. It assumes a deep understanding of MetPX-Sundew. Currently the dd_notify.py script creates messages for the protocol exp., v00. and v02 (latest sarracenia protocol version)
 
 
 Notifications on DD 
@@ -478,8 +468,4 @@ file has been placed on dd (with the / replaced by .)  For example, here is a lo
 
 
 
-   
-   
-   
-   
    
