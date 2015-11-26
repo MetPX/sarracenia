@@ -46,6 +46,7 @@ class sr_config:
 
         self.program_name   = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
         self.config_name    = config
+        self.config_path    = config
         self.etcdir         = os.getcwd()
         self.exedir         = os.getcwd()
         self.logdir         = os.getcwd()
@@ -146,7 +147,7 @@ class sr_config:
         self.mirror               = True
 
         self.queue_name           = None
-        self.queue                = None 
+        self.queue_prefix         = None
         self.durable              = False
         self.expire               = None
         self.message_ttl          = None
@@ -266,6 +267,12 @@ class sr_config:
         sarra = homedir + '/.config/sarra/sarra.conf'
         if os.path.isfile(sarra) : self.config(sarra)
 
+    def get_queue_name(self):
+        if self.queue_name :
+           if self.queue_prefix in self.queue_name : return
+           self.queue_name = self.queue_prefix + '.'+ self.queue_name
+           return
+        self.random_queue_name()
 
     def isMatchingMask(self, str): 
 
@@ -453,7 +460,6 @@ class sr_config:
                      self.queue_name = words[1]
                      n = 2
 
-                elif words[0] == 'queue'      : self.queue = words[1] 
                 elif words[0] == 'durable'    : self.durable = isTrue(words[1])
                 elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
                 elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
@@ -596,6 +602,30 @@ class sr_config:
            sys.exit(0)
 
         return n
+
+    def random_queue_name(self) :
+
+        queuefile = ''
+        parts = self.config_path.split(os.sep)
+        if len(parts) != 1 :  queuefile = os.sep.join(parts[:-1]) + os.sep
+
+        fnp   = parts[-1].split('.')
+        if fnp[0][0] != '.' : fnp[0] = '.' + fnp[0]
+        queuefile = queuefile + '.'.join(fnp[:-1]) + '.queue'
+
+        if os.path.isfile(queuefile) :
+           f = open(queuefile)
+           self.queue_name = f.read()
+           f.close()
+           return
+        
+        self.queue_name  = self.queue_prefix
+        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+
+        f = open(queuefile,'w')
+        f.write(self.queue_name)
+        f.close()
 
     def setlog(self):
 
