@@ -48,7 +48,7 @@ if sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
 
-def envoke(confpath):
+def invoke(confpath):
 
     parts = confpath.split('/')
 
@@ -71,7 +71,7 @@ def envoke(confpath):
 
 
 
-# recursive scan of ~/.config/sarra/* , envoking process according to
+# recursive scan of ~/.config/sarra/* , invoking process according to
 # the process named from the parent directory
 
 def scandir(dirpath):
@@ -81,7 +81,7 @@ def scandir(dirpath):
         if os.path.isdir(absname) : scandir(absname)
         if not '.conf' in name    : continue
  
-        envoke(absname)
+        invoke(absname)
 
 
 homedir = os.path.expanduser("~")
