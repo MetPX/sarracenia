@@ -44,7 +44,6 @@ try :
          from sr_http           import *
          from sr_instances      import *
          from sr_message        import *
-         from sr_sftp           import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_file      import *
@@ -52,14 +51,14 @@ except :
          from sarra.sr_http      import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-         from sarra.sr_sftp      import *
 
 class sr_sarra(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-        self.exchange = 'xpublic'
+        self.accept_if_unmatch = True
+        self.exchange          = 'xpublic'
         self.configure()
 
     def check(self):
@@ -176,6 +175,10 @@ class sr_sarra(sr_instances):
                      return ftp_download(self.msg, self.ftp_user, self.ftp_password, self.ftp_mode, self.ftp_binary )
 
                 elif self.msg.url.scheme == 'sftp' :
+                     try :    
+                              from sr_sftp       import sftp_download
+                     except : 
+                              from sarra.sr_sftp import sftp_download
                      return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
 
                 elif self.msg.url.scheme == 'file' :
@@ -342,6 +345,12 @@ class sr_sarra(sr_instances):
 
                  self.msg.from_amqplib(raw_msg)
                  self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+
+                 # make use of accept/reject
+
+                 if not self.isMatchingPattern(self.msg.urlstr) :
+                    self.logger.info("Rejected by accept/reject options")
+                    continue
 
                  # if message for this cluster or for this cluster's route
 
