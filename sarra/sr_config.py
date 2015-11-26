@@ -32,7 +32,6 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
-#
 
 import logging
 import os,re,socket,sys
@@ -132,6 +131,11 @@ class sr_config:
         self.subtopic             = None
         self.url                  = None
 
+        self.accept_if_unmatch    = True     # accept if No pattern matching
+        self.masks                = []       # All the masks (accept and reject)
+        self.currentDir           = '.'      # mask directory (if needed)
+        self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
+
         self.mirror               = True
 
         self.queue_name           = None
@@ -145,9 +149,7 @@ class sr_config:
         self.rename               = None
 
         self.source_broker        = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-
         self.source_exchange      = None
-
         self.source_topic         = None
 
         self.source_from_exchange = False
@@ -255,6 +257,17 @@ class sr_config:
         if os.path.isfile(sarra) : self.config(sarra)
 
 
+    def isMatchingMask(self, str): 
+
+        for mask in self.masks:
+            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            if mask_regexp.match(str) :
+               self.currentDir        = maskDir
+               self.currentFileOption = maskFileOption
+               return accepting
+
+        return self.accept_if_unmatch
+
     def isTrue(self,s):
         if  s == 'True' or s == 'true' or s == 'yes' or s == 'on' or \
             s == 'Yes'  or s == 'YES' or s == 'TRUE' or s == 'ON' or \
@@ -270,7 +283,30 @@ class sr_config:
         needexit = False
         n        = 0
         try:
-                if words[0] in ['config','-c','--config']:
+                if   words[0] in ['accept','reject']:
+                     accepting   = words[0] == 'accept'
+                     pattern     = words[1]
+                     mask_regexp = re.compile(pattern)
+
+                     if len(words) > 2: self.currentFileOption = words[2]
+
+                     self.masks.append(pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting)
+
+                elif words[0] in ['accept_if_unmatch','-aiu','--accept_if_unmatch']:
+                     if words[0][0:1] == '-' : 
+                        self.accept_if_unmatch = True
+                        n = 1
+                     else :
+                        self.accept_if_unmatch = self.isTrue(words[1])
+                        n = 2
+
+                elif words[0] == 'directory':
+                     self.currentDir = words[1]
+
+                elif words[0] == 'filename':
+                     self.currentFileOption = words[1]
+
+                elif words[0] in ['config','-c','--config']:
                      self.config(words[1])
                      n = 2
 
@@ -711,3 +747,5 @@ def main():
 
 if __name__=="__main__":
    main()
+
+
