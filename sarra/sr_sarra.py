@@ -134,6 +134,13 @@ class sr_sarra(sr_instances):
 
     def configure(self):
 
+        # cumulative variable reinitialized
+
+        self.exchange_key         = None     
+        self.masks                = []       
+        self.currentDir           = '.'      
+        self.currentFileOption    = 'WHATFN' 
+
         # installation general configurations and settings
 
         self.general()
