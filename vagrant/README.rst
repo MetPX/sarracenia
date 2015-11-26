@@ -31,4 +31,6 @@ Example::
     cd metpx/sarra/vagrant/server
     vagrant up
     vagrant ssh
-    ./test_sr_sarrah.sh
+    ./test_sr_sarrah.sh px test
+
+ You could also simply provision this instance and test out Sarracenia.
