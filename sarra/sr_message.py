@@ -190,7 +190,8 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.time    = token[0]
-        self.url     = urllib.parse.urlparse(token[1]+token[2])
+        self.urlstr  = token[1]+token[2]
+        self.url     = urllib.parse.urlparse(self.urlstr)
         self.path    = token[2]
 
         if self.mtype == 'log' :

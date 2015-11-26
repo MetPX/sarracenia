@@ -32,7 +32,6 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
-#
 
 import logging
 import os,re,socket,sys
@@ -116,12 +115,18 @@ class sr_config:
 
         self.document_root        = None
 
+        self.discard              = False
+
         self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
         self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
 
         self.flow                 = None
 
+        self.lock                 = None
+
         self.logpath              = None
+
+        self.notify_only          = False
 
         self.instance             = 0
         self.nbr_instances        = 1
@@ -130,11 +135,25 @@ class sr_config:
         self.exchange             = None
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
+        self.exchange_key         = []
         self.url                  = None
+
+        self.accept_if_unmatch    = True     # accept if No pattern matching
+        self.masks                = []       # All the masks (accept and reject)
+        self.currentDir           = '.'      # mask directory (if needed)
+        self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
 
         self.mirror               = True
 
         self.queue_name           = None
+        self.queue                = None 
+        self.durable              = False
+        self.expire               = None
+        self.message_ttl          = None
+
+        self.flatten              = '/'
+
+        self.log_back             = True
 
         self.randomize            = False
 
@@ -145,9 +164,7 @@ class sr_config:
         self.rename               = None
 
         self.source_broker        = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-
         self.source_exchange      = None
-
         self.source_topic         = None
 
         self.source_from_exchange = False
@@ -180,14 +197,9 @@ class sr_config:
         self.msg_script           = None
         self.file_script          = None
 
-        #
-
         #self.destination          = URL()
         #self.destination.set('amqp://guest:guest@localhost/')
         #self.destination_exchange = 'sx_guest'
-
-        self.exchange_key         = []
-
 
         self.inplace              = False
         self.overwrite            = False
@@ -255,6 +267,17 @@ class sr_config:
         if os.path.isfile(sarra) : self.config(sarra)
 
 
+    def isMatchingMask(self, str): 
+
+        for mask in self.masks:
+            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            if mask_regexp.match(str) :
+               self.currentDir        = maskDir
+               self.currentFileOption = maskFileOption
+               return accepting
+
+        return self.accept_if_unmatch
+
     def isTrue(self,s):
         if  s == 'True' or s == 'true' or s == 'yes' or s == 'on' or \
             s == 'Yes'  or s == 'YES' or s == 'TRUE' or s == 'ON' or \
@@ -270,7 +293,34 @@ class sr_config:
         needexit = False
         n        = 0
         try:
-                if words[0] in ['config','-c','--config']:
+                if   words[0] in ['accept','reject']:
+                     accepting   = words[0] == 'accept'
+                     pattern     = words[1]
+                     mask_regexp = re.compile(pattern)
+
+                     if len(words) > 2: self.currentFileOption = words[2]
+
+                     self.masks.append(pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting)
+
+                elif words[0] in ['accept_if_unmatch','-aiu','--accept_if_unmatch']:
+                     if words[0][0:1] == '-' : 
+                        self.accept_if_unmatch = True
+                        n = 1
+                     else :
+                        self.accept_if_unmatch = self.isTrue(words[1])
+                        n = 2
+
+                elif words[0] in ['discard','-d','--discard','--download-and-discard']:
+                     self.discard = self.isTrue(words[1])
+                     n = 2
+
+                elif words[0] == 'directory':
+                     self.currentDir = words[1]
+
+                elif words[0] == 'filename':
+                     self.currentFileOption = words[1]
+
+                elif words[0] in ['config','-c','--config']:
                      self.config(words[1])
                      n = 2
 
@@ -328,8 +378,16 @@ class sr_config:
                      self.help()
                      needexit = True
 
+                elif words[0] in ['lock','-lk','--lock']:
+                     self.lock = words[1] 
+                     n = 2
+
                 elif words[0] in ['log','-l','-log','--log']:
                      self.logpath = words[1]
+                     n = 2
+
+                elif words[0] in ['log_back','-lb','--log_back']:
+                     self.log_back = self.isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['inplace','-in','--inplace']:
@@ -350,6 +408,10 @@ class sr_config:
                         self.logger.error("message_validation_script invalid (%s)" % words[1])
                         ok = False
                      if not ok : needexit = True
+                     n = 2
+
+                elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
+                     self.notify_only = self.isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['parts','-p','--parts']:
@@ -380,6 +442,7 @@ class sr_config:
 
                 elif words[0] in ['subtopic','-sub','--subtopic'] :
                      self.subtopic = words[1]
+                     self.exchange_key.append(self.topic_prefix + '.' + self.subtopic)
                      n = 2
 
                 elif words[0] in ['overwrite','-o','--overwrite'] :
@@ -389,6 +452,11 @@ class sr_config:
                 elif words[0] in ['queue_name','-qn','--queue_name'] :
                      self.queue_name = words[1]
                      n = 2
+
+                elif words[0] == 'queue'      : self.queue = words[1] 
+                elif words[0] == 'durable'    : self.durable = isTrue(words[1])
+                elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
+                elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
 
                 elif words[0] in ['randomize','-r','--randomize']:
                      if words[0][0:1] == '-' : 
@@ -519,24 +587,6 @@ class sr_config:
                      ok = self.validate_sum()
                      if not ok : needexit = True
                      n = 2
-
-                # XXX
-                elif words[0] in ['destination_exchange','-de','--destination_exchange']:
-                     self.dest_exchange = words[1]
-                     n = 2
-                elif words[0] in ['destination','-d','--destination'] :
-                     self.destination.set(words[1])
-                     n = 2
-                elif words[0] in ['exchange_key','-ek','--exchange_key']:
-                     self.exchange_key.append(words[1])
-                     n = 2
-                elif words[0] in ['transmission_url','-tr','--transmission_url']:
-                     self.transmission.set(words[1])
-                     n = 2
-                elif words[0] in ['transmission_document_root','-tdr','--transmission_document_root']:
-                     self.trx_document_root = words[1]
-                     n = 2
-
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
@@ -711,3 +761,5 @@ def main():
 
 if __name__=="__main__":
    main()
+
+
