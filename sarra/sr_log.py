@@ -65,6 +65,8 @@ class sr_log(sr_config):
         if self.exchange == None :
            self.exchange = 'xl_' + self.broker.username
 
+        self.topic = self.topic_prefix + '.' + self.subtopic
+
     def close(self):
         self.hc_src.close()
 
@@ -123,7 +125,6 @@ class sr_log(sr_config):
            name += self.program_name + '.' + self.exchange
 
         self.queue = Queue(self.hc_src,name)
-        self.topic = self.topic_prefix + '.' + self.subtopic
         self.queue.add_binding(self.exchange,self.topic)
         self.queue.build()
 
