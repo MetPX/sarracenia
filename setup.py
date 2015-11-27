@@ -87,5 +87,5 @@ setup(
 	"pyinotify", 
 	"psutil", 
 	"urllib3" ],
-    cmdclass={ "clean": CustomClean, "build": CustomBuild }
+    #cmdclass={ "clean": CustomClean, "build": CustomBuild }
 )
