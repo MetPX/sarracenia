@@ -89,7 +89,7 @@ class sr_subscribe(sr_instances):
            self.msg = sr_message(self.logger)
 
         self.msg.user         = self.broker.username
-        self.msg.log_exchange = 'xs_' + self.broker.username
+        self.msg.exchange_log = 'xs_' + self.broker.username
         self.msg.amqp_pub     = None
         self.msg.exchange_pub = None
 
@@ -256,7 +256,7 @@ class sr_subscribe(sr_instances):
         for k in self.exchange_key :
             self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,k) )
         if self.log_back :
-            self.logger.info("AMQP  output:    exchange(%s) topic(%s)\n" % (self.msg.log_exchange,'v02.log.#') )
+            self.logger.info("AMQP  output:    exchange(%s) topic(%s)\n" % (self.msg.exchange_log,'v02.log.#') )
 
         self.connect()
 
@@ -274,7 +274,7 @@ class sr_subscribe(sr_instances):
           try  :
                  if raw_msg != None : self.consumer.ack(raw_msg)
 
-                 raw_msg = self.consumer.consume(self.queue.qname)
+                 raw_msg = self.consumer.consume(self.msg_queue.qname)
                  if raw_msg == None : continue
 
                  # make use it as a sr_message

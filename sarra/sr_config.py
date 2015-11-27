@@ -136,7 +136,7 @@ class sr_config:
         self.exchange             = None
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
-        self.exchange_key         = []
+        self.exchange_key         = None
         self.url                  = None
 
         self.accept_if_unmatch    = True     # accept if No pattern matching
@@ -274,7 +274,7 @@ class sr_config:
            return
         self.random_queue_name()
 
-    def isMatchingMask(self, str): 
+    def isMatchingPattern(self, str): 
 
         for mask in self.masks:
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
@@ -449,7 +449,10 @@ class sr_config:
 
                 elif words[0] in ['subtopic','-sub','--subtopic'] :
                      self.subtopic = words[1]
-                     self.exchange_key.append(self.topic_prefix + '.' + self.subtopic)
+                     if self.exchange_key == None :
+                        self.exchange_key = [self.topic_prefix + '.' + self.subtopic]
+                     else :
+                        self.exchange_key.append(self.topic_prefix + '.' + self.subtopic)
                      n = 2
 
                 elif words[0] in ['overwrite','-o','--overwrite'] :

@@ -188,6 +188,8 @@ class sr_log2source(sr_instances):
 
                  user_exchange = 'xl_' + self.msg.headers['source']
 
+                 # FIXME ... what to do if xl_'source' does not work ????  ex.: deleting a user... extra log message back ...
+
                  ok = self.pub.publish( user_exchange, self.msg.topic, self.msg.notice, self.msg.headers )
                  if ok : self.logger.info("published to %s" % user_exchange)
 
