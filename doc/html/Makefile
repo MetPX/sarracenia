@@ -67,7 +67,7 @@ Admin.html: ../Admin.rst AMQP4Sarra.svg
 	rst2html ../Admin.rst >Admin.html
 
 clean: 
-	rm -f $(TARGETS) *.png 
+	rm -f $(TARGETS) 
 
 
 

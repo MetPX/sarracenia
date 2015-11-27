@@ -105,6 +105,12 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
 Flow Through Exchanges
 ~~~~~~~~~~~~~~~~~~~~~~
 
+.. image:: e-ddsr-components.jpg
+    :scale: 100%
+    :align: center
+
+
+
 A description of the conventional flow of messages through exchanges on a pump:
 
 - subscribers usually bind to the xpublic exchange to get the main data feed.
@@ -150,16 +156,22 @@ Debian-Derived
 ~~~~~~~~~~~~~~
 
 Notes::
-        debuild -uc 
-	dpkg -i ../metpx-sarracenia-0.1.1.all.dpkg
+
+   debuild -uc -us
+   dpkg -i ../metpx-sarracenia-0.1.1.all.dpkg
 
 Native Python 
 ~~~~~~~~~~~~~
 
 notes::
 
-	 python3 setup.py build
-	 python3 setup.py install
+    python3 setup.py build
+    python3 setup.py install
+
+    or?
+
+    pip3 install metpx-sarracenia   # not in pypi yet, but eventually.
+
 
 
 Operations
@@ -177,7 +189,11 @@ Stuff that should be running on a broker ::
 Add User
 ~~~~~~~~
 
-Adding a user at the broker level  and its permission (conf,write,read):
+This just shows how to add a user to Rabbitmq broker with appropriate permissions.
+You will need to cover authentication as needed by the payload transport protocol
+(SFTP, FTP, or HTTP(S)) separately.
+
+Adding a user at the broker level and its permission (conf,write,read):
 
   rabbitmqctl add_user Alice <password>
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
@@ -214,7 +230,7 @@ queue_manager.py
 
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means they will build up over time.  We have a script that looks for unused queues, and cleans them out. Currently, the limits are hard-coded as any queue having more than 25000 messages or 50mbytes of space will be deleted.
 
-
+This script is in samples/program, rather than as part of the package (as an sr_x command.)
 
 Rabbitmq Setup 
 --------------

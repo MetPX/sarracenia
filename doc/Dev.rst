@@ -25,7 +25,7 @@ Debian/Ubuntu
 - The following steps will build sarracenia but not sign the changes or the source package::
 
     cd metpx/sarracenia
-    dpkg-buildpackage -uc -us
+    debuild -uc -us
 
 
 RPM
