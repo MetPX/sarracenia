@@ -34,7 +34,7 @@
 #
 
 import logging
-import os,re,socket,sys
+import os,re,socket,sys,random
 import urllib,urllib.parse
 
 try :    from sr_util      import *

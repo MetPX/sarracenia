@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 #
-# This file is part of subscribecenia.
-# The subscribecenia suite is Free and is proudly provided by the Government of Canada
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# subscribecenia repository: git://git.code.sf.net/p/metpx/git
+# sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
@@ -37,12 +37,12 @@ try :
          from sr_instances      import *
          from sr_message        import *
 except : 
-         from subscribe.sr_amqp      import *
-         from subscribe.sr_file      import *
-         from subscribe.sr_ftp       import *
-         from subscribe.sr_http      import *
-         from subscribe.sr_instances import *
-         from subscribe.sr_message   import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_file      import *
+         from sarra.sr_ftp       import *
+         from sarra.sr_http      import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
 
 class sr_subscribe(sr_instances):
 
@@ -187,7 +187,7 @@ class sr_subscribe(sr_instances):
                      try :    
                               from sr_sftp           import sftp_download
                      except : 
-                              from subscribe.sr_sftp import sftp_download
+                              from sarra.sr_sftp import sftp_download
                      return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
 
                 elif self.msg.url.scheme == 'file' :
