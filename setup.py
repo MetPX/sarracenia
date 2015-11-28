@@ -41,8 +41,8 @@ packages=find_packages()
 print("packages = %s" % packages)
 
 setup(
-    name='sarra',
-    version='0.1.1',
+    name='metpx-sarracenia',
+    version='0.1.2',
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
@@ -76,9 +76,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Topic :: Environment :: Console',
         'Topic :: Communications :: File Sharing',
-        'Topic :: Internet :: File Transfer Protocol',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Logging',
     ],
