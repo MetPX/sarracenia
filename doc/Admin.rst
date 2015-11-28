@@ -152,32 +152,62 @@ Currently the only way to install is to git clone from the sf.net.
 The package is build in python3, and has a few dependencies.  On a debian derived Linux,
 one can build a debian package with ´debuild´ (in the sarracenia sub-directory), or 
 
+From Source
+~~~~~~~~~~~
+
+See Development Guide for instructions on how to build the various type of
+package files.
+
+
 Debian-Derived
 ~~~~~~~~~~~~~~
 
-Notes::
+The package can be downloaded and installed.
 
-   debuild -uc -us
-   dpkg -i ../metpx-sarracenia-0.1.1.all.dpkg
+   dpkg -i metpx-sarracenia-0.1.1.all.dpkg
 
-Native Python 
-~~~~~~~~~~~~~
+
+PIP
+~~~
+
+For many special cases, such as if using python in virtual env, it might be more pragmatic 
+to install the package using pip (python install package) from http://pypi.python.org/_.
+The application is registered in PyPi, 
+
+pip install metpx-sarracenia
+
+and to upgrade:
+
+pip install --upgrade metpx-sarracenia.
+
+
+Local Python 
+~~~~~~~~~~~~
 
 notes::
 
     python3 setup.py build
     python3 setup.py install
 
-    or?
 
-    pip3 install metpx-sarracenia   # not in pypi yet, but eventually.
+Windows
+~~~~~~~
 
+Any native python installation will do, but the dependencies in the standard python.org
+installation require the installation of a C-Compiler as well, so it gets a bit complicated.
+If you have an existing python installation that works with c-modules within it, then the
+complete package should install with all features.
+
+If you do not have a python environment handy, then the easiest one to get going with
+is winpython, which includes many scientifically relevant modules, and will easily install
+all dependencies for the package. You can obtain winpython from http://winpython.github.io/_
+Then one can install a wheel from sourceforge, or using pip and pypi.
 
 
 Operations
 ----------
 
-Stuff that should be running on a broker ::
+Stuff that should be running connected to a broker ::
 
   sr_log2source
   sr_source2log
