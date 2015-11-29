@@ -3,6 +3,12 @@
  MetPX-Sarracenia for Administrators
 =====================================
 
+.. NOTE::
+
+   NOT TO BE TRUSTED.  THERE IS NO MANUAL YET.
+   IF YOU DOWNLOADED THIS PACKAGE... IT IS STILL BEING DEVELOPED. 
+   USAGE MAY CHANGE.  NOT RELEASED YET.
+
 .. Contents::
 
 
@@ -15,17 +21,39 @@ Pre-Draft.  This document is still being built and should not be reviewed or rel
 Introduction
 ------------
 
-This Manual is a stub for now.  There is no useful Guide yet.  The man pages for the 
-individual commands are by and large accurate, but guides are missing for now.  
-This is a collection of tidbits that try to hint at how some tasks are accomplished.
+Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager,
+which sends advertisements in one direction, and log messages in the opposite direction.
+Administrators manually configure the paths that data flow at each switch, as each broker acts 
+independently, managing transfers from transfer engines it can reach, with no knowledge of 
+the overall network.  The locations of switches and the directions of traffic flow are 
+chosen to work with permitted flows.  Ideally, no firewall exceptions are needed.
+
+Sarracenia does no data transport.  It is a management layer to co-ordinate the use of
+transport layers.  So to get a running pump, actual transport mechanisms need to be set up
+as well.  The two mechanisms currently supported are web servers, and SFTP.  In the simplest
+case, all of the components are on the same server, but there is no need for that.  the
+broker could be on a different server from both ends of a given hop of a data transfer.
+
+The best way for data transfers to occur is to avoid polling (use of sr_watch.) It is more
+efficient if writers can be coaxed into emitting appropriate sr_post messages.  Similarly, 
+when delivering, it is ideal if the receivers use sr_subscribe, and a file_received hook
+to trigger their further processing, so that the file is handed to them without polling.
+This is the most efficient way of working, but it is understood that not all software
+can be made co-operative.
+
+Generally speaking, Linux is the main deployment target, and the only platform on which
+server configurations are deployed.  Other platforms are used as client end points.
+This isn´t a limitation, it is just what is used and tested.  Implementations of
+the pump on Windows should work, they just are not well tested.
+
 
 Mapping AMQP Concepts to Sarracenia
 -----------------------------------
 
 One thing that is safe to say is that one needs to understand a bit about AMQP to work 
 with Sarracenia.  AMQP is a vast and interesting topic in it's own right.  No attempt is 
-made to explain all of it here. This brief just provides a little context, and introduces only 
-background concepts needed to understand and/or use Sarracenia.  For more information 
+made to explain all of it here. This section just provides a little context, and introduces 
+only background concepts needed to understand and/or use Sarracenia.  For more information 
 on AMQP itself, a set of links is maintained at 
 the `Metpx web site <http://metpx.sourceforge.net/#amqp>`_ but a search engine
 will also reveal a wealth of material.
@@ -35,12 +63,10 @@ will also reveal a wealth of material.
     :align: center
 
 An AMQP Server is called a Broker. *Broker* is sometimes used to refer to the software,
-other times server running the broker software (same confusion as *web server*.) In the above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue.
- 
-There are many different broker software implementations. We use rabbitmq. 
-We are not trying to be rabbitmq specific, but management functions differ 
-between implementations.  So admin tasks require 'porting' while the main application 
-elements do not.
+other times server running the broker software (same confusion as *web server*.) In the 
+above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue.  There are 
+many different broker software implementations. We use rabbitmq.  We are not trying to 
+be rabbitmq specific, but management functions differ between implementations.  
 
 *Queues* are usually taken care of transparently, but you need to know
    - A Consumer/subscriber creates a queue to receive messages.
@@ -79,14 +105,15 @@ Sarracenia is an AMQP Application
 
 MetPX-Sarracenia is only a light wrapper/coating around AMQP.  
 
-- A MetPX-Sarracenia pump is a python AMQP application that uses an (rabbitmq) 
+- A MetPX-Sarracenia data pump is a python AMQP application that uses a (rabbitmq) 
   broker to co-ordinate SFTP and HTTP client data transfers, and accompanies a 
-  web server (apache) and sftp server (openssh) on the same user-facing address.  
+  web server (apache) and sftp server (openssh), often on the same user-facing address.  
 
 - Wherever reasonable, we use their terminology and syntax. 
   If someone knows AMQP, they understand. If not, they can research.
 
   - Users configure a *broker*, instead of a pump.
+  - by convention, the default vhost '/' is always used.  Use of other vhosts is untested.
   - users explicitly can pick their *queue* names.
   - users set *subtopic*, 
   - topics with dot separator are minimally transformed, rather than encoded.
@@ -144,13 +171,30 @@ types of ´spoofing´ as all messages can only be posted by proper owners.
 
 
 
+Transport Engines
+-----------------
+
+
+Apache Web Server
+~~~~~~~~~~~~~~~~~
+
+FIXME:
+some configuration snippets for the apache web server.
+
+
+
+OpenSSH Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+FIXME... special tunable notices here.
+
+
+
 Installation 
 ------------
 
-There is no installation procedure yet.  It is really a developer type process for now.
-Currently the only way to install is to git clone from the sf.net.
-The package is build in python3, and has a few dependencies.  On a debian derived Linux,
-one can build a debian package with ´debuild´ (in the sarracenia sub-directory), or 
+The package is built in python3, and has a few dependencies.  
+
 
 From Source
 ~~~~~~~~~~~
@@ -162,9 +206,10 @@ package files.
 Debian-Derived
 ~~~~~~~~~~~~~~
 
-The package can be downloaded and installed.
+The package can be downloaded from metpx.sf.net and installed.
 
    dpkg -i metpx-sarracenia-0.1.1.all.dpkg
+
 
 
 PIP
@@ -200,8 +245,9 @@ complete package should install with all features.
 
 If you do not have a python environment handy, then the easiest one to get going with
 is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for the package. You can obtain winpython from http://winpython.github.io/_
-Then one can install a wheel from sourceforge, or using pip and pypi.
+all dependencies for Sarracenia. You can obtain winpython from http://winpython.github.io/_
+(note: select python version >3 ) Then one can install a wheel from sourceforge, or using 
+pip. 
 
 
 Operations
@@ -216,36 +262,13 @@ Stuff that should be running connected to a broker ::
   queue_manager.py
 
 
-Add User
-~~~~~~~~
+Configuration
+-------------
 
-This just shows how to add a user to Rabbitmq broker with appropriate permissions.
-You will need to cover authentication as needed by the payload transport protocol
-(SFTP, FTP, or HTTP(S)) separately.
-
-Adding a user at the broker level and its permission (conf,write,read):
-
-  rabbitmqctl add_user Alice <password>
-  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
-
-A functional user with all permissions should be used on sarracenia broker...
-
-  rabbitmqctl add_user feeder <password>
-  rabbitmqctl set_permissions -p / Alice   ".*" ".*" ".*"
-
-By default an installation of a rabbitmq-server makes user guest the administrator... with password guest
-This should be changed for operational implementations... To void the guest user we suggest
-
-  rabbitmqctl set_user_tags guest
-  rabbitmqctl list_user_permissions guest
-  rabbitmqctl change_password guest ************
-
-And another administrator should be defined... we usually call it root...
-
-  rabbitmqctl add_user root   *********
-  rabbitmqctl set_user_tags root administrator
-
-Then you need to do the same work for sftp and or apache servers as required.
+Which user?  root, feeder?, other?  where
+Talk about switch setup...
+~/.config/sarra/...
+appdirs module...
 
 
 Housekeeping
@@ -265,45 +288,30 @@ This script is in samples/program, rather than as part of the package (as an sr_
 Rabbitmq Setup 
 --------------
 
-Sample information on setting up a rabbitmq broker for sarracenia to use.
+Sample information on setting up a rabbitmq broker for sarracenia to use.  The broker does not have to 
+be on the same host as anything else, but there has to be one reachable from at least one of the 
+transport engines.
+
 
 Installation
 ~~~~~~~~~~~~
 
-On machines that need to process AMQP messages, we need to install the server (or ´broker´) by installing the rabbitmq-server package.  On a debian derived system, the broker is installed as follows:
+Generally speaking, we want to stay above 3.x version.  
 
+https://www.rabbitmq.com/install-debian.html
+  - enable their repo. get the latest rabbitmq
+  - the one in the wheezy depot is < 3.  too old?
+
+apt-get update
 apt-get install rabbitmq-server
 
+in upto-date distros, you likely can just take the distro version.
 
-then run a bunch of configuration commands::
+The initial configuration of a broker set up as a Sarracenia data pump involves creating a number
+of exchanges and using a number of conventions around permissions. this setup needs to be done
+as root. We assume that admin work is done on the same server that is running the broker.
 
-  # create anonymous user
-  # password ********* provided in patates
-  #                                          conf write read
-  rabbitmqctl add_user anonymous *********
-  rabbitmqctl set_permissions -p / anonymous   "^xpublic|^amq.gen.*$|^cmc.*$"     "^amq.gen.*$|^cmc.*$"    "^xpublic|^amq.gen.*$|^cmc.*$"
-  rabbitmqctl list_user_permissions anonymous
-  
-  # create feeder user
-  # password ********* provided in patates
-  #                                       conf write read
-  rabbitmqctl add_user feeder ********
-  rabbitmqctl set_permissions -p / feeder  ".*"  ".*"  ".*"
-  rabbitmqctl list_user_permissions feeder
-  
-  # create administrator user
-  # password ********* provided in patates
-  
-  rabbitmqctl add_user root   *********
-  rabbitmqctl set_user_tags root administrator
-  
-  # takeaway administrator privileges from guest
-  rabbitmqctl set_user_tags guest
-  rabbitmqctl list_user_permissions guest
-  rabbitmqctl change_password guest ************
-
-  # list users
-  rabbitmqctl list_users
+The following configure rabbit for initial use::
 
   # enabling management web application
   # this is important since sr_rabbit uses this management facility/port access
@@ -312,13 +320,86 @@ then run a bunch of configuration commands::
   rabbitmq-plugins enable rabbitmq_management
   /etc/init.d/rabbitmq-server restart
 
+  # Obtain the rabbitmqadmin script from the broker just installed.  
+  cd /usr/local/sbin
+  wget http://localhost:15672/cli/rabbitmqadmin
+  chmod 755 rabbitmqadmin
+
   # within sarracenia,  the creation of exchanges is done by the broker administrator
   # mandatory exchanges should be created (xpublic, xlog)
 
-  wget http://broker.domain.com:15672/cli/rabbitmqadmin
-  chmod 755 rabbitmqadmin
   rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xpublic type=topic auto_delete=false durable=true
   rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xlog    type=topic auto_delete=false durable=true
+
+
+SSL Setup
+~~~~~~~~~
+
+This should be mandatory, and included here as part of setup.
+Wait until December 3rd, 2015... see if letsencrypt provides a simpler setup method.
+
+
+Change Defaults 
+~~~~~~~~~~~~~~~
+
+By default, an installation of a rabbitmq-server makes user guest the administrator... with password guest
+This should be changed for operational implementations... To void the guest user we suggest
+
+  rabbitmqctl set_user_tags guest
+  rabbitmqctl list_user_permissions guest
+  rabbitmqctl change_password guest ************
+
+And another administrator should be defined... we usually call it root...
+
+  rabbitmqctl add_user root   *********
+  rabbitmqctl set_user_tags root administrator
+  rabbitmqctl set_permissions root   ".*" ".*" ".*"
+
+
+
+Add a Feeder
+~~~~~~~~~~~~
+
+Each pump has a user that does the pump's activities, such as for use by sr_sarra running locally.
+It is usually feeder users that subscribe to other pumps to pull data in.
+That is a user with all permissions should be used on sarracenia broker...
+
+  rabbitmqctl add_user feeder <password>
+  rabbitmqctl set_permissions feeder   ".*" ".*" ".*"
+
+Feeders read from user queues, validate that there is no spoofing, and then further process.
+
+At the operating system level...
+sr_sarra is usually invoked by the feeder user, so it needs to have permission
+users?
+
+
+Add User
+~~~~~~~~
+
+This just shows how to add a user to Rabbitmq broker with appropriate permissions.
+You will need to cover authentication as needed by the payload transport protocol
+(SFTP, FTP, or HTTP(S)) separately.
+
+These users have the permissions to allow use the client programs sr_post, sr_subscribe, etc... 
+They can declare queues for their own use (with names that identify them clearly) and they can 
+read from xpublic, and their own log exchange but they are only able to write their xs_<user> 
+exchange.
+
+Adding a user at the broker level and its permission (conf,write,read):
+
+  rabbitmqctl add_user Alice <password>
+  rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
+
+or, parametrized:
+
+  u=Alice
+  rabbitmqctl add_user ${u} <password>
+  rabbitmqctl set_permissions -p / ${u} "^q_${u}.$" "^q_${u}.*$|^xs_${u}$" "^q_${u}.*$|^xl_${u}$|^xpublic$"
+
+
+Then you need to do the same work for sftp and or apache servers as required.
+
 
 
 Clustered Broker 
