@@ -492,18 +492,14 @@ This is about outputs from URP (how products are shipped out.)
 For how URP acquires data, see next point.
 
 A result of this should be *sr_winnow* and conventions around how
-the multi-source reliability feeds are dealt with.  Peter´s opening
-guess:
+the multi-source reliability feeds are dealt with.  
 
-each urp has a username (say urp1 and urp2), each one posts to
-xs_urp1, and xs_urp2.  sr_winnow maintains a table of path
-and checksums it has already seen.  When it sees a new checksum
-it enters it and the corresponding path into the table. 
-
-If the checksum is new, then the source is re-written (sr_winnow
-output_source config option?) so that it appears to come from the
-*urp* source, and is posted to xs_urp.   A Normal sr_sarra processes
-the xs_urp exchange normally.
+The urps share username (say urp), and they both post to
+xs_urp. sr_winnow maintains a table of path and checksums it has 
+already seen.  When it sees a new checksum it enters it 
+and the corresponding path into the table, and posts it
+to the xwinnow exchange.   A Normal sr_sarra processes the xwinnow
+exchange normally (treated as a multi-user switch, so no source check.)
 
 Initial Delivery:  March 31st 2016 
 
@@ -512,15 +508,11 @@ Questions/Comments:
 
 - Peter is thinking that we don´t want three copies of everything
   on each site (a1, a2, and a), but just one (a).  If the sources
-  a really different, you want multiples, but if they are identical, no.
-
-- should the exchanges subject to winnowing be named
-  differently, so that _sarra pays attention to all xs_* and winnow
-  pays attention to all xw_* ?  perhaps cleaner? but if someone 
-  really wants to see urp1 outputs?
+  a really different, you want multiples, but if they are identical, 
+  no.
 
 - should we just put a broker on each URP cluster, have a shovel
-  from xpublic on each urp to xs_urpX on a switch, and the
+  from xpublic on each urp to xs_urp on a switch, and the
   processing is unchanged after that.  Someone wants access
   to urp1 output just connects to either cluster directly.
   is that pointless? 
