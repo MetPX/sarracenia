@@ -70,7 +70,7 @@ sont aussi grandement simplifiés.
 Tandis que Sundew supporte plusieurs protocoles et formats de la météorologie,
 Sarracenia se retire de cette spécificité et généralise son approche, ce qui lui permet d'être utile pour dŽautres domaines scientifiques. Le client prototype, dd_subscribe, est en service depuis
 2013 et implante une grande partie des fonctions de consommateurs de données. Elle est la seule composante
-dans les paquets Debian actuels. Le reste des composantes devraient être disponibles à l'automne 2015.
+dans les paquets Debian actuels. Le reste des composantes devraient être disponibles durant le printemps de 2016.
 
 Sarracenia est plus simple que Sundew, peu importe l'utilisateur: opérateur, dévéloppeur, analyste, 
 source et consommateurs de données. Bien quŽil impose une interface pour lŽaccès au 

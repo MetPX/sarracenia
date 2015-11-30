@@ -84,7 +84,7 @@ specific applications and is a ruthlessly generic tree replication engine, which
 should allow it to be used in other domains.  The prototype client, dd_subscribe, 
 in use since 2013, implements the consumer end of the switch's functions, and is 
 the only component present in current packages.  The rest of MetPX-Sarracenia should 
-be included in packages by the Fall of 2015.
+be included in packages by the Spring of 2016.
 
 Sarracenia is expected to be a far simpler application than sundew from every 
 point of view: Operator, Developer, Analyst, Data Sources, Data consumers.  
