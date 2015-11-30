@@ -4,7 +4,7 @@
 #Guide.rtf:   Guide.latex
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
-GUIDES= Dev.html Admin.html
+GUIDES= Dev.html Admin.html indexe.html indexf.html
 
 MANPAGES= sr_sarra.8.html sr_subscribe.1.html dd_subscribe.1.html sr_watch.1.html sr_post.1.html sr_post.7.html sr_log.7.html sr_log2clusters.8.html log2clusters.7.html sr_log2source.8.html
 
@@ -68,6 +68,12 @@ Dev.html: ../Dev.rst
 
 Admin.html: ../Admin.rst AMQP4Sarra.svg
 	rst2html ../Admin.rst >Admin.html
+
+indexe.html: ../indexe.rst
+	rst2html ../indexe.rst >indexe.html
+
+indexf.html: ../indexf.rst
+	rst2html ../indexf.rst >indexf.html
 
 clean: 
 	rm -f $(TARGETS) 
