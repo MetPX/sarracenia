@@ -6,7 +6,7 @@
 
 GUIDES= Dev.html Admin.html
 
-MANPAGES= sr_sarra.8.html sr_subscribe.1.html dd_subscribe.1.html sr_watch.1.html sr_post.1.html sr_post.7.html sr_log.7.html sr_log2clusters.8.html sr_log2source.8.html
+MANPAGES= sr_sarra.8.html sr_subscribe.1.html dd_subscribe.1.html sr_watch.1.html sr_post.1.html sr_post.7.html sr_log.7.html sr_log2clusters.8.html log2clusters.7.html sr_log2source.8.html
 
 TARGETS= $(MANPAGES) $(GUIDES)
 
@@ -46,6 +46,9 @@ sr_post.1.html: ../sr_post.1.rst
 
 sr_post.7.html: ../sr_post.7.rst
 	rst2html ../sr_post.7.rst >sr_post.7.html
+
+log2clusters.7.html: ../log2clusters.7.rst
+	rst2html ../log2clusters.7.rst >log2clusters.7.html
 
 sr_log2clusters.8.html: ../sr_log2clusters.8.rst
 	rst2html ../sr_log2clusters.8.rst >sr_log2clusters.8.html

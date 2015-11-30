@@ -1,27 +1,27 @@
 
-=================
- log_routing.conf
-=================
+===================
+ log2clusters.conf
+===================
 
 -------------------------------------
 Return Log of the Products to Brokers
 -------------------------------------
 
-:Manual section: 1 
+:Manual section: 7 
 :Date: Oct 2015
-:Version: 0.0.1
+:Version: 0.1.1
 :Manual group: MetPx Sarracenia Suite
 
 
 PLACEMENT
 =========
 
-**~/.config/sarra/log_routing.conf**
+**~/.config/sarra/log2clusters.conf**
 
 DESCRIPTION
 ===========
 
-The file ~/.config/sarra/log_routing.conf defines where the logs, 
+The file ~/.config/sarra/log2clusters.conf defines where the logs, 
 for a given cluster, must be sent to. The file has the following syntax :
 
 cluster_Name broker_Url exchange_Log

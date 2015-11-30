@@ -21,7 +21,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_log2clusters** is a program that reads the file `log_routing(7) <log_routing.7.html>`_.
+**sr_log2clusters** is a program that reads the file `log2clusters(7) <log2clusters.7.html>`_.
 An instance of **sr_log2clusters** is started for each line of the config file
 that defines a cluster name log targer : 'cluster_Name broker_Url exchange_Log'.
 
