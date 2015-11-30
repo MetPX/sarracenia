@@ -64,5 +64,5 @@ all logs messages related to **cluster_Name** will be delivered.
 SEE ALSO
 ========
 
-`sr_log2clusters(1) <sr_log2clusters.1.html>`_ - routing logs back to some clusters.
+`sr_log2clusters(8) <sr_log2clusters.8.html>`_ - routing logs back to some clusters.
 
