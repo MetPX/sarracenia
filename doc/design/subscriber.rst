@@ -15,20 +15,21 @@ Receiving Data from a MetPX-Sarracenia Data Pump
 Introduction
 ------------
 
-This is an introduction to obtaining data
-from MetPX-Sarracenia data pumps. For detailed
-reference material, please consult the 
-traditional sr_subscribe(1) man page.
-
 A Sarracenia data pump is a web server with a notification
 system for subscribers to know, quickly, when new
 data has arrived.  To find out what data is available 
 on a pump, just view the tree with a web browser.  For 
 small immediate needs one can download data using the 
-browser itself, but that is not really the intended use.  
-In general, one configures sr_subscribe, the sarracenia downloader,
-to automatically download the data you want, to a directory
-where other software can process it.
+browser itself, or any standard downloader such as wget,
+but that is not really the intended use.  
+
+In general, one configures sr_subscribe to automatically 
+download the data you want, to a directory
+where other software can process it.  Please note that
+the tool is entirely command line driven (there is no GUI)
+and that, while written to be compatible with other 
+environments, the focus is on Linux usage in programmatic 
+settings.
 
 While Sarracenia can work with any web tree, or any URL 
 that sources want to post, there is a conventional layout.
@@ -49,6 +50,10 @@ dd.weather.gc.ca, pre-dates the convention.
 
 FIXME: insert standard tree image.
 
+Please note that this is an introduction to obtaining data
+from MetPX-Sarracenia data pumps. More detailed reference material
+is available at the traditional sr_subscribe(1) man page,
+and the other documentation of the package at http://metpx.sf.net_
 
 A First Example
 ---------------
@@ -139,6 +144,19 @@ If higher performance is needed, then the *instance* option can be set
 to a higher number, and that number of sr_subscribers will share
 the work of downloading, each with their own log file.
 
+As the start up is normal, that means the authentication information was good.
+Passwords are stored in the ~/.config/sarra/credentials.conf file.
+The format is just a complete url on each line.  Example for above would be::
+  
+  amqp://anonymous:anonymous@dd.weather.gc.ca/
+
+the password being placed after the :, and before the @ in the URL as is standard
+practice.  This file should be private (0600).  
+
+.. note::
+   FIXME: we should probably disable inclusion of passwords on the command line.
+   it is just asking for issues.  safer to store in credentials.conf one method is better than two?
+
 A normal download looks like this::
 
   2015-12-03 17:32:15,031 [INFO] Received topic   v02.post.observations.swob-ml.20151203.CMED
@@ -155,7 +173,7 @@ Here is a failure::
   2015-12-03 17:32:30,786 [ERROR] Download failed http://dd2.weather.gc.ca/observations/swob-ml/20151203/CXFB/2015-12-03-2200-CXFB-AUTO-swob.xml
   2015-12-03 17:32:30,787 [ERROR] Server couldn't fulfill the request. Error code: 404, Not Found
 
-after a few minutes, Here is what the current disectory looks like::
+after a few minutes, Here is what the current directory looks like::
 
   blacklab% ls -al | tail
   -rw-rw-rw-  1 peter peter   7875 Dec  3 17:36 2015-12-03-2236-CL3D-AUTO-minute-swob.xml
@@ -434,6 +452,121 @@ usually correspond to a file, but for large files, there will be one
 message per part. Checking the xxx...FIXME to find out which part 
 you have.
 
+.. note:: 
+   FIXME: perhaps show a way of checking the parts header to 
+   with an if statement in order to act on only the first part message
+   for long files.
 
 
+Partial File Updates
+--------------------
+
+When files are large, they are divided into parts.  Each part is transferred
+separately by sr_sarracenia.  So when a large file is updated, new part
+notifications (posts) are created.  sr_subscribe will check if the file on 
+disk matches the new part by checksumming the local data and comparing
+that to the post.  If they do not match, then the new part of the file
+will be downloaded.
+
+
+Redundant File Reception
+------------------------
+
+In environments where high reliability is required, multiple servers
+are often configured to provide services. The Sarracenia approach to
+high availability is ´Active-Active´ in that all sources are online
+and producing data in parallel.  Each source publishes data,
+and consumers obtain it from the first source that makes it availble,
+using checksums to determine whether the given datum has been obtained
+or not.
+
+Approach 1
+~~~~~~~~~~
+
+The simplest approach to high availability is to configure a 
+separate sr_subscribe for each source pump to write to the same
+destination directories.  When one subscribe seeks to download data, 
+it will look on local disk to see if is already there (as per the
+partial file updates described above.) If the other subscribe has
+already downloaded the file, then it will be there, and the other
+subscribe will leave it alone.
+
+This approach can lead to race conditions, where the two sr_subscribes
+each check, that the file has not arrived, so they both start 
+downloading.  This will have the effect of downloading ´raced´ files 
+multiple times, while no file corruption should result from this,
+it will cause the file to disappear after reception for a very short 
+period (as one copy is replaced by another.)
+
+FIXME: example of two sr_subscribes one pointing at edm, the other at CMC.
+
+Approach 2
+~~~~~~~~~~
+
+To get around the race conditions, and avoid redundant downloading,
+one would use sr_winnow2??? a process that would subscribe to both
+upstreams and pick one, the same way sr_winnow works on a single
+exchange.
+
+FIXME:
+
+
+Approach 3
+~~~~~~~~~~
+
+Force the user to install a local pump, run sr_winnow on the local pump.
+This makes a lot of sense for SPC´s where otherwise every workstation
+is doing this work independently.  They could aim at a local pump instead.
+
+Approach 4
+~~~~~~~~~~
+
+sample config file::
+
+  blacklab% cat >../dd_swob.conf <<EOT
+
+  broker amqp://edm.ec.gc.ca,amqp://ddi.cmc.ec.gc.ca
+
+  subtopic observations.swob-ml.#
+  accept .*
+  # do_something will catenate document_root with the path in 
+
+Make broker a comman-separated list.  Have sr_subscribe connect to 
+multiple upstreams.  since sr_subscribe already does not block, this 
+is not a big deal?  could just check each subscription in turn.  All 
+the other options (subtopic, accept/reject, directory) would be the same?
+
+The change to sr_subscribe would be to add the same associative array
+used in sr_winnow.  entries in the table would need to be aged out...
+
+aging strategy:  once the file is written to disk, remove from table,
+because it is on disk, so can always get it again... except... memory
+is faster, why force recalculation if you don´t need to...
+
+perhaps aging is better.  1 Associative array built per hour.
+look in 1 array for the current hour, a second for the last hour.
+when you get to a new hour, you throwout the oldest one (so it will
+go to disk.)
+
+what is the associative array for?  same as in sr_winnow:
+	- indexed by checksum.
+	- if it´s present, then we have already chosen to download it.
+          so do not pass to download process.
+
+This could be combined with approach 3 at SPC´s where instead of
+doing HA with two local pumps, they just have two independent pumps,
+sarra´d together (basically mini-ddi´s.)
+
+
+Approach 5
+~~~~~~~~~~
+
+on_message action to do the same thing as Approach 4.  I think it is
+such a common use case, that it should be built-in somehow... mind
+you it could be a standard on_message script...  one we would provide
+with sarracenia, but still need a change in sr_subscribe to connect to 
+two upstreams.
+
+That allows omission of the associative array etc... when not listening
+to multiple upstreams.
 
