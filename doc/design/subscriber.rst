@@ -401,3 +401,39 @@ An additional point is that if the processing of files is invoked
 in each instance, providing very easy parallel processing built 
 into sr_subscribe.  
 
+
+File Notification Without Downloading
+-------------------------------------
+
+If the data pump exists in a large shared environment, such as
+a Supercomputing Centre with a site file system.  In that case,
+the file might be available without downloading.  So just
+obtaining the file notification and transforming it into a 
+local file is sufficient::
+
+  blacklab% cat >../dd_swob.conf <<EOT
+
+  broker amqp://anonymous@dd.weather.gc.ca
+  subtopic observations.swob-ml.#
+  no_download
+  document_root /data/web/dd_root
+  on_message do_something
+
+  accept .*
+  # do_something will catenate document_root with the path in 
+  # the notification to obtain the full local path.
+
+.. note:: 
+   FIXME:: --no_download exists, but not no_download, patch sr_config
+   option is called notify_only, which seems a lot less obvious to me... ?
+
+
+on_message is a scripting hook, exactly like on_file, that allows
+specific processing to be done on receipt of a message.  A message will
+usually correspond to a file, but for large files, there will be one
+message per part. Checking the xxx...FIXME to find out which part 
+you have.
+
+
+
+
