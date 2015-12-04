@@ -405,8 +405,8 @@ Then you need to do the same work for sftp and or apache servers as required.
 
 
 
-Clustered Broker 
-~~~~~~~~~~~~~~~~
+Advanced Installations
+----------------------
 
 On some configurations (we usually call them *bunny*), we use a clusterd rabbitmq, like so::
 
@@ -548,6 +548,14 @@ The answer I got from the Rabbitmq gurus ::
   
   Cheers, Simon
   
+
+Security Scanning
+~~~~~~~~~~~~~~~~~
+
+In cases where security scanning of file being transferred is deemed necessary, one configures sarra with an on_part hook.
+FIXME: need an example of an on_file hook to call Amavis.  Have it check which part of a file is in question, and only scan
+the initial part.
+
 
 Hooks from Sundew
 -----------------
