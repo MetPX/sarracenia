@@ -223,7 +223,7 @@ pip install metpx-sarracenia
 
 and to upgrade:
 
-pip install --upgrade metpx-sarracenia.
+pip install --upgrade metpx-sarracenia
 
 
 Local Python 
@@ -261,6 +261,9 @@ Stuff that should be running connected to a broker ::
   and some number of sr_winnows and sr_sarra's.
   queue_manager.py
 
+For a switch there needs to be at least one adminsitrative user:
+- one with the power to create exchanges and permissions (rabbitmq administrator)
+- one to do do data movements.
 
 Configuration
 -------------

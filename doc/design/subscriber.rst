@@ -22,7 +22,7 @@ traditional sr_subscribe(1) man page.
 
 A Sarracenia data pump is a web server with a notification
 system for subscribers to know, quickly, when new
-data has arrived.   To find out what data is available 
+data has arrived.  To find out what data is available 
 on a pump, just view the tree with a web browser.  For 
 small immediate needs one can download data using the 
 browser itself, but that is not really the intended use.  
@@ -37,15 +37,15 @@ and the root of the tree is the date, in YYYYMMDD format.
 
 These dates do not represent anything about the data other than 
 when it was put into the pumping network, and since Sarracenia 
-always uses Universal Co-ordinated Time the dates might not correspond
+always uses Universal Co-ordinated Time, the dates might not correspond
 the current date/time in the location of the subscriber.
 
 Under the first level of date trees, there is a directory
 per source.  A Source in Sarracenia is an account used to inject
 data into the pump network.  Data can cross many pumps on it´s
-way to the visible one.  The above is the conventional tree
-one will find on most data pumps, but the original data
-pump, dd.weather.gc.ca pre-dates the convention.
+way to the visible one.  The tree described above is the conventional 
+one found on most data pumps, but the original data pump, 
+dd.weather.gc.ca, pre-dates the convention.
 
 FIXME: insert standard tree image.
 
@@ -64,10 +64,13 @@ forecast office.
 
 A configuration to obtain these files will look like so::
 
+  blacklab% cat >../dd_swob.conf <<EOT
+
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
   # write all SWOBS into the current working directory.
+  EOT
 
 The first line *broker* indicates where to connect to get the
 stream of notifications.   The term *broker* is taken from AMQP, which
@@ -180,12 +183,15 @@ downloaded.
 
 Note the following::
 
+  blacklab% cat >../dd_swob.conf <<EOT
+
   broker amqp://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
 
   #write all SWOBS into the current working directory
   #BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE .
   #     no subtopic means excessive notifications processed.
+  EOT
 
 This configuration, from the subscriber point of view, will likely deliver
 the same data as the previous example. However, the default subtopic being 
@@ -203,10 +209,10 @@ than replace it.
 By default, the files downloaded will be placed in the current working
 directory.   
 
-
-
 If downloading a directory tree, and the intent is to mirror
 the tree, then the option mirror should be set::
+
+  blacklab% cat >../dd_swob.conf <<EOT
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -216,6 +222,7 @@ the tree, then the option mirror should be set::
   #
   # instead of writing to current working directory, write to /tmp.
   # in /tmp. Mirror: create a hierarchy like the one on the source server.
+  EOT
 
 one can also intersperse *directory* and *accept/reject* directives to build
 an arbitrarily different hierarchy.
@@ -242,11 +249,27 @@ This can be done via either a traditional ´ls´ loop::
 This will poll the directory every five secondsa and feed file names to ''do_something'',
 excluding any hidden files, or the sr_* logs.  Hidden files are used to store file
 fragments until a complete file is received, so it is important to avoid processing 
-them until the complete file is received.  
+them until the complete file is received.  Sometimes existing software already scans 
+directories, and has fixed ideas about the files it will ingest and/or ignore.
+The *lock* option allows one to set the name of the temporary files during transfer
+to conform to other software´s expectations. 
 
-The 'ls' method works well if ''do_something'' erases the file after it is processed, 
-so that the 'ls' command is only ever processing a small directory tree, and every 
-file that shows up is *new*.
+Setting *lock* to ´.´ will cause the temporary files to begin a dot, the tradition
+for making hidden files on linux.  Setting a lock to something other than that will
+´say .temp´ will cause the name of the temporary files to be suffixed with ´.temp´
+When a file is completely received, it will be renamed, removing the .temp suffix.
+Another possibility is to use *tmpdir* dir option.  When software is particularly
+stubborn about ingesting anything it sees::
+
+ tempdir ../temp
+
+setting the tempdir option to a tree outside the actual destination dir will cause 
+the file to be assembled elsewhere and only renamed into the destination directory 
+once it is complete.
+
+The 'ls' method works especially well if ''do_something'' erases the file after it 
+is processed, so that the 'ls' command is only ever processing a small directory 
+tree, and every file that shows up is *new*.
 
 For a hierarchy of file (when mirror is true), ls itself is a bit unwieldy.  Perhaps 
 the following is better::
@@ -255,7 +278,6 @@ the following is better::
      find . -print | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something
      sleep 5
   done
-
 
 There is also the complexity that *do_something* might not delete files.  In that case,  
 one needs to filter out the files which have already been processed.  Perhaps rather than 
@@ -268,21 +290,33 @@ changed since the last poll::
      find . -newer .last_poll -print | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something
   done
 
-To avoid polling, one can use the inotifywait command, instead::
+All of these methods have in common that one walks a file hierarchy every so often.  So we
+Poll each directory periodically.  There is a natural maximum rate one can poll a directory
+tree, and there is good deal of overhead to walking trees, especially when they are large 
+and deep.  To avoid polling, one can use the inotifywait command::
 
-  inotifywait `pwd` | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something 
+  inotifywait -r `pwd` | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something 
 
-But the efficiency of inotify might not be all that different from polling on remote
+On a truly local file system, inotifywait is a lot more efficient than polling methods, 
+but the efficiency of inotify might not be all that different from polling on remote
 directories (where, in some cases it is actually implemented by polling under the covers.)
-There is also a limit to the number of inotifywaits that can be active on a system as a whole
+There is also a limit to the number of things that can be watched this way on a system as a whole
 and the process of scanning a large directory tree to start up an inotifywait can be quite
 significant.
+
+Regardless of the method used, the principle behind Basic File Reception is that sr_subscribe
+writes the file to a directory, and an independent process does i/o to find the new file.
+
+It is wortth noting that it would be more efficient, in terms of cpu and i/o of the system,  
+if sr_subscribe would directly inform the processing software that the file has arrived.
+
 
 Better File Reception
 ---------------------
 
-Ideally, rather than using the file system, sr_subscribe indicates when each 
-file is ready:: 
+Ideally, rather than using the file system, sr_subscribe indicates when each file is ready:: 
+
+  blacklab% cat >../dd_swob.conf <<EOT
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -292,10 +326,11 @@ file is ready::
   accept .*
   # rxpipe is a builtin on_file script which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
+  EOT
 
-With the *on_file* option, one can specify a built-in sample such as rxpipe.  With rxpipe, 
-every time a file transfer has completed and is ready for post-processing, it's name is written 
-to the linux named pipe in the current working directory.  So the code for post-processing 
+With the *on_file* option, one can specify a processing option such as rxpipe.  With rxpipe, 
+every time a file transfer has completed and is ready for post-processing, its name is written 
+to the linux pipe (named .rxpipe) in the current working directory.  So the code for post-processing 
 becomes::
 
   do_something <.rxpipe
@@ -312,9 +347,10 @@ completely avoided.
 Advanced File Reception
 -----------------------
 
-the *on_file* directive specifies the name of
-a snippet of python to be run when a file is received.  The rxpipe module is just an 
-example provided with sarracenia::
+While the *on_file* directive specifies the name of an action to perform on receipt
+of a file, those actions are not fixed, but simply small scripts provided with the
+package, and customizable by end users.  The rxpipe module is just an example 
+provided with sarracenia::
 
   class RxPipe(object):
       import os,stat
@@ -361,9 +397,7 @@ data delivery mechanism.  If the processing gets stuck, then the sr_subscriber
 will stop downloading, and the queue will be on the server,
 rather than creating a huge local directory on the client.
 
-An additional point is that if the processing of files is easily parallelized then 
-having each one run by one subscriber instance provides very easy parallel 
-processing built into sr_subscribe.  
-
-
+An additional point is that if the processing of files is invoked
+in each instance, providing very easy parallel processing built 
+into sr_subscribe.  
 
