@@ -48,6 +48,12 @@ Options are placed in the configuration file, one per line, of the form:
 
 Comment lines begins with **#**. 
 Empty lines are skipped.
+For example::
+
+  **debug true**
+
+would be a demonstration of setting the option to enable more verbose logging.
+
 
 
 INSTANCES

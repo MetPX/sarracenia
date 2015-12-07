@@ -223,7 +223,7 @@ pip install metpx-sarracenia
 
 and to upgrade:
 
-pip install --upgrade metpx-sarracenia.
+pip install --upgrade metpx-sarracenia
 
 
 Local Python 
@@ -261,6 +261,9 @@ Stuff that should be running connected to a broker ::
   and some number of sr_winnows and sr_sarra's.
   queue_manager.py
 
+For a switch there needs to be at least one adminsitrative user:
+- one with the power to create exchanges and permissions (rabbitmq administrator)
+- one to do do data movements.
 
 Configuration
 -------------
@@ -402,8 +405,8 @@ Then you need to do the same work for sftp and or apache servers as required.
 
 
 
-Clustered Broker 
-~~~~~~~~~~~~~~~~
+Advanced Installations
+----------------------
 
 On some configurations (we usually call them *bunny*), we use a clusterd rabbitmq, like so::
 
@@ -545,6 +548,14 @@ The answer I got from the Rabbitmq gurus ::
   
   Cheers, Simon
   
+
+Security Scanning
+~~~~~~~~~~~~~~~~~
+
+In cases where security scanning of file being transferred is deemed necessary, one configures sarra with an on_part hook.
+FIXME: need an example of an on_file hook to call Amavis.  Have it check which part of a file is in question, and only scan
+the initial part.
+
 
 Hooks from Sundew
 -----------------

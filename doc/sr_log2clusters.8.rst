@@ -39,9 +39,16 @@ followed by an action start|stop|restart|reload|status... (self described).
 CONFIGURATION
 =============
 
-Options are placed in the command line in the form: 
+Options are placed in the command line in the form:: 
 
-**-option <value>** 
+  **-option <value>** 
+
+For example::
+
+  **debug true**
+
+would be a demonstration of setting the option to enable more verbose logging.
+
 
 BROKER
 ------

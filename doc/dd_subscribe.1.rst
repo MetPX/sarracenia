@@ -40,11 +40,15 @@ The **dd_subscribe** command takes one argument: a configuration file described 
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
+Options are placed in the configuration file, one per line, of the form:: 
 
-**option <value>** 
+  **option <value>** 
 
-Comment lines begins with **#**. 
+Comment lines begins with **#**. For example::
+
+  **debug true**
+
+would be a demonstration of setting the option to enable more verbose logging. 
 
 
 RABBITMQ CREDENTIAL OPTIONS
