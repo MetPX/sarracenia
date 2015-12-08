@@ -27,22 +27,52 @@ cd sarracenia.
 The rest of the Guide assumes you are there.
 
 
-------------------
+Release Process
+---------------
+
+
+Versioning Scheme
+~~~~~~~~~~~~~~~~~
+
+Each release will be versioned as ``<protocol version>.<YY>.<MM> <segment>``
+
+
+Where:
+
+- **protocol version** is the message version. In Sarra messages, they are all prefixed with v02 (at the moment).
+- **YY** is the last two digits of the year of the initial release in the series.
+- **MM** is a TWO digit month number i.e. for April: 04.
+- **segment** is what would be used within a series. 
+  from pep0440:
+  X.YaN   # Alpha release
+  X.YbN   # Beta release
+  X.YrcN  # Release Candidate
+  X.Y     # Final release
+
+Example: 
+
+A release in January 2016 would be version as
+
+    metpx-sarracenia-2.16.01a01
+
+Cutting a New Release
+~~~~~~~~~~~~~~~~~~~~~
+
+Prior to tagging the release, the file ``sarra/__init__.py`` should be modified and the version number increased.
+
+Each new release triggers a *tag* in the git repository.
+
+Example::
+
+    git tag -a rel2.16.01a01 -m "release 2.16.01a01"
+
+
 Building a Release
 ------------------
 
 
-
-What commands are needed to perform a release:
-
-- git branch
-
-Name the version in a way compatible with PEP440.
-Then create the various packages:  upload to 
-
-
 Python Wheel
-------------
+~~~~~~~~~~~~
 
 For testing and development:
 
@@ -53,7 +83,7 @@ should build a wheel in the dist sub-directory.
 
 
 PyPi
-----
+~~~~
 
 Assuming pypi upload credentials are in place, uploading a new release is a one liner:
 
@@ -64,7 +94,7 @@ Note that the same version can never be uploaded twice. Need to clarify versioni
 
 
 Debian/Ubuntu
--------------
+~~~~~~~~~~~~~
 
 - check the **build-depends** line in *debian/control* for requirements to build from source.
 - The following steps will build sarracenia but not sign the changes or the source package::
@@ -73,12 +103,16 @@ Debian/Ubuntu
     debuild -uc -us
 
 
-RPM
----
+Launchpad
+~~~~~~~~~
+TODO
 
+RPM
+~~~
+TODO
 
 Windows
--------
+~~~~~~~
 
 Just do the whole python install thing with all steps for now.
 
