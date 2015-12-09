@@ -130,23 +130,3 @@ class Chunk:
         data_sum = self.chksum(self.filepath,current_block*self.chunksize,self.chunksize)
 
         return (self.chunksize, self.block_count, self.remainder, current_block, data_sum) 
-
-
-# ===================================
-# Seek info
-# ===================================
-
-def Seekinfo( chunksize, block_count, remainder, current_block ):
-    chunksize     = int(chunksize)
-    block_count   = int(block_count)
-    remainder     = int(remainder)
-    current_block = int(current_block)
-
-    offset = current_block * chunksize
-    length = chunksize
-    if remainder > 0 and current_block == block_count-1 : length = remainder
-
-    fsiz   = block_count * chunksize
-    if remainder > 0 : fsiz = fsiz - chunksize + remainder
-
-    return offset,length,fsiz

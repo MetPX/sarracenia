@@ -57,7 +57,7 @@ class sr_instances(sr_config):
         self.logpath    = None
         self.basic_name = self.program_name
         if self.config_name : self.basic_name += '_' + self.config_name 
-        self.statefile  = self.exedir + os.sep + '.' + self.basic_name + '.state'
+        self.statefile  = self.user_cache_dir + os.sep + '.' + self.basic_name + '.state'
         self.last_nbr_instances = self.file_get_int(self.statefile)
         if self.last_nbr_instances == None : self.last_nbr_instances = 0
 
@@ -65,8 +65,8 @@ class sr_instances(sr_config):
         self.instance      = i
         self.instance_name = self.basic_name + '_%.4d'%i
         self.instance_str  = self.instance_name.replace('_',' ')
-        self.pidfile       = self.exedir + os.sep + '.' + self.instance_name + '.pid'
-        self.logpath       = self.logdir + os.sep +       self.instance_name + '.log'
+        self.pidfile       = self.user_cache_dir + os.sep + '.' + self.instance_name + '.pid'
+        self.logpath       = self.user_log_dir + os.sep +       self.instance_name + '.log'
 
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)

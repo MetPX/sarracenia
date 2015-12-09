@@ -36,6 +36,7 @@
 import logging
 import os,re,socket,sys,random
 import urllib,urllib.parse
+from   appdirs import *
 
 try :    from sr_util      import *
 except : from sarra.sr_util import *
@@ -44,39 +45,66 @@ class sr_config:
 
     def __init__(self,config=None,args=None):
 
-        self.program_name   = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
-        self.config_name    = config
-        self.config_path    = config
-        self.etcdir         = os.getcwd()
-        self.exedir         = os.getcwd()
-        self.logdir         = os.getcwd()
+        # program_name
 
-        self.cache_url      = {}
-        self.credentials    = []
-        self.log_clusters   = {}
+        self.program_name    = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
 
+        # config
+
+        self.user_config     = config
+        self.config_name     = config
         if config != None :
-           self.config_name = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
-
-        # set logging to printit until we are fixed with it
-
-        self.setlog()
-        self.logger.debug("sr_config __init__")
+           self.config_name  = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
 
         # check arguments
 
         if args == [] : args = None
+        self.user_args       = args
 
-        # no settings call help
+        # appdirs setup... on linux it gives :
+        # site_data_dir   = /usr/share/default/sarra
+        # site_config_dir = /etc/xdg/xdg-default/sarra
+        # user_data_dir   = ~/.local/share/sarra
+        # user_cache_dir  = ~/.cache/sarra
+        # user_log_dir    = ~/.cache/sarra/log
+        # user_config_dir = ~/.config/sarra
+         
+        self.appname         = 'sarra'
+        self.appauthor       = 'science.gc.ca'
+        self.site_data_dir   = site_data_dir  (self.appname,self.appauthor)
+        self.site_config_dir = site_config_dir(self.appname,self.appauthor)
+        self.user_data_dir   = user_data_dir  (self.appname,self.appauthor)
+        self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
+        self.user_config_dir = user_config_dir(self.appname,self.appauthor)
+        self.user_log_dir    = user_log_dir   (self.appname,self.appauthor)
 
-        if config == None and args == None :
-           if hasattr(self,'help') : self.help()
-           sys.exit(0)
+        # umask change for directory creation and chmod
 
-        # initialisation settings
+        try    : os.umask(0)
+        except : pass
 
-        self.user_args   = args
-        self.user_config = config
+        # make sure the users directories exist
+
+        try    : os.makedirs(self.user_cache_dir, 0o775,True)
+        except : pass
+        try    : os.makedirs(self.user_config_dir,0o775,True)
+        except : pass
+        try    : os.makedirs(self.user_data_dir,  0o775,True)
+        except : pass
+        try    : os.makedirs(self.user_log_dir,   0o775,True)
+        except : pass
+
+        # logging is interactive at start
+
+        self.setlog()
+        self.logger.debug("sr_config __init__")
+
+        # general settings
+
+        self.cache_url       = {}
+        self.credentials     = []
+        self.log_clusters    = {}
+
 
     def args(self,args):
 
@@ -195,25 +223,32 @@ class sr_config:
         self.sumflg               = 'd'
         self.blocksize            = 0
 
-        self.msg_script           = None
-        self.file_script          = None
-
-        #self.destination          = URL()
-        #self.destination.set('amqp://guest:guest@localhost/')
-        #self.destination_exchange = 'sx_guest'
+        self.on_file              = None
+        self.on_message           = None
+        self.on_part              = None
+        self.on_poll              = None
+        self.on_post              = None
 
         self.inplace              = False
         self.overwrite            = False
         self.recompute_chksum     = False
 
+        self.interface            = None
+        self.vip                  = None
+
+    def execfile(self, opname, path):
+        try    : 
+                 exec(compile(open(path).read(), path, 'exec'))
+        except : 
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("for option %s script %s did not work" % (opname,path))
+
     def general(self):
         self.logger.debug("sr_config general")
 
-        homedir = os.path.expanduser("~")
-        confdir = homedir + '/.config/sarra/'
-
         # read in provided credentials
-        credent = confdir + 'credentials.conf'
+        credent = self.user_config_dir + os.sep + 'credentials.conf'
         try :
                  f = open(credent,'r')
                  lines = f.readlines()
@@ -236,7 +271,7 @@ class sr_config:
         self.logger.debug("credentials = %s\n" % self.credentials)
 
         # read in provided log cluster infos
-        log_cluster = confdir + 'log2clusters.conf'
+        log_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
         i = 0
         try :
                  f = open(log_cluster,'r')
@@ -264,7 +299,7 @@ class sr_config:
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
         # sarra.conf ... defaults for the server
-        sarra = homedir + '/.config/sarra/sarra.conf'
+        sarra = self.user_config_dir + os.sep + 'sarra.conf'
         if os.path.isfile(sarra) : self.config(sarra)
 
     def get_queue_name(self):
@@ -359,20 +394,6 @@ class sr_config:
                      self.events = words[1]
                      n = 2
 
-                elif words[0] in ['file_validation_script','-fs','--file_validation_script']:
-                     ok = True
-                     try    : exec(compile(open(words[1]).read(), words[1], 'exec'))
-                     except : 
-                              self.logger.error("file_validation_script invalid (%s)" % words[1])
-                              ok = False
-
-                     if self.file_script == None :
-                        self.logger.error("file_validation_script invalid (%s)" % words[1])
-                        ok = False
-
-                     if not ok : needexit = True
-                     n = 2
-
                 elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
                      self.cluster_aliases = words[1].split(',')
                      n = 2
@@ -405,20 +426,52 @@ class sr_config:
                      self.nbr_instances = int(words[1])
                      n = 2
 
-                elif words[0] in ['message_validation_script','-ms','--message_validation_script']:
-                     ok = True
-                     try    : exec(compile(open(words[1]).read(), words[1], 'exec'))
-                     except : 
-                              self.logger.error("message_validation_script invalid (%s)" % words[1])
-                              ok = False
-                     if self.msg_script == None :
-                        self.logger.error("message_validation_script invalid (%s)" % words[1])
-                        ok = False
-                     if not ok : needexit = True
+                elif words[0] in ['interface','-interface','--interface']:
+                     self.interface = words[1]
                      n = 2
 
                 elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
                      self.notify_only = self.isTrue(words[1])
+                     n = 2
+
+                elif words[0] in ['on_file','-on_file','--on_file']:
+                     self.on_file = None
+                     self.execfile("on_file",words[1])
+                     if self.on_file == None :
+                        self.logger.error("on_file script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] in ['on_message','-on_message','--on_message']:
+                     self.on_message = None
+                     self.execfile("on_message",words[1])
+                     if self.on_message == None :
+                        self.logger.error("on_message script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] in ['on_part','-on_part','--on_part']:
+                     self.on_part = None
+                     self.execfile("on_part",words[1])
+                     if self.on_part == None :
+                        self.logger.error("on_part script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] in ['on_poll','-on_poll','--on_poll']:
+                     self.on_poll = None
+                     self.execfile("on_poll",words[1])
+                     if self.on_poll == None :
+                        self.logger.error("on_poll script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] in ['on_post','-on_post','--on_post']:
+                     self.on_post = None
+                     self.execfile("on_post",words[1])
+                     if self.on_post == None :
+                        self.logger.error("on_post script incorrect (%s)" % words[1])
+                        ok = False
                      n = 2
 
                 elif words[0] in ['parts','-p','--parts']:
@@ -597,6 +650,10 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
+                elif words[0] in ['vip','-vip','--vip']:
+                     self.vip = words[1]
+                     n = 2
+
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
@@ -609,7 +666,7 @@ class sr_config:
     def random_queue_name(self) :
 
         queuefile = ''
-        parts = self.config_path.split(os.sep)
+        parts = self.user_config.split(os.sep)
         if len(parts) != 1 :  queuefile = os.sep.join(parts[:-1]) + os.sep
 
         fnp   = parts[-1].split('.')
@@ -782,6 +839,12 @@ def main():
     #to get more details
     cfg.debug = True
     cfg.setlog()
+    cfg.logger.debug("user_data_dir = %s" % cfg.user_data_dir)
+    cfg.logger.debug("user_cache_dir = %s"% cfg.user_cache_dir)
+    cfg.logger.debug("user_log_dir = %s"  % cfg.user_log_dir)
+    cfg.logger.debug("user_config_dir = %s"% cfg.user_config_dir)
+    cfg.logger.debug("site_data_dir = %s" % cfg.site_data_dir)
+    cfg.logger.debug("site_config_dir = %s"  % cfg.site_config_dir)
     cfg.general()
     cfg.args(cfg.user_args)
     cfg.config(cfg.user_config)

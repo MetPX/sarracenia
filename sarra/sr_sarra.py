@@ -216,8 +216,7 @@ class sr_sarra(sr_instances):
         self.logger.info("-st  <source_topic>          default v02.post.#")
         self.logger.info("-qn  <queue_name>            default q_username.config_name")
         self.logger.info("-m   <mirror>                default True")
-        self.logger.info("-ms  <message_validation_script>")
-        self.logger.info("-fs  <file_validation_script>")
+        self.logger.info("-on_* script fix me          default None")
         self.logger.info("-sk  <ssh_keyfile>")
         self.logger.info("-strip <strip count (directory)>")
         self.logger.info("-in  <put parts inplace>      default True")
@@ -296,33 +295,6 @@ class sr_sarra(sr_instances):
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']
 
-    def validate_file(self,target_file, offset, length):
-
-        if self.file_script == None : return True
-
-        ok, code, message = self.file_script(target_file, offset, length)
-
-        if not ok :
-           self.msg.code    = code
-           self.msg.message = message
-           self.msg.log_error()
-
-        return ok
-
-    def validate_message(self):
-
-        if self.msg_script == None : return True
-
-        ok, code, message = self.msg_script(self.msg)
-
-        if not ok :
-           self.msg.code    = code
-           self.msg.message = message
-           self.msg.log_error()
-
-        return ok
-
-
     def run(self):
 
         self.logger.info("sr_sarra run")
@@ -376,9 +348,16 @@ class sr_sarra(sr_instances):
                     ok = self.set_cluster()
                     if not ok : continue
 
-                 # message validation
+                 # on_message script
 
-                 if not self.validate_message() : continue
+                 if self.on_message : 
+                    ok, code, message = self.on_message(self,self.msg,self.logger)
+                    if not ok :
+                       self.msg.code    = code
+                       self.msg.message = message
+                       self.msg.log_error()
+                       continue
+
 
                  # set local file according to sarra : dr + imsg.path (or renamed path)
 
@@ -424,9 +403,15 @@ class sr_sarra(sr_instances):
                        i = i + 1
                  if not ok : continue
 
-                 # validate file/data
+                 # on_file script
 
-                 if not self.validate_file(self.msg.local_file, self.msg.local_offset, self.msg.length) : continue
+                 if self.on_file : 
+                    ok, code, message = self.on_file(self, self.msg.local_file, self.msg.local_offset, self.msg.length, self.logger)
+                    if not ok :
+                       self.msg.code    = code
+                       self.msg.message = message
+                       self.msg.log_error()
+                       continue
 
                  # force recompute checksum
 
