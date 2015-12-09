@@ -8,8 +8,8 @@ Sarracenia v02 Post Message Format/Protocol
 -------------------------------------------
 
 :Manual section: 7
-:Date: 2015-10-11
-:Version: 0.0.1 
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPX-Sarracenia
 
 SYNOPSIS

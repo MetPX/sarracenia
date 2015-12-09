@@ -8,8 +8,8 @@ Publish the Availability of a File to Subcribers
 ------------------------------------------------
 
 :Manual section: 1 
-:Date: Aug 2015
-:Version: 0.0.1
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
 
