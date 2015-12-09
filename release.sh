@@ -90,16 +90,19 @@ while [ 1 ]; do
 done
 		
 
-echo "dch -v $VERSION"
+#echo "dch -v $VERSION"
+dch -v $VERSION
 
+# echo "git commit debian/changelog -m 'cutting new release $VERSION'"
+git commit debian/changelog -m 'cutting new release $VERSION'
 
-echo "git commit debian/changelog -m 'cutting new release $VERSION'"
-
-
-echo "git tag -a v$VERSION -m 'release $VERSION'"
+# echo "git tag -a v$VERSION -m 'release $VERSION'"
+git tag -a v$VERSION -m 'release $VERSION'
 
 read -e -p "Enter the name of the git remote that you would like to push to: [default=origin] " -i "origin" REMOTE
-echo $REMOTE
 
-echo "git push origin master"
-echo "git push origin --tags"
+# echo "git push origin master"
+# echo "git push origin --tags"
+
+git push origin master
+git push origin --tags
