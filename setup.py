@@ -8,6 +8,8 @@ from distutils.core import setup
 from distutils.command.clean import clean
 from distutils.command.build import build
 
+import sarra
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 class CustomClean(clean):
@@ -42,7 +44,7 @@ print("packages = %s" % packages)
 
 setup(
     name='metpx-sarracenia',
-    version='0.1.2',
+    version=sarra.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
