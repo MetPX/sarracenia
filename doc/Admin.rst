@@ -389,12 +389,12 @@ They can declare queues for their own use (with names that identify them clearly
 read from xpublic, and their own log exchange but they are only able to write their xs_<user> 
 exchange.
 
-Adding a user at the broker level and its permission (conf,write,read):
+Adding a user at the broker level and its permission (conf,write,read)::
 
   rabbitmqctl add_user Alice <password>
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
 
-or, parametrized:
+or, parametrized::
 
   u=Alice
   rabbitmqctl add_user ${u} <password>
