@@ -51,7 +51,7 @@ Where:
 
 Example: 
 
-A release in January 2016 would be version as ``metpx-sarracenia-2.16.01a01``
+A release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 
 Cutting a New Release
 ~~~~~~~~~~~~~~~~~~~~~
@@ -63,10 +63,14 @@ Each new release triggers a *tag* in the git repository.
 Example::
 
     git tag -a rel2.16.01a01 -m "release 2.16.01a01"
+    
+A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
 
 
 Building a Release
 ------------------
+
+MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
 
 
 Python Wheel
@@ -87,8 +91,9 @@ Assuming pypi upload credentials are in place, uploading a new release is a one 
 
 python3 setup.py bdist_wheel upload  
 
-Note that the same version can never be uploaded twice. Need to clarify versioning.
+Note that the same version can never be uploaded twice. 
 
+A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
 
 
 Debian/Ubuntu
@@ -103,7 +108,25 @@ Debian/Ubuntu
 
 Launchpad
 ~~~~~~~~~
-TODO
+
+The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do so. 
+
+However, the steps below are a summary of what needs to be done:
+
+- for each distribution (precise, trusty, etc) update ``debian/changelog`` to reflect the distribution
+- build the source package using::
+
+    debuild -S -uc -us
+    
+- sign the ``.changes`` and ``.dsc`` files::
+
+    debsign -k<key id> <.changes file>
+
+- upload to launchpad::
+
+    dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
+    
+**Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
 
 RPM
 ~~~
