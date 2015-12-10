@@ -1,17 +1,17 @@
-python3-metpx-sarracenia (2.15.12a1) unstable; urgency=medium
+metpx-sarracenia (2.15.12a1) unstable; urgency=medium
 
   * Changing the versioning scheme for sarracenia
 
  -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Wed, 09 Dec 2015 14:36:47 -0500
 
-python3-metpx-sarracenia (0.1.1) unstable; urgency=low
+metpx-sarracenia (0.1.1) unstable; urgency=low
 
   [ Khosrow Ebrahimpour ]
   * resetting the version number on the package
 
  -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Wed, 18 Nov 2015 14:36:31 +0000
 
-python3-metpx-sarracenia (0.8-precise) unstable; urgency=low
+metpx-sarracenia (0.8-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * lock option set to . will be used as a temporary prefix for download
@@ -22,42 +22,42 @@ python3-metpx-sarracenia (0.8-precise) unstable; urgency=low
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.7-precise) unstable; urgency=low
+metpx-sarracenia (0.7-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * uses python-amqplib
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.6-precise) unstable; urgency=low
+metpx-sarracenia (0.6-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * supports newer type of messages under topic that starts with v00
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 04 Aug 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.5-precise) unstable; urgency=low
+metpx-sarracenia (0.5-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * loop wget and addition of a timeout of 180 secs by default to download the file
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 03 Feb 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.4-precise) unstable; urgency=low
+metpx-sarracenia (0.4-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * while loop over consumer.run() to stay alive when server/service stops/restarts
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 03 Feb 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.3-precise) unstable; urgency=low
+metpx-sarracenia (0.3-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * default exchange name now set to xpublic
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 03 Feb 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.2-precise) unstable; urgency=low
+metpx-sarracenia (0.2-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * release notes announcing the change of the default exchange name to xpublic
@@ -65,7 +65,7 @@ python3-metpx-sarracenia (0.2-precise) unstable; urgency=low
 
  -- Michel Grenier <michel.grenier@ec.gc.ca>  Mon, 27 Jan 2014 19:44:18 +0000
 
-python3-metpx-sarracenia (0.1-precise) unstable; urgency=low
+metpx-sarracenia (0.1-precise) unstable; urgency=low
 
   [ Michel Grenier ]
   * initial release
