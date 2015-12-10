@@ -21,11 +21,11 @@ Pre-Draft.  This document is still being built and should not be reviewed or rel
 Introduction
 ------------
 
-Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager,
-which sends advertisements in one direction, and log messages in the opposite direction.
-Administrators manually configure the paths that data flow at each switch, as each broker acts 
+Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager
+which sends advertisements in one direction and log messages in the opposite direction.
+Administrators manually configure the paths that data flow at each pump, as each broker acts 
 independently, managing transfers from transfer engines it can reach, with no knowledge of 
-the overall network.  The locations of switches and the directions of traffic flow are 
+the overall network.  The locations of pump and the directions of traffic flow are 
 chosen to work with permitted flows.  Ideally, no firewall exceptions are needed.
 
 Sarracenia does no data transport.  It is a management layer to co-ordinate the use of
@@ -320,7 +320,7 @@ The administrative processes perform validation of postings from sources, and on
 they are validated, forward them to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
  
-- sr_sarra - various configurations to pull from other switches data to make it available from the pump.
+- sr_sarra - various configurations to pull from other pump data to make it available from the pump.
 - sr_sarra - in full validation to pull data from local sources for to make it available from the pump.
 - sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
 - sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
@@ -373,7 +373,7 @@ Data
 ~~~~
 
 The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
-sr_sarra configurations from one switch to the next.  Each sr_sarra link is configured by:
+sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
 
 
 Logs
@@ -414,7 +414,7 @@ Switching/Routing
   Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
   a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
   a given source with a given node.  This has the effect of pumping different parts of large files 
-  through different nodes.  So one will see parts of files announced by such switches, to be
+  through different nodes.  So one will see parts of files announced by such pump, to be
   re-assembled by subscribers.
 
 Data Dissemination
@@ -514,6 +514,9 @@ SSL Setup
 
 This should be mandatory, and included here as part of setup.
 Wait until December 3rd, 2015... see if letsencrypt provides a simpler setup method.
+
+.. NOTE::
+   FIXME: Document this.
 
 
 Change Defaults 
@@ -723,12 +726,96 @@ The answer I got from the Rabbitmq gurus ::
   Cheers, Simon
   
 
-Security Scanning
-~~~~~~~~~~~~~~~~~
+Security Considerations
+-----------------------
+
+This section is meant to provide insight to those who need to perform a security review
+of the application prior to implementation.  
+
+Authentication used by transport engines is independent of that used for the brokers.  A security 
+assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate 
+the overall security of a given deployment.  All credentials used by the application are stored 
+in the ~/.config/sarra/credentials.conf file, and that that file is forced to 600 permissions.  
+
+The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
+storage of sftp keys is covered in documentation of various SSH or SFTP clients.
+
+For sarracenia itself, password authentication is used to communicate with the AMQP broker,
+so implementation of encrypted socket transport (SSL/TLS) on all broker traffic is strongly 
+recommended.  
+
+Sarracenia users are actually users defined on rabbitmq brokers. 
+Each user Alice, on a broker to which she has access:
+
+ - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
+ - has an exchange xl_Alice, where she writes her log messages.
+ - can create queues qs_Alice\_.* to bind to exchanges.
+ - Alice can create and destroy her own queues, but no-one else's.
+ - Alice can only write to her exchange (xs_Alice),
+ - Exchanges are managed by the administrator, and not any user.
+ - Alice can only post data that she is publishing (it will refer back to her)
+
+Cannot create any exchanges or other queues not shown above.
+
+Rabbitmq provides the granularity of security to restrict the names of
+objects, but not their types.  Thus, given the ability to create a queue named q_Alice,
+a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
+queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.
+
+To prevent such mis-use, sr_police is a component that is invoked regularly looking
+for mis-use, and cleaning it up.
+
+.. NOTE::
+   FIXME:  sr_police is a renaming of queue_manager.py queue_manager currently only looks for
+   obsolete queues with high number of items queued, or which have not been accessed in a long
+   time.  Need to add the feature of looking for exchanges that do not start with x and delete
+   them.
+
+   
+
+Input Validation
+~~~~~~~~~~~~~~~~
+
+Users such as Alice post their messages to their own exchange (xs_Alice).  Processes which read from 
+user exchanges have a responsibility for validation.   The process that reads xs_Alice (likely an sr_sarra) 
+will overwrite any *source* or *cluster* heading written into the message with the correct values for
+the current cluster, and the user which posted the message.  
+
+The checksum algorithm used must also be validated.  The algorithm must be known.  Similarly, the
+there is a malformed header of some kind, it should be rejected immediately.  Only well-formed messages
+should be forwarded for further processing.
+
+In the case of sr_sarra, using the onpart trigger, the checksum must be re-calculated from the data,
+to ensure they match.  If they do not match, the file will not be forwarded.  Depending on the level of 
+confidence between a pair of pumps, the level of validation may be relaxed to improve performance.  That 
+is the reason for the *recompute_checksum* option.  If set to false, there should be a performance improvement.
+
+Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
+users on the remote pumps and any other pumps the pump is forwarding for.  In that case the validation
+constraints are a little different:
+
+- source doesn´t matter. (feeders can represent other users, so do not overwrite.) 
+- ensure cluster is not local cluster (as that indicates either a loop or misuse.)
+
+If the message fails the non-local cluster test, it should be rejected (and the rejection logged back to...
+hmm...)
+
+FIXME:
+   - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
+
+
+
+
+
+Content Scanning
+~~~~~~~~~~~~~~~~
 
 In cases where security scanning of file being transferred is deemed necessary, one configures sarra with an on_part hook.
-FIXME: need an example of an on_file hook to call Amavis.  Have it check which part of a file is in question, and only scan
-the initial part.
+
+
+.. NOTE::
+  FIXME: need an example of an on_part hook to call Amavis.  Have it check which part of a file is in question, 
+  and only scan the initial part.  
 
 
 Hooks from Sundew
