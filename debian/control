@@ -1,8 +1,8 @@
-Source: python3-metpx-sarracenia
+Source: metpx-sarracenia
 Section: misc
 Priority: optional
 Maintainer: Michel Grenier <michel.grenier@ec.gc.ca>
-Build-Depends: debhelper (>= 4.2.32), python3
+Build-Depends: debhelper (>= 9), python3
 Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
 Vcs-Git: http://git.code.sf.net/p/metpx/git
