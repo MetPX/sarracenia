@@ -56,21 +56,21 @@ build() {
 	cd $P
 
 	VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
-	DIR=python3-metpx-sarracenia-$VERSION
-	DESC=python3-metpx-sarracenia_$VERSION.dsc
+	DIR=metpx-sarracenia-$VERSION
+	CHNG=metpx-sarracenia_$VERSION_source.changes
 
 	cd ..
 	cp -ap sarracenia $TMPDIR/$DIR
 	cd $TMPDIR/$DIR
-	sed -i 's/trusty; urgency/precise; urgency/g' debian/changelog
+	sed -i "s/unstable; urgency/$DIST; urgency/g" debian/changelog
 	debuild -S -uc -us
 	if [ $? -gt 0 ]; then
 		echo "Please resolve issues before proceeding with build!"
 		exit 1
 	fi
 	cd $TMPDIR
-	debsign -k4EE55EB5 $DESC
-	echo "dput ppa:ssc-hpc-chp-spc/metpx-$DIST $DESC"
+	debsign -k4EE55EB5 $CHNG
+	dput ppa:ssc-hpc-chp-spc/metpx-$DIST $CHNG
 	echo "-----"
 	echo "Log files available at $TMPDIR"
 	echo "-----"
