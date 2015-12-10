@@ -106,3 +106,6 @@ read -e -p "Enter the name of the git remote that you would like to push to: [de
 
 git push origin master
 git push origin --tags
+
+
+echo "Please remember to add '+' to the version string in __init__.py!"
