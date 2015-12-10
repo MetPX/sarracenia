@@ -51,9 +51,7 @@ Where:
 
 Example: 
 
-A release in January 2016 would be version as
-
-    metpx-sarracenia-2.16.01a01
+A release in January 2016 would be version as ``metpx-sarracenia-2.16.01a01``
 
 Cutting a New Release
 ~~~~~~~~~~~~~~~~~~~~~

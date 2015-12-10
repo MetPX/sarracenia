@@ -8,8 +8,8 @@ Subscribe, Acquire and ReAnnounce Products
 ------------------------------------------
 
 :Manual section: 8
-:Date: Oct 2015
-:Version: 0.0.1
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
 
