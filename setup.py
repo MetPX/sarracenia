@@ -60,8 +60,8 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[ 
-	"amqplib", 
-        "appdirs",
-	"pyinotify", 
-	"psutil" ],
+    "amqplib", 
+    "appdirs",
+    "pyinotify", 
+    "psutil" ],
 )
