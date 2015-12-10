@@ -174,6 +174,50 @@ types of ´spoofing´ as all messages can only be posted by proper owners.
 Transport Engines
 -----------------
 
+Transport engines are the data servers queried by subscribers, be they end users, or other pumps.
+The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
+The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of 
+configuring the servers for use, please consult the documentation of the servers themselves.
+The recipes here are simply examples, and are not definitive.
+
+Sample lighttpd Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Suitable when all the data being served is public, simply make the /var/www directory available::
+
+ cat >/etc/lighttpd/lighttpd.conf <<EOT
+
+  server.modules = ()
+
+  dir-listing.activate = "enable"
+  
+  server.document-root        = "/var/www"
+  server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
+  server.errorlog             = "/var/log/lighttpd/error.log"
+  server.pid-file             = "/var/run/lighttpd.pid"
+  server.username             = "www-data"
+  server.groupname            = "www-data"
+  server.port                 = 80
+  
+  
+  index-file.names            = ( "index.php", "index.html", "index.lighttpd.html" )
+  url.access-deny             = ( "~", ".inc" )
+  
+  # default listening port for IPv6 falls back to the IPv4 port
+  ## Use ipv6 if available
+  include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
+  include_shell "/usr/share/lighttpd/create-mime.assign.pl"
+  include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
+  
+  EOT
+
+  service lighttpd start
+
+This configuration will show all files under /var/www as folders, running under
+the www-data users.  Data posted in such directories must be readable to the www-data
+user, to allow the web server to read it.  so user of dd_post/dd_watch need to 
+place files under there and announce as http://<server>/...
+
 
 Apache Web Server
 ~~~~~~~~~~~~~~~~~
@@ -186,6 +230,8 @@ some configuration snippets for the apache web server.
 OpenSSH Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
+So any server to which ssh, or sftp, restricted or even chrooted will be accessible to the pump.
+The configuration of such services is out of scope of this
 FIXME... special tunable notices here.
 
 
@@ -253,29 +299,56 @@ pip.
 Operations
 ----------
 
-Stuff that should be running connected to a broker ::
+To operate a pump, there needs to be a user designated as the adminsitrator.
+The administrator is different from the others mostly in the permission granted
+to create exchanges, and the ability to run processes that address the common
+exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
+access only their own queues.
 
-  sr_log2source
-  sr_source2log
-  sr_log2cluster
-  and some number of sr_winnows and sr_sarra's.
-  queue_manager.py
+The administrative user name is an installation choice, and exactly as for any other 
+user, the configuration files are placed under ~/.config/sarra/, with the 
+defaults under sarra.conf, and the configurations for components under
+directories named after each component.  In the component directories,
+Configuration files have the .conf suffix.
 
-For a switch there needs to be at least one adminsitrative user:
-- one with the power to create exchanges and permissions (rabbitmq administrator)
-- one to do do data movements.
+The administrative processes perform validation of postings from sources, and once
+they are validated, forward them to the public exchanges for subscribers to access.
+The processes that are typically run on a broker:
+ 
+- sr_sarra - various configurations to pull from other switches data to make it available from the pump.
+- sr_sarra - in full validation to pull data from local sources for to make it available from the pump.
+- sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
+- sr_source2log - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
+- sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
+- sr_police  - aka. queue_manager.py, kill off useless or empty queues.
+- sr_police2 - look for dead instances, and restart them? (cron job in sundew.)
 
-Configuration
--------------
+As for any other user, there may be any number of configurations
+to set up, and all of them may need to run at once.  To do so easily, one can invoke:
 
-Which user?  root, feeder?, other?  where
-Talk about switch setup...
-~/.config/sarra/...
-appdirs module...
+  sr start
+
+to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
+Additionally, if the admin mode is set in ~/.config/sarra/sarra.conf like so:
+
+ admin True
+
+Then the log and police components are started as well.  It is standard practice to use a different
+AMQP user for administrative tasks, such as exchange or user creation, from data flow tasks, such as
+pulling and posting data.  Normally one would place credentials in ~/.config/sarra/credentials.conf
+for each account, and the various configuration files would use the appropriate account.
 
 
-Housekeeping
-~~~~~~~~~~~~
+.. note::
+ 
+  FIXME: does root or feeder run the log processes.
+  FIXME: we should probably rename sarra.conf to default.conf.  It is confusing for it to be named
+  after a configurable component... and not really configure that component.
+
+
+Housekeeping - sr_police
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a client connects to a broker, it creates a queue which is then bound to an exchange.  The user 
 can choose to have the client self-destruct when disconnected (*auto-delete*), or it can make 
@@ -287,6 +360,50 @@ queue_manager.py
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means they will build up over time.  We have a script that looks for unused queues, and cleans them out. Currently, the limits are hard-coded as any queue having more than 25000 messages or 50mbytes of space will be deleted.
 
 This script is in samples/program, rather than as part of the package (as an sr_x command.)
+
+Configurations
+--------------
+
+Which user?  root, feeder?, other?  where
+Talk about switch setup...
+~/.config/sarra/...
+appdirs module...
+
+Dataless or S=0
+~~~~~~~~~~~~~~~
+
+A configuration which includes only the AMQP broker.  This configuration can be used when users
+have access to disk space on both ends and only need a mediator.  This is the configuration
+of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
+not need any, or pumps deployed to provide redundant HA to remote data centres.
+
+.. note:: 
+
+  FIXME: sample configuration of shovels, and sr_winnow (with output to xpublic) to allow 
+  subscribers in the SPC to obtain data from either edm or dor.
+
+Note that while a configuration can be dataless, it can still make use of rabbitmq
+clustering for high availability requirements (see rabbitmq clustering below.)
+
+
+
+Standalone
+~~~~~~~~~~
+
+In a standalone configuration, there is only one node in the configuration.  It runs all components
+and shares none with any other nodes.  That means the Broker and data services such as sftp and
+apache are on the one node.
+
+One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
+queueing and transmission away from the instrument.  It is restarted when the opportunity arises.
+It is just a matter of installing and configuring all a data flow engine, a broker, and the package
+itself on a single server.
+
+
+.. note::
+
+   FIXME: go through the topologies in design/design.rst, and document what we think is relevant.
+
 
 Rabbitmq Setup 
 --------------

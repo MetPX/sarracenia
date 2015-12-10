@@ -27,10 +27,9 @@ Acquires the files and ReAnnounces them at their new locations.
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
 **sr_sarra** connects to a *source_broker* (often the same as the remote file server 
-itself) and subscribes to the notifications of interest. It uses the 
-notification information to download the file on the local server its running on. 
+itself) and subscribes to the notifications of interest. It uses the notification 
+information to download the file on the local server its running on. 
 After, it produces a new notification for the local file on a broker (usually on the local server).
-
 
 **sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
 or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
@@ -53,7 +52,11 @@ For example::
   **debug true**
 
 would be a demonstration of setting the option to enable more verbose logging.
-
+The configuration default for all sr_* commands is stored in the ~/.config/sarra/sarra.conf
+file, and while the name given on the command line may be a file name specified as a 
+relative or absolute path, sr_sarra will also look in the ~/.config/sarra/sarra directory 
+for a file named *config.conf*  The configuration in specific file always overrides
+the default, and the command line overrides any configuration file.
 
 
 INSTANCES
@@ -64,21 +67,23 @@ is not enough to process & download all available notifications.
 
 **instances      <integer>     (default:1)**
 
-sr_sarra "configname" start   will fork  N instances of sr_sarra using that config.
-.sr_sarra_configname_$instance.pid  are created and contain the PID  of $instance process.
-sr_sarra_configname_$instance.log  are created and contain the logs of $instance process.
+Invoking the command::
 
-The logs can be written in another directory than the current one with option :
+  sr_sarra "configname" start 
 
-**log            <directory logpath>  (default:$PWD)**
+will result in launching N instances of sr_sarra using that config.
+In the ~/.cache/sarra directory, a number of runtime files are created::
+
+  A .sr_sarra_configname_$instance.pid is created, containing the PID  of $instance process.
+  A sr_sarra_configname_$instance.log  is created as a log of $instance process.
+
+The logs can be written in another directory than the default one with option :
+
+**log            <directory logpath>  (default:~/.cache/sarra)**
 
 
 .. NOTE:: 
   FIXME: standard installation/setup explanations ...
-  FIXME: a standard place where all configs ?
-  FIXME: a standard place where all the logs ?
-  FIXME: a standard place where all the pid files ?
-  FIXME: a sr process starting all sarra configs of various kind.
 
 
 
