@@ -20,9 +20,9 @@ To hack on the sarracenia source, you need:
  - git. in order to download the source from the sf.net repository.
  - a running rabbitmq broker (if you want to actually run any code.)
 
-after you have cloned the source code.
+after you have cloned the source code::
 
-cd sarracenia. 
+    cd sarracenia. 
 
 The rest of the Guide assumes you are there.
 
@@ -76,9 +76,9 @@ MetPX-Sarracenia is distributed in a few different ways, and each has it's own b
 Python Wheel
 ~~~~~~~~~~~~
 
-For testing and development:
+For testing and development::
 
-python3 setup.py bdist_wheel 
+    python3 setup.py bdist_wheel 
 
 should build a wheel in the dist sub-directory.
 
@@ -87,9 +87,9 @@ should build a wheel in the dist sub-directory.
 PyPi
 ~~~~
 
-Assuming pypi upload credentials are in place, uploading a new release is a one liner:
+Assuming pypi upload credentials are in place, uploading a new release is a one liner::
 
-python3 setup.py bdist_wheel upload  
+    python3 setup.py bdist_wheel upload  
 
 Note that the same version can never be uploaded twice. 
 
