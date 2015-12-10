@@ -1,5 +1,5 @@
 Source: metpx-sarracenia
-Section: misc
+Section: python
 Priority: optional
 Maintainer: Michel Grenier <michel.grenier@ec.gc.ca>
 Build-Depends: debhelper (>= 9), python3
@@ -10,7 +10,7 @@ Vcs-Git: http://git.code.sf.net/p/metpx/git
 Package: python3-metpx-sarracenia
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
-Recommends: python3-paramiko, rabbitmq-server
+Suggests: python3-paramiko, rabbitmq-server
 Homepage: http://metpx.sourceforge.net
 Description: Meteorological Product Exchanger
  A utility that consumes AMQP message containing
