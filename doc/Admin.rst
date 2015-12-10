@@ -309,7 +309,12 @@ The administrative user name is an installation choice, and exactly as for any o
 user, the configuration files are placed under ~/.config/sarra/, with the 
 defaults under sarra.conf, and the configurations for components under
 directories named after each component.  In the component directories,
-Configuration files have the .conf suffix.
+Configuration files have the .conf suffix.  User roles are configured by
+the users.conf file.
+
+..note:: 
+  FIXME: missing users.conf(7) man page.
+  FIXME: missing credentials.conf(7) man page. do we need this?
 
 The administrative processes perform validation of postings from sources, and once
 they are validated, forward them to the public exchanges for subscribers to access.
@@ -361,13 +366,65 @@ The rabbitmq broker will never destroy a queue that is not in auto-delete (or du
 
 This script is in samples/program, rather than as part of the package (as an sr_x command.)
 
+Routing
+-------
+
+Data
+~~~~
+
+The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
+sr_sarra configurations from one switch to the next.  Each sr_sarra link is configured by:
+
+
+Logs
+~~~~
+
+Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end,
+as well as *feeders* as the messages traverse pumps.  log messages are posted to
+the xl_<user> exchange, and after log validation send through the xlog exchange.
+
+Messages in xlog destined for other clusters are routed to destinations by
+log2cluster component using log2cluster.conf configuration file.  log2cluster.conf
+uses space separated fields: First field is the cluster name (set as per **cluster** in
+post messages, the second is the destination to send the log messages for posting
+originating from that cluster to) Sample, log2cluster.conf::
+
+      clustername amqp://user@broker/vhost exchange=xlog
+
+Where message destination is the local cluster, log2user (log2source?) will copy
+the messages where source=<user> to sx_<user>, ready for consumption by sr_log.
+
+
+
 Configurations
 --------------
 
-Which user?  root, feeder?, other?  where
-Talk about switch setup...
-~/.config/sarra/...
-appdirs module...
+There are many different arrangements in which sarracenia can be used. The guide
+will work through a few examples:
+
+Dataless 
+  where one runs just sarracenia on top of a broker with no local transfer engines.
+  This is used, for example to run sr_winnow on a site to provide redundant data sources.
+
+Standalone 
+  the most obvious one, run the entire stack on a single server, openssh and a web server
+  as well the broker and sarra itself.  Makes a complete data pump, but without any redundancy.
+
+Switching/Routing
+  Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
+  a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
+  a given source with a given node.  This has the effect of pumping different parts of large files 
+  through different nodes.  So one will see parts of files announced by such switches, to be
+  re-assembled by subscribers.
+
+Data Dissemination
+  Where in order to serve a large number of clients, multiple identical servers, each with a complete
+  mirror of data 
+
+FIXME: 
+  ok, opened big mouth, now need to work through the examples.
+
+
 
 Dataless or S=0
 ~~~~~~~~~~~~~~~
