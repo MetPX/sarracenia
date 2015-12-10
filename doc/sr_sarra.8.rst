@@ -98,7 +98,7 @@ The source_broker option sets all the credential information to connect to the *
 Once connected to an AMQP broker, the user needs to create a queue and bind it
 to an exchange.  These options define which messages (URL notifications) the program receives:
 
- - **source_exchange      <name>         (default: amq.topic)** 
+ - **source_exchange      <name>         (default: xpublic)** 
  - **source_topic         <amqp pattern> (default: v02.post.#)**
  - **queue_name           <name>         (default: sr_sarra.config_name)** 
 
@@ -243,10 +243,10 @@ These options can be used for quality assurance.
 
 ::
 
-**message_validation_script    <script_path> (used if set)** 
-**file_validation_script       <script_path> (used if set)** 
+**on_message    <script> (used if set)** 
+**on_file       <script> (used if set)** 
 
-The  **message_validation_script**  receives a sr_message instance
+The  **on_message**  receives a sr_message instance
 containing all the amqp information. The user can write checks on
 any of the sr_message values.  Should it not comply to the checks,
 a log message (and an amqp log message) will posted, the message will be
@@ -261,7 +261,7 @@ The return values of this script are :
 OK,code,message    <boolean,integer,string>   accepted?,error code, error message
 
 
-The  **file_validation_script**  receives the file path.
+The  **on_file**  receives the file path.
 The user may run any kind of validation on the path.
 Should the file not comply to the checks, a log message (and an amqp log message) will posted,
 the message will be acknowledged without any further processing... 
