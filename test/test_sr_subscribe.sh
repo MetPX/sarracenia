@@ -1,12 +1,14 @@
 #!/bin/ksh
+SARRA_PATH=/usr/bin
+SR_SUBSCRIBE=${SARRA_PATH}/sr_subscribe
 
-DD_SUBSCRIBE=../sarra/sr_subscribe.py
-#DD_SUBSCRIBE=../sarra/dd_subscribe
+mkdir /tmp/sr_sarra
+cd /tmp/sr_sarra
 
-echo killall ${DD_SUBSCRIBE##.*/}
+echo killall ${SR_SUBSCRIBE##.*/}
 
 
-killall ${DD_SUBSCRIBE##.*/} > /dev/null 2>&1
+killall ${SR_SUBSCRIBE##.*/} > /dev/null 2>&1
 rm ./sr_susbscribe*.log ./toto* ./test/t* ./subscribe_test1.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
 
@@ -53,18 +55,18 @@ EOF
 
 # published files
 
-cp toto    /var/www/test/toto
-cp toto    /apps/px/test/toto
+sudo cp toto    /var/www/test/toto
+sudo cp toto    /apps/px/test/toto
 
 cp toto.p0 toto.128.2.0.0.d.Part
-cp toto.p0 /var/www/test/toto.128.2.0.0.d.Part
-cp toto.p0 /apps/px/test/toto.128.2.0.0.d.Part
+sudo cp toto.p0 /var/www/test/toto.128.2.0.0.d.Part
+sudo cp toto.p0 /apps/px/test/toto.128.2.0.0.d.Part
 
 cp toto.p1 toto.128.2.0.1.d.Part
-cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
-cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
+sudo cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
+sudo cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
 
-chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
+sudo chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
@@ -86,24 +88,31 @@ EOF
 mkdir ./test
 rm ./.*.queue
 
-echo ==== INPLACE ====
 
+# Define test functions
 function test2 {
 
-      $DD_SUBSCRIBE $* > ./sr_subscribe_test2.log 2>&1 &
+      echo -n "sr_post -dr /var/www -u http://localhost/test/toto -to alta ... "
+      $SR_SUBSCRIBE $* start > ./sr_subscribe_test2.log 2>&1 &
 
       sleep 5
 
       #======== 1
-      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_4
-      ls -al toto ./test/*
-      N=`diff toto ./test/toto|wc -l`
-      if ((N==0)) ; then
-         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
+
+      DIFF=`diff toto ./test/toto`
+      if [[ $? != 0 ]]; then
+         N=-1
       else
-         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -to alta
+         N=`diff toto ./test/toto|wc -l`
+      fi
+
+      if ((N==0)) ; then
+         echo OK
+      else
+         echo FAILED 
          exit 1
       fi
       rm   ./test/*
@@ -111,110 +120,134 @@ function test2 {
       #parts I
 
       #======== 2
-      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta ... "
+      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_5
-      ls -al toto ./test/*
-      N=`diff toto ./test/toto|wc -l`
-      if ((N==0)) ; then
-         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
+
+      DIFF=`diff toto ./test/toto`
+      if [[ $? != 0 ]]; then
+         N=-1
       else
-         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta
+         N=`diff toto ./test/toto|wc -l`
+      fi
+      if ((N==0)) ; then
+         echo OK 
+      else
+         echo FAILED
          exit 1
       fi
       rm   ./test/*
-
-
 
       #parts P
 
       #======== 2
-      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
-      ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta ... "
+      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_6
-      ls -al toto ./test/*
-      N=`diff toto ./test/toto|wc -l`
-      if ((N==0)) ; then
-         echo OK ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
+
+      DIFF=`diff toto ./test/toto`
+      if [[ $? != 0 ]]; then
+         N=-1
       else
-         echo ERROR ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta
+         N=`diff toto ./test/toto|wc -l`
+      fi
+      
+      if ((N==0)) ; then
+         echo OK
+      else
+         echo FAILED
          exit 1
       fi
       rm   ./test/*
 
-      killall ${DD_SUBSCRIBE##.*/}
-
+      # killall ${SR_SUBSCRIBE##.*/}
+      $SR_SUBSCRIBE $* stop >> ./sr_subscribe_test2.log 2>&1 &
 }
-
-
-test2 ./subscribe_test.conf
-
-echo ==== INSTANCES AND INSERTS ====
 
 function test4 {
 
-          $DD_SUBSCRIBE $* > ./sr_subscribe_test4.log 2>&1 &
-          sleep 10
+         echo -n "http instances/inserts ... "
+         $SR_SUBSCRIBE $* start > ./sr_subscribe_test4.log 2>&1 &
+         sleep 10
 
-         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,1 -r -to alta > /dev/null 2>&1
+         ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,1 -r -to alta > /dev/null 2>&1
 
-               sleep 30
-               touch ./test/test_no_8
-               ls -al toto ./test/*
-               N=`diff toto ./test/toto|wc -l`
-               if ((N==0)) ; then
-                  echo OK http:   INSTANCES/INSERTS
-               else
-                  echo ERROR http:   INSTANCES/INSERTS
-                  exit 1
-               fi
-               rm   ./test/*
+         sleep 30
+         touch ./test/test_no_8
+
+         DIFF=`diff toto ./test/toto`
+         if [[ $? != 0 ]]; then
+            N=-1
+         else
+            N=`diff toto ./test/toto|wc -l`
+         fi
+         if ((N==0)) ; then
+            echo OK
+         else
+            echo FAILED
+            exit 1
+         fi
+         rm   ./test/*
 
          sleep 10
-         killall ${DD_SUBSCRIBE##.*/}
-
+         # killall ${SR_SUBSCRIBE##.*/}
+         $SR_SUBSCRIBE $* stop >> ./sr_subscribe_test4.log 2>&1 &
 }
 
 
-test4 ./subscribe_test.conf
-
-
-echo ==== INSTANCES AND INSERTS AND TRUNCATE ====
-
 function test5 {
-
-
-          $DD_SUBSCRIBE $* > ./sr_subscribe_test5.log 2>&1 &
-          sleep 10
-
+         echo "http inserts and truncated ... "
+         $SR_SUBSCRIBE $* start > ./sr_subscribe_test5.log 2>&1 &
+         sleep 10
 
          cat toto | sed 's/12345/abcde/' > ./test/toto
          echo abc >> ./test/toto
 
-         ../sarra/sr_post.py -dr /var/www -u http://localhost/test/toto -p i,11 -r -to alta > /dev/null 2>&1
+         ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,11 -r -to alta > /dev/null 2>&1
 
-               sleep 30
-               touch ./test/test_no_9
-               ls -al toto ./test/*
-               N=`diff toto ./test/toto|wc -l`
-               if ((N==0)) ; then
-                  echo OK http:   INSERTS and TRUNCATED
-               else
-                  echo ERROR http:   INSERTS and TRUNCATED
-                  exit 1
-               fi
-               rm   ./test/toto*
+         sleep 30
+         touch ./test/test_no_9
+
+         DIFF=`diff toto ./test/toto`
+         if [[ $? != 0 ]]; then
+            N=-1
+         else
+            N=`diff toto ./test/toto|wc -l`
+         fi
+         
+         if ((N==0)) ; then
+            echo OK
+         else
+            echo FAILED
+            exit 1
+         fi
+         rm   ./test/toto*
 
 
          sleep 10
-         killall ${DD_SUBSCRIBE##.*/}
-
-
+         # killall ${SR_SUBSCRIBE##.*/}
+         $SR_SUBSCRIBE $* stop >> ./sr_subscribe_test5.log 2>&1 &
 }
 
+
+# Run tests
+echo 
+echo "* Running INPLACE test suite:"
+test2 ./subscribe_test.conf
+
+echo
+echo "* Running INSTANCES AND INSERTS test suite:"
+test4 ./subscribe_test.conf
+
+echo
+echo "* Running INSTANCES AND INSERTS AND TRUNCATE test suite:"
 test5 ./subscribe_test.conf
 
 rm ./sr_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf > /dev/null 2>&1
 rmdir ./test > /dev/null 2>&1
+rm -rf /tmp/sr_sarra
+exit 0
 
