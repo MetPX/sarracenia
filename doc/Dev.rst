@@ -56,15 +56,19 @@ A release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 Cutting a New Release
 ~~~~~~~~~~~~~~~~~~~~~
 
-Prior to tagging the release, the file ``sarra/__init__.py`` should be modified and the version number increased.
+* Edit ``sarra/__init__.py`` manually and increment the version number.
+* Run ```release.sh```
+* Edit ``sarra/__init__.py`` manually and add ``+`` to the end of the version number. This indicates ongoing development.
 
 Each new release triggers a *tag* in the git repository.
 
 Example::
 
-    git tag -a rel2.16.01a01 -m "release 2.16.01a01"
+    git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
     
 A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
+
+
 
 
 Building a Release
@@ -81,7 +85,6 @@ For testing and development::
     python3 setup.py bdist_wheel 
 
 should build a wheel in the dist sub-directory.
-
 
 
 PyPi
@@ -111,7 +114,7 @@ Launchpad
 
 The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do so. 
 
-However, the steps below are a summary of what needs to be done:
+However, the steps below are a summary of what the script does:
 
 - for each distribution (precise, trusty, etc) update ``debian/changelog`` to reflect the distribution
 - build the source package using::
@@ -130,6 +133,7 @@ However, the steps below are a summary of what needs to be done:
 
 RPM
 ~~~
+
 TODO
 
 Windows
@@ -137,6 +141,11 @@ Windows
 
 Just do the whole python install thing with all steps for now.  Easiest is: winpython.github.io 
 
+
+SourceForge
+~~~~~~~~~~~
+
+TODO
 
 Development Environment
 -----------------------
