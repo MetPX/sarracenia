@@ -42,7 +42,7 @@
 
 
 usage() {
-	echo "`basename $0`  <distribution1> [<distribution2> ...]"
+	echo "`basename $0` <git tag> <distribution1> [<distribution2> ...]"
 	echo 
 	echo "Available distributions: preicse, trusty"
 
@@ -77,12 +77,18 @@ build() {
 }
 
 
-if [ $# -lt 1 ]; then
+if [ $# -lt 2 ]; then
 	usage
 	exit 2
 fi
 
 P=$PWD
+TAG=$1
+
+# Checkout the tagged version
+git checkout $TAG
+shift
+
 while (( $# )); do
 	if [ $1 == 'precise' ]; then
 		build precise
@@ -90,7 +96,11 @@ while (( $# )); do
 		build trusty
 	else
 		echo "Unknown distribution. `basename $0` currently only supports precise and trusty"
+        git checkout master
 		exit 1
 	fi
 	shift
 done
+
+# revert back to master
+git checkout master
