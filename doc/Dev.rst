@@ -112,7 +112,9 @@ Debian/Ubuntu
 Launchpad
 ~~~~~~~~~
 
-The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do so. 
+The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do so::
+
+    publish-to-launchpad.sh sarra-v2.15.12a1 precise trusty
 
 However, the steps below are a summary of what the script does:
 
