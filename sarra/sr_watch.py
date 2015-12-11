@@ -15,7 +15,8 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
+#  Daluma Sen     - Shared Services Canada
+#  Last Changed   : Dec 11 16:07:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
 ########################################################################
@@ -36,9 +37,8 @@
 #
 
 import os, signal, sys, time
-
-import asyncore 
-import pyinotify 
+from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
 
 try :    from sr_post      import *
 except : from sarra.sr_post import *
@@ -46,8 +46,6 @@ except : from sarra.sr_post import *
 # ===================================
 # MAIN
 # ===================================
-
-
 def main():
 
     post = sr_post(config=None,args=sys.argv[1:])
@@ -58,103 +56,65 @@ def main():
     # =========================================
     # watch_path ready
     # =========================================
-
     watch_path = post.watchpath()
-    events     = 0
-
-    d = 'IN_DELETE'       in post.events 
-    w = 'IN_CLOSE_WRITE'  in post.events 
-    if d and w :
-       events = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE   | pyinotify.IN_DELETE_SELF \
-              | pyinotify.IN_ATTRIB      | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVE_SELF  
-    elif d :
-       events = pyinotify.IN_DELETE      | pyinotify.IN_DELETE_SELF
-    elif w :
-       events = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_ATTRIB    \
-              | pyinotify.IN_MOVED_TO    | pyinotify.IN_MOVE_SELF 
 
     # =========================================
-    # setup pyinotify watching
+    # setup watchdog
     # =========================================
+    class MyEventHandler(PatternMatchingEventHandler):
+        ignore_patterns = ["*.tmp"]
+        def event_post(self, event, tag):
+            if not event.is_directory:
+                try:
+                    post.watching(event.src_path, tag)
+                except PermissionError as err:
+                    post.logger.error(str(err))
 
-    wm         = pyinotify.WatchManager()
+        def on_created(self, event):
+            self.event_post(event, 'IN_CLOSE_WRITE')
+                    
+        def on_deleted(self, event):
+            if event.src_path == watch_path:
+                post.logger.error('Exiting!')
+                os._exit(0)
+            self.event_post(event, 'IN_DELETE')
 
-    class EventHandler(pyinotify.ProcessEvent):
-          def process_IN_ATTRIB(self,event):
-              # Files we don't want to touch
-              basename = os.path.basename(event.pathname)
-              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
-                 return
-              post.watching(event.pathname,'IN_CLOSE_WRITE')
-          def process_IN_CLOSE_WRITE(self,event):
-              # Files we don't want to touch
-              basename = os.path.basename(event.pathname)
-              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
-                 return
-              post.watching(event.pathname,'IN_CLOSE_WRITE')
-          def process_IN_DELETE(self,event):
-              post.watching(event.pathname,'IN_DELETE')
-          def process_IN_DELETE_SELF(self,event):
-              post.watching(event.pathname,'IN_DELETE')
-              post.logger.info("exiting")
-              os._exit(0)
-          def process_IN_MOVED_TO(self,event):
-              # Files we don't want to touch
-              basename = os.path.basename(event.pathname)
-              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
-                 return
-              post.watching(event.pathname,'IN_CLOSE_WRITE')
-          def process_IN_MOVE_SELF(self,event):
-              # Files we don't want to touch
-              basename = os.path.basename(event.pathname)
-              if basename[0] == '.' or basename[-4:] == ".tmp" or not os.access(event.pathname, os.R_OK):
-                 os._exit(0)
-              post.watching(event.pathname,'IN_CLOSE_WRITE')
+        def on_modified(self, event):
+            self.event_post(event, 'IN_CLOSE_WRITE')
 
-    notifier   = pyinotify.AsyncNotifier(wm,EventHandler())
-    wdd = wm.add_watch(watch_path, events, rec=post.recursive, auto_add=post.recursive)
-    #  more options/defaults : proc_fun=None, do_glob=False, quiet=True, exclude_filter=None):
-
+    try:
+        observer = Observer()
+        obs_watched = observer.schedule(MyEventHandler(), watch_path, recursive=post.recursive)
+        observer.start()
+    except OSError as err:
+        post.logger.error("Can't watch directory: %s" % str(err))
+        os._exit(0)
 
     # =========================================
     # signal reload
     # =========================================
-
     def signal_reload(signal, frame):
         post.logger.info('Reloading!')
         post.close()
-        wm.rm_watch( wm.get_wd(watch_path))
+        observer.unschedule(obs_watched)
         main()
 
-    # =========================================
-    # signal stop
-    # =========================================
+    signal.signal(signal.SIGHUP, signal_reload)
 
-    def signal_stop(signal, frame):
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
         post.logger.info('Stop!')
         post.close()
         post.stop = True
-        sys.exit(0)
+        observer.stop()
 
-    # =========================================
-    # signal handling
-    # =========================================
-
-    signal.signal(signal.SIGINT, signal_stop)
-    signal.signal(signal.SIGHUP, signal_reload)
-
-    # =========================================
-    # looping
-    # =========================================
-
-    asyncore.loop(100000000)
-    post.close()
-
+    observer.join()
     sys.exit(0)
 
 # =========================================
 # direct invocation
 # =========================================
-
 if __name__=="__main__":
    main()
