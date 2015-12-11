@@ -135,5 +135,21 @@ TODO
 Windows
 ~~~~~~~
 
-Just do the whole python install thing with all steps for now.
+Just do the whole python install thing with all steps for now.  Easiest is: winpython.github.io 
+
+
+Development Environment
+-----------------------
+
+
+Local Python 
+~~~~~~~~~~~~
+
+Working with a non-packaged version:
+
+notes::
+
+    python3 setup.py build
+    python3 setup.py install
+
 

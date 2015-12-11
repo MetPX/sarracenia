@@ -235,11 +235,21 @@ The configuration of such services is out of scope of this
 FIXME... special tunable notices here.
 
 
+SFTP Configuration
+~~~~~~~~~~~~~~~~~~
+
+Open SSH with restricted shell.
+
 
 Installation 
 ------------
 
-The package is built in python3, and has a few dependencies.  
+The recommended installation method is via debian packages,
+from the launchpad repository, or using pip (and PYpi), in 
+which case the other python packages needed will be installed
+by the package manager.  If installing without packaging, likely 
+best to do a source installation, and then examine the 
+prerequisites in setup.py.
 
 
 From Source
@@ -256,6 +266,12 @@ The package can be downloaded from metpx.sf.net and installed.
 
    dpkg -i metpx-sarracenia-0.1.1.all.dpkg
 
+Ubuntu 14.04:
+
+sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx-trusty
+sudo apt-get update
+sudo apt-get install python3-metpx-sarracenia
+
 
 
 PIP
@@ -271,14 +287,6 @@ and to upgrade:
 
 pip install --upgrade metpx-sarracenia
 
-
-Local Python 
-~~~~~~~~~~~~
-
-notes::
-
-    python3 setup.py build
-    python3 setup.py install
 
 
 Windows
@@ -299,7 +307,7 @@ pip.
 Operations
 ----------
 
-To operate a pump, there needs to be a user designated as the adminsitrator.
+To operate a pump, there needs to be a user designated as the administrator.
 The administrator is different from the others mostly in the permission granted
 to create exchanges, and the ability to run processes that address the common
 exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
@@ -394,6 +402,24 @@ originating from that cluster to) Sample, log2cluster.conf::
 Where message destination is the local cluster, log2user (log2source?) will copy
 the messages where source=<user> to sx_<user>, ready for consumption by sr_log.
 
+
+What is Going On?
+-----------------
+
+the sr_log command can be invoked, overriding the default exchange to bind to 'xlog' instead
+in order to get log information for an entire broker.
+
+Canned sr_log configuration with an onmessage action can be configured to gather statisical 
+information is a speedo on various aspects of operations.
+
+.. NOTE::
+   FIXME:
+   first canned sr_log configuration would be speedo...
+   speedo: total rate of posts/second, total rate of logs/second.
+   question: should posts go to the log as well?
+   before operations, we need to figure out how Nagios will monitor it.
+
+   Is any of this needed, or is the rabbit GUI enough on it's own?
 
 
 Configurations
@@ -738,7 +764,8 @@ the overall security of a given deployment.  All credentials used by the applica
 in the ~/.config/sarra/credentials.conf file, and that that file is forced to 600 permissions.  
 
 The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
-storage of sftp keys is covered in documentation of various SSH or SFTP clients.
+storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
+file just points to those key files.
 
 For sarracenia itself, password authentication is used to communicate with the AMQP broker,
 so implementation of encrypted socket transport (SSL/TLS) on all broker traffic is strongly 
