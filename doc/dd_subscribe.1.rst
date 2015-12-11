@@ -7,8 +7,8 @@ Select and Conditionally Download Posted Files
 -----------------------------------------------
 
 :Manual section: 1
-:Date: Oct 2013 
-:Version: 1.0.0
+:Date: @Date@
+:Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
 

@@ -14,17 +14,17 @@ Prerequisites
 * `Vagrant <https://www.vagrantup.com/downloads.html>`_. 
 * `VirtualBox <https://www.virtualbox.org/wiki/Downloads>`_.
 
-The various different setups are listed below.  
-
-Server
+Overview
 ------------
 
-Installs a basic sarra server in order to test ```sr_sarra``` using the script ```test/test_sr_sarra.sh```. The ```Vagrantfile``` is setup to provision a server running:
+Installs a basic Linux machine in order to test different components of sarracenia. The ```Vagrantfile``` is setup to provision a server running:
 
 - vsftpd
 - rabbitmq-server
 - apache2
 - metpx-sarra (installed from deb)
+
+Once provisioned, the test files are located under ```~vagrant/tests```.
 
 Example::
 
@@ -33,4 +33,11 @@ Example::
     vagrant ssh
     ./test_sr_sarrah.sh px test
 
- You could also simply provision this instance and test out Sarracenia.
+ You could also simply provision an instance and test out Sarracenia.
+
+
+ Supported OSes
+ ---------------
+
+ * Precise (Ubuntu 12.04)
+ * Trusty (Ubuntu 14.04)

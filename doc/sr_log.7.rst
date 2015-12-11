@@ -7,8 +7,8 @@
 Sarracenia v02 Log Message Format/Protocol
 ------------------------------------------
 
-:Date: 2015-10-16
-:Version: 0.0.1
+:Date: @Date@
+:Version: @Version@
 :Manual section: 7
 :Manual group: MetPX-Sarracenia
 

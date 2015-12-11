@@ -7,8 +7,8 @@ watch a directory and post messages when files in it change
 -----------------------------------------------------------
 
 :Manual section: 1 
-:Date: Aug 2015
-:Version: 0.0.1
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPX-Sarracenia
 
 SYNOPSIS

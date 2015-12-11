@@ -8,8 +8,8 @@ Return Log of the Products to Brokers
 -------------------------------------
 
 :Manual section: 7 
-:Date: Oct 2015
-:Version: 0.1.1
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
 

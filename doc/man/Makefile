@@ -4,6 +4,9 @@ RST2MAN = rst2man
 RST2HTML = rst2html
 MAKE = make
 
+VERSION = $(shell grep __version__ ../../sarra/__init__.py | sed -e 's/"//g' | cut -c15-)
+DATE = $(shell date "+%B %Y")
+
 MAN1SOURCES = $(wildcard ../*.1.rst)
 # MAN1NAMES = $(patsubst ../%.1.rst,%.1,$(MAN1SOURCES))
 MAN1TARGETS = $(patsubst ../%.1.rst,%.1,$(MAN1SOURCES))
@@ -22,17 +25,20 @@ HTMLTARGETS = $(HTMLSOURCES:.rst=.html)
 
 all: $(MANTARGETS)
 
-%.1: ../%.1.rst
+%.1: ../%.1.rst	
 	$(RST2MAN) $< $@
+	sed -i 's/@Version@/$(VERSION)/' $@
+	sed -i 's/@Date@/$(DATE)/' $@
 
 %.7: ../%.7.rst
 	$(RST2MAN) $< $@
+	sed -i 's/@Version@/$(VERSION)/' $@
+	sed -i 's/@Date@/$(DATE)/' $@
 
 %.8: ../%.8.rst
 	$(RST2MAN) $< $@
+	sed -i 's/@Version@/$(VERSION)/' $@
+	sed -i 's/@Date@/$(DATE)/' $@
 
 clean: 
-	rm -f $(MANTARGETS)
-
-
-
+	rm -f $(MANTARGETS) 

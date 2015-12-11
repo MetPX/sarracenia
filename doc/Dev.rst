@@ -20,9 +20,9 @@ To hack on the sarracenia source, you need:
  - git. in order to download the source from the sf.net repository.
  - a running rabbitmq broker (if you want to actually run any code.)
 
-after you have cloned the source code.
+after you have cloned the source code::
 
-cd sarracenia. 
+    cd sarracenia. 
 
 The rest of the Guide assumes you are there.
 
@@ -51,46 +51,52 @@ Where:
 
 Example: 
 
-A release in January 2016 would be version as
-
-    metpx-sarracenia-2.16.01a01
+A release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 
 Cutting a New Release
 ~~~~~~~~~~~~~~~~~~~~~
 
-Prior to tagging the release, the file ``sarra/__init__.py`` should be modified and the version number increased.
+* Edit ``sarra/__init__.py`` manually and increment the version number.
+* Run ```release.sh```
+* Edit ``sarra/__init__.py`` manually and add ``+`` to the end of the version number. This indicates ongoing development.
 
 Each new release triggers a *tag* in the git repository.
 
 Example::
 
-    git tag -a rel2.16.01a01 -m "release 2.16.01a01"
+    git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+    
+A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
+
+
 
 
 Building a Release
 ------------------
 
+MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
+
 
 Python Wheel
 ~~~~~~~~~~~~
 
-For testing and development:
+For testing and development::
 
-python3 setup.py bdist_wheel 
+    python3 setup.py bdist_wheel 
 
 should build a wheel in the dist sub-directory.
-
 
 
 PyPi
 ~~~~
 
-Assuming pypi upload credentials are in place, uploading a new release is a one liner:
+Assuming pypi upload credentials are in place, uploading a new release is a one liner::
 
-python3 setup.py bdist_wheel upload  
+    python3 setup.py bdist_wheel upload  
 
-Note that the same version can never be uploaded twice. Need to clarify versioning.
+Note that the same version can never be uploaded twice. 
 
+A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
 
 
 Debian/Ubuntu
@@ -105,14 +111,56 @@ Debian/Ubuntu
 
 Launchpad
 ~~~~~~~~~
-TODO
+
+The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do so::
+
+    publish-to-launchpad.sh sarra-v2.15.12a1 precise trusty
+
+However, the steps below are a summary of what the script does:
+
+- for each distribution (precise, trusty, etc) update ``debian/changelog`` to reflect the distribution
+- build the source package using::
+
+    debuild -S -uc -us
+    
+- sign the ``.changes`` and ``.dsc`` files::
+
+    debsign -k<key id> <.changes file>
+
+- upload to launchpad::
+
+    dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
+    
+**Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
 
 RPM
 ~~~
+
 TODO
 
 Windows
 ~~~~~~~
 
-Just do the whole python install thing with all steps for now.
+Just do the whole python install thing with all steps for now.  Easiest is: winpython.github.io 
+
+
+SourceForge
+~~~~~~~~~~~
+
+TODO
+
+Development Environment
+-----------------------
+
+
+Local Python 
+~~~~~~~~~~~~
+
+Working with a non-packaged version:
+
+notes::
+
+    python3 setup.py build
+    python3 setup.py install
+
 

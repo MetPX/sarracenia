@@ -33,8 +33,7 @@ cd /tmp
 wget -q https://www.rabbitmq.com/releases/rabbitmq-server/v3.5.6/rabbitmq-server_3.5.6-1_all.deb
 sudo dpkg -i rabbitmq-server_3.5.6-1_all.deb 
 
-if [ $1 = "trusty" ]; then
-	wget -q http://iweb.dl.sourceforge.net/project/metpx/sarracenia/0.1.1/metpx-sarracenia_0.1.1_all.deb
-	sudo dpkg -i metpx-sarracenia_0.1.1_all.deb 
-fi
-
+#if [ $1 = "trusty" ]; then
+#	wget -q http://iweb.dl.sourceforge.net/project/metpx/sarracenia/0.1.1/metpx-sarracenia_0.1.1_all.deb
+#	sudo dpkg -i metpx-sarracenia_0.1.1_all.deb 
+#fi 

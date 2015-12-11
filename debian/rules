@@ -4,5 +4,22 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+#clean: 
+#	make -C doc clean
+# 	dh_clean
+override_dh_auto_clean:
+	make -C doc clean
+	dh_auto_clean
+
+#build:
+#	make -C doc all
+#	dh_testdir -O--buildsystem=pybuild
+#	dh_auto_configure -O--buildsystem=pybuild
+#	dh_auto_build -O--buildsystem=pybuild 
+override_dh_auto_build:
+	make -C doc all
+	dh_auto_build
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+

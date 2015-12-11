@@ -4,7 +4,6 @@
 ==================
 
 
-
 ------------------------------------------------
 Receiving Data from a MetPX-Sarracenia Data Pump
 ------------------------------------------------
@@ -102,8 +101,8 @@ A First Example
 
 The tree described above is the conventional one found on most data pumps, 
 but the original data pump, dd.weather.gc.ca, pre-dates the convention.
-Regardless of the tree, one can browse it to find the
-data of interest. On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
+Regardless of the tree, one can browse it to find the data of interest. 
+On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
 to find the tree of all the weather observations in SWOB format
 recently issued by any Environment Canada forecast office.
 A configuration to obtain these files will look like so::
@@ -166,9 +165,8 @@ the following files are created::
 
 Each process started will have a pid file and a log file indicating it´s progress.
 As each matching observation is posted on dd.weather.gc.ca, a notification will be
-posted on the AMQP broker there.  
-If we take a look at the swob file created, it immediately gives an indication
-of whether it succeeded in connecting to the broker::
+posted on the AMQP broker there.  If we take a look at the swob file created, it 
+immediately gives an indication of whether it succeeded in connecting to the broker::
 
   blacklab% tail ~/.cache/sarra/sr_subscribe_dd_swob_0001.log
   

@@ -8,8 +8,8 @@ Subscribe, Acquire and ReAnnounce Products
 ------------------------------------------
 
 :Manual section: 8
-:Date: Oct 2015
-:Version: 0.0.1
+:Date: @Date@
+:Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
 
@@ -27,10 +27,9 @@ Acquires the files and ReAnnounces them at their new locations.
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
 **sr_sarra** connects to a *source_broker* (often the same as the remote file server 
-itself) and subscribes to the notifications of interest. It uses the 
-notification information to download the file on the local server its running on. 
+itself) and subscribes to the notifications of interest. It uses the notification 
+information to download the file on the local server its running on. 
 After, it produces a new notification for the local file on a broker (usually on the local server).
-
 
 **sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
 or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
@@ -53,7 +52,11 @@ For example::
   **debug true**
 
 would be a demonstration of setting the option to enable more verbose logging.
-
+The configuration default for all sr_* commands is stored in the ~/.config/sarra/sarra.conf
+file, and while the name given on the command line may be a file name specified as a 
+relative or absolute path, sr_sarra will also look in the ~/.config/sarra/sarra directory 
+for a file named *config.conf*  The configuration in specific file always overrides
+the default, and the command line overrides any configuration file.
 
 
 INSTANCES
@@ -64,21 +67,23 @@ is not enough to process & download all available notifications.
 
 **instances      <integer>     (default:1)**
 
-sr_sarra "configname" start   will fork  N instances of sr_sarra using that config.
-.sr_sarra_configname_$instance.pid  are created and contain the PID  of $instance process.
-sr_sarra_configname_$instance.log  are created and contain the logs of $instance process.
+Invoking the command::
 
-The logs can be written in another directory than the current one with option :
+  sr_sarra "configname" start 
 
-**log            <directory logpath>  (default:$PWD)**
+will result in launching N instances of sr_sarra using that config.
+In the ~/.cache/sarra directory, a number of runtime files are created::
+
+  A .sr_sarra_configname_$instance.pid is created, containing the PID  of $instance process.
+  A sr_sarra_configname_$instance.log  is created as a log of $instance process.
+
+The logs can be written in another directory than the default one with option :
+
+**log            <directory logpath>  (default:~/.cache/sarra)**
 
 
 .. NOTE:: 
   FIXME: standard installation/setup explanations ...
-  FIXME: a standard place where all configs ?
-  FIXME: a standard place where all the logs ?
-  FIXME: a standard place where all the pid files ?
-  FIXME: a sr process starting all sarra configs of various kind.
 
 
 
@@ -98,7 +103,7 @@ The source_broker option sets all the credential information to connect to the *
 Once connected to an AMQP broker, the user needs to create a queue and bind it
 to an exchange.  These options define which messages (URL notifications) the program receives:
 
- - **source_exchange      <name>         (default: amq.topic)** 
+ - **source_exchange      <name>         (default: xpublic)** 
  - **source_topic         <amqp pattern> (default: v02.post.#)**
  - **queue_name           <name>         (default: sr_sarra.config_name)** 
 
@@ -243,10 +248,10 @@ These options can be used for quality assurance.
 
 ::
 
-**message_validation_script    <script_path> (used if set)** 
-**file_validation_script       <script_path> (used if set)** 
+**on_message    <script> (used if set)** 
+**on_file       <script> (used if set)** 
 
-The  **message_validation_script**  receives a sr_message instance
+The  **on_message**  receives a sr_message instance
 containing all the amqp information. The user can write checks on
 any of the sr_message values.  Should it not comply to the checks,
 a log message (and an amqp log message) will posted, the message will be
@@ -261,7 +266,7 @@ The return values of this script are :
 OK,code,message    <boolean,integer,string>   accepted?,error code, error message
 
 
-The  **file_validation_script**  receives the file path.
+The  **on_file**  receives the file path.
 The user may run any kind of validation on the path.
 Should the file not comply to the checks, a log message (and an amqp log message) will posted,
 the message will be acknowledged without any further processing... 

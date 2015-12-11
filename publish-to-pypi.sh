@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-#
+#!/bin/bash
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
@@ -8,14 +7,13 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log.py : python3 program allowing users to receive all log messages
-#             generated from his products
+# publish-to-pypi.sh : publish sarracenia to PyPi
 #
 #
 # Code contributed by:
 #  Khosrow Ebrahimpour - Shared Services Canada
-#  Last Changed   : Dec  8 17:09:19 GMT 2015
-#  Last Revision  : Dec  8 17:09:19 GMT 2015
+#  Last Changed   : Dec 10 13:17:03 EST 2015
+#  Last Revision  : Dec 10 13:17:03 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -32,5 +30,38 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
+
 #
-__version__ = "2.15.12a1+"
+# Assumptions:
+# 1. release.sh has been run and a new release made
+# 2. PyPi configuration is in place 
+# 
+# Steps:
+# 1. build the wheel
+# 2. upload the wheel to PyPi
+
+
+usage() {
+	echo "`basename $0 <git tag>`" 
+	exit 2
+}
+
+if [ $# -ne 1 ]; then
+	usage
+	exit 2
+fi
+
+# checkout the tag version
+git checkout $1
+
+
+python3 setup.py bdist_wheel
+if [ $# -ne 0 ]; then
+	echo "Please fix errors and retry uploading to PyPi!"
+	exit 1
+fi
+
+python3 setup.py bdist_wheel upload 
+
+# checkout master again
+git checkout master

@@ -21,11 +21,11 @@ Pre-Draft.  This document is still being built and should not be reviewed or rel
 Introduction
 ------------
 
-Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager,
-which sends advertisements in one direction, and log messages in the opposite direction.
-Administrators manually configure the paths that data flow at each switch, as each broker acts 
+Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager
+which sends advertisements in one direction and log messages in the opposite direction.
+Administrators manually configure the paths that data flow at each pump, as each broker acts 
 independently, managing transfers from transfer engines it can reach, with no knowledge of 
-the overall network.  The locations of switches and the directions of traffic flow are 
+the overall network.  The locations of pump and the directions of traffic flow are 
 chosen to work with permitted flows.  Ideally, no firewall exceptions are needed.
 
 Sarracenia does no data transport.  It is a management layer to co-ordinate the use of
@@ -174,6 +174,50 @@ types of ´spoofing´ as all messages can only be posted by proper owners.
 Transport Engines
 -----------------
 
+Transport engines are the data servers queried by subscribers, be they end users, or other pumps.
+The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
+The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of 
+configuring the servers for use, please consult the documentation of the servers themselves.
+The recipes here are simply examples, and are not definitive.
+
+Sample lighttpd Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Suitable when all the data being served is public, simply make the /var/www directory available::
+
+ cat >/etc/lighttpd/lighttpd.conf <<EOT
+
+  server.modules = ()
+
+  dir-listing.activate = "enable"
+  
+  server.document-root        = "/var/www"
+  server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
+  server.errorlog             = "/var/log/lighttpd/error.log"
+  server.pid-file             = "/var/run/lighttpd.pid"
+  server.username             = "www-data"
+  server.groupname            = "www-data"
+  server.port                 = 80
+  
+  
+  index-file.names            = ( "index.php", "index.html", "index.lighttpd.html" )
+  url.access-deny             = ( "~", ".inc" )
+  
+  # default listening port for IPv6 falls back to the IPv4 port
+  ## Use ipv6 if available
+  include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
+  include_shell "/usr/share/lighttpd/create-mime.assign.pl"
+  include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
+  
+  EOT
+
+  service lighttpd start
+
+This configuration will show all files under /var/www as folders, running under
+the www-data users.  Data posted in such directories must be readable to the www-data
+user, to allow the web server to read it.  so user of dd_post/dd_watch need to 
+place files under there and announce as http://<server>/...
+
 
 Apache Web Server
 ~~~~~~~~~~~~~~~~~
@@ -186,14 +230,26 @@ some configuration snippets for the apache web server.
 OpenSSH Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
+So any server to which ssh, or sftp, restricted or even chrooted will be accessible to the pump.
+The configuration of such services is out of scope of this
 FIXME... special tunable notices here.
 
+
+SFTP Configuration
+~~~~~~~~~~~~~~~~~~
+
+Open SSH with restricted shell.
 
 
 Installation 
 ------------
 
-The package is built in python3, and has a few dependencies.  
+The recommended installation method is via debian packages,
+from the launchpad repository, or using pip (and PYpi), in 
+which case the other python packages needed will be installed
+by the package manager.  If installing without packaging, likely 
+best to do a source installation, and then examine the 
+prerequisites in setup.py.
 
 
 From Source
@@ -210,6 +266,12 @@ The package can be downloaded from metpx.sf.net and installed.
 
    dpkg -i metpx-sarracenia-0.1.1.all.dpkg
 
+Ubuntu 14.04:
+
+sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx-trusty
+sudo apt-get update
+sudo apt-get install python3-metpx-sarracenia
+
 
 
 PIP
@@ -225,14 +287,6 @@ and to upgrade:
 
 pip install --upgrade metpx-sarracenia
 
-
-Local Python 
-~~~~~~~~~~~~
-
-notes::
-
-    python3 setup.py build
-    python3 setup.py install
 
 
 Windows
@@ -253,29 +307,61 @@ pip.
 Operations
 ----------
 
-Stuff that should be running connected to a broker ::
+To operate a pump, there needs to be a user designated as the administrator.
+The administrator is different from the others mostly in the permission granted
+to create exchanges, and the ability to run processes that address the common
+exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
+access only their own queues.
 
-  sr_log2source
-  sr_source2log
-  sr_log2cluster
-  and some number of sr_winnows and sr_sarra's.
-  queue_manager.py
+The administrative user name is an installation choice, and exactly as for any other 
+user, the configuration files are placed under ~/.config/sarra/, with the 
+defaults under sarra.conf, and the configurations for components under
+directories named after each component.  In the component directories,
+Configuration files have the .conf suffix.  User roles are configured by
+the users.conf file.
 
-For a switch there needs to be at least one adminsitrative user:
-- one with the power to create exchanges and permissions (rabbitmq administrator)
-- one to do do data movements.
+..note:: 
+  FIXME: missing users.conf(7) man page.
+  FIXME: missing credentials.conf(7) man page. do we need this?
 
-Configuration
--------------
+The administrative processes perform validation of postings from sources, and once
+they are validated, forward them to the public exchanges for subscribers to access.
+The processes that are typically run on a broker:
+ 
+- sr_sarra - various configurations to pull from other pump data to make it available from the pump.
+- sr_sarra - in full validation to pull data from local sources for to make it available from the pump.
+- sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
+- sr_source2log - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
+- sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
+- sr_police  - aka. queue_manager.py, kill off useless or empty queues.
+- sr_police2 - look for dead instances, and restart them? (cron job in sundew.)
 
-Which user?  root, feeder?, other?  where
-Talk about switch setup...
-~/.config/sarra/...
-appdirs module...
+As for any other user, there may be any number of configurations
+to set up, and all of them may need to run at once.  To do so easily, one can invoke:
+
+  sr start
+
+to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
+Additionally, if the admin mode is set in ~/.config/sarra/sarra.conf like so:
+
+ admin True
+
+Then the log and police components are started as well.  It is standard practice to use a different
+AMQP user for administrative tasks, such as exchange or user creation, from data flow tasks, such as
+pulling and posting data.  Normally one would place credentials in ~/.config/sarra/credentials.conf
+for each account, and the various configuration files would use the appropriate account.
 
 
-Housekeeping
-~~~~~~~~~~~~
+.. note::
+ 
+  FIXME: does root or feeder run the log processes.
+  FIXME: we should probably rename sarra.conf to default.conf.  It is confusing for it to be named
+  after a configurable component... and not really configure that component.
+
+
+Housekeeping - sr_police
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a client connects to a broker, it creates a queue which is then bound to an exchange.  The user 
 can choose to have the client self-destruct when disconnected (*auto-delete*), or it can make 
@@ -287,6 +373,120 @@ queue_manager.py
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means they will build up over time.  We have a script that looks for unused queues, and cleans them out. Currently, the limits are hard-coded as any queue having more than 25000 messages or 50mbytes of space will be deleted.
 
 This script is in samples/program, rather than as part of the package (as an sr_x command.)
+
+Routing
+-------
+
+Data
+~~~~
+
+The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
+sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
+
+
+Logs
+~~~~
+
+Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end,
+as well as *feeders* as the messages traverse pumps.  log messages are posted to
+the xl_<user> exchange, and after log validation send through the xlog exchange.
+
+Messages in xlog destined for other clusters are routed to destinations by
+log2cluster component using log2cluster.conf configuration file.  log2cluster.conf
+uses space separated fields: First field is the cluster name (set as per **cluster** in
+post messages, the second is the destination to send the log messages for posting
+originating from that cluster to) Sample, log2cluster.conf::
+
+      clustername amqp://user@broker/vhost exchange=xlog
+
+Where message destination is the local cluster, log2user (log2source?) will copy
+the messages where source=<user> to sx_<user>, ready for consumption by sr_log.
+
+
+What is Going On?
+-----------------
+
+the sr_log command can be invoked, overriding the default exchange to bind to 'xlog' instead
+in order to get log information for an entire broker.
+
+Canned sr_log configuration with an onmessage action can be configured to gather statisical 
+information is a speedo on various aspects of operations.
+
+.. NOTE::
+   FIXME:
+   first canned sr_log configuration would be speedo...
+   speedo: total rate of posts/second, total rate of logs/second.
+   question: should posts go to the log as well?
+   before operations, we need to figure out how Nagios will monitor it.
+
+   Is any of this needed, or is the rabbit GUI enough on it's own?
+
+
+Configurations
+--------------
+
+There are many different arrangements in which sarracenia can be used. The guide
+will work through a few examples:
+
+Dataless 
+  where one runs just sarracenia on top of a broker with no local transfer engines.
+  This is used, for example to run sr_winnow on a site to provide redundant data sources.
+
+Standalone 
+  the most obvious one, run the entire stack on a single server, openssh and a web server
+  as well the broker and sarra itself.  Makes a complete data pump, but without any redundancy.
+
+Switching/Routing
+  Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
+  a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
+  a given source with a given node.  This has the effect of pumping different parts of large files 
+  through different nodes.  So one will see parts of files announced by such pump, to be
+  re-assembled by subscribers.
+
+Data Dissemination
+  Where in order to serve a large number of clients, multiple identical servers, each with a complete
+  mirror of data 
+
+FIXME: 
+  ok, opened big mouth, now need to work through the examples.
+
+
+
+Dataless or S=0
+~~~~~~~~~~~~~~~
+
+A configuration which includes only the AMQP broker.  This configuration can be used when users
+have access to disk space on both ends and only need a mediator.  This is the configuration
+of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
+not need any, or pumps deployed to provide redundant HA to remote data centres.
+
+.. note:: 
+
+  FIXME: sample configuration of shovels, and sr_winnow (with output to xpublic) to allow 
+  subscribers in the SPC to obtain data from either edm or dor.
+
+Note that while a configuration can be dataless, it can still make use of rabbitmq
+clustering for high availability requirements (see rabbitmq clustering below.)
+
+
+
+Standalone
+~~~~~~~~~~
+
+In a standalone configuration, there is only one node in the configuration.  It runs all components
+and shares none with any other nodes.  That means the Broker and data services such as sftp and
+apache are on the one node.
+
+One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
+queueing and transmission away from the instrument.  It is restarted when the opportunity arises.
+It is just a matter of installing and configuring all a data flow engine, a broker, and the package
+itself on a single server.
+
+
+.. note::
+
+   FIXME: go through the topologies in design/design.rst, and document what we think is relevant.
+
 
 Rabbitmq Setup 
 --------------
@@ -341,6 +541,9 @@ SSL Setup
 This should be mandatory, and included here as part of setup.
 Wait until December 3rd, 2015... see if letsencrypt provides a simpler setup method.
 
+.. NOTE::
+   FIXME: Document this.
+
 
 Change Defaults 
 ~~~~~~~~~~~~~~~
@@ -389,12 +592,12 @@ They can declare queues for their own use (with names that identify them clearly
 read from xpublic, and their own log exchange but they are only able to write their xs_<user> 
 exchange.
 
-Adding a user at the broker level and its permission (conf,write,read):
+Adding a user at the broker level and its permission (conf,write,read)::
 
   rabbitmqctl add_user Alice <password>
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
 
-or, parametrized:
+or, parametrized::
 
   u=Alice
   rabbitmqctl add_user ${u} <password>
@@ -549,12 +752,97 @@ The answer I got from the Rabbitmq gurus ::
   Cheers, Simon
   
 
-Security Scanning
-~~~~~~~~~~~~~~~~~
+Security Considerations
+-----------------------
+
+This section is meant to provide insight to those who need to perform a security review
+of the application prior to implementation.  
+
+Authentication used by transport engines is independent of that used for the brokers.  A security 
+assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate 
+the overall security of a given deployment.  All credentials used by the application are stored 
+in the ~/.config/sarra/credentials.conf file, and that that file is forced to 600 permissions.  
+
+The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
+storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
+file just points to those key files.
+
+For sarracenia itself, password authentication is used to communicate with the AMQP broker,
+so implementation of encrypted socket transport (SSL/TLS) on all broker traffic is strongly 
+recommended.  
+
+Sarracenia users are actually users defined on rabbitmq brokers. 
+Each user Alice, on a broker to which she has access:
+
+ - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
+ - has an exchange xl_Alice, where she writes her log messages.
+ - can create queues qs_Alice\_.* to bind to exchanges.
+ - Alice can create and destroy her own queues, but no-one else's.
+ - Alice can only write to her exchange (xs_Alice),
+ - Exchanges are managed by the administrator, and not any user.
+ - Alice can only post data that she is publishing (it will refer back to her)
+
+Cannot create any exchanges or other queues not shown above.
+
+Rabbitmq provides the granularity of security to restrict the names of
+objects, but not their types.  Thus, given the ability to create a queue named q_Alice,
+a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
+queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.
+
+To prevent such mis-use, sr_police is a component that is invoked regularly looking
+for mis-use, and cleaning it up.
+
+.. NOTE::
+   FIXME:  sr_police is a renaming of queue_manager.py queue_manager currently only looks for
+   obsolete queues with high number of items queued, or which have not been accessed in a long
+   time.  Need to add the feature of looking for exchanges that do not start with x and delete
+   them.
+
+   
+
+Input Validation
+~~~~~~~~~~~~~~~~
+
+Users such as Alice post their messages to their own exchange (xs_Alice).  Processes which read from 
+user exchanges have a responsibility for validation.   The process that reads xs_Alice (likely an sr_sarra) 
+will overwrite any *source* or *cluster* heading written into the message with the correct values for
+the current cluster, and the user which posted the message.  
+
+The checksum algorithm used must also be validated.  The algorithm must be known.  Similarly, the
+there is a malformed header of some kind, it should be rejected immediately.  Only well-formed messages
+should be forwarded for further processing.
+
+In the case of sr_sarra, using the onpart trigger, the checksum must be re-calculated from the data,
+to ensure they match.  If they do not match, the file will not be forwarded.  Depending on the level of 
+confidence between a pair of pumps, the level of validation may be relaxed to improve performance.  That 
+is the reason for the *recompute_checksum* option.  If set to false, there should be a performance improvement.
+
+Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
+users on the remote pumps and any other pumps the pump is forwarding for.  In that case the validation
+constraints are a little different:
+
+- source doesn´t matter. (feeders can represent other users, so do not overwrite.) 
+- ensure cluster is not local cluster (as that indicates either a loop or misuse.)
+
+If the message fails the non-local cluster test, it should be rejected (and the rejection logged back to...
+hmm...)
+
+FIXME:
+   - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
+
+
+
+
+
+Content Scanning
+~~~~~~~~~~~~~~~~
 
 In cases where security scanning of file being transferred is deemed necessary, one configures sarra with an on_part hook.
-FIXME: need an example of an on_file hook to call Amavis.  Have it check which part of a file is in question, and only scan
-the initial part.
+
+
+.. NOTE::
+  FIXME: need an example of an on_part hook to call Amavis.  Have it check which part of a file is in question, 
+  and only scan the initial part.  
 
 
 Hooks from Sundew
