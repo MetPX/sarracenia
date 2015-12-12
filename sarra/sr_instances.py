@@ -35,6 +35,8 @@
 #
 
 import logging,os,psutil,signal,sys
+from sys import platform as _platform
+
 
 try :
          from sr_config      import *
@@ -46,7 +48,9 @@ class sr_instances(sr_config):
     def __init__(self,config=None,args=None):
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
-        signal.signal(signal.SIGHUP, self.reload_signal)
+        if _platform != 'win32':
+            signal.signal(signal.SIGHUP, self.reload_signal)
+
         sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
         #self.configure()
@@ -195,15 +199,18 @@ class sr_instances(sr_config):
                     self.logger.info("%s strange state... " % self.instance_str)
                     self.stop_instance()
 
-        # fork : make sure the parent is not killed
-        # wait for child to start
-        pid = os.fork()
-        if pid > 0 :
-           os.wait()
-           self.logger.info("%s started" % self.instance_str)
-           return
+        if _platform != 'win32' :
+          # fork : make sure the parent is not killed
+          # wait for child to start
+          pid = os.fork()
+          if pid > 0 :
+             os.wait()
+             self.logger.info("%s started" % self.instance_str)
+             return
 
-        self.daemonize()
+          self.daemonize()
+        else:
+          self.logger.info("instances not implemented on windows %s " % self.instance_str)
 
         self.pid = os.getpid()
         self.file_set_int(self.pidfile,self.pid)
