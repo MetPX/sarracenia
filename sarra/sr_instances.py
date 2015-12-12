@@ -62,7 +62,7 @@ class sr_instances(sr_config):
     def build_instance(self,i):
         self.instance      = i
         self.instance_name = self.basic_name + '_%.4d'%i
-        self.instance_str  = self.instance_name.replace('_',' ')
+        self.instance_str  = 'sr_' + self.instance_name[3:].replace('_',' ')
         self.pidfile       = self.user_cache_dir + os.sep + '.' + self.instance_name + '.pid'
         self.logpath       = self.user_log_dir + os.sep +       self.instance_name + '.log'
 
@@ -70,7 +70,7 @@ class sr_instances(sr_config):
         self.pid           = self.file_get_int(self.pidfile)
     
     def daemonize(self):
-        d = multiprocessing.Process(name='p'+self.instance_str,target=self.dparent)
+        d = multiprocessing.Process(name='p_'+self.instance_name,target=self.dparent)
         d.daemon = False
         d.start()
         time.sleep(0.01)
