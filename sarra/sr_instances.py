@@ -187,7 +187,7 @@ class sr_instances(sr_config):
         # signal on child
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
-        if _platform != 'win32':
+        if sys.platform != 'win32':
             signal.signal(signal.SIGHUP, self.reload_signal)
 
         p = multiprocessing.current_process()
