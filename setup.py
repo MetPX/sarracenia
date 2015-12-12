@@ -62,6 +62,6 @@ setup(
     install_requires=[ 
     "amqplib", 
     "appdirs",
-    "pyinotify", 
+    "watchdog", 
     "psutil" ],
 )
