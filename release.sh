@@ -94,10 +94,10 @@ done
 dch -v $VERSION
 
 # echo "git commit debian/changelog -m 'cutting new release $VERSION'"
-git commit debian/changelog -m 'cutting new release $VERSION'
+git commit debian/changelog -m "cutting new sarra release $VERSION"
 
 # echo "git tag -a v$VERSION -m 'release $VERSION'"
-git tag -a v$VERSION -m 'release $VERSION'
+git tag -a v$VERSION -m "sarracenia release $VERSION"
 
 read -e -p "Enter the name of the git remote that you would like to push to: [default=origin] " -i "origin" REMOTE
 
