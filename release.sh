@@ -104,8 +104,8 @@ read -e -p "Enter the name of the git remote that you would like to push to: [de
 # echo "git push origin master"
 # echo "git push origin --tags"
 
-git push origin master
-git push origin --tags
+git push $REMOTE master
+git push $REMOTE --tags
 
 
 echo "Please remember to add '+' to the version string in __init__.py!"
