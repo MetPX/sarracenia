@@ -56,8 +56,8 @@ build() {
 	cd $P
 
 	VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
-	DIR=metpx-sarracenia-$VERSION
-	CHNG=metpx-sarracenia_$VERSION_source.changes
+	DIR=metpx-sarracenia-${VERSION}
+	CHNG=metpx-sarracenia_${VERSION}_source.changes
 
 	cd ..
 	cp -ap sarracenia $TMPDIR/$DIR
@@ -70,7 +70,7 @@ build() {
 	fi
 	cd $TMPDIR
 	debsign -k4EE55EB5 $CHNG
-	dput ppa:ssc-hpc-chp-spc/metpx-$DIST $CHNG
+	dput ppa:ssc-hpc-chp-spc/metpx $CHNG
 	echo "-----"
 	echo "Log files available at $TMPDIR"
 	echo "-----"
