@@ -407,17 +407,23 @@ def test_sr_log2clusters():
 
     log2clusters.msg.headers['parts']        = '1,1591,1,0,0'
     log2clusters.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
-    log2clusters.msg.headers['from_cluster'] = 'DDI.CMC'
     log2clusters.msg.headers['source']       = 'a_provider'
     log2clusters.msg.headers['to_clusters']  = 'dont_care_forward_direction'
     log2clusters.msg.headers['message']      = 'Downloaded'
     log2clusters.msg.headers['filename']     = 'toto'
     log2clusters.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
     log2clusters.msg.notice  += '201 foreign.host.com a_remote_source 823.353824'
-    log2clusters.msg.parse_v02_post()
 
-    # publish on our broker
+    # publish a bad one
     msg = log2clusters.msg
+    msg.headers['from_cluster'] = 'BAD'
+    msg.parse_v02_post()
+    publisher.publish(msg.exchange,msg.topic,msg.notice,msg.headers)
+
+    # publish a good one
+    msg = log2clusters.msg
+    msg.headers['from_cluster'] = 'DDI.CMC'
+    msg.parse_v02_post()
     publisher.publish(msg.exchange,msg.topic,msg.notice,msg.headers)
 
     # process with our single message that should be posted to our remote cluster
