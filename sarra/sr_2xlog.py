@@ -412,8 +412,6 @@ def test_sr_2xlog():
     toxlog.msg.exchange = exchange
     toxlog.msg.topic    = 'v02.log.this.is.test1'
     toxlog.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
-    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
-    toxlog.msg.notice  += '201 foreign.host.com '+ subscriber + ' 823.353824'
     toxlog.msg.headers  = {}
 
     toxlog.msg.headers['parts']        = '1,1591,1,0,0'
@@ -423,15 +421,21 @@ def test_sr_2xlog():
     toxlog.msg.headers['to_clusters']  = 'dont_care_forward_direction'
     toxlog.msg.headers['message']      = 'Downloaded'
     toxlog.msg.headers['filename']     = 'toto'
+
+    # start with a bad one
+    BAD                 = 'A_STRANGER'
+    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    toxlog.msg.notice  += '201 foreign.host.com '+ BAD + ' 823.353824'
     toxlog.msg.parse_v02_post()
 
     toxlog.msg.publish()
 
-    # change message that would come from another subscriber
+    # than post the good one
 
-    subscriber = 'A_STRANGER'
+    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
     toxlog.msg.notice  += '201 foreign.host.com '+ subscriber + ' 823.353824'
     toxlog.msg.parse_v02_post()
+
     toxlog.msg.publish()
 
     # process with our on_message and on_post
@@ -441,21 +445,24 @@ def test_sr_2xlog():
     i = 0
     j = 0
     k = 0
+    c = 0
     while True :
-          if toxlog.process_message():
-             if toxlog.msg.headers['source'] != 'a_provider': continue
-             if toxlog.msg.mtypej == 1: j += 1
-             if toxlog.msg.mtypek == 1: k += 1
-             i = i + 1
-             break
+          ok = toxlog.process_message()
+          c = c + 1
+          if c == 10 : break
+          if not ok : continue
+          if toxlog.msg.headers['source'] != 'a_provider': continue
+          if toxlog.msg.mtypej == 1: j += 1
+          if toxlog.msg.mtypek == 1: k += 1
+          i = i + 1
 
     toxlog.close()
 
     if j != 1 or k != 1 :
-       print("sr_toxlog TEST Failed 1")
+       print("sr_2xlog TEST Failed 1")
        sys.exit(1)
 
-    print("sr_toxlog TEST PASSED")
+    print("sr_2xlog TEST PASSED")
 
     os.unlink('./on_msg_test.py')
     os.unlink('./on_pst_test.py')
