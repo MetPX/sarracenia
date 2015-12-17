@@ -379,6 +379,8 @@ def test_sr_log2source():
 
     log2source.close()
 
+    os.unlink('./sr_log2source.queue')
+
     if j != N or k != N :
        print("sr_log2source TEST Failed 1")
        sys.exit(1)
