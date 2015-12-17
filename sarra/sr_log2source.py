@@ -160,17 +160,17 @@ class sr_log2source(sr_instances):
         if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster :
            self.logger.info("skipped : not for cluster %s" % self.cluster)
            self.logger.info("hdr from_cluster %s" % self.msg.headers['from_cluster'])
-           return False,self.msg
+           return False
 
         # is the log message from a source on this cluster
 
         if not 'source' in self.msg.headers or not self.msg.headers['source'] in self.source_users:
            self.logger.info("skipped : source not in %s" % self.source_users)
-           return False,self.msg
+           return False
 
         # yup this is one message we want to ship to our source
 
-        return True,self.msg
+        return True
 
     # =============
     # default_on_post  
@@ -184,12 +184,12 @@ class sr_log2source(sr_instances):
 
         ok = self.msg.publish( )
         if ok :
-              self.logger.info("published to %s" % self.msg.exchange)
+              self.logger.info ("published to %s"      % self.msg.exchange)
               self.logger.debug("Published topic   %s" % self.msg.topic)
               self.logger.debug("Published notice  %s" % self.msg.notice)
               self.logger.debug("Published headers %s" % self.msg.hdrstr)
 
-        return True,self.msg
+        return ok
 
 
     # =============
@@ -210,12 +210,12 @@ class sr_log2source(sr_instances):
 
                  if not self.on_message :
                         self.logger.debug( "default_on_message called")
-                        ok, self.msg = self.default_on_message()
+                        ok = self.default_on_message()
 
                  # invoke on_message when provided
                  else :
                         self.logger.debug("on_message called")
-                        ok, self.msg = self.on_message(self)
+                        ok = self.on_message(self)
 
                  if not ok : return ok
 
@@ -224,12 +224,12 @@ class sr_log2source(sr_instances):
 
                  if not self.on_post :
                         self.logger.debug( "default_on_post called")
-                        ok, self.msg = self.default_on_post()
+                        ok = self.default_on_post()
 
                  # invoke on_post when provided
                  else :
                         self.logger.debug("on_post called")
-                        ok, self.msg = self.on_post(self)
+                        ok = self.on_post(self)
 
                  return ok
 
@@ -311,10 +311,10 @@ def test_sr_log2source():
     f      = open("./on_msg_test.py","w")
     f.write("class Transformer(object): \n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok,msg = parent.default_on_message()\n")
-    f.write("          if not ok :  return ok,msg\n")
-    f.write("          msg.mtypej = 'transformed'\n")
-    f.write("          return True, msg\n")
+    f.write("          ok = parent.default_on_message()\n")
+    f.write("          if not ok :  return ok\n")
+    f.write("          parent.msg.mtypej = 'transformed'\n")
+    f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_message = transformer.perform\n")
     f.close()
@@ -322,10 +322,10 @@ def test_sr_log2source():
     f      = open("./on_pst_test.py","w")
     f.write("class Transformer(object): \n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok,msg = parent.default_on_post()\n")
-    f.write("          if not ok :  return ok,msg\n")
-    f.write("          msg.mtypek = 'transformed'\n")
-    f.write("          return True, msg\n")
+    f.write("          ok = parent.default_on_post()\n")
+    f.write("          if not ok :  return ok\n")
+    f.write("          parent.msg.mtypek = 'transformed'\n")
+    f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_post = transformer.perform\n")
     f.close()
