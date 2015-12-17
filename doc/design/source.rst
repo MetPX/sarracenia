@@ -367,6 +367,8 @@ files.
    re-assembly is possible, sender doesn't, so the sarra on Re-Advertiseing
    advertises 'p' instead of 'i', but user does not know or care.
 
+   conclusion: this is usually transparent, just admin's need to know
+   should go there. 
 
 Fingerprints
 ------------
