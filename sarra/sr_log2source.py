@@ -178,10 +178,6 @@ class sr_log2source(sr_instances):
 
     def default_on_post(self):
 
-        # ok ship it back to the user exchange 
-
-        self.msg.exchange = 'xl_' + self.msg.headers['source']
-
         ok = self.msg.publish( )
         if ok :
               self.logger.info ("published to %s"      % self.msg.exchange)
@@ -218,6 +214,10 @@ class sr_log2source(sr_instances):
                         ok = self.on_message(self)
 
                  if not ok : return ok
+
+                 # ok ship it back to the user exchange 
+
+                 self.msg.exchange = 'xl_' + self.msg.headers['source']
 
 
                  # invoke default_on_post
