@@ -381,7 +381,10 @@ class sr_config:
                         self.logger.setLevel(logging.DEBUG)
 
                 elif words[0] in ['document_root','-dr','--document_root']:
-                     self.document_root = words[1]
+                     if sys.platform == 'win32':
+                         self.document_root = words[1].replace('\\','/')
+                     else:
+                         self.document_root = words[1]
                      n = 2
 
                 elif words[0] in ['events','-e','--events']:
