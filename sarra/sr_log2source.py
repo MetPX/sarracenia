@@ -14,7 +14,6 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
@@ -40,90 +39,106 @@ import signal
 #============================================================
 # usage example
 #
-# sr_log2source -b broker -i 1
-
+# sr_log2source [options] [config] [start|stop|restart|reload|status]
+#
+# logs message have travel back to this cluster
+#
+# conditions :
+# exchange                = xlog
+# topic                   = v02.log
+# header['from_cluster']  = cluster        (here)
+# header['source]         in source_users  (one of our source : users.conf)
+#
+# it is a log message that our source sould be able to see so:
+#
+# publish this log message in xl_"source"
+#
 #============================================================
 
 try :    
-         from sr_amqp           import *
+         from sr_consumer       import *
          from sr_instances      import *
          from sr_message        import *
 except : 
-         from sarra.sr_amqp      import *
+         from sarra.sr_consumer  import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-
 
 class sr_log2source(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-        self.exchange = 'xlog'
-        self.topic    = 'v02.log.#'
-        self.broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+
         self.configure()
 
-
     def check(self):
-        # dont want to recreate these if they exists
-        if not hasattr(self,'msg') :
-           self.msg = sr_message(self.logger)
+
+        # create bindings from default ?
+
+        if self.bindings == [] :
+           key = self.topic_prefix + '.' + self.subtopic
+           self.bindings.append( (self.exchange,key) )
+
+        # scan users for role source
+
+        self.source_users = []
+
+        for user in self.users :
+            roles = self.users[user]
+            if 'source' in roles :
+               self.source_users.append(user)
+
 
     def close(self):
-        self.hc.close()
+        self.consumer.close()
 
     def configure(self):
 
-        # installation general configurations and settings
+        # overwrite defaults
+
+        self.broker               = self.manager
+        self.exchange             = 'xlog'
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
+
+        # load/reload all config settings
 
         self.general()
+        self.args   (self.user_args)
+        self.config (self.user_config)
 
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
+        # verify / complete settings
 
         self.check()
-        self.logger.info("nbr_instances %d"% self.nbr_instances)
 
 
     def connect(self):
 
         # =============
-        # consumer
+        # create message if needed
         # =============
 
-        # consumer host
+        if not hasattr(self,'msg'):
+           self.msg = sr_message(self.logger)
 
-        self.hc = HostConnect( logger = self.logger )
-        self.hc.set_url( self.broker )
-        self.hc.connect()
+        # =============
+        # consumer  queue_name : let consumer takes care of it
+        # =============
 
-        # consumer  add_prefetch(1) allows queue sharing between instances
+        self.consumer = sr_consumer(self)
 
-        self.consumer  = Consumer(self.hc)
-        self.consumer.build()
+        # =============
+        # publisher... (publish back to consumer)  
+        # =============
 
-        # consumer queue
+        self.publisher = self.consumer.publish_back()
 
-        name  = 'q_' + self.broker.username + '.' + self.program_name
-        if self.queue_name != None :
-           name = 'q_' + self.broker.username + '.' + self.queue_name
+        # =============
+        # setup message publisher
+        # =============
 
-        self.queue = Queue(self.hc,name)
-        self.queue.add_binding(self.exchange,self.topic)
-        self.queue.build()
-
-        # publisher
-
-        self.pub = Publisher(self.hc)
-        self.pub.build()
+        self.msg.publisher = self.consumer.publisher
 
 
     def help(self):
@@ -132,88 +147,248 @@ class sr_log2source(sr_instances):
         self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
         self.logger.info("-i   <instances> default:1")
 
-    def run(self):
 
-        self.logger.info("sr_log2source run")
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
+    # =============
+    # default_on_message  
+    # =============
+
+    def default_on_message(self):
+        self.logger.debug("sr_log2source default_on_message")
+
+        # is the log message for this cluster
+
+        if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster :
+           self.logger.info("skipped : not for cluster %s" % self.cluster)
+           self.logger.info("hdr from_cluster %s" % self.msg.headers['from_cluster'])
+           return False,self.msg
+
+        # is the log message from a source on this cluster
+
+        if not 'source' in self.msg.headers or not self.msg.headers['source'] in self.source_users:
+           self.logger.info("skipped : source not in %s" % self.source_users)
+           return False,self.msg
+
+        # yup this is one message we want to ship to our source
+
+        return True,self.msg
+
+    # =============
+    # default_on_post  
+    # =============
+
+    def default_on_post(self):
+
+        # ok ship it back to the user exchange 
+
+        self.msg.exchange = 'xl_' + self.msg.headers['source']
+
+        ok = self.msg.publish( )
+        if ok :
+              self.logger.info("published to %s" % self.msg.exchange)
+              self.logger.debug("Published topic   %s" % self.msg.topic)
+              self.logger.debug("Published notice  %s" % self.msg.notice)
+              self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        return True,self.msg
 
 
+    # =============
+    # process message  
+    # =============
 
-        self.connect()
+    def process_message(self):
 
-        self.msg.logger       = self.logger
-        self.msg.amqp_log     = None
-        self.msg.amqp_pub     = None
-
-        #
-        # loop on all message
-        #
-
-        raw_msg = None
-
-        while True :
-
-          try  :
-                 if raw_msg != None : self.consumer.ack(raw_msg)
-
-                 raw_msg = self.consumer.consume(self.queue.qname)
-                 if raw_msg == None : continue
-
-                 # make use it as a sr_message
-
-                 self.msg.from_amqplib(raw_msg)
+        try  :
+                 ok, self.msg = self.consumer.consume()
+                 if not ok : return ok
 
                  self.logger.info("Received topic   %s" % self.msg.topic)
                  self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s\n" % self.msg.hdrstr)
+                 self.logger.info("Received headers %s" % self.msg.hdrstr)
 
-                 # check for  from_cluster and source in headers
+                 # invoke default_on_message
 
-                 if not 'from_cluster' in self.msg.headers :
-                    self.logger.info("skipped : no cluster in message headers")
-                    continue
+                 if not self.on_message :
+                        self.logger.debug( "default_on_message called")
+                        ok, self.msg = self.default_on_message()
 
-                 if not 'source' in self.msg.headers :
-                    self.logger.info("skipped : no source in message headers")
-                    continue
+                 # invoke on_message when provided
+                 else :
+                        self.logger.debug("on_message called")
+                        ok, self.msg = self.on_message(self)
 
-                 # skip if cluster is not self.broker.hostname
-
-                 if self.msg.headers['from_cluster'] != self.cluster :
-                    self.logger.info("not for this cluster %s = %s\n" % (self.broker.hostname,self.cluster ))
-                    continue
-
-                 # ok ship it back to the user exchange 
-
-                 user_exchange = 'xl_' + self.msg.headers['source']
-
-                 # FIXME ... what to do if xl_'source' does not work ????  ex.: deleting a user... extra log message back ...
-
-                 ok = self.pub.publish( user_exchange, self.msg.topic, self.msg.notice, self.msg.headers )
-                 if ok : self.logger.info("published to %s" % user_exchange)
+                 if not ok : return ok
 
 
-          except :
+                 # invoke default_on_post
+
+                 if not self.on_post :
+                        self.logger.debug( "default_on_post called")
+                        ok, self.msg = self.default_on_post()
+
+                 # invoke on_post when provided
+                 else :
+                        self.logger.debug("on_post called")
+                        ok, self.msg = self.on_post(self)
+
+                 return ok
+
+        except :
                  (type, value, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 return False
+
+        return ok
+
+
+    def run(self):
+
+        # configure
+
+        self.configure()
+
+        # present basic config
+
+        self.logger.info("sr_log2source run")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
+                        (self.broker.hostname,self.broker.username,self.broker.path) )
+
+        for tup in self.bindings:
+            e,k =  tup
+            self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (e,k) )
+
+        self.logger.info("\nsource users = %s" % self.source_users)
+
+
+        # loop/process messages
+
+        self.connect()
+
+        while True :
+              ok = self.process_message()
+
 
     def reload(self):
-        self.logger.info("sr_log2source reload")
+        self.logger.info("%s reload" % self.program_name)
         self.close()
-        self.configure()
         self.run()
 
     def start(self):
-        self.configure()
-        self.logger.info("sr_log2source start")
+        self.logger.info("%s start" % self.program_name)
         self.run()
 
     def stop(self):
-        self.logger.info("sr_log2source stop")
+        self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
                  
+
+# ===================================
+# self test
+# ===================================
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
+
+def test_sr_log2source():
+
+    logger = test_logger()
+
+    yyyy   = time.strftime("%Y",time.gmtime())
+    opt1   = 'accept .*' + yyyy + '.*'
+    opt2   = 'reject .*'
+    opt3   = 'on_message ./on_msg_test.py'
+    opt4   = 'on_post ./on_pst_test.py'
+
+    # here an example that calls the default_on_message...
+    # then process it if needed
+    f      = open("./on_msg_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          ok,msg = parent.default_on_message()\n")
+    f.write("          if not ok :  return ok,msg\n")
+    f.write("          msg.mtypej = 'transformed'\n")
+    f.write("          return True, msg\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_message = transformer.perform\n")
+    f.close()
+
+    f      = open("./on_pst_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          ok,msg = parent.default_on_post()\n")
+    f.write("          if not ok :  return ok,msg\n")
+    f.write("          msg.mtypek = 'transformed'\n")
+    f.write("          return True, msg\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_post = transformer.perform\n")
+    f.close()
+
+    # setup sr_log2source to catch repost N log messages
+
+    N = 10
+
+    log2source         = sr_log2source()
+    log2source.logger  = logger
+    log2source.debug   = False
+
+    log2source.user_queue_dir = os.getcwd()
+    log2source.option( opt1.split()  )
+    log2source.option( opt2.split()  )
+    log2source.option( opt3.split()  )
+    log2source.option( opt4.split()  )
+
+    # ==================
+    # define YOUR BROKER HERE
+
+    ok, details = log2source.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    if not ok :
+       print("UNABLE TO PERFORM TEST")
+       print("Need a good broker")
+       sys.exit(1)
+    log2source.broker = details.url
+
+    # ==================
+    # define a source_users list here
+
+    log2source.source_users = ['USGS-Sioux-Falls']
+
+    # ==================
+    # define the matching cluster here
+    log2source.cluster = 'DDI.CMC'
+
+    log2source.connect()
+
+    # process N messages
+
+    i = 0
+    j = 0
+    k = 0
+    while True :
+          if log2source.process_message():
+             if log2source.msg.mtypej == 'transformed': j += 1
+             if log2source.msg.mtypek == 'transformed': k += 1
+             i = i + 1
+          if i == N: break
+
+    log2source.close()
+
+    if j != N or k != N :
+       print("sr_log2source TEST Failed 1")
+       sys.exit(1)
+
+    print("sr_log2source TEST PASSED")
+
+    os.unlink('./on_msg_test.py')
+    os.unlink('./on_pst_test.py')
+
+    sys.exit(0)
 
 # ===================================
 # MAIN
@@ -225,24 +400,35 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
-       action = sys.argv[-1]
-       if len(sys.argv) > 3: args = sys.argv[1:-1]
 
-    log2source = sr_log2source(config,args)
+    if len(sys.argv) > 1 :
+       action = sys.argv[-1]
+       args   = sys.argv[:-1]
+
+    if len(sys.argv) > 2 : 
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('log2source',config)
+       if ok     : args = sys.argv[:-2]
+       if not ok :
+          config = None
+          end = -2
+
+
+    log2source = sr_log2source(config,args[1:])
 
     if   action == 'reload' : log2source.reload_parent()
     elif action == 'restart': log2source.restart_parent()
     elif action == 'start'  : log2source.start_parent()
     elif action == 'stop'   : log2source.stop_parent()
     elif action == 'status' : log2source.status_parent()
+    elif action == 'TEST'   : test_sr_log2source()
     else :
            log2source.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)
-
-
 
 # =========================================
 # direct invocation
