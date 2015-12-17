@@ -8,15 +8,13 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log2clusters.py : python3 program uses log2clusters.conf to repost all log messages
-#                      to the proper cluster
+# sr_log2clusters.py : python3 this program assumes log routing
+#                      between clusters
 #
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 17 09:23:05 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -35,196 +33,416 @@
 #
 #
 
-import signal
-
 #============================================================
 # usage example
 #
-# sr_log2clusters -b broker
-
+# sr_log2clusters [options] [config] [start|stop|restart|reload|status]
+#
+# On the current cluster... subscribers return their log about
+# product downloads. It is possible that this cluster "pumped" that product
+# from another cluster. It is this originating cluster that needs this log
+# This program publishes the message back to their originating cluster
+#
+# conditions :
+#
+# Each line in log2clusters.conf (self.log_clusters) contains :
+# cluster_name  cluster_broker  cluster_exchange
+# One instance of sr_log2clusters is fork for each of them
+#
+# The instance consumes log messages on self.broker 
+# exchange = xlog     
+# topic    = v02.log  
+# subtopic = #        
+#
+# It validates the message : it must have the header['source']
+# and header['from_cluster'] for proper log routing.
+#
+# If valid and header['from_cluster'] match cluster_name
+# the log message is published in cluster_exchange on the cluster_broker
+#
 #============================================================
 
 try :    
-         from sr_amqp           import *
-         from sr_instances      import *
-         from sr_message        import *
+         from sr_consumer        import *
+         from sr_instances       import *
+         from sr_message         import *
 except : 
-         from sarra.sr_amqp      import *
+         from sarra.sr_consumer  import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-
 
 class sr_log2clusters(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-        self.source_exchange = 'xlog'
-        self.source_broker   = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        self.source_topic    = 'v02.log.#'
-        self.index           = 0
         self.configure()
-        self.nbr_instances   = len(self.log_clusters)
 
     def check(self):
-        # dont want to recreate these if they exists
-        if not hasattr(self,'msg') :
-           self.msg = sr_message(self.logger)
+
+        # create bindings from default ?
+
+        if self.bindings == [] :
+           key = self.topic_prefix + '.' + self.subtopic
+           self.bindings.append( (self.exchange,key) )
+
+        # no queue name allowed
+
+        if self.queue_name != None:
+           self.logger.error("queue name forced in this program")
+           self.queue_name =  None
+
+        # as many instances than cluster to route log to
+
+        self.nbr_instances = len(self.log_clusters)
+        self.logger.debug("nbr_instances = %d" % self.nbr_instances)
+
 
     def close(self):
-        self.hc_src.close()
-        self.hc_pst.close()
+        self.consumer.close()
+        self.hc.close()
 
     def configure(self):
 
-        # installation general configurations and settings
+        # overwrite defaults
+
+        self.broker               = self.manager
+        self.exchange             = 'xlog'
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
+
+        # load/reload all config settings
 
         self.general()
+        self.args   (self.user_args)
+        self.config (self.user_config)
 
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
+        # verify / complete settings
 
         self.check()
-
-        self.cluster_index, self.broker, self.exchange = self.log_clusters[self.index]
 
     def connect(self):
 
         # =============
-        # consumer
+        # create message if needed
         # =============
 
-        # consumer host
-
-        self.hc_src = HostConnect( logger = self.logger )
-        self.hc_src.set_url( self.source_broker )
-        self.hc_src.connect()
-
-        # consumer  add_prefetch(1) allows queue sharing between instances
-
-        self.consumer  = Consumer(self.hc_src)
-        self.consumer.add_prefetch(1)
-        self.consumer.build()
-
-        # consumer queue
-
-        name  = 'q_' + self.source_broker.username
-        if self.queue_name != None :
-           name += '.' + self.queue_name
-        else :
-           name += '.' + self.program_name
-        name += '.' + self.source_broker.hostname + '.' + self.source_exchange
-
-        self.queue = Queue(self.hc_src,name)
-        self.queue.add_binding(self.source_exchange,self.source_topic)
-        self.queue.build()
+        if not hasattr(self,'msg'):
+           self.msg = sr_message(self.logger)
 
         # =============
-        # publisher
+        # consumer  queue_name : let consumer takes care of it
         # =============
 
-        # publisher host
+        self.consumer = sr_consumer(self)
 
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.broker )
-        self.hc_pst.connect()
+        # =============
+        # publisher... on remote cluster
+        # =============
 
-        # publisher
+        self.hc = HostConnect( logger = self.logger )
+        self.hc.set_url( self.cluster_broker )
+        self.hc.connect()
 
-        self.pub    = Publisher(self.hc_pst)
-        self.pub.build()
+        self.publisher = Publisher(self.hc)
+        self.publisher.build()
+
+        # =============
+        # setup message publisher
+        # =============
+
+        self.msg.publisher = self.publisher
+
 
     def help(self):
-        self.logger.info("Usage: %s -b <broker> [start|stop|restart|reload|status]  \n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
-
-    def run(self):
-
-        self.logger.info("sr_log2clusters run")
-        self.logger.info("AMQP  input broker(%s) user(%s) vhost(%s)" % (self.source_broker.hostname,self.source_broker.username,self.source_broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.source_exchange,self.source_topic) )
-        self.logger.info("checking for %s" % self.cluster_index)
-        self.logger.info("AMQP output broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s)" % (self.exchange) )
+        self.logger.info("Usage: %s [options] [config] [start|stop|restart|reload|status]  \n" % self.program_name )
 
 
-        self.connect()
+    # =============
+    # default_on_message  
+    # =============
 
-        self.msg.logger       = self.logger
+    def default_on_message(self):
+        self.logger.debug("sr_log2clusters default_on_message")
 
-        #
-        # loop on all message
-        #
+        # check for from_cluster and it the cluster match  cluster_name
 
-        raw_msg = None
+        if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster_name :
+           self.logger.info("skipped : not for cluster %s" % self.cluster_name)
+           return False
 
-        while True :
+        # avoid bad message (no source) and looping no repost on this cluster
 
-          try  :
-                 if raw_msg != None : self.consumer.ack(raw_msg)
+        if not 'source' in self.msg.headers or self.msg.headers['from_cluster'] == self.cluster :
+           self.logger.info("skipped : invalid message or looping avoided")
+           return False
 
-                 raw_msg = self.consumer.consume(self.queue.qname)
-                 if raw_msg == None : continue
+        # yup this is one valid message from that post broker
 
-                 # make use it as a sr_message
+        return True
 
-                 self.msg.from_amqplib(raw_msg)
+    # =============
+    # default_on_post  
+    # =============
+
+    def default_on_post(self):
+
+        ok = self.msg.publish( )
+        if ok :
+              self.logger.info ("published to %s %s"   % (self.cluster_broker.geturl(),self.msg.exchange))
+              self.logger.debug("Published topic   %s" % self.msg.topic)
+              self.logger.debug("Published notice  %s" % self.msg.notice)
+              self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        return ok
+
+    # =============
+    # process message  
+    # =============
+
+    def process_message(self):
+
+        try  :
+                 ok, self.msg = self.consumer.consume()
+                 if not ok : return ok
 
                  self.logger.info("Received topic   %s" % self.msg.topic)
                  self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s\n" % self.msg.hdrstr)
+                 self.logger.info("Received headers %s" % self.msg.hdrstr)
 
-                 # check for  from_cluster and source in headers
+                 # invoke default_on_message
 
-                 if not 'from_cluster' in self.msg.headers :
-                    self.logger.info("skipped : no cluster in message headers")
-                    continue
+                 if not self.on_message :
+                        self.logger.debug( "default_on_message called")
+                        ok = self.default_on_message()
 
-                 # skip if cluster is not self.broker.hostname
+                 # invoke on_message when provided
+                 else :
+                        self.logger.debug("on_message called")
+                        ok = self.on_message(self)
 
-                 if self.msg.headers['from_cluster'] == self.cluster :
-                    self.logger.info("on current cluster %s\n" % self.cluster )
-                    continue
+                 if not ok : return ok
 
-                 # ok ship log to appropriate log_cluster
+                 # ok accepted... ship subscriber log to xlog
 
-                 if self.cluster_index != self.msg.headers['from_cluster']:
-                    self.logger.info("not processing cluster %s in this process\n" % self.cluster_index )
-                    continue
+                 self.msg.exchange = self.cluster_exchange
 
-                 ok = self.pub.publish( self.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
-                 if ok : self.logger.info("published to %s %s" % (self.broker.geturl(),self.exchange))
+                 # invoke default_on_post
 
-          except :
+                 if not self.on_post :
+                        self.logger.debug( "default_on_post called")
+                        ok = self.default_on_post()
+
+                 # invoke on_post when provided
+                 else :
+                        self.logger.debug("on_post called")
+                        ok = self.on_post(self)
+
+                 return ok
+
+        except :
                  (type, value, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 return False
+
+        return ok
+
+
+    def run(self):
+
+        # configure
+
+        self.configure()
+
+        # set instance
+
+        self.set_instance()
+
+        # present basic config
+
+        self.logger.info("sr_log2clusters run")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
+                        (self.broker.hostname,self.broker.username,self.broker.path) )
+        tup = self.bindings[0]
+        e,k =  tup
+        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (e,k) )
+
+        self.logger.info("\nCLUSTER")
+        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
+                        (self.cluster_broker.hostname,self.cluster_broker.username,self.cluster_broker.path) )
+        self.logger.info("AMQP  output:    exchange(%s) topic(%s)" % (self.cluster_exchange,k) )
+
+        # loop/process messages
+
+        self.connect()
+
+        while True :
+              ok = self.process_message()
+
+
+    def set_instance(self):
+
+        i = self.instance - 1
+
+        self.cluster_name, self.cluster_broker, self.cluster_exchange = self.log_clusters[i]
+
+        self.queue_name  = 'q_' + self.broker.username + '.'
+        self.queue_name += self.program_name + '.' + self.cluster_name + '.' + self.cluster_exchange
+
 
     def reload(self):
-        self.logger.info("sr_log2clusters reload")
+        self.logger.info("%s reload" % self.program_name)
         self.close()
-        self.index = self.instance - 1
-        self.configure()
         self.run()
 
     def start(self):
-        self.logger.info("sr_log2clusters start")
-        self.index = self.instance - 1
-        self.configure()
+        self.logger.info("%s start" % self.program_name)
         self.run()
 
     def stop(self):
-        self.logger.info("sr_log2clusters stop")
+        self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
                  
+
+# ===================================
+# self test
+# ===================================
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
+
+def test_sr_log2clusters():
+
+    logger = test_logger()
+
+    opt1   = 'on_message ./on_msg_test.py'
+    opt2   = 'on_post ./on_pst_test.py'
+
+    # here an example that calls the default_on_message...
+    # then process it if needed
+    f      = open("./on_msg_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self):\n")
+    f.write("          self.count_ok = 0\n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          ok = parent.default_on_message()\n")
+    f.write("          if not ok :  return ok\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypej = self.count_ok\n")
+    f.write("          return True\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_message = transformer.perform\n")
+    f.close()
+
+    f      = open("./on_pst_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self): \n")
+    f.write("          self.count_ok = 0\n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          ok = parent.default_on_post()\n")
+    f.write("          if not ok :  return ok\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypek = self.count_ok\n")
+    f.write("          return True\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_post = transformer.perform\n")
+    f.close()
+
+    # setup sr_log2clusters for 1 user (just this instance)
+
+    log2clusters         = sr_log2clusters()
+    log2clusters.logger  = logger
+    log2clusters.debug   = True
+    log2clusters.configure()
+    log2clusters.bindings = [ ('xlog','v02.log.this.#') ]
+    log2clusters.nbr_instances   = 1
+
+    log2clusters.option( opt1.split()  )
+    log2clusters.option( opt2.split()  )
+
+    # ==================
+    # define YOUR BROKER HERE
+
+    ok, details = log2clusters.credentials.get("amqp://ddi1.edm.ec.gc.ca/")
+    if not ok :
+       print("UNABLE TO PERFORM TEST")
+       print("Need a good broker")
+       sys.exit(1)
+    log2clusters.broker  = details.url
+    log2clusters.cluster = 'DDI.EDM'
+
+    # ==================
+    # define REMOTE BROKER HERE
+
+    log2clusters.cluster_name = 'DDI.CMC'
+    ok, details = log2clusters.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    if not ok :
+       print("UNABLE TO PERFORM TEST")
+       print("Need a good broker")
+       sys.exit(1)
+    log2clusters.cluster_exchange = 'xlog'
+
+    # ==================
+    # set instance
+
+    log2clusters.instance = 1
+    log2clusters.set_instance()
+    log2clusters.connect()
+
+    publisher = log2clusters.consumer.publish_back()
+    
+    # prepare a funky message good message
+
+    log2clusters.msg.exchange = 'xlog'
+    log2clusters.msg.topic    = 'v02.log.this.is.test1'
+    log2clusters.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
+    log2clusters.msg.headers  = {}
+
+    log2clusters.msg.headers['parts']        = '1,1591,1,0,0'
+    log2clusters.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
+    log2clusters.msg.headers['from_cluster'] = 'DDI.CMC'
+    log2clusters.msg.headers['source']       = 'a_provider'
+    log2clusters.msg.headers['to_clusters']  = 'dont_care_forward_direction'
+    log2clusters.msg.headers['message']      = 'Downloaded'
+    log2clusters.msg.headers['filename']     = 'toto'
+    log2clusters.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    log2clusters.msg.notice  += '201 foreign.host.com a_remote_source 823.353824'
+    log2clusters.msg.parse_v02_post()
+
+    # publish on our broker
+    msg = log2clusters.msg
+    publisher.publish(msg.exchange,msg.topic,msg.notice,msg.headers)
+
+    # process with our single message that should be posted to our remote cluster
+
+    j = 0
+    k = 0
+    while True :
+          ok = log2clusters.process_message()
+          if not ok : continue
+          if log2clusters.msg.mtypej == 1: j += 1
+          if log2clusters.msg.mtypek == 1: k += 1
+          break
+
+    log2clusters.close()
+
+    if j != 1 or k != 1 :
+       print("sr_log2clusters TEST Failed 1")
+       sys.exit(1)
+
+    print("sr_log2clusters TEST PASSED")
+
+    os.unlink('./on_msg_test.py')
+    os.unlink('./on_pst_test.py')
+
+    sys.exit(0)
 
 # ===================================
 # MAIN
@@ -236,24 +454,33 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       if len(sys.argv) > 3: args = sys.argv[1:-1]
+       args   = sys.argv[:-1]
 
-    log2clusters = sr_log2clusters(config,args)
+    if len(sys.argv) > 2 : 
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('log2clusters',config)
+       if ok     : args = sys.argv[:-2]
+       if not ok :
+          config = None
+          end = -2
+
+    log2clusters = sr_log2clusters(config,args[1:])
 
     if   action == 'reload' : log2clusters.reload_parent()
     elif action == 'restart': log2clusters.restart_parent()
     elif action == 'start'  : log2clusters.start_parent()
     elif action == 'stop'   : log2clusters.stop_parent()
     elif action == 'status' : log2clusters.status_parent()
+    elif action == 'TEST'   : test_sr_log2clusters()
     else :
            log2clusters.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)
-
-
 
 # =========================================
 # direct invocation
@@ -261,3 +488,4 @@ def main():
 
 if __name__=="__main__":
    main()
+
