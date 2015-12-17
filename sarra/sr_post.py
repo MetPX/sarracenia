@@ -290,6 +290,9 @@ class sr_post(sr_config):
 
         self.event = event
 
+        if sys.platform == 'win32' : # put the slashes in the right direction on windows
+           fpath = fpath.replace('\\','/')
+
         if self.document_root != None :
            fpath = fpath.replace(self.document_root,'')
            if fpath[0] == '/' : fpath = fpath[1:]

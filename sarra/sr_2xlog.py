@@ -8,14 +8,14 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log2source.py : python3 program takes all log messages and repost them to the
-#                    log exchange of the source user
+# sr_2xlog.py : python3 program takes log messages from various source
+#                       validates them and put the valid one in xlog
+#                       to permit pump  log routing
 #
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 17 09:23:05 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -34,37 +34,37 @@
 #
 #
 
-import signal
-
 #============================================================
 # usage example
 #
-# sr_log2source [options] [config] [start|stop|restart|reload|status]
+# sr_2xlog [options] [config] [start|stop|restart|reload|status]
 #
-# logs message have travel back to this cluster
+# sr_subscriber logs back its downloads on the cluster it is subscribed to
+# The sr_subscribe program are using exchange xs_"username"... for that
+# This program validates these log message and if ok, integrate them in xlog
 #
 # conditions :
-# exchange                = xlog
-# topic                   = v02.log
-# header['from_cluster']  = cluster        (here)
-# header['source]         in source_users  (one of our source : users.conf)
+# exchangeS               = (from users.conf role subscriber)
+#                         = [xs_subscriber1,xs_subscriber2...]
+#                         = one sr_2xlog instance per exchange
+# topic                   = v02.log.#
+# header['from_cluster']  = should be defined ... for log routing
+# header['source]         = should be defined ... for log routing
 #
-# it is a log message that our source sould be able to see so:
-#
-# publish this log message in xl_"source"
+# valid log messages are publish in xlog for log routing
 #
 #============================================================
 
 try :    
-         from sr_consumer       import *
-         from sr_instances      import *
-         from sr_message        import *
+         from sr_consumer        import *
+         from sr_instances       import *
+         from sr_message         import *
 except : 
          from sarra.sr_consumer  import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
 
-class sr_log2source(sr_instances):
+class sr_2xlog(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
@@ -74,20 +74,44 @@ class sr_log2source(sr_instances):
 
     def check(self):
 
-        # create bindings from default ?
+        # no binding allowed
 
-        if self.bindings == [] :
-           key = self.topic_prefix + '.' + self.subtopic
-           self.bindings.append( (self.exchange,key) )
+        if self.bindings != [] :
+           self.logger.error("broker exchange, topic_prefix and subtopic are static in this program")
+           self.bindings  = []
 
-        # scan users for role source
+        # no queue name allowed
 
-        self.source_users = []
+        if self.queue_name != None:
+           self.logger.error("queue name forced in this program")
+           self.queue_name =  None
 
+        # scan users for role subscribe
+
+        self.subscribe_users = {}
+
+        i = 0
         for user in self.users :
             roles = self.users[user]
-            if 'source' in roles :
-               self.source_users.append(user)
+            if 'subscribe' in roles :
+               self.subscribe_users[i] = user
+               i = i + 1
+
+        self.logger.debug("subscribers = %s " % self.subscribe_users)
+
+        # recreate bindings with exchange from subscriber list
+
+        self.exchanges = {}
+
+        for i in self.subscribe_users :
+            user = self.subscribe_users[i]
+            exchange          = 'xs_'+ user
+            key               = self.topic_prefix + '.' + self.subtopic
+            self.exchanges[i] = (exchange,key)
+            i = i + 1
+        self.logger.debug("exchanges = %s " % self.exchanges)
+
+        self.nbr_instances = len(self.subscribe_users)
 
 
     def close(self):
@@ -97,8 +121,8 @@ class sr_log2source(sr_instances):
 
         # overwrite defaults
 
-        self.broker               = self.manager
-        self.exchange             = 'xlog'
+        if hasattr(self,'manager'):
+           self.broker            = self.manager
         self.topic_prefix         = 'v02.log'
         self.subtopic             = '#'
 
@@ -142,10 +166,7 @@ class sr_log2source(sr_instances):
 
 
     def help(self):
-        self.logger.info("Usage: %s -b <broker> -i <instances> [start|stop|restart|reload|status]  \n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
-        self.logger.info("-i   <instances> default:1")
+        self.logger.info("Usage: %s [options] [config] [start|stop|restart|reload|status]  \n" % self.program_name )
 
 
     # =============
@@ -153,22 +174,21 @@ class sr_log2source(sr_instances):
     # =============
 
     def default_on_message(self):
-        self.logger.debug("sr_log2source default_on_message")
+        self.logger.debug("sr_2xlog default_on_message")
 
         # is the log message for this cluster
 
-        if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster :
-           self.logger.info("skipped : not for cluster %s" % self.cluster)
-           self.logger.info("hdr from_cluster %s" % self.msg.headers['from_cluster'])
+        if not 'from_cluster' in self.msg.headers or not 'source' in self.msg.headers :
+           self.logger.info("skipped : no cluster or source in message")
            return False
 
         # is the log message from a source on this cluster
 
-        if not 'source' in self.msg.headers or not self.msg.headers['source'] in self.source_users:
-           self.logger.info("skipped : source not in %s" % self.source_users)
+        if not hasattr(self.msg,'log_user')  or self.msg.log_user != self.subscriber:
+           self.logger.info("skipped : log_user is not subscriber %s " % self.subscriber)
            return False
 
-        # yup this is one message we want to ship to our source
+        # yup this is one valid message from that suscriber
 
         return True
 
@@ -186,7 +206,6 @@ class sr_log2source(sr_instances):
               self.logger.debug("Published headers %s" % self.msg.hdrstr)
 
         return ok
-
 
     # =============
     # process message  
@@ -215,10 +234,9 @@ class sr_log2source(sr_instances):
 
                  if not ok : return ok
 
-                 # ok ship it back to the user exchange 
+                 # ok accepted... ship subscriber log to xlog
 
-                 self.msg.exchange = 'xl_' + self.msg.headers['source']
-
+                 self.msg.exchange = 'xlog'
 
                  # invoke default_on_post
 
@@ -247,9 +265,13 @@ class sr_log2source(sr_instances):
 
         self.configure()
 
+        # set instance
+
+        self.set_instance()
+
         # present basic config
 
-        self.logger.info("sr_log2source run")
+        self.logger.info("sr_2xlog run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
@@ -257,7 +279,7 @@ class sr_log2source(sr_instances):
             e,k =  tup
             self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (e,k) )
 
-        self.logger.info("\nsource users = %s" % self.source_users)
+        self.logger.info("\nsubscriber = %s" % self.subscriber)
 
 
         # loop/process messages
@@ -266,6 +288,16 @@ class sr_log2source(sr_instances):
 
         while True :
               ok = self.process_message()
+
+
+    def set_instance(self):
+        i = self.instance - 1
+
+        self.subscriber = self.subscribe_users[i]
+
+        self.bindings.append(self.exchanges[i])
+
+        self.queue_name = 'q_' + self.broker.username + '.' + self.program_name + '.' + self.subscriber
 
 
     def reload(self):
@@ -296,24 +328,24 @@ class test_logger:
           self.info    = self.silence
           self.warning = print
 
-def test_sr_log2source():
+def test_sr_2xlog():
 
     logger = test_logger()
 
-    yyyy   = time.strftime("%Y",time.gmtime())
-    opt1   = 'accept .*' + yyyy + '.*'
-    opt2   = 'reject .*'
-    opt3   = 'on_message ./on_msg_test.py'
-    opt4   = 'on_post ./on_pst_test.py'
+    opt1   = 'on_message ./on_msg_test.py'
+    opt2   = 'on_post ./on_pst_test.py'
 
     # here an example that calls the default_on_message...
     # then process it if needed
     f      = open("./on_msg_test.py","w")
     f.write("class Transformer(object): \n")
+    f.write("      def __init__(self):\n")
+    f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
     f.write("          ok = parent.default_on_message()\n")
     f.write("          if not ok :  return ok\n")
-    f.write("          parent.msg.mtypej = 'transformed'\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypej = self.count_ok\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_message = transformer.perform\n")
@@ -321,71 +353,116 @@ def test_sr_log2source():
 
     f      = open("./on_pst_test.py","w")
     f.write("class Transformer(object): \n")
+    f.write("      def __init__(self): \n")
+    f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
     f.write("          ok = parent.default_on_post()\n")
     f.write("          if not ok :  return ok\n")
-    f.write("          parent.msg.mtypek = 'transformed'\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypek = self.count_ok\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_post = transformer.perform\n")
     f.close()
 
-    # setup sr_log2source to catch repost N log messages
+    # setup sr_2xlog for 1 user (just this instance)
 
-    N = 10
+    toxlog         = sr_2xlog()
+    toxlog.logger  = logger
+    toxlog.debug   = True
+    toxlog.configure()
 
-    log2source         = sr_log2source()
-    log2source.logger  = logger
-    log2source.debug   = False
+    subscriber = 'anonymous'
+    exchange   = 'xs_' + subscriber
+    toxlog.subscribe_users = [subscriber]
+    toxlog.exchanges       = {}
+    toxlog.exchanges[0]    = ( exchange, 'v02.log.#' )
+    toxlog.user_queue_dir  = os.getcwd()
+    toxlog.nbr_instances   = 1
 
-    log2source.user_queue_dir = os.getcwd()
-    log2source.option( opt1.split()  )
-    log2source.option( opt2.split()  )
-    log2source.option( opt3.split()  )
-    log2source.option( opt4.split()  )
+    toxlog.option( opt1.split()  )
+    toxlog.option( opt2.split()  )
 
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2source.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    ok, details = toxlog.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")
        sys.exit(1)
-    log2source.broker = details.url
-
-    # ==================
-    # define a source_users list here
-
-    log2source.source_users = ['USGS-Sioux-Falls']
+    toxlog.broker = details.url
 
     # ==================
     # define the matching cluster here
-    log2source.cluster = 'DDI.CMC'
+    toxlog.cluster = 'DDI.CMC'
 
-    log2source.connect()
+    # ==================
+    # set instance
 
-    # process N messages
+    toxlog.instance = 1
+    toxlog.set_instance()
+    toxlog.connect()
+    
+    # do an empty consume... assure AMQP's readyness
+    ok, msg = toxlog.consumer.consume()
+
+    # use toxlog.publisher to post a log to xs_anonymous
+
+    toxlog.msg.exchange = exchange
+    toxlog.msg.topic    = 'v02.log.this.is.test1'
+    toxlog.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
+    toxlog.msg.headers  = {}
+
+    toxlog.msg.headers['parts']        = '1,1591,1,0,0'
+    toxlog.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
+    toxlog.msg.headers['from_cluster'] = 'DDI.CMC'
+    toxlog.msg.headers['source']       = 'a_provider'
+    toxlog.msg.headers['to_clusters']  = 'dont_care_forward_direction'
+    toxlog.msg.headers['message']      = 'Downloaded'
+    toxlog.msg.headers['filename']     = 'toto'
+
+    # start with a bad one
+    BAD                 = 'A_STRANGER'
+    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    toxlog.msg.notice  += '201 foreign.host.com '+ BAD + ' 823.353824'
+    toxlog.msg.parse_v02_post()
+
+    toxlog.msg.publish()
+
+    # than post the good one
+
+    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    toxlog.msg.notice  += '201 foreign.host.com '+ subscriber + ' 823.353824'
+    toxlog.msg.parse_v02_post()
+
+    toxlog.msg.publish()
+
+    # process with our on_message and on_post
+    # expected only 1 hit for a good message
+    # to go to xlog
 
     i = 0
     j = 0
     k = 0
+    c = 0
     while True :
-          if log2source.process_message():
-             if log2source.msg.mtypej == 'transformed': j += 1
-             if log2source.msg.mtypek == 'transformed': k += 1
-             i = i + 1
-          if i == N: break
+          ok = toxlog.process_message()
+          c = c + 1
+          if c == 10 : break
+          if not ok : continue
+          if toxlog.msg.headers['source'] != 'a_provider': continue
+          if toxlog.msg.mtypej == 1: j += 1
+          if toxlog.msg.mtypek == 1: k += 1
+          i = i + 1
 
-    log2source.close()
+    toxlog.close()
 
-    os.unlink('./.sr_log2source.queue')
-
-    if j != N or k != N :
-       print("sr_log2source TEST Failed 1")
+    if j != 1 or k != 1 :
+       print("sr_2xlog TEST Failed 1")
        sys.exit(1)
 
-    print("sr_log2source TEST PASSED")
+    print("sr_2xlog TEST PASSED")
 
     os.unlink('./on_msg_test.py')
     os.unlink('./on_pst_test.py')
@@ -402,7 +479,6 @@ def main():
     args   = None
     config = None
 
-
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
        args   = sys.argv[:-1]
@@ -411,23 +487,22 @@ def main():
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('log2source',config)
+       ok,config = cfg.config_path('toxlog',config)
        if ok     : args = sys.argv[:-2]
        if not ok :
           config = None
           end = -2
 
+    toxlog = sr_2xlog(config,args[1:])
 
-    log2source = sr_log2source(config,args[1:])
-
-    if   action == 'reload' : log2source.reload_parent()
-    elif action == 'restart': log2source.restart_parent()
-    elif action == 'start'  : log2source.start_parent()
-    elif action == 'stop'   : log2source.stop_parent()
-    elif action == 'status' : log2source.status_parent()
-    elif action == 'TEST'   : test_sr_log2source()
+    if   action == 'reload' : toxlog.reload_parent()
+    elif action == 'restart': toxlog.restart_parent()
+    elif action == 'start'  : toxlog.start_parent()
+    elif action == 'stop'   : toxlog.stop_parent()
+    elif action == 'status' : toxlog.status_parent()
+    elif action == 'TEST'   : test_sr_2xlog()
     else :
-           log2source.logger.error("action unknown %s" % action)
+           toxlog.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

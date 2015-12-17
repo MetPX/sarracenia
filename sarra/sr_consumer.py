@@ -50,11 +50,13 @@ class sr_consumer:
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
 
+        self.use_pattern    = parent.masks != []
+        self.accept_unmatch = parent.accept_unmatch
+
         self.build_connection()
         self.build_consumer()
         self.build_queue()
-        self.build_message()
-        self.build_logback()
+        self.get_message()
 
     def build_connection(self):
         self.logger.debug("sr_consumer build_broker")
@@ -79,23 +81,22 @@ class sr_consumer:
 
         self.consumer.build()
 
-    def build_logback(self):
-        self.logger.debug("sr_consumer build_logback")
+    def publish_back(self):
+        self.logger.debug("sr_consumer publish_back")
 
-        self.log_back     = self.parent.log_back
-        self.msg.amqp_log = None
+        self.publisher = Publisher(self.hc)
+        self.publisher.build()
 
-        if self.log_back :
-           self.msg.amqp_log = Publisher(self.hc)
-           self.msg.amqp_log.build()
-           self.msg.exchange_log = 'xs_' + self.broker.username
-           self.logger.info("AMQP  output:    exchange(%s) topic(%s)\n" % (self.msg.exchange_log,'v02.log.#') )
+        return self.publisher
 
-    def build_message(self):
-        self.logger.debug("sr_consumer build_message")
+    def get_message(self):
+        self.logger.debug("sr_consumer get_message")
+
+        if not hasattr(self.parent,'msg'):
+           self.parent.msg = sr_message(self.logger)
 
         self.raw_msg  = None
-        self.msg      = sr_message(self.logger)
+        self.msg      = self.parent.msg
         self.msg.user = self.broker.username
 
     def build_queue(self):
@@ -135,13 +136,13 @@ class sr_consumer:
     def close(self):
         self.hc.close()
 
-    def consume(self,use_pattern=True,accept_unmatch=False):
+    def consume(self):
 
-        # acknowledge last message... we are done with it
+        # acknowledge last message... we are done with it since asking for a new one
         if self.raw_msg != None : self.consumer.ack(self.raw_msg)
 
         # consume a new one
-        self.raw_msg = self.consumer.consume(self.msg_queue.qname)
+        self.raw_msg = self.consumer.consume(self.queue_name)
         if self.raw_msg == None : return False, self.msg
 
 
@@ -159,8 +160,8 @@ class sr_consumer:
 
         # make use of accept/reject
 
-        if use_pattern :
-           if not self.parent.isMatchingPattern(self.msg.urlstr,accept_unmatch) :
+        if self.use_pattern :
+           if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
               self.logger.debug("Rejected by accept/reject options")
               return False,self.msg
 
@@ -168,8 +169,14 @@ class sr_consumer:
 
     def random_queue_name(self) :
 
-        queuedir  = self.parent.user_queue_dir
-        queuefile = '.' + self.parent.config_name + '.queue'
+        queuedir   = self.parent.user_queue_dir
+        queuefile  = '.'
+        queuefile += self.parent.program_name
+
+        if self.parent.config_name :
+           queuefile += '.' + self.parent.config_name
+
+        queuefile += '.queue'
         queuepath = queuedir + os.sep + queuefile
 
         if os.path.isfile(queuepath) :
@@ -228,7 +235,6 @@ def self_test():
     cfg.debug          = False
     cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@ddi.cmc.ec.gc.ca/")
     cfg.queue_share    = True
-    cfg.log_back       = True
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = True
     cfg.expire         = 30
@@ -246,7 +252,7 @@ def self_test():
 
     i = 0
     while True :
-          ok, msg = consumer.consume(use_pattern=True,accept_unmatch=False)
+          ok, msg = consumer.consume()
           if ok: break
 
           i = i + 1
@@ -255,6 +261,8 @@ def self_test():
              break
 
     consumer.close()
+
+    os.unlink("./.sr_consumer.test.queue")
 
     if msg != None :
        if yyyy in msg.notice :
