@@ -14,8 +14,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 17 09:20:42 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,8 +32,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-
-import signal
 
 #============================================================
 # usage example
@@ -149,11 +146,11 @@ class sr_log2source(sr_instances):
 
 
     # =============
-    # default_on_message  
+    # __on_message__  internal message validation
     # =============
 
-    def default_on_message(self):
-        self.logger.debug("sr_log2source default_on_message")
+    def __on_message__(self):
+        self.logger.debug("sr_log2source __on_message__")
 
         # is the log message for this cluster
 
@@ -173,10 +170,10 @@ class sr_log2source(sr_instances):
         return True
 
     # =============
-    # default_on_post  
+    # __on_post__ internal posting
     # =============
 
-    def default_on_post(self):
+    def __on_post__(self):
 
         ok = self.msg.publish( )
         if ok :
@@ -202,34 +199,30 @@ class sr_log2source(sr_instances):
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s" % self.msg.hdrstr)
 
-                 # invoke default_on_message
+                 # invoke __on_message__
 
-                 if not self.on_message :
-                        self.logger.debug( "default_on_message called")
-                        ok = self.default_on_message()
-
-                 # invoke on_message when provided
-                 else :
-                        self.logger.debug("on_message called")
-                        ok = self.on_message(self)
-
+                 ok = self.__on_message__()
                  if not ok : return ok
+
+                 # invoke user provided on_message 
+
+                 if self.on_message :
+                    ok = self.on_message(self)
+                    if not ok : return ok
 
                  # ok ship it back to the user exchange 
 
                  self.msg.exchange = 'xl_' + self.msg.headers['source']
 
+                 # invoke __on_post__
 
-                 # invoke default_on_post
+                 ok = self.__on_post__()
+                 if not ok : return ok
 
-                 if not self.on_post :
-                        self.logger.debug( "default_on_post called")
-                        ok = self.default_on_post()
+                 # invoke user provided on_post 
 
-                 # invoke on_post when provided
-                 else :
-                        self.logger.debug("on_post called")
-                        ok = self.on_post(self)
+                 if self.on_post :
+                    ok = self.on_post(self)
 
                  return ok
 
@@ -260,7 +253,7 @@ class sr_log2source(sr_instances):
         self.logger.info("\nsource users = %s" % self.source_users)
 
 
-        # loop/process messages
+        # connect and loop/process messages
 
         self.connect()
 
@@ -311,8 +304,6 @@ def test_sr_log2source():
     f      = open("./on_msg_test.py","w")
     f.write("class Transformer(object): \n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok = parent.default_on_message()\n")
-    f.write("          if not ok :  return ok\n")
     f.write("          parent.msg.mtypej = 'transformed'\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
@@ -322,8 +313,6 @@ def test_sr_log2source():
     f      = open("./on_pst_test.py","w")
     f.write("class Transformer(object): \n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok = parent.default_on_post()\n")
-    f.write("          if not ok :  return ok\n")
     f.write("          parent.msg.mtypek = 'transformed'\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
@@ -336,7 +325,7 @@ def test_sr_log2source():
 
     log2source         = sr_log2source()
     log2source.logger  = logger
-    log2source.debug   = False
+    log2source.debug   = True
 
     log2source.user_queue_dir = os.getcwd()
     log2source.option( opt1.split()  )
