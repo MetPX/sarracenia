@@ -206,11 +206,12 @@ class sr_credentials:
                 for optval in optlist:
                     parts   = optval.split('=')
                     keyword = parts[0].strip()
-                    value   = parts[1].strip()
         
-                    if    keyword == 'ssh_keyfile' : details.ssh_keyfile = value
-                    elif  keyword == 'passive'     : details.passive     = self.isTrue(value)
-                    elif  keyword == 'binary'      : details.binary      = self.isTrue(value)
+                    if    keyword == 'ssh_keyfile' : details.ssh_keyfile = parts[1].strip()
+                    elif  keyword == 'passive'     : details.passive     = True
+                    elif  keyword == 'active'      : details.passive     = False
+                    elif  keyword == 'binary'      : details.binary      = True
+                    elif  keyword == 'acsii'       : details.binary      = False
                     else: self.logger.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
@@ -250,7 +251,7 @@ class sr_credentials:
         self.logger.debug("credentials = %s\n" % self.credentials)
 
 # ===================================
-# self_test
+# self testing
 # ===================================
 
 class test_logger:
@@ -262,13 +263,13 @@ class test_logger:
           self.info    = self.silence
           self.warning = print
 
-def self_test():
+def test_sr_credentials():
 
     logger      = test_logger()
     credentials = sr_credentials(logger)
 
     # covers : parse, credential_details obj, isTrue, add
-    line = "ftp://guest:toto@localhost passive  =  False , binary=True"
+    line = "ftp://guest:toto@localhost active , binary"
     credentials.parse(line)
 
     # covers get with match
@@ -342,7 +343,7 @@ def self_test():
 
 def main():
 
-    self_test()
+    test_sr_credentials()
     sys.exit(0)
 
 # =========================================
