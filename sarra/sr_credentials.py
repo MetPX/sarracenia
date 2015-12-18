@@ -211,7 +211,7 @@ class sr_credentials:
                     elif  keyword == 'passive'     : details.passive     = True
                     elif  keyword == 'active'      : details.passive     = False
                     elif  keyword == 'binary'      : details.binary      = True
-                    elif  keyword == 'acsii'       : details.binary      = False
+                    elif  keyword == 'ascii'       : details.binary      = False
                     else: self.logger.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
