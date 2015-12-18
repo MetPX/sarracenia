@@ -167,7 +167,11 @@ class sr_log2source(sr_instances):
 
         # yup this is one message we want to ship to our source
 
-        return True
+        # user provided an on_message script
+
+        if self.on_message : ok = self.on_message(self)
+
+        return ok
 
     # =============
     # __on_post__ internal posting
@@ -176,11 +180,17 @@ class sr_log2source(sr_instances):
     def __on_post__(self):
 
         ok = self.msg.publish( )
+
+        # should always be ok
         if ok :
               self.logger.info ("published to %s"      % self.msg.exchange)
               self.logger.debug("Published topic   %s" % self.msg.topic)
               self.logger.debug("Published notice  %s" % self.msg.notice)
               self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        # invoke user provided on_post anyway
+
+        if self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -204,12 +214,6 @@ class sr_log2source(sr_instances):
                  ok = self.__on_message__()
                  if not ok : return ok
 
-                 # invoke user provided on_message 
-
-                 if self.on_message :
-                    ok = self.on_message(self)
-                    if not ok : return ok
-
                  # ok ship it back to the user exchange 
 
                  self.msg.exchange = 'xl_' + self.msg.headers['source']
@@ -217,12 +221,6 @@ class sr_log2source(sr_instances):
                  # invoke __on_post__
 
                  ok = self.__on_post__()
-                 if not ok : return ok
-
-                 # invoke user provided on_post 
-
-                 if self.on_post :
-                    ok = self.on_post(self)
 
                  return ok
 
