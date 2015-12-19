@@ -20,11 +20,42 @@ To hack on the sarracenia source, you need:
  - git. in order to download the source from the sf.net repository.
  - a running rabbitmq broker (if you want to actually run any code.)
 
+
 after you have cloned the source code::
 
-    cd sarracenia. 
+    git clone git://git.code.sf.net/p/metpx/git metpx-git
+    cd metpx-git/sarracenia. 
 
 The rest of the Guide assumes you are there.
+
+Documentation
+-------------
+
+The development process is to write up what one intends to to or have done into
+a restructured text file in the doc/design sub-directory.  The files there provide
+a basis for discussion.  Ideally, the information there acts as a pieces which can 
+be edited into documentation for the features as they are implemented.
+
+Each new component sr\_whatever, should have relevant man pages implemented.  
+The Guides should also be revised.  The form of the documentation is still under
+discussion.  Current thinking:
+
+- GettingIt.rst (Installation)
+- Dev.rst (this guide for developers)
+- Subscribers.rst (a guide for how to read data from a pump.)
+- Source.rst (a guide for those publishing data to a pump.)
+- Admin.rst (an Admininistrator´s Guide.)
+
+When there are new sections, they should likely start out in design/ and after
+review, graduate into the main documentation.
+
+
+Development
+-----------
+
+Development occurs on the master branch, which may be in any state at any given
+time, and should note be relied upon.  From time to time releases are tagged, and
+maintenance results in a branch.
 
 
 Release Process
@@ -51,14 +82,14 @@ Where:
 
 Example: 
 
-A release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
+The first alpha release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 
 Cutting a New Release
 ~~~~~~~~~~~~~~~~~~~~~
 
-* Edit ``sarra/__init__.py`` manually and increment the version number.
+* Edit ``sarra/__init__.py`` manually and set the version number.
 * Run ```release.sh```
-* Edit ``sarra/__init__.py`` manually and add ``+`` to the end of the version number. This indicates ongoing development.
+* Edit ``sarra/__init__.py`` manually and add ``+`` to the end of the version number to differentiate continuing development on the master branch from the last release.
 
 Each new release triggers a *tag* in the git repository.
 
@@ -75,6 +106,13 @@ Building a Release
 ------------------
 
 MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
+
+.. note::
+   FIXME:  the adding of the + to master makes the current tree not the release,
+   so need to expclicitly checkout the tag... no?  how does one 
+   Can someone correct this:
+
+   git checkout -t sarra-v2.16.01a01  ?
 
 
 Python Wheel

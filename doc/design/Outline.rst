@@ -90,8 +90,12 @@ and seem helpful.  We should get rid of any that are not helpful.
      *It is not enough for justice to be done.  Justice must be seen to be done.*
 
      It is not enough for data to be delivered.  That delivery must be logged,
-     and that log must be returned to the source.
-
+     and that log must be returned to the source.  While we want to supply
+     enough information to data sources, we do not want to drown the network
+     in meta data.  The local component logs will have much more information,
+     The log messages traverse the network to the source are ´final dispositions´
+     whenever an operation is either completed or finally abandoned.
+    
 
 
   5. This is a data distribution tool, not a file tree replicator.
