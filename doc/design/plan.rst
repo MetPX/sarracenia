@@ -30,7 +30,7 @@ Revision Record
 Design Principles
 -----------------
 
-- The switching software knows as little as possible about the data being transferred.
+- The pumping software knows as little as possible about the data being transferred.
   no data parsing should be necessary for the software.  The only data parsed is
   what is defined in the sr_post(7) and sr_log(7) manual pages, and the various 
   configuration files.
@@ -67,7 +67,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
 
      There must be no limitation on maximum file size that can traverse the network.
      Eliminating file size restrictions is accomplished by sending parts of the
-     file through the network at a time, so that no intervenining switch is required
+     file through the network at a time, so that no intervenining pump is required
      to store the entire file.
  
      On Long-haul links, a single connection suffers greatly from round-trip latency.
@@ -105,26 +105,26 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      criteria: log messages created, read with sr_subscribe.
  
  
-  5. ( *InProgress* ) **user-centric multi-switch log message routing.**
+  5. ( *InProgress* ) **user-centric multi-pump log message routing.**
 
      Assigned to: Michel Grenier
 
      Using the same mechanisms as the announcements (AMQP messages) but conceptually 
      in the opposite direction (flowing from consumers back to sources.)
      This is accomplished by ensuring that log messages for consumption are sent
-     back throught the switching network to get to where the source can view them.
+     back throught the pumping network to get to where the source can view them.
 
-     criteria:  log message inserted at one switch is routed correctly to a source
-     which inserted the relevant post into another switch.
+     criteria:  log message inserted at one pump is routed correctly to a source
+     which inserted the relevant post into another pump.
  
-  6. ( *Done* ) **source data routing (over multiple switches).**
+  6. ( *Done* ) **source data routing (over multiple pumps).**
 
      Assigned to: Michel Grenier
 
-     Currently, routing through multiple switches is done manually by admins.
-     Admins manually configure each intervening switch for each data set's routing needs.
+     Currently, routing through multiple pumps is done manually by admins.
+     Admins manually configure each intervening pump for each data set's routing needs.
      
-     A user cannot specify the switches to which data should be sent.
+     A user cannot specify the pumps to which data should be sent.
      Giving users that capability is a design goal of the project.
      Need a relatively simple model for the data sources to specify the distribution
      of their data.  This is to be addressed after log message routing.
@@ -194,8 +194,8 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Pending Dependencies: Multi-User Support, Source Data Routing.
 
      Criteria:  
-     sr\_?? command issued on one switch, triggers htpasswd restriction
-     on another switch.
+     sr\_?? command issued on one pump, triggers htpasswd restriction
+     on another pump.
      Alice is on SwitchA, Bob has access to SwitchC, data goes from A to C via SwitchB.
      Eve running sr_sub on SwitchB should not be able to intercept.
 
@@ -203,7 +203,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
 
      Assigned to: ??
 
-     Need to document all the steps in setting up a switch in whatever cluster configurations
+     Need to document all the steps in setting up a pump in whatever cluster configurations
      are deemed appropriate (standalone first, then perhaps ddsr, and others.)
      Perhaps easier to build simple commands, than complicated documentation.
      tradeoffs.
@@ -211,8 +211,8 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Pending Dependencies: Alice to Bob, Multi-User Support, Source Data Routing, Automated Linux Builds
 
      Criteria:
-     doc tested by someone using it to configure a standalone switch, from vanilla linux server.
-     Documented method to add a user, add an interswitch connection, start up all the plumbing 
+     doc tested by someone using it to configure a standalone pump, from vanilla linux server.
+     Documented method to add a user, add an interpump connection, start up all the plumbing 
      processes.  How to configure SARRA to read from sx_user and post.  How to configure 
      pre-fetch (message), and post-fetch (file) validation. 
 
@@ -324,7 +324,7 @@ specific time line.
    
  55. ( *Waiting* ) **web config file inclusion**
      Ideally, sources could provide configuration snippets for their data types that could
-     be on the switches, and directly referenced on the web sites by config files.
+     be on the pumps, and directly referenced on the web sites by config files.
      So sources could move directories around, and just publish updated configurations to
      reflect the change.
      
@@ -345,9 +345,9 @@ These items will graduate to features at some point.
 
 
 101. ( *Critical?* ) If a firewall prevents SARA from pulling data from an sr_post,
-     there is no simple sr_* ish way to send the data to a switch.  *sr_put* is 
+     there is no simple sr_* ish way to send the data to a pump.  *sr_put* is 
      conceived as a program that uses instances to start up a bunch of streams
-     and round-robins sending to the switch... on the switch, normal SARRA picks it up.
+     and round-robins sending to the pump... on the pump, normal SARRA picks it up.
 
 102. ( *Critical* ) Not clear how file receipt/ingest works.
      users need to write to a private area, scanning/validation happens, then it
@@ -373,7 +373,7 @@ These items will graduate to features at some point.
           
 104. ( *important* ) lack of .adm. messages
      likely Khosrow will hit this first.  many needs, not explored yet
-     role of source vs. switch admin permissions.
+     role of source vs. pump admin permissions.
 
      - setting quotas?
      - setting access permissions.
@@ -421,7 +421,7 @@ sftp.science.gc.ca Server
 
 *Assigned to:* Michel Grenier (Jun Hu3)
 
-An S=0 (data-less) switching service. The switching nodes access the site-wide file systems
+An S=0 (data-less) pumping service. The pumping nodes access the site-wide file systems
 available to science.gc.ca. So authentication is what is on the systems.
 likely characteristics:
 
@@ -499,7 +499,7 @@ xs_urp. sr_winnow maintains a table of path and checksums it has
 already seen.  When it sees a new checksum it enters it 
 and the corresponding path into the table, and posts it
 to the xwinnow exchange.   A Normal sr_sarra processes the xwinnow
-exchange normally (treated as a multi-user switch, so no source check.)
+exchange normally (treated as a multi-user pump, so no source check.)
 
 Initial Delivery:  March 31st 2016 
 
@@ -512,7 +512,7 @@ Questions/Comments:
   no.
 
 - should we just put a broker on each URP cluster, have a shovel
-  from xpublic on each urp to xs_urp on a switch, and the
+  from xpublic on each urp to xs_urp on a pump, and the
   processing is unchanged after that.  Someone wants access
   to urp1 output just connects to either cluster directly.
   is that pointless? 
@@ -595,15 +595,15 @@ This functionality will not be present initially, but needs to figure into later
 sr_box
 ~~~~~~
 
-Essentially DropBox functionality, provided over the sarracenia switching infrastructure.
+Essentially DropBox functionality, provided over the sarracenia pumping infrastructure.
 This is a wrapper around the the components built in earlier iterations to provide
 dropbox emulation.
 
 - sr_subscribe reproduces remote writes
 - sr_watch posts local writes (while ignoring sr_subscribe ones)
-- something (to do the writes to the switch from local.) probably just fire off a sr_sender.
-  or will switch have sr_sarra lying around, so no need? what about firewalls?
-- default switch (sftp.science.gc.ca ?)
+- something (to do the writes to the pump from local.) probably just fire off a sr_sender.
+  or will pump have sr_sarra lying around, so no need? what about firewalls?
+- default pump (sftp.science.gc.ca ?)
 - encfs provides privacy layer (dropbox is default private, dd is default public)
 
 There is little to no code to implement this functionality, but a lot of configuration.
@@ -626,7 +626,7 @@ Pull Distribution
 ~~~~~~~~~~~~~~~~~
 
 If someone specifies ANY as to_clusters, does that mean we need to push that data to all
-switches?  Is there a bit-torrent-style demand element to propagation?  what if announcements
+pumps?  Is there a bit-torrent-style demand element to propagation?  what if announcements
 we processed by creating ''symbolic links'' on the next element of the chain, so that the
 copy does not actually happen until someone actually asks for it?
 
@@ -693,7 +693,7 @@ focus: deltas.txt, logmessages.txt, sr_post_sample.txt
    - sr_post should not do validation (so easier to test psychotic settings
       like 1 byte blocks.)
 
-   post to a switch, sarra build a site, sr_subscribe pulls from it.
+   post to a pump, sarra build a site, sr_subscribe pulls from it.
 	             logs build                      logs pull
 
    - use a single exchange (no source exchanges etc...)
