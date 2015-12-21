@@ -73,6 +73,7 @@ class sr_subscribe(sr_instances):
            self.log_back  = False
 
         # if no subtopic given... make it #  for all
+        self.logger.info("bindings %s" % self.bindings)
         if self.bindings == []  :
            key = self.topic_prefix + '.#'
            self.bindings.append( (self.exchange,key) )
@@ -376,12 +377,6 @@ class sr_subscribe(sr_instances):
         # present basic config
 
         self.logger.info("sr_subscribe run")
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
-                        (self.broker.hostname,self.broker.username,self.broker.path) )
-
-        for tup in self.bindings:
-            e,k =  tup
-            self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (e,k) )
 
         # loop/process messages
 
