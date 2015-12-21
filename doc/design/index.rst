@@ -3,12 +3,19 @@
  sr_Sarracenia Design Docs
 ===========================
 
+Please note the nature of Design documents is that
+they do not reflect the actual implementation.  Some of it
+is ideas that were discarded, much of it is the basis for discussion.
+When the design is settled and decisions made, the information
+percolates down into the documentation (outside this directory.)
+So the information here is of some interest to developers and
+contributors, but not really useful to anyone else.
+
 Current information: 
 
  - `Outline.html <Outline.html>`_
  - `design.html <design.html>`_
  - `plan.html <plan.html>`_
-
 
  - `biblio.html <biblio.html>`_ -- bibliography.
 

@@ -8,13 +8,13 @@ Overview
 MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
 standard technologies (sftp and web servers and AMQP brokers) to achieve real-time message 
 delivery and end to end transparency in file transfers.  Whereas in Sundew, each 
-switch is a standalone configuration which transforms data in complex ways, in 
+pump is a standalone configuration which transforms data in complex ways, in 
 sarracenia, the data sources establish a structure which is carried through any 
-number of intervening switches until they arrive at a client.  The consumer can 
+number of intervening pumps until they arrive at a client.  The consumer can 
 provide explicit acknowledgement that propagates back through the network to the 
 source.  
 
-Whereas traditional file switching is a point-to-point affair where knowledge is only
+Whereas traditional file pumping is a point-to-point affair where knowledge is only
 between each segment, in Sarracenia, information flows from end to end in both directions.
 At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using 
 any standard HTTP server (tested with apache).  Weather applications are soft real-time, 
@@ -28,25 +28,25 @@ sending far more efficient.
 
 insert diagram here.
 
-Sources of data announce their products, switching systems pull the data onto their 
+Sources of data announce their products, pumping systems pull the data onto their 
 WAF trees, and then announce their trees for downstream clients.  When clients 
 download data, they may write a log message back to the server.  Servers are configured 
 to forward those client log messages back through the intervening servers back to 
 the source.  The Source can see the entire path that the data took to get to each 
-client.  With traditional switching applications, sources only see that they delivered 
+client.  With traditional pumping applications, sources only see that they delivered 
 to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
 the path of data required assistance from administrators of each intervening system.  
-With Sarracenia's log forwarding, the switching network is completely transparent 
+With Sarracenia's log forwarding, the pumping network is completely transparent 
 to the sources, in that they can see where it went.  With end to end logs, diagnostics 
 are vastly simplified for everyone.
 
 For large files / high performance, files are segmented on ingest if they are sufficiently 
-large to make this worthwhile.  Each file can traverse the switch network independently, 
+large to make this worthwhile.  Each file can traverse the pump network independently, 
 and reassembly is only needed at end points.   A file of sufficient size will announce 
 the availability of several segments for transfer, multiple threads or transfer nodes 
 will pick up segments and transfer them.  The more segments available, the higher 
 the parallelism of the transfer.    Sarracenia manages parallelism and network usage 
-without explicit user intervention.  As intervening switches do not store and 
+without explicit user intervention.  As intervening pumps do not store and 
 forward entire files, the maximum file size which can traverse the network is 
 maximized.  
 
@@ -59,7 +59,7 @@ For each objective/consideration/advice below, see if they make sense,
 and seem helpful.  We should get rid of any that are not helpful.
 
 
-  1. The switch is, or any number of switches are, transparent.
+  1. The pump is, or any number of pumps are, transparent.
      Put another way:
      The source is in charge of the data they provide.
 
@@ -90,8 +90,12 @@ and seem helpful.  We should get rid of any that are not helpful.
      *It is not enough for justice to be done.  Justice must be seen to be done.*
 
      It is not enough for data to be delivered.  That delivery must be logged,
-     and that log must be returned to the source.
-
+     and that log must be returned to the source.  While we want to supply
+     enough information to data sources, we do not want to drown the network
+     in meta data.  The local component logs will have much more information,
+     The log messages traverse the network to the source are ´final dispositions´
+     whenever an operation is either completed or finally abandoned.
+    
 
 
   5. This is a data distribution tool, not a file tree replicator.
@@ -128,8 +132,8 @@ and seem helpful.  We should get rid of any that are not helpful.
 
   8. Common management not needed, just pass logs around.
 
-     Different groups can manage different switches.
-     when we interconnect switches, they become a source for us.
+     Different groups can manage different pumps.
+     when we interconnect pumps, they become a source for us.
      log messages are routed to the data sources, so they get our logs on their
      data.  (security can have something to say about that.)
 
@@ -137,7 +141,7 @@ and seem helpful.  We should get rid of any that are not helpful.
      ubuntu,centos -- primary.
      but windows also.
 
-     We are trying to make a switch that others can easily adopt.
+     We are trying to make a pump that others can easily adopt.
      That means they can install and go.
 
      It needs to be easy to set up, both client and server.
@@ -172,7 +176,7 @@ and seem helpful.  We should get rid of any that are not helpful.
      such as FTP, have no fixed limit.  
 
      Other scientific domains use very large files (measured in terabytes.) aim to be able
-     to flow those through the switches.  Worth thinking about transporting huge files.
+     to flow those through the pumps.  Worth thinking about transporting huge files.
 
 
 12. Normal operation should not require programming knowledge.

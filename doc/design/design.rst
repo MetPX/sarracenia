@@ -62,20 +62,20 @@ Assumptions/Constraints
 Number of Switches 
 ------------------
 
-The application is supposed to support any number of topologies, that is any number of switches S=0,1,2,3
+The application is supposed to support any number of topologies, that is any number of pumps S=0,1,2,3
 may exist between origin and final delivery, and do the right thing.
 
-Why isn´t everything point to point, or when do you insert a switch?
+Why isn´t everything point to point, or when do you insert a pumps?
 
  - network topology/firewall rules sometimes require being at rest in a transfer area between two
    organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
-   whenever traffic prevents initiating a connection, that indicates a store & forward switch
+   whenever traffic prevents initiating a connection, that indicates a store & forward pumps
    may be needed.
 
  - physical topology.  While connectivity may be present, optimal bandwidth use may involve 
    not taking the default path from A to B, but perhaps passing through C.
 
- - when the transfer is not 1:1, but 1:<source does not know how> many. The switching takes
+ - when the transfer is not 1:1, but 1:<source does not know how> many. The pumping takes
    care of sending it to multiple points.
 
  - when the source data needs to be reliably available.  This translates to making many copies,
@@ -92,8 +92,8 @@ Why isn´t everything point to point, or when do you insert a switch?
 
  - For asynchronous transfers.  If the source has many other activities, it may want
    to give responsibility to another service to do potentially lengthy file transfers.
-   the switch is inserted very near to the source, and is full store & forward. sr_post
-   completes (nearly instant), and from then on the switching network manages transfers.
+   the pump is inserted very near to the source, and is full store & forward. sr_post
+   completes (nearly instant), and from then on the pumping network manages transfers.
 
 
 AMQP Feature Selection
@@ -152,7 +152,7 @@ complexity to cover multiple cases.
 
 sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 blocks of large files are announced independently. and blocks can follow different paths
-between initial switch and final delivery.
+between initial pump and final delivery.
 
 AMQP vhosts are not used.  Never saw any need for them. The commands support their optional 
 use, but there was no visible purpose to using them is apparent.
@@ -166,7 +166,7 @@ Aspects of AMQP use can be either constraints or features:
  - users authenticate to local cluster only. We don´t impose any sort of credential or identity propagation
    or federation, or distributed trust.  
 
- - switches represent users by forwarding files on their behalf, there is no need to include
+ - pumps represent users by forwarding files on their behalf, there is no need to include
    information about the source users later on in the network. 
 
  - This means that if user A from S0 is defined, and a user is given the same name on S1, then they may 
@@ -179,7 +179,7 @@ Application
 
 Description of application logic relevant to discussion.  There is a ´control plane´ where posts about new 
 data available are made, and log messages reporting status of transfers of the same data are routed among 
-control plane users and switches.  A switch is an AMQP broker, and users authenticate to the broker.  Data 
+control plane users and pumps.  A pump is an AMQP broker, and users authenticate to the broker.  Data 
 may (most of the time does) have a different other authentication method.  
 
 There are very different security use cases for file transfer:
@@ -199,12 +199,12 @@ There are very different security use cases for file transfer:
     These transfers can have requirements for be high availability. 
 
  3. **Third Party Transfer** the control plane is explicitly used only to control the transfer, authentication
-    at both ends is done separately.  Users authenticate to the data-less, or SEP switch with AMQP, but the
+    at both ends is done separately.  Users authenticate to the data-less, or SEP pump with AMQP, but the
     authentication at both ends is outside sarracenia control.  Third-party transfer is limited to S=0.
-    If the data does not cross the switch, it cannot be forwarded. So no routing is relevant to this case.
+    If the data does not cross the pump, it cannot be forwarded. So no routing is relevant to this case.
     Also dependent on the availability of the two end points throughout, so more difficult to assure in practice.
 
-Both public and private transfers are intended to support arbitrary chains of switches between *source* and *consumer*.
+Both public and private transfers are intended to support arbitrary chains of pumps between *source* and *consumer*.
 The cases depend on routing of posts and log messages. 
 
 .. NOTE::
@@ -220,10 +220,10 @@ of entity:
  - users start with u. users are also referred to as *sources*
  - servers start with svr
  - clusters start with c
- - ´switches´ is used as a synonym for cluster, and they start with S (capital S.): S0, S1, S2...
+ - ´pumps´ is used as a synonym for cluster, and they start with S (capital S.): S0, S1, S2...
 
-on switches:
- - users that switches used to authenticate to each other are **interswitch accounts**. Another word: **feeder** , **concierge**  ?
+on pumps:
+ - users that pumps used to authenticate to each other are **interpump accounts**. Another word: **feeder** , **concierge**  ?
  - users that inject data into the network are called **sources**.
  - users that subscribe to data are called **consumers**.
 
@@ -240,22 +240,22 @@ The following header in messages relate to routing, which are set in all message
  - *private* - the flag to indicate whether the data is private or public.
 
 An important goal of post routing is that the *source* decides where posts go, so 
-switching of individual products must be done only on the contents of the posts, not
+pumping of individual products must be done only on the contents of the posts, not
 some administrator configuration.
 
-Administrators configure the inter switch connections (via SARRA and other components)
+Administrators configure the inter pump connections (via SARRA and other components)
 to align with network topologies, but once set up, all data should flow properly with 
-only source initiated routing commands. Some configuration may be needed on all switches
-whenever a new switch is added to the network.
+only source initiated routing commands. Some configuration may be needed on all pumps
+whenever a new pump is added to the network.
 
 
 Routing Posts
 ~~~~~~~~~~~~~
 
 Post routing is the routing of the post messages announced by data *sources*.
-The data corresponding to the source follows the same sequence of switches as the posts
-themselves.  When a post is processed on a switch, it is downloaded, and then the posting
-is modified to reflect that´s availability from the next-hop switch.
+The data corresponding to the source follows the same sequence of pumps as the posts
+themselves.  When a post is processed on a pump, it is downloaded, and then the posting
+is modified to reflect that´s availability from the next-hop pump.
 
 Post messages are defined in the sr_post(7) man page.  They are initially emitted by *sources*,
 published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to 
@@ -266,7 +266,7 @@ either xPrivate or xPublic.
    if not separate exchange, then anyone can see any post (not the data, but yes the post)
    I think that´s not good.
 
-For Public data, *feeders* for downstream switches connect to xPublic.
+For Public data, *feeders* for downstream pumps connect to xPublic.
 They look at the to_clust Header in each message, and consult a post2cluster.conf file.
 post2cluster.conf is just a list of cluster names configured by the administrator::
 
@@ -275,7 +275,7 @@ post2cluster.conf is just a list of cluster names configured by the administrato
         ddi.science.gc.ca 
 
 This list of clusters is supposed to be the clusters that are reachable by traversing
-this switch.  If any cluster in post2cluster.conf is listed in the to_clust of the 
+this pump.  If any cluster in post2cluster.conf is listed in the to_clust of the 
 message field, then the data needs to tr
 
 Separate Downstream *feeders* connect to xPrivate for private data.  Only *feeders* are
@@ -283,14 +283,14 @@ allowed to connect to xprivate.
 
 .. Note::
    FIXME: perhaps feed specific private exchanges for each feeder?  x2ddiedm, x2ddidor, x2ddisci ?
-   using one xPrivate means switches can see messages they may not be allowed to download
-   (lesser issue than with xPublic, but depends how trusted downstream switch is.)
+   using one xPrivate means pumps can see messages they may not be allowed to download
+   (lesser issue than with xPublic, but depends how trusted downstream pump is.)
 
 Routing Logs
 ~~~~~~~~~~~~
 
 Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end, 
-as well as *feeders* as the messages traverse switches.  log messages are posted to 
+as well as *feeders* as the messages traverse pumps.  log messages are posted to 
 the xl_<user> exchange, and after log validation queued for the xlog exchange.
 
 Messages in xlog destined for other clusters are routed to destinations by 
@@ -357,7 +357,7 @@ Reading from a feeder:
  - ensure cluster is not local cluster (as that would be a lie.) ?
 
 Regardless:
- - check the partitioning size, if it exceeds switch maximum, Reject.
+ - check the partitioning size, if it exceeds pump maximum, Reject.
  - check the bandwidth limitations in place. If exceeded, Hold.
  - check the disk usage limit in place. If exceeded, Hold.
  - If the private flag is set, then accept by copying to xPrivate
@@ -410,15 +410,15 @@ in creating log messages.
  - downstream processing is from xlog exchange which is assumed clean.
  - Rejecting a log message means not copying it anywhere. 
 
- - sourcce check does not make sense when channels are used for inter-switch log routing.
-   Essentially, all downstream switches can do is forward to the source cluster.
-   The switches receiving the log messages must not convert the consuminguser on those links.
-   evidence of need of some sort of setting: user vs. inter-switch setting.
+ - sourcce check does not make sense when channels are used for inter-pump log routing.
+   Essentially, all downstream pumps can do is forward to the source cluster.
+   The pumps receiving the log messages must not convert the consuminguser on those links.
+   evidence of need of some sort of setting: user vs. inter-pump setting.
 
 ... NOTE::
    FIXME: if you reject a log message, does it generate a log message?
    Denial of service potential by just generating infinite bogs log messages.
-   It is sad that if a connection is mis-configured as a user one, when it is inter-switch,
+   It is sad that if a connection is mis-configured as a user one, when it is inter-pump,
    that will cause messages to be dropped.  how to detect configuration error?
 
 
@@ -436,18 +436,18 @@ ends of the transfer are not sharing with arbitrary others.
    way such routing is done is via a sr_sarra subscription to xpublic on S1, and
    S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
    unless the http permissions are set to deny on S1 and S2. Eve should not have
-   access.  Implement via http/auth permitting inter-switch accounts on S2
+   access.  Implement via http/auth permitting inter-pump accounts on S2
    to access S1/<private> and S3 account to S2/<private>. then permit bob on
    S3.
 
 There are two modes of sending products through a network, private vs. public.
 With public sending, the information transmitted is assumed to be public and available
-to all comers,  If someone sees the data on an intervening switch, then they are likely
+to all comers,  If someone sees the data on an intervening pump, then they are likely
 to be able to download it at will without further arrangements.  public data is posted
-for inter-switch copies using the xPublic exchange, which all users may access as well.
+for inter-pump copies using the xPublic exchange, which all users may access as well.
 
 Private data is only made available to those who are explicitly permitted access.
-private data is made available only on the xPrivate exchange.  Only Interswitch channel
+private data is made available only on the xPrivate exchange.  Only Interpump channel
 users are given access to these messages.
 
 .. NOTE::
@@ -467,7 +467,7 @@ HTTPS Private Access
    Really not baked yet.  For https, need to create/manage .htaccess (canned but generated every day) 
    and .htpasswd (generated every day) files.  
  
-Need some kind of adm message that sources can send N switches later to alter the contents of .htpasswd
+Need some kind of adm message that sources can send N pumps later to alter the contents of .htpasswd
 CRUD? or just overwrite every time?  query?
 
 Sarra likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.
@@ -488,9 +488,9 @@ or to determine if there is a particular design pattern that can be applied gene
 To make these determinations, considerable exploration is needed.
 
 We start with naming the topologies so they can be referred to easily in further discussions.
-None of the topologies assume that disks are switched among servers in the traditional HA style.
+None of the topologies assume that disks are pumped among servers in the traditional HA style.
 
-Based on experience, disk switching is considered unreliable in practice, as it involves complex
+Based on experience, disk pumping is considered unreliable in practice, as it involves complex
 interaction with many layers, including the application.  Disks are either dedicated to nodes, 
 or a cluster file system is to be used. The application is expected to deal with those two
 cases.
@@ -522,8 +522,8 @@ Fingerprint Winnowing
       are now *fresh* and used, until a faster source becomes available. 
 
       The advantage of this method is that now A/B decision is required, so the time
-      to *switchover* is zero.  Other strategies are subject to considerable delays        
-      in making the decision to switchover, and pathologies one could summarize as flapping,
+      to *pumpover* is zero.  Other strategies are subject to considerable delays        
+      in making the decision to pumpover, and pathologies one could summarize as flapping,
       and/or deadlocks.
 
 
@@ -549,7 +549,7 @@ of DDSR's are essentially other sarracenia instances.
 There are still multiple options available within this configuration pattern.
 ddsr one broker per node?  (or just one broker ( clustered,logical ) broker?)
 
-On a switching/router, once delivery has occurred to all contexts, can you delete the file?
+On a pumping/router, once delivery has occurred to all contexts, can you delete the file?
 Just watch the log files and tick off as each scope confirms receipt.
 when last one confirmed, delete. (makes re-xmit difficult ;-)
 
@@ -620,7 +620,7 @@ or sftp) rather than being limited to AMQP posts.  This is the type of view pres
 dd.weather.gc.ca.
 
 Given this view, all files must be fully reassembled on receipt, prior to announcing downstream
-availability.  files may have been fragmented for transfer across intervening switches.
+availability.  files may have been fragmented for transfer across intervening pumps.
 
 There are multiple options for achieving this end user visible effect, each with tradeoffs.
 In all cases, there is a load balancer in front of the nodes which distributes incoming
@@ -715,7 +715,7 @@ SEP: Shared End-Point Configuration
 
 The SEP configuration, all of the mover nodes are directly accessible to users.
 The broker does not provide data service, just a pure message broker. Can be called
-*data-less* switch, or a *bunny*.
+*data-less* pump, or a *bunny*.
 
 The broker is run clustered, and nothing can be said about the mover nodes.
 Consumers and watchers can be started up by anyone on any collection of nodes, 
