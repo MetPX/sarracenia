@@ -321,6 +321,42 @@ Should you want to turned them off the option is :
 **log_back <boolean>        (default: true)** 
 
 
+ADVANCED FEATURES
+-----------------
+
+There are ways to insert scripts into the flow of messages and file downloads:
+Should you want to implement tasks in various part of the execution of the program
+
+
+**do_download <script>        (default: None)** 
+**on_message  <script>        (default: None)** 
+**on_file     <script>        (default: None)** 
+**on_parts    <script>        (default: None)** 
+
+
+A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be:
+(this one being for **on_file**)
+
+class Transformer(object): 
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          logger = parent.logger
+
+          logger.info("I have no effect but adding this log line")
+
+          return True
+
+transformer  = Transformer()
+self.on_file = transformer.perform
+
+The only arguments the script receives it **parent**, which is an instance of
+the **sr_subscribe** class
+Should one of these scripts return False, the processing of the message/file
+will stop there and another message will be consume from the broker.
+
+
 DEPRECATED SETTINGS
 -------------------
 
