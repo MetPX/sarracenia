@@ -45,11 +45,11 @@ class sr_message():
 
     def __init__(self,logger):
         self.logger        = logger
-        self.amqp_log      = None
-        self.amqp_pub      = None
+        self.publisher     = None
         self.exchange      = None
         self.exchange_pub  = None
-        self.exchange_log  = 'xlog'
+        self.log_exchange  = 'xlog'
+        self.log_publisher = None
         self.topic         = None
         self.notice        = None
         self.headers       = {}
@@ -114,32 +114,19 @@ class sr_message():
     def get_elapse(self):
         return time.time()-self.tbegin
 
-    def log_amqp(self):
-        self.log_topic    = self.topic.replace('.post.','.log.')
-        self.log_notice   = "%s %d %s %s %f" % \
-                       (self.notice,self.code,self.host,self.user,self.get_elapse())
-        self.headers['message'] = self.message
+    def log_publish(self,code,message):
+        self.code               = code
+        self.headers['message'] = message
+        self.log_topic          = self.topic.replace('.post.','.log.')
+        self.log_notice         = "%s %d %s %s %f" % \
+                                  (self.notice,self.code,self.host,self.user,self.get_elapse())
+        self.set_hdrstr()
+        if self.log_publisher != None :
+           self.log_publisher.publish(self.log_exchange,self.log_topic,self.log_notice,self.headers)
 
-        if self.amqp_log != None :
-           self.amqp_log.publish(self.exchange_log,self.log_topic,self.log_notice,self.headers)
+        self.logger.info("%d %s : %s %s %s" % (code,message,self.log_topic,self.log_notice,self.hdrstr))
 
-
-    def log_error(self):
-        self.log_amqp()
-
-        if self.logger   != None :
-           self.set_hdrstr()
-           self.logger.error("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
-
-        del self.headers['message']
-
-    def log_info(self):
-        self.log_amqp()
-
-        if self.logger   != None :
-           self.set_hdrstr()
-           self.logger.info("%d %s : %s %s %s" % (self.code,self.message,self.log_topic,self.log_notice,self.hdrstr))
-
+        # make sure not published again
         del self.headers['message']
 
     def parse_v00_post(self):
@@ -154,6 +141,7 @@ class sr_message():
         self.topic        = self.topic_prefix + '.' + self.subtopic
 
         token        = self.notice.split(' ')
+        self.urlcred = token[2]
         url          = urllib.parse.urlparse(token[2]+token[3])
         self.set_notice(url)
         
@@ -190,6 +178,7 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.time    = token[0]
+        self.urlcred = token[1]
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
         self.path    = token[2]
@@ -225,9 +214,16 @@ class sr_message():
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
     def publish(self):
-        if self.amqp_pub != None :
-           self.amqp_pub.publish(self.exchange_pub,self.topic,self.notice,self.headers)
-        self.log_info()
+        if self.publisher != None :
+           self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
+           return True
+        else:
+           self.set_hdrstr()
+           self.logger.error("Publisher not set in message")
+           self.logger.error("Message lost exchange %s topic %s " % (self.exchange,self.topic))
+           self.logger.error("Message lost notice   %s"           % self.notice )
+           self.logger.error("Message lost headers  %s"           % self.hdrstr )
+        return False
 
     def set_from_cluster(self,from_cluster=None):
         if from_cluster != None :

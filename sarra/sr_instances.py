@@ -35,7 +35,8 @@
 #
 
 import logging,os,psutil,signal,sys
-import multiprocessing
+from sys import platform as _platform
+
 
 try :
          from sr_config      import *
@@ -45,6 +46,11 @@ except :
 class sr_instances(sr_config):
 
     def __init__(self,config=None,args=None):
+        signal.signal(signal.SIGTERM, self.stop_signal)
+        signal.signal(signal.SIGINT, self.stop_signal)
+        if _platform != 'win32':
+            signal.signal(signal.SIGHUP, self.reload_signal)
+
         sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
         #self.configure()
@@ -69,21 +75,34 @@ class sr_instances(sr_config):
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
     
+    # from daniel lemay's metpx version
     def daemonize(self):
-        d = multiprocessing.Process(name='p_'+self.instance_name,target=self.dparent)
-        d.daemon = False
-        d.start()
-        time.sleep(0.01)
-        d.terminate()
-
-    def dparent(self):
-        p = multiprocessing.current_process()
-        # hide parend pid in child process name
-        pname  = "%d_" % p.pid + p.name
-        s = multiprocessing.Process(name=pname,target=self.start_as_daemon)
-        s.daemon = False
-        s.start()
-        self.logger.info(" %s started" % self.instance_str)
+        try:
+           pid = os.fork()
+        except OSError as e:
+           raise Exception("fork #1 failed: %s [%d]" % (e.strerror, e.errno))
+     
+        if (pid == 0):
+           os.setsid()
+           try:
+              pid = os.fork() 
+           except OSError as e:
+              raise Exception("fork #2 failed: %s [%d]" % (e.strerror, e.errno))
+    
+           if (pid == 0):   
+              os.chdir(self.cwd)
+              os.umask(0)
+           else:
+              os._exit(0) 
+        else:
+           os._exit(0)  
+     
+        os.close(sys.stdin.fileno())
+        os.close(sys.stdout.fileno())
+        #os.close(sys.stderr.fileno())
+     
+        os.open('/dev/null', os.O_RDWR)  # stdin
+        os.dup2(0, 1)                    # stdout
      
     def file_get_int(self,path):
         i = None
@@ -118,7 +137,7 @@ class sr_instances(sr_config):
                  os.kill(self.pid, signal.SIGHUP)
                  self.logger.info("%s reload" % self.instance_str)
         except :
-                 self.logger.warning("%s no reload ...; restarting" % self.instance_str)
+                 self.logger.warning("%s no reload ... strange state; restarting" % self.instance_str)
                  self.restart_instance()
     
     def reload_parent(self):
@@ -177,52 +196,28 @@ class sr_instances(sr_config):
                     self.logger.info("%s already started" % self.instance_str)
                     return
            except : 
-                    self.logger.info("%s strange state...; restarting " % self.instance_str)
+                    self.logger.info("%s strange state... " % self.instance_str)
                     self.stop_instance()
 
-        self.daemonize()
+        if _platform != 'win32' :
+          # fork : make sure the parent is not killed
+          # wait for child to start
+          pid = os.fork()
+          if pid > 0 :
+             os.wait()
+             self.logger.info("%s started" % self.instance_str)
+             return
 
-    def start_as_daemon(self):
+          self.daemonize()
+        else:
+          self.logger.info("instances not implemented on windows %s " % self.instance_str)
 
-        # signal on child
-        signal.signal(signal.SIGTERM, self.stop_signal)
-        signal.signal(signal.SIGINT, self.stop_signal)
-        if sys.platform != 'win32':
-            signal.signal(signal.SIGHUP, self.reload_signal)
-
-        p = multiprocessing.current_process()
-
-        # extract encoded instance and parend pid
-        instance = int(p.name[-4:])
-        ppid     = int(p.name.split('_')[0])
-
-        self.build_instance(instance)
-        self.pid = p.pid
+        self.pid = os.getpid()
         self.file_set_int(self.pidfile,self.pid)
-         
+
         self.setlog()
 
-        # kill parent
-        os.kill(ppid, signal.SIGTERM)
-
         self.start()
-
-    def daemonize2(self):
-        d = multiprocessing.Process(name = 'i'+self.instance_str, target = self.start_as_daemon )
-        d.daemon = True
-        d.start()
-        self.logger.info("%s started" % self.instance_str)
-
-    def daemonize3(self):
-        p = multiprocessing.current_process()
-        self.instance_str = p.name
-        i = int(p.name[-4:])
-        self.build_instance(i)
-
-        d = multiprocessing.Process(name = self.instance_str, target = self.start_as_daemon )
-        d.daemon = True
-        d.start()
-        self.logger.info("%s daemon started" % self.instance_str)
 
     def start_parent(self):
 
@@ -254,7 +249,6 @@ class sr_instances(sr_config):
                  p = psutil.Process(self.pid)
                  status = p.status()
                  self.logger.info("%s is %s" % (self.instance_str,status))
-         
                  return
         except : pass
 
@@ -355,22 +349,20 @@ class test_instances(sr_instances):
 
 def main():
 
-    f = open('test_instances.conf','wb')
+    f = open('./test_instances.conf','wb')
     f.close()
 
-    this_test = test_instances('test_instances.conf',sys.argv[1:])
+    this_test = test_instances('./test_instances.conf',sys.argv[1:])
 
     action = sys.argv[-1]
     if action == 'reload' : this_test.reload_parent()
     if action == 'restart': this_test.restart_parent()
     if action == 'start'  : this_test.start_parent()
-    if action == 'stop'   : this_test.stop_parent()
     if action == 'status' : this_test.status_parent()
-
-    os.unlink('test_instances.conf')
-
+    if action == 'stop'   :
+       this_test.stop_parent()
+       os.unlink('./test_instances.conf')
     sys.exit(0)
-
 
 # =========================================
 # direct invocation
@@ -378,3 +370,4 @@ def main():
 
 if __name__=="__main__":
    main()
+

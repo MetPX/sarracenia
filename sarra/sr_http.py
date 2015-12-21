@@ -36,15 +36,17 @@
 
 import os, urllib.request, urllib.error, sys
 
-def http_download( msg, iuser, ipassword ) :
+def http_download( parent ) :
 
-    url       = msg.url
-    urlstr    = url.geturl()
-    user      = url.username
-    password  = url.password
+    msg         = parent.msg
+    url         = msg.url
+    urlstr      = msg.urlstr
 
-    if iuser     != None : user     = iuser
-    if ipassword != None : password = ipassword
+    ok, details = parent.credentials.get(msg.urlcred)
+    if details  : url = details.url 
+
+    user        = url.username
+    passwd      = url.password
 
     try :
             # create a password manager                
@@ -91,9 +93,8 @@ def http_download( msg, iuser, ipassword ) :
            msg.logger.error('Download failed %s ' % urlstr)
            msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
 
-    msg.code    = 499
-    msg.message = 'http download problem'
-    msg.log_error()
+    msg.log_publish(499,'http download problem')
+    msg.logger.error("Could not download")
 
     return False
 
@@ -115,8 +116,6 @@ def http_write(req,msg) :
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Downloaded'
-    msg.log_info()
+    msg.log_publish(201,'Downloaded')
 
     return True

@@ -15,52 +15,52 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 17 09:23:05 EST 2015
 #
 ########################################################################
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+#
+#
 
 #============================================================
 # usage example
 #
-# sr_subscribe configfile.conf [stop|start|status|reload|restart]
+# sr_subscribe [options] [config] [start|stop|restart|reload|status]
 #
 #============================================================
 
 import os,sys,time
 
 try :    
-         from sr_amqp           import *
+         from sr_consumer       import *
          from sr_file           import *
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
-         from sr_message        import *
 except : 
-         from sarra.sr_amqp      import *
+         from sarra.sr_consumer  import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
-         from sarra.sr_message   import *
 
 class sr_subscribe(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-
-        # special settings for sr_subscribe
-
-        self.accept_if_unmatch = False
-        self.broker            = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
-        self.exchange          = 'xpublic'
-        self.inplace           = True
-        self.lock              = '.tmp'
-        self.mirror            = False
-        self.overwrite         = True
-        self.amqp_log          = None
-
         self.configure()
 
     def check(self):
@@ -72,164 +72,135 @@ class sr_subscribe(sr_instances):
            self.overwrite = True
            self.log_back  = False
 
-        if self.notify_only :
-           self.log_back  = False
-
-        # if no accept/reject provided... accept .*
-        if self.masks == [] :
-           self.accept_if_unmatch = True
-
         # if no subtopic given... make it #  for all
-        if self.exchange_key == None :
-           self.exchange_key = [self.topic_prefix + '.#']
+        self.logger.info("bindings %s" % self.bindings)
+        if self.bindings == []  :
+           key = self.topic_prefix + '.#'
+           self.bindings.append( (self.exchange,key) )
+           self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # dont want to recreate these if they exists
+        # queue must be shared
 
-        if not hasattr(self,'msg') :
-           self.msg = sr_message(self.logger)
+        self.queue_share = True
 
-        self.msg.user         = self.broker.username
-        self.msg.exchange_log = 'xs_' + self.broker.username
-        self.msg.amqp_pub     = None
-        self.msg.exchange_pub = None
+        # pattern must be used
+        # if unset we will accept unmatched... so everything
 
-        # umask change for directory creation and chmod
-
-        try    : os.umask(0)
-        except : pass
+        self.use_pattern          = True
+        self.accept_unmatch       = self.masks == []
 
     def close(self):
-        self.hc.close()
-
-    def connect(self):
-
-        self.hc       = None
-        self.amqp_log = None
-
-        self.hc = HostConnect( logger = self.logger )
-        self.hc.set_url(self.broker)
-        self.hc.connect()
-
-        self.consumer = Consumer(self.hc)
-        self.consumer.add_prefetch(1)
-        self.consumer.build()
-
-        self.queue_prefix = 'q_'+ self.broker.username
-        self.get_queue_name()
-        self.msg_queue = Queue(self.hc,self.queue_name,durable=self.durable)
-        if self.expire != None :
-           self.msg_queue.add_expire(self.expire)
-        if self.message_ttl != None :
-           self.msg_queue.add_message_ttl(self.message_ttl)
-
-
-        for k in self.exchange_key :
-           self.logger.info('Binding queue %s with key %s to exchange %s on broker %s://%s@%s%s', 
-		self.queue_name, k, self.exchange, self.broker.scheme, self.broker.username, self.broker.hostname,self.broker.path )
-           self.msg_queue.add_binding(self.exchange, k )
-
-        self.msg_queue.build()
-
-        if self.log_back :
-           self.amqp_log = Publisher(self.hc)
-           self.amqp_log.build()
-
+        self.consumer.close()
 
     def configure(self):
 
-        # cumulative variable reinitialized
+        # special settings for sr_subscribe
 
-        self.exchange_key         = None     
-        self.masks                = []       
-        self.currentDir           = '.'      
-        self.currentFileOption    = 'WHATFN' 
+        self.accept_if_unmatch = False
+        self.broker            = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
+        self.exchange          = 'xpublic'
+        self.inplace           = True
+        self.lock              = '.tmp'
+        self.mirror            = False
+        self.overwrite         = True
+        self.log_back          = True
 
-        # installation general configurations and settings
+        # load/reload all config settings
 
         self.general()
+        self.args   (self.user_args)
+        self.config (self.user_config)
 
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
+        # verify / complete settings
 
         self.check()
 
-        self.setlog()
-        self.logger.info("user_config = %d %s" % (self.instance,self.user_config))
 
-    def delete_event(self):
-        if self.msg.sumflg != 'R' : return False
+    def connect(self):
 
-        self.msg.code = 503
-        self.msg.message = "Service unavailable : delete"
-        self.msg.log_error()
- 
-        return True
+        # =============
+        # create message if needed
+        # =============
 
-    def download(self):
+        if not hasattr(self,'msg'):
+           self.msg = sr_message(self.logger)
+
+        # =============
+        # consumer  queue_name : let consumer takes care of it
+        # =============
+
+        self.consumer = sr_consumer(self)
+
+        # =============
+        # publisher... (publish back to consumer)  
+        # =============
+
+        if self.log_back :
+           self.publisher         = self.consumer.publish_back()
+           self.msg.log_publisher = self.publisher
+           self.msg.log_exchange  = 'xs_' + self.broker.username
+
+    def __do_download__(self):
+
 
         self.logger.info("downloading/copying into %s " % self.msg.local_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
-                     return http_download(self.msg, self.http_user, self.http_password )
+                     return http_download(self)
 
                 elif self.msg.url.scheme == 'ftp' :
-                     return ftp_download(self.msg, self.ftp_user, self.ftp_password, self.ftp_mode, self.ftp_binary )
+                     return ftp_download(self)
 
                 elif self.msg.url.scheme == 'sftp' :
-                     try :    
-                              from sr_sftp           import sftp_download
-                     except : 
-                              from sarra.sr_sftp import sftp_download
-                     return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
+                     try    : from sr_sftp       import sftp_download
+                     except : from sarra.sr_sftp import sftp_download
+                     return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
                      return file_process(self.msg)
 
+                # user defined download scripts
+
+                if   self.do_download :
+                     return self.do_download(self)
+
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.code    = 503
-                self.msg.message = "Unable to process"
-                self.msg.log_error()
+                self.msg.log_publish(503,"Unable to process")
+                self.logger.error("Could not download")
 
-        self.msg.code    = 503
-        self.msg.message = "Service unavailable %s" % self.msg.url.scheme
-        self.msg.log_error()
+        self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+
 
     def help(self):
-        self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
 
-        self.logger.info("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
-        self.logger.info("Examples:\n")    
+        print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
+        print("Examples:\n")    
 
-        self.logger.info("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
-        self.logger.info("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
-        self.logger.info("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
-        self.logger.info("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout\n" % self.program_name)
+        print("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
+        print("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
+        print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
+        print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout\n" % self.program_name)
 
-        self.logger.info("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
-          "\nAMQP broker connection:\n" +
+        print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
+          "\nAMQP broker settings:\n" +
           "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
 	  "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
-          "\nAMQP Queue settings:\n" +
-          "\tdurable       <boolean>      (default: False)\n" +
+          "\nAMQP Queue bindings:\n" +
           "\texchange      <name>         (default: xpublic)\n" +
-          "\texpire        <minutes>      (default: None)\n" +
-          "\tmessage-ttl   <minutes>      (default: None)\n" +
-          "\tqueue_name    <name>         (default: None)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.post)\n" +
           "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
           "\t\t\t* single directory wildcard (matches one directory)\n" +
           "\t\t\t# wildcard (matches rest)\n" +
-          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.post)\n" +
+          "\nAMQP Queue settings:\n" +
+          "\tdurable       <boolean>      (default: False)\n" +
+          "\texpire        <minutes>      (default: None)\n" +
+          "\tmessage-ttl   <minutes>      (default: None)\n" +
+          "\tqueue_name    <name>         (default: program set it for you)\n" +
           "\nHTTP Settings:\n" +
           "\nLocal File Delivery settings:\n" +
           "\taccept    <regexp pattern> (MANDATORY)\n" +
@@ -241,143 +212,179 @@ class sr_subscribe(sr_instances):
           "\tstrip    <count> (number of directories to remove from beginning.)\n" +
 	  "" )
 
-        self.logger.info("if the download of the url received in the amqp message needs credentials")
-        self.logger.info("you defines the credentials in the $HOME/.config/sarra/credentials.conf")
-        self.logger.info("one url per line. as an example, the file could contain:")
-        self.logger.info("http://myhttpuser:myhttppassword@apachehost.com/")
-        self.logger.info("ftp://myftpuser:myftppassword@ftpserver.org/")
-        self.logger.info("etc...")
+        print("if the download of the url received in the amqp message needs credentials")
+        print("you defines the credentials in the $HOME/.config/sarra/credentials.conf")
+        print("one url per line. as an example, the file could contain:")
+        print("http://myhttpuser:myhttppassword@apachehost.com/")
+        print("ftp://myftpuser:myftppassword@ftpserver.org/")
+        print("etc...")
 
-    def run(self):
+    # =============
+    # __on_message__
+    # =============
 
-        self.logger.info("sr_subscribe run")
+    def __on_message__(self):
 
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
-        for k in self.exchange_key :
-            self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,k) )
-        if self.log_back :
-            self.logger.info("AMQP  output:    exchange(%s) topic(%s)\n" % (self.msg.exchange_log,'v02.log.#') )
+        # notify only : we are done with this message
 
-        self.connect()
+        if self.notify_only : return False
 
-        self.msg.logger       = self.logger
-        self.msg.amqp_log     = self.amqp_log
+        # no support for delete event
 
-        #
-        # loop on all message
-        #
+        if self.msg.sumflg == 'R' :
+           self.logger.warning("delete message ignored")
+           return False
 
-        raw_msg = None
+        # invoke user defined on_message when provided
 
-        while True :
+        if self.on_message : return self.on_message()
 
-          try  :
-                 if raw_msg != None : self.consumer.ack(raw_msg)
+        return True
 
-                 raw_msg = self.consumer.consume(self.msg_queue.qname)
-                 if raw_msg == None : continue
+    # =============
+    # process message  
+    # =============
 
-                 # make use it as a sr_message
+    def process_message(self):
 
-                 try :
-                           self.msg.from_amqplib(raw_msg)
-                 except :
-                           self.msg.code    = 417
-                           self.msg.message = "Expectation Failed : sumflg or partflg"
-                           self.msg.log_error()
-                           continue
+        try  :
+                 #=================================
+                 #  consume message
+                 #=================================
+                 ok, self.msg = self.consumer.consume()
+                 if not ok : return ok
 
-                 # make use of accept/reject
+                 self.logger.info("Received notice  %s" % self.msg.notice)
 
-                 if not self.isMatchingPattern(self.msg.urlstr) :
-                    self.logger.debug("Rejected by accept/reject options")
-                    continue
+                 # selected directory from accept/reject resolved in consumer
+
                  self.document_root = self.currentDir
 
-                 # notify_only mode : print out received message
-                 if self.notify_only :
-                    self.logger.info("%s %s" % (self.msg.notice,self.msg.hdrstr))
-                    continue
-                 # log what is selected
-                 else :
-                    self.logger.info("Received topic   %s" % self.msg.topic)
-                    self.logger.info("Received notice  %s" % self.msg.notice)
-                    self.logger.info("Received headers %s" % self.msg.headers)
-
-                 # root directory should exists
-                 if not os.path.isdir(self.document_root) :
-                    self.logger.error("directory %s does not exist" % self.document_root)
-                    continue
-
-                 # set local file according to subscribe : dr + imsg.path (or renamed path)
+                 #=================================
+                 # setting up message with sr_subscribe config options
+                 # self.set_local     : how/where sr_subscribe is configured for that product
+                 # self.msg.set_local : how message settings (like parts) applies in this case
+                 #=================================
 
                  self.set_local()
-
-                 # set local file according to the message and subscribe's setting
-
                  self.msg.set_local(self.inplace,self.local_path,self.local_url)
                  self.msg.headers['rename'] = self.local_path
 
-                 # asked to delete ?
+                 #=================================
+                 # now message is complete : invoke __on_message__
+                 #=================================
 
-                 if self.delete_event() : continue
+                 ok = self.__on_message__()
+                 if not ok : return ok
 
-                 # make sure local directory exists
-                 # FIXME : logging errors...
+                 #=================================
+                 # prepare download 
+                 # the document_root should exists : it the starting point of the downloads
+                 # make sure local directory where the file will be downloaded exists
+                 #=================================
+
+                 if not os.path.isdir(self.document_root) :
+                    self.logger.error("directory %s does not exist" % self.document_root)
+                    return False
+
+                 # pass no warning it may already exists
                  try    : os.makedirs(self.local_dir,0o775,True)
                  except : pass
 
-                 # if overwrite is not enforced (False)
-                 # verify if msg checksum and local_file checksum match
-                 # FIXME : should we republish / repost ???
+                 #=================================
+                 # overwrite False, user asked that if the announced file already exists,
+                 # verify checksum to avoid an unnecessary download
+                 #=================================
 
+                 need_download = True
                  if not self.overwrite and self.msg.checksum_match() :
+                    self.msg.log_publish(304, 'not modified')
+                    self.logger.info("file not modified %s " % self.msg.local_file)
 
-                    self.msg.code    = 304
-                    self.msg.message = 'not modified'
-                    self.msg.log_info()
-             
-                    # a part unmodified can make a difference
-                    if self.inplace and self.msg.in_partfile :
-                       file_reassemble(self.msg)
+                    # if we are processing an entire file... we are done
+                    if self.msg.partflg == '1' :  return False
 
-                    # chksum computed on msg offset/length may need to truncate
-                    file_truncate(self.msg)
-                    continue
+                    need_download = False
 
+                 #=================================
                  # proceed to download  3 attempts
+                 #=================================
 
-                 i  = 0
-                 while i < 3 : 
-                       ok = self.download()
-                       if ok : break
-                       i = i + 1
-                 if not ok : continue
+                 if need_download :
+                    i  = 0
+                    while i < 3 : 
+                          ok = self.__do_download__()
+                          if ok : break
+                          i = i + 1
+                    # could not download
+                    if not ok : return False
 
-                 # Delayed insertion
-                 # try reassemble the file, conditions may have changed since writing
+                    # if the part should have been inplace... but could not
 
-                 if self.inplace and self.msg.in_partfile :
-                    self.msg.code    = 307
-                    self.msg.message = 'Temporary Redirect'
-                    self.msg.log_info()
-                    file_reassemble(self.msg)
-                    continue
+                    if self.inplace and self.msg.in_partfile :
+                       self.msg.log_publish(307,'Temporary Redirect')
 
-                 # announcing the download or insert
+                    # got it : call on_part if a part
 
-                 if self.msg.partflg != '1' :
-                    if self.inplace : self.msg.change_partflg('i')
-                    else            : self.msg.change_partflg('p')
+                    if self.msg.partflg != '1' and self.on_part :
+                       ok = self.on_part(self)
+                       if not ok : return False
 
-                 # if we inserted a part in file ... try reassemble
+                    # got it : call on_file if a file
 
-                 if self.inplace and self.msg.partflg != '1' :
-                    file_reassemble(self.msg)
+                    if self.msg.partflg == '1' and self.on_file :
+                       ok = self.on_file(self)
+                       if not ok : return False
 
-          except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                    # discard option
+
+                    if self.discard :
+                       try    :
+                                 os.unlink(self.msg.local_file)
+                                 self.logger.warning("Discarted  %s" % self.msg.local_file)
+                       except :
+                                 (stype, svalue, tb) = sys.exc_info()
+                                 self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+                       return False
+
+                 #=================================
+                 # if we processed a file we are done
+                 #=================================
+
+                 if self.msg.partflg == '1' : return True
+
+                 #=================================
+                 # if we processed a part (downloaded or not)
+                 # it can make a difference for parts that wait reassembly
+                 #=================================
+            
+                 file_reassemble(self)
+
+        except :
+                 (type, value, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 return False
+
+        return True
+
+
+    def run(self):
+
+        # configure
+
+        self.configure()
+
+        # present basic config
+
+        self.logger.info("sr_subscribe run")
+
+        # loop/process messages
+
+        self.connect()
+
+        while True :
+              ok = self.process_message()
+
 
     # ==============================================
     # how will the download file land on this server
@@ -429,21 +436,133 @@ class sr_subscribe(sr_instances):
         self.local_url  = 'file:' + self.local_path
         self.local_url  = urllib.parse.urlparse(self.local_url)
 
+
     def reload(self):
-        self.logger.info("sr_subscribe reload")
+        self.logger.info("%s reload" % self.program_name)
         self.close()
-        self.configure()
         self.run()
 
     def start(self):
-        self.configure()
-        self.logger.info("sr_subscribe start")
+        self.logger.info("%s start" % self.program_name)
         self.run()
 
     def stop(self):
-        self.logger.info("sr_subscribe stop")
+        self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
+                 
+# ===================================
+# self test
+# ===================================
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = print
+          self.error   = print
+          self.info    = print
+          self.warning = print
+
+def test_sr_subscribe():
+
+    logger = test_logger()
+
+    opt1   = 'on_message ./on_msg_test.py'
+    opt2   = 'on_part ./on_prt_test.py'
+    opt3   = 'on_file ./on_fil_test.py'
+
+    # here an example that calls the default_on_message...
+    # then process it if needed
+    f      = open("./on_msg_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self):\n")
+    f.write("          self.count_ok = 0\n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypej = self.count_ok\n")
+    f.write("          return True\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_message = transformer.perform\n")
+    f.close()
+
+    f      = open("./on_prt_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self): \n")
+    f.write("          self.count_ok = 0\n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypek = self.count_ok\n")
+    f.write("          return True\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_part = transformer.perform\n")
+    f.close()
+
+    f      = open("./on_fil_test.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self): \n")
+    f.write("          self.count_ok = 0\n")
+    f.write("      def perform(self, parent ):\n")
+    f.write("          self.count_ok += 1\n")
+    f.write("          parent.msg.mtypel = self.count_ok\n")
+    f.write("          return True\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.on_file = transformer.perform\n")
+    f.close()
+
+    # setup sr_subscriber for 1 user (just this instance)
+
+    subscribe         = sr_subscriber()
+    subscribe.logger  = logger
+    subscribe.debug   = True
+
+    # set options
+    subscribe.option( opt1.split()  )
+    subscribe.option( opt2.split()  )
+    subscribe.option( opt3.split()  )
+    subscribe.configure()
+
+    # ==================
+    # set instance
+
+    subscribe.instance = 1
+    subscribe.nbr_instances   = 1
+    subscribe.connect()
+    
+    # do an empty consume... assure AMQP's readyness
+    ok, msg = subscribe.consumer.consume()
+
+
+    # process with our on_message and on_post
+    # expected only 1 hit for a good message
+    # to go to xlog
+
+    i = 0
+    j = 0
+    k = 0
+    c = 0
+    while True :
+          ok = subscribe.process_message()
+          c = c + 1
+          if c == 10 : break
+          if not ok : continue
+          if subscribe.msg.headers['source'] != 'a_provider': continue
+          if subscribe.msg.mtypej == 1: j += 1
+          if subscribe.msg.mtypek == 1: k += 1
+          i = i + 1
+
+    subscribe.close()
+
+    if j != 1 or k != 1 :
+       print("sr_2xlog TEST Failed 1")
+       sys.exit(1)
+
+    print("sr_2xlog TEST PASSED")
+
+    os.unlink('./on_msg_test.py')
+    os.unlink('./on_pst_test.py')
+
+    sys.exit(0)
 
 # ===================================
 # MAIN
@@ -455,18 +574,28 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+       args   = sys.argv[:-1]
 
-    subscribe = sr_subscribe(config,args)
+    if len(sys.argv) > 2 : 
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('subscribe',config)
+       if ok     : args = sys.argv[:-2]
+       if not ok :
+          config = None
+          end = -2
+
+    subscribe = sr_subscribe(config,args[1:])
 
     if   action == 'reload' : subscribe.reload_parent()
     elif action == 'restart': subscribe.restart_parent()
     elif action == 'start'  : subscribe.start_parent()
     elif action == 'stop'   : subscribe.stop_parent()
     elif action == 'status' : subscribe.status_parent()
+    elif action == 'TEST'   : test_sr_subscribe()
     else :
            subscribe.logger.error("action unknown %s" % action)
            sys.exit(1)
