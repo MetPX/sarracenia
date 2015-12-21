@@ -74,19 +74,24 @@ class ftp_chunk():
 
 
 
-def ftp_download( msg, iuser, ipassword, iftp_mode, ibinary ):
+def ftp_download( parent ):
 
-    url       = msg.url
-    host      = url.hostname
-    port      = url.port
-    user      = url.username
-    password  = url.password
-    urlstr    = url.geturl()
+    msg         = parent.msg
+    url         = msg.url
+    urlstr      = msg.urlstr
 
-    if iuser     != None : user = iuser
-    if ipassword != None : password = ipassword
+    ok, details = parent.credentials.get(msg.urlcred)
+    if details  : url = details.url
 
-    token       = url.path[1:].split('/')
+    host        = url.hostname
+    port        = url.port
+    user        = url.username
+    password    = url.password
+    passive     = details.passive
+    binary      = details.binary
+
+    token       = msg.url.path[1:].split('/')
+
     cdir        = '/'.join(token[:-1])
     remote_file = token[-1]
 
@@ -98,10 +103,7 @@ def ftp_download( msg, iuser, ipassword, iftp_mode, ibinary ):
                ftp.connect(host,port)
                ftp.login(user, password)
 
-            if iftp_mode == 'active':
-                ftp.set_pasv(False)
-            else:
-                ftp.set_pasv(True)
+            ftp.set_pasv(passive)
 
             ftp.cwd(cdir)
 

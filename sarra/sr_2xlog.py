@@ -170,11 +170,11 @@ class sr_2xlog(sr_instances):
 
 
     # =============
-    # default_on_message  
+    # __on_message__ internal process of message
     # =============
 
-    def default_on_message(self):
-        self.logger.debug("sr_2xlog default_on_message")
+    def __on_message__(self):
+        self.logger.debug("sr_2xlog __on_message__")
 
         # is the log message for this cluster
 
@@ -189,21 +189,31 @@ class sr_2xlog(sr_instances):
            return False
 
         # yup this is one valid message from that suscriber
+     
+        # invoke on_message when provided
 
-        return True
+        if self.on_message : ok = self.on_message(self)
+
+        return ok
 
     # =============
-    # default_on_post  
+    # __on_post__ internal posting of message
     # =============
 
-    def default_on_post(self):
+    def __on_post__(self):
 
         ok = self.msg.publish( )
+
+        # should always be ok
         if ok :
               self.logger.info ("published to %s"      % self.msg.exchange)
               self.logger.debug("Published topic   %s" % self.msg.topic)
               self.logger.debug("Published notice  %s" % self.msg.notice)
               self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        # invoke on_post when provided anyway
+
+        if self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -221,33 +231,19 @@ class sr_2xlog(sr_instances):
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s" % self.msg.hdrstr)
 
-                 # invoke default_on_message
+                 # invoke __on_message__
 
-                 if not self.on_message :
-                        self.logger.debug( "default_on_message called")
-                        ok = self.default_on_message()
-
-                 # invoke on_message when provided
-                 else :
-                        self.logger.debug("on_message called")
-                        ok = self.on_message(self)
-
+                 ok = self.__on_message__()
                  if not ok : return ok
 
                  # ok accepted... ship subscriber log to xlog
 
                  self.msg.exchange = 'xlog'
 
-                 # invoke default_on_post
+                 # invoke __on_post__
 
-                 if not self.on_post :
-                        self.logger.debug( "default_on_post called")
-                        ok = self.default_on_post()
-
-                 # invoke on_post when provided
-                 else :
-                        self.logger.debug("on_post called")
-                        ok = self.on_post(self)
+                 ok = self.__on_post__()
+                 if not ok : return ok
 
                  return ok
 
@@ -342,8 +338,6 @@ def test_sr_2xlog():
     f.write("      def __init__(self):\n")
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok = parent.default_on_message()\n")
-    f.write("          if not ok :  return ok\n")
     f.write("          self.count_ok += 1\n")
     f.write("          parent.msg.mtypej = self.count_ok\n")
     f.write("          return True\n")
@@ -356,8 +350,6 @@ def test_sr_2xlog():
     f.write("      def __init__(self): \n")
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
-    f.write("          ok = parent.default_on_post()\n")
-    f.write("          if not ok :  return ok\n")
     f.write("          self.count_ok += 1\n")
     f.write("          parent.msg.mtypek = self.count_ok\n")
     f.write("          return True\n")

@@ -472,6 +472,52 @@ completely avoided.
    We should probably verify whether this probability is negligeable or not.
    FIXME.
 
+.. NOTE:: 
+   Long discussion about on_file, on_message, on_post ... on_<whatever>
+   When looking at the code, there was an initial mystery about whether the
+   triggers should happen before, during or after default processing.
+
+   alternatives explored:
+
+   1) (initial implementation) build the processing into an ´default´ code
+   executed when no option is specified, but when on_<whatever> is specified,
+   it replaces the default action.
+
+   - Cool that it allows the user code to be before during or after default 
+     processing. 
+   - Sucks that it forces every plugin to re-implement (at least by a call)
+     default processing... it is more of a ´how to implement the operation´
+     rather than additional processing triggerred by an event (original intent.)
+     It makes breakage likely.
+   - Sucks ... too complicated for plugin devs.
+   
+   2) make the option comma separated... ie. on_file=before,hoho
+   to run the hoho process before default processing, have before,replace, and after
+   as placement options.  (variations: -before_file, on_file, after_file) in any event
+   the idea is to have the user specify when to run the procedure
+ 
+   - Cool that it avoids the use having to call default processing
+   - Sucks ... too complicated for plugin devs.
+  
+   3) Make convention that it always happens near the end for on\_ scripts
+   and the only way it changes the flow is binary (Succeed or Fail.)  A separate
+   class of scripts is do\_<whatever> scripts that would actually implement things,
+   like additional protocols for sending, or polling scripts where the script is
+   on an accessory trigger, but the actual implementation of the activity itself.
+   examples of do\_ scripts:
+
+   - do_poll ... will implement polling for sr_poll.
+   - do_send ...
+   - do_acquire ... (don´t remember, there was another name.)
+
+   - Cool that it avoids the use having to call default processing
+   - Sucks ... will people understand the difference between do\_ and on\_ ?
+     will they just be confused?
+   - Cool simpler than the other options, while not losing power.
+   - Cool clearer... ?!
+
+   We liked 3) in the end.   
+
 
 Advanced File Reception
 -----------------------
@@ -555,6 +601,8 @@ local file is sufficient::
 .. note:: 
    FIXME:: --no_download exists, but not no_download, patch sr_config
    option is called notify_only, which seems a lot less obvious to me... ?
+   we might actually do something with on_message=discard to do no_download
+   without a command line option.
 
 
 on_message is a scripting hook, exactly like on_file, that allows
@@ -590,6 +638,12 @@ and producing data in parallel.  Each source publishes data,
 and consumers obtain it from the first source that makes it availble,
 using checksums to determine whether the given datum has been obtained
 or not.
+
+We looked over all the approaches, and ended up back where we
+started... Approach 6 was kind of the unspoken default that we
+were trying to get away from, but after looking at the other
+options, it remains the simplest.
+
 
 Approach 1
 ~~~~~~~~~~
@@ -709,4 +763,18 @@ two upstreams.
 
 That allows omission of the associative array etc... when not listening
 to multiple upstreams.
+
+
+Approach 6
+~~~~~~~~~~
+
+Just implement a local dataless pump with sr_winnow.  The sr_winnow
+is fed by shovels from upstream sources, and the local clients just
+connect to this local pump.  sr_winnow takes care of only presenting
+the products from the first server to make them available.
+
+This requires no code at all.  sr_winnow just works as it already
+does for sources, just at a different scale.
+
+
 
