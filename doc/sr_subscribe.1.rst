@@ -64,27 +64,6 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-one can use a single *broker* option as above, or it can be 
-broken out: protocol,amqp-user,amqp-password,host,port,vhost
-
-**host     <hostname> (default: dd.weather.gc.ca)** 
-     the server running an AMQP broker which is publishing file announcements postings.
-
-**port       <number> (default: 5672)** 
-     the port on which a the AMQP broker service is running.
-
-**protocol [amqp|amqps] (default: amqp)**
-     the protocol used to communicate with the AMQP broker.
-
-**amqp-user    <user> (default: anonymous)** 
-     the user name to authenticate to the broker to obtain the announcements
-
-**amqp-password  <pw> (default: anonymous)** 
-     the password for the user name to authenticate to the broker to obtain the announcements
-
-**vhost    <string>  (default: /)**
-     AMQP broker vhost specification. 
-
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -133,7 +112,7 @@ The queue is where the notifications are held on the server for each subscriber.
 
 ::
 
-**queue         <name>         (default: q_<amqp-user>)** 
+**queue_name    <name>         (default: q_<brokerUser>)** 
 **durable       <boolean>      (default: False)** 
 **expire        <minutes>      (default: None)** 
 **message-ttl   <minutes>      (default: None)** 
@@ -159,13 +138,35 @@ on disk if the broker is restarted.
 The  **message-ttl**  option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-HTTP DOWNLOAD CREDENTIALS 
--------------------------
+DOWNLOAD CREDENTIALS 
+--------------------
+
+
+The configuration for credentials that concerns product download is stored in the
+ ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
 
 ::
 
-**http-user   <user> (default: None)** 
-**http-password <pw> (default: None)** 
+**amqp://user:passwd@host:port/**
+**amqps://user:passwd@host:port/**
+
+**sftp://user:passwd@host:port/**
+**sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
+
+**ftp://user:passwd@host:port/**
+**ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
+
+**http://user:passwd@host:port/**
+
+Should you implement other protocol that the supported ones, 
+you would write a **_do_download** script to support it.
+And if you want, you could add the credentials in the file.
+You would get access to the credentials value in the script
+with the code :   
+
+**ok, details = parent.credentials.get(msg.urlcred)**
+**if details  : url = details.url**
+
 
 DELIVERY SPECIFICATIONS
 -----------------------
