@@ -38,28 +38,16 @@ import os,re,socket,sys,random
 import urllib,urllib.parse
 from   appdirs import *
 
-try :    from sr_util      import *
-except : from sarra.sr_util import *
+try :
+         from sr_credentials       import *
+         from sr_util              import *
+except : 
+         from sarra.sr_credentials import *
+         from sarra.sr_util        import *
 
 class sr_config:
 
     def __init__(self,config=None,args=None):
-
-        # program_name
-
-        self.program_name    = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
-
-        # config
-
-        self.user_config     = config
-        self.config_name     = config
-        if config != None :
-           self.config_name  = re.sub(r'(\.cfg|\.conf|\.config)','',os.path.basename(config))
-
-        # check arguments
-
-        if args == [] : args = None
-        self.user_args       = args
 
         # appdirs setup... on linux it gives :
         # site_data_dir   = /usr/share/default/sarra
@@ -69,14 +57,17 @@ class sr_config:
         # user_log_dir    = ~/.cache/sarra/log
         # user_config_dir = ~/.config/sarra
          
-        self.appname         = 'sarra'
-        self.appauthor       = 'science.gc.ca'
-        self.site_data_dir   = site_data_dir  (self.appname,self.appauthor)
-        self.site_config_dir = site_config_dir(self.appname,self.appauthor)
-        self.user_data_dir   = user_data_dir  (self.appname,self.appauthor)
-        self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
-        self.user_config_dir = user_config_dir(self.appname,self.appauthor)
-        self.user_log_dir    = user_log_dir   (self.appname,self.appauthor)
+        self.appname          = 'sarra'
+        self.appauthor        = 'science.gc.ca'
+        self.site_data_dir    = site_data_dir  (self.appname,self.appauthor)
+        self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
+        self.user_data_dir    = user_data_dir  (self.appname,self.appauthor)
+        self.user_cache_dir   = user_cache_dir (self.appname,self.appauthor)
+        self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
+        self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
+
+        self.user_queue_dir   = self.user_cache_dir + '/queue'
+        self.user_scripts_dir = self.user_cache_dir + '/scripts'
 
         # umask change for directory creation and chmod
 
@@ -85,13 +76,17 @@ class sr_config:
 
         # make sure the users directories exist
 
-        try    : os.makedirs(self.user_cache_dir, 0o775,True)
+        try    : os.makedirs(self.user_cache_dir,  0o775,True)
         except : pass
-        try    : os.makedirs(self.user_config_dir,0o775,True)
+        try    : os.makedirs(self.user_config_dir, 0o775,True)
         except : pass
-        try    : os.makedirs(self.user_data_dir,  0o775,True)
+        try    : os.makedirs(self.user_data_dir,   0o775,True)
         except : pass
-        try    : os.makedirs(self.user_log_dir,   0o775,True)
+        try    : os.makedirs(self.user_log_dir,    0o775,True)
+        except : pass
+        try    : os.makedirs(self.user_queue_dir,  0o775,True)
+        except : pass
+        try    : os.makedirs(self.user_scripts_dir,0o775,True)
         except : pass
 
         # logging is interactive at start
@@ -99,12 +94,37 @@ class sr_config:
         self.setlog()
         self.logger.debug("sr_config __init__")
 
+        # program_name
+
+        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.program_dir  = self.program_name[3:]
+        self.logger.debug("sr_config program_name %s " % self.program_name)
+
+        # config
+
+        self.config_name  = None
+        self.user_config  = config
+
+        # config might be None ... in some program or if we simply instantiate a class
+        # but if it is not... it better be an existing file
+
+        if config != None :
+           self.config_name = re.sub(r'(\.conf)','',os.path.basename(config))
+           ok, self.user_config = self.config_path(self.program_dir,config)
+           self.logger.debug("sr_config config_name  %s " % self.config_name ) 
+           self.logger.debug("sr_config user_config  %s " % self.user_config ) 
+
+        # check arguments
+
+        if args == [] : args = None
+        self.user_args       = args
+
         # general settings
 
+        self.users           = {}
         self.cache_url       = {}
-        self.credentials     = []
+        self.credentials     = sr_credentials(self.logger)
         self.log_clusters    = {}
-
 
     def args(self,args):
 
@@ -112,10 +132,13 @@ class sr_config:
 
         if args == None : return
 
+        # on command line opition starts with - or --
         i = 0
         while i < len(args):
-              n = self.option(args[i:])
-              if n == 0 : n = 1
+              n = 1
+              if args[i][0] == '-' :
+                 n = self.option(args[i:])
+                 if n == 0 : n = 1
               i = i + n
 
     def config(self,path):
@@ -125,104 +148,131 @@ class sr_config:
 
         try:
             f = open(path, 'r')
+            for line in f.readlines():
+                words = line.split()
+                if (len(words) >= 2 and not re.compile('^[ \t]*#').search(line)):
+                    self.option(words)
+            f.close()
+
         except:
             (type, value, tb) = sys.exc_info()
             self.logger.error("Type: %s, Value: %s" % (type, value))
-            return 
 
-        for line in f.readlines():
-            words = line.split()
-            if (len(words) >= 2 and not re.compile('^[ \t]*#').search(line)):
-                self.option(words)
+    def config_path(self,subdir,config):
 
-        f.close()
+        if config == None : return False,None
+
+        # priority 1 : config given is absolute path
+
+        if os.path.isfile(config) :
+           return True,config
+
+        config_name = re.sub(r'(\.conf|\.py)','',os.path.basename(config))
+
+        if subdir == 'scripts' : ext = '.py'
+        else                   : ext = '.conf'
+
+        # priority 2 : config given is a user one
+
+        config_path = self.user_config_dir + os.sep + subdir + os.sep + config_name + ext
+
+        if os.path.isfile(config_path) :
+           return True,config_path
+
+        # priority 3 : config given to site config
+
+        config_path = self.site_config_dir + os.sep + subdir + os.sep + config_name + ext
+
+        if os.path.isfile(config_path) :
+           return True,config_path
+
+        # return bad file ... 
+
+        if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
+        else                   : self.logger.error("File incorrect %s" % config)
+
+        return False,config
+
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
         self.debug                = False
 
-        self.document_root        = None
+        self.admin                = None
+        self.manager              = None
 
-        self.discard              = False
-
-        self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
-        self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
-
-        self.flow                 = None
-
-        self.lock                 = None
-
-        self.logpath              = None
-
-        self.notify_only          = False
-
-        self.instance             = 0
-        self.nbr_instances        = 1
-
+        # consumer
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.bindings             = []
         self.exchange             = None
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
-        self.exchange_key         = None
-        self.url                  = None
-
-        self.accept_if_unmatch    = True     # accept if No pattern matching
-        self.masks                = []       # All the masks (accept and reject)
-        self.currentDir           = '.'      # mask directory (if needed)
-        self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
-
-        self.mirror               = True
 
         self.queue_name           = None
-        self.queue_prefix         = None
         self.durable              = False
         self.expire               = None
         self.message_ttl          = None
+        self.queue_share          = False
 
-        self.flatten              = '/'
+        self.use_pattern          = False    # accept if No pattern matching
+        self.accept_unmatch       = False    # accept if No pattern matching
+        self.masks                = []       # All the masks (accept and reject)
+        self.currentDir           = '.'      # mask directory (if needed)
+        self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
+        # 
 
-        self.log_back             = True
+        # publish
+        self.document_root        = None
+        self.url                  = None
+
+        #self.broker              = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        #self.exchange            = None
+        #self.topic_prefix        = 'v02.post'
+        #self.subtopic            = None
+
+        self.to_clusters          = None
+        self.parts                = '1'
+        self.sumflg               = 'd'
+
+        self.rename               = None
+        self.flow                 = None
+        self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
+        self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
 
         self.randomize            = False
-
         self.reconnect            = False
+
+        self.partflg              = '1'
+        #
+
+        self.destination          = None
+
+        # subscribe
+
+        self.discard              = False
+        self.flatten              = '/'
+        self.log_back             = True
 
         self.recursive            = False
 
-        self.rename               = None
-
-        self.source_broker        = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        self.source_exchange      = None
-        self.source_topic         = None
+        self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.post_exchange        = None
+        self.post_topic           = None
 
         self.source_from_exchange = False
 
-        # cluster stuff
+        # general cluster stuff
         self.cluster              = None
         self.cluster_aliases      = []
-        self.to_clusters          = None
         self.gateway_for          = []
-
-        self.ftp_user             = None
-        self.ftp_password         = None
-        self.ftp_mode             = 'passive'
-        self.ftp_binary           = True
-        self.http_user            = None
-        self.http_password        = None
-        self.sftp_user            = None
-        self.sftp_password        = None
-        self.sftp_keyfile         = None
 
         self.sleep                = 0
         self.strip                = 0
 
-        self.parts                = '1'
-        self.partflg              = '1'
-
-        self.sumflg               = 'd'
         self.blocksize            = 0
 
+        self.do_download          = None
         self.on_file              = None
         self.on_message           = None
         self.on_part              = None
@@ -230,50 +280,83 @@ class sr_config:
         self.on_post              = None
 
         self.inplace              = False
+
+
+
+
+        self.lock                 = None
+
+        self.notify_only          = False
+
+        # 2 object not to reset in child
+        if not hasattr(self,'logpath') :
+           self.logpath           = None
+        if not hasattr(self,'instance') :
+           self.instance          = 0
+        self.nbr_instances        = 1
+
+
+        self.mirror               = True
+
         self.overwrite            = False
         self.recompute_chksum     = False
 
         self.interface            = None
         self.vip                  = None
 
+
     def execfile(self, opname, path):
+
+        ok,script = self.config_path('scripts',path)
+        self.logger.info("installing script %s " % script ) 
+
         try    : 
-                 exec(compile(open(path).read(), path, 'exec'))
+                 exec(compile(open(script).read(), script, 'exec'))
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
                  self.logger.error("for option %s script %s did not work" % (opname,path))
 
     def general(self):
         self.logger.debug("sr_config general")
 
+        # state variables that need to be reinitialized
+
+        self.bindings             = []     
+        self.masks                = []       
+        self.currentDir           = '.'      
+        self.currentFileOption    = 'WHATFN' 
+
         # read in provided credentials
         credent = self.user_config_dir + os.sep + 'credentials.conf'
+        self.credentials.read(credent)
+
+        # read in provided rabbit users
+        users = self.user_config_dir + os.sep + 'users.conf'
         try :
-                 f = open(credent,'r')
+              # users file is not mandatory
+              if os.path.exists(users):
+                 f = open(users,'r')
                  lines = f.readlines()
                  f.close
                  for line in lines :
                      line = line.strip()
                      if len(line) == 0 or line[0] == '#' : continue
                      parts = line.split()
-                     url   = urllib.parse.urlparse(parts[0])
-                     key   = None
-                     # for sftp only, a second field may be added, the path to the ssh_keyfile
-                     if url.scheme == 'sftp' and len(parts) > 1 :
-                        key = parts[1]
-                     self.credentials.append((url,key))
+                     user  = parts[0]
+                     roles = line.replace(user,'').lower().strip()
+                     self.users[user] = roles
 
-        # credential file is not mandatory
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("credentials = %s\n" % self.credentials)
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+        self.logger.debug("users = %s\n" % self.users)
 
         # read in provided log cluster infos
         log_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
         i = 0
         try :
+              if os.path.exists(log_cluster):
                  f = open(log_cluster,'r')
                  lines = f.readlines()
                  f.close
@@ -281,11 +364,10 @@ class sr_config:
                      line = line.strip()
                      if len(line) == 0 or line[0] == '#' : continue
                      parts = line.split()
-                     name  = parts[0]
-                     u     = urllib.parse.urlparse(parts[1])
-                     ok, tup  = self.validate_amqp_url(u)
-                     url, key = tup
-                     if not ok :
+                     name    = parts[0]
+                     urlstr  = parts[1]
+                     ok, url = self.validate_urlstr(urlstr)
+                     if not ok or not url.scheme in ['amqp','amqps']:
                         self.logger.error("problem with %s" % parts[1])
                      # fixme parts[2] exchange should be optional
                      exch  = parts[2]
@@ -295,39 +377,30 @@ class sr_config:
         # cluster file is not mandatory
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.debug("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
-        # sarra.conf ... defaults for the server
-        sarra = self.user_config_dir + os.sep + 'sarra.conf'
-        if os.path.isfile(sarra) : self.config(sarra)
+        # defaults.conf ... defaults for the server
+        defconf = self.user_config_dir + os.sep + 'default.conf'
+        self.logger.debug("defconf = %s\n" % defconf)
+        if os.path.isfile(defconf) : self.config(defconf)
 
-    def get_queue_name(self):
-        if self.queue_name :
-           if self.queue_prefix in self.queue_name : return
-           self.queue_name = self.queue_prefix + '.'+ self.queue_name
-           return
-        self.random_queue_name()
-
-    def isMatchingPattern(self, str): 
+    def isMatchingPattern(self, str, accept_unmatch = False): 
 
         for mask in self.masks:
+            self.logger.debug(mask)
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
             if mask_regexp.match(str) :
                self.currentDir        = maskDir
                self.currentFileOption = maskFileOption
                return accepting
 
-        return self.accept_if_unmatch
+        return accept_unmatch
 
-    def isTrue(self,s):
-        if  s == 'True' or s == 'true' or s == 'yes' or s == 'on' or \
-            s == 'Yes'  or s == 'YES' or s == 'TRUE' or s == 'ON' or \
-            s == '1'    or s == 'On' :
-            return True
-        else:
-            return False
-
+    def isTrue(self,S):
+        s = S.lower()
+        if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+        return False
 
     def option(self,words):
         self.logger.debug("sr_config option %s" % words[0])
@@ -342,15 +415,40 @@ class sr_config:
 
                      if len(words) > 2: self.currentFileOption = words[2]
 
-                     self.masks.append(pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting)
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.logger.debug("Masks")
+                     self.logger.debug("Masks %s"% self.masks)
 
-                elif words[0] in ['accept_if_unmatch','-aiu','--accept_if_unmatch']:
+                elif words[0] in ['accept_unmatch','-au','--accept_unmatch']:
                      if words[0][0:1] == '-' : 
-                        self.accept_if_unmatch = True
+                        self.accept_unmatch = True
                         n = 1
                      else :
-                        self.accept_if_unmatch = self.isTrue(words[1])
+                        self.accept_unmatch = self.isTrue(words[1])
                         n = 2
+
+                # admin: suppose to appear directly under the broker declaration
+                # of the default manager account of the cluster in defaults.conf
+                elif words[0] in ['admin','-admin','--admin']:
+                     admin_user  = words[1]
+                     manager_str = self.manager.geturl()
+                     user_pass   = self.manager.username+':'+self.manager.password
+                     admin_str   = manager_str.replace(user_pass,admin_user)
+                     ok, url     = self.validate_urlstr(admin_str)
+                     self.admin  = url
+                     if not ok or not url.scheme in ['amqp','amqps']:
+                        self.logger.error("problem with admin (%s)" % admin_str)
+                        needexit = True
+                     n = 2
+
+                elif words[0] in ['manager','-manager','--manager'] :
+                     urlstr       = words[1]
+                     ok, url      = self.validate_urlstr(urlstr)
+                     self.manager = url
+                     if not ok or not url.scheme in ['amqp','amqps']:
+                        self.logger.error("problem with manager (%s)" % urlstr)
+                        needexit = True
+                     n = 2
 
                 elif words[0] in ['discard','-d','--discard','--download-and-discard']:
                      self.discard = self.isTrue(words[1])
@@ -414,7 +512,7 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['log','-l','-log','--log']:
-                     self.logpath = words[1]
+                     self.user_log_dir = words[1]
                      n = 2
 
                 elif words[0] in ['log_back','-lb','--log_back']:
@@ -434,7 +532,15 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
-                     self.notify_only = self.isTrue(words[1])
+                     self.notify_only = True
+                     n = 1
+
+                elif words[0] in ['do_download','-do_download','--do_download']:
+                     self.on_file = None
+                     self.execfile("do_download",words[1])
+                     if self.do_download == None :
+                        self.logger.error("do_download script incorrect (%s)" % words[1])
+                        ok = False
                      n = 2
 
                 elif words[0] in ['on_file','-on_file','--on_file']:
@@ -484,12 +590,16 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['broker','-b','--broker'] :
-                     self.broker = urllib.parse.urlparse(words[1])
-                     ok, tup  = self.validate_amqp_url(self.broker)
-                     self.broker, key = tup
-                     if not ok :
-                        self.logger.error("broker has wrong protocol (%s)" % self.broker.scheme)
+                     urlstr      = words[1]
+                     ok, url     = self.validate_urlstr(urlstr)
+                     self.broker = url
+                     if not ok or not url.scheme in ['amqp','amqps']:
+                        self.logger.error("problem with broker (%s)" % urlstr)
                         needexit = True
+                     n = 2
+
+                elif words[0] in ['destination','-destination','--destination'] :
+                     self.destination = words[1]
                      n = 2
 
                 elif words[0] in ['exchange','-ex','--exchange'] :
@@ -505,10 +615,10 @@ class sr_config:
 
                 elif words[0] in ['subtopic','-sub','--subtopic'] :
                      self.subtopic = words[1]
-                     if self.exchange_key == None :
-                        self.exchange_key = [self.topic_prefix + '.' + self.subtopic]
-                     else :
-                        self.exchange_key.append(self.topic_prefix + '.' + self.subtopic)
+                     key = self.topic_prefix + '.' + self.subtopic
+                     self.bindings.append( (self.exchange,key) )
+                     self.logger.debug("BINDINGS")
+                     self.logger.debug("BINDINGS %s"% self.bindings)
                      n = 2
 
                 elif words[0] in ['overwrite','-o','--overwrite'] :
@@ -518,6 +628,14 @@ class sr_config:
                 elif words[0] in ['queue_name','-qn','--queue_name'] :
                      self.queue_name = words[1]
                      n = 2
+
+                elif words[0] in ['queue_share','-qs','--queue_share'] :
+                     if words[0][0:1] == '-' : 
+                        self.queue_share = True
+                        n = 1
+                     else :
+                        self.queue_share = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] == 'durable'    : self.durable = isTrue(words[1])
                 elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
@@ -567,17 +685,17 @@ class sr_config:
                      self.url = urllib.parse.urlparse(words[1])
                      n = 2
 
-                elif words[0] in ['source_broker','-sb','--source_broker'] :
-                     self.source_broker = urllib.parse.urlparse(words[1])
-                     ok, tup  = self.validate_amqp_url(self.source_broker)
-                     self.source_broker, key = tup
-                     if not ok :
-                        self.logger.error("source_broker has wrong protocol (%s)" % self.source_broker.scheme)
+                elif words[0] in ['post_broker','-pb','--post_broker'] :
+                     urlstr      = words[1]
+                     ok, url     = self.validate_urlstr(urlstr)
+                     self.post_broker = url
+                     if not ok or not url.scheme in ['amqp','amqps']:
+                        self.logger.error("problem with post_broker (%s)" % urlstr)
                         needexit = True
                      n = 2
 
-                elif words[0] in ['source_exchange','-se','--source_exchange']:
-                     self.source_exchange = words[1]
+                elif words[0] in ['post_exchange','-pe','--post_exchange']:
+                     self.post_exchange = words[1]
                      n = 2
 
                 elif words[0] in ['source_from_exchange','-sfe','--source_from_exchange']:
@@ -635,7 +753,7 @@ class sr_config:
                      self.sftp_keyfile = words[1]
                      n = 2
 
-                elif words[0] in ['source_topic','-st','--source_topic']:
+                elif words[0] in ['post_topic','-pt','--post_topic']:
                      self.source_topic = words[1]
                      n = 2
 
@@ -659,36 +777,13 @@ class sr_config:
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("problem with option %s" % words[0])
 
         if needexit :
-           sys.exit(0)
+           sys.exit(1)
 
         return n
-
-    def random_queue_name(self) :
-
-        queuefile = ''
-        parts = self.user_config.split(os.sep)
-        if len(parts) != 1 :  queuefile = os.sep.join(parts[:-1]) + os.sep
-
-        fnp   = parts[-1].split('.')
-        if fnp[0][0] != '.' : fnp[0] = '.' + fnp[0]
-        queuefile = queuefile + '.'.join(fnp[:-1]) + '.queue'
-
-        if os.path.isfile(queuefile) :
-           f = open(queuefile)
-           self.queue_name = f.read()
-           f.close()
-           return
-        
-        self.queue_name  = self.queue_prefix
-        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-
-        f = open(queuefile,'w')
-        f.write(self.queue_name)
-        f.close()
 
     def setlog(self):
 
@@ -730,62 +825,17 @@ class sr_config:
         if self.debug :
            self.logger.setLevel(logging.DEBUG)
 
-    def validate_amqp_url(self,url):
-        if not url.scheme in ['amqp','amqps'] :
-           return False,(url,None)
-
-        return self.validate_url(url)
-
     # check url and add credentials if needed from credential file
 
-    def validate_url(self,url):
+    def validate_urlstr(self,urlstr):
 
-        if url in self.cache_url :
-           return True, self.cache_url[url]
+        ok, details = self.credentials.get(urlstr)
+        if details == None :
+           self.logger.error("credential problem with %s"% urlstr)
+           return False, urllib.parse.urlparse(urlstr)
 
-        rebuild = False
-        user    = url.username
-        pasw    = url.password
-        key     = None
+        return True, details.url
 
-        # default vhost is '/'
-        if url.scheme in ['amqp','amqps'] :
-           path = url.path
-           if path == None or path == '' :
-              path = '/'
-              rebuild = True
-
-        if user == None or pasw == None :
-           for u,k in self.credentials :
-               if url.scheme    != u.scheme  : continue
-               if url.hostname  != u.hostname: continue
-               if url.port      != u.port    : continue
-               if user and user != u.username: continue
-               user = u.username
-               pasw = u.password
-               key  = k
-               rebuild = True
-               break
-
-        if url.scheme in ['amqp','amqps'] :
-           if user == None :
-              user = 'guest'
-              rebuild = True
-           if pasw == None :
-              pasw = 'guest'
-              rebuild = True
-               
-        if path == None : path = ''
-
-        if rebuild :
-           netloc = url.hostname
-           if url.port != None : netloc += ':%d'%url.port
-           urls   = '%s://%s:%s@%s%s' % (url.scheme,user,pasw,netloc,path)
-           newurl = urllib.parse.urlparse(urls)
-           self.cache_url[url] = (newurl,key)
-           return True, self.cache_url[url]
-
-        return True,(url,None)
 
     def validate_parts(self):
         if not self.parts[0] in ['1','p','i']:
@@ -840,7 +890,7 @@ def main():
        cfg = sr_config(None,sys.argv[1:])
     cfg.defaults()
     #to get more details
-    cfg.debug = True
+    #cfg.debug = True
     cfg.setlog()
     cfg.logger.debug("user_data_dir = %s" % cfg.user_data_dir)
     cfg.logger.debug("user_cache_dir = %s"% cfg.user_cache_dir)
@@ -848,6 +898,7 @@ def main():
     cfg.logger.debug("user_config_dir = %s"% cfg.user_config_dir)
     cfg.logger.debug("site_data_dir = %s" % cfg.site_data_dir)
     cfg.logger.debug("site_config_dir = %s"  % cfg.site_config_dir)
+    cfg.logger.debug("user_queue_dir = %s"  % cfg.user_queue_dir)
     cfg.general()
     cfg.args(cfg.user_args)
     cfg.config(cfg.user_config)
@@ -860,5 +911,3 @@ def main():
 
 if __name__=="__main__":
    main()
-
-

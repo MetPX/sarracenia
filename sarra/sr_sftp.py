@@ -39,22 +39,25 @@ from   paramiko import *
 
 import logging
 
+def sftp_download( parent ):
 
-def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
-    url       = msg.url
-    host      = url.hostname
-    port      = url.port
-    user      = url.username
-    password  = url.password
-    urlstr    = url.geturl()
+    msg         = parent.msg
+    url         = msg.url
+    urlstr      = msg.urlstr
 
-    if iuser     != None : user = iuser
-    if ipassword != None : password = ipassword
+    ok, details = parent.credentials.get(msg.urlcred)
+    if details  : url = details.url
 
-    token    = url.path[1:].split('/')
+    host        = url.hostname
+    port        = url.port
+    user        = url.username
+    password    = url.password
+    ssh_keyfile = details.ssh_keyfile
+
+    token       = msg.url.path[1:].split('/')
     
-    cdir     = '/'.join(token[:-1])
-    cfile    = token[-1]
+    cdir        = '/'.join(token[:-1])
+    cfile       = token[-1]
 
     try :
 
@@ -108,15 +111,11 @@ def sftp_download( msg, iuser, ipassword, ssh_keyfile ):
 
             (stype, svalue, tb) = sys.exc_info()
             msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-            msg.code    = 499
-            msg.message = 'sftp download problem'
-            msg.log_error()
+            msg.log_publish(499,'sftp download problem')
 
             return False
 
-    msg.code    = 499
-    msg.message = 'sftp download problem'
-    msg.log_error()
+    msg.log_publish(499,'sftp download problem')
 
     return False
 
@@ -137,9 +136,7 @@ def sftp_write(req,msg):
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Downloaded'
-    msg.log_info()
+    msg.log_publish(201,'Downloaded')
 
     return True
 
@@ -173,9 +170,7 @@ def sftp_write_length(req,msg):
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Downloaded'
-    msg.log_info()
+    msg.log_publish(201,'Downloaded')
 
     return True
 

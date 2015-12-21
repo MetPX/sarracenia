@@ -139,15 +139,11 @@ def ftp_download( parent ):
 
             (stype, svalue, tb) = sys.exc_info()
             msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-            msg.code    = 499
-            msg.message = 'ftp download problem'
-            msg.log_error()
+            msg.log_publish(499,'ftp download problem')
 
             return False
 
-    msg.code    = 499
-    msg.message = 'ftp download problem'
-    msg.log_error()
+    msg.log_publish(499,'ftp download problem')
 
     return False
 
@@ -168,9 +164,7 @@ def ftp_write(ftp,remote_file,msg,binary):
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Downloaded'
-    msg.log_info()
+    msg.log_publish(201,'Downloaded')
 
     return True
 
@@ -198,8 +192,6 @@ def ftp_write_from_chunk(ftp,remote_file,msg,binary):
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Downloaded'
-    msg.log_info()
+    msg.log_publish(201,'Downloaded')
 
     return True

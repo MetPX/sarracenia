@@ -56,7 +56,7 @@ def file_insert( msg ) :
 # another process is working with this part_file
 # so errors are ignored silently 
 
-def file_insert_part(msg,part_file):
+def file_insert_part(parent,msg,part_file):
     try :
              # file disappeared ...
              # probably inserted by another process in parallel
@@ -99,19 +99,18 @@ def file_insert_part(msg,part_file):
 
     # success: log insertion
 
-    msg.code    = 201
-    msg.message = 'Inserted'
-    msg.log_info()
+    msg.log_publish(201,'Inserted')
 
     # publish now, if needed, that it is inserted
 
-    if msg.amqp_pub == None : return True
+    if msg.publisher : 
+       msg.set_topic_url('v02.post',msg.target_url)
+       msg.set_notice(msg.target_url,msg.time)
+       msg.publish()
+       msg.log_publish(201,'Publish')
 
-    msg.set_topic_url('v02.post',msg.target_url)
-    msg.set_notice(msg.target_url,msg.time)
-    msg.code    = 201
-    msg.message = 'Published'
-    msg.publish()
+    # if lastchunk, check if file needs to be truncated
+    file_truncate(parent,msg)
 
     return True
 
@@ -122,9 +121,7 @@ def file_link( msg ) :
     try    : os.link(msg.url.path,msg.local_file)
     except : return False
 
-    msg.code    = 201
-    msg.message = 'Linked'
-    msg.log_info()
+    msg.log_publish( 201, 'Linked')
 
     return True
 
@@ -143,16 +140,17 @@ def file_process( msg ) :
 
     except : pass
 
-    msg.code    = 499
-    msg.message = 'Not Copied'
-    msg.log_error()
+    msg.log_publish(499,'Not Copied')
+    msg.logger.error("could not copy %s in %s"%(msg.url.path,msg.local_file))
 
     return False
 
 # when ever a part file is processed (inserted or written in part_file)
 # this module is called to try inserting any part_file left
 
-def file_reassemble(msg):
+def file_reassemble(parent):
+
+    msg = parent.msg
 
     # target file does not exit yet
 
@@ -192,21 +190,18 @@ def file_reassemble(msg):
           fsiz    = lstat[stat.ST_SIZE] 
           if msg.offset > fsiz :
              msg.logger.debug("part file %s no ready for insertion (fsiz %d, offset %d)" % (part_file,fsiz,msg.offset))
-             return
+             break
 
 
           # insertion attempt... should work unless there is some race condition
 
-          ok = file_insert_part(msg,part_file)
+          ok = file_insert_part(parent,msg,part_file)
           # break and not return because we want to check the lastchunk processing
           if not ok : break
 
 
           i = i + 1
 
-    # out of the look... 
-    # check if file needs to be truncated
-    file_truncate(msg)
 
 # write exact length
 
@@ -237,13 +232,11 @@ def file_write_length(req,msg):
 
     fp.close()
 
-    msg.code    = 201
-    msg.message = 'Copied'
-    msg.log_info()
+    msg.log_publish(201,'Copied')
 
     return True
 
-def file_truncate(msg):
+def file_truncate(parent,msg):
 
     # will do this when processing the last chunk
     # whenever that is
@@ -260,8 +253,11 @@ def file_truncate(msg):
 
                 msg.set_topic_url('v02.post',msg.target_url)
                 msg.set_notice(msg.target_url,msg.time)
-                msg.code    = 205
-                msg.message = 'Reset Content :truncated'
-                msg.log_info()
+                msg.log_publish(205, 'Reset Content :truncated')
+
+                # last chunk inserted call on_file
+                if parent.on_file :
+                   parent.on_file(parent)
 
     except : pass
+
