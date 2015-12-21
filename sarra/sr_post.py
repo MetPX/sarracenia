@@ -87,6 +87,9 @@ class sr_post(sr_config):
         # defaults general and proper to sr_post
 
         self.defaults()
+        
+        ok, details = self.credentials.get("amqp://guest:guest@localhost/")
+        self.broker = details.url
 
         # installation general configurations and settings
 
