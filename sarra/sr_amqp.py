@@ -128,6 +128,8 @@ class HostConnect:
        self.vhost    = vhost
 
        if self.protocol == 'amqps' : self.ssl = True
+       if self.vhost    == None    : self.vhost = '/'
+       if self.vhost    == ''      : self.vhost = '/'
 
    def set_url(self,url):
        self.protocol = url.scheme
@@ -138,6 +140,8 @@ class HostConnect:
        self.vhost    = url.path
 
        if self.protocol == 'amqps' : self.ssl = True
+       if self.vhost    == None    : self.vhost = '/'
+       if self.vhost    == ''      : self.vhost = '/'
 
 
 # ==========
@@ -187,6 +191,7 @@ class Consumer:
               except :
                      (stype, value, tb) = sys.exc_info()
                      self.logger.error("Type: %s, Value: %s" % (stype, value))
+                     self.logger.error("Could not consume in queue %s" % queuename )
                      if self.hc.loop :
                         self.hc.reconnect()
                         self.logger.info("consume resume ok")
