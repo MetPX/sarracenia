@@ -1,3 +1,10 @@
+metpx-sarracenia (2.15.12a3) unstable; urgency=medium
+
+  * Incremental release
+  * Example on_file script included with package now
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Mon, 21 Dec 2015 14:59:35 -0500
+
 metpx-sarracenia (2.15.12a2) unstable; urgency=medium
 
   * Incremental release. Still in pre-alpha.
