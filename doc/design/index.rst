@@ -16,7 +16,6 @@ Current information:
  - `Outline.html <Outline.html>`_
  - `design.html <design.html>`_
  - `plan.html <plan.html>`_
- - `gnats.html <gnats.html>`_ -- known issues with current master branch.
 
  - `biblio.html <biblio.html>`_ -- bibliography.
 
