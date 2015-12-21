@@ -284,6 +284,33 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      so that sources can set their own access control.
 
 
+Release Blockers
+~~~~~~~~~~~~~~~~
+
+The list of things that are currently blocking graduation to the next quality
+standard.  If we are in Alpha, then the list of issues prevents graduation to
+beta, if in beta, then to release:
+
+- ~/.conf/sarra/credentials.conf -- permissions.
+  should force credentials to 600.
+
+- sr_sender1 does not exist.
+
+- sr_sender2 does not exist.
+
+- sr_winnow does not exist.
+
+- Cannot run as a pump (currently only start individual components.)
+  need functioning equivalent to sundew´s: px start 
+
+- User guide docs do not exist.
+
+- Admin Guide not complete.
+
+- sr_police (a scheduled watch dog to make sure all is cool) does not exist.
+
+
+
 Parking Lot For Initial Release
 -------------------------------
 
@@ -348,12 +375,14 @@ These items will graduate to features at some point.
      there is no simple sr_* ish way to send the data to a pump.  *sr_put* is 
      conceived as a program that uses instances to start up a bunch of streams
      and round-robins sending to the pump... on the pump, normal SARRA picks it up.
+     This component has a working title: sr_sender2
 
 102. ( *Critical* ) Not clear how file receipt/ingest works.
      users need to write to a private area, scanning/validation happens, then it
      gets moved to a ´public´ tree. can we do that with links?
 
-103. ( *interesting* ) sr_winnow that takes care of links.
+103. ( *interesting* ) link support.
+     sr_winnow that takes care of links.
      When a product arrives and it is already known, if the path is the
      same, then just drop it by not copying anywhere.  If the path is
      different (defining *different* is a discussion), then perhaps
@@ -556,7 +585,7 @@ Someone Other Than Michel Feed Sundew->DD
 *Assigned to:*  Michel Grenier ( Jun Hu )
 
 All of the feeds for dd that currently use sundew as the *bootstrap* to create initial
-data sources for the dd/ddi ´
+data sources for the dd/ddi.
 
 
 The Queue of Small Changes
@@ -579,7 +608,35 @@ List of small things, to not forget...
 - adjust apache indexing to put date directories in descending order. - Khosrow.
   access pattern is that most people want the latest data, so makes little sense
   to have nearly everyone read the entire directory.
+- self-test to use config.
+  really cool that there are now TEST options for some of the modules.
+  But the test modules hard code the broker and other settings, so
+  cannot be used elsewhere.
+  TEST modules should use a configuration module:
+  ~/.config/sarra/<component>/test.conf
+  so that self-test can work anywhere.
+- Looks like mirror True makes the directory tree, but does not place files in it. 
 
+
+
+
+Windows Worries
+~~~~~~~~~~~~~~~
+
+minor: Windows doesn´t work (ie. fully.) perhaps not an issue for initial release.
+
+- tasks... fork/exec, createProcess, multiprocessing issue.
+
+- hard links ?   
+  createhardlink call exists on windows now.
+
+- cron ?   	   
+  modern windows has schtasks and can be done from Scheduled Tasks control panel.
+  Just need setup for the windows tool.
+
+- file permissions  
+  how to make sure credentials.conf is private on multi-user systems.
+  
 
 
 

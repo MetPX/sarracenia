@@ -17,6 +17,10 @@ Revision Record
 
 Pre-Draft.  This document is still being built and should not be reviewed or relied upon.
 
+:version: @Version@ 
+:date: @Date@
+
+
 
 Introduction
 ------------

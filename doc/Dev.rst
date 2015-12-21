@@ -3,6 +3,9 @@
  MetPX-Sarracenia Developer's Guide
 ====================================
 
+:version: @Version@ 
+:date: @Date@
+
 .. contents::
 
 
@@ -55,11 +58,30 @@ Development
 
 Development occurs on the master branch, which may be in any state at any given
 time, and should note be relied upon.  From time to time releases are tagged, and
-maintenance results in a branch.
-
+maintenance results in a branch.  Releases are classified as follows:
 
 Release Process
 ---------------
+
+Alpha
+  snapshot releases taken directly from master, with no other qualitative guarantees.
+  no gurantee of functionality, some components may be partially implemented, some
+  breakage may occur.
+  no bug-fixes, issues addressed by subsequent version.
+
+Beta
+  Feature Complete for a given release.  Components in their final form for this release.
+  Documentation exists in at least one language.
+  All previously known release block bugs addressed. 
+  no bug-fixes, issues addressed by subsequent version.
+
+RC - Release Candidate.
+  implied has gone through beta to identify and address major issues.
+  Translated documentation available.
+  no bug-fixes, issues addressed by subsequent version.
+
+Final versions have no suffix and are considered stable and supported.
+Stable should receive bug-fixes if necessary from time to time.
 
 
 Versioning Scheme
