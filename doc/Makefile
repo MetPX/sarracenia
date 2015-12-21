@@ -4,7 +4,7 @@ RST2MAN = rst2man
 RST2HTML = rst2html
 MAKE = make
 
-all: man html design
+all: man html
 
 .PHONY: design man html
 
