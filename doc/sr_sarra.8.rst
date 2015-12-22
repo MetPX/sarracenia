@@ -310,6 +310,7 @@ the next hop broker, the user sets these options :
  - **url               <url>          (MANDATORY)**
  - **recompute_chksum  <boolean>      (False)** 
  - **post_exchange     <name>         (default: xpublic)** 
+ - **on_post           <script>       (default: None)** 
 
 The **url** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the credentials. It is a good practice not to 
@@ -326,9 +327,11 @@ looping in a network of pumps.
    so data is forwarded in spite of checksum mismatch. We should think more about this.
    not sure this option is a good thing.
 
-
 The **post_exchange** option set under which exchange the new notification will be posted.
 Im most cases it is 'xpublic'.
+
+Whenever a publish happens for a product, a user can set to trigger a script.
+The option **on_post** would be used to do such a setup.
 
 
 SEE ALSO
