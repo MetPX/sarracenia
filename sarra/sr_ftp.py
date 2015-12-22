@@ -119,14 +119,14 @@ def ftp_download( parent ):
             # downloading entire file... no sweat
 
             if msg.partflg != 'i' :
-               ok = ftp_write(ftp,remote_file,msg,ibinary)
+               ok = ftp_write(ftp,remote_file,msg,binary)
 
             # no seek in ftplib.py
             # to get a fraction of a file, read the entire file and
             # keep the part needed... should never be used... but supported
 
             else:
-               ok = ftp_write_from_chunk(ftp,remote_file,msg,ibinary)
+               ok = ftp_write_from_chunk(ftp,remote_file,msg,binary)
 
             try    : ftp.close()
             except : pass

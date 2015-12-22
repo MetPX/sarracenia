@@ -123,9 +123,6 @@ class sr_sarra(sr_instances):
 
         # no queue name allowed
 
-        if self.queue_name != None:
-           self.logger.error("queue name forced in this program")
-
         self.queue_name  = 'q_' + self.broker.username + '.'
         self.queue_name += self.program_name + '.' + self.config_name 
 
@@ -343,6 +340,27 @@ class sr_sarra(sr_instances):
 
         return True
 
+    # =============
+    # __on_post__ posting of message
+    # =============
+
+    def __on_post__(self):
+
+        ok = self.msg.publish( )
+
+        # should always be ok
+        if ok :
+              self.logger.info ("published to %s"      % self.msg.exchange)
+              self.logger.debug("Published topic   %s" % self.msg.topic)
+              self.logger.debug("Published notice  %s" % self.msg.notice)
+              self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        # invoke on_post when provided anyway
+
+        if self.on_post : ok = self.on_post(self)
+
+        return ok
+
     def process_message(self):
 
         self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
@@ -451,7 +469,7 @@ class sr_sarra(sr_instances):
 
         self.msg.set_topic_url('v02.post',self.msg.local_url)
         self.msg.set_notice(self.msg.local_url,self.msg.time)
-        self.msg.publish()
+        self.__on_post__()
         self.msg.log_publish(201,'Published')
 
         if self.msg.partflg == '1' : return True

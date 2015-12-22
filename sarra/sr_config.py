@@ -220,6 +220,8 @@ class sr_config:
         self.masks                = []       # All the masks (accept and reject)
         self.currentDir           = '.'      # mask directory (if needed)
         self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
+
+        self.log_exchange         = 'xlog'
         # 
 
         # publish
@@ -258,7 +260,6 @@ class sr_config:
 
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
-        self.post_topic           = None
 
         self.source_from_exchange = False
 
@@ -751,10 +752,6 @@ class sr_config:
 
                 elif words[0] in ['sftp_keyfile','-sk','--sftp_keyfile']:
                      self.sftp_keyfile = words[1]
-                     n = 2
-
-                elif words[0] in ['post_topic','-pt','--post_topic']:
-                     self.source_topic = words[1]
                      n = 2
 
                 elif words[0] in ['sleep','-sleep','--sleep']:

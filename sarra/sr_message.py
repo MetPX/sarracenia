@@ -45,11 +45,11 @@ class sr_message():
 
     def __init__(self,logger):
         self.logger        = logger
-        self.publisher     = None
         self.exchange      = None
-        self.exchange_pub  = None
         self.log_exchange  = 'xlog'
         self.log_publisher = None
+        self.publisher     = None
+        self.pub_exchange  = None
         self.topic         = None
         self.notice        = None
         self.headers       = {}
@@ -214,8 +214,14 @@ class sr_message():
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
     def publish(self):
+        if self.pub_exchange != None : self.exchange = self.pub_exchange
+
         if self.publisher != None :
            self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
+           self.set_hdrstr()
+           self.logger.debug("Message pub exchange %s topic %s " % (self.exchange,self.topic))
+           self.logger.debug("Message pub notice   %s"           % self.notice )
+           self.logger.debug("Message pub headers  %s"           % self.hdrstr )
            return True
         else:
            self.set_hdrstr()
