@@ -115,25 +115,17 @@ cat << EOF > sarra_test1.conf
 
 # source
 
-source_broker amqp://guest@localhost/
-source_exchange xs_guest
-source_topic v02.post.#
-
-sftp_user $USER
-sftp_password $PASSWORD
-
-ftp_user $USER
-ftp_password $PASSWORD
-
-queue_name q_guest.sr_sarra.test
+broker amqp://guest@localhost/
+exchange xs_guest
+subtopic #
 
 source_from_exchange True
 cluster alta
 
 # destination
 
-broker amqp://guest@localhost/
-exchange xpublic
+post_broker amqp://guest@localhost/
+post_exchange xpublic
 document_root /
 
 EOF
@@ -141,6 +133,8 @@ EOF
 mkdir -p ~/.config/sarra 2> /dev/null
 echo 'cluster alta' > ~/.config/sarra/sarra.conf
 echo 'amqp://guest:guest@localhost/' > ~/.config/sarra/credentials.conf
+echo 'sftp://'$USER':'$PASSWORD'@localhost/' >> ~/.config/sarra/credentials.conf
+echo 'ftp://'$USER':'$PASSWORD'@localhost/' >> ~/.config/sarra/credentials.conf
 
 mkdir ./test
 

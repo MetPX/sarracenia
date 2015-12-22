@@ -70,9 +70,7 @@ sudo chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
-broker amqp://localhost/
-amqp-user guest
-amqp-password guest
+broker amqp://guest:guest@localhost/
 
 exchange xs_guest
 topic_prefix v02.post
