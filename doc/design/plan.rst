@@ -309,7 +309,22 @@ beta, if in beta, then to release:
 
 - sr_police (a scheduled watch dog to make sure all is cool) does not exist.
 
+- when to trigger on_file when files are multi-part.
+  Inplace True
 
+  - An old version of the file is already on the server.
+  - A newer version is coming in…  same size.
+  - send its announcement parts randomly.
+  - Since they all fit in… they are all downloaded in place.
+  - Since it is random the last part can be amoung the first one to be inserted.
+  - Calling the on_part is obvious.
+  - don’t have a clue when it is finished and when to call the final on_file…   
+
+  Could write a state file writing the parts inserted and when complete, 
+  remove this file and invoke on_file.  But there is a race condition when 
+  multiple instances want to update the state file.
+ 
+ 
 
 Parking Lot For Initial Release
 -------------------------------
