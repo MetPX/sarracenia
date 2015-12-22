@@ -121,6 +121,14 @@ class sr_sarra(sr_instances):
         self.accept_msg_for_clusters.extend ( self.cluster_aliases )
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
 
+        # no queue name allowed
+
+        if self.queue_name != None:
+           self.logger.error("queue name forced in this program")
+
+        self.queue_name  = 'q_' + self.broker.username + '.'
+        self.queue_name += self.program_name + '.' + self.config_name 
+
         # umask change for directory creation and chmod
 
         try    : os.umask(0)
@@ -267,7 +275,6 @@ class sr_sarra(sr_instances):
         print("\tdurable              <boolean>       (default: False)")
         print("\texpire               <minutes>       (default: None)")
         print("\tmessage-ttl          <minutes>       (default: None)")
-        print("\tqueue_name           <name>          (default: program set it for you)")
         print("\nFile settings:")
         print("\taccept    <regexp pattern>           (default: None)")
         print("\tdocument_root        <document_root> (MANDATORY)")
