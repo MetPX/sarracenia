@@ -64,27 +64,6 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-one can use a single *broker* option as above, or it can be 
-broken out: protocol,amqp-user,amqp-password,host,port,vhost
-
-**host     <hostname> (default: dd.weather.gc.ca)** 
-     the server running an AMQP broker which is publishing file announcements postings.
-
-**port       <number> (default: 5672)** 
-     the port on which a the AMQP broker service is running.
-
-**protocol [amqp|amqps] (default: amqp)**
-     the protocol used to communicate with the AMQP broker.
-
-**amqp-user    <user> (default: anonymous)** 
-     the user name to authenticate to the broker to obtain the announcements
-
-**amqp-password  <pw> (default: anonymous)** 
-     the password for the user name to authenticate to the broker to obtain the announcements
-
-**vhost    <string>  (default: /)**
-     AMQP broker vhost specification. 
-
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -133,7 +112,7 @@ The queue is where the notifications are held on the server for each subscriber.
 
 ::
 
-**queue         <name>         (default: q_<amqp-user>)** 
+**queue_name    <name>         (default: q_<brokerUser>)** 
 **durable       <boolean>      (default: False)** 
 **expire        <minutes>      (default: None)** 
 **message-ttl   <minutes>      (default: None)** 
@@ -159,13 +138,35 @@ on disk if the broker is restarted.
 The  **message-ttl**  option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-HTTP DOWNLOAD CREDENTIALS 
--------------------------
+DOWNLOAD CREDENTIALS 
+--------------------
+
+
+The configuration for credentials that concerns product download is stored in the
+ ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
 
 ::
 
-**http-user   <user> (default: None)** 
-**http-password <pw> (default: None)** 
+**amqp://user:passwd@host:port/**
+**amqps://user:passwd@host:port/**
+
+**sftp://user:passwd@host:port/**
+**sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
+
+**ftp://user:passwd@host:port/**
+**ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
+
+**http://user:passwd@host:port/**
+
+Should you implement other protocol that the supported ones, 
+you would write a **_do_download** script to support it.
+And if you want, you could add the credentials in the file.
+You would get access to the credentials value in the script
+with the code :   
+
+**ok, details = parent.credentials.get(msg.urlcred)**
+**if details  : url = details.url**
+
 
 DELIVERY SPECIFICATIONS
 -----------------------
@@ -320,6 +321,42 @@ Should you want to turned them off the option is :
 **log_back <boolean>        (default: true)** 
 
 
+ADVANCED FEATURES
+-----------------
+
+There are ways to insert scripts into the flow of messages and file downloads:
+Should you want to implement tasks in various part of the execution of the program
+
+
+**do_download <script>        (default: None)** 
+**on_message  <script>        (default: None)** 
+**on_file     <script>        (default: None)** 
+**on_parts    <script>        (default: None)** 
+
+
+A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be:
+(this one being for **on_file**)
+
+class Transformer(object): 
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          logger = parent.logger
+
+          logger.info("I have no effect but adding this log line")
+
+          return True
+
+transformer  = Transformer()
+self.on_file = transformer.perform
+
+The only arguments the script receives it **parent**, which is an instance of
+the **sr_subscribe** class
+Should one of these scripts return False, the processing of the message/file
+will stop there and another message will be consume from the broker.
+
+
 DEPRECATED SETTINGS
 -------------------
 
@@ -327,6 +364,12 @@ These settings pertain to previous versions of the client, and have been superce
 
 ::
 
+
+ **host          <broker host> (unsupported)** 
+ **amqp-user     <broker user> (unsupported)** 
+ **amqp-password <broker pass> (unsupported)** 
+ **http-user     <url    user> (now in credentials.conf)** 
+ **http-password <url    pass> (now in credentials.conf)** 
  **topic         <amqp pattern> (deprecated)** 
  **exchange_type <type>         (default: topic)** 
  **exchange_key  <amqp pattern> (deprecated)** 
