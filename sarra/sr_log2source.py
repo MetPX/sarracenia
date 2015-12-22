@@ -139,10 +139,7 @@ class sr_log2source(sr_instances):
 
 
     def help(self):
-        self.logger.info("Usage: %s -b <broker> -i <instances> [start|stop|restart|reload|status]  \n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-b   <broker>    default:amqp://guest:guest@localhost/")
-        self.logger.info("-i   <instances> default:1")
+        self.logger.info("Usage: %s [options] [config] [start|stop|restart|reload|status]  \n" % self.program_name )
 
 
     # =============
