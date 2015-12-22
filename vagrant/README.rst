@@ -33,11 +33,12 @@ Example::
     vagrant ssh
     ./test_sr_sarrah.sh px test
 
- You could also simply provision an instance and test out Sarracenia.
+
+You could also simply provision an instance and test out Sarracenia.
 
 
- Supported OSes
- ---------------
+Supported OSes
+---------------
 
- * Precise (Ubuntu 12.04)
- * Trusty (Ubuntu 14.04)
+* Precise (Ubuntu 12.04)
+* Trusty (Ubuntu 14.04)
