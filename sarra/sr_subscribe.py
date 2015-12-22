@@ -115,6 +115,8 @@ class sr_subscribe(sr_instances):
 
         self.check()
 
+        self.setlog()
+
 
     def connect(self):
 
@@ -162,7 +164,7 @@ class sr_subscribe(sr_instances):
 
                 # user defined download scripts
 
-                if   self.do_download :
+                elif self.do_download :
                      return self.do_download(self)
 
         except :
@@ -237,7 +239,7 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : return self.on_message()
+        if self.on_message : return self.on_message(self)
 
         return True
 
@@ -247,123 +249,111 @@ class sr_subscribe(sr_instances):
 
     def process_message(self):
 
-        try  :
-                 #=================================
-                 #  consume message
-                 #=================================
-                 ok, self.msg = self.consumer.consume()
-                 if not ok : return ok
+        self.logger.info("Received notice  %s" % self.msg.notice)
 
-                 self.logger.info("Received notice  %s" % self.msg.notice)
+        # selected directory from accept/reject resolved in consumer
 
-                 # selected directory from accept/reject resolved in consumer
+        self.document_root = self.currentDir
 
-                 self.document_root = self.currentDir
+        #=================================
+        # setting up message with sr_subscribe config options
+        # self.set_local     : how/where sr_subscribe is configured for that product
+        # self.msg.set_local : how message settings (like parts) applies in this case
+        #=================================
 
-                 #=================================
-                 # setting up message with sr_subscribe config options
-                 # self.set_local     : how/where sr_subscribe is configured for that product
-                 # self.msg.set_local : how message settings (like parts) applies in this case
-                 #=================================
+        self.set_local()
+        self.msg.set_local(self.inplace,self.local_path,self.local_url)
+        self.msg.headers['rename'] = self.local_path
 
-                 self.set_local()
-                 self.msg.set_local(self.inplace,self.local_path,self.local_url)
-                 self.msg.headers['rename'] = self.local_path
+        #=================================
+        # now message is complete : invoke __on_message__
+        #=================================
 
-                 #=================================
-                 # now message is complete : invoke __on_message__
-                 #=================================
+        ok = self.__on_message__()
+        if not ok : return ok
 
-                 ok = self.__on_message__()
-                 if not ok : return ok
+        #=================================
+        # prepare download 
+        # the document_root should exists : it the starting point of the downloads
+        # make sure local directory where the file will be downloaded exists
+        #=================================
 
-                 #=================================
-                 # prepare download 
-                 # the document_root should exists : it the starting point of the downloads
-                 # make sure local directory where the file will be downloaded exists
-                 #=================================
+        if not os.path.isdir(self.document_root) :
+           self.logger.error("directory %s does not exist" % self.document_root)
+           return False
 
-                 if not os.path.isdir(self.document_root) :
-                    self.logger.error("directory %s does not exist" % self.document_root)
-                    return False
+        # pass no warning it may already exists
+        try    : os.makedirs(self.local_dir,0o775,True)
+        except : pass
 
-                 # pass no warning it may already exists
-                 try    : os.makedirs(self.local_dir,0o775,True)
-                 except : pass
+        #=================================
+        # overwrite False, user asked that if the announced file already exists,
+        # verify checksum to avoid an unnecessary download
+        #=================================
 
-                 #=================================
-                 # overwrite False, user asked that if the announced file already exists,
-                 # verify checksum to avoid an unnecessary download
-                 #=================================
+        need_download = True
+        if not self.overwrite and self.msg.checksum_match() :
+           self.msg.log_publish(304, 'not modified')
+           self.logger.info("file not modified %s " % self.msg.local_file)
 
-                 need_download = True
-                 if not self.overwrite and self.msg.checksum_match() :
-                    self.msg.log_publish(304, 'not modified')
-                    self.logger.info("file not modified %s " % self.msg.local_file)
+           # if we are processing an entire file... we are done
+           if self.msg.partflg == '1' :  return False
 
-                    # if we are processing an entire file... we are done
-                    if self.msg.partflg == '1' :  return False
+           need_download = False
 
-                    need_download = False
+        #=================================
+        # proceed to download  3 attempts
+        #=================================
 
-                 #=================================
-                 # proceed to download  3 attempts
-                 #=================================
+        if need_download :
+           i  = 0
+           while i < 3 : 
+                 ok = self.__do_download__()
+                 if ok : break
+                 i = i + 1
+           # could not download
+           if not ok : return False
 
-                 if need_download :
-                    i  = 0
-                    while i < 3 : 
-                          ok = self.__do_download__()
-                          if ok : break
-                          i = i + 1
-                    # could not download
-                    if not ok : return False
+           # if the part should have been inplace... but could not
 
-                    # if the part should have been inplace... but could not
+           if self.inplace and self.msg.in_partfile :
+              self.msg.log_publish(307,'Temporary Redirect')
 
-                    if self.inplace and self.msg.in_partfile :
-                       self.msg.log_publish(307,'Temporary Redirect')
+           # got it : call on_part if a part
 
-                    # got it : call on_part if a part
+           if self.msg.partflg != '1' and self.on_part :
+              ok = self.on_part(self)
+              if not ok : return False
 
-                    if self.msg.partflg != '1' and self.on_part :
-                       ok = self.on_part(self)
-                       if not ok : return False
+           # got it : call on_file if a file
 
-                    # got it : call on_file if a file
+           if self.msg.partflg == '1' and self.on_file :
+              ok = self.on_file(self)
+              if not ok : return False
 
-                    if self.msg.partflg == '1' and self.on_file :
-                       ok = self.on_file(self)
-                       if not ok : return False
+           # discard option
 
-                    # discard option
+           if self.discard :
+              try    :
+                        os.unlink(self.msg.local_file)
+                        self.logger.warning("Discarted  %s" % self.msg.local_file)
+              except :
+                        (stype, svalue, tb) = sys.exc_info()
+                        self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+              return False
 
-                    if self.discard :
-                       try    :
-                                 os.unlink(self.msg.local_file)
-                                 self.logger.warning("Discarted  %s" % self.msg.local_file)
-                       except :
-                                 (stype, svalue, tb) = sys.exc_info()
-                                 self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
-                       return False
+        #=================================
+        # if we processed a file we are done
+        #=================================
 
-                 #=================================
-                 # if we processed a file we are done
-                 #=================================
+        if self.msg.partflg == '1' : return True
 
-                 if self.msg.partflg == '1' : return True
-
-                 #=================================
-                 # if we processed a part (downloaded or not)
-                 # it can make a difference for parts that wait reassembly
-                 #=================================
-            
-                 file_reassemble(self)
-
-        except :
-                 (type, value, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
-                 return False
+        #=================================
+        # if we processed a part (downloaded or not)
+        # it can make a difference for parts that wait reassembly
+        #=================================
+   
+        file_reassemble(self)
 
         return True
 
@@ -383,7 +373,17 @@ class sr_subscribe(sr_instances):
         self.connect()
 
         while True :
-              ok = self.process_message()
+              try  :
+                      #  consume message
+                      ok, self.msg = self.consumer.consume()
+                      if not ok : continue
+
+                      #  process message (ok or not... go to the next)
+                      ok = self.process_message()
+
+              except:
+                      (type, value, tb) = sys.exc_info()
+                      self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
 
     # ==============================================
@@ -480,7 +480,7 @@ def test_sr_subscribe():
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
     f.write("          self.count_ok += 1\n")
-    f.write("          parent.msg.mtypej = self.count_ok\n")
+    f.write("          parent.msg.mtype_m = self.count_ok\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_message = transformer.perform\n")
@@ -492,7 +492,7 @@ def test_sr_subscribe():
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
     f.write("          self.count_ok += 1\n")
-    f.write("          parent.msg.mtypek = self.count_ok\n")
+    f.write("          parent.msg.mtype_p = self.count_ok\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_part = transformer.perform\n")
@@ -504,15 +504,15 @@ def test_sr_subscribe():
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
     f.write("          self.count_ok += 1\n")
-    f.write("          parent.msg.mtypel = self.count_ok\n")
+    f.write("          parent.msg.mtype_f  = self.count_ok\n")
     f.write("          return True\n")
     f.write("transformer = Transformer()\n")
     f.write("self.on_file = transformer.perform\n")
     f.close()
 
-    # setup sr_subscriber for 1 user (just this instance)
+    # setup sr_subscribe (just this instance)
 
-    subscribe         = sr_subscriber()
+    subscribe         = sr_subscribe()
     subscribe.logger  = logger
     subscribe.debug   = True
 
@@ -525,12 +525,11 @@ def test_sr_subscribe():
     # ==================
     # set instance
 
-    subscribe.instance = 1
-    subscribe.nbr_instances   = 1
+    subscribe.instance      = 1
+    subscribe.nbr_instances = 1
     subscribe.connect()
     
     # do an empty consume... assure AMQP's readyness
-    ok, msg = subscribe.consumer.consume()
 
 
     # process with our on_message and on_post
@@ -542,25 +541,33 @@ def test_sr_subscribe():
     k = 0
     c = 0
     while True :
-          ok = subscribe.process_message()
-          c = c + 1
-          if c == 10 : break
+          ok, msg = subscribe.consumer.consume()
           if not ok : continue
-          if subscribe.msg.headers['source'] != 'a_provider': continue
-          if subscribe.msg.mtypej == 1: j += 1
-          if subscribe.msg.mtypek == 1: k += 1
+          ok = subscribe.process_message()
+          if not ok : continue
+          if subscribe.msg.mtype_m == 1: j += 1
+          if subscribe.msg.mtype_f == 1: k += 1
           i = i + 1
+          if i == 1 : break
 
     subscribe.close()
 
     if j != 1 or k != 1 :
-       print("sr_2xlog TEST Failed 1")
+       print("sr_subscriber TEST Failed 1")
        sys.exit(1)
 
-    print("sr_2xlog TEST PASSED")
+    # FIX ME part stuff
+    # with current message from a local file
+    # create some parts in parent.msg
+    # and process them with subscribe.process_message
+    # make sure temporary redirection, insert, download inplace
+    # truncate... etc works
 
+    print("sr_subscriber TEST PASSED")
+
+    os.unlink('./on_fil_test.py')
     os.unlink('./on_msg_test.py')
-    os.unlink('./on_pst_test.py')
+    os.unlink('./on_prt_test.py')
 
     sys.exit(0)
 

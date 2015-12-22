@@ -9,14 +9,13 @@
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
 # sr_sarra.py : python3 program allowing users to listen and download product from
-#              another sarracenia server or from user posting (sr_post/sr_watch)
+#               another sarracenia server or from user posting (sr_post/sr_watch)
+#               and reannounce the product on the current server
 #
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 22 09:20:21 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,12 +32,59 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
+#============================================================
+# usage example
+#
+# sr_sarra [options] [config] [start|stop|restart|reload|status]
+#
+# sr_sarra consumes message, for each message it downloads the product
+# and reannounce it. On usage of sarra is to acquire data from source
+# that announce their products.  The other usage is to dessiminate products
+# from other brokers/pumps.
+#
+# condition 1: from a source
+# broker                  = where sarra is running (manager)
+# exchange                = xs_source_user
+# message                 = message.headers['to_clusters'] verified...
+#                           is this message for this cluster
+# product                 = downloaded under directory (option document_root)
+#                         = subdirectory from mirror option  OR
+#                           message.headers['rename'] ...
+#                           can be trimmed by option  strip
+# post_broker             = where sarra is running (manager)
+# post_exchange           = xpublic
+# post_message            = same as incoming message
+#                           message.headers['source']  is set from source_user
+#                           message.headers['cluster'] is set from option cluster from default.conf
+#                           message is built from url option give
+# log_exchange            = xlog
+#
+#
+# condition 2: from another broker/pump
+# broker                  = the remote broker...
+# exchange                = xpublic
+# message                 = message.headers['to_clusters'] verified...
+#                           is this message for this cluster
+# product                 = usually the product placement is mirrored 
+#                           option document_root needs to be set
+# post_broker             = where sarra is running (manager)
+# post_exchange           = xpublic
+# post_message            = same as incoming message
+#                           message.headers['source']  left as is
+#                           message.headers['cluster'] left as is 
+#                           option url : gives new url announcement for this product
+# log_exchange            = xs_"remoteBrokerUser"
+#
+#
+#============================================================
+
 #
 
 import os,sys,time
 
 try :    
          from sr_amqp           import *
+         from sr_consumer       import *
          from sr_file           import *
          from sr_ftp            import *
          from sr_http           import *
@@ -46,6 +92,7 @@ try :
          from sr_message        import *
 except : 
          from sarra.sr_amqp      import *
+         from sarra.sr_consumer  import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
@@ -57,18 +104,16 @@ class sr_sarra(sr_instances):
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
         self.defaults()
-        self.accept_if_unmatch = True
-        self.exchange          = 'xpublic'
         self.configure()
 
     def check(self):
 
-        # dont want to recreate these if they exists
+        # bindings should be defined 
 
-        if not hasattr(self,'msg') :
-           self.msg      = sr_message(self.logger)
-
-        self.msg.user = self.source_broker.username
+        if self.bindings == []  :
+           key = self.topic_prefix + '.#'
+           self.bindings.append( (self.exchange,key) )
+           self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # make a single list for clusters that we accept message for
 
@@ -82,40 +127,25 @@ class sr_sarra(sr_instances):
         except : pass
 
     def close(self):
-        self.hc_src.close()
+        self.consumer.close()
         self.hc_pst.close()
 
     def connect(self):
 
         # =============
+        # create message if needed
+        # =============
+
+        if not hasattr(self,'msg'):
+           self.msg = sr_message(self.logger)
+
+        # =============
         # consumer
         # =============
 
-        # consumer host
-
-        self.hc_src = HostConnect( logger = self.logger )
-        self.hc_src.set_url( self.source_broker )
-        self.hc_src.connect()
-
-        # consumer  add_prefetch(1) allows queue sharing between instances
-
-        self.consumer  = Consumer(self.hc_src)
-        self.consumer.add_prefetch(1)
-        self.consumer.build()
-
-        # consumer queue
-        name  = 'q_' + self.source_broker.username + '.' + self.program_name + '.' + self.config_name
-        if self.queue_name != None :
-           name = 'q_' + self.source_broker.username + '.' + self.queue_name
-
-        self.queue = Queue(self.hc_src,name)
-        self.queue.add_binding(self.source_exchange,self.source_topic)
-        self.queue.build()
-
-        # log publisher
-
-        self.amqp_log    = Publisher(self.hc_src)
-        self.amqp_log.build()
+        self.consumer          = sr_consumer(self)
+        self.msg.log_publisher = self.consumer.publish_back()
+        self.msg.log_exchange  = self.log_exchange
 
         # =============
         # publisher
@@ -124,22 +154,49 @@ class sr_sarra(sr_instances):
         # publisher host
 
         self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.broker )
+        self.hc_pst.set_url( self.post_broker )
         self.hc_pst.connect()
 
         # publisher
 
-        self.amqp_pub    = Publisher(self.hc_pst)
-        self.amqp_pub.build()
+        self.publisher = Publisher(self.hc_pst)
+        self.publisher.build()
+        self.msg.publisher    = self.publisher
+        self.msg.pub_exchange = self.post_exchange
+
 
     def configure(self):
 
-        # cumulative variable reinitialized
+        # overwrite defaults
+        # the default settings in most cases :
+        # sarra receives directly from sources  onto itself
+        # or it consumes message from another pump
+        # we cannot define a default broker exchange
 
-        self.exchange_key         = None     
-        self.masks                = []       
-        self.currentDir           = '.'      
-        self.currentFileOption    = 'WHATFN' 
+        # default broker and exchange None
+
+        self.broker   = None
+        self.exchange = None
+        # FIX ME  log_exchange set to NONE
+        # instead of xlog and make it mandatory perhaps ?
+        # since it can be xlog or xs_remotepumpUsername ?
+
+        # in most cases, sarra downloads and repost for itself.
+        # default post_broker and post_exchange are
+
+        self.post_broker    = None
+        self.post_exchange  = 'xpublic'
+        if hasattr(self,'manager'):
+           self.post_broker = self.manager
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_if_unmatch = True
+
+        # most of the time we want to mirror product directory and share queue
+
+        self.mirror            = True
+        self.queue_share       = True
 
         # installation general configurations and settings
 
@@ -158,98 +215,273 @@ class sr_sarra(sr_instances):
         self.check()
 
         self.setlog()
-        self.logger.info("user_config = %d %s" % (self.instance,self.user_config))
 
-    def delete_event(self):
-        if self.msg.sumflg != 'R' : return False
-
-        self.msg.code = 503
-        self.msg.message = "Service unavailable : delete"
-        self.msg.log_error()
- 
-        return True
-
-
-    def download(self):
+    def __do_download__(self):
 
         self.logger.info("downloading/copying into %s " % self.msg.local_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
-                     return http_download(self.msg, self.http_user, self.http_password )
+                     return http_download(self)
 
                 elif self.msg.url.scheme == 'ftp' :
-                     return ftp_download(self.msg, self.ftp_user, self.ftp_password, self.ftp_mode, self.ftp_binary )
+                     return ftp_download(self)
 
                 elif self.msg.url.scheme == 'sftp' :
-                     try :    
-                              from sr_sftp       import sftp_download
-                     except : 
-                              from sarra.sr_sftp import sftp_download
-                     return sftp_download(self.msg, self.sftp_user, self.sftp_password, self.sftp_keyfile )
+                     try    : from sr_sftp       import sftp_download
+                     except : from sarra.sr_sftp import sftp_download
+                     return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
                      return file_process(self.msg)
 
+                # user defined download scripts
+
+                elif self.do_download :
+                     return self.do_download(self)
+
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.code    = 503
-                self.msg.message = "Unable to process"
-                self.msg.log_error()
+                self.msg.log_publish(503,"Unable to process")
+                self.logger.error("Could not download")
 
-        self.msg.code    = 503
-        self.msg.message = "Service unavailable %s" % self.msg.url.scheme
-        self.msg.log_error()
-
+        self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
-        self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-i   <nbr_of_instances>      default 1")
-        self.logger.info("-b   <broker>                default amqp://guest:guest@localhost/")
-        self.logger.info("-dr  <document_root>")
-        self.logger.info("-ex  <exchange>              default xpublic")
-        self.logger.info("-u   <url>")
-        self.logger.info("-sb  <source_broker>         default amqp://guest:guest@localhost/")
-        self.logger.info("-se  <source_exchange>       default xpublic")
-        self.logger.info("-st  <source_topic>          default v02.post.#")
-        self.logger.info("-qn  <queue_name>            default q_username.config_name")
-        self.logger.info("-m   <mirror>                default True")
-        self.logger.info("-on_* script fix me          default None")
-        self.logger.info("-sk  <ssh_keyfile>")
-        self.logger.info("-strip <strip count (directory)>")
-        self.logger.info("-in  <put parts inplace>      default True")
-        self.logger.info("-o   <overwrite no sum check> default True")
-        self.logger.info("-rc  <recompute sun>          default False")
-        self.logger.info("DEBUG:")
-        self.logger.info("-debug")
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("OPTIONS:")
+        print("instances <nb_of_instances>      default 1")
+        print("\nAMQP consumer broker settings:")
+        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(MANDATORY)")
+        print("\nAMQP Queue bindings:")
+        print("\texchange             <name>          (MANDATORY)")
+        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
+        print("\tsubtopic             <amqp pattern>  (default: #)")
+        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
+        print("\t\t\t* single directory wildcard (matches one directory)")
+        print("\t\t\t# wildcard (matches rest)")
+        print("\tlog_exchange         <name>          (default: xlog)")
+        print("\nAMQP Queue settings:")
+        print("\tdurable              <boolean>       (default: False)")
+        print("\texpire               <minutes>       (default: None)")
+        print("\tmessage-ttl          <minutes>       (default: None)")
+        print("\tqueue_name           <name>          (default: program set it for you)")
+        print("\nFile settings:")
+        print("\taccept    <regexp pattern>           (default: None)")
+        print("\tdocument_root        <document_root> (MANDATORY)")
+        print("\tinplace              <boolean>       (default False)")
+        print("\toverwrite            <boolean>       (default False)")
+        print("\tmirror               <boolean>       (default True)")
+        print("\treject    <regexp pattern>           (default: None)")
+        print("\tstrip      <strip count (directory)> (default 0)")
+        print("\tdo_download          <script>        (default None)")
+        print("\ton_file              <script>        (default None)")
+        print("\nMessage settings:")
+        print("\ton_message           <script>        (default None)")
+        print("\trecompute_chksum     <boolean>       (default False)")
+        print("\tsource_from_exchange <boolean>       (default False)")
+        print("\turl                  <url>           (MANDATORY)")
+        print("\nAMQP posting broker settings:")
+        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(default: manager amqp broker in default.conf)")
+        print("\tpost_exchange        <name>          (default xpublic)")
+        print("\ton_post              <script>        (default None)")
+        print("DEBUG:")
+        print("-debug")
 
-    # this instances of sr_sarra runs,
-    # for cluster               : self.cluster
-    # alias for the cluster are : self.cluster_aliases
-    # it is a gateway for       : self.gateway_for 
-    # all these cluster names were put in list self.accept_msg_for_clusters
-    # The message's target clusters  self.msg.to_clusters should be in
-    # the self.accept_msg_for_clusters list
+    # =============
+    # __on_message__
+    # =============
 
-    def route_this_message(self):
+    def __on_message__(self):
+
+        # no support for delete event
+
+        if self.msg.sumflg == 'R' :
+           self.logger.warning("delete message ignored")
+           return False
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
-           self.msg.code    = 403
-           self.msg.message = "Forbidden : message without destination amqp header['to_clusters']"
-           self.msg.log_error()
+           self.msg.log_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+           self.logger.error("message without destination amqp header['to_clusters']")
            return False
 
-        # loop on all message destinations (target)
+        # this instances of sr_sarra runs,
+        # for cluster               : self.cluster
+        # alias for the cluster are : self.cluster_aliases
+        # it is a gateway for       : self.gateway_for 
+        # all these cluster names were put in list self.accept_msg_for_clusters
+        # The message's target clusters  self.msg.to_clusters should be in
+        # the self.accept_msg_for_clusters list
+
+        # if this cluster is a valid destination than one of the "to_clusters" pump
+        # will be present in self.accept_msg_for_clusters
+
+        ok = False
         for target in self.msg.to_clusters :
-           if target in self.accept_msg_for_clusters : return True
+           if  not target in self.accept_msg_for_clusters :  continue
+           ok = True
+           break
 
-        # nope this one is not for this cluster
-        self.logger.warning("skipped : not for this cluster...")
+        if not ok :
+           self.logger.warning("skipped : not for this cluster...")
+           return False
 
-        return False
+        # invoke user defined on_message when provided
+
+        if self.on_message : return self.on_message(self)
+
+        return True
+
+    def process_message(self):
+
+        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+
+        #=================================
+        # setting source and cluster if required
+        #=================================
+
+        if self.source_from_exchange :
+           ok = self.set_source()
+           if not ok : return False
+
+        if not 'from_cluster' in self.msg.headers :
+           ok = self.set_cluster()
+           if not ok : return False
+
+        #=================================
+        # setting up message with sr_sarra config options
+        # self.set_local     : how/where sr_subscribe is configured for that product
+        # self.msg.set_local : how message settings (like parts) applies in this case
+        #=================================
+
+        self.set_local()
+        self.msg.set_local(self.inplace,self.local_file,self.local_url)
+
+        #=================================
+        # now message is complete : invoke __on_message__
+        #=================================
+
+        ok = self.__on_message__()
+        if not ok : return False
+
+        #=================================
+        # prepare download 
+        # make sure local directory where the file will be downloaded exists
+        #=================================
+
+        # pass no warning it may already exists
+        try    : os.makedirs(self.local_dir,0o775,True)
+        except : pass
+
+        #=================================
+        # overwrite False, ask that if the announced file already exists,
+        # verify checksum to avoid an unnecessary download
+        #=================================
+
+        need_download = True
+        if not self.overwrite and self.msg.checksum_match() :
+           self.msg.log_publish(304, 'not modified')
+           self.logger.info("file not modified %s " % self.msg.local_file)
+
+           # if we are processing an entire file... we are done
+           if self.msg.partflg == '1' :  return False
+
+           need_download = False
+
+        #=================================
+        # proceed to download  3 attempts
+        #=================================
+
+        if need_download :
+           i  = 0
+           while i < 3 : 
+                 ok = self.__do_download__()
+                 if ok : break
+                 i = i + 1
+           # could not download
+           if not ok : return False
+
+           # force recompute checksum
+
+           if self.recompute_chksum :
+              self.msg.compute_local_checksum()
+              # When downloaded, it changed from the message... 
+              # this is weird... means the file changed in the mean time
+              # and probably reposted...
+              # now posting of this file will have accurate checksum
+              if not self.msg.local_checksum == self.msg.checksum :
+                 self.msg.set_sum(self.msg.sumflg,self.msg.local_checksum)
+                 self.msg.log_publish(205,'Reset Content : checksum')
+
+           # if the part should have been inplace... but could not
+
+           if self.inplace and self.msg.in_partfile :
+              self.msg.log_publish(307,'Temporary Redirect')
+
+           # got it : call on_part if a part
+
+           if self.msg.partflg != '1' and self.on_part :
+              ok = self.on_part(self)
+              if not ok : return False
+
+           # got it : call on_file if a file
+
+           if self.msg.partflg == '1' and self.on_file :
+              ok = self.on_file(self)
+              if not ok : return False
+
+        #=================================
+        # publish our download
+        #=================================
+
+        if self.msg.partflg != '1' :
+           if self.inplace : self.msg.change_partflg('i')
+           else            : self.msg.change_partflg('p')
+
+        self.msg.set_topic_url('v02.post',self.msg.local_url)
+        self.msg.set_notice(self.msg.local_url,self.msg.time)
+        self.msg.publish()
+        self.msg.log_publish(201,'Published')
+
+        if self.msg.partflg == '1' : return True
+      
+        # if dealt with a part... and inplace, try reassemble
+
+        if self.inplace : file_reassemble(self)
+
+        return True
+
+
+    def run(self):
+
+        # configure
+
+        self.configure()
+
+        # present basic config
+
+        self.logger.info("sr_sarra run")
+
+        # loop/process messages
+
+        self.connect()
+
+        while True :
+              try  :
+                      #  consume message
+                      ok, self.msg = self.consumer.consume()
+                      if not ok : continue
+
+                      #  process message (ok or not... go to the next)
+                      ok = self.process_message()
+
+              except:
+                      (type, value, tb) = sys.exc_info()
+                      self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
 
     def set_local(self):
 
@@ -295,177 +527,10 @@ class sr_sarra(sr_instances):
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']
 
-    def run(self):
-
-        self.logger.info("sr_sarra run")
-
-        self.connect()
-
-        self.msg.logger       = self.logger
-        self.msg.amqp_log     = self.amqp_log
-        self.msg.amqp_pub     = self.amqp_pub
-        self.msg.exchange_pub = self.exchange
-
-        #
-        # loop on all message
-        #
-
-        raw_msg = None
-
-        while True :
-
-          try  :
-                 if raw_msg != None : self.consumer.ack(raw_msg)
-
-                 raw_msg = self.consumer.consume(self.queue.qname)
-                 if raw_msg == None : continue
-
-                 # make use it as a sr_message
-
-                 self.msg.from_amqplib(raw_msg)
-                 self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
-
-                 # make use of accept/reject
-
-                 if not self.isMatchingPattern(self.msg.urlstr) :
-                    self.logger.info("Rejected by accept/reject options")
-                    continue
-
-                 # if message for this cluster or for this cluster's route
-
-                 ok = self.route_this_message()
-                 if not ok : continue
-
-                 # setting source from exchange 
-
-                 if self.source_from_exchange :
-                    ok = self.set_source()
-                    if not ok : continue
-
-                 # setting originating cluster if not defined
-
-                 if not 'from_cluster' in self.msg.headers :
-                    ok = self.set_cluster()
-                    if not ok : continue
-
-                 # on_message script
-
-                 if self.on_message : 
-                    ok, code, message = self.on_message(self,self.msg,self.logger)
-                    if not ok :
-                       self.msg.code    = code
-                       self.msg.message = message
-                       self.msg.log_error()
-                       continue
-
-
-                 # set local file according to sarra : dr + imsg.path (or renamed path)
-
-                 self.set_local()
-
-                 # set local file according to the message and sarra's setting
-
-                 self.msg.set_local(self.inplace,self.local_file,self.local_url)
-
-                 # asked to delete ?
-
-                 if self.delete_event() : continue
-
-                 # make sure local directory exists
-                 # FIXME : logging errors...
-                 try    : os.makedirs(self.local_dir,0o775,True)
-                 except : pass
-
-                 # if overwrite is not enforced (False)
-                 # verify if msg checksum and local_file checksum match
-                 # FIXME : should we republish / repost ???
-
-                 if not self.overwrite and self.msg.checksum_match() :
-
-                    self.msg.code    = 304
-                    self.msg.message = 'not modified'
-                    self.msg.log_info()
-             
-                    # a part unmodified can make a difference
-                    if self.inplace and self.msg.in_partfile :
-                       file_reassemble(self.msg)
-
-                    # chksum computed on msg offset/length may need to truncate
-                    file_truncate(self.msg)
-                    continue
-
-                 # proceed to download  3 attempts
-
-                 i  = 0
-                 while i < 3 : 
-                       ok = self.download()
-                       if ok : break
-                       i = i + 1
-                 if not ok : continue
-
-                 # on_file script
-
-                 if self.on_file : 
-                    ok, code, message = self.on_file(self, self.msg.local_file, self.msg.local_offset, self.msg.length, self.logger)
-                    if not ok :
-                       self.msg.code    = code
-                       self.msg.message = message
-                       self.msg.log_error()
-                       continue
-
-                 # force recompute checksum
-
-                 if self.recompute_chksum :
-                    self.msg.compute_local_checksum()
-
-                    # When downloaded, it changed from the message... 
-                    # this is weird... means the file changed in the mean time
-                    # and probably reposted...
-                    # now posting of this file will have accurate checksum
-
-                    if not self.msg.local_checksum == self.msg.checksum :
-                       self.msg.set_sum(self.msg.sumflg,self.msg.local_checksum)
-                       self.msg.code    = 205
-                       self.msg.message = 'Reset Content : checksum'
-                       self.msg.log_info()
-
-
-                 # Delayed insertion
-                 # try reassemble the file, conditions may have changed since writing
-
-                 if self.inplace and self.msg.in_partfile :
-                    self.msg.code    = 307
-                    self.msg.message = 'Temporary Redirect'
-                    self.msg.log_info()
-                    file_reassemble(self.msg)
-                    continue
-
-                 # announcing the download or insert
-
-                 if self.msg.partflg != '1' :
-                    if self.inplace : self.msg.change_partflg('i')
-                    else            : self.msg.change_partflg('p')
-
-                 self.msg.set_topic_url('v02.post',self.msg.local_url)
-                 self.msg.set_notice(self.msg.local_url,self.msg.time)
-                 self.msg.code    = 201
-                 self.msg.message = 'Published'
-                 self.msg.publish()
-              
-                 # if we inserted a part in file ... try reassemble
-
-                 if self.inplace and self.msg.partflg != '1' :
-                    file_reassemble(self.msg)
-
-          except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-
     def set_cluster(self):
         if self.cluster == None :
-           self.msg.code    = 403
-           self.msg.message = "Forbidden : message without cluster"
-           self.msg.log_error()
+           self.msg.log_publish(403,"Forbidden : message without cluster")
+           self.logger.error("Forbidden : message without cluster")
            return False
 
         self.msg.set_from_cluster(self.cluster)
@@ -473,9 +538,9 @@ class sr_sarra(sr_instances):
 
     def set_source(self):
         if self.msg.exchange[:3] != 'xs_' :
-           self.msg.code    = 403
-           self.msg.message = "Forbidden : message without source"
-           self.msg.log_error()
+           self.logger.info("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
+           self.msg.log_publish(403,"Forbidden : message without source")
+           self.logger.error("Forbidden : message without source")
            return False
 
         source = self.msg.exchange[3:]
@@ -483,21 +548,18 @@ class sr_sarra(sr_instances):
         return True
 
     def reload(self):
-        self.logger.info("sr_sarra reload")
+        self.logger.info("%s reload" % self.program_name)
         self.close()
-        self.configure()
         self.run()
 
     def start(self):
-        self.configure()
-        self.logger.info("sr_sarra start")
+        self.logger.info("%s start" % self.program_name)
         self.run()
 
     def stop(self):
-        self.logger.info("sr_sarra stop")
+        self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
-
 
 # ===================================
 # MAIN

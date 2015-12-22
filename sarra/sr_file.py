@@ -109,6 +109,10 @@ def file_insert_part(parent,msg,part_file):
        msg.publish()
        msg.log_publish(201,'Publish')
 
+    # publish now, if needed, that it is inserted
+    if msg.lastchunk : 
+       msg.logger.info("file complete %s" % msg.target_file)
+
     # if lastchunk, check if file needs to be truncated
     file_truncate(parent,msg)
 
@@ -198,9 +202,10 @@ def file_reassemble(parent):
           ok = file_insert_part(parent,msg,part_file)
           # break and not return because we want to check the lastchunk processing
           if not ok : break
-
-
           i = i + 1
+
+    # if lastchunk, check if file needs to be truncated
+    file_truncate(parent,msg)
 
 
 # write exact length

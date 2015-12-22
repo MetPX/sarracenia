@@ -108,7 +108,7 @@ class sr_consumer:
         self.expire      = self.parent.expire
         self.message_ttl = self.parent.message_ttl
 
-        self.broker_str  = self.broker.geturl().replace(self.broker.password,'')
+        self.broker_str  = self.broker.geturl().replace(':'+self.broker.password+'@','@')
 
         # queue name 
         self.set_queue_name()

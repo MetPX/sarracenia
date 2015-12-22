@@ -512,7 +512,7 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['log','-l','-log','--log']:
-                     self.user_log_dir = words[1]
+                     self.logpath = words[1]
                      n = 2
 
                 elif words[0] in ['log_back','-lb','--log_back']:
