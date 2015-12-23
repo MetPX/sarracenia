@@ -40,8 +40,8 @@ setup(
               "sr_watch=sarra.sr_watch:main",
               "sr_subscribe=sarra.sr_subscribe:main",
               "sr_log2source=sarra.sr_log2source:main",
-              "sr_source2log=sarra.sr_source2log:main",
               "sr_log2clusters=sarra.sr_log2clusters:main"
+              "sr_2xlog=sarra.sr_2xlog:main",
               ]
     },
     classifiers=[
