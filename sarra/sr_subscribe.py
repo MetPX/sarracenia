@@ -427,7 +427,7 @@ class sr_subscribe(sr_instances):
         # if flatten... we flatten relative path
         # strip taken into account
 
-        if self.mirror :
+        if self.flatten != '/' :
            filename = self.flatten.join(token)
 
         self.local_dir  = local_dir
