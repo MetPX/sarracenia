@@ -42,7 +42,7 @@
 
 
 usage() {
-	echo "`basename $0 <git tag>`" 
+	echo "`basename $0` <git tag>" 
 	exit 2
 }
 
