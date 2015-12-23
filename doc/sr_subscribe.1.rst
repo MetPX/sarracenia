@@ -136,9 +136,8 @@ on disk if the broker is restarted.
 The  **message-ttl**  option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-DOWNLOAD CREDENTIALS 
---------------------
-
+CREDENTIALS 
+-----------
 
 The configuration for credentials that concerns product download is stored in the
  ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
@@ -154,15 +153,16 @@ The configuration for credentials that concerns product download is stored in th
 
 - **http://user:passwd@host:port/**
 
-Should you implement other protocol that the supported ones, 
-you would write a **_do_download** script to support it.
-And if you want, you could add the credentials in the file.
-You would get access to the credentials value in the script
-with the code :   
+to implement supported of additional protocols, one would write 
+a **_do_download** script.  the scripts would access the credentials 
+value in the script with the code :   
 
 - **ok, details = parent.credentials.get(msg.urlcred)**
 - **if details  : url = details.url**
 
+.. note::
+   FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
+   non url elements of the entry. details.ssh_keyfile?
 
 DELIVERY SPECIFICATIONS
 -----------------------
