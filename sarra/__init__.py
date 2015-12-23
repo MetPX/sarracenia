@@ -33,4 +33,4 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "2.15.12a3"
+__version__ = "2.15.12a4"
