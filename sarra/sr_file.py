@@ -13,7 +13,6 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
@@ -85,11 +84,19 @@ def file_insert_part(parent,msg,part_file):
              ft.close()
              fp.close()
 
-
              # remove inserted part file
 
              try    : os.unlink(part_file)
              except : pass
+
+             # run on part... if provided
+
+             if parent.on_part :
+                ok = parent.on_part(parent)
+                if not ok : 
+                   msg.logger.warning("inserted but rejected by on_part %s " % part_file)
+                   msg.logger.warning("the file may not be correctly reassemble %s " % msg.target_file)
+                   return ok
 
     # oops something went wrong
 
@@ -106,15 +113,18 @@ def file_insert_part(parent,msg,part_file):
     if msg.publisher : 
        msg.set_topic_url('v02.post',msg.target_url)
        msg.set_notice(msg.target_url,msg.time)
-       msg.publish()
+       parent.__on_post__()
        msg.log_publish(201,'Publish')
-
-    # publish now, if needed, that it is inserted
-    if msg.lastchunk : 
-       msg.logger.info("file complete %s" % msg.target_file)
 
     # if lastchunk, check if file needs to be truncated
     file_truncate(parent,msg)
+
+    # ok we reassembled the file and it is the last chunk... call on_file
+    if msg.lastchunk : 
+       msg.logger.warning("file assumed complete with last part %s" % msg.target_file)
+       if parent.on_file:
+          ok = parent.on_file(parent)
+          return ok
 
     return True
 
@@ -259,10 +269,6 @@ def file_truncate(parent,msg):
                 msg.set_topic_url('v02.post',msg.target_url)
                 msg.set_notice(msg.target_url,msg.time)
                 msg.log_publish(205, 'Reset Content :truncated')
-
-                # last chunk inserted call on_file
-                if parent.on_file :
-                   parent.on_file(parent)
 
     except : pass
 

@@ -319,16 +319,40 @@ class sr_subscribe(sr_instances):
            if self.inplace and self.msg.in_partfile :
               self.msg.log_publish(307,'Temporary Redirect')
 
-           # got it : call on_part if a part
+           # got it : call on_part (for all parts, a file being consider
+           # a 1 part product... we run on_part in all cases)
 
-           if self.msg.partflg != '1' and self.on_part :
+           if self.on_part :
               ok = self.on_part(self)
               if not ok : return False
 
-           # got it : call on_file if a file
+           # running on_file : if it is a file, or 
+           # it is a part and we are not running "inplace" (discard True)
+           # or we are running in place and it is the last part.
 
-           if self.msg.partflg == '1' and self.on_file :
-              ok = self.on_file(self)
+           if self.on_file :
+              # entire file pumped in
+              if self.msg.partflg == '1' :
+                 ok = self.on_file(self)
+
+              # parts : not inplace... all considered files
+              else:
+                 if not self.inplace :
+                    ok = self.on_file(self)
+
+                 # ***FIX ME***: When reassembled, lastchunk is inserted last and therefore
+                 # calling on_file on lastchunk is accurate... Here, the lastchunk was inserted
+                 # directly into the target file... The decision of directly inserting the part
+                 # into the file is based on the file'size being bigger or equal to part's offset.
+                 # It may be the case that we were at the point of inserting the last chunk...
+                 # BUT IT IS POSSIBLE THAT,WHEN OVERWRITING A FILE WITH PARTS BEING SENT IN PARALLEL,
+                 # THE PROGRAM INSERTS THE LASTCHUNK BEFORE THE END OF COLLECTING THE FILE'PARTS...
+                 # HENCE AN APPROPRIATE CALL TO on_file ... 
+
+                 # inplace : last part(chunk) is inserted
+                 elif (self.msg.lastchunk and not self.msg.in_partfile) :
+                    ok = self.on_file(self)
+
               if not ok : return False
 
            # discard option
