@@ -135,6 +135,51 @@ class sr_sarra(sr_instances):
         self.consumer.close()
         self.hc_pst.close()
 
+    def configure(self):
+
+        # overwrite defaults
+        # the default settings in most cases :
+        # sarra receives directly from sources  onto itself
+        # or it consumes message from another pump
+        # we cannot define a default broker exchange
+
+        # default broker and exchange None
+
+        self.broker   = None
+        self.exchange = None
+        # FIX ME  log_exchange set to NONE
+        # instead of xlog and make it mandatory perhaps ?
+        # since it can be xlog or xs_remotepumpUsername ?
+
+        # in most cases, sarra downloads and repost for itself.
+        # default post_broker and post_exchange are
+
+        self.post_broker    = None
+        self.post_exchange  = 'xpublic'
+        if hasattr(self,'manager'):
+           self.post_broker = self.manager
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_if_unmatch = True
+
+        # most of the time we want to mirror product directory and share queue
+
+        self.mirror            = True
+        self.queue_share       = True
+
+        # load/reload all config settings
+
+        self.general()
+        self.args   (self.user_args)
+        self.config (self.user_config)
+
+        # verify / complete settings
+
+        self.check()
+
+        self.setlog()
+
     def connect(self):
 
         # =============
@@ -169,57 +214,6 @@ class sr_sarra(sr_instances):
         self.msg.publisher    = self.publisher
         self.msg.pub_exchange = self.post_exchange
 
-
-    def configure(self):
-
-        # overwrite defaults
-        # the default settings in most cases :
-        # sarra receives directly from sources  onto itself
-        # or it consumes message from another pump
-        # we cannot define a default broker exchange
-
-        # default broker and exchange None
-
-        self.broker   = None
-        self.exchange = None
-        # FIX ME  log_exchange set to NONE
-        # instead of xlog and make it mandatory perhaps ?
-        # since it can be xlog or xs_remotepumpUsername ?
-
-        # in most cases, sarra downloads and repost for itself.
-        # default post_broker and post_exchange are
-
-        self.post_broker    = None
-        self.post_exchange  = 'xpublic'
-        if hasattr(self,'manager'):
-           self.post_broker = self.manager
-
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_if_unmatch = True
-
-        # most of the time we want to mirror product directory and share queue
-
-        self.mirror            = True
-        self.queue_share       = True
-
-        # installation general configurations and settings
-
-        self.general()
-
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        self.check()
-
-        self.setlog()
 
     def __do_download__(self):
 
@@ -361,6 +355,10 @@ class sr_sarra(sr_instances):
 
         return ok
 
+    # =============
+    # process message  
+    # =============
+
     def process_message(self):
 
         self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
@@ -384,14 +382,14 @@ class sr_sarra(sr_instances):
         #=================================
 
         self.set_local()
-        self.msg.set_local(self.inplace,self.local_file,self.local_url)
+        self.msg.set_local(self.inplace,self.local_path,self.local_url)
 
         #=================================
         # now message is complete : invoke __on_message__
         #=================================
 
         ok = self.__on_message__()
-        if not ok : return False
+        if not ok : return ok
 
         #=================================
         # prepare download 
@@ -403,7 +401,7 @@ class sr_sarra(sr_instances):
         except : pass
 
         #=================================
-        # overwrite False, ask that if the announced file already exists,
+        # overwrite False, user asked that if the announced file already exists,
         # verify checksum to avoid an unnecessary download
         #=================================
 
@@ -570,7 +568,8 @@ class sr_sarra(sr_instances):
         # Local directory (directory created if needed)
 
         self.local_dir  = self.local_dir.replace('//','/')
-        self.local_file = self.local_dir   + '/' + self.filename
+        self.local_file = self.filename
+        self.local_path = self.local_dir   + '/' + self.filename
         self.local_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
 
         # we dont propagate renaming... once used get rid of it

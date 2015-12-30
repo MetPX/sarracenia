@@ -14,7 +14,6 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
@@ -37,13 +36,15 @@
 
 import sys, os, os.path, time, pwd, subprocess
 
-# just make it simple and stupid
+try :    
+         from sr_config         import *
+except : 
+         from sarra.sr_config    import *
 
-# first check action
 
-if sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
-   print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
-   sys.exit(1)
+# sarracenia program span
+
+SR_PROGRAMS=['log2source','log2clusters','source2log','watch','winnow','sarra','subscribe','sender1','sender2','poll']
 
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
@@ -52,19 +53,14 @@ def invoke(confpath):
 
     parts = confpath.split('/')
 
-    if not parts[-2] in ['sarra','subscribe','sender','poll'] : return
+    if not parts[-2] in SR_PROGRAMS: return
 
     program = 'sr_' + parts[-2]
+    config  = re.sub(r'(\.conf)','',parts[-1])
 
-    print("executing %s %s %s" % (program,confpath,sys.argv[-1]))
-
-    pid = os.fork()
-    if pid > 0 :
-       os.wait()
-       return
 
     try :
-             subprocess.check_call([program,confpath,sys.argv[-1]])
+             subprocess.check_call([program,config,sys.argv[-1]])
     except :
              (stype, svalue, tb) = sys.exc_info()
              print("Type: %s, Value: %s" % (stype, svalue))
@@ -74,18 +70,39 @@ def invoke(confpath):
 # recursive scan of ~/.config/sarra/* , invoking process according to
 # the process named from the parent directory
 
-def scandir(dirpath):
-    for name in os.listdir(dirpath) :
-        absname = dirpath+'/'+name
+def scandir(dirconf):
+    if not os.path.isdir(dirconf)       : return
 
-        if os.path.isdir(absname) : scandir(absname)
-        if not '.conf' in name    : continue
+    for confname in os.listdir(dirconf) :
+        if not '.conf' in confname      : continue
+        confpat = dirconf + '/' + confname
  
-        invoke(absname)
+        invoke(confpat)
 
 
-homedir = os.path.expanduser("~")
-confdir = homedir + '/.config/sarra/'
+# ===================================
+# MAIN
+# ===================================
 
-scandir(confdir)
-sys.exit(0)
+def main():
+
+    # first check action
+
+    if sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
+       print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
+       sys.exit(1)
+
+    cfg = sr_config()
+
+    for d in SR_PROGRAMS:
+        scandir(cfg.user_config_dir+os.sep+d)
+
+    sys.exit(0)
+
+
+# =========================================
+# direct invocation
+# =========================================
+
+if __name__=="__main__":
+   main()
