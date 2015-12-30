@@ -13,9 +13,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 29 11:42:11 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -57,12 +55,16 @@ class credential_details:
           self.ssh_keyfile = None
           self.passive     = True
           self.binary      = True
+          self.tls         = False
+          self.prot_p      = False
       def __str__(self):
           s  = ''
           s += self.url.geturl()
           s += " %s" % self.ssh_keyfile
           s += " %s" % self.passive
           s += " %s" % self.binary
+          s += " %s" % self.tls
+          s += " %s" % self.prot_p
           return s
 
 # class credentials
@@ -90,37 +92,18 @@ class sr_credentials:
 
         # already cached
 
-        if urlstr in self.credentials :
+        if self.has(urlstr) :
            self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
            return True, self.credentials[urlstr]
 
-        # create url object
+        # create url object if needed
 
         url = urllib.parse.urlparse(urlstr)
 
-        # resolving credentials
+        # resolved from defined credentials
 
-        for s in self.credentials :
-            details = self.credentials[s]
-            u       = details.url
-
-            if url.scheme        != u.scheme   : continue
-            if url.hostname      != u.hostname : continue
-            if url.port          != u.port     : continue
-            if url.username      != u.username : 
-               if url.username   != None       : continue
-            if url.password      != u.password : 
-               if url.password   != None       : continue
-
-            # note for AMQP... 
-            # amqp users have same credentials for any vhost
-            # so no need to check url.path against u.path
-
-            # resolved : cache it and return
-
-            self.credentials[urlstr] = details
-            self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
-            return True, details
+        ok, details = self.resolve(urlstr, url)
+        if ok : return True, details
 
         # not found... is it valid ?
         if not self.isValid(url) :
@@ -131,6 +114,10 @@ class sr_credentials:
         self.add(urlstr)
         self.logger.debug("sr_credentials get add %s %s" % (urlstr,self.credentials[urlstr]))
         return False,self.credentials[urlstr]
+
+    def has(self, urlstr ):
+        self.logger.debug("sr_credentials has %s" % urlstr)
+        return urlstr in self.credentials
 
     def isTrue(self,S):
         s = S.lower()
@@ -197,7 +184,8 @@ class sr_credentials:
                    self.add(urlstr,details)
                    return
         
-                # parsing options :  name = value
+                # parsing options :  comma separated option names
+                # some option has name = value : like ssh_keyfile
         
                 optline = sline.replace(urlstr,'')
                 optline = optline.strip()
@@ -212,6 +200,9 @@ class sr_credentials:
                     elif  keyword == 'active'      : details.passive     = False
                     elif  keyword == 'binary'      : details.binary      = True
                     elif  keyword == 'ascii'       : details.binary      = False
+                    elif  keyword == 'ssl'         : details.tls         = False
+                    elif  keyword == 'tls'         : details.tls         = True
+                    elif  keyword == 'prot_p'      : details.prot_p      = True
                     else: self.logger.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
@@ -250,6 +241,41 @@ class sr_credentials:
 
         self.logger.debug("credentials = %s\n" % self.credentials)
 
+
+    def resolve(self,urlstr, url = None):
+
+        # create url object if needed
+
+        if not url :
+           url = urllib.parse.urlparse(urlstr)
+
+        # resolving credentials
+
+        for s in self.credentials :
+            details = self.credentials[s]
+            u       = details.url
+
+            if url.scheme        != u.scheme   : continue
+            if url.hostname      != u.hostname : continue
+            if url.port          != u.port     : continue
+            if url.username      != u.username : 
+               if url.username   != None       : continue
+            if url.password      != u.password : 
+               if url.password   != None       : continue
+
+            # note for AMQP... 
+            # amqp users have same credentials for any vhost
+            # so no need to check url.path against u.path
+
+            # resolved : cache it and return
+
+            self.credentials[urlstr] = details
+            self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            return True, details
+
+        return False, None
+
+
 # ===================================
 # self testing
 # ===================================
@@ -258,9 +284,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 def test_sr_credentials():

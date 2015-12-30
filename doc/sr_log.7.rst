@@ -142,7 +142,8 @@ AMQP HEADERS
 
 In addition to the first line of the message containing all mandatory fields, optional 
 elements are stored in AMQP headers (key-value pairs), included in messages when 
-appropriate.   In addition to the headers specified in the sr_post(7) manual page, the following log-specific headers are defined:
+appropriate.   In addition to the headers specified in the sr_post(7) manual page, the 
+following log-specific headers are defined:
 
 message=<msgstring>
 

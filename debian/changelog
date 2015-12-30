@@ -1,3 +1,11 @@
+metpx-sarracenia (2.15.12a4) unstable; urgency=medium
+
+  * Improved documentation
+  * Bug fix in mirroring in sr_subscribe  
+  * Bug fix for on_part, on_file in sr_file
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Wed, 23 Dec 2015 11:15:56 -0500
+
 metpx-sarracenia (2.15.12a3) unstable; urgency=medium
 
   * Incremental release

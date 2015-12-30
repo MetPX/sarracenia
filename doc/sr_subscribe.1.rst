@@ -58,7 +58,7 @@ RABBITMQ CREDENTIAL OPTIONS
 
 The broker option sets all the credential information to connect to the  **RabbitMQ** server 
 
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
 
@@ -110,12 +110,10 @@ AMQP QUEUE SETTINGS
 
 The queue is where the notifications are held on the server for each subscriber.
 
-::
-
-**queue_name    <name>         (default: q_<brokerUser>)** 
-**durable       <boolean>      (default: False)** 
-**expire        <minutes>      (default: None)** 
-**message-ttl   <minutes>      (default: None)** 
+- **queue_name    <name>         (default: q_<brokerUser>)** 
+- **durable       <boolean>      (default: False)** 
+- **expire        <minutes>      (default: None)** 
+- **message-ttl   <minutes>      (default: None)** 
 
 By default, sr_subscribe** creates a queue name that should be unique and starts with  **q_** 
 and is usually followe
@@ -138,35 +136,33 @@ on disk if the broker is restarted.
 The  **message-ttl**  option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-DOWNLOAD CREDENTIALS 
---------------------
-
+CREDENTIALS 
+-----------
 
 The configuration for credentials that concerns product download is stored in the
  ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
 
-::
+- **amqp://user:passwd@host:port/**
+- **amqps://user:passwd@host:port/**
 
-**amqp://user:passwd@host:port/**
-**amqps://user:passwd@host:port/**
+- **sftp://user:passwd@host:port/**
+- **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
 
-**sftp://user:passwd@host:port/**
-**sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
+- **ftp://user:passwd@host:port/**
+- **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
 
-**ftp://user:passwd@host:port/**
-**ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
+- **http://user:passwd@host:port/**
 
-**http://user:passwd@host:port/**
+to implement supported of additional protocols, one would write 
+a **_do_download** script.  the scripts would access the credentials 
+value in the script with the code :   
 
-Should you implement other protocol that the supported ones, 
-you would write a **_do_download** script to support it.
-And if you want, you could add the credentials in the file.
-You would get access to the credentials value in the script
-with the code :   
+- **ok, details = parent.credentials.get(msg.urlcred)**
+- **if details  : url = details.url**
 
-**ok, details = parent.credentials.get(msg.urlcred)**
-**if details  : url = details.url**
-
+.. note::
+   FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
+   non url elements of the entry. details.ssh_keyfile?
 
 DELIVERY SPECIFICATIONS
 -----------------------
@@ -174,16 +170,14 @@ DELIVERY SPECIFICATIONS
 Theses options set what files the user wants and where it will be placed,
 and under which name.
 
-::
-
-**accept    <regexp pattern> (must be set)** 
-**directory <path>           (default: .)** 
-**flatten   <boolean>        (default: false)** 
-**lock      <.string>        (default: .tmp)** 
-**mirror    <boolean>        (default: false)** 
-**overwrite <boolean>        (default: true)** 
-**reject    <regexp pattern> (optional)** 
-**strip     <count>         (default: 0)**
+- **accept    <regexp pattern> (must be set)** 
+- **directory <path>           (default: .)** 
+- **flatten   <boolean>        (default: false)** 
+- **lock      <.string>        (default: .tmp)** 
+- **mirror    <boolean>        (default: false)** 
+- **overwrite <boolean>        (default: true)** 
+- **reject    <regexp pattern> (optional)** 
+- **strip     <count>         (default: 0)**
 
 The  **lock**  option is a suffix given to the file during the download
 and taken away when it is completed... If  **lock**  is set to  **.** 
@@ -318,21 +312,19 @@ RABBITMQ LOGGING
 For each download, an amqp log message is sent back to the broker.
 Should you want to turned them off the option is :
 
-**log_back <boolean>        (default: true)** 
+- **log_back <boolean>        (default: true)** 
 
 
 ADVANCED FEATURES
 -----------------
 
 There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program
+Should you want to implement tasks in various part of the execution of the program:
 
-
-**do_download <script>        (default: None)** 
-**on_message  <script>        (default: None)** 
-**on_file     <script>        (default: None)** 
-**on_parts    <script>        (default: None)** 
-
+- **do_download <script>        (default: None)** 
+- **on_message  <script>        (default: None)** 
+- **on_file     <script>        (default: None)** 
+- **on_parts    <script>        (default: None)** 
 
 A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be:
 (this one being for **on_file**)
@@ -354,7 +346,7 @@ self.on_file = transformer.perform
 The only arguments the script receives it **parent**, which is an instance of
 the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consume from the broker.
+will stop there and another message will be consumed from the broker.
 
 
 DEPRECATED SETTINGS
@@ -362,17 +354,14 @@ DEPRECATED SETTINGS
 
 These settings pertain to previous versions of the client, and have been superceded.
 
-::
-
-
- **host          <broker host> (unsupported)** 
- **amqp-user     <broker user> (unsupported)** 
- **amqp-password <broker pass> (unsupported)** 
- **http-user     <url    user> (now in credentials.conf)** 
- **http-password <url    pass> (now in credentials.conf)** 
- **topic         <amqp pattern> (deprecated)** 
- **exchange_type <type>         (default: topic)** 
- **exchange_key  <amqp pattern> (deprecated)** 
+- **host          <broker host> (unsupported)** 
+- **amqp-user     <broker user> (unsupported)** 
+- **amqp-password <broker pass> (unsupported)** 
+- **http-user     <url    user> (now in credentials.conf)** 
+- **http-password <url    pass> (now in credentials.conf)** 
+- **topic         <amqp pattern> (deprecated)** 
+- **exchange_type <type>         (default: topic)** 
+- **exchange_key  <amqp pattern> (deprecated)** 
 
 SEE ALSO
 --------

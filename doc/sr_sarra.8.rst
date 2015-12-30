@@ -52,10 +52,11 @@ For example::
   **debug true**
 
 would be a demonstration of setting the option to enable more verbose logging.
-The configuration default for all sr_* commands is stored in the ~/.config/sarra/sarra.conf
-file, and while the name given on the command line may be a file name specified as a 
-relative or absolute path, sr_sarra will also look in the ~/.config/sarra/sarra directory 
-for a file named *config.conf*  The configuration in specific file always overrides
+The configuration default for all sr_* commands is stored in 
+the ~/.config/sarra/default.conf file, and while the name given on the command 
+line may be a file name specified as a relative or absolute path, sr_sarra 
+will also look in the ~/.config/sarra/sarra directory for a file 
+named *config.conf*  The configuration in specific file always overrides
 the default, and the command line overrides any configuration file.
 
 
@@ -79,7 +80,7 @@ In the ~/.cache/sarra directory, a number of runtime files are created::
 
 The logs can be written in another directory than the default one with option :
 
-**log            <directory logpath>  (default:~/.cache/sarra)**
+**log            <directory logpath>  (default:~/.cache/sarra/log)**
 
 
 .. NOTE:: 
@@ -90,8 +91,9 @@ The logs can be written in another directory than the default one with option :
 SOURCE NOTIFICATION OPTIONS
 ---------------------------
 
-First, the program needs to set all the rabbitmq configurations for a source broker.
-The broker option sets all the credential information to connect to the **AMQP** server 
+First, the program needs to set all the rabbitmq configurations for a source 
+broker.  The broker option sets all the credential information to connect 
+to the **AMQP** server 
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -109,15 +111,15 @@ QUEUE BINDINGS OPTIONS
 First, the program needs to set all the rabbitmq configurations for a source broker.
 These options define which messages (URL notifications) the program receives:
 
- - **exchange      <name>         (MANDATORY)** 
- - **topic_prefix  <name>         (default: v02.post)**
- - **subtopic      <amqp pattern> (default: #)**
+- **exchange      <name>         (MANDATORY)** 
+- **topic_prefix  <name>         (default: v02.post)**
+- **subtopic      <amqp pattern> (default: #)**
 
 The **exchange** is mandatory.
 
 If **sr_sarra** is to be used to get products from a source 
 (**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
-be name 'xs_'SourceUserName.  SourceUserName is the amqp username the source
+be name 'xs\_'SourceUserName.  SourceUserName is the amqp username the source
 uses to announce his products.
 
 If **sr_sarra** is to be used to dessiminate products from another pump
@@ -151,7 +153,7 @@ The state and actions performed with the messages/products of the broker
 are logged back to it again through AMQP LOG MESSAGES.  When the broker
 pulls products from sources and announces the products on himself, the
 **log_exchange** should be set to 'xlog'.  In a broker to broker dessimination 
-this option should be set to 'xs_'brokerUserName.
+this option should be set to 'xs\_'brokerUserName.
 
 
 QUEUE SETTING OPTIONS
@@ -164,7 +166,7 @@ QUEUE SETTING OPTIONS
 
 These options (except for queue_share)  are all AMQP queue attributes.
 The queue's name is automatically build by the program. The name has
-the form :  q_'brokerUsername'.sr_sarra.'config_name'
+the form :  q\_'brokerUsername'.sr_sarra.'config_name'
 It is easier to have this fix name when it is time to determine if 
 the program such a config on that broker has a problem.
 A program running several instances must set **queue_share** to True
@@ -178,48 +180,51 @@ MESSAGE SELECTION OPTIONS
  - **source_from_exchange <boolean> (default: False)** 
  - **on_message            <script> (default: None)** 
 
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding, or the 
-more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
-difference being that the AMQP filtering is applied by the broker itself, saving the 
-notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
-messages sent by the broker to the subscriber.  In other words,  **accept/reject**  are 
-client side filters, whereas  **subtopic**  is server side filtering.  
+One has the choice of filtering using  **subtopic**  with only AMQP's limited 
+wildcarding, or the more powerful regular expression based  **accept/reject**  
+mechanisms described below.  The difference being that the AMQP filtering is 
+applied by the broker itself, saving the notices from being delivered to the 
+client at all. The  **accept/reject**  patterns apply to messages sent by the 
+broker to the subscriber.  In other words,  **accept/reject**  are client 
+side filters, whereas  **subtopic**  is server side filtering.  
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
-client side mechanisms, saving bandwidth and processing for all.
+It is best practice to use server side filtering to reduce the number of 
+announcements sent to the client to a small superset of what is relevant, and 
+perform only a fine-tuning with the client side mechanisms, saving bandwidth 
+and processing for all.
 
-**sr_sarra** checks, in the received message, the destination clusters. A message without this
-information in the header is discarted as incorrect.  It compares it to his cluster name, his
-cluster_alias list, and his gateway list (options CLUSTER,cluster_alias and gateway_for 
-set in default.conf).  If the message was not designated to be process by this instance,
-the message is discarted. 
+**sr_sarra** checks, in the received message, the destination clusters. A 
+message without this information in the header is discarted as incorrect.  It 
+compares it to his cluster name, his cluster_alias list, and his gateway list 
+(options CLUSTER,cluster_alias and gateway_for set in default.conf).  If the 
+message was not designated to be process by this instance, the message is 
+discarded. 
 
-All messages should contain the entry 'source'in the message.headers. But this restriction
-does not apply for suppliers (**sr_post**,**sr_watch**). In this case, **sr_sarra** would be
-used with option **source_from_exchange**  and if the message is processed and published, its
-'source' would be set to the suppliers broker's username.
+All messages should contain the entry 'source'in the message.headers. But 
+this restriction does not apply for suppliers (**sr_post**,**sr_watch**). In 
+this case, **sr_sarra** would be used with option **source_from_exchange**  
+and if the message is processed and published, its 'source' would be set to 
+the suppliers broker's username.
 
-The user can provide an **on_message** script. When a message is accepted up to this level of
-verification, the **on_message** script is called... with the **sr_sarra** class instance as
-argument.  The script can perform whatever you want... if it returns False, the processing of
-the message will stop there. If True, the program will resume the work from there.
-
+The user can provide an **on_message** script. When a message is accepted up 
+to this level of verification, the **on_message** script is called... with 
+the **sr_sarra** class instance as argument.  The script can perform whatever 
+you want... if it returns False, the processing of the message will stop 
+there. If True, the program will continue processing from there.  
 
 DESTINATION OPTIONS
 -------------------
 
-Theses options set where and how the program will place the files to be downloaded.
+Theses options set where and how the program will place the files to be 
+downloaded.
 
-::
-
-**document_root <path>           (default: .)** 
-**mirror        <boolean>        (default: true)** 
-**strip         <integer>        (default: 0)** 
-**overwrite     <boolean>        (default: true)** 
-**inplace       <boolean>        (default: true)** 
-**do_download   <script>         (default: None)**
-**on_file       <script>         (default: None)**
+- **document_root <path>           (default: .)** 
+- **mirror        <boolean>        (default: true)** 
+- **strip         <integer>        (default: 0)** 
+- **overwrite     <boolean>        (default: true)** 
+- **inplace       <boolean>        (default: true)** 
+- **do_download   <script>         (default: None)**
+- **on_file       <script>         (default: None)**
 
 The **document_root** sets a directory the root of the download tree.
 This directory never appears in the newly created amqp notifications.
@@ -241,54 +246,57 @@ become :
 
 path = document_root + filename
 
-Once the path is defined in the program, if the **overwrite** option is set to True,'
-the program checks if the file is already there. If it is, it computes the checksum
-on it according to the notification'settings. If the local file checksum matches the
-one of the notification, the file is not downloaded, the incoming notification is 
-acknowledge, and the file is not announced. If the file is not there, or the checksum
-differs, the file is overwritten and a new notification is sent to the destination broker.
+Once the path is defined in the program, if the **overwrite** option is set to 
+True, the program checks if the file is already there. If it is, it computes 
+the checksum on it according to the notification'settings. If the local file 
+checksum matches the one of the notification, the file is not downloaded, the 
+incoming notification is acknowledge, and the file is not announced. If the 
+file is not there, or the checksum differs, the file is overwritten and a 
+new notification is sent to the destination broker.
 
-The **inplace** option defaults to True. The program receiving notifications of file 
-parts, will put these parts inplace in the file in an orderly fashion. Each parts,
-once inserted in the file, is notified to the destination broker.
+The **inplace** option defaults to True. The program receiving notifications 
+of file parts, will put these parts inplace in the file in an orderly fashion. 
+Each part, once inserted in the file, is announced to subscribers.
 
-The **do_download** option defaults to None. If used it defines a script that will be called
-when an unsupported protocol is received in a message. The user can use all the **sr_sarra**
-class elements including the message in order to set the proper download of the product.
+The **do_download** option defaults to None. If used it defines a script that 
+will be called when an unsupported protocol is received in a message. The user 
+can use all the **sr_sarra** class elements including the message in order to 
+set the proper download of the product.
 
-The **on_file** option defaults to None. If used it defines a script that will be called
-once the file is downloaded. The user can do whatever he wants with the downloaded file
-perform checks... etc. Again it should return True to tell the program to resume processing.
-If false, it will continue to the next message.
+The **on_file** option defaults to None. If used it defines a script that will 
+be called once the file is downloaded. The user can do whatever he wants with 
+the downloaded file perform checks... etc. Again it should return True to tell 
+the program to resume processing.  If false, it will continue to the next 
+message.
 
 .. NOTE:: 
   - FIXME: destfn script  : should it support a destination script
   - FIXME: renamer script : should it support a file renamer script
 
 
-DOWNLOAD CREDENTIALS 
---------------------
+CREDENTIALS 
+-----------
 
-All credentials to be able to download the product from the URL
-given in the message, should it require it, must be defined in
-the file ~/.conf/sarra/credentials.conf. You can also put the broker's
-credentials there too, and specify them in the configuration file
-with the minimal requiered fields.  The format is one entry per line.
-Here some examples:
+Ther username and password or keys used to access servers are credentials.
+The confidential parts of credentials are stored only in ~/.conf/sarra/credentials.conf.  This includes all download, upload, or broker passwords and settings 
+needed by the various configurations.  The format is one entry per line.  Examples:
 
-**amqp://user1:password1@host/**
-**amqps://user2:password2@host:5671/dev**
+- **amqp://user1:password1@host/**
+- **amqps://user2:password2@host:5671/dev**
 
-**http://user3:password3@host**
-**https://user4:password4@host:8282**
+- **http://user3:password3@host**
+- **https://user4:password4@host:8282**
 
-**sftp://user5:password5@host**
-**sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+- **sftp://user5:password5@host**
+- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
 
-**ftp://user7:password7@host  passive,binary**
-**ftp://user8:password8@host:2121  active,ascii**
+- **ftp://user7:password7@host  passive,binary**
+- **ftp://user8:password8@host:2121  active,ascii**
 
-
+In other configuration files or on the command line, the url simply lacks the 
+password or key specification.  The url given in the other files is looked 
+up in credentials.conf. 
+ 
 OUTPUT NOTIFICATION OPTIONS
 ---------------------------
 
@@ -300,7 +308,7 @@ The post_broker option sets all the credential information to connect to the
 **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
-
+      FIXME: do not understand following parenthetical
       (default: manager defined in default.conf) 
 
 Once connected to the source AMQP broker, the program builds notifications after
@@ -317,18 +325,18 @@ host, port, and optionally, the credentials. It is a good practice not to
 notify the credentials and separately inform the consumers about it.
 
 If **recompute_chksum** is set to True, the checksum will be recomputed
-on file download and value will overwrite the one from the incoming amqp message.  
-If a file is repeatedly modified, the download may occur after the file is overwritten
-but with its old notification... resulting in a checksum mismatch and potential
-looping in a network of pumps.
+on file download and value will overwrite the one from the incoming amqp 
+message.  If a file is repeatedly modified, the download may occur after the 
+file is overwritten but with its old notification... resulting in a checksum 
+mismatch and potential looping in a network of pumps.
 
 .. NOTE::
    FIXME:  this is pathological case.  It ignores the incoming checksum.
    so data is forwarded in spite of checksum mismatch. We should think more about this.
    not sure this option is a good thing.
 
-The **post_exchange** option set under which exchange the new notification will be posted.
-Im most cases it is 'xpublic'.
+The **post_exchange** option set under which exchange the new notification 
+will be posted.  Im most cases it is 'xpublic'.
 
 Whenever a publish happens for a product, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup.

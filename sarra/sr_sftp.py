@@ -13,9 +13,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Dec 29 07:52:45 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -34,79 +32,311 @@
 #
 #
 
-import paramiko, os,sys
+import paramiko, os,sys,time
 from   paramiko import *
 
-import logging
+#============================================================
+# sftp protocol in sarracenia supports/uses :
+#
+# connect
+# close
+#
+# if a source    : get    (remote,local)
+#                  ls     ()
+#                  cd     (dir)
+#                  delete (path)
+#
+# if a sender    : put    (local,remote)
+#                  cd     (dir)
+#                  mkdir  (dir)
+#                  umask  ()
+#                  chmod  (perm)
+#                  rename (old,new)
+#
+# SFTP : supports remote file seek... so 'I' part possible
+#
+
+class sr_sftp():
+    def __init__(self, parent) :
+        self.logger = parent.logger
+        self.logger.debug("sr_sftp __init__")
+
+        self.parent      = parent 
+        self.connected   = False 
+        self.sftp        = None
+
+    # cd
+    def cd(self, path):
+        self.logger.debug("sr_sftp cd %s" % path)
+        self.sftp.chdir(self.originalDir)
+        self.sftp.chdir(path)
+        self.pwd = path
+
+    # chmod
+    def chmod(self,perm,path):
+        self.logger.debug("sr_sftp chmod %s %s" % (str(perm),path))
+        self.sftp.chmod(path,eval('0o'+str(perm)))
+
+    # close
+    def close(self):
+        self.logger.debug("sr_sftp close")
+        self.connected = False
+        try   : self.sftp.close()
+        except: pass
+        self.sftp = None
+        try   : self.ssh.close()
+        except: pass
+        self.ssh  = None
+
+    # connect...
+    def connect(self):
+        self.logger.debug("sr_sftp connect %s" % self.parent.destination)
+
+        self.connected   = False
+        self.destination = self.parent.destination
+
+        try:
+                ok, details = self.parent.credentials.get(self.destination)
+                if details  : url = details.url
+
+                host        = url.hostname
+                port        = url.port
+                user        = url.username
+                password    = url.password
+
+                self.ssh_keyfile = details.ssh_keyfile
+                if self.ssh_keyfile : password = None
+
+                self.kbytes_ps = 0
+                self.bufsize   = 8192
+
+                if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
+                if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Unable to get credentials for %s" % self.destination)
+                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+
+        try:
+                if port == '' or port == None : port = 22
+
+                paramiko.util.logging.getLogger().setLevel(logging.WARN)
+
+                self.ssh = paramiko.SSHClient()
+                self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.ssh.connect(host,port,user,password,pkey=None,key_filename=self.ssh_keyfile,timeout=None)
+
+                #if ssh_keyfile != None :
+                #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
+
+                sftp = self.ssh.open_sftp()
+
+                sftp.chdir('.')
+                self.originalDir = sftp.getcwd()
+                self.pwd         = self.originalDir
+
+                self.connected = True
+
+                self.sftp = sftp
+
+                return True
+
+        except:
+            (stype, svalue, tb) = sys.exc_info()
+            self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (host,user, stype,svalue))
+        return False
+
+    # delete
+    def delete(self, path):
+        self.logger.debug("sr_sftp rm %s" % path)
+        self.sftp.remove(path)
+
+    # get
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
+        self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
+
+        if length == 0 :
+           self.sftp.get(remote_file,local_file)
+           return
+
+        if not os.path.isfile(local_file) :
+           fp = open(local_file,'w')
+           fp.close()
+
+        fp = open(local_file,'r+b')
+        if local_offset != 0 : fp.seek(local_offset,0)
+
+        rfp = self.sftp.file(remote_file,'rb',self.bufsize)
+        if remote_offset != 0 : rfp.seek(remote_offset,0)
+
+        nc = int(length/self.bufsize)
+        r  = length%self.bufsize
+
+        # read/write bufsize "nc" times
+        i  = 0
+        while i < nc :
+              chunk = rfp.read(self.bufsize)
+              fp.write(chunk)
+              i = i + 1
+
+        # remaining
+        if r > 0 :
+           chunk = rfp.read(r)
+           fp.write(chunk)
+
+        rfp.close()
+        fp.close()
+
+    # ls
+    def ls(self):
+        self.logger.debug("sr_sftp ls")
+        self.entries  = {}
+        dir_attr = self.sftp.listdir_attr()
+        for index in range(len(dir_attr)):
+            attr = dir_attr[index]
+            line = attr.__str__()
+            self.line_callback(line)
+        self.logger.debug("sr_sftp ls = %s" % self.entries )
+        return self.entries
+
+    # line_callback: ls[filename] = 'stripped_file_description'
+    def line_callback(self,iline):
+        self.logger.debug("sr_sftp line_callback %s" % iline)
+
+        oline  = iline
+        oline  = oline.strip('\n')
+        oline  = oline.strip()
+        oline  = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        fil  = opart2[-1]
+        line = ' '.join(opart2)
+
+        self.entries[fil] = line
+
+    # mkdir
+    def mkdir(self, remote_dir):
+        self.logger.debug("sr_sftp mkdir %s" % remote_dir)
+        self.sftp.mkdir(remote_dir,0o775)
+
+    # put
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0):
+        self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
+
+        if length == 0 :
+           self.sftp.put(local_file,remote_file)
+           return
+
+        cb        = None
+
+        if self.kbytes_ps > 0.0 :
+           cb = self.trottle
+           d1,d2,d3,d4,now = os.times()
+           self.tbytes     = 0.0
+           self.tbegin     = now + 0.0
+           self.bytes_ps   = self.kbytes_ps * 1024.0
+
+        if not os.path.isfile(local_file) :
+           fp = open(local_file,'w')
+           fp.close()
+
+        fp = open(local_file,'r+b')
+        if local_offset != 0 : fp.seek(local_offset,0)
+
+        rfp = self.sftp.file(remote_file,'wb',self.bufsize)
+        if remote_offset != 0 : rfp.seek(remote_offset,0)
+
+        nc = int(length/self.bufsize)
+        r  = length%self.bufsize
+
+        # read/write bufsize "nc" times
+        i  = 0
+        while i < nc :
+              chunk = fp.read(self.bufsize)
+              rfp.write(chunk)
+              if cb : cb(chunk)
+              i = i + 1
+
+        # remaining
+        if r > 0 :
+           chunk = fp.read(r)
+           rfp.write(chunk)
+           if cb : cb(chunk)
+
+        fp.close()
+        rfp.close()
+
+    # rename
+    def rename(self,remote_old,remote_new) :
+        self.logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
+        self.sftp.rename(remote_old,remote_new)
+
+    # rmdir
+    def rmdir(self,path) :
+        self.logger.debug("sr_sftp rmdir %s " % path)
+        self.sftp.rmdir(path)
+
+    # trottle
+    def trottle(self,buf) :
+        self.logger.debug("sr_sftp trottle")
+        self.tbytes = self.tbytes + len(buf)
+        span = self.tbytes / self.bytes_ps
+        d1,d2,d3,d4,now = os.times()
+        rspan = now - self.tbegin
+        if span > rspan :
+           time.sleep(span-rspan)
+
+
+#============================================================
+#
+# wrapping of sr_sftp in sftp_download
+#
+#============================================================
 
 def sftp_download( parent ):
+    logger = parent.logger
+    msg    = parent.msg
 
-    msg         = parent.msg
     url         = msg.url
     urlstr      = msg.urlstr
-
-    ok, details = parent.credentials.get(msg.urlcred)
-    if details  : url = details.url
-
-    host        = url.hostname
-    port        = url.port
-    user        = url.username
-    password    = url.password
-    ssh_keyfile = details.ssh_keyfile
-
     token       = msg.url.path[1:].split('/')
-    
     cdir        = '/'.join(token[:-1])
-    cfile       = token[-1]
+    remote_file = token[-1]
 
     try :
+            parent.destination = msg.urlcred
+            sftp = sr_sftp(parent)
+            sftp.connect()
+            sftp.cd(cdir)
 
-            paramiko.util.logging.getLogger().setLevel(logging.WARN)
-
-            t = None
-            if port == None : 
-               t = paramiko.Transport(host)
-            else:
-               t_args = (host,port)
-               t = paramiko.Transport(t_args)
-
-            if ssh_keyfile != None :
-               key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
-               t.connect(username=user,pkey=key)
-            else:
-               t.connect(username=user,password=password)
-
-            sftp = paramiko.SFTP.from_transport(t)
-            sftp.chdir(cdir)
+            remote_offset = 0
+            if  msg.partflg == 'i': remote_offset = msg.offset
 
             str_range = ''
             if msg.partflg == 'i' :
-               str_range = 'bytes=%d-%d'%(msg.offset,msg.offset+msg.length-1)
+               str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+msg.length-1)
 
             #download file
 
             msg.logger.info('Downloads: %s %s into %s %d-%d' % 
                 (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
 
+            sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length)
 
-            response  = sftp.file(cfile,'rb',msg.bufsize)
-            if msg.partflg == 'i' :
-               response.seek(msg.offset,0)
-               ok = sftp_write_length(response,msg)
-            else :
-               ok = sftp_write(response,msg)
+            msg.log_publish(201,'Downloaded')
 
-            try    : sftp.close()
-            except : pass
-            try    : t.close()
-            except : pass
+            sftp.close()
 
-            return ok
+            return True
             
     except:
             try    : sftp.close()
-            except : pass
-            try    : t.close()
             except : pass
 
             (stype, svalue, tb) = sys.exc_info()
@@ -118,59 +348,114 @@ def sftp_download( parent ):
     msg.log_publish(499,'sftp download problem')
 
     return False
+                 
+# ===================================
+# self_test
+# ===================================
 
-# read all file no worry
+try    : from sr_config         import *
+except : from sarra.sr_config   import *
 
-def sftp_write(req,msg):
-    if not os.path.isfile(msg.local_file) :
-       fp = open(msg.local_file,'w')
-       fp.close
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
 
-    fp = open(msg.local_file,'r+b')
-    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+def self_test():
 
-    while True:
-          chunk = req.read(msg.bufsize)
-          if not chunk : break
-          fp.write(chunk)
+    logger = test_logger()
 
-    fp.close()
+    # config setup
+    cfg = sr_config()
+    cfg.defaults()
+    cfg.general()
+    cfg.debug  = True
+    opt1 = "destination sftp://localhost"
+    cfg.option( opt1.split()  )
+    cfg.logger = logger
 
-    msg.log_publish(201,'Downloaded')
+    try:
+           sftp = sr_sftp(cfg)
+           sftp.connect()
+           sftp.mkdir("tztz")
+           sftp.chmod(775,"tztz")
+           sftp.cd("tztz")
+       
+           f = open("aaa","wb")
+           f.write(b"1\n")
+           f.write(b"2\n")
+           f.write(b"3\n")
+           f.close()
+       
+           sftp.put("aaa", "bbb")
+           ls = sftp.ls()
+           logger.info("ls = %s" % ls )
+       
+           sftp.chmod(775,"bbb")
+           ls = sftp.ls()
+           logger.info("ls = %s" % ls )
+       
+           sftp.rename("bbb", "ccc")
+           ls = sftp.ls()
+           logger.info("ls = %s" % ls )
+       
+           sftp.get("ccc", "bbb")
+           f = open("bbb","rb")
+           data = f.read()
+           f.close()
+       
+           if data != b"1\n2\n3\n" :
+              logger.error("sr_sftp1 TEST FAILED")
+              sys.exit(1)
+       
+           sftp.delete("ccc")
+           logger.info("%s" % sftp.originalDir)
+           sftp.cd("")
+           logger.info("%s" % sftp.sftp.getcwd())
+           sftp.rmdir("tztz")
 
-    return True
+           sftp.put("aaa","bbb",0,0,2)
+           sftp.put("aaa","bbb",2,4,2)
+           sftp.put("aaa","bbb",4,2,2)
+           sftp.get("bbb","bbb",2,2,2)
+           sftp.delete("bbb")
+           f = open("bbb","rb")
+           data = f.read()
+           f.close()
+       
+           if data != b"1\n3\n3\n" :
+              logger.error("sr_sftp TEST FAILED ")
+              sys.exit(1)
+       
+           sftp.close()
+    except:
+           (stype, svalue, tb) = sys.exc_info()
+           logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+           logger.error("sr_sftp TEST FAILED")
+           sys.exit(2)
 
+    os.unlink('aaa')
+    os.unlink('bbb')
 
-# read exact length
+    print("sr_sftp TEST PASSED")
+    sys.exit(0)
 
-def sftp_write_length(req,msg):
-    # file should exists
-    if not os.path.isfile(msg.local_file) :
-       fp = open(msg.local_file,'w')
-       fp.close()
+# ===================================
+# MAIN
+# ===================================
 
-    # file open read/modify binary
-    fp = open(msg.local_file,'r+b')
-    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+def main():
 
-    nc = int(msg.length/msg.bufsize)
-    r  =     msg.length%msg.bufsize
+    self_test()
+    sys.exit(0)
 
-    # read/write bufsize "nc" times
-    i  = 0
-    while i < nc :
-          chunk = req.read(msg.bufsize)
-          fp.write(chunk)
-          i = i + 1
+# =========================================
+# direct invocation : self testing
+# =========================================
 
-    # remaining
-    if r > 0 :
-       chunk = req.read(r)
-       fp.write(chunk)
-
-    fp.close()
-
-    msg.log_publish(201,'Downloaded')
-
-    return True
-
+if __name__=="__main__":
+   main()

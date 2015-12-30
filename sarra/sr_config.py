@@ -13,7 +13,6 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
@@ -600,7 +599,12 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['destination','-destination','--destination'] :
+                     urlstr           = words[1]
+                     ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words[1]
+                     if not ok :
+                        self.logger.error("problem with destination (%s)" % urlstr)
+                        needexit = True
                      n = 2
 
                 elif words[0] in ['exchange','-ex','--exchange'] :
