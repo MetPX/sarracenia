@@ -263,9 +263,16 @@ class sr_credentials:
             if url.password      != u.password : 
                if url.password   != None       : continue
 
-            # note for AMQP... 
+            # for AMQP...  vhost checking
             # amqp users have same credentials for any vhost
-            # so no need to check url.path against u.path
+            # default /  may not be set...
+            if 'amqp' in url.scheme :
+                url_vhost = url.path
+                u_vhost   = u.path
+                if url_vhost == '' : url_vhost = '/'
+                if u_vhost   == '' : u_vhost   = '/'
+
+                if url_vhost != u_vhost : continue
 
             # resolved : cache it and return
 
@@ -284,9 +291,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
-          self.info    = print
+          self.info    = self.silence
           self.warning = print
 
 def test_sr_credentials():

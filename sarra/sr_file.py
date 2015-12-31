@@ -185,9 +185,8 @@ def file_reassemble(parent):
           # setting block i in message
 
           msg.current_block = i
-          partstr = '%s,%d,%d,%d,%d' %\
-                    ('i',msg.chunksize,msg.block_count,msg.remainder,msg.current_block)
-          msg.set_parts_str(partstr)
+          msg.set_parts('i',msg.chunksize,msg.block_count,msg.remainder,msg.current_block)
+          #? redo sum too ?
           msg.set_suffix()
 
           # set part file
