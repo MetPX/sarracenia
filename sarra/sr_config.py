@@ -260,6 +260,7 @@ class sr_config:
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
 
+        self.source               = None
         self.source_from_exchange = False
 
         # general cluster stuff

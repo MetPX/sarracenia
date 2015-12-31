@@ -191,18 +191,13 @@ class sr_log2clusters(sr_instances):
 
     def __on_post__(self):
 
-        ok = self.msg.publish( )
-
         # should always be ok
-        if ok :
-              self.logger.info ("published to %s %s"   % (self.cluster_broker.geturl(),self.msg.exchange))
-              self.logger.debug("Published topic   %s" % self.msg.topic)
-              self.logger.debug("Published notice  %s" % self.msg.notice)
-              self.logger.debug("Published headers %s" % self.msg.hdrstr)
+
+        ok = self.msg.publish( )
 
         # invoke user provided on_post anyway
 
-        if self.on_post : ok = self.on_post(self)
+        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 

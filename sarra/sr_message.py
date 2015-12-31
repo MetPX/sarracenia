@@ -213,22 +213,26 @@ class sr_message():
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
     def publish(self):
+        ok = False
+
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
         if self.publisher != None :
-           self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
-           self.set_hdrstr()
-           self.logger.debug("Message pub exchange %s topic %s " % (self.exchange,self.topic))
-           self.logger.debug("Message pub notice   %s"           % self.notice )
-           self.logger.debug("Message pub headers  %s"           % self.hdrstr )
-           return True
-        else:
-           self.set_hdrstr()
-           self.logger.error("Publisher not set in message")
-           self.logger.error("Message lost exchange %s topic %s " % (self.exchange,self.topic))
-           self.logger.error("Message lost notice   %s"           % self.notice )
-           self.logger.error("Message lost headers  %s"           % self.hdrstr )
-        return False
+           ok = self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
+
+        if ok :
+                self.printlog = self.logger.info
+                self.printlog("message published :")
+        else  :
+                self.printlog = self.logger.error
+                self.printlog("Could not publish message :")
+
+        self.set_hdrstr()
+        self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
+        self.printlog("notice   %s"           % self.notice )
+        self.printlog("headers  %s"           % self.hdrstr )
+
+        return ok
 
     def set_from_cluster(self,from_cluster=None):
         if from_cluster != None :
@@ -248,13 +252,11 @@ class sr_message():
     def set_hdrstr(self):
         self.hdrstr  = ''
 
-        if self.partstr != None :
-           self.headers['parts']   = self.partstr
-           self.hdrstr  += '%s=%s ' % ('parts',self.partstr)
+        if 'parts' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('parts',self.headers['parts'])
 
-        if self.sumstr  != None :
-           self.headers['sum']     = self.sumstr
-           self.hdrstr  += '%s=%s ' % ('sum',self.sumstr)
+        if 'sum' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('sum', self.headers['sum'])
 
         if 'from_cluster' in self.headers :
            self.hdrstr  += '%s=%s ' % ('from_cluster',self.headers['from_cluster'])
@@ -412,16 +414,15 @@ class sr_message():
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
     def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
-        self.partflg       =  partflg 
-        self.chunksize     =  chunksize
-        self.block_count   =  block_count
-        self.remainder     =  remainder
-        self.current_block =  current_block
-        self.partstr       =  None
-        if partflg         == None : return
-        self.partstr       = '%s,%d,%d,%d,%d' %\
-                             (partflg,chunksize,block_count,remainder,current_block)
-        self.lastchunk     = current_block == block_count-1
+        self.partflg          = partflg 
+        self.chunksize        = chunksize
+        self.block_count      = block_count
+        self.remainder        = remainder
+        self.current_block    = current_block
+        self.partstr          = '%s,%d,%d,%d,%d' %\
+                                (partflg,chunksize,block_count,remainder,current_block)
+        self.lastchunk        = current_block == block_count-1
+        self.headers['parts'] = self.partstr
 
     def set_parts_str(self,partstr):
 
@@ -472,11 +473,10 @@ class sr_message():
            del self.headers['source']
 
     def set_sum(self,sumflg='d',checksum=0):
-        self.sumflg    =  sumflg
-        self.checksum  =  checksum
-        self.sumstr    =  None
-        if self.sumflg == None : return
-        self.sumstr    = '%s,%s' % (sumflg,checksum)
+        self.sumflg   =  sumflg
+        self.checksum =  checksum
+        self.sumstr   = '%s,%s' % (sumflg,checksum)
+        self.headers['sum'] = self.sumstr
 
     def set_sum_str(self,sumstr):
         self.sumflg  = None

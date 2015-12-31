@@ -36,14 +36,14 @@
 import os,random,sys
 
 try :
-         from sr_amqp         import *
-         from sr_config       import *
-         from sr_message      import *
-         from sr_util         import *
+         from sr_config        import *
+         from sr_message       import *
+         from sr_poster        import *
+         from sr_util          import *
 except :
-         from sarra.sr_amqp    import *
          from sarra.sr_config  import *
          from sarra.sr_message import *
+         from sarra.sr_poster  import *
          from sarra.sr_util    import *
 
 class sr_post(sr_config):
@@ -58,28 +58,19 @@ class sr_post(sr_config):
            self.logger.error("url required")
            sys.exit(1)
 
-        self.chkclass = Checksum()
-        self.chkclass.from_list(self.sumflg)
-        self.chksum = self.chkclass.checksum
-
         # sarra exchange default value is xs_username
         # username being the broker's
 
         if self.exchange == None :
            self.exchange = 'xs_%s' % self.broker.username
 
-        self.msg = sr_message(self.logger)
-        self.msg.set_exchange(self.exchange)
-        self.msg.set_flow(self.flow)
-        self.msg.set_flow(self.flow)
-        self.msg.set_to_clusters(self.to_clusters)
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
            self.help()
            sys.exit(1)
 
     def close(self):
-        self.hc_post.close()
+        self.poster.close()
 
     def configure(self):
 
@@ -109,44 +100,66 @@ class sr_post(sr_config):
 
     def connect(self):
 
-        self.hc_post      = HostConnect( logger = self.logger )
-        self.hc_post.set_url( self.broker )
-
         # sr_post : no loop to reconnect to broker
 
+        self.loop = True
         if self.program_name == 'sr_post' :
-           self.hc_post.loop = False
+           self.loop = False
+
+        # message
+
+        self.msg = sr_message( self.logger )
+
+        # publisher
+
+        self.post_broker   = self.broker
+        self.poster        = sr_poster(self, self.loop)
+        self.msg.publisher = self.poster.publisher
+
                                    
-        self.hc_post.connect()
-
-        self.pub    = Publisher(self.hc_post)
-        self.pub.build()
-
     def help(self):
-        self.logger.info("Usage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-b   <broker>          default:amqp://guest:guest@localhost/")
-        self.logger.info("-c   <config_file>")
-        self.logger.info("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : self.logger.info("-e   <events>          default:IN_CLOSE_WRITE\n")
-        self.logger.info("-ex  <exchange>        default:xs_\"broker.username\"")
-        self.logger.info("-f   <flow>            default:None\n")
-        self.logger.info("-h|--help\n")
-        self.logger.info("-l   <logpath>         default:stdout")
-        self.logger.info("-p   <parts>           default:1")
-        self.logger.info("-to  <name1,name2,...> defines target clusters, mandatory")
-        self.logger.info("-tp  <topic_prefix>    default:v02.post")
-        self.logger.info("-sub <subtopic>        default:'path.of.file'")
-        self.logger.info("-rn  <rename>          default:None")
-        self.logger.info("-sum <sum>             default:d")
-        self.logger.info("DEBUG:")
-        self.logger.info("-debug")
-        self.logger.info("-r  : randomize chunk posting")
-        self.logger.info("-rr : reconnect between chunks")
+        print("\nUsage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
+        print("OPTIONS:")
+        print("-b   <broker>          default:amqp://guest:guest@localhost/")
+        print("-c   <config_file>")
+        print("-dr  <document_root>   default:None")
+        if self.program_name == 'sr_watch' : print("-e   <events>          default:IN_CLOSE_WRITE\n")
+        print("-ex  <exchange>        default:xs_\"broker.username\"")
+        print("-f   <flow>            default:None\n")
+        print("-h|--help\n")
+        print("-l   <logpath>         default:stdout")
+        print("-p   <parts>           default:1")
+        print("-to  <name1,name2,...> defines target clusters, mandatory")
+        print("-tp  <topic_prefix>    default:v02.post")
+        print("-sub <subtopic>        default:'path.of.file'")
+        print("-rn  <rename>          default:None")
+        print("-sum <sum>             default:d")
+        print("-on_post <script>      default:None")
+        print("DEBUG:")
+        print("-debug")
+        print("-r  : randomize chunk posting")
+        print("-rr : reconnect between chunks\n")
 
     def instantiate(self,i=0):
         self.instance = i
         self.setlog()
+
+    # =============
+    # __on_post__ internal posting of message
+    # =============
+
+    def __on_post__(self):
+
+        # should always be ok
+
+        ok = self.msg.publish( )
+
+        # invoke on_post when provided anyway
+
+        if ok and self.on_post : ok = self.on_post(self)
+
+        return ok
+
 
     def posting(self):
 
@@ -173,40 +186,21 @@ class sr_post(sr_config):
            self.logger.error("File not found %s " % filepath )
            return False
 
-        # verify part file... if it is ok
-
-        if self.partflg == 'p' :
-           ok,message = self.verify_p_file(filepath)
-           if not ok:
-              self.logger.error("partflg set to p but %s for file  %s " % (message,filepath))
-              return False
-
         # rename path given with no filename
 
         rename = self.rename
         if self.rename != None and self.rename[-1] == os.sep :
            rename += os.path.basename(self.url.path)
 
-        # make sure a part file has a part name
-        if self.rename != None and self.partflg == 'p' :
-           if not self.msg.suffix in rename :
-              rename += self.msg.suffix
-
-        self.msg.set_rename(rename)
-
-        #
-
-        self.logger.info("broker(%s) user(%s) vhost(%s)  exchange(%s)" % \
-        (self.broker.hostname,self.broker.username,self.broker.path,self.exchange) )
+        filename = os.path.basename(filepath)
 
         # ==============
         # delete event...
         # ==============
 
         if self.event == 'IN_DELETE' :
-           self.msg.set_parts(None)
-           self.msg.set_sum(sumflg='R')
-           self.publish()
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
+           if not ok : sys.exit(1)
            return
 
         # ==============
@@ -214,79 +208,27 @@ class sr_post(sr_config):
         # ==============
 
         if self.partflg == 'p' :
-           blocksize, block_count, remainder, current_block, sum_data = self.p_chunk
-           self.msg.set_parts('p', blocksize, block_count, remainder, current_block)
-           self.msg.set_sum(self.sumflg,sum_data)
-           self.publish()
+           ok = self.poster.post_local_part(filepath,self.exchange,self.url,self.to_clusters,rename)
+           if not ok : sys.exit(1)
            return
 
         # ==============
-        # Chunk set up
+        # blocksize != 0
         # ==============
 
-        chunk  = Chunk(self.blocksize,self.chksum,filepath)
-        N      = chunk.get_Nblock()
+        if self.blocksize != 0 :
+           ok = self.poster.post_local_inplace(filepath,self.exchange,self.url, \
+                                                  self.to_clusters,self.blocksize,self.sumflg,rename)
+           if not ok : sys.exit(1)
+           return
 
         # ==============
-        # Randomize
+        # regular file
         # ==============
 
-        rparts = list(range(0,N))
-
-        # randomize chunks
-        if self.randomize and N>1 :
-           i = 0
-           while i < N/2+1 :
-               j         = random.randint(0,N-1)
-               tmp       = rparts[j]
-               rparts[j] = rparts[i]
-               rparts[i] = tmp
-               i = i + 1
-
-        # ==============
-        # loop on chunk
-        # ==============
-
-        i  = 0
-        while i < N:
-
-            # build message
- 
-            c = chunk.get( rparts[i] )
-            blocksize, block_count, remainder, current_block, sum_data = c
-
-            self.msg.set_parts(self.partflg, blocksize, block_count, remainder, current_block)
-            self.msg.set_sum(self.sumflg,sum_data)
-
-            self.publish()
-
-            i = i + 1
-
-            # reconnect ?
-            if self.reconnect and i<N :
-               self.logger.info("Reconnect")
-               self.hc_post.reconnect()
-
-    def publish(self):
-        if self.subtopic == None :
-           self.msg.set_topic_url(self.topic_prefix,self.url)
-        else :
-           self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
-
-        self.msg.set_notice(self.url)
-        self.msg.set_hdrstr()
-        self.logger.info("%s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
-        ok = self.pub.publish( self.msg.exchange, self.msg.topic, self.msg.notice, self.msg.headers )
-        if not ok : sys.exit(1)
-        self.logger.info("published")
-
-    def verify_p_file(self,filepath):
-        ok,message = self.msg.verify_part_suffix(filepath)
-
-        if ok :
-           self.p_chunk = (self.msg.chunksize, self.msg.block_count, self.msg.remainder, self.msg.current_block, self.msg.checksum)
-
-        return ok,message
+        ok = self.poster.post_local_file(filepath,self.exchange,self.url,self.to_clusters,self.sumflg,rename)
+        if not ok: sys.exit(1)
+        return
 
     def watching(self, fpath, event ):
 
