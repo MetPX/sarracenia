@@ -47,14 +47,11 @@ except :
 
 class sr_poster:
 
-    def __init__(self, parent):
+    def __init__(self, parent, loop=True):
         self.logger         = parent.logger
         self.logger.debug("sr_poster __init__")
         self.parent         = parent
-        self.loop           = True
-
-        if hasattr(self.parent,'loop') :
-           self.loop        = parent.loop
+        self.loop           = loop
 
         self.chkclass       = Checksum()
 
@@ -131,7 +128,7 @@ class sr_poster:
         if self.parent.flow    != None : self.msg.headers['flow']         = self.parent.flow
         if filename            != None : self.msg.headers['filename']     = filename
 
-        ok = self.msg.publish()
+        ok = self.parent.__on_post__()
 
         return ok
 
@@ -275,13 +272,19 @@ class test_logger:
           self.info    = self.silence
           self.warning = print
 
+class sr_cfg_plus(sr_config):
+      def __init__(self,config=None,args=None):
+          sr_config.__init__(self,config,args)
+      def __on_post__(self):
+          return self.msg.publish()
+
 def self_test():
 
     try :
             logger = test_logger()
 
             #setup consumer to catch first post
-            cfg = sr_config()
+            cfg = sr_cfg_plus()
             cfg.defaults()
             cfg.logger         = logger
             cfg.debug          = False

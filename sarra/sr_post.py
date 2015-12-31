@@ -113,7 +113,7 @@ class sr_post(sr_config):
         # publisher
 
         self.post_broker   = self.broker
-        self.poster        = sr_poster(self)
+        self.poster        = sr_poster(self, self.loop)
         self.msg.publisher = self.poster.publisher
 
                                    
@@ -134,6 +134,7 @@ class sr_post(sr_config):
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
+        print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
         print("-r  : randomize chunk posting")
@@ -142,6 +143,23 @@ class sr_post(sr_config):
     def instantiate(self,i=0):
         self.instance = i
         self.setlog()
+
+    # =============
+    # __on_post__ internal posting of message
+    # =============
+
+    def __on_post__(self):
+
+        # should always be ok
+
+        ok = self.msg.publish( )
+
+        # invoke on_post when provided anyway
+
+        if ok and self.on_post : ok = self.on_post(self)
+
+        return ok
+
 
     def posting(self):
 
