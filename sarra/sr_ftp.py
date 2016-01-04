@@ -135,8 +135,8 @@ class sr_ftp():
 
                 try   : self.originalDir = ftp.pwd()
                 except:
-                        (type, value, tb) = sys.exc_info()
-                        self.logger.warning("Unable to ftp.pwd (Type: %s, Value: %s)" % (type ,value))
+                        (stype, svalue, tb) = sys.exc_info()
+                        self.logger.warning("Unable to ftp.pwd (Type: %s, Value: %s)" % (stype ,svalue))
 
                 self.pwd = self.originalDir
 

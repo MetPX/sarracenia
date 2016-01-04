@@ -406,8 +406,8 @@ class sr_subscribe(sr_instances):
                       ok = self.process_message()
 
               except:
-                      (type, value, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                      (stype, svalue, tb) = sys.exc_info()
+                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
 
     # ==============================================
