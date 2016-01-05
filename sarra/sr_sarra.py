@@ -161,12 +161,12 @@ class sr_sarra(sr_instances):
 
         # Should there be accept/reject option used unmatch are accepted
 
-        self.accept_if_unmatch = True
+        self.accept_unmatch = True
 
         # most of the time we want to mirror product directory and share queue
 
-        self.mirror            = True
-        self.queue_share       = True
+        self.mirror         = True
+        self.queue_share    = True
 
         # load/reload all config settings
 

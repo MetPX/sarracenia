@@ -96,14 +96,14 @@ class sr_subscribe(sr_instances):
 
         # special settings for sr_subscribe
 
-        self.accept_if_unmatch = False
-        self.broker            = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
-        self.exchange          = 'xpublic'
-        self.inplace           = True
-        self.lock              = '.tmp'
-        self.mirror            = False
-        self.overwrite         = True
-        self.log_back          = True
+        self.accept_unmatch = False
+        self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
+        self.exchange       = 'xpublic'
+        self.inplace        = True
+        self.lock           = '.tmp'
+        self.mirror         = False
+        self.overwrite      = True
+        self.log_back       = True
 
         # load/reload all config settings
 

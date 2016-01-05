@@ -14,7 +14,6 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Jun Hu         - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
 #
@@ -45,30 +44,32 @@ import signal
 #============================================================
 
 try :    
-         from sr_amqp           import *
-         from sr_config       import *
-         from sr_message        import *
+         from sr_consumer       import *
 except : 
-         from sarra.sr_amqp      import *
-         from sarra.sr_config  import *
-         from sarra.sr_message   import *
+         from sarra.sr_consumer import *
 
 
 class sr_log(sr_config):
 
     def __init__(self,config=None,args=None):
         sr_config.__init__(self,config,args)
+        self.configure()
 
     def check(self):
-        self.msg = sr_message(self.logger)
+        self.exchange = 'xl_' + self.broker.username
 
-        if self.exchange == None :
-           self.exchange = 'xl_' + self.broker.username
+        if self.bindings == [] :
+           key = self.topic_prefix + '.' + self.subtopic
+           self.bindings     = [ (self.exchange,key) ]
 
-        self.topic = self.topic_prefix + '.' + self.subtopic
+        # pattern must be used
+        # if unset we will accept unmatched... so everything
+
+        self.use_pattern          = self.masks != []
+        self.accept_unmatch       = self.masks == []
 
     def close(self):
-        self.hc_src.close()
+        self.consumer.close()
 
     def configure(self):
 
@@ -76,14 +77,17 @@ class sr_log(sr_config):
 
         self.general()
 
-        # defaults general and proper to sr_post
+        # defaults
 
         self.defaults()
 
-        self.topic_prefix = 'v02.log'
-        self.subtopic     = '#'
 
-        self.broker       = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        # proper to this program
+
+        self.exchange             = 'xl_' + self.broker.username
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
+        self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
         # arguments from command line
 
@@ -98,37 +102,6 @@ class sr_log(sr_config):
         self.check()
 
 
-    def connect(self):
-
-        # =============
-        # consumer
-        # =============
-
-        # consumer host
-
-        self.hc_src = HostConnect( logger = self.logger )
-        self.hc_src.set_url( self.broker )
-        self.hc_src.connect()
-
-        # consumer  add_prefetch(1) allows queue sharing between instances
-
-        self.consumer  = Consumer(self.hc_src)
-        self.consumer.build()
-
-        # consumer queue
-
-        # OPTION ON QUEUE NAME ?
-        name  = 'q_' + self.broker.username + '.' 
-        if self.queue_name != None :
-           name += self.queue_name
-        else :
-           name += self.program_name + '.' + self.exchange
-
-        self.queue = Queue(self.hc_src,name)
-        self.queue.add_binding(self.exchange,self.topic)
-        self.queue.build()
-
-
     def help(self):
         self.logger.info("Usage: %s -b <broker> \n" % self.program_name )
         self.logger.info("OPTIONS:")
@@ -137,39 +110,27 @@ class sr_log(sr_config):
     def run(self):
 
         self.logger.info("sr_log run")
-        self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % (self.broker.hostname,self.broker.username,self.broker.path) )
-        self.logger.info("AMQP  input :    exchange(%s) topic(%s)" % (self.exchange,self.topic) )
 
-        self.connect()
-
-        self.msg.logger       = self.logger
-        self.msg.amqp_log     = None
-        self.msg.amqp_pub     = None
+        parent        = self
+        self.consumer = sr_consumer(parent)
 
         #
         # loop on all message
         #
 
-        raw_msg = None
-
         while True :
 
           try  :
-                 raw_msg = self.consumer.consume(self.queue.qname)
-                 if raw_msg == None : continue
-
-                 # make use it as a sr_message
-
-                 self.msg.from_amqplib(raw_msg)
+                 ok, self.msg = self.consumer.consume()
+                 if not ok : continue
 
                  self.logger.info("Received topic   %s" % self.msg.topic)
                  self.logger.info("Received notice  %s" % self.msg.notice)
                  self.logger.info("Received headers %s\n" % self.msg.hdrstr)
 
-                 self.consumer.ack(raw_msg)
           except :
-                 (type, value, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (type, value))
+                 (stype, svalue, tb) = sys.exc_info()
+                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
                  
 
 def main():

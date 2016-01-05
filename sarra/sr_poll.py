@@ -153,7 +153,7 @@ class sr_poll(sr_instances):
 
         # Should there be accept/reject option used unmatch are accepted
 
-        self.accept_if_unmatch = False
+        self.accept_unmatch = False
 
         # load/reload all config settings
 
