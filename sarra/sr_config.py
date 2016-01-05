@@ -33,6 +33,7 @@
 #
 
 import logging
+import netifaces
 import os,re,socket,sys,random
 import urllib,urllib.parse
 from   appdirs import *
@@ -154,8 +155,8 @@ class sr_config:
             f.close()
 
         except:
-            (type, value, tb) = sys.exc_info()
-            self.logger.error("Type: %s, Value: %s" % (type, value))
+            (stype, svalue, tb) = sys.exc_info()
+            self.logger.error("Type: %s, Value: %s" % (stype, svalue))
 
     def config_path(self,subdir,config):
 
@@ -197,6 +198,8 @@ class sr_config:
         self.logger.debug("sr_config defaults")
 
         self.debug                = False
+
+        self.logrotate            = 5
 
         self.admin                = None
         self.manager              = None
@@ -274,16 +277,14 @@ class sr_config:
         self.blocksize            = 0
 
         self.do_download          = None
+        self.do_poll              = None
         self.on_file              = None
+        self.on_line              = None
         self.on_message           = None
         self.on_part              = None
-        self.on_poll              = None
         self.on_post              = None
 
         self.inplace              = False
-
-
-
 
         self.lock                 = None
 
@@ -386,6 +387,24 @@ class sr_config:
         self.logger.debug("defconf = %s\n" % defconf)
         if os.path.isfile(defconf) : self.config(defconf)
 
+    def has_vip(self): 
+
+        # no vip given... so should not matter ?
+        if self.vip == None or self.interface == None :
+           self.logger.error("option vip or interface missing...")
+           sys.exit(1)
+           return False
+
+        a = netifaces.ifaddresses(self.interface)
+        if netifaces.AF_INET in a :
+           for inet in a[netifaces.AF_INET]:
+               if 'addr' in inet :
+                   if inet['addr'] == self.vip :
+                      return True
+
+        return False
+
+
     def isMatchingPattern(self, str, accept_unmatch = False): 
 
         for mask in self.masks:
@@ -461,6 +480,18 @@ class sr_config:
                 elif words[0] == 'filename':
                      self.currentFileOption = words[1]
 
+                # like accept... make more sense when poll...
+                if   words[0] == 'get':
+                     accepting   = True
+                     pattern     = words[1]
+                     mask_regexp = re.compile(pattern)
+
+                     if len(words) > 2: self.currentFileOption = words[2]
+
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.logger.debug("Masks")
+                     self.logger.debug("Masks %s"% self.masks)
+
                 elif words[0] in ['config','-c','--config']:
                      self.config(words[1])
                      n = 2
@@ -504,6 +535,10 @@ class sr_config:
                      self.flow = words[1] 
                      n = 2
 
+                elif words[0] in ['filename','-filename','--filename']:
+                     self.currentFileOption = words[1]
+                     n = 2
+
                 elif words[0] in ['help','-h','-help','--help']:
                      self.help()
                      needexit = True
@@ -518,6 +553,10 @@ class sr_config:
 
                 elif words[0] in ['log_back','-lb','--log_back']:
                      self.log_back = self.isTrue(words[1])
+                     n = 2
+
+                elif words[0] in ['logrotate','-lr','--logrotate']:
+                     self.logrotate = int(words[1])
                      n = 2
 
                 elif words[0] in ['inplace','-in','--inplace']:
@@ -552,6 +591,14 @@ class sr_config:
                         ok = False
                      n = 2
 
+                elif words[0] in ['on_line','-on_line','--on_line']:
+                     self.on_line = None
+                     self.execfile("on_line",words[1])
+                     if self.on_line == None :
+                        self.logger.error("on_line script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
                 elif words[0] in ['on_message','-on_message','--on_message']:
                      self.on_message = None
                      self.execfile("on_message",words[1])
@@ -568,11 +615,11 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['on_poll','-on_poll','--on_poll']:
-                     self.on_poll = None
-                     self.execfile("on_poll",words[1])
-                     if self.on_poll == None :
-                        self.logger.error("on_poll script incorrect (%s)" % words[1])
+                elif words[0] in ['do_poll','-do_poll','--do_poll']:
+                     self.do_poll = None
+                     self.execfile("do_poll",words[1])
+                     if self.do_poll == None :
+                        self.logger.error("do_poll script incorrect (%s)" % words[1])
                         ok = False
                      n = 2
 
@@ -814,7 +861,8 @@ class sr_config:
         self.logger.debug("switching to log file %s" % self.logpath )
           
         self.lpath   = self.logpath
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.lpath, when='midnight', interval=1, backupCount=5)
+        self.handler = logging.handlers.TimedRotatingFileHandler(self.lpath, when='midnight', \
+                       interval=1, backupCount=self.logrotate)
         fmt          = logging.Formatter( LOG_FORMAT )
         self.handler.setFormatter(fmt)
 
@@ -880,19 +928,16 @@ class sr_config:
 def main():
 
     if len(sys.argv) == 1 :
-       print(" None None")
        cfg = sr_config(None,None)
     elif os.path.isfile(sys.argv[1]):
        args = None
        if len(sys.argv) > 2 : args = sys.argv[2:]
-       print(" Conf %s" % args)
        cfg = sr_config(sys.argv[1],args)
     else :
-       print(" None %s" % sys.argv[1:])
        cfg = sr_config(None,sys.argv[1:])
     cfg.defaults()
     #to get more details
-    #cfg.debug = True
+    cfg.debug = True
     cfg.setlog()
     cfg.logger.debug("user_data_dir = %s" % cfg.user_data_dir)
     cfg.logger.debug("user_cache_dir = %s"% cfg.user_cache_dir)
@@ -904,7 +949,6 @@ def main():
     cfg.general()
     cfg.args(cfg.user_args)
     cfg.config(cfg.user_config)
-    print("  %s" % cfg.source_from_exchange)
     sys.exit(0)
 
 # =========================================
