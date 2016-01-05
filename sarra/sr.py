@@ -41,11 +41,6 @@ try :
 except : 
          from sarra.sr_config    import *
 
-
-# sarracenia program span
-
-SR_PROGRAMS=['log2source','log2clusters','source2log','watch','winnow','sarra','subscribe','sender1','sender2','poll']
-
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
 
@@ -53,11 +48,8 @@ def invoke(confpath):
 
     parts = confpath.split('/')
 
-    if not parts[-2] in SR_PROGRAMS: return
-
     program = 'sr_' + parts[-2]
     config  = re.sub(r'(\.conf)','',parts[-1])
-
 
     try :
              subprocess.check_call([program,config,sys.argv[-1]])
@@ -66,6 +58,18 @@ def invoke(confpath):
              print("Type: %s, Value: %s" % (stype, svalue))
 
 
+# check number of config files
+
+def nbr_config(dirconf):
+    n = 0
+
+    if not os.path.isdir(dirconf)       : return 0
+
+    for confname in os.listdir(dirconf) :
+        if not '.conf' in confname      : continue
+        n += 1
+ 
+    return n
 
 # recursive scan of ~/.config/sarra/* , invoking process according to
 # the process named from the parent directory
@@ -85,7 +89,6 @@ def scandir(dirconf):
 # ===================================
 
 def main():
-
     # first check action
 
     if sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
@@ -94,11 +97,19 @@ def main():
 
     cfg = sr_config()
 
+    # sarracenia program span
+    LOG_PROGRAMS=['log2clusters','2xlog','log2source']
+    for d in LOG_PROGRAMS:
+        if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
+           scandir(cfg.user_config_dir+os.sep+d)
+        else :
+           subprocess.check_call(['sr_'+d,sys.argv[-1]])
+
+    SR_PROGRAMS =['watch','winnow','sarra','subscribe','sender1','sender2','poll']
     for d in SR_PROGRAMS:
         scandir(cfg.user_config_dir+os.sep+d)
 
     sys.exit(0)
-
 
 # =========================================
 # direct invocation
