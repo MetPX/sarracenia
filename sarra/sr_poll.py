@@ -492,7 +492,7 @@ class sr_poll(sr_instances):
                        FileOption = maskFileOption
 
                 desc   = desclst[remote_file]
-                fsiz   = desc.split()[0]
+                fsiz   = desc.split()[4]
 
                 self.urlstr  = self.destination + self.destDir + '/'+ remote_file
                 self.url     = urllib.parse.urlparse(self.urlstr)
