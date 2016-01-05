@@ -41,6 +41,8 @@ try :
 except : 
          from sarra.sr_config    import *
 
+cfg = sr_config()
+
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
 
@@ -52,6 +54,7 @@ def invoke(confpath):
     config  = re.sub(r'(\.conf)','',parts[-1])
 
     try :
+             cfg.logger.info("%s %s %s" % (program,config,sys.argv[-1]))
              subprocess.check_call([program,config,sys.argv[-1]])
     except :
              (stype, svalue, tb) = sys.exc_info()
@@ -103,6 +106,7 @@ def main():
         if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
            scandir(cfg.user_config_dir+os.sep+d)
         else :
+           cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
            subprocess.check_call(['sr_'+d,sys.argv[-1]])
 
     SR_PROGRAMS =['watch','winnow','sarra','subscribe','sender1','sender2','poll']
