@@ -153,7 +153,7 @@ class sr_poll(sr_instances):
 
         # Should there be accept/reject option used unmatch are accepted
 
-        self.accept_if_unmatch = False
+        self.accept_unmatch = False
 
         # load/reload all config settings
 
@@ -492,7 +492,7 @@ class sr_poll(sr_instances):
                        FileOption = maskFileOption
 
                 desc   = desclst[remote_file]
-                fsiz   = desc.split()[0]
+                fsiz   = desc.split()[4]
 
                 self.urlstr  = self.destination + self.destDir + '/'+ remote_file
                 self.url     = urllib.parse.urlparse(self.urlstr)

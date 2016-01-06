@@ -67,7 +67,7 @@ class sr_config:
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
 
         self.user_queue_dir   = self.user_cache_dir + '/queue'
-        self.user_scripts_dir = self.user_cache_dir + '/scripts'
+        self.user_scripts_dir = self.user_config_dir + '/scripts'
 
         # umask change for directory creation and chmod
 
