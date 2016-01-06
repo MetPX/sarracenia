@@ -141,6 +141,7 @@ class sr_config:
                  if n == 0 : n = 1
               i = i + n
 
+
     def config(self,path):
         self.logger.debug("sr_config config")
 
@@ -221,13 +222,14 @@ class sr_config:
         self.accept_unmatch       = False    # accept if No pattern matching
         self.masks                = []       # All the masks (accept and reject)
         self.currentDir           = '.'      # mask directory (if needed)
-        self.currentFileOption    = 'WHATFN' # kept... should we ever reimplement this
+        self.currentFileOption    = None     # should implement metpx like stuff
 
         self.log_exchange         = 'xlog'
         # 
 
         # publish
         self.document_root        = None
+        self.post_document_root   = None
         self.url                  = None
 
         #self.broker              = urllib.parse.urlparse('amqp://guest:guest@localhost/')
@@ -287,6 +289,7 @@ class sr_config:
         self.inplace              = False
 
         self.lock                 = None
+        self.chmod                = 775
 
         self.notify_only          = False
 
@@ -295,6 +298,7 @@ class sr_config:
            self.logpath           = None
         if not hasattr(self,'instance') :
            self.instance          = 0
+        self.no                   = -1
         self.nbr_instances        = 1
 
 
@@ -517,6 +521,13 @@ class sr_config:
                          self.document_root = words[1]
                      n = 2
 
+                elif words[0] in ['post_document_root','-pdr','--post_document_root']:
+                     if sys.platform == 'win32':
+                         self.post_document_root = words[1].replace('\\','/')
+                     else:
+                         self.post_document_root = words[1]
+                     n = 2
+
                 elif words[0] in ['events','-e','--events']:
                      i = 0
                      if 'IN_CLOSE_WRITE' in words[1] : i = i + 1
@@ -547,6 +558,10 @@ class sr_config:
                      self.lock = words[1] 
                      n = 2
 
+                elif words[0] in ['chmod','-chmod','--chmod']:
+                     self.chmod = int(words[1])
+                     n = 2
+
                 elif words[0] in ['log','-l','-log','--log']:
                      self.logpath = words[1]
                      n = 2
@@ -565,6 +580,10 @@ class sr_config:
 
                 elif words[0] in ['instances','-i','--instances']:
                      self.nbr_instances = int(words[1])
+                     n = 2
+
+                elif words[0] in ['--no']:
+                     self.no = int(words[1])
                      n = 2
 
                 elif words[0] in ['interface','-interface','--interface']:
