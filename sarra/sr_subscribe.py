@@ -73,7 +73,6 @@ class sr_subscribe(sr_instances):
            self.log_back  = False
 
         # if no subtopic given... make it #  for all
-        self.logger.info("bindings %s" % self.bindings)
         if self.bindings == []  :
            key = self.topic_prefix + '.#'
            self.bindings.append( (self.exchange,key) )
@@ -483,9 +482,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
-          self.info    = print
+          self.info    = self.silence
           self.warning = print
 
 def test_sr_subscribe():
@@ -538,13 +537,13 @@ def test_sr_subscribe():
 
     subscribe         = sr_subscribe()
     subscribe.logger  = logger
-    subscribe.debug   = True
 
     # set options
     subscribe.option( opt1.split()  )
     subscribe.option( opt2.split()  )
     subscribe.option( opt3.split()  )
     subscribe.configure()
+    subscribe.debug   = True
 
     # ==================
     # set instance
