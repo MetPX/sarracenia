@@ -203,6 +203,7 @@ class sr_instances(sr_config):
         if self.user_config != None : cmd.append(self.user_config)
         cmd.append("start")
      
+        self.logger.info("%s starting" % self.instance_str)
         self.logger.debug(" cmd = %s" % cmd)
         pid = subprocess.Popen(cmd)
 
@@ -232,7 +233,7 @@ class sr_instances(sr_config):
 
         # as instance
         else:
-             self.logger.info("start instance %d \n" % self.no)
+             self.logger.debug("start instance %d \n" % self.no)
              self.build_instance(self.no)
              self.pid = os.getpid()
              self.file_set_int(self.pidfile,self.pid)
