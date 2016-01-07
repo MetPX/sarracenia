@@ -191,13 +191,14 @@ class sr_log2clusters(sr_instances):
 
     def __on_post__(self):
 
+        # invoke on_post when provided
+
+        if self.on_post : ok = self.on_post(self)
+        if not ok: return ok
+
         # should always be ok
 
         ok = self.msg.publish( )
-
-        # invoke user provided on_post anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 
