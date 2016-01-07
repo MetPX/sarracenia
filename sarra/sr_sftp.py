@@ -72,6 +72,35 @@ class sr_sftp():
         self.sftp.chdir(path)
         self.pwd = path
 
+    # cd forced
+    def cd_forced(self,perm,path) :
+        self.logger.debug("sr_sftp cd_forced %d %s" % (perm,path))
+
+        # try to go directly to path
+
+        self.sftp.chdir(self.originalDir)
+        try   :
+                self.sftp.chdir(path)
+                return
+        except: pass
+
+        # need to create subdir
+
+        self.sftp.chdir(self.originalDir)
+
+        subdirs = path.split("/")
+        for d in subdirs :
+            if d == ''   : continue
+            # try to go directly to subdir
+            try   :
+                    self.sftp.chdir(d)
+                    continue
+            except: pass
+
+            # create and go to subdir
+            self.sftp.mkdir(d,eval('0o'+ str(perm)))
+            self.sftp.chdir(d)
+
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_sftp chmod %s %s" % (str(perm),path))
@@ -152,7 +181,7 @@ class sr_sftp():
         self.logger.debug("sr_sftp rm %s" % path)
         self.sftp.remove(path)
 
-    # get
+    # get  fixme : implement trottle...
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
 
@@ -313,7 +342,8 @@ def sftp_download( parent ):
             parent.destination = msg.urlcred
             sftp = sr_sftp(parent)
             sftp.connect()
-            sftp.cd(cdir)
+
+            sftp.cd_forced(775,cdir)
 
             remote_offset = 0
             if  msg.partflg == 'i': remote_offset = msg.offset
@@ -365,7 +395,7 @@ def sftp_send( parent ):
     try :
             sftp = sr_sftp(parent)
             sftp.connect()
-            sftp.cd(remote_dir)
+            sftp.cd_forced(775,remote_dir)
 
             offset = 0
 

@@ -71,6 +71,35 @@ class sr_ftp():
         self.ftp.cwd(path)
         self.pwd = path
 
+    def cd_forced(self,perm,path) :
+        self.logger.debug("sr_ftp cd_forced %d %s" % (perm,path))
+
+        # try to go directly to path
+
+        self.ftp.cwd(self.originalDir)
+        try   :
+                self.ftp.cwd(path)
+                return
+        except: pass
+
+        # need to create subdir
+
+        self.ftp.cwd(self.originalDir)
+
+        subdirs = path.split("/")
+        for d in subdirs :
+            if d == ''   : continue
+            # try to go directly to subdir
+            try   :
+                    self.ftp.cwd(d)
+                    continue
+            except: pass
+
+            # create and go to subdir
+            self.ftp.mkd(d)
+            self.ftp.voidcmd('SITE CHMOD ' + str(perm) + ' ' + d)
+            self.ftp.cwd(d)
+
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
@@ -163,6 +192,7 @@ class sr_ftp():
            fp = open(local_file,'w')
            fp.close()
 
+        # fixme : get trottled.... instead of fp.write... call get_trottle(buf) which calls fp.write
         if self.binary :
            fp = open(local_file,'r+b')
            if local_offset != 0 : fp.seek(local_offset,0)
@@ -326,7 +356,8 @@ def ftp_send( parent ):
     try :
             ftp = sr_ftp(parent)
             ftp.connect()
-            ftp.cd(remote_dir)
+
+            ftp.cd_forced(775,remote_dir)
 
             offset = 0
 

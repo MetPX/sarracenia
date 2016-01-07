@@ -61,8 +61,6 @@ class sr_message():
 
         self.chkclass      = Checksum()
 
-        self.bufsize       = 10 * 1024 * 1024
-
         self.inplace       = True
 
         self.user          = None
