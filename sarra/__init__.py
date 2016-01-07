@@ -8,14 +8,11 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log.py : python3 program allowing users to receive all log messages
-#             generated from his products
+# __init__.py : contains version number of sarracenia
 #
 #
 # Code contributed by:
 #  Khosrow Ebrahimpour - Shared Services Canada
-#  Last Changed   : Dec  8 17:09:19 GMT 2015
-#  Last Revision  : Dec  8 17:09:19 GMT 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,4 +30,4 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "2.15.12a4"
+__version__ = "2.16.01a1"
