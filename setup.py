@@ -33,7 +33,9 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts":[
+              "sr=sarra.sr:main",
               "sr_post=sarra.sr_post:main",
+              "sr_poll=sarra.sr_poll:main",
               "sr_log=sarra.sr_log:main",
               "sr_sarra=sarra.sr_sarra:main",
               "sr_sender=sarra.sr_sender:main",

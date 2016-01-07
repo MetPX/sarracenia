@@ -86,7 +86,12 @@ P=$PWD
 TAG=$1
 
 # Checkout the tagged version
+cd $P
 git checkout $TAG
+if [ $? -gt 0 ]; then
+	echo "Incorrect tag name!"
+	exit 1
+fi
 shift
 
 while (( $# )); do
@@ -96,7 +101,8 @@ while (( $# )); do
 		build trusty
 	else
 		echo "Unknown distribution. `basename $0` currently only supports precise and trusty"
-        git checkout master
+		cd $P
+		git checkout master
 		exit 1
 	fi
 	shift

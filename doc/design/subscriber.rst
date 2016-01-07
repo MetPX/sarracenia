@@ -244,6 +244,32 @@ In any event, after a few minutes, Here is what the current directory looks like
   blacklab% 
 
 
+Working with Multiple Configurations
+-------------------------------------
+
+A small digression:
+
+normally one just specifies the full path to the configuration file for sr_subscribe.
+When running downloads from multiple sources, or to different destinations, one can place 
+all the subscription configuration files, with the .conf suffix, in a standard 
+directory: ~/.config/sarra/subscribe/
+
+Imagine there are two files in that directory:  CMC.conf and NWS.conf.
+One could then run: 
+
+ sr_subscribe CMC start 
+
+from anywhere, and the configuration in the directory would be invoked.  Also, one can use by using 
+the sr command to start/stop multiple configurations at once.  The sr command will go through the 
+default directories and start up all the configurations it finds.  
+
+ sr start
+
+will start up some sr_subscribe processes as configured by CMC.conf and others to match NWS.conf.
+sr stop will also do what you would expect.  As will sr status.  Back to file reception:
+
+
+
 Refining Selection
 ------------------
 

@@ -35,7 +35,7 @@ When an **AMQP** message is processed by  `sr_sarra(1) <sr_sarra.1.html>`_
 its headers is extended with the pair  headers['from_cluster'] = cluster_Name.
 The value of 'from_cluster' can be set with option  **from_cluster cluster_Name**
 in **sr_sarra**'s config file, or for the whole server if set in
-~/.config/sarra/sarra.conf.
+~/.config/sarra/default.conf.
 
 
 BROKER_URL
