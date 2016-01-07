@@ -348,6 +348,71 @@ def sftp_download( parent ):
     msg.log_publish(499,'sftp download problem')
 
     return False
+
+#============================================================
+#
+# wrapping of sr_sftp in sftp_send
+#
+#============================================================
+
+def sftp_send( parent ):
+    logger = parent.logger
+    msg    = parent.msg
+
+    local_file = parent.local_path
+    remote_dir = parent.remote_rpath
+
+    try :
+            sftp = sr_sftp(parent)
+            sftp.connect()
+            sftp.cd(remote_dir)
+
+            offset = 0
+
+            if  msg.partflg == 'i': offset = msg.offset
+
+            str_range = ''
+            if msg.partflg == 'i' :
+               str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
+
+            #download file
+
+            msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
+
+            if parent.lock == None or msg.partflg == 'i' :
+               sftp.put(local_file, parent.remote_file, offset, offset, msg.length)
+            elif parent.lock == '.' :
+               remote_lock = '.'  + parent.remote_file
+               sftp.put(local_file, remote_lock)
+               sftp.rename(remote_lock, parent.remote_file)
+            elif parent.lock[0] == '.' :
+               remote_lock = parent.remote_file + parent.lock
+               sftp.put(local_file, remote_lock)
+               sftp.rename(remote_lock, parent.remote_file)
+
+            try   : sftp.chmod(parent.chmod,parent.remote_file)
+            except: pass
+
+            msg.log_publish(201,'Delivered')
+
+            sftp.close()
+
+            return True
+            
+    except:
+            try    : sftp.close()
+            except : pass
+
+            (stype, svalue, tb) = sys.exc_info()
+            msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+            msg.log_publish(499,'sftp delivery problem')
+
+            return False
+
+    msg.log_publish(499,'sftp delivery problem')
+
+    return False
                  
 # ===================================
 # self_test

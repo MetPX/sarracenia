@@ -14,7 +14,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Revision  : Jan  6 08:33:10 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,9 +33,8 @@
 #
 #
 
-import logging,os,psutil,signal,sys
+import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
-
 
 try :
          from sr_config      import *
@@ -52,9 +51,9 @@ class sr_instances(sr_config):
 
         sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
-        #self.configure()
         self.build_parent()
-        self.setlog()
+        self.defaults()
+        self.configure()
 
     def build_parent(self):
         self.logpath    = None
@@ -74,7 +73,6 @@ class sr_instances(sr_config):
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
     
-    # from daniel lemay's metpx version
     def daemonize(self):
         try:
            pid = os.fork()
@@ -98,7 +96,7 @@ class sr_instances(sr_config):
      
         os.close(sys.stdin.fileno())
         os.close(sys.stdout.fileno())
-        #os.close(sys.stderr.fileno())
+        os.close(sys.stderr.fileno())
      
         os.open('/dev/null', os.O_RDWR)  # stdin
         os.dup2(0, 1)                    # stdout
@@ -198,46 +196,50 @@ class sr_instances(sr_config):
                     self.logger.info("%s strange state... " % self.instance_str)
                     self.stop_instance()
 
-        if _platform != 'win32' :
-          # fork : make sure the parent is not killed
-          # wait for child to start
-          pid = os.fork()
-          if pid > 0 :
-             os.wait()
-             self.logger.info("%s started" % self.instance_str)
-             return
-
-          self.daemonize()
-        else:
-          self.logger.info("instances not implemented on windows %s " % self.instance_str)
-
-        self.pid = os.getpid()
-        self.file_set_int(self.pidfile,self.pid)
-
-        self.setlog()
-
-        self.start()
+        cmd = []
+        cmd.append(sys.argv[0])
+        cmd.append("--no")
+        cmd.append("%d" % self.instance)
+        if self.user_config != None : cmd.append(self.user_config)
+        cmd.append("start")
+     
+        self.logger.info("%s starting" % self.instance_str)
+        self.logger.debug(" cmd = %s" % cmd)
+        pid = subprocess.Popen(cmd)
 
     def start_parent(self):
+        self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
 
-        self.logger.info("instances %d \n" % self.nbr_instances)
+        # as parent
+        if   self.no == -1 :
+             self.logger.info("instances %d \n" % self.nbr_instances)
 
-        # instance 0 is the parent... child starts at 1
+             # instance 0 is the parent... child starts at 1
 
-        i=1
-        while i <= self.nbr_instances :
-              self.build_instance(i)
-              self.start_instance()
-              i = i + 1
+             i=1
+             while i <= self.nbr_instances :
+                   self.build_instance(i)
+                   self.start_instance()
+                   i = i + 1
 
-        # the number of instances has decreased... stop excedent
-        while i <= self.last_nbr_instances:
-              self.build_instance(i)
-              self.stop_instance()
-              i = i+1
+             # the number of instances has decreased... stop excedent
+             while i <= self.last_nbr_instances:
+                   self.build_instance(i)
+                   self.stop_instance()
+                   i = i+1
 
-        # write nbr_instances
-        self.file_set_int(self.statefile,self.nbr_instances)
+             # write nbr_instances
+             self.file_set_int(self.statefile,self.nbr_instances)
+
+        # as instance
+        else:
+             self.logger.debug("start instance %d \n" % self.no)
+             self.build_instance(self.no)
+             self.pid = os.getpid()
+             self.file_set_int(self.pidfile,self.pid)
+             self.setlog()
+             self.run()
+        sys.exit(0)
 
     def status_instance(self):
         if self.pid == None :

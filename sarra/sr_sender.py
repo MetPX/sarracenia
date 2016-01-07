@@ -1,401 +1,468 @@
 #!/usr/bin/python3
+#
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
+# Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
+#
+# Questions or bugs report: dps-client@ec.gc.ca
+# sarracenia repository: git://git.code.sf.net/p/metpx/git
+# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+#
+# sr_sender.py : python3 program consumes product messages and send them to another pump
+#                and announce the newly arrived product on that pump. If the post_broker
+#                is not given... it is accepted, the products are sent without notices.
+#
+#
+# Code contributed by:
+#  Michel Grenier - Shared Services Canada
+#  Last Changed   : Jan  5 08:31:59 EST 2016
+#
+########################################################################
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+#
+#============================================================
+# usage example
+#
+# sr_sender [options] [config] [start|stop|restart|reload|status]
+#
+# sr_sender connects to a broker. For each product it has selected, it sends it onto the other
+# broker and reannounce it there.
+#
+# conditions:
+#
+# broker                  = where sarra is running (manager)
+# exchange                = xpublic
+# message.headers[to_clusters] verified if destination includes remote pump ?
+#
+# do_send                 = a script supporting the protocol defined in the destination
+# destination             = an url of the credentials of the remote server and its options (see credentials)
+# directory               = the placement is mirrored usually
+# accept/reject           = pattern matching what we want to poll in that directory
+#
+# (optional... only if message are posted after products are sent)
+# post_broker             = remote broker (remote manager)
+# post_exchange           = xpublic
+# document_root           = if provided, extracted from the url if present
+# url                     = build from the destination/directory/product
+# product                 = the product placement is mirrored by default
+#                           unless if accept/reject are under a directory option
+# post_message            = incoming message with url changes
+#                           message.headers['source']  left as is
+#                           message.headers['cluster'] left as is 
+#                           option url : gives new url announcement for this product
+#============================================================
+
+#
 
 import os,sys,time
-import paramiko
-from   paramiko import *
 
 try :    
          from sr_amqp           import *
-         from sr_config         import *
-         from sr_transfert      import *
-         from sr_util           import *
+         from sr_consumer       import *
+         from sr_ftp            import *
+         from sr_instances      import *
+         from sr_message        import *
+         from sr_poster         import *
 except : 
          from sarra.sr_amqp      import *
-         from sarra.sr_config    import *
-         from sarra.sr_transfert import *
-         from sarra.sr_util      import *
+         from sarra.sr_consumer  import *
+         from sarra.sr_ftp       import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
+         from sarra.sr_poster    import *
 
-class sr_sender(sr_config):
+class sr_sender(sr_instances):
 
-    def __init__(self,logger,config=None,args=None):
-
-        self.logger = logger
-        self.conf   = config
-
+    def __init__(self,config=None,args=None):
+        sr_instances.__init__(self,config,args)
         self.defaults()
-        self.config(config)
-        self.args(args)
+        self.configure()
+
+    def check(self):
+        self.connected     = False 
+
+        # to clusters requiered
+
+        if self.post_broker != None and self.to_clusters == None :
+           self.logger.error("Need to know post_broker cluster name")
+           self.logger.error("-to option is mandatory in this case\n")
+           sys.exit(1)
+
+        # fallback bindings to "all"
+
+        if self.exchange  == None :
+           self.exchange   = 'xpublic'
+
+        if self.bindings == []  :
+           key = self.topic_prefix + '.#'
+           self.bindings.append( (self.exchange,key) )
+           self.logger.debug("*** BINDINGS %s"% self.bindings)
+
+        # no queue name allowed... force this one
+
+        self.queue_name  = 'q_' + self.broker.username + '.'
+        self.queue_name += self.program_name + '.' + self.config_name 
+
+        # check destination
+
+        self.details = None
+        if self.destination != None :
+           ok, self.details = self.credentials.get(self.destination)
+
+        if self.destination == None or self.details == None :
+           self.logger.error("destination option incorrect or missing\n")
+           sys.exit(1)
+
+        # check destination
+        if self.post_broker != None and self.post_exchange == None :
+           self.post_exchange = self.exchange
+
+    def close(self):
+        self.consumer.close()
+        if self.post_broker : self.poster.close()
+        self.connected = False 
+
+    def configure(self):
+
+        # a destination must be provided
+
+        self.destination  = None
+        self.post_broker  = None
+        self.currentDir   = None
+
+        # consumer defaults
+
+        if hasattr(self,'manager'):
+           self.broker = self.manager
+        self.exchange  = 'xpublic'
+
+        # most of the time we want to mirror product directory and share queue
+
+        self.mirror      = True
+        self.queue_share = True
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_unmatch = True
+
+        # load/reload all config settings
+
+        self.general()
+        self.args   (self.user_args)
+        self.config (self.user_config)
+
+        # verify / complete settings
 
         self.check()
 
-    def check(self):
-
-        self.destination.set(self.destination.get())
-        if not self.destination.protocol in ['amqp','amqps'] or \
-           self.destination.user     == None   or \
-           self.destination.password == None   or \
-           self.destination.error :
-           self.logger.error("destination url %s " % self.destination.get())
-
-        self.source.set(self.source.get())
-        if not self.source.protocol in ['amqp','amqps'] or \
-           self.source.user     == None   or \
-           self.source.password == None   or \
-           self.source.error :
-           self.logger.error("source url %s " % self.source.get())
-
-    def defaults(self):
-
-        self.str_flags   = 'd'
-        self.blocksize   = 0
-        self.tag         = 'default'
-        self.randomize   = False
-        self.basedir     = ''
-        self.source      = URL()
-        self.destination = URL()
-        self.post        = URL()
-
-        self.source.protocol = 'amqp'
-        self.source.host     = 'localhost'
-        self.source.user     = 'guest'
-        self.source.password = 'guest'
-        self.src_exchange    = 'sx_guest'
-
-        self.destination.protocol = 'amqp'
-        self.destination.host     = 'localhost'
-        self.destination.user     = 'guest'
-        self.destination.password = 'guest'
-        self.dest_exchange        = 'xpublic'
-        self.dest_path            = None
-
-        self.transmission  = URL()
-        self.trx_basedir   = ''
-        self.user          = None
-        self.password      = None
-        self.ssh_keyfile   = None
-        self.lock          = None
-
-        self.exchange_type = 'topic'
-        self.exchange_key  = []
-
-        self.flags       = Flags()
-        self.flags.from_str(self.str_flags)
-
-    def close(self):
-        self.hc_src.close()
-        self.hc_dst.close()
+        self.setlog()
 
     def connect(self):
+
+        # =============
+        # create message
+        # =============
+
+        self.msg = sr_message(self.logger)
 
         # =============
         # consumer
         # =============
 
-        # consumer host
-
-        self.hc_src = HostConnect( self.source.host, self.source.port, \
-                                   self.source.user,self.source.password, \
-                                   ssl= self.source.protocol == 'amqps', logger = self.logger, loop=True)
-        self.hc_src.connect()
-
-        # consumer 
-
-        self.consumer  = Consumer(self.hc_src)
-        self.consumer.add_prefetch(1)
-        self.consumer.build()
-
-        # consumer exchange : make sure it exists
-        ex = Exchange(self.hc_src,self.src_exchange)
-        ex.build()
-
-        # consumer queue
-
-        key   = self.exchange_key[0]
-        if key[-2:] == '.#' : key = key[:-2]
-        name  = 'cmc.sr_sender' + '.' + self.conf + '.' + self.src_exchange + '.' + key
-        self.queue = Queue(self.hc_src,name)
-        self.queue.add_binding(self.src_exchange,self.exchange_key[0])
-        self.queue.build()
-
-        # log publisher
-
-        self.log    = Publisher(self.hc_src)
-        self.log.build()
-
-        # log exchange : make sure it exists
-
-        xlog = Exchange(self.hc_src,'log')
-        xlog.build()
+        self.consumer          = sr_consumer(self)
+        self.msg.log_publisher = self.consumer.publish_back()
+        self.msg.log_exchange  = self.log_exchange
 
         # =============
-        # publisher
+        # poster
         # =============
 
-        # publisher host
+        if self.post_broker :
+           self.poster           = sr_poster(self)
 
-        self.hc_dst = HostConnect( self.destination.host, self.destination.port, \
-                                   self.destination.user, self.destination.password, \
-                                   ssl= self.destination.protocol == 'amqps', logger = self.logger, loop=True)
-        self.hc_dst.connect()
+           self.msg.publisher    = self.poster.publisher
+           self.msg.pub_exchange = self.post_exchange
 
-        # publisher
+        self.connected        = True 
 
-        self.pub    = Publisher(self.hc_dst)
-        self.pub.build()
+    # =============
+    # __do_send__
+    # =============
 
-        # publisher exchange : make sure it exists
+    def __do_send__(self):
 
-        xpub = Exchange(self.hc_dst,self.dest_exchange)
-        xpub.build()
-
-    def get_elapse(self):
-        return time.time()-self.tbegin
-
-    def run(self):
-
-        #
-        # loop on all message
-        #
-        while True :
-
-          try  :
-                 msg = self.consumer.consume(self.queue.qname)
-                 if msg == None : continue
-                 self.start_timer()
-
-                 # restoring all info from amqp message
-
-                 body     = msg.body
-                 exchange = msg.delivery_info['exchange']
-                 str_key  = msg.delivery_info['routing_key']
-                 hdr      = msg.properties['application_headers']
-                 filename = hdr['filename']
-
-                 if type(body) == bytes : body = body.decode("utf-8")
-
-                 self.logger.info('Receiving: %s',str_key)
-                 self.logger.info('Receiving: %s',body)
-
-                 # instanciate key and notice
-
-                 dkey    = Key()
-                 notice  = Notice()
-                 new_key = str_key
-
-                 if str_key[:3] == 'v01':
-                    dkey.from_key(str_key) 
-                    notice.from_notice(body)
-                 else :
-                    dkey.from_v00_key(str_key,self.source.user) 
-                    notice.from_v00_notice(body)
-                    new_key = dkey.get()
-                    body    = notice.get()
-
-
-                 # local file
-                 local_file = self.basedir + '/' + notice.dpath
-                 if not os.path.isfile(local_file) :
-                    self.logger.error("file notified but not present %s" % local_file)
-                    self.consumer.ack(msg)
-                    continue
-                    
-
-                 # Target file
-
-                 target_file = self.trx_basedir + '/' + notice.dpath
-                 if exchange[:3] == 'sx_' or str_key[:4] == 'v00.' :
-                    today = time.strftime("%Y%m%d",time.gmtime())
-                    target_file = self.trx_basedir + \
-                                   '/' + today + \
-                                   '/' + self.source.user + \
-                                   '/' + notice.dpath
-
-                 target_file = target_file.replace('//','/')
-                 target_dir  = target_file.replace(notice.dfile,'')
-
-                 # send product
-
-                 self.send(local_file,target_dir,notice.dfile)
-
-                 # create new notice
-
-                 notice.source = self.post.get()
-                 if self.trx_basedir != '' :
-                    notice.lpath  = target_file.replace(self.trx_basedir + '/','')
-
-                 # publish and log
-
-
-                 str_key = dkey.get()
-                 body    = notice.get()
-
-                 self.pub.publish(self.dest_exchange,str_key,body,notice.dfile)
-                 self.logger.info("Publishes: %s   key      = %s" % ('xpublic',str_key))
-                 self.logger.info("Publishes: %s   body     = %s" % ('xpublic',body) )
-
-                 log_key  = str_key.replace('.post.','.log.')
-                 body    += ' %d %s %s %f' % (202,socket.gethostname(),self.destination.user,self.get_elapse())
-                 self.log.publish('log',log_key,body,'log')
-
-                 self.consumer.ack(msg)
-
-          except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-
-    def send(self,lfile,tdir,tfile):
-        host        = self.transmission.host
-        port        = self.transmission.port
-        user        = self.transmission.user
-        passwd      = self.transmission.password
-
-        ssh_keyfile = self.ssh_keyfile
-        if self.user     != None : user   = self.user
-        if self.password != None : passwd = self.password
+        self.logger.info("sending/copying %s " % self.msg.local_file)
 
         try :
-                self.t = None
-                if port == None : 
-                   self.t = paramiko.Transport(host)
-                else:
-                   t_args = (host,port)
-                   self.t = paramiko.Transport(t_args)
+                if   self.do_send :
+                     return self.do_send(self)
 
-                if ssh_keyfile != None :
-                   key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
-                   self.t.connect(username=user,pkey=key)
-                else:
-                   self.t.connect(username=user,password=passwd)
+                elif self.msg.url.scheme in ['ftp','ftps']  :
+                     return ftp_send(self)
 
-                self.sftp = paramiko.SFTP.from_transport(self.t)
+                elif self.msg.url.scheme == 'sftp' :
+                     try    : from sr_sftp       import sftp_download
+                     except : from sarra.sr_sftp import sftp_download
+                     return sftp_send(self)
 
-                # chdir/mkdir
-                try    : self.sftp.chdir(tdir)
-                except :
-                         self.sftp.chdir('/')
-                         cwd = ''
-                         dirs = tdir.split('/')
-                         for d in dirs :
-                             cwd = cwd + '/' + d
-                             try    : self.sftp.chdir(cwd)
-                             except : 
-                                      try :
-                                               self.sftp.mkdir(cwd,0o755)
-                                               self.sftp.chdir(cwd)
-                                      except : 
-                                               (stype, svalue, tb) = sys.exc_info()
-                                               self.logger.error("Type=%s, Value=%s" % (stype, svalue))
-                                               self.logger.error("file not delivered %s" % tfile)
-                                               return False
-                # sending
-                lockf = tfile
-                if self.lock != None :
-                   if self.lock == '.' : lockf = '.' + tfile
-                   else                : lockf = tfile + self.lock
+        except :
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.msg.log_publish(503,"Unable to process")
+                self.logger.error("Could not send")
 
-                self.sftp.put(lfile,lockf)
-                if self.lock != None :  self.sftp.rename(lockf,tfile)
+        self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
-                # close connection
-                try    : self.sftp.close()
-                except : pass
-                try    : self.t.close()
-                except : pass
+    def help(self):
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("OPTIONS:")
+        print("instances <nb_of_instances>      default 1")
+        print("\nAMQP consumer broker settings:")
+        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(MANDATORY)")
+        print("\nAMQP Queue bindings:")
+        print("\texchange             <name>          (default: xpublic)")
+        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
+        print("\tsubtopic             <amqp pattern>  (default: #)")
+        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
+        print("\t\t\t* single directory wildcard (matches one directory)")
+        print("\t\t\t# wildcard (matches rest)")
+        print("\nAMQP Queue settings:")
+        print("\tdurable              <boolean>       (default: False)")
+        print("\texpire               <minutes>       (default: None)")
+        print("\tmessage-ttl          <minutes>       (default: None)")
+        print("\nFile settings:")
+        print("\tdocument_root        <document_root> (MANDATORY)")
+        print("\taccept    <regexp pattern>           (default: None)")
+        print("\tmirror               <boolean>       (default True)")
+        print("\treject    <regexp pattern>           (default: None)")
+        print("\tstrip      <strip count (directory)> (default 0)")
+        print("\nDestination/message settings:")
+        print("\tdo_send              <script>        (default None)")
+        print("\tdestination          <url>           (MANDATORY)")
+        print("\tpost_document_root   <document_root> (default None)")
+        print("\turl                  <url>           (MANDATORY)")
+        print("\ton_message           <script>        (default None)")
+        print("\tto                   <cluster>       (MANDATORY)")
+        print("\nAMQP posting broker settings (optional):")
+        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(default: manager amqp broker in default.conf)")
+        print("\tpost_exchange        <name>          (default xs_postusername)")
+        print("\ton_post              <script>        (default None)")
+        print("DEBUG:")
+        print("-debug")
 
-                return True
-                
-        except:
-                (stype, value, tb) = sys.exc_info()
-                self.logger.error("Sending failed %s. Type: %s, Value: %s" % (self.transmission.get_nocredential(), stype ,value))
+    # =============
+    # __on_message__
+    # =============
 
-        return False
+    def __on_message__(self):
 
-    def start_timer(self):
-        self.tbegin = time.time()
-  
-    def truncate(self,lfile,l_fsiz,r_fsiz):
-        fp = open(lfile,'r+b')
-        fp.truncate(r_fsiz)
-        fp.close()
-        self.logger.info("Truncated: %s (%d to %d)" % (lfile,l_fsiz,r_fsiz) )
-
-    def update(self, lfile, offset, length, fsiz, str_flags, data_sum ):
-        lfsiz  = 0
-
-        if not os.path.isfile(lfile) : return True,lfsiz
-
-        lstat  = os.stat(lfile)
-        lfsiz  = lstat[stat.ST_SIZE]
-
-        echunk = offset + length - 1
-        if echunk >= lfsiz : return True,lfsiz
-
-        ldata_sum = self.checksum(lfile,offset,length)
-        if ldata_sum != data_sum : return True,lfsiz
-   
-        return False,lfsiz
-                
-    def write_to_file(self,req,lfile,loffset,length) :
-        # file should exists
-        if not os.path.isfile(lfile) :
-           fp = open(lfile,'w')
-           fp.close()
-
-        # file open read/modify binary
-        fp = open(lfile,'r+b')
-        if loffset != 0 : fp.seek(loffset,0)
-
-        nc = int(length/self.bufsize)
-        r  = length % self.bufsize
-
-        # loop on bufsize if needed
-        i  = 0
-        while i < nc :
-              chunk = req.read(self.bufsize)
-              if len(chunk) != self.bufsize :
-                 self.logger.debug('length %d and bufsize = %d' % (len(chunk),self.bufsize))
-                 self.logger.error('source data differ from notification... abort')
-                 if i > 0 : self.logger.error('product corrupted')
-                 return False
-              fp.write(chunk)
-              i = i + 1
-
-        # remaining
-        if r > 0 :
-           chunk = req.read(r)
-           if len(chunk) != r :
-              self.logger.debug('length %d and remainder = %d' % (len(chunk),r))
-              self.logger.error('source data differ from notification... abort')
+        # only if sending to another pump
+        if self.post_broker != None :
+           # the message has not specified a destination.
+           if not 'to_clusters' in self.msg.headers :
+              self.msg.log_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+              self.logger.error("message without destination amqp header['to_clusters']")
               return False
-           fp.write(chunk)
 
-        fp.close()
+           # this instances of sr_sender runs,
+           # to send product to cluster: self.to_clusters.
+           # since self.to_clusters might be a list, we check for 
+           # and try matching any of this list to the message's to_clusters list
+
+           ok = False
+           for cluster in self.msg.to_clusters.split(',') :
+              if cluster.strip() != self.to_clusters :  continue
+              ok = True
+              break
+
+           if not ok :
+              self.logger.warning("skipped : not for remote cluster...")
+              return False
+
+        if self.destination[:3] == 'ftp' :
+            # 'i' cannot be supported by ftp/ftps
+            # we cannot offset in the remote file to inject data
+            #
+            # FIXME instead of dropping the message
+            # the inplace part could be delivered as 
+            # a separate partfile and message set to 'p'
+            if  self.msg.partflg == 'i':
+                logger.error("ftp, inplace part file not supported")
+                msg.log_publish(499,'ftp delivery problem')
+                return False
+
+        # invoke user defined on_message when provided
+
+        if self.on_message : return self.on_message(self)
 
         return True
 
-    def start_timer(self):
-        self.tbegin = time.time()
+    # =============
+    # process message  
+    # =============
 
-# default validation: notification always ok
-# ===================================
+    def process_message(self):
 
-import logging
+        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
-def validate_ok( body, logger ):
-    valid = True
+        #=================================
+        # setting up message with sr_sender config options
+        # self.set_local  : setting local info for the file/part
+        # self.set_remote : setting remote server info for the file/part
+        #=================================
 
-    logger.debug("validate_ok")
+        self.set_local()
+        self.set_remote()
 
-    return valid
+        #=================================
+        # now message is complete : invoke __on_message__
+        #=================================
 
-class Validator():
-      def __init__(self):
-          pass
+        ok = self.__on_message__()
+        if not ok : return ok
 
-validator         = Validator()
-validator.vscript = validate_ok
+        #=================================
+        # proceed to send :  has to work
+        #=================================
 
-logdir = '/tmp'
+        while True : 
+              ok = self.__do_send__()
+              if ok : break
+
+        #=================================
+        # publish our sending
+        #=================================
+
+        self.msg.set_topic_url('v02.post',self.remote_url)
+        self.msg.set_notice(self.remote_url,self.msg.time)
+        self.__on_post__()
+        self.msg.log_publish(201,'Published')
+
+        return True
+
+    def run(self):
+
+        # configure
+
+        self.configure()
+
+        # present basic config
+
+        self.logger.info("sr_sender run")
+
+        # loop/process messages
+
+        self.connect()
+
+        while True :
+              try  :
+                      #  consume message
+                      ok, self.msg = self.consumer.consume()
+                      if not ok : continue
+
+                      #  process message (ok or not... go to the next)
+                      ok = self.process_message()
+
+              except:
+                      (stype, svalue, tb) = sys.exc_info()
+                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+
+
+    def set_local(self):
+
+        self.local_root  = ''
+        self.local_rpath = ''
+
+        path  = '%s' % self.msg.path
+        token = path.split('/')
+
+        if self.document_root != None : self.local_root  = self.document_root
+        if len(token) > 1             : self.local_rpath = '/'.join(token[:-1])
+        self.filename = token[-1]
+
+
+        # Local directory (directory created if needed)
+
+        self.local_dir    = self.local_root + '/' + self.local_rpath
+        self.local_dir    = self.local_dir.replace('//','/')
+        self.local_file   = self.filename
+
+        self.local_path   = self.local_dir   + '/' + self.filename
+
+        self.local_offset = self.msg.offset
+        self.local_length = self.msg.lenght
+
+
+    def set_remote(self):
+
+        self.remote_root  = ''
+        if self.post_document_root != None : self.remote_root = self.post_document_root
+
+        # mirror case by default
+        self.remote_rpath = self.local_rpath
+
+        # a target directory was provided
+        if self.currentDir != None:
+           self.remote_rpath = self.currentDir
+
+        # no mirror and no directory ...
+        if not self.mirror and self.currentDir == None :
+           self.logger.warning("no mirroring and directory unset : assumed None ")
+           self.remote_rpath = ''
+
+        # default to localfilename
+
+        self.remote_file = self.local_file
+
+        self.remote_dir  = self.remote_root + '/' + self.remote_rpath
+        self.remote_path = self.remote_dir  + '/' + self.remote_file
+
+        self.remote_urlstr = self.destination + self.remote_path + '/' + self.remote_file
+        self.remote_url    = urllib.parse.urlparse(self.remote_urlstr)
+
+    # =============
+    # __on_post__ posting of message
+    # =============
+
+    def __on_post__(self):
+
+        # should always be ok
+
+        ok = self.msg.publish( )
+
+        # invoke on_post when provided anyway
+
+        if ok and self.on_post : ok = self.on_post(self)
+
+        return ok
+
+    def reload(self):
+        self.logger.info("%s reload" % self.program_name)
+        self.close()
+        self.run()
+
+    def start(self):
+        self.logger.info("%s start" % self.program_name)
+        self.run()
+
+    def stop(self):
+        self.logger.info("%s stop" % self.program_name)
+        self.close()
+        os._exit(0)
 
 # ===================================
 # MAIN
@@ -403,40 +470,29 @@ logdir = '/tmp'
 
 def main():
 
-    LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+    action = None
+    args   = None
+    config = None
 
-    if logdir == None :
-       logger = logging.getLogger(__name__)
-       logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    if len(sys.argv) >= 3 :
+       action = sys.argv[-1]
+       config = sys.argv[-2]
+       if len(sys.argv) > 3: args = sys.argv[1:-2]
 
-    # user wants to logging in a directory/file
+    sender = sr_sender(config,args)
+
+    if   action == 'reload' : sender.reload_parent()
+    elif action == 'restart': sender.restart_parent()
+    elif action == 'start'  : sender.start_parent()
+    elif action == 'stop'   : sender.stop_parent()
+    elif action == 'status' : sender.status_parent()
     else :
-       fn     = 'sr_sender'
-       lfn    = fn + '_' + sys.argv[1] + "_%s" % os.getpid() + ".log"
-       lfile  = logdir + os.sep + lfn
-
-       # Standard error is redirected in the log
-       sys.stderr = open(lfile, 'a')
-
-       # python logging
-       logger = None
-       fmt    = logging.Formatter( LOG_FORMAT )
-       hdlr   = logging.handlers.TimedRotatingFileHandler(lfile, when='midnight', interval=1, backupCount=5)
-       hdlr.setFormatter(fmt)
-       logger = logging.getLogger(lfn)
-       logger.setLevel(logging.INFO)
-       logger.addHandler(hdlr)
-
-
-    sender = sr_sender(logger,config=sys.argv[1],args=sys.argv)
-
-    sender.connect()
-
-    sender.run()
-
-    sender.close()
+           sender.logger.error("action unknown %s" % action)
+           sys.exit(1)
 
     sys.exit(0)
+
+
 
 # =========================================
 # direct invocation

@@ -309,6 +309,82 @@ def ftp_download( parent ):
     msg.log_publish(499,'ftp download problem')
 
     return False
+
+#============================================================
+#
+# wrapping of sr_ftp in ftp_send
+#
+#============================================================
+
+def ftp_send( parent ):
+    logger = parent.logger
+    msg    = parent.msg
+
+    local_file = parent.local_path
+    remote_dir = parent.remote_rpath
+
+    try :
+            ftp = sr_ftp(parent)
+            ftp.connect()
+            ftp.cd(remote_dir)
+
+            offset = 0
+
+            # 'i' cannot be supported by ftp/ftps
+            # we cannot offset in the remote file to inject data
+            #
+            # FIXME instead of dropping the message
+            # the inplace part could be delivered as 
+            # a separate partfile and message set to 'p'
+            if  msg.partflg == 'i':
+                logger.error("ftp, inplace part file not supported")
+                msg.log_publish(499,'ftp delivery problem')
+                return False
+
+            str_range = ''
+
+            # deliver file
+
+            msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
+
+            if parent.lock == None :
+               ftp.put(local_file, parent.remote_file)
+            elif parent.lock == '.' :
+               remote_lock = '.'  + parent.remote_file
+               ftp.put(local_file, remote_lock)
+               ftp.rename(remote_lock, parent.remote_file)
+            elif parent.lock[0] == '.' :
+               remote_lock = parent.remote_file + parent.lock
+               ftp.put(local_file, remote_lock)
+               ftp.rename(remote_lock, parent.remote_file)
+            elif parent.lock == 'umask' :
+               ftp.umask()
+               ftp.put(local_file, parent.remote_file)
+
+            try   : ftp.chmod(parent.chmod,parent.remote_file)
+            except: pass
+
+            msg.log_publish(201,'Delivered')
+
+            ftp.close()
+
+            return True
+            
+    except:
+            try    : ftp.close()
+            except : pass
+
+            (stype, svalue, tb) = sys.exc_info()
+            msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+            msg.log_publish(499,'ftp delivery problem')
+
+            return False
+
+    msg.log_publish(499,'ftp delivery problem')
+
+    return False
+                 
                  
 
 # ===================================
