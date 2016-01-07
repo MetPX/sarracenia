@@ -258,7 +258,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Assigned to: Michel Grenier
 
      Not baked yet.
-     ~/.config/sarra/  ... sarra.conf, and credentials
+     ~/.config/sarra/  ... default.conf, and credentials
 
  17. ( *InProgress* ) **Credential Store**
 
