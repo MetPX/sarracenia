@@ -34,7 +34,7 @@
 #
 #
 
-import sys, os, os.path, time, pwd, subprocess
+import sys, os, os.path, time, subprocess
 
 try :    
          from sr_config         import *
