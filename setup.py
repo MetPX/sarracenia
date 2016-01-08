@@ -65,6 +65,6 @@ setup(
     "amqplib", 
     "appdirs",
     "watchdog", 
-    "netiface", 
+    "netifaces", 
     "psutil" ],
 )
