@@ -206,7 +206,8 @@ class sr_instances(sr_config):
      
         self.logger.info("%s starting" % self.instance_str)
         self.logger.debug(" cmd = %s" % cmd)
-        pid = subprocess.Popen(cmd)
+        pid = subprocess.Popen(cmd,shell=False,\
+              stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
