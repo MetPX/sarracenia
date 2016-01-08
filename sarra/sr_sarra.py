@@ -124,6 +124,7 @@ class sr_sarra(sr_instances):
         self.accept_msg_for_clusters      = [ self.cluster ]
         self.accept_msg_for_clusters.extend ( self.cluster_aliases )
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
+        self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
 
         # no queue name allowed
 
