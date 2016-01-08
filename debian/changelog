@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.01a2) precise; urgency=low
+
+  * startup calls, sr_instances fix, sr_message fix
+
+ -- Michel Grenier <aspymjg@grogne2.cmc.ec.gc.ca>  Fri, 08 Jan 2016 14:23:39 -0500
+
 metpx-sarracenia (2.16.01a1) unstable; urgency=medium
 
   * Multiple improvements and bug fixes.
