@@ -232,7 +232,7 @@ class sr_sarra(sr_instances):
                      return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
-                     return file_process(self.msg)
+                     return file_process(self)
 
                 # user defined download scripts
 
@@ -342,8 +342,9 @@ class sr_sarra(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post : ok = self.on_post(self)
-        if not ok: return ok
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
 
         # should always be ok
 

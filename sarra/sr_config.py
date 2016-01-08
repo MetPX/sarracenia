@@ -159,7 +159,7 @@ class sr_config:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
 
-    def config_path(self,subdir,config):
+    def config_path(self,subdir,config, mandatory=True):
 
         if config == None : return False,None
 
@@ -188,9 +188,9 @@ class sr_config:
            return True,config_path
 
         # return bad file ... 
-
-        if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
-        else                   : self.logger.error("File incorrect %s" % config)
+        if mandatory :
+          if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
+          else                   : self.logger.error("File incorrect %s" % config)
 
         return False,config
 
@@ -398,8 +398,7 @@ class sr_config:
 
         # no vip given... so should not matter ?
         if self.vip == None or self.interface == None :
-           self.logger.error("option vip or interface missing...")
-           sys.exit(1)
+           self.logger.warning("option vip or interface missing...")
            return False
 
         a = netifaces.ifaddresses(self.interface)
@@ -412,12 +411,12 @@ class sr_config:
         return False
 
 
-    def isMatchingPattern(self, str, accept_unmatch = False): 
+    def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
             self.logger.debug(mask)
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-            if mask_regexp.match(str) :
+            if mask_regexp.match(chaine) :
                if not accepting : return accepting
                self.currentPattern    = pattern
                self.currentDir        = maskDir
@@ -1045,38 +1044,128 @@ class sr_config:
         return False
 
 
+
+# ===================================
+# self_test
+# ===================================
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
+
+def self_test():
+    # instantiation
+    cfg = sr_config()
+
+    # overwrite logs
+    logger     = test_logger()
+    cfg.logger = logger
+
+    # defaults + check isTrue
+    cfg.defaults()
+    if not cfg.isTrue('true') or cfg.isTrue('false') :
+       cfg.logger.error("problem with isTrue")
+       cfg.logger.error("TEST FAILED")
+       sys.exit(1)
+
+    # pluggin script checking
+    f = open("./scrpt.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self):\n")
+    f.write("          pass\n")
+    f.write("\n")
+    f.write("      def perform(self,parent):\n")
+    f.write("          if parent.this_value != 0 : return False\n")
+    f.write("          parent.this_value = 1\n")
+    f.write("          return True\n")
+    f.write("\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.this_script = transformer.perform\n")
+    f.close()
+
+    ok, path = cfg.config_path("scripts","scrpt.py")
+    if not ok :
+       cfg.logger.error("problem with config_path")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    cfg.this_value  = 0
+    cfg.this_script = None
+    cfg.execfile("this_script",path)
+    if cfg.this_script == None :
+       cfg.logger.error("problem with execfile")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    cfg.this_script(cfg)
+    if cfg.this_value != 1 :
+       cfg.logger.error("problem with script ")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    # general ... 
+
+    cfg.general()
+    if not os.path.isdir(cfg.user_data_dir)    or \
+       not os.path.isdir(cfg.user_cache_dir)   or \
+       not os.path.isdir(cfg.user_log_dir)     or \
+       not os.path.isdir(cfg.user_config_dir)  :
+       cfg.logger.error("problem with general user directories ")
+       sys.exit(1)
+
+    # args ... 
+
+    cfg.randomize = False
+    cfg.inplace   = False
+    cfg.logrotate = 5
+    cfg.args(['--randomize', '--inplace', 'True',  '--logrotate', 10, '-vip', '127.0.0.1', '-interface', 'lo' ])
+    if not cfg.randomize   or \
+       not cfg.inplace     or \
+       cfg.logrotate != 10 :
+       cfg.logger.error("problem with args")
+       sys.exit(1)
+
+
+    # has_vip... 
+
+    if not cfg.has_vip():
+       cfg.logger.error("has_vip failed")
+       sys.exit(1)
+
+    # config... 
+    #def isMatchingPattern(self, str, accept_unmatch = False): 
+    #def metpx_dirPattern(self,basename,destDir,destName) :
+    #def metpx_getDestInfos(self, filename):
+    #def validate_urlstr(self,urlstr):
+    #def validate_parts(self):
+    #def validate_sum(self):
+
+
+    #cfg.config(self.user_config)
+    #cfg.option(words)
+
+    print("TEST PASSED")
+    sys.exit(0)
+
 # ===================================
 # MAIN
 # ===================================
 
 def main():
 
-    if len(sys.argv) == 1 :
-       cfg = sr_config(None,None)
-    elif os.path.isfile(sys.argv[1]):
-       args = None
-       if len(sys.argv) > 2 : args = sys.argv[2:]
-       cfg = sr_config(sys.argv[1],args)
-    else :
-       cfg = sr_config(None,sys.argv[1:])
-    cfg.defaults()
-    #to get more details
-    cfg.debug = True
-    cfg.setlog()
-    cfg.logger.debug("user_data_dir = %s" % cfg.user_data_dir)
-    cfg.logger.debug("user_cache_dir = %s"% cfg.user_cache_dir)
-    cfg.logger.debug("user_log_dir = %s"  % cfg.user_log_dir)
-    cfg.logger.debug("user_config_dir = %s"% cfg.user_config_dir)
-    cfg.logger.debug("site_data_dir = %s" % cfg.site_data_dir)
-    cfg.logger.debug("site_config_dir = %s"  % cfg.site_config_dir)
-    cfg.logger.debug("user_queue_dir = %s"  % cfg.user_queue_dir)
-    cfg.general()
-    cfg.args(cfg.user_args)
-    cfg.config(cfg.user_config)
+    self_test()
     sys.exit(0)
 
 # =========================================
-# direct invocation
+# direct invocation : self testing
 # =========================================
 
 if __name__=="__main__":

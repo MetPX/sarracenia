@@ -94,10 +94,12 @@ class sr_log2clusters(sr_instances):
 
         # as many instances than cluster to route log to
 
+        self.logger.debug("log_clusters = %s" % self.log_clusters)
+
         self.nbr_instances = len(self.log_clusters)
-        self.logger.debug("nbr_instances = %d" % self.nbr_instances)
 
-
+        if self.nbr_instances == 0 : sys.exit(0)
+           
     def close(self):
         self.consumer.close()
         self.hc.close()
@@ -193,8 +195,9 @@ class sr_log2clusters(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post : ok = self.on_post(self)
-        if not ok: return ok
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
 
         # should always be ok
 
@@ -455,7 +458,7 @@ def main():
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('log2clusters',config)
+       ok,config = cfg.config_path('log2clusters',config,mandatory=False)
        if ok     : args = sys.argv[:-2]
        if not ok :
           config = None

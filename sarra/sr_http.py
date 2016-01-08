@@ -38,15 +38,15 @@ import os, urllib.request, urllib.error, sys
 
 def http_download( parent ) :
 
-    msg         = parent.msg
-    url         = msg.url
-    urlstr      = msg.urlstr
+    msg          = parent.msg
+    url          = msg.url
+    urlstr       = msg.urlstr
 
-    ok, details = parent.credentials.get(msg.urlcred)
-    if details  : url = details.url 
+    ok, details  = parent.credentials.get(msg.urlcred)
+    if details   : url = details.url 
 
-    user        = url.username
-    passwd      = url.password
+    user         = url.username
+    passwd       = url.password
 
     try :
             # create a password manager                
@@ -78,7 +78,7 @@ def http_download( parent ) :
             msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
-            ok       =  http_write(response,msg)
+            ok       =  http_write(response,msg,parent.bufsize)
 
             return ok
 
@@ -98,7 +98,7 @@ def http_download( parent ) :
 
     return False
 
-def http_write(req,msg) :
+def http_write(req,msg,bufsize) :
     if not os.path.isfile(msg.local_file) :
        fp = open(msg.local_file,'w')
        fp.close
@@ -110,7 +110,7 @@ def http_write(req,msg) :
     # http provides exact data
 
     while True:
-          chunk = req.read(msg.bufsize)
+          chunk = req.read(bufsize)
           if not chunk : break
           fp.write(chunk)
 

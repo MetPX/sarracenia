@@ -113,6 +113,8 @@ class sr_2xlog(sr_instances):
 
         self.nbr_instances = len(self.subscribe_users)
 
+        if self.nbr_instances == 0 : sys.exit(0)
+           
 
     def close(self):
         self.consumer.close()
@@ -140,11 +142,10 @@ class sr_2xlog(sr_instances):
     def connect(self):
 
         # =============
-        # create message if needed
+        # create message
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self.logger)
 
         # =============
         # consumer  queue_name : let consumer takes care of it
@@ -204,8 +205,9 @@ class sr_2xlog(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post : ok = self.on_post(self)
-        if not ok: return ok
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
 
         # should always be ok
 
@@ -475,7 +477,7 @@ def main():
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('toxlog',config)
+       ok,config = cfg.config_path('2xlog',config,mandatory=False)
        if ok     : args = sys.argv[:-2]
        if not ok :
           config = None

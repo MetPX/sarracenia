@@ -422,6 +422,12 @@ class sr_message():
         self.lastchunk        = current_block == block_count-1
         self.headers['parts'] = self.partstr
 
+        self.offset        = self.current_block * self.chunksize
+        self.filesize      = self.block_count * self.chunksize
+        if self.remainder  > 0 :
+           self.filesize  += self.remainder   - self.chunksize
+           if self.lastchunk : self.length    = self.remainder
+
     def set_parts_str(self,partstr):
 
         self.partflg = None

@@ -35,7 +35,7 @@
 
 import os, stat, sys
 
-def file_insert( msg ) :
+def file_insert( parent,msg ) :
 
     # file must exists
     if not os.path.isfile(msg.url.path):
@@ -45,7 +45,7 @@ def file_insert( msg ) :
     fp = open(msg.url.path,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
-    ok = file_write_length(fp, msg )
+    ok = file_write_length(fp, msg, parent.bufsize )
 
     fp.close()
 
@@ -77,7 +77,7 @@ def file_insert_part(parent,msg,part_file):
              # no worry with length, read all of part_file
              i  = 0
              while i<msg.length :
-                   buf = fp.read(msg.bufsize)
+                   buf = fp.read(parent.bufsize)
                    ft.write(buf)
                    i  += len(buf)
 
@@ -139,7 +139,9 @@ def file_link( msg ) :
 
     return True
 
-def file_process( msg ) :
+def file_process( parent ) :
+
+    msg = parent.msg
 
     # try link if no inserts
 
@@ -149,7 +151,7 @@ def file_process( msg ) :
        if ok : return ok
 
     try :
-             ok = file_insert(msg)
+             ok = file_insert(parent,msg)
              if ok : return ok
 
     except : pass
@@ -219,7 +221,7 @@ def file_reassemble(parent):
 
 # write exact length
 
-def file_write_length(req,msg):
+def file_write_length(req,msg,bufsize):
     # file should exists
     if not os.path.isfile(msg.local_file) :
        fp = open(msg.local_file,'w')
@@ -229,13 +231,13 @@ def file_write_length(req,msg):
     fp = open(msg.local_file,'r+b')
     if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
-    nc = int(msg.length/msg.bufsize)
-    r  =     msg.length%msg.bufsize
+    nc = int(msg.length/bufsize)
+    r  =     msg.length%bufsize
 
     # read/write bufsize "nc" times
     i  = 0
     while i < nc :
-          chunk = req.read(msg.bufsize)
+          chunk = req.read(bufsize)
           fp.write(chunk)
           i = i + 1
 

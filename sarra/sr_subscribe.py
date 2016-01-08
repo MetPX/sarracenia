@@ -159,7 +159,7 @@ class sr_subscribe(sr_instances):
                      return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
-                     return file_process(self.msg)
+                     return file_process(self)
 
                 # user defined download scripts
 

@@ -152,8 +152,9 @@ class sr_post(sr_config):
 
         # invoke on_post when provided
 
-        if self.on_post : ok = self.on_post(self)
-        if not ok: return ok
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
 
         # should always be ok
 

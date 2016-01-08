@@ -212,7 +212,6 @@ class sr_instances(sr_config):
 
         # as parent
         if   self.no == -1 :
-             self.logger.info("instances %d \n" % self.nbr_instances)
 
              # instance 0 is the parent... child starts at 1
 
@@ -238,7 +237,7 @@ class sr_instances(sr_config):
              self.pid = os.getpid()
              self.file_set_int(self.pidfile,self.pid)
              self.setlog()
-             self.run()
+             self.start()
         sys.exit(0)
 
     def status_instance(self):
