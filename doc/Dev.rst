@@ -68,6 +68,8 @@ Alpha
   no gurantee of functionality, some components may be partially implemented, some
   breakage may occur.
   no bug-fixes, issues addressed by subsequent version.
+  Often used for early end-to-end testing (rather than installing custom from tree on 
+  each test machine.)
 
 Beta
   Feature Complete for a given release.  Components in their final form for this release.
@@ -76,7 +78,7 @@ Beta
   no bug-fixes, issues addressed by subsequent version.
 
 RC - Release Candidate.
-  implied has gone through beta to identify and address major issues.
+  implies it has gone through beta to identify and address major issues.
   Translated documentation available.
   no bug-fixes, issues addressed by subsequent version.
 
@@ -122,19 +124,26 @@ Example::
 A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
 
 
-
-
-Building a Release
-------------------
-
-MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
-
 .. note::
    FIXME:  the adding of the + to master makes the current tree not the release,
    so need to expclicitly checkout the tag... no?  how does one 
    Can someone correct this:
 
    git checkout -t sarra-v2.16.01a01  ?
+
+
+Building a Release
+------------------
+
+MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
+Packaged releases are always preferable to one off builds, because they are reproducible.
+
+When development requires testing across a wide range of servers, it is preferred to make an alpha
+release, rather than installing one off packages.  So the preferred mechanisms is to build
+the ubuntu and pip packages at least, and install on the test machines using the relevant public
+repositories.
+ 
+
 
 
 Python Wheel
@@ -158,11 +167,18 @@ Note that the same version can never be uploaded twice.
 
 A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
 
+.. note:: 
+   when uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
+   For seamless upgrade, early testers need to do supply the --pre switch to pip:
+
+   pip3 install --upgrade --pre metpx-sarracenia
+
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
-- check the **build-depends** line in *debian/control* for requirements to build from source.
+This process builds a local .deb in the parent directory using standard debian mechanisms.
+- check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
 - The following steps will build sarracenia but not sign the changes or the source package::
 
     cd metpx/sarracenia
@@ -201,7 +217,7 @@ TODO
 Windows
 ~~~~~~~
 
-Just do the whole python install thing with all steps for now.  Easiest is: winpython.github.io 
+Install winpython from github.io version 3.4 or higher.  Then use pip to install from PyPI.
 
 
 SourceForge
