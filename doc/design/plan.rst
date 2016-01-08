@@ -105,7 +105,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      criteria: log messages created, read with sr_subscribe.
  
  
-  5. ( *InProgress* ) **user-centric multi-pump log message routing.**
+  5. ( *Done* ) **user-centric multi-pump log message routing.**
 
      Assigned to: Michel Grenier
 
@@ -129,7 +129,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      Need a relatively simple model for the data sources to specify the distribution
      of their data.  This is to be addressed after log message routing.
  
-  7. ( *InProgress* ) **multi-user support.**
+  7. ( *Done* ) **multi-user support.**
 
      Assigned to: Michel Grenier
 
@@ -144,7 +144,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      but not those of others.
  
  
-  8. ( *Waiting* ) **Triggering**
+  8. ( *Done* ) **Triggering**
 
      Assigned to: Michel Grenier
 
@@ -155,7 +155,7 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      so you can see that the complete file is there before it runs. or run a checksum
      or something.
  
-  9. ( *Waiting* ) **Automated Linux Builds & Packaging**
+  9. ( *Done* ) **Automated Linux Builds & Packaging**
 
      Assigned to: Khosrow Ebrahimpour
 
@@ -227,9 +227,9 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
         someone manages to set up a file transfer using only the guides.
         Example...
 
- 13. ( *InProgress* ) **End-User Operating Mode**
+ 13. ( *Done* ) **End-User Operating Mode**
 
-     Assigned to: ??
+     Assigned to: Michel Grenier
 
      Should be easy to use in a way where no cron jobs or other accessories are required, 
      just set the config files and go.  One user just invokes it, like rsync or scp.
@@ -253,14 +253,17 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      This needs to work over multiple nodes in DDSR, or SEP topologies.
      Suspect best path is to throttle message posting out of pre-validation?
 
- 16. ( *InProgress* ) **Config File Paths**
+
+ 16. ( *Done* ) **Config File Paths**
 
      Assigned to: Michel Grenier
 
      Not baked yet.
      ~/.config/sarra/  ... sarra.conf, and credentials
+     appdir.
 
- 17. ( *InProgress* ) **Credential Store**
+
+ 17. ( *Done* ) **Credential Store**
 
      Assigned to: Michel Grenier
 
@@ -324,7 +327,16 @@ beta, if in beta, then to release:
   remove this file and invoke on_file.  But there is a race condition when 
   multiple instances want to update the state file.
  
+- locking in sr_subscribe (as in dd_subscribe) except call it: 'inflight'
  
+
+Known Bugs
+----------
+
+-- Multi-processing on windows... 
+   only works as long as instance=1
+
+
 
 Parking Lot For Initial Release
 -------------------------------
@@ -615,7 +627,7 @@ List of small things, to not forget...
 - sr_sarra move 'recompute_chksum' to Developer options
 - sr_sarra man page says default exchange is amq.topic. hmm.. that is wrong.
 - force permissions to 600 on credentials.conf
-- police_cron to flag weird stuff
+- sr_police to flag weird stuff
   exchanges that do not start with x (and ar not built-in.)
   queues that do not start with q\_
   perhaps delete them? or just report?
