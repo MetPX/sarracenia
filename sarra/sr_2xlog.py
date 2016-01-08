@@ -140,11 +140,10 @@ class sr_2xlog(sr_instances):
     def connect(self):
 
         # =============
-        # create message if needed
+        # create message
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self.logger)
 
         # =============
         # consumer  queue_name : let consumer takes care of it
@@ -202,13 +201,15 @@ class sr_2xlog(sr_instances):
 
     def __on_post__(self):
 
+        # invoke on_post when provided
+
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
+
         # should always be ok
 
         ok = self.msg.publish( )
-
-        # invoke on_post when provided anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -468,19 +469,17 @@ def main():
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
+       args   = sys.argv[1:-1]
 
-    if len(sys.argv) > 2 : 
+    if len(sys.argv) >= 3 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('toxlog',config)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+       ok,config = cfg.config_path('2xlog',config,mandatory=False)
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-    toxlog = sr_2xlog(config,args[1:])
+    toxlog = sr_2xlog(config,args)
 
     if   action == 'reload' : toxlog.reload_parent()
     elif action == 'restart': toxlog.restart_parent()

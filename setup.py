@@ -33,15 +33,20 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts":[
-              "sr_post=sarra.sr_post:main",
+              "sr_admin=sarra.sr_admin:main",
+              "sr_police=sarra.sr_police:main",
+              "sr=sarra.sr:main",
+              "sr_2xlog=sarra.sr_2xlog:main",
               "sr_log=sarra.sr_log:main",
+              "sr_log2clusters=sarra.sr_log2clusters:main",
+              "sr_log2source=sarra.sr_log2source:main",
+              "sr_poll=sarra.sr_poll:main",
+              "sr_post=sarra.sr_post:main",
+              "sr_watch=sarra.sr_watch:main",
+              "sr_winnow=sarra.sr_winnow:main",
               "sr_sarra=sarra.sr_sarra:main",
               "sr_sender=sarra.sr_sender:main",
-              "sr_watch=sarra.sr_watch:main",
               "sr_subscribe=sarra.sr_subscribe:main",
-              "sr_log2source=sarra.sr_log2source:main",
-              "sr_log2clusters=sarra.sr_log2clusters:main",
-              "sr_2xlog=sarra.sr_2xlog:main"
               ]
     },
     classifiers=[
@@ -63,5 +68,6 @@ setup(
     "amqplib", 
     "appdirs",
     "watchdog", 
+    "netifaces", 
     "psutil" ],
 )

@@ -200,6 +200,7 @@ class sr_instances(sr_config):
         cmd.append(sys.argv[0])
         cmd.append("--no")
         cmd.append("%d" % self.instance)
+        if self.user_args   != None : cmd.extend(self.user_args)
         if self.user_config != None : cmd.append(self.user_config)
         cmd.append("start")
      
@@ -212,7 +213,6 @@ class sr_instances(sr_config):
 
         # as parent
         if   self.no == -1 :
-             self.logger.info("instances %d \n" % self.nbr_instances)
 
              # instance 0 is the parent... child starts at 1
 
@@ -238,7 +238,7 @@ class sr_instances(sr_config):
              self.pid = os.getpid()
              self.file_set_int(self.pidfile,self.pid)
              self.setlog()
-             self.run()
+             self.start()
         sys.exit(0)
 
     def status_instance(self):
@@ -350,10 +350,16 @@ class test_instances(sr_instances):
 
 def main():
 
-    f = open('./test_instances.conf','wb')
+
+    action = sys.argv[-1]
+    args   = sys.argv[1:-1]
+    config = './test_instances.conf'
+
+    f = open(config,'wb')
     f.close()
 
-    this_test = test_instances('./test_instances.conf',sys.argv[1:])
+
+    this_test = test_instances(config,args)
 
     action = sys.argv[-1]
     if action == 'reload' : this_test.reload_parent()

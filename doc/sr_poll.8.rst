@@ -21,25 +21,25 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_poll** is a program that connects onto a remote server,
-checks in various directories for some files. When a file is
-present, modified or created in the directory, the program will
-notify that new product.
+**sr_poll** is a program that connects to a remote server to 
+check in various directories for some files. When a file is
+present, modified or created in the remote directory, the program will
+notify about the new product.
 
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
-**sr_poll** connects to a *broker*. Than every *sleep* seconds, it connects to 
+**sr_poll** connects to a *broker*.  Every *sleep* seconds, it connects to 
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
-its content... When a file matched a pattern given by *accept*, **sr_poll** builds
+the contents. When a file matches a pattern given by *accept*, **sr_poll** builds
 a notification for that product and sends it to the *broker*. The matching content 
 of the *directory* is kept in a file for reference. Should a matching file be changed,
-or created at the next iteration, another notification is being sent.
+or created at a later iteration, a new notification is sent.
 
-**sr_poll** can be used to acquire files remote files. The notifications created can
-be listen by `sr_sarra(1) <sr_sarra.1.html>`_  , downloaded and reposted from its new location.
+**sr_poll** can be used to acquire remote files. an `sr_sarra(1) <sr_sarra.1.html>`_  can
+subscribe to the posted notifications, to download and repost them from a data pump.
 
 The **sr_poll** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+followed by an action start|stop|restart|reload|status... 
 
 CONFIGURATION
 =============
@@ -84,13 +84,12 @@ The logs can be written in another directory than the default one with option :
 VIP, INTERFACE, INSTANCE
 ------------------------
 
-There is only one instance of sr_poll that should be used for a 
-certain config. So the *instances* option is forced to 1. Moreover
-we enforced it to be a singleton. **sr_poll** perform its task if envoke
-on a server where the ip *vip*  from an *interface*  is present...
-If not, **sr_poll** will be put asleep.  When asleep, it will still 
-go onto the server every *sleep* seconds, to update its reference file
-and be up to date to takeover the work.
+As only one instance of sr_poll that should be used for each configuration,
+the *instances* option is forced to 1. It also behaves as a singleton: **sr_poll** perform 
+its task if invoked on a server where the ip *vip* from an *interface* is present...
+If not, **sr_poll** will sleep.  When asleep, it will wakeup 
+on the server every *sleep* seconds, to update its reference file and be perhaps
+take over the work.
 
 **vip       <ip>         (MANDATORY)**
 **interface <string>     (MANDATORY)**
@@ -100,16 +99,14 @@ CREDENTIALS
 -----------
 
 The configuration for credentials that concerns destination to be reached
-is stored in the
- ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
+is stored in the ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
 
 - **sftp://user:passwd@host:port/**
 - **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
-
 - **ftp://user:passwd@host:port/**
 - **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
 
-- **ftps://user:passwd@host:port/ tls **
+- **ftps://user:passwd@host:port/ tls**
 - **ftps://user:passwd@host:port/ [passive|active] [binary|ascii] tls [prot_p]**
 
 
@@ -126,7 +123,7 @@ The destination option sets the information to connect to the remote server
       (default: None and it is mandatory to set it ) 
 
 
-The *destination* should be set with the minimum requiered information...
+The *destination* should be set with the minimum required information...
 **sr_poll**  uses *destination* in the *AMQP* notification. It is accepted, but not a good
 practice to have a password in a notification. To reach the remote server,
 the *destination*, is resolved from the credential file.

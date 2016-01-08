@@ -245,69 +245,6 @@ SFTP Configuration
 Open SSH with restricted shell.
 
 
-Installation 
-------------
-
-The recommended installation method is via debian packages,
-from the launchpad repository, or using pip (and PYpi), in 
-which case the other python packages needed will be installed
-by the package manager.  If installing without packaging, likely 
-best to do a source installation, and then examine the 
-prerequisites in setup.py.
-
-
-From Source
-~~~~~~~~~~~
-
-See Development Guide for instructions on how to build the various type of
-package files.
-
-
-Debian-Derived
-~~~~~~~~~~~~~~
-
-The package can be downloaded from metpx.sf.net and installed.
-
-   dpkg -i metpx-sarracenia-0.1.1.all.dpkg
-
-Ubuntu 14.04:
-
-sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx-trusty
-sudo apt-get update
-sudo apt-get install python3-metpx-sarracenia
-
-
-
-PIP
-~~~
-
-For many special cases, such as if using python in virtual env, it might be more pragmatic 
-to install the package using pip (python install package) from http://pypi.python.org/_.
-The application is registered in PyPi, 
-
-pip install metpx-sarracenia
-
-and to upgrade:
-
-pip install --upgrade metpx-sarracenia
-
-
-
-Windows
-~~~~~~~
-
-Any native python installation will do, but the dependencies in the standard python.org
-installation require the installation of a C-Compiler as well, so it gets a bit complicated.
-If you have an existing python installation that works with c-modules within it, then the
-complete package should install with all features.
-
-If you do not have a python environment handy, then the easiest one to get going with
-is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for Sarracenia. You can obtain winpython from http://winpython.github.io/_
-(note: select python version >3 ) Then one can install a wheel from sourceforge, or using 
-pip. 
-
-
 Operations
 ----------
 
@@ -319,7 +256,7 @@ access only their own queues.
 
 The administrative user name is an installation choice, and exactly as for any other 
 user, the configuration files are placed under ~/.config/sarra/, with the 
-defaults under sarra.conf, and the configurations for components under
+defaults under default.conf, and the configurations for components under
 directories named after each component.  In the component directories,
 Configuration files have the .conf suffix.  User roles are configured by
 the users.conf file.
@@ -332,11 +269,11 @@ The administrative processes perform validation of postings from sources, and on
 they are validated, forward them to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
  
-- sr_sarra - various configurations to pull from other pump data to make it available from the pump.
-- sr_sarra - in full validation to pull data from local sources for to make it available from the pump.
-- sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
+- sr_sarra   - to pull data in from local sources to make it available from the pump.
+- sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
 - sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
-- sr_source2log - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
+- sr_2xlog   - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
 - sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
 - sr_police  - aka. queue_manager.py, kill off useless or empty queues.
 - sr_police2 - look for dead instances, and restart them? (cron job in sundew.)
@@ -347,9 +284,9 @@ to set up, and all of them may need to run at once.  To do so easily, one can in
   sr start
 
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
-Additionally, if the admin mode is set in ~/.config/sarra/sarra.conf like so:
+To run as a broker administrator, the Manager option is set in ~/.config/sarra/default.conf like so:
 
- admin True
+  Manager amqp://adminuser:adminpw@localhost/
 
 Then the log and police components are started as well.  It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, from data flow tasks, such as
@@ -359,9 +296,7 @@ for each account, and the various configuration files would use the appropriate 
 
 .. note::
  
-  FIXME: does root or feeder run the log processes.
-  FIXME: we should probably rename sarra.conf to default.conf.  It is confusing for it to be named
-  after a configurable component... and not really configure that component.
+  FIXME: does root or feeder run the log processes.  - run by whatever the 'manager' is?
 
 
 Housekeeping - sr_police

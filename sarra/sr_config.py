@@ -159,7 +159,7 @@ class sr_config:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
 
-    def config_path(self,subdir,config):
+    def config_path(self,subdir,config, mandatory=True):
 
         if config == None : return False,None
 
@@ -188,9 +188,9 @@ class sr_config:
            return True,config_path
 
         # return bad file ... 
-
-        if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
-        else                   : self.logger.error("File incorrect %s" % config)
+        if mandatory :
+          if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
+          else                   : self.logger.error("File incorrect %s" % config)
 
         return False,config
 
@@ -201,6 +201,9 @@ class sr_config:
         self.debug                = False
 
         self.logrotate            = 5
+
+        self.bufsize              = 8192
+        self.kbytes_ps            = 0
 
         self.admin                = None
         self.manager              = None
@@ -331,7 +334,7 @@ class sr_config:
         self.bindings             = []     
         self.masks                = []       
         self.currentDir           = '.'      
-        self.currentFileOption    = 'WHATFN' 
+        self.currentFileOption    = None 
 
         # read in provided credentials
         credent = self.user_config_dir + os.sep + 'credentials.conf'
@@ -395,8 +398,7 @@ class sr_config:
 
         # no vip given... so should not matter ?
         if self.vip == None or self.interface == None :
-           self.logger.error("option vip or interface missing...")
-           sys.exit(1)
+           self.logger.warning("option vip or interface missing...")
            return False
 
         a = netifaces.ifaddresses(self.interface)
@@ -409,14 +411,17 @@ class sr_config:
         return False
 
 
-    def isMatchingPattern(self, str, accept_unmatch = False): 
+    def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
             self.logger.debug(mask)
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-            if mask_regexp.match(str) :
+            if mask_regexp.match(chaine) :
+               if not accepting : return accepting
+               self.currentPattern    = pattern
                self.currentDir        = maskDir
                self.currentFileOption = maskFileOption
+               self.currentRegexp     = mask_regexp
                return accepting
 
         return accept_unmatch
@@ -426,18 +431,164 @@ class sr_config:
         if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
         return False
 
+    # modified from metpx SenderFTP
+    def metpx_basename_parts(self,basename):
+
+        parts = re.findall( self.currentPattern, basename )
+        if len(parts) == 2 and parts[1] == '' : parts.pop(1)
+        if len(parts) != 1 : return None
+
+        lst = []
+        if isinstance(parts[0],tuple) :
+           lst = list(parts[0])
+        else:
+          lst.append(parts[0])
+
+        return lst
+
+    # from metpx SenderFTP
+    def metpx_dirPattern(self,basename,destDir,destName) :
+
+        BN = basename.split(":")
+        EN = BN[0].split("_")
+        BP = self.metpx_basename_parts(basename)
+
+        ndestDir = ""
+        DD = destDir.split("/")
+        for  ddword in DD :
+             if ddword == "" : continue
+
+             nddword = ""
+             DW = ddword.split("$")
+             for dwword in DW :
+                 nddword += self.metpx_matchPattern(BN,EN,BP,dwword,dwword)
+
+             ndestDir += "/" + nddword 
+
+        return ndestDir
+
+    # modified from metpx client
+    def metpx_getDestInfos(self, filename):
+        """
+        WHATFN         -- First part (':') of filename 
+        HEADFN         -- Use first 2 fields of filename
+        NONE           -- Use the entire filename
+        TIME or TIME:  -- TIME stamp appended
+        DESTFN=fname   -- Change the filename to fname
+
+        ex: mask[2] = 'NONE:TIME'
+        """
+        timeSuffix   = ''
+        satnet       = ''
+        parts        = filename.split(':')
+        firstPart    = parts[0]
+        destFileName = filename
+        for spec in self.currentFileOption.split(':'):
+            if spec == 'WHATFN':
+                destFileName =  firstPart
+            elif spec == 'HEADFN':
+                headParts = firstPart.split('_')
+                if len(headParts) >= 2:
+                    destFileName = headParts[0] + '_' + headParts[1] 
+                else:
+                    destFileName = headParts[0] 
+            elif spec == 'SENDER' and 'SENDER=' in filename:
+                 i = filename.find('SENDER=')
+                 if i >= 0 : destFileName = filename[i+6:].split(':')[0]
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif spec == 'NONE':
+                 if 'SENDER=' in filename:
+                     i = filename.find('SENDER=')
+                     destFileName = filename[:i]
+                 else :
+                     if len(parts) >= 6 :
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1 : destFileName = ':'.join(parts[:5])
+                 # extra trailing : removed if present
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif spec == 'NONESENDER':
+                 if 'SENDER=' in filename:
+                     i = filename.find('SENDER=')
+                     j = filename.find(':',i)
+                     destFileName = filename[:i+j]
+                 else :
+                     if len(parts) >= 6 :
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1 : destFileName = ':'.join(parts[:5])
+                 # extra trailing : removed if present
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif re.compile('SATNET=.*').match(spec):
+                 satnet = ':' + spec
+            elif re.compile('DESTFN=.*').match(spec):
+                 destFileName = spec[7:]
+            elif re.compile('DESTFNSCRIPT=.*').match(spec):
+                 old_destname       = destFileName
+                 old_destfn_script  = self.destfn_script
+                 self.destfn_script = None
+                 self.execfile('destfn_script',script)
+                 if self.destfn_script != None :
+                    destFileName = self.destfn_script(filename)
+                 self.destfn_script = old_destfn_script
+                 if destFileName == None : destFileName = old_destFileName
+            elif spec == 'TIME':
+                if destFileName != filename :
+                   timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
+                   # check for PX or PDS behavior ... if file already had a time extension keep his...
+                   if parts[-1][0] == '2' : timeSuffix = ':' + parts[-1]
+            else:
+                self.logger.error("Don't understand this DESTFN parameter: %s" % spec)
+                return (None, None) 
+        return destFileName + satnet + timeSuffix
+
+    # modified from metpx SenderFTP
+    def metpx_matchPattern(self,BN,EN,BP,keywd,defval) :
+        if   keywd[:4] == "{T1}"    : return (EN[0])[0:1]   + keywd[4:]
+        elif keywd[:4] == "{T2}"    : return (EN[0])[1:2]   + keywd[4:]
+        elif keywd[:4] == "{A1}"    : return (EN[0])[2:3]   + keywd[4:]
+        elif keywd[:4] == "{A2}"    : return (EN[0])[3:4]   + keywd[4:]
+        elif keywd[:4] == "{ii}"    : return (EN[0])[4:6]   + keywd[4:]
+        elif keywd[:6] == "{CCCC}"  : return  EN[1]         + keywd[6:]
+        elif keywd[:4] == "{YY}"    : return (EN[2])[0:2]   + keywd[4:]
+        elif keywd[:4] == "{GG}"    : return (EN[2])[2:4]   + keywd[4:]
+        elif keywd[:4] == "{Gg}"    : return (EN[2])[4:6]   + keywd[4:]
+        elif keywd[:5] == "{BBB}"   : return (EN[3])[0:3]   + keywd[5:]
+        # from pds'datetime suffix... not sure
+        elif keywd[:7] == "{RYYYY}" : return (BN[6])[0:4]   + keywd[7:]
+        elif keywd[:5] == "{RMM}"   : return (BN[6])[4:6]   + keywd[5:]
+        elif keywd[:5] == "{RDD}"   : return (BN[6])[6:8]   + keywd[5:]
+        elif keywd[:5] == "{RHH}"   : return (BN[6])[8:10]  + keywd[5:]
+        elif keywd[:5] == "{RMN}"   : return (BN[6])[10:12] + keywd[5:]
+        elif keywd[:5] == "{RSS}"   : return (BN[6])[12:14] + keywd[5:]
+
+        # Matching with basename parts if given
+
+        if BP != None :
+           for i,v in enumerate(BP):
+               kw  = '{' + str(i) +'}'
+               lkw = len(kw)
+               if keywd[:lkw] == kw : return v + keywd[lkw:]
+
+        return defval
+
     def option(self,words):
         self.logger.debug("sr_config option %s" % words[0])
 
         needexit = False
         n        = 0
         try:
-                if   words[0] in ['accept','reject']:
-                     accepting   = words[0] == 'accept'
+                if   words[0] in ['accept','get','reject']:
+                     accepting   = words[0] == 'accept' or words[0] == 'get'
                      pattern     = words[1]
                      mask_regexp = re.compile(pattern)
+                     n = 2
 
-                     if len(words) > 2: self.currentFileOption = words[2]
+                     if len(words) > 2:
+                        self.currentFileOption = words[2]
+                        n = 3
 
                      self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
                      self.logger.debug("Masks")
@@ -465,43 +616,33 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] in ['manager','-manager','--manager'] :
-                     urlstr       = words[1]
-                     ok, url      = self.validate_urlstr(urlstr)
-                     self.manager = url
+                elif words[0] in ['broker','-b','--broker'] :
+                     urlstr      = words[1]
+                     ok, url     = self.validate_urlstr(urlstr)
+                     self.broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with manager (%s)" % urlstr)
+                        self.logger.error("problem with broker (%s)" % urlstr)
                         needexit = True
                      n = 2
 
-                elif words[0] in ['discard','-d','--discard','--download-and-discard']:
-                     self.discard = self.isTrue(words[1])
+                elif words[0] in ['bufsize','-bufsize','--bufsize']:
+                     self.bufsize = int(words[1])
                      n = 2
 
-                elif words[0] == 'directory':
-                     self.currentDir = words[1]
-
-                elif words[0] == 'filename':
-                     self.currentFileOption = words[1]
-
-                # like accept... make more sense when poll...
-                if   words[0] == 'get':
-                     accepting   = True
-                     pattern     = words[1]
-                     mask_regexp = re.compile(pattern)
-
-                     if len(words) > 2: self.currentFileOption = words[2]
-
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
-                     self.logger.debug("Masks")
-                     self.logger.debug("Masks %s"% self.masks)
-
-                elif words[0] in ['config','-c','--config']:
-                     self.config(words[1])
+                elif words[0] in ['chmod','-chmod','--chmod']:
+                     self.chmod = int(words[1])
                      n = 2
 
                 elif words[0] in ['cluster','-cl','--cluster']:
                      self.cluster = words[1] 
+                     n = 2
+
+                elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
+                     self.cluster_aliases = words[1].split(',')
+                     n = 2
+
+                elif words[0] in ['config','-c','--config']:
+                     self.config(words[1])
                      n = 2
 
                 elif words[0] in ['debug','-debug','--debug']:
@@ -514,6 +655,23 @@ class sr_config:
                      if self.debug :
                         self.logger.setLevel(logging.DEBUG)
 
+                elif words[0] in ['destination','-destination','--destination'] :
+                     urlstr           = words[1]
+                     ok, url          = self.validate_urlstr(urlstr)
+                     self.destination = words[1]
+                     if not ok :
+                        self.logger.error("problem with destination (%s)" % urlstr)
+                        needexit = True
+                     n = 2
+
+                elif words[0] == 'directory':
+                     self.currentDir = words[1]
+                     n = 2
+
+                elif words[0] in ['discard','-d','--discard','--download-and-discard']:
+                     self.discard = self.isTrue(words[1])
+                     n = 2
+
                 elif words[0] in ['document_root','-dr','--document_root']:
                      if sys.platform == 'win32':
                          self.document_root = words[1].replace('\\','/')
@@ -521,12 +679,23 @@ class sr_config:
                          self.document_root = words[1]
                      n = 2
 
-                elif words[0] in ['post_document_root','-pdr','--post_document_root']:
-                     if sys.platform == 'win32':
-                         self.post_document_root = words[1].replace('\\','/')
-                     else:
-                         self.post_document_root = words[1]
+                elif words[0] in ['do_download','-do_download','--do_download']:
+                     self.on_file = None
+                     self.execfile("do_download",words[1])
+                     if self.do_download == None :
+                        self.logger.error("do_download script incorrect (%s)" % words[1])
+                        ok = False
                      n = 2
+
+                elif words[0] in ['do_poll','-do_poll','--do_poll']:
+                     self.do_poll = None
+                     self.execfile("do_poll",words[1])
+                     if self.do_poll == None :
+                        self.logger.error("do_poll script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] == 'durable'    : self.durable = isTrue(words[1])
 
                 elif words[0] in ['events','-e','--events']:
                      i = 0
@@ -538,28 +707,46 @@ class sr_config:
                      self.events = words[1]
                      n = 2
 
-                elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
-                     self.cluster_aliases = words[1].split(',')
+                elif words[0] in ['exchange','-ex','--exchange'] :
+                     self.exchange = words[1]
+                     n = 2
+
+                elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
+
+                elif words[0] in ['filename','-filename','--filename']:
+                     self.currentFileOption = words[1]
                      n = 2
 
                 elif words[0] in ['flow','-f','--flow']:
                      self.flow = words[1] 
                      n = 2
 
-                elif words[0] in ['filename','-filename','--filename']:
-                     self.currentFileOption = words[1]
+                elif words[0] in ['gateway_for','-gf','--gateway_for']:
+                     self.gateway_for = words[1].split(',')
                      n = 2
 
                 elif words[0] in ['help','-h','-help','--help']:
                      self.help()
                      needexit = True
 
-                elif words[0] in ['lock','-lk','--lock']:
-                     self.lock = words[1] 
+                elif words[0] in ['inplace','-in','--inplace']:
+                     self.inplace = self.isTrue(words[1])
                      n = 2
 
-                elif words[0] in ['chmod','-chmod','--chmod']:
-                     self.chmod = int(words[1])
+                elif words[0] in ['instances','-i','--instances']:
+                     self.nbr_instances = int(words[1])
+                     n = 2
+
+                elif words[0] in ['interface','-interface','--interface']:
+                     self.interface = words[1]
+                     n = 2
+
+                elif words[0] in ['kbytes_ps','-kbytes_ps','--kbytes_ps']:
+                     self.kbytes_ps = int(words[1])
+                     n = 2
+
+                elif words[0] in ['lock','-lk','--lock']:
+                     self.lock = words[1] 
                      n = 2
 
                 elif words[0] in ['log','-l','-log','--log']:
@@ -574,33 +761,28 @@ class sr_config:
                      self.logrotate = int(words[1])
                      n = 2
 
-                elif words[0] in ['inplace','-in','--inplace']:
-                     self.inplace = self.isTrue(words[1])
+                elif words[0] in ['manager','-manager','--manager'] :
+                     urlstr       = words[1]
+                     ok, url      = self.validate_urlstr(urlstr)
+                     self.manager = url
+                     if not ok or not url.scheme in ['amqp','amqps']:
+                        self.logger.error("problem with manager (%s)" % urlstr)
+                        needexit = True
                      n = 2
 
-                elif words[0] in ['instances','-i','--instances']:
-                     self.nbr_instances = int(words[1])
+                elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
+
+                elif words[0] in ['mirror','-mirror','--mirror']:
+                     self.mirror = self.isTrue(words[1])
                      n = 2
 
                 elif words[0] in ['--no']:
                      self.no = int(words[1])
                      n = 2
 
-                elif words[0] in ['interface','-interface','--interface']:
-                     self.interface = words[1]
-                     n = 2
-
                 elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
                      self.notify_only = True
                      n = 1
-
-                elif words[0] in ['do_download','-do_download','--do_download']:
-                     self.on_file = None
-                     self.execfile("do_download",words[1])
-                     if self.do_download == None :
-                        self.logger.error("do_download script incorrect (%s)" % words[1])
-                        ok = False
-                     n = 2
 
                 elif words[0] in ['on_file','-on_file','--on_file']:
                      self.on_file = None
@@ -634,14 +816,6 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['do_poll','-do_poll','--do_poll']:
-                     self.do_poll = None
-                     self.execfile("do_poll",words[1])
-                     if self.do_poll == None :
-                        self.logger.error("do_poll script incorrect (%s)" % words[1])
-                        ok = False
-                     n = 2
-
                 elif words[0] in ['on_post','-on_post','--on_post']:
                      self.on_post = None
                      self.execfile("on_post",words[1])
@@ -650,51 +824,34 @@ class sr_config:
                         ok = False
                      n = 2
 
+                elif words[0] in ['overwrite','-o','--overwrite'] :
+                     self.overwrite = self.isTrue(words[1])
+                     n = 2
+
                 elif words[0] in ['parts','-p','--parts']:
                      self.parts   = words[1]
                      ok = self.validate_parts()
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['broker','-b','--broker'] :
+                elif words[0] in ['post_broker','-pb','--post_broker'] :
                      urlstr      = words[1]
                      ok, url     = self.validate_urlstr(urlstr)
-                     self.broker = url
+                     self.post_broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with broker (%s)" % urlstr)
+                        self.logger.error("problem with post_broker (%s)" % urlstr)
                         needexit = True
                      n = 2
 
-                elif words[0] in ['destination','-destination','--destination'] :
-                     urlstr           = words[1]
-                     ok, url          = self.validate_urlstr(urlstr)
-                     self.destination = words[1]
-                     if not ok :
-                        self.logger.error("problem with destination (%s)" % urlstr)
-                        needexit = True
+                elif words[0] in ['post_document_root','-pdr','--post_document_root']:
+                     if sys.platform == 'win32':
+                         self.post_document_root = words[1].replace('\\','/')
+                     else:
+                         self.post_document_root = words[1]
                      n = 2
 
-                elif words[0] in ['exchange','-ex','--exchange'] :
-                     self.exchange = words[1]
-                     n = 2
-
-                elif words[0] in ['to','-to','--to']:
-                     self.to_clusters = words[1]
-                     n = 2
-
-                elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
-                     self.topic_prefix = words[1]
-
-                elif words[0] in ['subtopic','-sub','--subtopic'] :
-                     self.subtopic = words[1]
-                     key = self.topic_prefix + '.' + self.subtopic
-                     self.bindings.append( (self.exchange,key) )
-                     self.logger.debug("BINDINGS")
-                     self.logger.debug("BINDINGS %s"% self.bindings)
-                     n = 2
-
-                elif words[0] in ['overwrite','-o','--overwrite'] :
-                     self.overwrite = self.isTrue(words[1])
+                elif words[0] in ['post_exchange','-pe','--post_exchange']:
+                     self.post_exchange = words[1]
                      n = 2
 
                 elif words[0] in ['queue_name','-qn','--queue_name'] :
@@ -708,10 +865,6 @@ class sr_config:
                      else :
                         self.queue_share = self.isTrue(words[1])
                         n = 2
-
-                elif words[0] == 'durable'    : self.durable = isTrue(words[1])
-                elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
-                elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
 
                 elif words[0] in ['randomize','-r','--randomize']:
                      if words[0][0:1] == '-' : 
@@ -749,25 +902,8 @@ class sr_config:
                      self.rename = words[1]
                      n = 2
 
-                elif words[0] in ['gateway_for','-gf','--gateway_for']:
-                     self.gateway_for = words[1].split(',')
-                     n = 2
-
-                elif words[0] in ['url','-u','--url']:
-                     self.url = urllib.parse.urlparse(words[1])
-                     n = 2
-
-                elif words[0] in ['post_broker','-pb','--post_broker'] :
-                     urlstr      = words[1]
-                     ok, url     = self.validate_urlstr(urlstr)
-                     self.post_broker = url
-                     if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with post_broker (%s)" % urlstr)
-                        needexit = True
-                     n = 2
-
-                elif words[0] in ['post_exchange','-pe','--post_exchange']:
-                     self.post_exchange = words[1]
+                elif words[0] in ['sleep','-sleep','--sleep']:
+                     self.sleep = int(words[1])
                      n = 2
 
                 elif words[0] in ['source_from_exchange','-sfe','--source_from_exchange']:
@@ -778,65 +914,33 @@ class sr_config:
                         self.source_from_exchange = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['ftp_user','-fu','--ftp_user']:
-                     self.ftp_user = words[1]
-                     n = 2
-
-                elif words[0] in ['ftp_password','-fp','--ftp_password']:
-                     self.ftp_password = words[1]
-                     n = 2
-
-                elif words[0] in ['ftp_mode','-fm','--ftp_mode']:
-                     if not words[1] in ['active','passive'] :
-                        self.logger.error("ftp_mode is active or passive")
-                        needexit = True
-                     self.ftp_mode = words[1]
-                     n = 2
-
-                elif words[0] in ['ftp_binary','-fb','--ftp_binary']:
-                     self.ftp_binary = self.isTrue(words[1])
-                     n = 2
-
-                elif words[0] in ['mirror','-mirror','--mirror']:
-                     self.mirror = self.isTrue(words[1])
-                     n = 2
-
-                elif words[0] in ['http_user','-hu','--http_user']:
-                     self.http_user = words[1]
-                     n = 2
-
-                elif words[0] in ['http_password','-hp','--http_password']:
-                     self.http_password = words[1]
-                     n = 2
-
-                elif words[0] in ['url_password','-up','--url_password']:
-                     self.password = words[1]
-                     n = 2
-
-                elif words[0] in ['sftp_user','-su','--sftp_user']:
-                     self.sftp_user = words[1]
-                     n = 2
-
-                elif words[0] in ['sftp_password','-sp','--sftp_password']:
-                     self.sftp_password = words[1]
-                     n = 2
-
-                elif words[0] in ['sftp_keyfile','-sk','--sftp_keyfile']:
-                     self.sftp_keyfile = words[1]
-                     n = 2
-
-                elif words[0] in ['sleep','-sleep','--sleep']:
-                     self.sleep = int(words[1])
-                     n = 2
-
                 elif words[0] in ['strip','-strip','--strip']:
                      self.strip = int(words[1])
+                     n = 2
+
+                elif words[0] in ['subtopic','-sub','--subtopic'] :
+                     self.subtopic = words[1]
+                     key = self.topic_prefix + '.' + self.subtopic
+                     self.bindings.append( (self.exchange,key) )
+                     self.logger.debug("BINDINGS")
+                     self.logger.debug("BINDINGS %s"% self.bindings)
                      n = 2
 
                 elif words[0] in ['sum','-sum','--sum']:
                      self.sumflg = words[1]
                      ok = self.validate_sum()
                      if not ok : needexit = True
+                     n = 2
+
+                elif words[0] in ['to','-to','--to']:
+                     self.to_clusters = words[1]
+                     n = 2
+
+                elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
+                     self.topic_prefix = words[1]
+
+                elif words[0] in ['url','-u','--url']:
+                     self.url = urllib.parse.urlparse(words[1])
                      n = 2
 
                 elif words[0] in ['vip','-vip','--vip']:
@@ -940,38 +1044,128 @@ class sr_config:
         return False
 
 
+
+# ===================================
+# self_test
+# ===================================
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
+
+def self_test():
+    # instantiation
+    cfg = sr_config()
+
+    # overwrite logs
+    logger     = test_logger()
+    cfg.logger = logger
+
+    # defaults + check isTrue
+    cfg.defaults()
+    if not cfg.isTrue('true') or cfg.isTrue('false') :
+       cfg.logger.error("problem with isTrue")
+       cfg.logger.error("TEST FAILED")
+       sys.exit(1)
+
+    # pluggin script checking
+    f = open("./scrpt.py","w")
+    f.write("class Transformer(object): \n")
+    f.write("      def __init__(self):\n")
+    f.write("          pass\n")
+    f.write("\n")
+    f.write("      def perform(self,parent):\n")
+    f.write("          if parent.this_value != 0 : return False\n")
+    f.write("          parent.this_value = 1\n")
+    f.write("          return True\n")
+    f.write("\n")
+    f.write("transformer = Transformer()\n")
+    f.write("self.this_script = transformer.perform\n")
+    f.close()
+
+    ok, path = cfg.config_path("scripts","scrpt.py")
+    if not ok :
+       cfg.logger.error("problem with config_path")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    cfg.this_value  = 0
+    cfg.this_script = None
+    cfg.execfile("this_script",path)
+    if cfg.this_script == None :
+       cfg.logger.error("problem with execfile")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    cfg.this_script(cfg)
+    if cfg.this_value != 1 :
+       cfg.logger.error("problem with script ")
+       cfg.logger.error("TEST FAILED")
+       os.unlink("./scrpt.py")
+       sys.exit(1)
+
+    # general ... 
+
+    cfg.general()
+    if not os.path.isdir(cfg.user_data_dir)    or \
+       not os.path.isdir(cfg.user_cache_dir)   or \
+       not os.path.isdir(cfg.user_log_dir)     or \
+       not os.path.isdir(cfg.user_config_dir)  :
+       cfg.logger.error("problem with general user directories ")
+       sys.exit(1)
+
+    # args ... 
+
+    cfg.randomize = False
+    cfg.inplace   = False
+    cfg.logrotate = 5
+    cfg.args(['--randomize', '--inplace', 'True',  '--logrotate', 10, '-vip', '127.0.0.1', '-interface', 'lo' ])
+    if not cfg.randomize   or \
+       not cfg.inplace     or \
+       cfg.logrotate != 10 :
+       cfg.logger.error("problem with args")
+       sys.exit(1)
+
+
+    # has_vip... 
+
+    if not cfg.has_vip():
+       cfg.logger.error("has_vip failed")
+       sys.exit(1)
+
+    # config... 
+    #def isMatchingPattern(self, str, accept_unmatch = False): 
+    #def metpx_dirPattern(self,basename,destDir,destName) :
+    #def metpx_getDestInfos(self, filename):
+    #def validate_urlstr(self,urlstr):
+    #def validate_parts(self):
+    #def validate_sum(self):
+
+
+    #cfg.config(self.user_config)
+    #cfg.option(words)
+
+    print("TEST PASSED")
+    sys.exit(0)
+
 # ===================================
 # MAIN
 # ===================================
 
 def main():
 
-    if len(sys.argv) == 1 :
-       cfg = sr_config(None,None)
-    elif os.path.isfile(sys.argv[1]):
-       args = None
-       if len(sys.argv) > 2 : args = sys.argv[2:]
-       cfg = sr_config(sys.argv[1],args)
-    else :
-       cfg = sr_config(None,sys.argv[1:])
-    cfg.defaults()
-    #to get more details
-    cfg.debug = True
-    cfg.setlog()
-    cfg.logger.debug("user_data_dir = %s" % cfg.user_data_dir)
-    cfg.logger.debug("user_cache_dir = %s"% cfg.user_cache_dir)
-    cfg.logger.debug("user_log_dir = %s"  % cfg.user_log_dir)
-    cfg.logger.debug("user_config_dir = %s"% cfg.user_config_dir)
-    cfg.logger.debug("site_data_dir = %s" % cfg.site_data_dir)
-    cfg.logger.debug("site_config_dir = %s"  % cfg.site_config_dir)
-    cfg.logger.debug("user_queue_dir = %s"  % cfg.user_queue_dir)
-    cfg.general()
-    cfg.args(cfg.user_args)
-    cfg.config(cfg.user_config)
+    self_test()
     sys.exit(0)
 
 # =========================================
-# direct invocation
+# direct invocation : self testing
 # =========================================
 
 if __name__=="__main__":

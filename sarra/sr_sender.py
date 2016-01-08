@@ -93,17 +93,7 @@ class sr_sender(sr_instances):
     def check(self):
         self.connected     = False 
 
-        # to clusters requiered
-
-        if self.post_broker != None and self.to_clusters == None :
-           self.logger.error("Need to know post_broker cluster name")
-           self.logger.error("-to option is mandatory in this case\n")
-           sys.exit(1)
-
         # fallback bindings to "all"
-
-        if self.exchange  == None :
-           self.exchange   = 'xpublic'
 
         if self.bindings == []  :
            key = self.topic_prefix + '.#'
@@ -126,12 +116,25 @@ class sr_sender(sr_instances):
            sys.exit(1)
 
         # check destination
-        if self.post_broker != None and self.post_exchange == None :
-           self.post_exchange = self.exchange
+        if self.post_broker != None :
+           if self.post_exchange == None : self.post_exchange = self.exchange
+
+        # we act like a sender only no posting
+        # in this case accept everything if no accept/reject were defined
+        else:
+           self.accept_unmatch = self.masks == []
+
+        # to clusters requiered
+
+        if self.post_broker != None and self.to_clusters == None :
+           self.logger.error("Need to know post_broker cluster name")
+           self.logger.error("-to option is mandatory in this case\n")
+           sys.exit(1)
 
     def close(self):
         self.consumer.close()
-        if self.post_broker : self.poster.close()
+        if self.post_broker :
+           self.poster.close()
         self.connected = False 
 
     def configure(self):
@@ -184,6 +187,7 @@ class sr_sender(sr_instances):
         self.consumer          = sr_consumer(self)
         self.msg.log_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
+        self.msg.user          = self.details.url.username
 
         # =============
         # poster
@@ -194,6 +198,7 @@ class sr_sender(sr_instances):
 
            self.msg.publisher    = self.poster.publisher
            self.msg.pub_exchange = self.post_exchange
+           self.msg.user         = self.post_broker.username
 
         self.connected        = True 
 
@@ -285,7 +290,7 @@ class sr_sender(sr_instances):
 
            ok = False
            for cluster in self.msg.to_clusters.split(',') :
-              if cluster.strip() != self.to_clusters :  continue
+              if not cluster in self.to_clusters :  continue
               ok = True
               break
 
@@ -312,6 +317,24 @@ class sr_sender(sr_instances):
         return True
 
     # =============
+    # __on_post__ posting of message
+    # =============
+
+    def __on_post__(self):
+
+        # invoke on_post when provided
+
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
+
+        # should always be ok
+
+        ok = self.msg.publish( )
+
+        return ok
+
+    # =============
     # process message  
     # =============
 
@@ -327,6 +350,7 @@ class sr_sender(sr_instances):
 
         self.set_local()
         self.set_remote()
+        self.set_remote_url()
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -413,42 +437,54 @@ class sr_sender(sr_instances):
         if self.post_document_root != None : self.remote_root = self.post_document_root
 
         # mirror case by default
-        self.remote_rpath = self.local_rpath
 
-        # a target directory was provided
-        if self.currentDir != None:
-           self.remote_rpath = self.currentDir
+        self.remote_rpath = self.local_rpath
+        self.remote_file  = self.local_file
 
         # no mirror and no directory ...
         if not self.mirror and self.currentDir == None :
            self.logger.warning("no mirroring and directory unset : assumed None ")
            self.remote_rpath = ''
 
-        # default to localfilename
+        # a target directory was provided
+        if self.currentDir != None:
+           self.remote_rpath = self.currentDir
 
-        self.remote_file = self.local_file
+        # PDS like destination pattern/keywords
+
+        destName = self.metpx_getDestInfos(self.remote_file)
+        if self.destfn_script :
+            ldestName = self.destfn_script(destName)
+            if ldestName != destName :
+               self.logger.info("destfn_script : %s becomes %s "  % (destName,ldestName) )
+               destName = ldestName
+
+        destDir = self.remote_rpath
+        destDir = self.metpx_dirPattern(self.remote_file,destDir,destName)
+
+        self.remote_file  = destName
+        self.remote_rpath = destDir
+
+        # build dir/path and url from options
 
         self.remote_dir  = self.remote_root + '/' + self.remote_rpath
         self.remote_path = self.remote_dir  + '/' + self.remote_file
 
-        self.remote_urlstr = self.destination + self.remote_path + '/' + self.remote_file
-        self.remote_url    = urllib.parse.urlparse(self.remote_urlstr)
+    def set_remote_url(self):
 
-    # =============
-    # __on_post__ posting of message
-    # =============
+        self.remote_urlstr    = self.destination
+        if self.url != None :
+           self.remote_urlstr = self.url.geturl()
 
-    def __on_post__(self):
+        if self.remote_urlstr[-1] != '/' : self.remote_urlstr += '/'
 
-        # should always be ok
+        if self.remote_rpath != '' and self.remote_rpath[0] == '/':
+           self.rempote_rpath = self.remote_rpath[1:]
 
-        ok = self.msg.publish( )
+        if not self.post_document_root and 'ftp' in self.remote_urlstr[:4] : self.remote_urlstr += '/'
 
-        # invoke on_post when provided anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
-
-        return ok
+        self.remote_urlstr += self.remote_path + '/' + self.remote_file
+        self.remote_url     = urllib.parse.urlparse(self.remote_urlstr)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
@@ -474,10 +510,10 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) > 3 :
        action = sys.argv[-1]
        config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+       args   = sys.argv[1:-2]
 
     sender = sr_sender(config,args)
 

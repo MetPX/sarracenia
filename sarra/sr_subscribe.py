@@ -159,7 +159,7 @@ class sr_subscribe(sr_instances):
                      return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
-                     return file_process(self.msg)
+                     return file_process(self)
 
                 # user defined download scripts
 
@@ -604,21 +604,14 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) > 1 :
+    if len(sys.argv) >= 2 : 
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
 
-    if len(sys.argv) > 2 : 
-       config    = sys.argv[-2]
-       cfg       = sr_config()
-       cfg.general()
-       ok,config = cfg.config_path('subscribe',config)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+    if len(sys.argv) >= 3 : 
+       config = sys.argv[-2]
+       args   = sys.argv[1:-2]
 
-    subscribe = sr_subscribe(config,args[1:])
+    subscribe = sr_subscribe(config,args)
 
     if   action == 'reload' : subscribe.reload_parent()
     elif action == 'restart': subscribe.restart_parent()

@@ -86,6 +86,10 @@ class sr_log2source(sr_instances):
             if 'source' in roles :
                self.source_users.append(user)
 
+        self.logger.debug("source_users = %s " % self.source_users)
+
+        self.nbr_instances = len(self.source_users)
+           
 
     def close(self):
         self.consumer.close()
@@ -176,13 +180,15 @@ class sr_log2source(sr_instances):
 
     def __on_post__(self):
 
+        # invoke on_post when provided
+
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
+
         # should always be ok
 
         ok = self.msg.publish( )
-
-        # invoke user provided on_post anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -384,20 +390,17 @@ def main():
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
+       args   = sys.argv[1:-1]
 
     if len(sys.argv) > 2 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('log2source',config)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+       ok,config = cfg.config_path('log2source',config,mandatory=False)
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-
-    log2source = sr_log2source(config,args[1:])
+    log2source = sr_log2source(config,args)
 
     if   action == 'reload' : log2source.reload_parent()
     elif action == 'restart': log2source.restart_parent()

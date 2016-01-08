@@ -94,9 +94,9 @@ class sr_log2clusters(sr_instances):
 
         # as many instances than cluster to route log to
 
-        self.nbr_instances = len(self.log_clusters)
-        self.logger.debug("nbr_instances = %d" % self.nbr_instances)
+        self.logger.debug("log_clusters = %s" % self.log_clusters)
 
+        self.nbr_instances = len(self.log_clusters)
 
     def close(self):
         self.consumer.close()
@@ -191,13 +191,15 @@ class sr_log2clusters(sr_instances):
 
     def __on_post__(self):
 
+        # invoke on_post when provided
+
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
+
         # should always be ok
 
         ok = self.msg.publish( )
-
-        # invoke user provided on_post anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -448,19 +450,17 @@ def main():
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
+       args   = sys.argv[1:-1]
 
     if len(sys.argv) > 2 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('log2clusters',config)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+       ok,config = cfg.config_path('log2clusters',config,mandatory=False)
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-    log2clusters = sr_log2clusters(config,args[1:])
+    log2clusters = sr_log2clusters(config,args)
 
     if   action == 'reload' : log2clusters.reload_parent()
     elif action == 'restart': log2clusters.restart_parent()

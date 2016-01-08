@@ -108,6 +108,10 @@ class sr_sarra(sr_instances):
 
     def check(self):
 
+        if self.broker == None :
+           self.logger.error("no broker given")
+           sys.exit(1)
+
         # bindings should be defined 
 
         if self.bindings == []  :
@@ -120,6 +124,7 @@ class sr_sarra(sr_instances):
         self.accept_msg_for_clusters      = [ self.cluster ]
         self.accept_msg_for_clusters.extend ( self.cluster_aliases )
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
+        self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
 
         # no queue name allowed
 
@@ -232,7 +237,7 @@ class sr_sarra(sr_instances):
                      return sftp_download(self)
 
                 elif self.msg.url.scheme == 'file' :
-                     return file_process(self.msg)
+                     return file_process(self)
 
                 # user defined download scripts
 
@@ -340,13 +345,15 @@ class sr_sarra(sr_instances):
 
     def __on_post__(self):
 
+        # invoke on_post when provided
+
+        if self.on_post :
+           ok = self.on_post(self)
+           if not ok: return ok
+
         # should always be ok
 
         ok = self.msg.publish( )
-
-        # invoke on_post when provided anyway
-
-        if ok and self.on_post : ok = self.on_post(self)
 
         return ok
 
@@ -614,10 +621,16 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
-       action = sys.argv[-1]
-       config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+    if len(sys.argv) >= 3 : 
+       action    = sys.argv[-1]
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('sarra',config)
+       args = sys.argv[1:-2]
+       if not ok : 
+          print("error : no config file")
+          sys.exit(1)
 
     sarra = sr_sarra(config,args)
 

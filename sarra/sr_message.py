@@ -61,8 +61,6 @@ class sr_message():
 
         self.chkclass      = Checksum()
 
-        self.bufsize       = 10 * 1024 * 1024
-
         self.inplace       = True
 
         self.user          = None
@@ -423,6 +421,12 @@ class sr_message():
                                 (partflg,chunksize,block_count,remainder,current_block)
         self.lastchunk        = current_block == block_count-1
         self.headers['parts'] = self.partstr
+
+        self.offset        = self.current_block * self.chunksize
+        self.filesize      = self.block_count * self.chunksize
+        if self.remainder  > 0 :
+           self.filesize  += self.remainder   - self.chunksize
+           if self.lastchunk : self.length    = self.remainder
 
     def set_parts_str(self,partstr):
 

@@ -132,7 +132,7 @@ so the sr_post command will look like this:
 If you find you are using the same arguments all the time,
 it might be convenient to store them in a central configuration::
   
-  blacklab% cat >~/.config/sarra/sarra.conf <<EOT
+  blacklab% cat >~/.config/sarra/default.conf <<EOT
 
   broker amqps://rnd@ddsr.cmc.ec.gc.ca/
   to DDIEDM,DDIDOR,ARCHPC
@@ -198,6 +198,7 @@ HTTP Injection
 If we take a similar case, but in this case there is some http accessible space,
 the steps are the same or even simpler if no authentication is required for the pump
 to acquire the data.  One needs to install a web server of some kind.  
+
 As an example, for lighttpd, the following could be a complete configuration:: 
 
   cat >/etc/lighttpd/lighttpd.conf <<EOT
@@ -276,7 +277,7 @@ downstream, may refuse to forward your data for various reasons, that will only
 be reported to the source in these log messages.  
 
 To view source log messages, the sr_log command is just a version of sr_subscribe, with the
-same options where they make sense. If the configuration file (~/.config/sarra/sarra.conf) 
+same options where they make sense. If the configuration file (~/.config/sarra/default.conf) 
 is set up, then all that is needed is::
 
   sr_log
@@ -417,4 +418,57 @@ from multiple sources.
   Fingerprint methods that are based on the name, rather than the actual data, 
   will cause the entire file to be re-sent when they are updated.  
 
+
+Labelling Interesting Flows
+---------------------------
+
+Those injecting data have the freeform attribute 'flow' available to assign an arbitrary label
+to a message, like a transaction id, to be able to follow a particular file though the network.
+
   
+Advanced Posting
+----------------
+
+What if there is some piece of metadata that a data source has chosen for some reason not to
+include in the filename hierarchy?  How can data consumers know that information without having
+to download the file in order to determine that it is uninteresting.  A typical example would be
+weather warnings.  The file names might include weather warnings for an entire country.  If consumers
+are only interested in downloading warnings that are local to them, then, a data source could
+use the on_post hook in order to add additional headers to the message.
+
+In order to use the additional headers, subscribers would need to implement and on_message hook on their
+end, which would examine the non-standard header, and perhaps decide to avoid retrieving the file by
+returning false from the hook script.
+
+.. note::
+  with great flexibility comes great potential for harm.  the path names should include as much information
+  as possible as sarracenia is built to optimize routing using them.  Additional meta-data should be used
+  to supplement, rather than replace, the built-in routing. 
+
+
+Efficiency Considerations 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is not recommended to put overly complex logic in the hook scripts, as they execute synchronously with
+post and receive operations.  Note that the use of built-in facilities of AMQP (headers) is done to
+explicitly be as efficient as possible.  As an extreme example, including encoded XML into messages
+will not affect performance slightly, it will slow processing by orders of magnitude that one will not
+be able to compensate for with multiple instances (the penaly is simply too large to overcome.)
+
+Consider, for example, Common Alerting Protocol (CAP) messages for weather alerts.  These alerts routinely 
+exceed 100 KBytes in size, wheras a sarracenia message is on the order of 200 bytes.  The sarracenia messages
+go to many more recipients than the alert: anyone considering a alert, as oppposed to just the ones
+the subscriber is actually interested in, and this metadata will also be included in the log messages,
+and so replicated in many additional locations where the data itself will not be present.
+
+Including all the information that is in the CAP would mean just in terms of pure transport 500 times 
+more capacity used for a single message.  When there are many millions of messages to transfer, this adds up.
+Only minimal information required by the subscriber to make the decision to download or not should be 
+added to the message. this example has ignored 
+
+.. note::
+  FIXME: I guess we should start making some benchmarks soon.
+  Need to establish a baseline...  What is meaningful?
+  How many messages per second a subscriber can download?  
+
+
