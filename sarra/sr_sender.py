@@ -510,10 +510,10 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) > 3 :
        action = sys.argv[-1]
        config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+       args   = sys.argv[1:-2]
 
     sender = sr_sender(config,args)
 

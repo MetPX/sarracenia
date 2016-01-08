@@ -200,6 +200,7 @@ class sr_instances(sr_config):
         cmd.append(sys.argv[0])
         cmd.append("--no")
         cmd.append("%d" % self.instance)
+        if self.user_args   != None : cmd.extend(self.user_args)
         if self.user_config != None : cmd.append(self.user_config)
         cmd.append("start")
      
@@ -349,10 +350,16 @@ class test_instances(sr_instances):
 
 def main():
 
-    f = open('./test_instances.conf','wb')
+
+    action = sys.argv[-1]
+    args   = sys.argv[1:-1]
+    config = './test_instances.conf'
+
+    f = open(config,'wb')
     f.close()
 
-    this_test = test_instances('./test_instances.conf',sys.argv[1:])
+
+    this_test = test_instances(config,args)
 
     action = sys.argv[-1]
     if action == 'reload' : this_test.reload_parent()

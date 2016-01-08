@@ -98,8 +98,6 @@ class sr_log2clusters(sr_instances):
 
         self.nbr_instances = len(self.log_clusters)
 
-        if self.nbr_instances == 0 : sys.exit(0)
-           
     def close(self):
         self.consumer.close()
         self.hc.close()
@@ -452,19 +450,17 @@ def main():
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
+       args   = sys.argv[1:-1]
 
     if len(sys.argv) > 2 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
        ok,config = cfg.config_path('log2clusters',config,mandatory=False)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-    log2clusters = sr_log2clusters(config,args[1:])
+    log2clusters = sr_log2clusters(config,args)
 
     if   action == 'reload' : log2clusters.reload_parent()
     elif action == 'restart': log2clusters.restart_parent()

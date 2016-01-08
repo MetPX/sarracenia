@@ -108,6 +108,10 @@ class sr_sarra(sr_instances):
 
     def check(self):
 
+        if self.broker == None :
+           self.logger.error("no broker given")
+           sys.exit(1)
+
         # bindings should be defined 
 
         if self.bindings == []  :
@@ -616,10 +620,16 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
-       action = sys.argv[-1]
-       config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+    if len(sys.argv) >= 3 : 
+       action    = sys.argv[-1]
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('sarra',config)
+       args = sys.argv[1:-2]
+       if not ok : 
+          print("error : no config file")
+          sys.exit(1)
 
     sarra = sr_sarra(config,args)
 

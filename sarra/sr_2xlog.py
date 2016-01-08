@@ -113,8 +113,6 @@ class sr_2xlog(sr_instances):
 
         self.nbr_instances = len(self.subscribe_users)
 
-        if self.nbr_instances == 0 : sys.exit(0)
-           
 
     def close(self):
         self.consumer.close()
@@ -471,19 +469,17 @@ def main():
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]
-       args   = sys.argv[:-1]
+       args   = sys.argv[1:-1]
 
-    if len(sys.argv) > 2 : 
+    if len(sys.argv) >= 3 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
        ok,config = cfg.config_path('2xlog',config,mandatory=False)
-       if ok     : args = sys.argv[:-2]
-       if not ok :
-          config = None
-          end = -2
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-    toxlog = sr_2xlog(config,args[1:])
+    toxlog = sr_2xlog(config,args)
 
     if   action == 'reload' : toxlog.reload_parent()
     elif action == 'restart': toxlog.restart_parent()
