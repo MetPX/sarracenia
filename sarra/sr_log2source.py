@@ -170,6 +170,8 @@ class sr_log2source(sr_instances):
 
         # user provided an on_message script
 
+        ok = True
+
         if self.on_message : ok = self.on_message(self)
 
         return ok

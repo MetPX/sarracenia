@@ -191,6 +191,8 @@ class sr_2xlog(sr_instances):
      
         # invoke on_message when provided
 
+        ok = True
+
         if self.on_message : ok = self.on_message(self)
 
         return ok

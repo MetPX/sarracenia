@@ -126,10 +126,11 @@ class sr_sarra(sr_instances):
         self.accept_msg_for_clusters.extend ( self.gateway_for  )
         self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
 
-        # no queue name allowed
+        # default queue name if not given
 
-        self.queue_name  = 'q_' + self.broker.username + '.'
-        self.queue_name += self.program_name + '.' + self.config_name 
+        if self.queue_name == None :
+           self.queue_name  = 'q_' + self.broker.username + '.'
+           self.queue_name += self.program_name + '.' + self.config_name 
 
         # umask change for directory creation and chmod
 
