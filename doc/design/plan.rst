@@ -334,7 +334,24 @@ Known Bugs
 
 -- Multi-processing on windows... 
    only works as long as instance=1
+-- remove is not propagated among switches.
+-- new connection for every transfer (have connections persist.)
 
+-- when receive a post for an older version of a file, what you download will not match
+   the post. it generates a bogus checksum mismatch error.
+  
+   possible fix:
+     -- add file modification time to the v02 messages.
+        date/time encoding will be interesting, perhaps same as log message?
+     -- if the file exists, and the v02 announcement is older than the file, then squawk 
+        info ´posting older than file already received´)
+     -- when we download, run os.utime (both windows and linux!) to set the modification time
+        of the file, using the LastModificationTime HTTP header, + equivalent with SFTP.
+     -- when a file is downloaded, compare the mtime of the file to that in the header
+        with the one stored in the v02 announcement.
+     -- if the v02 announcement is older than the file, then squawk 
+        info ´downloaded data newer than posted´
+        
 
 
 Parking Lot For Initial Release
