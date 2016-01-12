@@ -94,7 +94,7 @@ def scandir(dirconf):
 def main():
     # first check action
 
-    if sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
+    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
        print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
        sys.exit(1)
 

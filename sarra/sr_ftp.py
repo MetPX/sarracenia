@@ -84,9 +84,9 @@ class sr_ftp():
 
         # need to create subdir
 
-        self.ftp.cwd(self.originalDir)
-
         subdirs = path.split("/")
+        if path[0:1] == "/" : subdirs[0] = "/" + subdirs[0]
+
         for d in subdirs :
             if d == ''   : continue
             # try to go directly to subdir
@@ -351,7 +351,7 @@ def ftp_send( parent ):
     msg    = parent.msg
 
     local_file = parent.local_path
-    remote_dir = parent.remote_rpath
+    remote_dir = parent.remote_dir
 
     try :
             ftp = sr_ftp(parent)

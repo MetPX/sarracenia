@@ -102,8 +102,9 @@ class sr_sender(sr_instances):
 
         # no queue name allowed... force this one
 
-        self.queue_name  = 'q_' + self.broker.username + '.'
-        self.queue_name += self.program_name + '.' + self.config_name 
+        if self.queue_name == None :
+           self.queue_name  = 'q_' + self.broker.username + '.'
+           self.queue_name += self.program_name + '.' + self.config_name 
 
         # check destination
 
@@ -119,10 +120,9 @@ class sr_sender(sr_instances):
         if self.post_broker != None :
            if self.post_exchange == None : self.post_exchange = self.exchange
 
-        # we act like a sender only no posting
-        # in this case accept everything if no accept/reject were defined
-        else:
-           self.accept_unmatch = self.masks == []
+        # accept/reject
+        self.use_pattern          = self.masks != []
+        self.accept_unmatch       = self.masks == []
 
         # to clusters requiered
 
@@ -188,6 +188,7 @@ class sr_sender(sr_instances):
         self.msg.log_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.details.url.username
+        self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
 
         # =============
         # poster
@@ -208,16 +209,16 @@ class sr_sender(sr_instances):
 
     def __do_send__(self):
 
-        self.logger.info("sending/copying %s " % self.msg.local_file)
+        self.logger.info("sending/copying %s " % self.local_path)
 
         try :
                 if   self.do_send :
                      return self.do_send(self)
 
-                elif self.msg.url.scheme in ['ftp','ftps']  :
+                elif self.details.url.scheme in ['ftp','ftps']  :
                      return ftp_send(self)
 
-                elif self.msg.url.scheme == 'sftp' :
+                elif self.details.url.scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_download
                      except : from sarra.sr_sftp import sftp_download
                      return sftp_send(self)
@@ -371,10 +372,11 @@ class sr_sender(sr_instances):
         # publish our sending
         #=================================
 
-        self.msg.set_topic_url('v02.post',self.remote_url)
-        self.msg.set_notice(self.remote_url,self.msg.time)
-        self.__on_post__()
-        self.msg.log_publish(201,'Published')
+        if self.post_broker :
+           self.msg.set_topic_url('v02.post',self.remote_url)
+           self.msg.set_notice(self.remote_url,self.msg.time)
+           self.__on_post__()
+           self.msg.log_publish(201,'Published')
 
         return True
 
@@ -428,7 +430,7 @@ class sr_sender(sr_instances):
         self.local_path   = self.local_dir   + '/' + self.filename
 
         self.local_offset = self.msg.offset
-        self.local_length = self.msg.lenght
+        self.local_length = self.msg.length
 
 
     def set_remote(self):
@@ -460,7 +462,7 @@ class sr_sender(sr_instances):
                destName = ldestName
 
         destDir = self.remote_rpath
-        destDir = self.metpx_dirPattern(self.remote_file,destDir,destName)
+        destDir = self.metpx_dirPattern(self.msg.urlstr,self.remote_file,destDir,destName)
 
         self.remote_file  = destName
         self.remote_rpath = destDir
@@ -510,10 +512,10 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) > 3 :
+    if len(sys.argv) >= 3 :
        action = sys.argv[-1]
        config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+       if len(sys.argv) > 3: args = sys.argv[1:-2]
 
     sender = sr_sender(config,args)
 
@@ -527,8 +529,6 @@ def main():
            sys.exit(1)
 
     sys.exit(0)
-
-
 
 # =========================================
 # direct invocation
