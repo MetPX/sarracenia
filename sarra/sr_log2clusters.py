@@ -181,6 +181,8 @@ class sr_log2clusters(sr_instances):
 
         # invoke user provided on_message 
 
+        ok = True
+
         if self.on_message : ok = self.on_message(self)
 
         return ok

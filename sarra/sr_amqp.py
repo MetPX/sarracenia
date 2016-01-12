@@ -248,6 +248,7 @@ class Publisher:
        self.logger.debug("building publisher")
        self.channel = self.hc.new_channel()
        self.channel.tx_select()
+       self.logger.debug("building publisher done")
        
    def publish(self,exchange_name,exchange_key,message,headers):
        try :
@@ -326,4 +327,7 @@ class Queue:
 
        # queue bindings
        for exchange_name,exchange_key in self.bindings:
+           self.logger.debug("queue binding %s %s" % (exchange_name,exchange_key))
            self.bind(exchange_name, exchange_key )
+
+       self.logger.debug("queue build done")
