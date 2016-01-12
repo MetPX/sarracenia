@@ -12,8 +12,6 @@
 #
 # Code contributed by:
 #  Khosrow Ebrahimpour - Shared Services Canada
-#  Last Changed   : Dec 10 13:17:03 EST 2015
-#  Last Revision  : Dec 10 13:17:03 EST 2015
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -54,14 +52,25 @@ fi
 # checkout the tag version
 git checkout $1
 
+# Copy the code to a tempdir to build 
+TMPDIR=`mktemp --tmpdir=/tmp -d metpx-build.XXXX`
+P=$PWD
+cp -ap . $TMPDIR
+
+cd $TMPDIR
 
 python3 setup.py bdist_wheel
-if [ $# -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	echo "Please fix errors and retry uploading to PyPi!"
+	cd $P 
+	git checkout master
 	exit 1
 fi
 
 python3 setup.py bdist_wheel upload 
 
-# checkout master again
+# clean up
+cd $P
 git checkout master
+
+rm -rf $TMPDIR

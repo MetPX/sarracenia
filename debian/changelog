@@ -1,3 +1,11 @@
+metpx-sarracenia (2.16.01a3) unstable; urgency=medium
+
+  * Added sr_winnow.
+  * Modified how sr_sarra deals with named queue
+  * Fixed some issues with sr_*  missing the declaration of an ok variable in certain circumstances.
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 12 Jan 2016 09:49:53 -0500
+
 metpx-sarracenia (2.16.01a2) unstable; urgency=low
 
   * startup calls, sr_instances fix, sr_message fix
