@@ -309,10 +309,13 @@ The  **accept/reject**  patterns apply to message notice url as above.
 Here is an example, here some ordered configuration options :
 
 ::
+
   directory /my/new/important_location
+
   accept .*IMPORTANT.*
 
   directory /my/new/location/for_others
+
   accept .*
 
 If the notification selected is, as above, this :
@@ -412,14 +415,19 @@ Example of use:
 
 ::
         filename NONE
+
         directory /this/first/target/directory
+
         accept .*file.*type1.*
 
         directory /this/target/directory
+
         accept .*file.*type2.*
+
         accept .*file.*type3.*  DESTFN=file_of_type3
 
         directory /this/${0}/pattern/${1}/directory
+
         accept .*(2016....).*(RAW.*GRIB).*
 
 A selected message from the first accept would be delivered unchanged to the first directory.
