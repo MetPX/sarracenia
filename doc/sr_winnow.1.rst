@@ -53,8 +53,8 @@ For example::
 would be a demonstration of setting the option to enable more verbose logging.
 The configuration default for all sr_* commands is stored in 
 the ~/.config/sarra/default.conf file, and while the name given on the command 
-line may be a file name specified as a relative or absolute path, sr_sarra 
-will also look in the ~/.config/sarra/sarra directory for a file 
+line may be a file name specified as a relative or absolute path, sr_winnow 
+will also look in the ~/.config/sarra/winnow directory for a file 
 named *config.conf*  The configuration in specific file always overrides
 the default, and the command line overrides any configuration file.
 
@@ -158,17 +158,20 @@ wildcarding.
 QUEUE SETTING OPTIONS
 ---------------------
 
+ - **queue_name   <string>          (default: None)** 
  - **durable      <boolean>         (default: False)** 
  - **expire       <minutes>         (default: None)**
  - **message-ttl  <minutes>         (default: None)**
 
 These options (except for queue_share)  are all AMQP queue attributes.
-The queue's name is automatically build by the program. The name has
-the form :  q\_'brokerUsername'.sr_sarra.'config_name'
-It is easier to have this fix name when it is time to determine if 
-the program such a config on that broker has a problem.
-The program forces the option **queue_share** to True
-and the option **instances** to 1.
+If a **queue_name** is not provided, it is automatically build by the program.
+The name has the form :  q\_'brokerUsername'.sr_winnow.'config_name'
+It is easier to have this fix name when it is time to look on the broker
+and determine the queue of the program... to see if it is on problem for example.
+The program forces the option **queue_share** to True and the option **instances** to 1.
+This means, only one instance on one server running (cannot share cache),
+but it also means, another instance on another server can access the queue
+(when vip fallover another server)
 
 MESSAGE SELECTION OPTIONS
 -------------------------
