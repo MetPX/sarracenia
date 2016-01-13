@@ -141,9 +141,10 @@ class sr_sender(sr_instances):
 
         # a destination must be provided
 
-        self.destination  = None
-        self.post_broker  = None
-        self.currentDir   = None
+        self.destination    = None
+        self.post_broker    = None
+        self.currentDir     = None
+        self.currentPattern = None
 
         # consumer defaults
 
@@ -290,7 +291,7 @@ class sr_sender(sr_instances):
            # and try matching any of this list to the message's to_clusters list
 
            ok = False
-           for cluster in self.msg.to_clusters.split(',') :
+           for cluster in self.msg.to_clusters :
               if not cluster in self.to_clusters :  continue
               ok = True
               break
@@ -449,12 +450,14 @@ class sr_sender(sr_instances):
            self.remote_rpath = ''
 
         # a target directory was provided
-        if self.currentDir != None:
+        if self.use_pattern and self.currentDir != None:
            self.remote_rpath = self.currentDir
 
         # PDS like destination pattern/keywords
 
-        self.remote_file = self.metpx_getDestInfos(self.local_file)
+        if self.currentFileOption != None :
+           self.remote_file = self.metpx_getDestInfos(self.local_file)
+
         if self.destfn_script :
             last_remote_file = self.remote_file
             ok = self.destfn_script(self)
@@ -484,7 +487,7 @@ class sr_sender(sr_instances):
 
         if not self.post_document_root and 'ftp' in self.remote_urlstr[:4] : self.remote_urlstr += '/'
 
-        self.remote_urlstr += self.remote_path + '/' + self.remote_file
+        self.remote_urlstr += self.remote_rpath + '/' + self.remote_file
         self.remote_url     = urllib.parse.urlparse(self.remote_urlstr)
 
     def reload(self):

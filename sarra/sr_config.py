@@ -224,6 +224,7 @@ class sr_config:
         self.use_pattern          = False    # accept if No pattern matching
         self.accept_unmatch       = False    # accept if No pattern matching
         self.masks                = []       # All the masks (accept and reject)
+        self.currentPattern       = None     # defaults to all
         self.currentDir           = '.'      # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
 
@@ -436,6 +437,7 @@ class sr_config:
     # modified from metpx SenderFTP
     def metpx_basename_parts(self,basename):
 
+        if self.currentPattern == None : return []
         parts = re.findall( self.currentPattern, basename )
         if len(parts) == 2 and parts[1] == '' : parts.pop(1)
         if len(parts) != 1 : return None
