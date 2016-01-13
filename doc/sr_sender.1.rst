@@ -218,6 +218,8 @@ SETUP 1 : PUMP TO PUMP REPLICATION
  - **document_root      <directory> (None)** 
 
  - **destination        <url>       (MANDATORY)** 
+ - **do_send            <script>    (None)** 
+ - **kbytes_ps          <int>       (default: 0)** 
  - **post_document_root <directory> (default: '')** 
 
  - **to               <clustername> (default: None)** 
@@ -234,7 +236,9 @@ The defaults is None which means that the path in the notification is the absolu
 The **destination** defines the protocol and server to be used to deliver the products.
 Its form is a partial url, for example:  **ftp://myuser@myhost**
 The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
-(password and connection options).
+(password and connection options).  Supported protocol are ftp,ftps and sftp. Should the
+user need to implement another sending mechanism, he would provide the plugin script 
+through option **do_send**.
 
 On the remote site, the **post_document_root** serves the same purpose as the
 **document_root** on this server.  The defaults is None which means that the delivered path
@@ -248,6 +252,7 @@ Now we are ready to send the product... For example, if the selected notificatio
 
 sends local file [**document_root**]/relative/path/to/IMPORTANT_product
 to    **destination**/[**post_document_root**]/relative/path/to/IMPORTANT_product
+(**kbytes_ps** is greater than 0, the process attempts to respect this delivery speed... ftp,ftps,or sftp)
 
 At this point, a pump to pump setup need needs to send the remote notification...
 (If the post_broker is not set, there will be no posting... just products replication)
