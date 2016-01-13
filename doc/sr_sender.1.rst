@@ -2,9 +2,9 @@
  SR_Sender 
 ==========
 
------------------------------------------------------------
+--------------------------------------------------------------------------
 Sends file from messages to remote server (option repost to remote broker)
------------------------------------------------------------
+--------------------------------------------------------------------------
 
 :Manual section: 1 
 :Date: @Date@
@@ -36,7 +36,7 @@ a notification is created and sent to that broker.
 The primary purpose of this program is to replicate (or partially replicate) a pump
 onto another that would not be allowed to acquire the products directly (PAZ, or 
 firewalled network pump)...  But we discovered that, if we do not have to repost
-the notification, it can serves as a product dissiminator. For this second objective
+the notification, it can serves as a product disseminator. For this second objective
 we added **metpx-sundew** like options and option behaviors.
 
 The **sr_sender** command takes two argument: a configuration file described below,
@@ -51,9 +51,9 @@ Options are placed in the configuration file, one per line, of the form:
 
 Comment lines begins with **#**. 
 Empty lines are skipped.
-For example::
+For example:
 
-  **debug true**
+**debug true**
 
 would be a demonstration of setting the option to enable more verbose logging.
 The configuration default for all sr_* commands is stored in 
@@ -273,7 +273,7 @@ The script can perform whatever you want... if it returns False, the message wil
 be published. If True, the program will continue processing from there.  
 
 
-DESTINATION SETUP 2 : METPX-SUNDEW LIKE DESSIMINATION
+DESTINATION SETUP 2 : METPX-SUNDEW LIKE DISSEMINATION
 -----------------------------------------------------
 
 In this type of usage, we would not usually repost... but if the 
@@ -348,7 +348,7 @@ sends products to a destination it logs it to the
 **log_exchange**. The default is 'xlog'.  
 
 
-SUNDEW DESSIMINATION OPTIONS
+SUNDEW COMPATIBILITY OPTIONS
 ----------------------------
 
 **destfn_script <script> (default:None)**
@@ -365,17 +365,34 @@ for setting the remote filename. Some **keywords** are based on the fact that
 **metpx-sundew** filenames are five (to six) fields strings separated by for colons.
 The possible keywords are :
 
-::
-       WHATFN      the first part of the metpx filename (string before first :)
-       HEADFN      HEADER part of the metpx filename
-       SENDER      the metpx filename may end with a string SENDER=<string>
-                   in this case the <string> will be the remote filename
-       NONE        deliver with the complete metpx filename (without :SENDER=...)
-       NONESENDER  deliver with the complete metpx filename (with :SENDER=...)
-       TIME        time stamp appended to filename. Example of use: WHATFN:TIME
-       DESTFN=str  direct filename declaration str
-       SATNET=1,2,3,A  cmc internal satnet application parameters
-       DESTFNSCRIPT=script.py  invoke a script (same as destfn_script) to generate the
+WHATFN      
+  the first part of the metpx filename (string before first :)
+
+HEADFN      
+  HEADER part of the metpx filename
+
+SENDER      
+  the metpx filename may end with a string SENDER=<string>
+  in this case the <string> will be the remote filename
+
+NONE        
+  deliver with the complete metpx filename (without :SENDER=...)
+
+NONESENDER  
+  deliver with the complete metpx filename (with :SENDER=...)
+
+TIME        
+ time stamp appended to filename. Example of use: WHATFN:TIME
+
+DESTFN=str  
+ direct filename declaration str
+
+SATNET=1,2,3,A  
+ cmc internal satnet application parameters
+
+DESTFNSCRIPT=script.py  
+ invoke a script (same as destfn_script) to generate the name of 
+ the file to write.
 
 
 **accept <regexp pattern> [<keyword>]**
@@ -411,8 +428,8 @@ A selected message from the third  accept would be renamed "file_of_type3" in th
 A selected message from the forth  accept would be delivered unchanged to a directory
 named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would have a notice like :
 
-
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
+
 SEE ALSO
 ========
 
