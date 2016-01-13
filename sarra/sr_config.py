@@ -224,6 +224,7 @@ class sr_config:
         self.use_pattern          = False    # accept if No pattern matching
         self.accept_unmatch       = False    # accept if No pattern matching
         self.masks                = []       # All the masks (accept and reject)
+        self.currentPattern       = None     # defaults to all
         self.currentDir           = '.'      # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
 
@@ -281,8 +282,10 @@ class sr_config:
 
         self.blocksize            = 0
 
+        self.destfn_script        = None
         self.do_download          = None
         self.do_poll              = None
+        self.do_send              = None
         self.on_file              = None
         self.on_line              = None
         self.on_message           = None
@@ -434,6 +437,7 @@ class sr_config:
     # modified from metpx SenderFTP
     def metpx_basename_parts(self,basename):
 
+        if self.currentPattern == None : return []
         parts = re.findall( self.currentPattern, basename )
         if len(parts) == 2 and parts[1] == '' : parts.pop(1)
         if len(parts) != 1 : return None
@@ -447,11 +451,11 @@ class sr_config:
         return lst
 
     # from metpx SenderFTP
-    def metpx_dirPattern(self,basename,destDir,destName) :
+    def metpx_dirPattern(self,urlstr,basename,destDir,destName) :
 
         BN = basename.split(":")
         EN = BN[0].split("_")
-        BP = self.metpx_basename_parts(basename)
+        BP = self.metpx_basename_parts(urlstr)
 
         ndestDir = ""
         DD = destDir.split("/")
@@ -478,6 +482,7 @@ class sr_config:
 
         ex: mask[2] = 'NONE:TIME'
         """
+        if self.currentFileOption == None : return filename
         timeSuffix   = ''
         satnet       = ''
         parts        = filename.split(':')
@@ -526,13 +531,17 @@ class sr_config:
             elif re.compile('DESTFN=.*').match(spec):
                  destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
-                 old_destname       = destFileName
                  old_destfn_script  = self.destfn_script
+                 old_remote_file    = self.remote_file
+                 self.remote_file   = destFileName
                  self.destfn_script = None
+                 script = spec[13:]
                  self.execfile('destfn_script',script)
                  if self.destfn_script != None :
-                    destFileName = self.destfn_script(filename)
+                    ok = self.destfn_script(self)
+                 destFileName       = self.remote_file
                  self.destfn_script = old_destfn_script
+                 self.remote_file   = old_remote_file
                  if destFileName == None : destFileName = old_destFileName
             elif spec == 'TIME':
                 if destFileName != filename :
@@ -679,8 +688,16 @@ class sr_config:
                          self.document_root = words[1]
                      n = 2
 
+                elif words[0] in ['destfn_script','-destfn_script','--destfn_script']:
+                     self.destfn_script = None
+                     self.execfile("destfn_script",words[1])
+                     if self.destfn_script == None :
+                        self.logger.error("destfn_script script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
                 elif words[0] in ['do_download','-do_download','--do_download']:
-                     self.on_file = None
+                     self.do_download = None
                      self.execfile("do_download",words[1])
                      if self.do_download == None :
                         self.logger.error("do_download script incorrect (%s)" % words[1])
@@ -692,6 +709,14 @@ class sr_config:
                      self.execfile("do_poll",words[1])
                      if self.do_poll == None :
                         self.logger.error("do_poll script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
+                elif words[0] in ['do_send','-do_send','--do_send']:
+                     self.do_send = None
+                     self.execfile("do_send",words[1])
+                     if self.do_send == None :
+                        self.logger.error("do_send script incorrect (%s)" % words[1])
                         ok = False
                      n = 2
 

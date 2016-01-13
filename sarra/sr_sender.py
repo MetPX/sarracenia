@@ -102,8 +102,9 @@ class sr_sender(sr_instances):
 
         # no queue name allowed... force this one
 
-        self.queue_name  = 'q_' + self.broker.username + '.'
-        self.queue_name += self.program_name + '.' + self.config_name 
+        if self.queue_name == None :
+           self.queue_name  = 'q_' + self.broker.username + '.'
+           self.queue_name += self.program_name + '.' + self.config_name 
 
         # check destination
 
@@ -119,10 +120,9 @@ class sr_sender(sr_instances):
         if self.post_broker != None :
            if self.post_exchange == None : self.post_exchange = self.exchange
 
-        # we act like a sender only no posting
-        # in this case accept everything if no accept/reject were defined
-        else:
-           self.accept_unmatch = self.masks == []
+        # accept/reject
+        self.use_pattern          = self.masks != []
+        self.accept_unmatch       = self.masks == []
 
         # to clusters requiered
 
@@ -141,9 +141,10 @@ class sr_sender(sr_instances):
 
         # a destination must be provided
 
-        self.destination  = None
-        self.post_broker  = None
-        self.currentDir   = None
+        self.destination    = None
+        self.post_broker    = None
+        self.currentDir     = None
+        self.currentPattern = None
 
         # consumer defaults
 
@@ -188,6 +189,7 @@ class sr_sender(sr_instances):
         self.msg.log_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.details.url.username
+        self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
 
         # =============
         # poster
@@ -208,16 +210,16 @@ class sr_sender(sr_instances):
 
     def __do_send__(self):
 
-        self.logger.info("sending/copying %s " % self.msg.local_file)
+        self.logger.info("sending/copying %s " % self.local_path)
 
         try :
                 if   self.do_send :
                      return self.do_send(self)
 
-                elif self.msg.url.scheme in ['ftp','ftps']  :
+                elif self.details.url.scheme in ['ftp','ftps']  :
                      return ftp_send(self)
 
-                elif self.msg.url.scheme == 'sftp' :
+                elif self.details.url.scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_download
                      except : from sarra.sr_sftp import sftp_download
                      return sftp_send(self)
@@ -289,7 +291,7 @@ class sr_sender(sr_instances):
            # and try matching any of this list to the message's to_clusters list
 
            ok = False
-           for cluster in self.msg.to_clusters.split(',') :
+           for cluster in self.msg.to_clusters :
               if not cluster in self.to_clusters :  continue
               ok = True
               break
@@ -371,10 +373,11 @@ class sr_sender(sr_instances):
         # publish our sending
         #=================================
 
-        self.msg.set_topic_url('v02.post',self.remote_url)
-        self.msg.set_notice(self.remote_url,self.msg.time)
-        self.__on_post__()
-        self.msg.log_publish(201,'Published')
+        if self.post_broker :
+           self.msg.set_topic_url('v02.post',self.remote_url)
+           self.msg.set_notice(self.remote_url,self.msg.time)
+           self.__on_post__()
+           self.msg.log_publish(201,'Published')
 
         return True
 
@@ -428,7 +431,7 @@ class sr_sender(sr_instances):
         self.local_path   = self.local_dir   + '/' + self.filename
 
         self.local_offset = self.msg.offset
-        self.local_length = self.msg.lenght
+        self.local_length = self.msg.length
 
 
     def set_remote(self):
@@ -447,22 +450,23 @@ class sr_sender(sr_instances):
            self.remote_rpath = ''
 
         # a target directory was provided
-        if self.currentDir != None:
+        if self.use_pattern and self.currentDir != None:
            self.remote_rpath = self.currentDir
 
         # PDS like destination pattern/keywords
 
-        destName = self.metpx_getDestInfos(self.remote_file)
+        if self.currentFileOption != None :
+           self.remote_file = self.metpx_getDestInfos(self.local_file)
+
         if self.destfn_script :
-            ldestName = self.destfn_script(destName)
-            if ldestName != destName :
-               self.logger.info("destfn_script : %s becomes %s "  % (destName,ldestName) )
-               destName = ldestName
+            last_remote_file = self.remote_file
+            ok = self.destfn_script(self)
+            if last_remote_file != self.remote_file :
+               self.logger.info("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
 
         destDir = self.remote_rpath
-        destDir = self.metpx_dirPattern(self.remote_file,destDir,destName)
+        destDir = self.metpx_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)
 
-        self.remote_file  = destName
         self.remote_rpath = destDir
 
         # build dir/path and url from options
@@ -483,7 +487,7 @@ class sr_sender(sr_instances):
 
         if not self.post_document_root and 'ftp' in self.remote_urlstr[:4] : self.remote_urlstr += '/'
 
-        self.remote_urlstr += self.remote_path + '/' + self.remote_file
+        self.remote_urlstr += self.remote_rpath + '/' + self.remote_file
         self.remote_url     = urllib.parse.urlparse(self.remote_urlstr)
 
     def reload(self):
@@ -510,10 +514,10 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) > 3 :
+    if len(sys.argv) >= 3 :
        action = sys.argv[-1]
        config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+       if len(sys.argv) > 3: args = sys.argv[1:-2]
 
     sender = sr_sender(config,args)
 
@@ -527,8 +531,6 @@ def main():
            sys.exit(1)
 
     sys.exit(0)
-
-
 
 # =========================================
 # direct invocation

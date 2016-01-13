@@ -245,10 +245,8 @@ class Publisher:
        self.hc.add_build(self.build)
 
    def build(self):
-       self.logger.debug("building publisher")
        self.channel = self.hc.new_channel()
        self.channel.tx_select()
-       self.logger.debug("building publisher done")
        
    def publish(self,exchange_name,exchange_key,message,headers):
        try :

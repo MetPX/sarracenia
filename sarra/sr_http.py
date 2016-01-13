@@ -78,6 +78,7 @@ def http_download( parent ) :
             msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
+            msg.logger.info('response header = %s' % response.headers)
             ok       =  http_write(response,msg,parent.bufsize)
 
             return ok
