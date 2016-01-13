@@ -454,17 +454,16 @@ class sr_sender(sr_instances):
 
         # PDS like destination pattern/keywords
 
-        destName = self.metpx_getDestInfos(self.remote_file)
+        self.remote_file = self.metpx_getDestInfos(self.local_file)
         if self.destfn_script :
-            ldestName = self.destfn_script(destName)
-            if ldestName != destName :
-               self.logger.info("destfn_script : %s becomes %s "  % (destName,ldestName) )
-               destName = ldestName
+            last_remote_file = self.remote_file
+            ok = self.destfn_script(self)
+            if last_remote_file != self.remote_file :
+               self.logger.info("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
 
         destDir = self.remote_rpath
-        destDir = self.metpx_dirPattern(self.msg.urlstr,self.remote_file,destDir,destName)
+        destDir = self.metpx_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)
 
-        self.remote_file  = destName
         self.remote_rpath = destDir
 
         # build dir/path and url from options
