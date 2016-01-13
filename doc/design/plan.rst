@@ -296,14 +296,7 @@ beta, if in beta, then to release:
 - ~/.conf/sarra/credentials.conf -- permissions.
   should force credentials to 600.
 
-- sr_sender1 does not exist.
-
 - sr_sender2 does not exist.
-
-- sr_winnow does not exist.
-
-- Cannot run as a pump (currently only start individual components.)
-  need functioning equivalent to sundew´s: px start 
 
 - User guide docs do not exist.
 
@@ -337,7 +330,8 @@ Known Bugs
 -- remove is not propagated among switches.
 -- new connection for every transfer (have connections persist.)
 
--- when receive a post for an older version of a file, what you download will not match
+-- reported from end user use of dd.weather.gc.ca spurious errors generated.
+   when receive a post for an older version of a file, what you download will not match
    the post. it generates a bogus checksum mismatch error.
   
    possible fix:
