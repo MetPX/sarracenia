@@ -19,16 +19,17 @@ Pre-Draft.  This document is still being built and should not be reviewed or rel
 Installation 
 ------------
 
-On systems where they are available, debian packages are recommended.
-from the launchpad repository, or using pip (and PYpi), in 
-which case the other python packages needed will be installed
-by the package manager.  
+The package is built for python version 3.4 or higher.  On systems where 
+they are available, debian packages are recommended.
+These can be obtained from the launchpad repository, or using pip 
+(and PYpi.) In both cases, the other python packages (or dependencies) needed 
+will be installed by the package manager automatically.
 
 
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ubuntu 12.04 and 14.04::
+On Ubuntu 14.04::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
@@ -55,6 +56,8 @@ and to upgrade after the initial installation::
 
   sudo pip install --upgrade metpx-sarracenia
 
+On many systems where both pythons 2 and 3 are installed, you may need to specify 
+pip3 rather than pip.
 
 
 Windows
