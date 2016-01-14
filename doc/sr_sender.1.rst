@@ -408,11 +408,11 @@ plied this keyword option.  This keyword has priority over the preceeding **file
 e **regexp pattern** can be use to set directory parts if part of the message is put
 to parenthesis. **sr_sender** can use these parts to build the directory name. The
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
-e second **${1}** etc.
+the second **${1}** etc.
 
 
 
-ample of use:
+example of use:
 
 
       filename NONE
