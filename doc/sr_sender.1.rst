@@ -368,59 +368,60 @@ for setting the remote filename. Some **keywords** are based on the fact that
 **metpx-sundew** filenames are five (to six) fields strings separated by for colons.
 The possible keywords are :
 
-WHATFN      
-  the first part of the metpx filename (string before first :)
 
-HEADFN      
-  HEADER part of the metpx filename
+**WHATFN**
+ - the first part of the metpx filename (string before first :)
 
-SENDER      
-  the metpx filename may end with a string SENDER=<string>
-  in this case the <string> will be the remote filename
+**HEADFN**
+ - HEADER part of the metpx filename
 
-NONE        
-  deliver with the complete metpx filename (without :SENDER=...)
+**SENDER**
+ - the metpx filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
 
-NONESENDER  
-  deliver with the complete metpx filename (with :SENDER=...)
+**NONE**
+ - deliver with the complete metpx filename (without :SENDER=...)
 
-TIME        
- time stamp appended to filename. Example of use: WHATFN:TIME
+**NONESENDER**
+ - deliver with the complete metpx filename (with :SENDER=...)
 
-DESTFN=str  
- direct filename declaration str
+**TIME**
+ - time stamp appended to filename. Example of use: WHATFN:TIME
 
-SATNET=1,2,3,A  
- cmc internal satnet application parameters
+**DESTFN=str**
+ - direct filename declaration str
 
-DESTFNSCRIPT=script.py  
- invoke a script (same as destfn_script) to generate the name of 
- the file to write.
+**SATNET=1,2,3,A**
+ - cmc internal satnet application parameters
+
+**DESTFNSCRIPT=script.py**
+ - invoke a script (same as destfn_script) to generate the name of the file to write
+
+
 
 
 **accept <regexp pattern> [<keyword>]**
 
-A keyword can be added to the **accept** option. The keyword is any one of the **filename**
-option.  A message that matched against the accept regexp pattern, will have its remote_file
-applied this keyword option.  This keyword has priority over the preceeding **filename** one.
+keyword can be added to the **accept** option. The keyword is any one of the **filename**
+tion.  A message that matched against the accept regexp pattern, will have its remote_file
+plied this keyword option.  This keyword has priority over the preceeding **filename** one.
 
-The **regexp pattern** can be use to set directory parts if part of the message is put
-into parenthesis. **sr_sender** can use these parts to build the directory name. The
-first enclosed parenthesis strings will replace keyword **${0}** in the directory name...
+e **regexp pattern** can be use to set directory parts if part of the message is put
+to parenthesis. **sr_sender** can use these parts to build the directory name. The
+rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
 
 
 
-Example of use:
+example of use:
 
-::
-        filename NONE
 
-        directory /this/first/target/directory
+      filename NONE
 
-        accept .*file.*type1.*
+      directory /this/first/target/directory
 
-        directory /this/target/directory
+      accept .*file.*type1.*
+
+      directory /this/target/directory
 
         accept .*file.*type2.*
 
