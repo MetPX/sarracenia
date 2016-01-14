@@ -144,6 +144,7 @@ class sr_config:
 
     def config(self,path):
         self.logger.debug("sr_config config")
+        self.logger.debug("sr_config %s" % path)
 
         if path == None : return
 
@@ -151,7 +152,7 @@ class sr_config:
             f = open(path, 'r')
             for line in f.readlines():
                 words = line.split()
-                if (len(words) >= 2 and not re.compile('^[ \t]*#').search(line)):
+                if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
                     self.option(words)
             f.close()
 
@@ -806,6 +807,7 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
+                     self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
 
@@ -971,6 +973,9 @@ class sr_config:
                 elif words[0] in ['vip','-vip','--vip']:
                      self.vip = words[1]
                      n = 2
+
+                else :
+                     self.logger.error("problem with option %s" % words[0])
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
