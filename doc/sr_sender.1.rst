@@ -370,17 +370,16 @@ The possible keywords are :
 
  - **WHATFN : the first part of the metpx filename (string before first :)**
  - **HEADFN : HEADER part of the metpx filename**
- - **SENDER : the metpx filename may end with a string SENDER=<string>**
- - **.        in this case the <string> will be the remote filename**
+ - **SENDER : the metpx filename may end with a string SENDER=<string>
+              in this case the <string> will be the remote filename**
  - **NONE : deliver with the complete metpx filename (without :SENDER=...)**
  - **NONESENDER : deliver with the complete metpx filename (with :SENDER=...)**
  - **TIME : time stamp appended to filename. Example of use: WHATFN:TIME**
  - **DESTFN=str : direct filename declaration str**
  - **SATNET=1,2,3,A : cmc internal satnet application parameters**
- - **DESTFNSCRIPT=script.py : invoke a script (same as destfn_script) to generate the name of **
- - **the file to write.**
+ - **DESTFNSCRIPT=script.py : invoke a script (same as destfn_script) to generate the name of 
+     the file to write.**
 
-.
 
 
 **accept <regexp pattern> [<keyword>]**
