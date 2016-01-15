@@ -9,7 +9,9 @@ Receiving Data from a MetPX-Sarracenia Data Pump
 
 Status: Pre-Draft
 
-FIXME: Not useful yet!
+.. note::
+  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
+  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
 
 .. contents::
 
@@ -233,15 +235,35 @@ all the subscription configuration files, with the .conf suffix, in a standard
 directory: ~/.config/sarra/subscribe/
 
 Imagine there are two files in that directory:  CMC.conf and NWS.conf.
-One could then run: 
+One could then run:: 
 
- sr_subscribe CMC start 
+  peter@idefix:~/test$ sr_subscribe CMC.conf start
+  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
+  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
+  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
+  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
+  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
+  2016-01-14 18:13:01,427 [INFO] sr_subscribe CMC 0006 starting
+  peter@idefix:~/test$ 
 
 from anywhere, and the configuration in the directory would be invoked.  Also, one can use by using 
 the sr command to start/stop multiple configurations at once.  The sr command will go through the 
-default directories and start up all the configurations it finds.  
+default directories and start up all the configurations it finds::
 
- sr start
+  peter@idefix:~/test$ sr_subscribe CMC.conf start
+  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
+  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
+  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
+  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
+  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0001 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0002 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0003 starting
+  peter@idefix:~/test$ 
 
 will start up some sr_subscribe processes as configured by CMC.conf and others to match NWS.conf.
 sr stop will also do what you would expect.  As will sr status.  Back to file reception:
@@ -250,6 +272,11 @@ sr stop will also do what you would expect.  As will sr status.  Back to file re
 
 Refining Selection
 ------------------
+
+..note:: 
+  FIXME: Make a picture, with a 
+  - broker at one end, and the subtopic apply there.
+  - client at the other end, and the accept/reject apply there.
 
 The *accept* option applies on the sr_subscriber processes themselves,
 providing regular expression based filtering of the notifications which are transferred.  
@@ -365,7 +392,12 @@ accept clauses.
   topic names) has a different meaning than it does in an accept 
   clause, where it means match any string.
   
-  Yes, this is confusing.  No, it cannot be helped.  Explanation long.
+  Yes, this is confusing.  No, it cannot be helped.  
+
+  Why: The syntax of wildcarding in AMQP (which defines suptopic syntax) is 
+  set by the international standard, and there are no other systems that 
+  use it.  Regular expressions are a well known pattern matching language 
+  with widespread support.
 
 
 Basic File Reception
@@ -500,19 +532,13 @@ of a file, those actions are not fixed, but simply small scripts provided with t
 package, and customizable by end users.  The rxpipe module is just an example 
 provided with sarracenia::
 
-  FIXME: This code is wrong!  must be fixed prior to publish!
-
   class RxPipe(object):
-      import os,stat
 
-      def __init__():
+      def __init__(self):
+          self.rxpipe = open( "/local/home/peter/test/npipe", "w" )
 
-          # FIXME: check for existence if...
-          self.rxpipe = os.mknod(".rxpipe", device=stat.S_IFIFO )
-          # FIXME: set unbufferred ?
-
-      def perform(self, ipath, logger ):
-          self.rxpipe.write( ippath + "\n" )
+      def perform(self, parent):
+          self.rxpipe.write( msg.local_file + "\n" )
           self.rxpipe.flush()
           return None
 
@@ -520,13 +546,15 @@ provided with sarracenia::
 
   self.on_file=rxpipe.perform
 
+Before running this code, at the command line, create the named pipe::
+
+  mkfifo /local/home/peter/test/npipe
+
 With this fragment of python, when sr_subscribe is first called, it ensures that
-a pipe named .rxpipe is opened in the current working directory by executing
+a pipe named npipe is opened in the specified directory by executing
 the __init__ function within the declared RxPipe python class.  Then, whenever
 a file reception is completed, the assignment of *self.on_file* ensures that 
-the rx.perform function is called.
-
-FIXME: describe parameters.
+the rx.perform function is called.  
 
 The rxpipe.perform function just writes the name of the file dowloaded to
 the named pipe.  The use of the named pipe renders data reception asynchronous
@@ -536,20 +564,251 @@ as standard input to it, from a named pipe.
 
 In the examples above, file reception and processing are kept entirely separate.  If there
 is a problem with processing, the file reception directories will fill up, potentially
-growing to an unwieldy size and causing many practical difficulties.  
-
-When a plugin such as on_file is used, the processing of each file downloaded is
-run before proceeding to the next file.  
+growing to an unwieldy size and causing many practical difficulties.  When a plugin such 
+as on_file is used, the processing of each file downloaded is run before proceeding 
+to the next file.  
 
 If the code in the on_file script is changed to do actual processing work, then
 rather than being independent, the processing could provide back pressure to the 
 data delivery mechanism.  If the processing gets stuck, then the sr_subscriber 
-will stop downloading, and the queue will be on the server,
-rather than creating a huge local directory on the client.
+will stop downloading, and the queue will be on the server, rather than creating 
+a huge local directory on the client.  Different models apply in different
+situations.
 
 An additional point is that if the processing of files is invoked
 in each instance, providing very easy parallel processing built 
 into sr_subscribe.  
+
+
+What Fields are Available to on\_ Scripts?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Without peering into the python source code of sarracenia, it is hard to know
+what values are available to plugin scripts.  As a cheat to save developers
+from having to understant the source code, a diagnostic plugin might be helpful.
+
+if one sets the following script as a trigger in a configuration, the entire
+list of available variables can be displayed in a log file::
+
+  cat >dump_msg.py <<EOT
+  import os,stat,time
+
+  class Transformer(object):
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          parent.logger.info("PARENT = \n")
+          parent.logger.info(vars(parent))
+          parent.logger.info("message = \n")
+          parent.logger.info(vars(parent.msg))
+          return False
+
+transformer = Transformer()
+self.on_file = transformer.perform
+
+EOT
+
+Make the above file an on_file (or other trigger) script in a configuration, start up a receiver (and if it is a busy one, then stop it immediately, as it creates
+very large log messages for every message received.)  Essentially the entire program state is available to plugins. A sample output is shown
+
+below::
+
+  peter@idefix:~/test$ sr_subscribe dd.conf start
+  peter@idefix:~/test$ sr_subscribe dd.conf stop  # do this immediately for a receiver with high traffic!
+  peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log 
+  
+  # the following is reformatted to look reasonable on a page.
+  2016-01-14 17:13:01,649 [INFO] {
+  'kbytes_ps': 0, 
+  'queue_name': None, 
+  'flatten': '/', 
+  'exchange': 'xpublic',
+  'discard': False,
+  'log_back': True,
+  'source': None,
+  'pidfile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd_0001.pid',
+  'event': 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF',
+  'basic_name': 'sr_subscribe_dd',
+  'cluster_aliases': [],
+  'expire': None,
+  'currentRegexp': re.compile('.*'),
+  'handler': <logging.handlers.TimedRotatingFileHandler
+  object at 0x7f4fcdc4d780>,
+  'accept_unmatch': False,
+  'reconnect': False,
+  'isrunning': False,
+  'on_line': None,
+  'masks': [('.*/grib2/.*', '/local/home/peter/test/dd', None, re.compile('.*/grib2/.*'), False),
+  ('.*grib2.tar.*', '/local/home/peter/test/dd', None, re.compile('.*grib2.tar.*'), False),
+  ('.*', '/local/home/peter/test/dd', None, re.compile('.*'), True)],
+  'logrotate': 5,
+  'pid': 14079,
+  'consumer': <sarra.sr_consumer.sr_consumer object at 0x7f4fcdc489b0>,
+  'post_document_root': None,
+  'manager': None,
+  'publisher': <sarra.sr_amqp.Publisher object at 0x7f4fcdbdae48>,
+  'post_broker': ParseResult(scheme='amqp',
+  netloc='guest:guest@localhost',
+  path='/',
+  params='',
+  query='',
+  fragment=''),
+  'currentPattern': '.*',
+  'partflg': '1',
+  'notify_only': False,
+  'program_dir': 'subscribe',
+  'on_part': None,
+  'to_clusters': None,
+  'site_data_dir': '/usr/share/ubuntu/sarra',
+  'source_from_exchange': False,
+  'local_url': ParseResult(scheme='file', netloc='',
+  path='/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
+  params='', query='', fragment=''),
+  'sumflg': 'd',
+  'user_log_dir': '/local/home/peter/.cache/sarra/log',
+  'topic_prefix': 'v02.post',
+  'local_file': 'SACN62_CYVT_142200___11878',
+  'on_post': None,
+  'do_poll': None,
+  'message_ttl': None,
+  'user_scripts_dir': '/local/home/peter/.config/sarra/scripts',
+  'recursive': False,
+  'appname': 'sarra',
+  'debug': False,
+  'chmod': 775,
+  'destination': None,
+  'subtopic': None,
+  'events': 'IN_CLOSE_WRITE|IN_DELETE',
+  'document_root': '/local/home/peter/test/dd',
+  'inplace': True,
+  'last_nbr_instances': 6,
+  'config_name': 'dd',
+  'instance_str': 'sr_subscribe dd 0001',
+  'randomize': False,
+  'vip': None,
+  'parts': '1',
+  'lock': '.tmp',
+  'cache_url': {},
+  'queue_share': True,
+  'overwrite': True,
+  'appauthor': 'science.gc.ca',
+  'no': 1,
+  'url': None,
+  'bindings': [('xpublic', 'v02.post.#')],
+  'blocksize': 0,
+  'cluster': None,
+  'rename': None,
+  'user_config_dir': '/local/home/peter/.config/sarra',
+  'users': {},
+  'currentDir': '/local/home/peter/test/dd',
+  'instance': 1,
+  'sleep': 0,
+  'user_cache_dir': '/local/home/peter/.cache/sarra',
+  'log_clusters': {},
+  'strip': 0,
+  'msg': <sarra.sr_message.sr_message object at 0x7f4fcdc54518>,
+  'site_config_dir': '/etc/xdg/xdg-ubuntu/sarra',
+  'user_args': ['--no', '1'],
+  'program_name': 'sr_subscribe',
+  'on_file': <bound method Transformer.perform of <sarra.sr_config.Transformer object at 0x7f4fcdc48908>>,
+  'cwd': '/local/home/peter/test',
+  'nbr_instances': 6,
+  'credentials': <sarra.sr_credentials.sr_credentials object at 0x7f4fcdc911d0>,
+  'on_message': None,
+  'currentFileOption': None,
+  'local_dir': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22',
+  'user_config': 'dd.conf',
+  'lpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
+  'bufsize': 8192,
+  'do_download': None,
+  'post_exchange': None,
+  'log_exchange': 'xlog',
+  'local_path': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
+  'instance_name': 'sr_subscribe_dd_0001',
+  'statefile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd.state',
+  'use_pattern': True,
+  'admin': None,
+  'gateway_for': [],
+  'interface': None,
+  'logpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
+  'recompute_chksum': False,
+  'user_queue_dir': '/local/home/peter/.cache/sarra/queue',
+  'mirror': True,
+  'broker': ParseResult(scheme='amqp', netloc='anonymous:anonymous@dd.weather.gc.ca', path='/', params='', query='', fragment=''),
+  'durable': False,
+  'logger': <logging.RootLogger object at 0x7f4fcdc48a20>,
+  'user_data_dir': '/local/home/peter/.local/share/sarra',
+  'flow': None}
+
+  2016-01-14 17:13:01,649 [INFO] message = 
+
+No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of this state will vary
+over time.
+
+
+Testing on\_ Scripts
+~~~~~~~~~~~~~~~~~~~~
+
+When debugging, it is useful to do initial work using a separate script,
+rather than calling it directly from sarracenia.  The following method 
+allows one to test scripts for basic function before using them in anger::
+
+  cat >fifo_test.py <<EOT
+  #!/usr/bin/python3
+
+  """
+  when a file is downloaded, write the name of it to a named pipe called .rxpipe
+  at the root of the file reception tree.
+
+  """
+  import os,stat,time
+
+  class Transformer(object):
+
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          msg    = parent.msg
+
+          # writing filename in pipe
+          f = open('/users/dor/aspy/mjg/mon_fifo','w')
+          f.write(msg.local_file)
+          f.flush()
+          f.close()
+
+          # resume process as usual ?
+          return True
+
+  transformer = Transformer()
+  #self.on_file = transformer.perform
+
+  """ 
+  for testing outside of a sr_ component plugin environment,
+  we comment out the normal activiation line of the script above
+  and insert a little wrapper, so that it can be invoked
+  at the command line:
+         python3  fifo_test.py
+
+  """
+
+  class Message() :
+      def __init__(self):
+          self.local_file = "a string"
+
+  class Parent() :
+      def __init__(self):
+          # need to create enough fields in the message to test the script.
+          self.msg = Message()
+
+  parent = Parent()
+
+  transformer.perform(parent)
+  EOT
+
+The part after the #self.on_file line is only a test harness.  Once creates a calling
+object with the fields needed to test the 
 
 
 File Notification Without Downloading
@@ -565,19 +824,12 @@ local file is sufficient::
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
-  no_download
   document_root /data/web/dd_root
   on_message do_something
 
   accept .*
   # do_something will catenate document_root with the path in 
   # the notification to obtain the full local path.
-
-.. note:: 
-   FIXME:: --no_download exists, but not no_download, patch sr_config
-   option is called notify_only, which seems a lot less obvious to me... ?
-   we might actually do something with on_message=discard to do no_download
-   without a command line option.
 
 
 on_message is a scripting hook, exactly like on_file, that allows
@@ -591,6 +843,7 @@ you have.
    with an if statement in order to act on only the first part message
    for long files.
 
+   FIXME: is .py needed on on\_ triggers?
 
 Partial File Updates
 --------------------

@@ -29,13 +29,35 @@ will be installed by the package manager automatically.
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+On Ubuntu 12.04::
+
+  apt-get install python3-dev
+  apt-get install python3-setuptools
+  easy-install3 pip
+  pip3 install metpx_sarracenia
+  pip3 install paramiko
+
 On Ubuntu 14.04::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
   sudo apt-get install python3-metpx-sarracenia
+  sudo apt-get install python3-paramiko
 
-Ubuntu 16.04 is not yet supported:
+.. note::
+   FIXME: confirm that python3-paramiko is in our repo for 14.04?
+
+
+While the package itself is pure python and completely portable,
+Ubuntu 16.04 is not yet supported in the repositories, so
+it must be installed there using pip, or one can download 
+the .dpkg from sourceforge.net::
+
+  wget -O sarra.deb http://sourceforge.net/projects/metpx/files/sarracenia/2.16.01/python3-metpx-sarracenia_2.16.01a3_all.deb/download
+  sudo dpkg -i sarra.deb
+  sudo apt-get install -f
+
+The last line pulls in dependencies of the debian package.
 
 .. note: 
    FIXME: 16.04 (xenial) is trivial to add, all deps are already in repos...

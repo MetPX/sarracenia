@@ -3,11 +3,9 @@
  MetPX-Sarracenia for Administrators
 =====================================
 
-.. NOTE::
-
-   NOT TO BE TRUSTED.  THERE IS NO MANUAL YET.
-   IF YOU DOWNLOADED THIS PACKAGE... IT IS STILL BEING DEVELOPED. 
-   USAGE MAY CHANGE.  NOT RELEASED YET.
+.. note::
+  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
+  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
 
 .. Contents::
 

@@ -7,13 +7,16 @@
 Injecting Data into a MetPX-Sarracenia Pump Network
 ---------------------------------------------------
 
+.. note::
+  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
+  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
+
 .. contents::
 
-MetPX-Sarracenia data pumps are most efficient when processes directly communicate.  
 Regardless of how it is done, injecting data means telling the pump where the data 
-is so that it can be forwarded by the pump.   In the simplest case, it takes the 
-data from your account, wherever you have it, providing you give it permission.  
-we describe that case first.
+is so that it can be forwarded to and/or by the pump.   In the simplest case, it 
+takes the data from your account, wherever you have it, providing you give it 
+permission.  we describe that case first.
 
 SFTP Injection
 --------------
@@ -26,11 +29,15 @@ into the pump network.  To use sr_post, you have to know:
 - your own server name. (say: grumpy.cmc.ec.gc.ca )
 - your own user name on your server (say: peter)
 
-Lets say you want the pump to access peter's account via SFTP.  Then you need
-to take the pumps public key, and place it in peter's .ssh/authorized_keys.
+Assume the goal is for the pump to access peter's account via SFTP.  Then you need
+to take the pump´s public key, and place it in peter's .ssh/authorized_keys.
 On the server you are using (*grumpy*), one needs to do something like this::
 
   wget http://ddsr.cmc.ec.gca/config/pump.pub >>~peter/.ssh/authorized_keys
+
+.. note::
+  FIXME: this config directory is not implemented yet.  need to get public key 
+  by talking to an admin for now.
 
 This will enable the pump to access peter's account on grumpy using his private key. 
 So assuming one is logged in to Peter's account on grumpy, one can store the broker
@@ -46,6 +53,10 @@ credentials safely:
 
 Now we just need to figure out where to send the file to.  
 Aim a browser at:
+
+.. note::
+   FIXME: doc tree not implemented yet either... you have to talk to an admin
+   to get advice on this stuff.
 
 http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 
@@ -96,20 +107,6 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 
 
 .. notes:
-   FIXME:
-   the network.html file... suggest a table in (and accompanying réseau.html)
-   not going structured XML because... ok what is the structure of the XML?
-   what do we put contacts in?  is there a standard that covers GEDS links?
-   what types of ´contact´ will be relevant in future (perhaps ´phone´ isn´t)
-   skype?  webex? beehive chat?  Need to consider visibility.
-   Network.html on the external facing pumps will likely look different from
-   the internal ones.
- 
-   I´m just making up these destinations to give an idea of the kinds of things
-   that should be in there.  I don´t want to start a project to define the
-   format that will be readable on all platforms as well as semantic so easily
-   machine digestible.  But perhaps we should, or maybe later?
- 
    These names correspond to business functions, not the machines that implement
    them.  The names will be implemented as aliases on switches.
    ALLCAPS is just a convention to avoid confusion with hostnames, which are 
@@ -122,12 +119,6 @@ so the sr_post command will look like this:
   sr_post -to DDIEDM,DDIDOR,ARCHPC \
           -broker amqps://rnd@ddsr.cmc.ec.gc.ca/  \
           sftp://peter@grumpy/treefrog/frog.dna
-
-.. note::
-   FIXME: unix convention is to place options before arguments.
-   man page seems to indicate arguments before options (url is first?)
-   probably need to review sr_post man page to clarify.
-
 
 If you find you are using the same arguments all the time,
 it might be convenient to store them in a central configuration::
@@ -144,6 +135,9 @@ So now the command line for sr_post is just the url to for ddsr to retrieve the
 file on grumpy:
 
   sr_post treefrog/frog.dna
+
+.. note::
+  FIXME: provide real example.
 
 Either way, the command asks ddsr to retrieve the treefrog/frog.dna file by logging 
 in to grumpy as peter (using the pump's private key.) to retrieve it, and posting it 
@@ -164,6 +158,9 @@ and then:
 
   sr_post -c dissem treefrog/frog.dna
 
+.. note::
+  FIXME: real example.
+
 If there are different varieties of posting used, configurations can be saved for each
 one. 
 
@@ -182,7 +179,7 @@ after posting without being sure the pump actually picked them up.
 
   sftp is perhaps the simplest for the user to implement and understand, but it is also
   the most costly in terms of CPU on the server.  All of the work of data transfer is
-  done at the python application level, when sftp acquisition is done, which isn´t great.
+  done at the python application level when sftp acquisition is done, which isn´t great.
 
   a lower cpu version would be for the client to send somehow (sftp?) and then just
   tell where the file is on the pump (basically the sr_sender2 version.)
@@ -198,6 +195,11 @@ HTTP Injection
 If we take a similar case, but in this case there is some http accessible space,
 the steps are the same or even simpler if no authentication is required for the pump
 to acquire the data.  One needs to install a web server of some kind.  
+
+.. note::
+  FIXME: replace with shs3.py provide real example.
+
+relegate lighttpd to appendix.
 
 As an example, for lighttpd, the following could be a complete configuration:: 
 
@@ -249,11 +251,17 @@ then a watch is started:
 
   sr_watch project start
 
+.. note::
+  FIXME: real example.
+
 While sr_watch is running, any time a file is created in the *document_root* directory, 
 it will be announced to the pump (on localhost, ie. the server blacklab itself.)
 
  cp frog.dna  /var/www/project/outgoing
   
+.. note::
+  FIXME: real example.
+
 This triggers a post to the pump.  Any subscribers will then be able to download
 the file.
 
@@ -322,6 +330,9 @@ then do:
 
   sr_sender2 treefrog/frog.dna
 
+.. note::
+  FIXME: real example.
+
 This will result in an sftp being initiated to ddsr, and posting of the file
 on ddsr with a file: url in the xs_rnd exchange.   
 
@@ -356,20 +367,6 @@ message if it refuses to forward a file.
 As each part is announced, so there is a corresponding log message for
 each part.  This allows senders to monitor progress of delivery of large
 files.
-
-.. note::
-   FIXME: part threshold not implemented, currently one has to manually 
-   program part headers into dd_post, requiring detailed understanding
-   of protocol.
-
-   Do we need to explain in-place vs. not? I think they just naturally
-   arise out of how routing goes.  This is perhaps not right in the
-   protocol, where it should be the sarra that understands that no
-   re-assembly is possible, sender doesn't, so the sarra on Re-Advertiseing
-   advertises 'p' instead of 'i', but user does not know or care.
-
-   conclusion: this is usually transparent, just admin's need to know
-   should go there. 
 
 Fingerprints
 ------------
@@ -445,6 +442,9 @@ returning false from the hook script.
   as possible as sarracenia is built to optimize routing using them.  Additional meta-data should be used
   to supplement, rather than replace, the built-in routing. 
 
+.. note::
+  FIXME: example
+
 
 Efficiency Considerations 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -453,7 +453,7 @@ It is not recommended to put overly complex logic in the hook scripts, as they e
 post and receive operations.  Note that the use of built-in facilities of AMQP (headers) is done to
 explicitly be as efficient as possible.  As an extreme example, including encoded XML into messages
 will not affect performance slightly, it will slow processing by orders of magnitude that one will not
-be able to compensate for with multiple instances (the penaly is simply too large to overcome.)
+be able to compensate for with multiple instances (the penalty is simply too large to overcome.)
 
 Consider, for example, Common Alerting Protocol (CAP) messages for weather alerts.  These alerts routinely 
 exceed 100 KBytes in size, wheras a sarracenia message is on the order of 200 bytes.  The sarracenia messages
@@ -463,12 +463,9 @@ and so replicated in many additional locations where the data itself will not be
 
 Including all the information that is in the CAP would mean just in terms of pure transport 500 times 
 more capacity used for a single message.  When there are many millions of messages to transfer, this adds up.
-Only minimal information required by the subscriber to make the decision to download or not should be 
-added to the message. this example has ignored 
-
-.. note::
-  FIXME: I guess we should start making some benchmarks soon.
-  Need to establish a baseline...  What is meaningful?
-  How many messages per second a subscriber can download?  
+Only the minimal information required by the subscriber to make the decision to download or not should be 
+added to the message.  It should also be noted that in addition to the above, there is typically a 10x to 
+100x cpu and memory penalty parsing an XML data structure compared to plain text representation, which
+will affect the processing rate.
 
 
