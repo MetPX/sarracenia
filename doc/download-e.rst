@@ -7,7 +7,7 @@ Downloading MetPX
 Sundew
 ------
 
-Currently MetPx-Sundew is only available for download from the project's `SourceForge file storage <https://sourceforge.net/projects/metpx/files/sundew/>`_. 
+Currently MetPx-Sundew is only available for download from the `sundew section  <https://sourceforge.net/projects/metpx/files/sundew/>`_ of the project's SourceForge file storage, . 
 
 Sarracenia
 ----------
@@ -34,4 +34,4 @@ Releases are built into *debian* packages for **Ubuntu 14.04 (trusty)** and will
 SourceForge
 ~~~~~~~~~~~
 
-The *.deb* binaries (build for Ubuntu 14.04) and source *tarballs* are also made available on the project's `SourceForge file storage <https://sourceforge.net/projects/metpx/files/sarracenia/>`_. 
+The *.deb* binaries (build for Ubuntu 14.04) and source *tarballs* are also made available in the `sarracenia section <https://sourceforge.net/projects/metpx/files/sarracenia/>`_ of the project's SourceForge file storage. 
