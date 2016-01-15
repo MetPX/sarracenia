@@ -68,9 +68,9 @@ class sr_subscribe(sr_instances):
         # setting impacting other settings
 
         if self.discard:
-           self.inplace   = False
-           self.overwrite = True
-           self.log_back  = False
+           self.inplace    = False
+           self.overwrite  = True
+           self.no_logback = True
 
         # if no subtopic given... make it #  for all
         if self.bindings == []  :
@@ -102,7 +102,7 @@ class sr_subscribe(sr_instances):
         self.lock           = '.tmp'
         self.mirror         = False
         self.overwrite      = True
-        self.log_back       = True
+        self.no_logback     = False
 
         # load/reload all config settings
 
@@ -136,7 +136,7 @@ class sr_subscribe(sr_instances):
         # publisher... (publish back to consumer)  
         # =============
 
-        if self.log_back :
+        if not self.no_logback :
            self.publisher         = self.consumer.publish_back()
            self.msg.log_publisher = self.publisher
            self.msg.log_exchange  = 'xs_' + self.broker.username
