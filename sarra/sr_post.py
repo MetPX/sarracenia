@@ -201,7 +201,7 @@ class sr_post(sr_config):
         # ==============
 
         if self.event == 'IN_DELETE' :
-           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,None,'R,0',rename,filename)
            if not ok : sys.exit(1)
            return
 

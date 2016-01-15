@@ -584,7 +584,7 @@ class sr_sarra(sr_instances):
            self.logger.error("Forbidden : message without cluster")
            return False
 
-        self.msg.set_from_cluster(self.cluster)
+        self.msg.headers['from_cluster'] = self.cluster
         return True
 
     def set_source(self):
