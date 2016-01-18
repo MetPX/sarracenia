@@ -366,6 +366,10 @@ def main():
     this_test = test_instances(config,args)
 
     action = sys.argv[-1]
+
+    if   action == 'foreground' :
+         this_test.nbr_instances = 0
+         this_test.start()
     if action == 'reload' : this_test.reload_parent()
     if action == 'restart': this_test.restart_parent()
     if action == 'start'  : this_test.start_parent()

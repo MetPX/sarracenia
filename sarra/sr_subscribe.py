@@ -613,7 +613,10 @@ def main():
 
     subscribe = sr_subscribe(config,args)
 
-    if   action == 'reload' : subscribe.reload_parent()
+    if   action == 'foreground' :
+         subscribe.nbr_instances = 0
+         subscribe.start()
+    elif action == 'reload' : subscribe.reload_parent()
     elif action == 'restart': subscribe.restart_parent()
     elif action == 'start'  : subscribe.start_parent()
     elif action == 'stop'   : subscribe.stop_parent()

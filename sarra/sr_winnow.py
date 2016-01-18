@@ -355,7 +355,11 @@ def main():
 
     winnow = sr_winnow(config,args)
 
-    if   action == 'reload' : winnow.reload_parent()
+
+    if   action == 'foreground' :
+         winnow.nbr_instances = 0
+         winnow.start()
+    elif action == 'reload' : winnow.reload_parent()
     elif action == 'restart': winnow.restart_parent()
     elif action == 'start'  : winnow.start_parent()
     elif action == 'stop'   : winnow.stop_parent()

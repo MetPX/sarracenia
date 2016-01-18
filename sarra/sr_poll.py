@@ -647,7 +647,11 @@ def main():
 
     poll = sr_poll(config,args)
 
-    if   action == 'reload' : poll.reload_parent()
+
+    if   action == 'foreground' :
+         poll.nbr_instances = 0
+         poll.start()
+    elif action == 'reload' : poll.reload_parent()
     elif action == 'restart': poll.restart_parent()
     elif action == 'start'  : poll.start_parent()
     elif action == 'stop'   : poll.stop_parent()

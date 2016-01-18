@@ -521,7 +521,11 @@ def main():
 
     sender = sr_sender(config,args)
 
-    if   action == 'reload' : sender.reload_parent()
+
+    if   action == 'foreground' :
+         sender.nbr_instances = 0
+         sender.start()
+    elif action == 'reload' : sender.reload_parent()
     elif action == 'restart': sender.restart_parent()
     elif action == 'start'  : sender.start_parent()
     elif action == 'stop'   : sender.stop_parent()
