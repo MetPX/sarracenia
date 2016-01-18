@@ -32,18 +32,6 @@ syntax.  The location of config dir is platform dependent::
    C:\Users\peter\AppData\Local\science.gc.ca\sarra
 
 
-Options are placed in configuration files, one per line, in the form: 
-
- **option <value>** 
-
-For example::
-
-  **debug true**
-
-sets the *debug* option to enable more verbose logging.
-To provide non-functional description of configuration, or comments, use lines
-that begin with a **#**.  
-
 The top of the tree contains a file 'default.conf' which contains setting that
 are read as defaults for any component which is started up.   default.conf
 will be read by every component on startup.   Components are the specific
@@ -55,9 +43,30 @@ suffix assumed)  If it is not found as file path, then the component will
 look in the component's config directory ( **config_dir** / **component** )
 for a matching .conf file.
 
+Options are placed in configuration files, one per line, in the form: 
+
+ **option <value>** 
+
+For example::
+
+  **debug true**
+
+sets the *debug* option to enable more verbose logging.  To provide non-functional 
+description of configuration, or comments, use lines that begin with a **#**.  
+
+Options and command line arguments are equivalent.  Every command line argument 
+has a corresponding long version starting with '--'.  For example *-u* has the 
+long form *--url*. One can also specify this option in a configuration file. 
+To do so, use the long form without the '--', and put its value separated by a space.
+The following are all equivalent:
+
+  - **url <url>** 
+  - **-u <url>**
+  - **--url <url>**
+
 Settings in an individual .conf file are read in after the default.conf
-file, and so can override defaults.   Options can also be specified on
-the command line to override what is in a configuration file.
+file, and so can override defaults.   Options specified on
+the command line override configuration files.
 
 Settings are interpreted in order.  Each file is read from top to bottom.
 for example:
@@ -199,6 +208,32 @@ Past that time, the message is taken out of the queue by the broker.
 .. note::
    FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
    non url elements of the entry. details.ssh_keyfile?
+
+ROUTING
+-------
+
+Sources of data need to indicate the clusters to which they would like data to be delivered.
+Data Pumps need to identify themselves, and their neighbors in order to pass data to them.
+
+**cluster** 
+   The name of the local cluster.
+
+**cluster_aliases** <alias>,<alias>,...
+   Alternate names for the cluster.
+
+**gateway_for**
+   If this pump sees data on a remote cluster that is destined for one of the clusters in this list, 
+   then retrieve it for forwarding there.
+
+**to** <cluster>,<cluster>,<cluster>...
+   for programs that inject data, to inform the pumping network of the intended destination of data
+   being injected.
+
+sr_sarra interprets *cluster, cluster_aliases*, and *gateway_for*, such that products which are not 
+meant for the local cluster are not downloaded.  Similarly, sr_sender interprets these options such that only 
+intended is sent to remote clusters.
+
+
 
 DELIVERY SPECIFICATIONS
 -----------------------
