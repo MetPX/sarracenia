@@ -112,23 +112,14 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
+Please refer to the `sr_config(7) <sr_config.7.html>`_ manual page for a detailed description of
+common settings, and methods of specifying them.
 
 **[-b|--broker <broker>]**
        *broker*  is the broker to connect to to send the post.
 
 **[-c|--config <configfile>]**
-
-Any command line arguments has a corresponding long version starting with '--'.
-For example  *-u*  has the long form  *--url* . You can also specify
-this option in a configuration file shall you need it. To do so, you simply
-use the long form without the '--', and put its value separated by a space.
-In a configuration file the right syntax to set the url is :
-
-**url <url>**
-
-The  *config*  option is no exception... and if used the content of this
-other specified file will have its options processed.
-
+       A file filled with options.
 
 **[-dr|--document_root <path>]**
 
@@ -173,6 +164,18 @@ With the  *rename*   option, the user can
 suggest a destination path for its files. If the given
 path ends with '/' it suggests a directory path... 
 If it doesn't, the option specifies a file renaming.
+
+
+**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
+
+  A comma-separated list of destination clusters to which the posted data should be sent.
+  Ask pump administrators for a list of valid destinations.
+
+  default: None.
+
+.. note:: 
+  FIXME: a good list of destination should be discoverable.
+
 
 **[-tp|--topic_prefix <key>]**
 
