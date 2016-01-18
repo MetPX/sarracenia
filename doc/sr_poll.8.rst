@@ -16,7 +16,7 @@ Poll products from a remote server
 SYNOPSIS
 ========
 
-**sr_poll** configfile start|stop|restart|reload|status
+**sr_poll** configfile foreground|start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
@@ -40,6 +40,13 @@ subscribe to the posted notifications, to download and repost them from a data p
 
 The **sr_poll** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... 
+
+The **foreground** action is different. It would be used when building a configuration
+or debugging things. It is used when the user wants to run the program and its configfile 
+interactively...   The **foreground** instance is not concerned by other actions, 
+but should the configured instances be running it shares the same (configured) message queue.
+The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
+or use other means to kill its process.
 
 CONFIGURATION
 =============

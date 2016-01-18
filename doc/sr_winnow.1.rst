@@ -14,7 +14,7 @@ winnows messages, suppressing redundant product notification
 SYNOPSIS
 ========
 
-**sr_winnow** configfile start|stop|restart|reload|status
+**sr_winnow** configfile foreground|start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
@@ -36,6 +36,12 @@ and the notification is posted.
 
 The **sr_winnow** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
+
+The **foreground** action is different. It would be used when building a configuration
+or debugging things. It is used when the user wants to run the program and its configfile 
+interactively...   The **foreground** instance is not concerned by other actions. 
+The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
+or use other means to kill its process.
 
 CONFIGURATION
 =============

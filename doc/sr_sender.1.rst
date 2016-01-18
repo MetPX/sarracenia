@@ -14,7 +14,7 @@ Sends file from messages to remote server (option repost to remote broker)
 SYNOPSIS
 ========
 
-**sr_sender** configfile start|stop|restart|reload|status
+**sr_sender** configfile foreground|start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
@@ -41,6 +41,13 @@ we added **metpx-sundew** like options and option behaviors.
 
 The **sr_sender** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
+
+The **foreground** action is different. It would be used when building a configuration
+or debugging things. It is used when the user wants to run the program and its configfile 
+interactively...   The **foreground** instance is not concerned by other actions, 
+but should the configured instances be running it shares the same (configured) message queue.
+The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
+or use other means to kill its process.
 
 CONFIGURATION
 =============
