@@ -3,12 +3,6 @@
  MetPX-Sarracenia for Administrators
 =====================================
 
-.. NOTE::
-
-   NOT TO BE TRUSTED.  THERE IS NO MANUAL YET.
-   IF YOU DOWNLOADED THIS PACKAGE... IT IS STILL BEING DEVELOPED. 
-   USAGE MAY CHANGE.  NOT RELEASED YET.
-
 .. Contents::
 
 
@@ -16,6 +10,7 @@ Revision Record
 ---------------
 
 Pre-Draft.  This document is still being built and should not be reviewed or relied upon.
+the term FIXME is present to indicate locations where content addition is expected.
 
 :version: @Version@ 
 :date: @Date@
@@ -264,6 +259,7 @@ the users.conf file.
 ..note:: 
   FIXME: missing users.conf(7) man page.
   FIXME: missing credentials.conf(7) man page. do we need this?
+  FIXME: should we do a generic sr_config(7) man page instead?
 
 The administrative processes perform validation of postings from sources, and once
 they are validated, forward them to the public exchanges for subscribers to access.
@@ -322,6 +318,12 @@ Data
 The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
 sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
 
+.. note::
+  FIXME: sample sarra used to pull from another pump.
+
+.. note::
+  FIXME:: sample sender to push to another pump.
+
 
 Logs
 ~~~~
@@ -347,6 +349,10 @@ What is Going On?
 
 the sr_log command can be invoked, overriding the default exchange to bind to 'xlog' instead
 in order to get log information for an entire broker.
+
+
+.. NOTE:: 
+   config sample of looking at xlog.
 
 Canned sr_log configuration with an onmessage action can be configured to gather statisical 
 information is a speedo on various aspects of operations.
@@ -421,10 +427,6 @@ queueing and transmission away from the instrument.  It is restarted when the op
 It is just a matter of installing and configuring all a data flow engine, a broker, and the package
 itself on a single server.
 
-
-.. note::
-
-   FIXME: go through the topologies in design/design.rst, and document what we think is relevant.
 
 
 Rabbitmq Setup 

@@ -71,5 +71,8 @@ to get all logs messages.
 SEE ALSO
 ========
 
+`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+
+
 :: FIXME
 

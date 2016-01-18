@@ -282,7 +282,7 @@ reconnection to the broker every time a post is to be sent.
 SEE ALSO
 ========
 
-`sr_get(1) <sr_get.1.html>`_ - the multi-protocol download client.
+`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 

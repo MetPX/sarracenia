@@ -407,11 +407,8 @@ the file to be assembled elsewhere and only renamed into the destination directo
 once it is complete.
 
 .. NOTE::
-  Is the PDS method (000 mode bits) implemented?  If not, I do not think we should.
-  Certainly it should not be documented as a recommended option.  At best it should
-  be deprecated.  Ideally we deal with unco-operative receivers via tempdir
-  or an onfile that does something elegant... (specifically target the wrong
-  directory and onfile just mv's it afterward.)
+  the lock option may change names to 'inflight' at some point. under debate.
+
 
 The 'ls' method works especially well if ''do_something'' erases the file after it 
 is processed, so that the 'ls' command is only ever processing a small directory 

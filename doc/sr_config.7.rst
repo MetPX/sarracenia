@@ -1,12 +1,12 @@
-==============
- SR_Subscribe 
-==============
+===========
+ SR_CONFIG 
+===========
 
------------------------------------------------
-Select and Conditionally Download Posted Files
------------------------------------------------
+-------------------------------------
+Overview of Sarra Configuration Files
+-------------------------------------
 
-:Manual section: 1
+:Manual section: 7
 :Date: @Date@
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
@@ -16,54 +16,120 @@ Select and Conditionally Download Posted Files
 SYNOPSIS
 ========
 
- **sr_subscribe** *[-n] configfile.conf*
- (formerly **dd_subscribe** )
+ - **sr_component** <config> [start|stop|restart|status]
+ - **<config_dir>**/ [ default.conf ]
+ - **<config_dir>**/ [ sarra | subscribe | log | sender ] / <config.conf>
+ - **<config_dir>**/ scripts / <script.py>
 
 DESCRIPTION
 ===========
 
+Metpx Sarracenia is configured using a tree of text files using a common
+syntax.  The location of config dir is platform dependent::
 
-sr_subscribe is a program to efficiently download files from websites or file servers 
-that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
-publish a message for each file as soon as it is available.  Clients connect to a
-*broker* (often the same as the server itself) and subscribe to the notifications.
-The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
-and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications.
+ - linux: ~/.config/sarra
+ - Windows: %AppDir%/science.gc.ca/sarra, this might be:
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra
 
-**sr_subscribe** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
-suppress the download behaviour and only post the URL on standard output.  The standard
-output can be piped to other processes in classic UNIX text filter style.
 
-The **sr_subscribe** command takes one argument: a configuration file described below.
+Options are placed in configuration files, one per line, in the form: 
 
-CONFIGURATION
-=============
+ **option <value>** 
 
-Options are placed in the configuration file, one per line, of the form: 
-
-**option <value>** 
-
-Comment lines begins with **#**. 
 For example::
 
   **debug true**
 
-would be a demonstration of setting the option to enable more verbose logging.
+sets the *debug* option to enable more verbose logging.
+To provide non-functional description of configuration, or comments, use lines
+that begin with a **#**.  
+
+The top of the tree contains a file 'default.conf' which contains setting that
+are read as defaults for any component which is started up.   default.conf
+will be read by every component on startup.   Components are the specific
+functional programs of metpx-sarracenia: sr_subscribe, 
+sr_sarra, sr_sender, sr_log, etc...  Individual configuration files
+can be placed anywhere and invoked with the complete path.   When components
+are invoked, the provided file is interpreted as a file path (with a .conf
+suffix assumed)  If it is not found as file path, then the component will
+look in the component's config directory ( **config_dir** / **component** )
+for a matching .conf file.
+
+Settings in an individual .conf file are read in after the default.conf
+file, and so can override defaults.   Options can also be specified on
+the command line to override what is in a configuration file.
+
+Settings are interpreted in order.  Each file is read from top to bottom.
+for example:
+
+sequence #1::
+
+  reject *gif
+  accept .*
+
+sequence #2::
+
+  accept .*
+  reject *gif
+
+In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
+accepts everything) is encountered before the reject statement, so the reject has no effect.
 
 
-RABBITMQ CREDENTIAL OPTIONS
----------------------------
+CREDENTIALS 
+-----------
 
-The broker option sets all the credential information to connect to the  **RabbitMQ** server 
+Ther username and password or keys used to access servers are examples of credentials.
+In order to reduce the sensitivity of most configuration files, the credentials
+are stored in a single file apart from all other settings.  The credentials.conf file
+is the only mandatory configuration file for all users.
 
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+For all **sarracenia** programs, the confidential parts of credentials are stored
+only in ~/.conf/sarra/credentials.conf.  This includes the destination and the broker
+passwords and settings needed by components.  The format is one entry per line.  Examples:
+
+- **amqp://user1:password1@host/**
+- **amqps://user2:password2@host:5671/dev**
+
+- **sftp://user5:password5@host**
+- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+
+- **ftp://user7:password7@host  passive,binary**
+- **ftp://user8:password8@host:2121  active,ascii**
+
+- **ftps://user7:password7@host  passive,binary,tls**
+- **ftps://user8:password8@host:2121  active,ascii,tls,prot_p**
+
+In other configuration files or on the command line, the url simply lacks the
+password or key specification.  The url given in the other files is looked
+up in credentials.conf.
+
+To implement supported of additional protocols, one would write 
+a **_do_download** script.  the scripts would access the credentials 
+value in the script with the code :   
+
+- **ok, details = parent.credentials.get(msg.urlcred)**
+- **if details  : url = details.url**
+
+
+BROKER
+------
+
+All components interact with a broker in some way, so this option will be found
+either in the default.conf or each specific configuration file.
+The broker option tell each component which broker to contact.
+
+**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
+      (default: None and it is mandatory to set it ) 
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+Once connected to an AMQP broker, the user needs to bind a queue
+to exchanges and topics to determine the messages of interest.
 
+To configure in administrative mode, set an option *manager* in the same
+format as broker, to specify how to connect to the broker for administrative
+purposes.  See Administration Guide for more information.
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -115,20 +181,12 @@ The queue is where the notifications are held on the server for each subscriber.
 - **expire        <minutes>      (default: None)** 
 - **message-ttl   <minutes>      (default: None)** 
 
-By default, sr_subscribe** creates a queue name that should be unique and starts with  **q_** 
+By default, components create a queue name that should be unique and starts with  **q_** 
 and is usually followe
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
-The  **queue**  option sets a queue name. It should always start with  **cmc** .
 
-.. NOTE::
-   FIXME: is this **cmc** default correct?  Has it changed to something less cmc centric?
-   makes things easier to clean up if exchanges and queues are associated with login users.
-   I think the correct default might be something like: qs_Alice for user 'Alice' for the 
-   sx_Alice exchange, and ql_Alice for the sl_Alice exchange.  Is that right?
-   have to be able to permit people to create only the queues they should... 
-   so. Alice would only be able to create queues ^q._Alice.* ... and Bob only q._Bob.*$
-   does it matter to differentiate s vs. l? or just use same queue names for all (q_Alice?)
-
+.. note::
+   FIXME, this file placement is obsolete, goes in .cache now?
 
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
@@ -136,29 +194,7 @@ on disk if the broker is restarted.
 The  **message-ttl**  option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-CREDENTIALS 
------------
 
-The configuration for credentials that concerns product download is stored in the
- ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
-
-- **amqp://user:passwd@host:port/**
-- **amqps://user:passwd@host:port/**
-
-- **sftp://user:passwd@host:port/**
-- **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
-
-- **ftp://user:passwd@host:port/**
-- **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
-
-- **http://user:passwd@host:port/**
-
-to implement supported of additional protocols, one would write 
-a **_do_download** script.  the scripts would access the credentials 
-value in the script with the code :   
-
-- **ok, details = parent.credentials.get(msg.urlcred)**
-- **if details  : url = details.url**
 
 .. note::
    FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
@@ -277,24 +313,26 @@ A variety of example configuration files are available here:
 
 
 
-QUEUES and MULTIPLE STREAMS
----------------------------
+INSTANCES
+---------
 
-When executed,  **sr_subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to sr_subscribe**
-with a .queue suffix ( ."configfile".queue). 
-If sr_subscribe is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, it uses the queuename 
-stored in that file to connect to the same queue, and not lose any messages.
+It is possible that one instance of a component and configuration is not enough to process & send all available notifications.  The *instances* option allows several processes running the same configuration to share the load. the following option in a configuration file:
 
-File downloads can be parallelized by running multiple sr_subscribes using
-the same queue.  The processes will share the queue and each download 
-part of what has been selected.  Simply launch multiple instances
-of sr_subscribe in the same user/directory using the same configuration file, 
+**instances      <integer>     (default:1)**
 
-You can also run several sr_subscribe with different configuration files to
-have multiple download streams delivering into the the same directory,
-and that download stream can be multi-streamed as well.
+will result in launching N instances of the component using that config.
+In the ~/.cache/sarra directory, a number of runtime files are created::
+
+  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  A sr_sender_configname_$instance.log  is created as a log of $instance process.
+
+The logs can be written in another directory than the default one with option :
+
+**log            <directory logpath>  (default:~/.cache/<component>/log)**
+
+.. note::  
+  FIXME: indicate windows location also... dot files on windows?
+
 
 .. Note::
 
@@ -315,21 +353,51 @@ Should you want to turned them off the option is :
 - **log_back <boolean>        (default: true)** 
 
 
-ADVANCED FEATURES
------------------
 
-There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program:
+PLUGIN SCRIPTS
+--------------
 
-- **do_download <script>        (default: None)** 
-- **on_message  <script>        (default: None)** 
-- **on_file     <script>        (default: None)** 
-- **on_parts    <script>        (default: None)** 
+Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
+flexibility to override those common cases with user plugins scripts, written in python.  
+MetPX comes with a variety of scripts which can act as examples.   
 
-A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be:
-(this one being for **on_file**)
+Users can place their own scripts in the script sub-directory 
+of their config directory tree.
 
-class Transformer(object): 
+.. note:: 
+   FIXME: where the default scripts are stored is an unresolved issue. 
+   sr components are supposed to look there, but we have not figured that out yet.
+
+There are two varieties of
+scripts:  do\_* and on\_*.  Do\_* scripts are used to implement functions, replacing built-in
+functionality, for example, to implement additional transfer protocols.  
+
+- do_download - to implement additional protocols.
+
+
+On\_* scripts are used more often. They allow actions to be inserted to augment the default 
+processing for various specialized use cases. The scripts are invoked by having a given 
+configuration file specify an on_<event> option. The event can be one of:
+
+- on_file -- When the reception of a file has been completed, trigger followup action.
+
+- on_log -- when an sr_log message is received by sr_log, or about to be sent by any other
+  component.
+
+- on_msg -- when an sr_post(7) message has been received.  For example, a message has been received 
+  and additional criteria are being evaluated for download of the corresponding file.  if the on_msg 
+  script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
+  which decides that data that is too old is not worth downloading.)
+
+- on_part -- Large file transfers are split into parts.  Each part is transferred separately.
+  When a completed part is received, one can specify additional processing.
+
+- on_post -- when a data source (or sarra) is about to post a message, permit customized
+  adjustments of the post.
+
+The simplest example of a script: A do_nothing.py script for **on_file**::
+
+  class Transformer(object): 
       def __init__(self):
           pass
 
@@ -340,33 +408,20 @@ class Transformer(object):
 
           return True
 
-transformer  = Transformer()
-self.on_file = transformer.perform
+  transformer  = Transformer()
+  self.on_file = transformer.perform
 
 The only arguments the script receives it **parent**, which is an instance of
 the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
+For other events, the last line of the script must be modified to correspond.
 
+More examples are available in the Guide documentation.
 
-DEPRECATED SETTINGS
--------------------
-
-These settings pertain to previous versions of the client, and have been superceded.
-
-- **host          <broker host> (unsupported)** 
-- **amqp-user     <broker user> (unsupported)** 
-- **amqp-password <broker pass> (unsupported)** 
-- **http-user     <url    user> (now in credentials.conf)** 
-- **http-password <url    pass> (now in credentials.conf)** 
-- **topic         <amqp pattern> (deprecated)** 
-- **exchange_type <type>         (default: topic)** 
-- **exchange_key  <amqp pattern> (deprecated)** 
 
 SEE ALSO
 --------
-
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
@@ -379,35 +434,3 @@ SEE ALSO
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
-
-
-HISTORY
--------
-
-dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
-version was deployed in 2013 on an experimental basis.  The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02.
-
-In 2007, when the MetPX was originally open sourced, the staff responsible were part of
-Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
-of disappearing species which are not furry (the furry ones get all the attention) and
-because search engines will find references to names which are more unusual more easily, 
-the original MetPX WMO switch was named after a carnivorous plant on the Species At
-Risk Registry:  The *Thread-leaved Sundew*.  
-
-The organization behind metpx have since moved to Shared Services Canada, but when
-it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
-of insectivorous pitcher plants. We like plants that eat!  
-
-
-dd_subscribe Renaming
-~~~~~~~~~~~~~~~~~~~~~
-
-The new module (MetPX-Sarracenia) has many components, is used for more than 
-distribution, and more than one web site, and causes confusion for sys-admins thinking
-it is associated with the dd(1) command (to convert and copy files).  So, we switched
-all the components to use the sr\_ prefix.
-

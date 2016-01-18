@@ -331,6 +331,8 @@ These settings pertain to previous versions of the client, and have been superce
 SEE ALSO
 --------
 
+`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
