@@ -209,7 +209,7 @@ class sr_winnow(sr_instances):
         self.setlog()
 
     def help(self):
-        self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        self.logger.info("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>                default manager (if configured)")
         self.logger.info("-e   <exchange>              MANDATORY")
@@ -355,7 +355,11 @@ def main():
 
     winnow = sr_winnow(config,args)
 
-    if   action == 'reload' : winnow.reload_parent()
+
+    if   action == 'foreground' :
+         winnow.nbr_instances = 0
+         winnow.start()
+    elif action == 'reload' : winnow.reload_parent()
     elif action == 'restart': winnow.restart_parent()
     elif action == 'start'  : winnow.start_parent()
     elif action == 'stop'   : winnow.stop_parent()

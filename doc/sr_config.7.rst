@@ -16,7 +16,7 @@ Overview of Sarra Configuration Files
 SYNOPSIS
 ========
 
- - **sr_component** <config> [start|stop|restart|status]
+ - **sr_component** <config> [foreground|start|stop|restart|status]
  - **<config_dir>**/ [ default.conf ]
  - **<config_dir>**/ [ sarra | subscribe | log | sender ] / <config.conf>
  - **<config_dir>**/ scripts / <script.py>

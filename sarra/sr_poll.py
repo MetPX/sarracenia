@@ -35,7 +35,7 @@
 #============================================================
 # usage example
 #
-# sr_poll [options] [config] [start|stop|restart|reload|status]
+# sr_poll [options] [config] [foreground|start|stop|restart|reload|status]
 #
 # sr_poll connects to a destination. For each directory given, it lists its content
 # and match the accept/reject products in that directory. Each file is announced and
@@ -300,7 +300,7 @@ class sr_poll(sr_instances):
         return ok
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
         print("OPTIONS:")
         print("DEBUG:")
         print("-debug")
@@ -647,7 +647,11 @@ def main():
 
     poll = sr_poll(config,args)
 
-    if   action == 'reload' : poll.reload_parent()
+
+    if   action == 'foreground' :
+         poll.nbr_instances = 0
+         poll.start()
+    elif action == 'reload' : poll.reload_parent()
     elif action == 'restart': poll.restart_parent()
     elif action == 'start'  : poll.start_parent()
     elif action == 'stop'   : poll.stop_parent()
