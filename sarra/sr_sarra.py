@@ -635,7 +635,11 @@ def main():
 
     sarra = sr_sarra(config,args)
 
-    if   action == 'reload' : sarra.reload_parent()
+
+    if   action == 'foreground' :
+         sarra.nbr_instances = 0
+         sarra.start()
+    elif action == 'reload' : sarra.reload_parent()
     elif action == 'restart': sarra.restart_parent()
     elif action == 'start'  : sarra.start_parent()
     elif action == 'stop'   : sarra.stop_parent()
