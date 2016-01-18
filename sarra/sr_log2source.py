@@ -88,7 +88,8 @@ class sr_log2source(sr_instances):
 
         self.logger.debug("source_users = %s " % self.source_users)
 
-        self.nbr_instances = len(self.source_users)
+        if len(self.source_users) == 0 :
+           self.nbr_instances = 0
            
 
     def close(self):

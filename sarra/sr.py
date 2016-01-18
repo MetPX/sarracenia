@@ -81,7 +81,8 @@ def scandir(dirconf):
     if not os.path.isdir(dirconf)       : return
 
     for confname in os.listdir(dirconf) :
-        if not '.conf' in confname      : continue
+        if len(confname) < 5                 : continue
+        if not '.conf' in confname[-5:]      : continue
         confpat = dirconf + '/' + confname
  
         invoke(confpat)

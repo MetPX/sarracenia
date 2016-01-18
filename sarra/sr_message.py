@@ -232,23 +232,14 @@ class sr_message():
 
         return ok
 
-    def set_from_cluster(self,from_cluster=None):
-        if from_cluster != None :
-           self.headers['from_cluster'] = from_cluster
-        elif 'from_cluster' in self.headers :
-           del self.headers['from_cluster']
-
     def set_exchange(self,name):
         self.exchange = name
 
-    def set_flow(self,flow=None):
-        if flow != None :
-           self.headers['flow'] = flow
-        elif 'flow' in self.headers :
-           del self.headers['flow']
-
     def set_hdrstr(self):
         self.hdrstr  = ''
+
+        if 'mtime' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('mtime', self.headers['mtime'])
 
         if 'parts' in self.headers :
            self.hdrstr  += '%s=%s ' % ('parts',self.headers['parts'])

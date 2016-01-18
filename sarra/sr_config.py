@@ -144,6 +144,7 @@ class sr_config:
 
     def config(self,path):
         self.logger.debug("sr_config config")
+        self.logger.debug("sr_config %s" % path)
 
         if path == None : return
 
@@ -151,7 +152,7 @@ class sr_config:
             f = open(path, 'r')
             for line in f.readlines():
                 words = line.split()
-                if (len(words) >= 2 and not re.compile('^[ \t]*#').search(line)):
+                if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
                     self.option(words)
             f.close()
 
@@ -262,7 +263,7 @@ class sr_config:
 
         self.discard              = False
         self.flatten              = '/'
-        self.log_back             = True
+        self.no_logback           = False
 
         self.recursive            = False
 
@@ -308,7 +309,7 @@ class sr_config:
         self.nbr_instances        = 1
 
 
-        self.mirror               = True
+        self.mirror               = False
 
         self.overwrite            = False
         self.recompute_chksum     = False
@@ -678,8 +679,12 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['discard','-d','--discard','--download-and-discard']:
-                     self.discard = self.isTrue(words[1])
-                     n = 2
+                     if words[0][0:1] == '-' : 
+                        self.discard = True
+                        n = 1
+                     else :
+                        self.discard = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['document_root','-dr','--document_root']:
                      if sys.platform == 'win32':
@@ -720,7 +725,13 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] == 'durable'    : self.durable = isTrue(words[1])
+                elif words[0] == 'durable'   : 
+                     if words[0][0:1] == '-' : 
+                        self.durable = True
+                        n = 1
+                     else :
+                        self.durable = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['events','-e','--events']:
                      i = 0
@@ -755,8 +766,12 @@ class sr_config:
                      needexit = True
 
                 elif words[0] in ['inplace','-in','--inplace']:
-                     self.inplace = self.isTrue(words[1])
-                     n = 2
+                     if words[0][0:1] == '-' : 
+                        self.inplace = True
+                        n = 1
+                     else :
+                        self.inplace = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['instances','-i','--instances']:
                      self.nbr_instances = int(words[1])
@@ -778,10 +793,6 @@ class sr_config:
                      self.logpath = words[1]
                      n = 2
 
-                elif words[0] in ['log_back','-lb','--log_back']:
-                     self.log_back = self.isTrue(words[1])
-                     n = 2
-
                 elif words[0] in ['logrotate','-lr','--logrotate']:
                      self.logrotate = int(words[1])
                      n = 2
@@ -798,14 +809,27 @@ class sr_config:
                 elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
 
                 elif words[0] in ['mirror','-mirror','--mirror']:
-                     self.mirror = self.isTrue(words[1])
-                     n = 2
+                     if words[0][0:1] == '-' : 
+                        self.mirror = True
+                        n = 1
+                     else :
+                        self.mirror = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['--no']:
                      self.no = int(words[1])
                      n = 2
 
+                elif words[0] in ['no_logback','-nlb','--no_logback']:
+                     if words[0][0:1] == '-' : 
+                        self.no_logback = True
+                        n = 1
+                     else :
+                        self.no_logback = self.isTrue(words[1])
+                        n = 2
+
                 elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
+                     self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
 
@@ -850,8 +874,12 @@ class sr_config:
                      n = 2
 
                 elif words[0] in ['overwrite','-o','--overwrite'] :
-                     self.overwrite = self.isTrue(words[1])
-                     n = 2
+                     if words[0][0:1] == '-' : 
+                        self.overwrite = True
+                        n = 1
+                     else :
+                        self.overwrite = self.isTrue(words[1])
+                        n = 2
 
                 elif words[0] in ['parts','-p','--parts']:
                      self.parts   = words[1]
@@ -971,6 +999,9 @@ class sr_config:
                 elif words[0] in ['vip','-vip','--vip']:
                      self.vip = words[1]
                      n = 2
+
+                else :
+                     self.logger.error("problem with option %s" % words[0])
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
