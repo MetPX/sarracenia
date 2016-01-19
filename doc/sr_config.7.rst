@@ -24,6 +24,20 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+Metpx Sarracenia components are the specific functional programs: sr_subscribe, 
+sr_sarra, sr_sender, sr_log, etc...  When any component is invoked, a configuration
+file is given to indicate which configuration to operate on, and an operation
+is given:  The operation is one of:
+
+ - foreground:  run a single instance in the foreground logging to stderr
+ - restart: stop and then start the configuration.
+ - start:  start the configuration running
+ - status: check if the configuration is running.
+ - stop: stop the configuration from running 
+
+For example:  *sr_subscribe dd foreground* runs the sr_subcribe component with the dd configuration
+as a single foreground instance.
+
 Metpx Sarracenia is configured using a tree of text files using a common
 syntax.  The location of config dir is platform dependent::
 
@@ -31,12 +45,10 @@ syntax.  The location of config dir is platform dependent::
  - Windows: %AppDir%/science.gc.ca/sarra, this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra
 
-
 The top of the tree contains a file 'default.conf' which contains setting that
 are read as defaults for any component which is started up.   default.conf
-will be read by every component on startup.   Components are the specific
-functional programs of metpx-sarracenia: sr_subscribe, 
-sr_sarra, sr_sender, sr_log, etc...  Individual configuration files
+will be read by every component on startup.   
+Individual configuration files
 can be placed anywhere and invoked with the complete path.   When components
 are invoked, the provided file is interpreted as a file path (with a .conf
 suffix assumed)  If it is not found as file path, then the component will
