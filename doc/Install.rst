@@ -41,8 +41,8 @@ On Ubuntu 14.04::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
-  sudo apt-get install python3-metpx-sarracenia
-  sudo apt-get install python3-paramiko
+  sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
+  sudo apt-get install python3-paramiko   # adds SFTP support.
 
 .. note::
    FIXME: confirm that python3-paramiko is in our repo for 14.04?
@@ -56,8 +56,9 @@ the .dpkg from sourceforge.net::
   wget -O sarra.deb http://sourceforge.net/projects/metpx/files/sarracenia/2.16.01/python3-metpx-sarracenia_2.16.01a3_all.deb/download
   sudo dpkg -i sarra.deb
   sudo apt-get install -f
+  apt-get install python3-paramiko #for SFTP support.
 
-The last line pulls in dependencies of the debian package.
+The line with *install -f* pulls in debian package dependencies. 
 
 .. note: 
    FIXME: 16.04 (xenial) is trivial to add, all deps are already in repos...

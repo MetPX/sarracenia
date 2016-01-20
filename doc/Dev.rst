@@ -43,7 +43,7 @@ Each new component sr\_whatever, should have relevant man pages implemented.
 The Guides should also be revised.  The form of the documentation is still under
 discussion.  Current thinking:
 
-- GettingIt.rst (Installation)
+- Install.rst (Installation)
 - Dev.rst (this guide for developers)
 - Subscribers.rst (a guide for how to read data from a pump.)
 - Source.rst (a guide for those publishing data to a pump.)
