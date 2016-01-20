@@ -13,6 +13,9 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 
 .. contents::
 
+.. NOTE::
+   FIXME:  introduction what is a data pump?
+   should refer to 
 Regardless of how it is done, injecting data means telling the pump where the data 
 is so that it can be forwarded to and/or by the pump.   In the simplest case, it 
 takes the data from your account, wherever you have it, providing you give it 
@@ -98,7 +101,7 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 |                    | Provides direct delivery into Government HPC environment.    |
 |                    | Contact: SSC.HPCOptimization-OptimisationCHP.SSC@canada.ca   |
 +--------------------+--------------------------------------------------------------+
-| BROADCAST          | Send to all switches. Probably best to avoid.                |
+| BROADCAST          | Send to all pumps. Probably best to avoid.                   |
 |                    | All contacts for all of the above.                           |
 |                    | GEDS_                                                        |
 +--------------------+--------------------------------------------------------------+
@@ -108,7 +111,7 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 
 .. notes:
    These names correspond to business functions, not the machines that implement
-   them.  The names will be implemented as aliases on switches.
+   them.  The names will be implemented as aliases on pumps.
    ALLCAPS is just a convention to avoid confusion with hostnames, which are 
    generally lowercase, similar to C convention for macros. 
 
@@ -118,7 +121,7 @@ so the sr_post command will look like this:
 
   sr_post -to DDIEDM,DDIDOR,ARCHPC \
           -broker amqps://rnd@ddsr.cmc.ec.gc.ca/  \
-          sftp://peter@grumpy/treefrog/frog.dna
+          -url sftp://peter@grumpy/treefrog/frog.dna
 
 If you find you are using the same arguments all the time,
 it might be convenient to store them in a central configuration::
@@ -134,14 +137,14 @@ it might be convenient to store them in a central configuration::
 So now the command line for sr_post is just the url to for ddsr to retrieve the
 file on grumpy:
 
-  sr_post treefrog/frog.dna
+  sr_post -url treefrog/frog.dna
 
 .. note::
   FIXME: provide real example.
 
 Either way, the command asks ddsr to retrieve the treefrog/frog.dna file by logging 
 in to grumpy as peter (using the pump's private key.) to retrieve it, and posting it 
-on the switch, for forwarding to the other pump destinations.
+on the pump, for forwarding to the other pump destinations.
 
 similar to sr_subscribe, one can also place configuration files in an sr_post specific
 directory:: 
@@ -156,7 +159,7 @@ directory::
 
 and then:
 
-  sr_post -c dissem treefrog/frog.dna
+  sr_post -c dissem -url treefrog/frog.dna
 
 .. note::
   FIXME: real example.
@@ -198,38 +201,6 @@ to acquire the data.  One needs to install a web server of some kind.
 
 .. note::
   FIXME: replace with shs3.py provide real example.
-
-relegate lighttpd to appendix.
-
-As an example, for lighttpd, the following could be a complete configuration:: 
-
-  cat >/etc/lighttpd/lighttpd.conf <<EOT
-
-  server.modules = ()
-
-  dir-listing.activate = "enable"
-  
-  server.document-root        = "/var/www"
-  server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
-  server.errorlog             = "/var/log/lighttpd/error.log"
-  server.pid-file             = "/var/run/lighttpd.pid"
-  server.username             = "www-data"
-  server.groupname            = "www-data"
-  server.port                 = 80
-  
-  
-  index-file.names            = ( "index.php", "index.html", "index.lighttpd.html" )
-  url.access-deny             = ( "~", ".inc" )
-  
-  # default listening port for IPv6 falls back to the IPv4 port
-  ## Use ipv6 if available
-  include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
-  include_shell "/usr/share/lighttpd/create-mime.assign.pl"
-  include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
-  
-  EOT
-
-  service lighttpd start
 
 This configuration will show all files under /var/www as folders, running under
 the www-data users.  Data posted in such directories must be readable to the www-data
@@ -298,57 +269,6 @@ arbitrary post processing of log messages by using on_message plugin.
    FIXME: need some examples.
 
 
-Sending a File to the Pump
---------------------------
-
-Sometimes it is easier to send the file to the pump, rather than having the pump
-pick it up.  Use sr_sender2 to do that. With sr_sender2, the source needs an account 
-on the data pump and preferably to have keys stored there.  say rnd.pub.
-
-place the source server and account public key in the ~/.ssh/authorized_keys on the
-data pump. so then one adds the necessary credentials to the sr\_ configuration::
-
-  cat >>~/.config/sarra/credentials.conf <<EOT
-
-  sftp://rnd:rndpw@ddsr.cmc.ec.gc.ca/
-
-  EOT
-
-Also need to set up the sr_sender2 configuration::
-
-  blacklab% cat >~/.config/sarra/sr_sender2/dissem.conf <<EOT
-
-  broker amqps://rnd@ddsr.cmc.ec.gc.ca/
-  to DDIEDM,DDIDOR,ARCHPC
-  base_url sftp://rnd@ddsr.cmc.ec.gc.ca/
-  instances 3
-
-  EOT
-
-
-then do:
-
-  sr_sender2 treefrog/frog.dna
-
-.. note::
-  FIXME: real example.
-
-This will result in an sftp being initiated to ddsr, and posting of the file
-on ddsr with a file: url in the xs_rnd exchange.   
-
-.. note::
-   FIXME: major magic here, as the sender doesn´t know the absolute path
-   of the files on the remote pump, how does it compute the file: announcement?
-
-   FIXME: so it shows up on the pump owned by rnd, we likely need to chown
-   it to be dd_adm, or something.   ...
-   
-If the file is large, then there will be several posts of each part of 
-the file as it is delivered.  The *instances* option can be used to have
-the send proceed in parallel.  In the example above, three concurrent streams
-will be used to send the file, provided it is large enough to be sent
-in three or more parts.
-
 
 Large Files
 -----------
@@ -361,7 +281,7 @@ be adjusted to taste using the *part_threshold* option.
 
 Different pumps along the route may have different maximum part sizes.  To
 traverse a given path, the part must be no larger than the threshold setting
-of all the intervening pumps.  A pump will send the source an erroe log
+of all the intervening pumps.  A pump will send the source an error log
 message if it refuses to forward a file.
 
 As each part is announced, so there is a corresponding log message for
@@ -457,7 +377,7 @@ be able to compensate for with multiple instances (the penalty is simply too lar
 
 Consider, for example, Common Alerting Protocol (CAP) messages for weather alerts.  These alerts routinely 
 exceed 100 KBytes in size, wheras a sarracenia message is on the order of 200 bytes.  The sarracenia messages
-go to many more recipients than the alert: anyone considering a alert, as oppposed to just the ones
+go to many more recipients than the alert: anyone considering downloading an alert, as oppposed to just the ones
 the subscriber is actually interested in, and this metadata will also be included in the log messages,
 and so replicated in many additional locations where the data itself will not be present.
 
