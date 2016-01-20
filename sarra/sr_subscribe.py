@@ -37,7 +37,7 @@
 #============================================================
 # usage example
 #
-# sr_subscribe [options] [config] [foreground|start|stop|restart|reload|status]
+# sr_subscribe [options] [config] [start|stop|restart|reload|status]
 #
 #============================================================
 
@@ -176,7 +176,7 @@ class sr_subscribe(sr_instances):
 
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
 
         print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
         print("Examples:\n")    

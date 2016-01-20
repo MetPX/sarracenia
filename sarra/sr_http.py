@@ -78,7 +78,7 @@ def http_download( parent ) :
             msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
-            msg.logger.info('response header = %s' % response.headers)
+            msg.logger.debug('response header = %s' % response.headers)
             ok       =  http_write(response,msg,parent.bufsize)
 
             return ok
@@ -120,3 +120,77 @@ def http_write(req,msg,bufsize) :
     msg.log_publish(201,'Downloaded')
 
     return True
+
+# ===================================
+# self_test
+# ===================================
+
+try    :
+         from sr_config         import *
+         from sr_message        import *
+except : 
+         from sarra.sr_config   import *
+         from sarra.sr_message  import *
+
+class test_logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = print
+          self.info    = self.silence
+          self.warning = print
+
+def self_test():
+
+    logger = test_logger()
+
+    # config setup
+    cfg = sr_config()
+    cfg.defaults()
+    cfg.general()
+    cfg.debug  = True
+    cfg.logger = logger
+
+    try:
+           cfg.msg         = sr_message(cfg.logger)
+           cfg.msg.start_timer()
+           cfg.msg.topic   = 'v02.post.test'
+           cfg.msg.host    = 'localhost'
+           cfg.msg.user    = 'localuser'
+           cfg.msg.notice  = 'noticest.test'
+
+           cfg.msg.urlcred = "http://dd1.wxod-stage.cmc.ec.gc.ca"
+           cfg.msg.urlstr  = "http://dd1.wxod-stage.cmc.ec.gc.ca/citypage_weather/xml/ON/s0000623_e.xml"
+           cfg.msg.url     = urllib.parse.urlparse(cfg.msg.urlstr)
+           cfg.msg.partflg = '1'
+           cfg.msg.local_file   = './toto'
+           cfg.msg.local_offset = 0
+           cfg.msg.length       = 100000
+                   
+           http_download(cfg)
+    except:
+           logger.error("sr_http TEST FAILED")
+           (stype, svalue, tb) = sys.exc_info()
+           logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
+           sys.exit(2)
+
+    print("sr_http TEST PASSED")
+    sys.exit(0)
+
+# ===================================
+# MAIN
+# ===================================
+
+def main():
+
+    self_test()
+    sys.exit(0)
+
+# =========================================
+# direct invocation : self testing
+# =========================================
+
+if __name__=="__main__":
+   main()
+

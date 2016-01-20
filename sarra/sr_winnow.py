@@ -209,7 +209,7 @@ class sr_winnow(sr_instances):
         self.setlog()
 
     def help(self):
-        self.logger.info("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
+        self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>                default manager (if configured)")
         self.logger.info("-e   <exchange>              MANDATORY")

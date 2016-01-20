@@ -35,7 +35,7 @@
 #============================================================
 # usage example
 #
-# sr_sarra [options] [config] [foreground|start|stop|restart|reload|status]
+# sr_sarra [options] [config] [start|stop|restart|reload|status]
 #
 # sr_sarra consumes message, for each message it downloads the product
 # and reannounce it. On usage of sarra is to acquire data from source
@@ -254,7 +254,7 @@ class sr_sarra(sr_instances):
         self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
         print("\nAMQP consumer broker settings:")
