@@ -29,7 +29,7 @@ Releases are built into *debian* packages for **Ubuntu 14.04 (trusty)** and will
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
-  sudo apt-get install python3-metpx-saracenia
+  sudo apt-get install python3-metpx-sarracenia
 
 SourceForge
 ~~~~~~~~~~~

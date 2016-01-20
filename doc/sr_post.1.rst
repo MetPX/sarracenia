@@ -22,6 +22,8 @@ DESCRIPTION
 ===========
 
 **sr_post** posts the availability of a file by creating an announcment.
+In contrast to most other components of sarracenia that act as service daemon
+processes, sr_post is a one shot invocation which posts the notice and exits.
 Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
 to consume the announcement and download the file.  To make files available 
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
