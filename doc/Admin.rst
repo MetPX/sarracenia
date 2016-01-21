@@ -156,7 +156,7 @@ A description of the conventional flow of messages through exchanges on a pump:
 
 - sr_winnow may pull from xs_alice instead, but follows the same pattern as sr_sarra.
 
-- usually, sr_source2log will read xs_alice and copy the log messages onto the private xlog exchange.
+- usually, sr_2xlog will read xs_alice and copy the log messages onto the private xlog exchange.
 
 - Admins can point sr_log at the xlog exchange to get system-wide monitoring.
   Alice will not have permission to do that, she can only look at xl_Alice, which should have
@@ -187,37 +187,6 @@ Sample lighttpd Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Suitable when all the data being served is public, simply make the /var/www directory available::
-
- cat >/etc/lighttpd/lighttpd.conf <<EOT
-
-  server.modules = ()
-
-  dir-listing.activate = "enable"
-  
-  server.document-root        = "/var/www"
-  server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
-  server.errorlog             = "/var/log/lighttpd/error.log"
-  server.pid-file             = "/var/run/lighttpd.pid"
-  server.username             = "www-data"
-  server.groupname            = "www-data"
-  server.port                 = 80
-  
-  
-  index-file.names            = ( "index.php", "index.html", "index.lighttpd.html" )
-  url.access-deny             = ( "~", ".inc" )
-  
-  # default listening port for IPv6 falls back to the IPv4 port
-  ## Use ipv6 if available
-  include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
-  include_shell "/usr/share/lighttpd/create-mime.assign.pl"
-  include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
-  
-  EOT
-
-  service lighttpd start
-
-This configuration will show all files under /var/www as folders, running under
-the www-data users.  Data posted in such directories must be readable to the www-data
 user, to allow the web server to read it.  so user of dd_post/dd_watch need to 
 place files under there and announce as http://<server>/...
 
@@ -247,7 +216,7 @@ Open SSH with restricted shell.
 Operations
 ----------
 
-To operate a pump, there needs to be a user designated as the administrator.
+To operate a pump, there needs to be a user designated as the pump administrator.
 The administrator is different from the others mostly in the permission granted
 to create exchanges, and the ability to run processes that address the common
 exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
@@ -262,8 +231,8 @@ the users.conf file.
 
 ..note:: 
   FIXME: missing users.conf(7) man page.
-  FIXME: missing credentials.conf(7) man page. do we need this?
-  FIXME: should we do a generic sr_config(7) man page instead?
+  joe [subscriber|source|pump|admin]
+
 
 The administrative processes perform validation of postings from sources, and once
 they are validated, forward them to the public exchanges for subscribers to access.
@@ -272,6 +241,7 @@ The processes that are typically run on a broker:
 - sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
 - sr_sarra   - to pull data in from local sources to make it available from the pump.
 - sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_poll    - for sources without advertisements, revert to explicit polling for initial injection.
 - sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
 - sr_2xlog   - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
 - sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
@@ -286,17 +256,12 @@ to set up, and all of them may need to run at once.  To do so easily, one can in
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
 To run as a broker administrator, the Manager option is set in ~/.config/sarra/default.conf like so:
 
-  Manager amqp://adminuser:adminpw@localhost/
+  manager amqp://adminuser:adminpw@localhost/
 
 Then the log and police components are started as well.  It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, from data flow tasks, such as
 pulling and posting data.  Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.
-
-
-.. note::
- 
-  FIXME: does root or feeder run the log processes.  - run by whatever the 'manager' is?
 
 
 Housekeeping - sr_police
@@ -328,6 +293,10 @@ sr_sarra configurations from one pump to the next.  Each sr_sarra link is config
 .. note::
   FIXME:: sample sender to push to another pump.
 
+.. note::
+  DB cleanup is not described... (cleaning up old days)
+  cron? root? pump admin? 
+  need to talk about permissions with people delivering via sftp?
 
 Logs
 ~~~~
@@ -398,8 +367,6 @@ Data Dissemination
 
 FIXME: 
   ok, opened big mouth, now need to work through the examples.
-
-
 
 Dataless or S=0
 ~~~~~~~~~~~~~~~
@@ -785,7 +752,15 @@ FIXME:
    - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
 
 
+Privileged System Access
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+No sarracenia accounts of require privileged system of any kind.  The pump administrator account requires
+privileges only on the AMQP broker, but nothing on the underlying operating system.   
+
+The may be a single task which must operate with privileges: cleaning up the database, which is an easily
+auditable script that must be run on a regular basis.  If all acquisition is done via sarra, then all of
+the files will belong to the pump administrator, and privileged access is not required for this either.
 
 
 Content Scanning
@@ -797,6 +772,7 @@ In cases where security scanning of file being transferred is deemed necessary, 
 .. NOTE::
   FIXME: need an example of an on_part hook to call Amavis.  Have it check which part of a file is in question, 
   and only scan the initial part.  
+  use on_part hook, check which part it is, if > 2 don't bother.
 
 
 Hooks from Sundew
