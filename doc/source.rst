@@ -13,14 +13,15 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 
 .. contents::
 
-A Sarracenia data pump is a web (or sftp) server with notifications
-for subscribers to know, quickly, when new data has arrived.
-To find out what data is already available on a pump,
-view the tree with a web browser.  For simple immediate needs, one can 
+A Sarracenia data pump is a web (or sftp) server with notifications for subscribers 
+to know, quickly, when new data has arrived.  To find out what data is already available 
+on a pump, view the tree with a web browser.  For simple immediate needs, one can 
 download data using the browser itself, or a standard tool such as wget.
 The usual intent is for sr_subscribe to automatically download the data 
 wanted to a directory on a subscriber machine where other software 
-can process it. 
+can process it.   Note that this manual uses subscriptions to test
+data injection, so the subscriber guide should likely be read before
+this one.
 
 Regardless of how it is done, injecting data means telling the pump where the data 
 is so that it can be forwarded to and/or by the pump.   This can be done by either
@@ -43,10 +44,12 @@ These are just inherent limitations of watching directories, no matter how it is
 With sr_post, the program that puts the file anywhere in the arbitrarily deep tree tells 
 the pump (which will tell subscribers) exactly where to look. There are no system limits 
 to worry about. That’s how dd.weather.gc.ca works, and notifications are sub-second, with
-60 million files on the disk.
+60 million files on the disk.  It is much more efficient, in general, to do direct 
+notifications rather than pass by the indirection of the file system, but in small
+and simple cases, it make little practical difference. 
 
-In the simplest case, the pump takes data from your account, wherever you have it
-, providing you give it permission.  we describe that case first.
+In the simplest case, the pump takes data from your account, wherever you have it, 
+providing you give it permission.  we describe that case first.
 
 SFTP Injection
 --------------
@@ -273,6 +276,8 @@ then a watch is started:
 
 .. note::
   FIXME: real example.
+  FIXME: sr_watch was supposed to take configuration files, but might not have
+   been modified to that effect yet.
 
 While sr_watch is running, any time a file is created in the *document_root* directory, 
 it will be announced to the pump (on localhost, ie. the server blacklab itself.)
