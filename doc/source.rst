@@ -289,8 +289,15 @@ the file.
    so creating real demo is deferred.   
 
 
+Polling External Sources
+------------------------
 
+Some sources are inherently remote, and we are unable to interest of affect them.
+One can configure sr_poll to pull in data from external sources, typically web sites.
+The sr_poll command typically runs as a singleton that tracks what is new at a source tree
+and creates source messages for the pump network to process.  
 
+FIXME: sr_poll example neeeded.
 
 
 
