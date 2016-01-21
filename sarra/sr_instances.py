@@ -52,55 +52,32 @@ class sr_instances(sr_config):
         sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
         self.build_parent()
-        self.defaults()
         self.configure()
 
     def build_parent(self):
+        self.logger.debug("sr_instances build_parent")
+
         self.logpath    = None
+
         self.basic_name = self.program_name
         if self.config_name : self.basic_name += '_' + self.config_name 
-        self.statefile  = self.user_cache_dir + os.sep + '.' + self.basic_name + '.state'
+        self.statefile  = self.user_cache_dir + os.sep + self.basic_name + '.state'
+
         self.last_nbr_instances = self.file_get_int(self.statefile)
         if self.last_nbr_instances == None : self.last_nbr_instances = 0
 
     def build_instance(self,i):
+        self.logger.debug("sr_instances build_instance %d" % i)
         self.instance      = i
         self.instance_name = self.basic_name + '_%.4d'%i
         self.instance_str  = 'sr_' + self.instance_name[3:].replace('_',' ')
-        self.pidfile       = self.user_cache_dir + os.sep + '.' + self.instance_name + '.pid'
-        self.logpath       = self.user_log_dir + os.sep +       self.instance_name + '.log'
+
+        self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
+        self.logpath       = self.user_log_dir   + os.sep + self.instance_name + '.log'
 
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
     
-    def daemonize(self):
-        try:
-           pid = os.fork()
-        except OSError as e:
-           raise Exception("fork #1 failed: %s [%d]" % (e.strerror, e.errno))
-     
-        if (pid == 0):
-           os.setsid()
-           try:
-              pid = os.fork() 
-           except OSError as e:
-              raise Exception("fork #2 failed: %s [%d]" % (e.strerror, e.errno))
-    
-           if (pid == 0):   
-              os.chdir(self.cwd)
-              os.umask(0)
-           else:
-              os._exit(0) 
-        else:
-           os._exit(0)  
-     
-        os.close(sys.stdin.fileno())
-        os.close(sys.stdout.fileno())
-        os.close(sys.stderr.fileno())
-     
-        os.open('/dev/null', os.O_RDWR)  # stdin
-        os.dup2(0, 1)                    # stdout
-     
     def file_get_int(self,path):
         i = None
         try :
@@ -123,6 +100,11 @@ class sr_instances(sr_config):
                  f.write("%d"%i)
                  f.close()
         except : pass
+
+    def foreground_parent(self):
+        self.logger.debug("sr_instances foreground_parent")
+        self.nbr_instances = 0
+        self.start()
 
     def reload_instance(self):
         if self.pid == None :
@@ -327,14 +309,6 @@ class test_instances(sr_instances):
      
       def __init__(self,config=None,args=None):
          sr_instances.__init__(self,config,args)
-         self.configure()
-
-      def configure(self):
-          self.general()
-          self.defaults()
-          self.args(self.user_args)
-          self.config(self.user_config)
-          self.setlog()
 
       def reload(self):
           self.logger.info("reloaded")
@@ -367,16 +341,14 @@ def main():
 
     action = sys.argv[-1]
 
-    if   action == 'foreground' :
-         this_test.nbr_instances = 0
-         this_test.start()
-    if action == 'reload' : this_test.reload_parent()
-    if action == 'restart': this_test.restart_parent()
-    if action == 'start'  : this_test.start_parent()
-    if action == 'status' : this_test.status_parent()
-    if action == 'stop'   :
-       this_test.stop_parent()
-       os.unlink('./test_instances.conf')
+    if action == 'foreground' : this_test.foreground_parent()
+    if action == 'reload'     : this_test.reload_parent()
+    if action == 'restart'    : this_test.restart_parent()
+    if action == 'start'      : this_test.start_parent()
+    if action == 'status'     : this_test.status_parent()
+    if action == 'stop'       :
+                                this_test.stop_parent()
+                                os.unlink('./test_instances.conf')
     sys.exit(0)
 
 # =========================================

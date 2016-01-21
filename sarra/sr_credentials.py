@@ -345,18 +345,18 @@ def test_sr_credentials():
 
     # covers read
     urlstr = "sftp://ruser@remote"
-    f = open('/tmp/toto','w')
-    f.write(urlstr + " ssh_keyfile=/tmp/toto\n")
+    f = open('/tmp/mytoto2','w')
+    f.write(urlstr + " ssh_keyfile=/tmp/mytoto2\n")
     f.close()
 
-    credentials.read('/tmp/toto')
+    credentials.read('/tmp/mytoto2')
     ok, details = credentials.get(urlstr)
-    if not ok or details.ssh_keyfile != '/tmp/toto' :
+    if not ok or details.ssh_keyfile != '/tmp/mytoto2' :
        print("sr_credentials TEST 5 FAILED")
        print(urlstr,details)
        sys.exit(1)
 
-    os.unlink('/tmp/toto')
+    os.unlink('/tmp/mytoto2')
 
     # covers isValid
     if credentials.isValid(urllib.parse.urlparse("ftp://host"))       or \

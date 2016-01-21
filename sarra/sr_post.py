@@ -72,32 +72,6 @@ class sr_post(sr_config):
     def close(self):
         self.poster.close()
 
-    def configure(self):
-
-        # defaults general and proper to sr_post
-
-        self.defaults()
-        
-        ok, details = self.credentials.get("amqp://guest:guest@localhost/")
-        self.broker = details.url
-
-        # installation general configurations and settings
-
-        self.general()
-
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        self.check()
-
-
     def connect(self):
 
         # sr_post : no loop to reconnect to broker
@@ -149,10 +123,12 @@ class sr_post(sr_config):
     # =============
 
     def __on_post__(self):
+        self.logger.debug("sr_post __on_post__")
 
         # invoke on_post when provided
 
         if self.on_post :
+           self.logger.debug("sr_post user on_post")
            ok = self.on_post(self)
            if not ok: return ok
 
@@ -162,6 +138,10 @@ class sr_post(sr_config):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        ok, details = self.credentials.get("amqp://guest:guest@localhost/")
+        self.broker = details.url
 
     def posting(self):
 
@@ -201,7 +181,7 @@ class sr_post(sr_config):
         # ==============
 
         if self.event == 'IN_DELETE' :
-           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,None,'R,0',rename,filename)
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
            if not ok : sys.exit(1)
            return
 

@@ -54,13 +54,9 @@ class sr_winnow(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
 
-        self.accept_unmatch = True
         self.cache          = {}
         self.maxEntries     = 12000
-
-        self.configure()
 
     def cache_add(self, key):
         if len(self.cache) >= self.maxEntries: self.cache_clean()
@@ -129,7 +125,7 @@ class sr_winnow(sr_instances):
 
         # accept/reject
         self.use_pattern          = self.masks != []
-        self.accept_unmatch       = self.masks == []
+        self.accept_unmatch       = True
 
     def close(self):
         self.consumer.close()
@@ -175,17 +171,7 @@ class sr_winnow(sr_instances):
         self.logger.info("Output AMQP  exchange(%s)" % self.msg.pub_exchange )
 
 
-    def configure(self):
-
-        # cumulative variable reinitialized
-
-        self.masks                = []       
-        self.currentDir           = '.'      
-        self.currentFileOption    = None
-
-        # installation general configurations and settings
-
-        self.general()
+    def overwrite_defaults(self):
 
         # default broker : manager
 
@@ -193,20 +179,6 @@ class sr_winnow(sr_instances):
         self.post_broker = None
         if hasattr(self,'manager'):
            self.broker   = self.manager
-
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        self.check()
-
-        self.setlog()
 
     def help(self):
         self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
@@ -286,14 +258,9 @@ class sr_winnow(sr_instances):
 
     def run(self):
 
-        # configure
-
-        self.configure()
-
         # present basic config
 
         self.logger.info("sr_winnow run")
-
 
         # loop/process messages
 
@@ -342,28 +309,21 @@ def main():
     args   = None
     config = None
 
+    if len(sys.argv) >= 2 : 
+       action = sys.argv[-1]
+
     if len(sys.argv) >= 3 : 
-       action    = sys.argv[-1]
-       config    = sys.argv[-2]
-       cfg       = sr_config()
-       cfg.general()
-       ok,config = cfg.config_path('winnow',config)
-       args = sys.argv[1:-2]
-       if not ok : 
-          print("error : no config file")
-          sys.exit(1)
+       config = sys.argv[-2]
+       args   = sys.argv[1:-2]
 
     winnow = sr_winnow(config,args)
 
-
-    if   action == 'foreground' :
-         winnow.nbr_instances = 0
-         winnow.start()
-    elif action == 'reload' : winnow.reload_parent()
-    elif action == 'restart': winnow.restart_parent()
-    elif action == 'start'  : winnow.start_parent()
-    elif action == 'stop'   : winnow.stop_parent()
-    elif action == 'status' : winnow.status_parent()
+    if   action == 'foreground' : winnow.foreground_parent()
+    elif action == 'reload'     : winnow.reload_parent()
+    elif action == 'restart'    : winnow.restart_parent()
+    elif action == 'start'      : winnow.start_parent()
+    elif action == 'stop'       : winnow.stop_parent()
+    elif action == 'status'     : winnow.status_parent()
     else :
            winnow.logger.error("action unknown %s" % action)
            sys.exit(1)

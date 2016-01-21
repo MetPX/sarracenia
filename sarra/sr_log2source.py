@@ -65,9 +65,6 @@ class sr_log2source(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-
-        self.configure()
 
     def check(self):
 
@@ -90,31 +87,9 @@ class sr_log2source(sr_instances):
 
         if len(self.source_users) == 0 :
            self.nbr_instances = 0
-           
 
     def close(self):
         self.consumer.close()
-
-    def configure(self):
-
-        # overwrite defaults
-
-        self.broker               = self.manager
-        self.exchange             = 'xlog'
-        self.topic_prefix         = 'v02.log'
-        self.subtopic             = '#'
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
-
     def connect(self):
 
         # =============
@@ -195,6 +170,14 @@ class sr_log2source(sr_instances):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        # overwrite defaults
+
+        self.broker               = self.manager
+        self.exchange             = 'xlog'
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
 
     # =============
     # process message  
@@ -234,10 +217,6 @@ class sr_log2source(sr_instances):
 
 
     def run(self):
-
-        # configure
-
-        self.configure()
 
         # present basic config
 
@@ -326,9 +305,13 @@ def test_sr_log2source():
     log2source.logger  = logger
     log2source.debug   = True
 
-    log2source.user_queue_dir = os.getcwd()
+    log2source.user_cache_dir = os.getcwd()
+
+    # because following options have accept/reject
+    log2source.masks   = []
     log2source.option( opt1.split()  )
     log2source.option( opt2.split()  )
+
     log2source.option( opt3.split()  )
     log2source.option( opt4.split()  )
 
@@ -365,9 +348,9 @@ def test_sr_log2source():
              i = i + 1
           if i == N: break
 
-    log2source.close()
+    os.unlink(log2source.consumer.queuepath)
 
-    os.unlink('./.sr_log2source.queue')
+    log2source.close()
 
     if j != N or k != N :
        print("sr_log2source TEST Failed 1")
@@ -389,7 +372,6 @@ def main():
     action = None
     args   = None
     config = None
-
 
     if len(sys.argv) > 1 :
        action = sys.argv[-1]

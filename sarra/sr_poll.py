@@ -86,8 +86,6 @@ class sr_poll(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-        self.configure()
 
     def cd(self, path):
         try   :
@@ -141,31 +139,6 @@ class sr_poll(sr_instances):
     def close(self):
         self.poster.close()
         self.connected = False 
-
-    def configure(self):
-
-        # overwrite defaults
-        # default broker, exchange, destination None
-
-        self.broker         = None
-        self.exchange       = None
-        self.destination    = None
-
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = False
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
-        self.setlog()
 
     def connect(self):
 
@@ -401,6 +374,19 @@ class sr_poll(sr_instances):
 
         return defval
 
+    def overwrite_defaults(self):
+
+        # overwrite defaults
+        # default broker, exchange, destination None
+
+        self.broker         = None
+        self.exchange       = None
+        self.destination    = None
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_unmatch = False
+
     # =============
     # for all directories, get urls to post
     # if True is returned it means : no sleep, retry on return
@@ -449,10 +435,7 @@ class sr_poll(sr_instances):
             pdir = pdir.replace('}','')
             pdir = pdir.replace('/','_')
 
-            self.lspath = self.user_data_dir + '/poll/' + self.config_name 
-            try    : os.makedirs(self.lspath,  0o775,True)
-            except : pass
-            self.lspath += '/.ls' + pdir
+            self.lspath = self.user_cache_dir + os.sep + 'ls' + pdir
 
             # ls that directory
 
@@ -573,13 +556,7 @@ class sr_poll(sr_instances):
 
     def run(self):
 
-        # present basic config
-
         self.logger.info("sr_poll run")
-
-        # configure
-
-        self.configure()
 
         # connect to broker
 
@@ -640,22 +617,21 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) >= 2 : 
        action = sys.argv[-1]
+
+    if len(sys.argv) >= 3 : 
        config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+       args   = sys.argv[1:-2]
 
     poll = sr_poll(config,args)
 
-
-    if   action == 'foreground' :
-         poll.nbr_instances = 0
-         poll.start()
-    elif action == 'reload' : poll.reload_parent()
-    elif action == 'restart': poll.restart_parent()
-    elif action == 'start'  : poll.start_parent()
-    elif action == 'stop'   : poll.stop_parent()
-    elif action == 'status' : poll.status_parent()
+    if   action == 'foreground' : poll.foreground_parent()
+    elif action == 'reload'     : poll.reload_parent()
+    elif action == 'restart'    : poll.restart_parent()
+    elif action == 'start'      : poll.start_parent()
+    elif action == 'stop'       : poll.stop_parent()
+    elif action == 'status'     : poll.status_parent()
     else :
            poll.logger.error("action unknown %s" % action)
            sys.exit(1)

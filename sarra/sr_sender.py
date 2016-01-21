@@ -87,8 +87,6 @@ class sr_sender(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-        self.configure()
 
     def check(self):
         self.connected     = False 
@@ -136,42 +134,6 @@ class sr_sender(sr_instances):
         if self.post_broker :
            self.poster.close()
         self.connected = False 
-
-    def configure(self):
-
-        # a destination must be provided
-
-        self.destination    = None
-        self.post_broker    = None
-        self.currentDir     = None
-        self.currentPattern = None
-
-        # consumer defaults
-
-        if hasattr(self,'manager'):
-           self.broker = self.manager
-        self.exchange  = 'xpublic'
-
-        # most of the time we want to mirror product directory and share queue
-
-        self.mirror      = True
-        self.queue_share = True
-
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = True
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
-        self.setlog()
 
     def connect(self):
 
@@ -336,6 +298,30 @@ class sr_sender(sr_instances):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        # a destination must be provided
+
+        self.destination    = None
+        self.post_broker    = None
+        self.currentDir     = None
+        self.currentPattern = None
+
+        # consumer defaults
+
+        if hasattr(self,'manager'):
+           self.broker = self.manager
+        self.exchange  = 'xpublic'
+
+        # most of the time we want to mirror product directory and share queue
+
+        self.mirror      = True
+        self.queue_share = True
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_unmatch = True
+
     # =============
     # process message  
     # =============
@@ -382,10 +368,6 @@ class sr_sender(sr_instances):
         return True
 
     def run(self):
-
-        # configure
-
-        self.configure()
 
         # present basic config
 
@@ -514,22 +496,21 @@ def main():
     args   = None
     config = None
 
-    if len(sys.argv) >= 3 :
+    if len(sys.argv) >= 2 : 
        action = sys.argv[-1]
+
+    if len(sys.argv) >= 3 : 
        config = sys.argv[-2]
-       if len(sys.argv) > 3: args = sys.argv[1:-2]
+       args   = sys.argv[1:-2]
 
     sender = sr_sender(config,args)
 
-
-    if   action == 'foreground' :
-         sender.nbr_instances = 0
-         sender.start()
-    elif action == 'reload' : sender.reload_parent()
-    elif action == 'restart': sender.restart_parent()
-    elif action == 'start'  : sender.start_parent()
-    elif action == 'stop'   : sender.stop_parent()
-    elif action == 'status' : sender.status_parent()
+    if   action == 'foreground' : sender.foreground_parent()
+    elif action == 'reload'     : sender.reload_parent()
+    elif action == 'restart'    : sender.restart_parent()
+    elif action == 'start'      : sender.start_parent()
+    elif action == 'stop'       : sender.stop_parent()
+    elif action == 'status'     : sender.status_parent()
     else :
            sender.logger.error("action unknown %s" % action)
            sys.exit(1)

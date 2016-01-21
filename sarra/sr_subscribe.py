@@ -60,10 +60,9 @@ class sr_subscribe(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-        self.configure()
 
     def check(self):
+        self.logger.debug("sr_subscribe check")
 
         # setting impacting other settings
 
@@ -91,7 +90,8 @@ class sr_subscribe(sr_instances):
     def close(self):
         self.consumer.close()
 
-    def configure(self):
+    def overwrite_defaults(self):
+        self.logger.debug("sr_subscribe overwrite_defaults")
 
         # special settings for sr_subscribe
 
@@ -103,19 +103,6 @@ class sr_subscribe(sr_instances):
         self.mirror         = False
         self.overwrite      = True
         self.no_logback     = False
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
-        self.setlog()
-
 
     def connect(self):
 
@@ -383,12 +370,6 @@ class sr_subscribe(sr_instances):
 
     def run(self):
 
-        # configure
-
-        self.configure()
-
-        # present basic config
-
         self.logger.info("sr_subscribe run")
 
         # loop/process messages
@@ -542,7 +523,6 @@ def test_sr_subscribe():
     subscribe.option( opt1.split()  )
     subscribe.option( opt2.split()  )
     subscribe.option( opt3.split()  )
-    subscribe.configure()
     subscribe.debug   = True
 
     # ==================
@@ -613,15 +593,13 @@ def main():
 
     subscribe = sr_subscribe(config,args)
 
-    if   action == 'foreground' :
-         subscribe.nbr_instances = 0
-         subscribe.start()
-    elif action == 'reload' : subscribe.reload_parent()
-    elif action == 'restart': subscribe.restart_parent()
-    elif action == 'start'  : subscribe.start_parent()
-    elif action == 'stop'   : subscribe.stop_parent()
-    elif action == 'status' : subscribe.status_parent()
-    elif action == 'TEST'   : test_sr_subscribe()
+    if   action == 'foreground' : subscribe.foreground_parent()
+    elif action == 'reload'     : subscribe.reload_parent()
+    elif action == 'restart'    : subscribe.restart_parent()
+    elif action == 'start'      : subscribe.start_parent()
+    elif action == 'stop'       : subscribe.stop_parent()
+    elif action == 'status'     : subscribe.status_parent()
+    elif action == 'TEST'       : test_sr_subscribe()
     else :
            subscribe.logger.error("action unknown %s" % action)
            sys.exit(1)

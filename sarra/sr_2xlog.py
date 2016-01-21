@@ -68,9 +68,6 @@ class sr_2xlog(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-
-        self.configure()
 
     def check(self):
 
@@ -116,26 +113,6 @@ class sr_2xlog(sr_instances):
 
     def close(self):
         self.consumer.close()
-
-    def configure(self):
-
-        # overwrite defaults
-
-        if hasattr(self,'manager'):
-           self.broker            = self.manager
-        self.topic_prefix         = 'v02.log'
-        self.subtopic             = '#'
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
 
     def connect(self):
 
@@ -215,6 +192,15 @@ class sr_2xlog(sr_instances):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        # overwrite defaults
+
+        if hasattr(self,'manager'):
+           self.broker            = self.manager
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
+
     # =============
     # process message  
     # =============
@@ -254,10 +240,6 @@ class sr_2xlog(sr_instances):
 
 
     def run(self):
-
-        # configure
-
-        self.configure()
 
         # set instance
 
@@ -360,7 +342,6 @@ def test_sr_2xlog():
     toxlog         = sr_2xlog()
     toxlog.logger  = logger
     toxlog.debug   = True
-    toxlog.configure()
 
     subscriber = 'anonymous'
     exchange   = 'xs_' + subscriber
@@ -376,7 +357,7 @@ def test_sr_2xlog():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = toxlog.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    ok, details = toxlog.credentials.get("amqp://ddi2.edm.ec.gc.ca/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")

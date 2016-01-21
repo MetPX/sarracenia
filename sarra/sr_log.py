@@ -44,18 +44,21 @@ import signal
 #============================================================
 
 try :    
-         from sr_consumer       import *
+         from sr_consumer        import *
+         from sr_instances       import *
 except : 
-         from sarra.sr_consumer import *
+         from sarra.sr_consumer  import *
+         from sarra.sr_instances import *
 
 
-class sr_log(sr_config):
+class sr_log(sr_instances):
 
     def __init__(self,config=None,args=None):
-        sr_config.__init__(self,config,args)
-        self.configure()
+        sr_instances.__init__(self,config,args)
 
     def check(self):
+        self.nbr_instances = 1
+
         self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
@@ -71,41 +74,37 @@ class sr_log(sr_config):
     def close(self):
         self.consumer.close()
 
-    def configure(self):
-
-        # installation general configurations and settings
-
-        self.general()
-
-        # defaults
-
-        self.defaults()
-
-
-        # proper to this program
-
+    def overwrite_defaults(self):
         self.exchange             = 'xl_' + self.broker.username
         self.topic_prefix         = 'v02.log'
         self.subtopic             = '#'
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
-        # arguments from command line
-
-        self.args(self.user_args)
-
-        # config from file
-
-        self.config(self.user_config)
-
-        # verify all settings
-
-        self.check()
-
-
     def help(self):
-        self.logger.info("Usage: %s -b <broker> \n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Or   : %s [OPTIONS] -b <broker> [start|stop|restart|reload|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
+
+    # =============
+    # __on_message__  internal message validation
+    # =============
+
+    def __on_message__(self):
+        self.logger.debug("sr_log __on_message__")
+
+        self.logger.info("Received topic   %s" % self.msg.topic)
+        self.logger.info("Received notice  %s" % self.msg.notice)
+        self.logger.info("Received headers %s\n" % self.msg.hdrstr)
+
+        # user provided an on_message script
+
+        ok = True
+
+        if self.on_message : ok = self.on_message(self)
+
+        return ok
+
 
     def run(self):
 
@@ -124,39 +123,65 @@ class sr_log(sr_config):
                  ok, self.msg = self.consumer.consume()
                  if not ok : continue
 
-                 self.logger.info("Received topic   %s" % self.msg.topic)
-                 self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s\n" % self.msg.hdrstr)
+                 ok = self.__on_message__()
 
           except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
                  
 
+    def reload(self):
+        self.logger.info("%s reload" % self.program_name)
+        self.close()
+        self.run()
+
+    def start(self):
+        self.logger.info("%s start" % self.program_name)
+        self.run()
+
+    def stop(self):
+        self.logger.info("%s stop" % self.program_name)
+        self.close()
+        os._exit(0)
+                 
+# ===================================
+# MAIN
+# ===================================
+
 def main():
 
-    dlog = sr_log(config=None,args=sys.argv)
-    dlog.configure()
+    action = None
+    args   = None
+    config = None
 
-    # =========================================
-    # signal stop
-    # =========================================
+    if len(sys.argv) > 1 :
+       action = sys.argv[-1]
+       args   = sys.argv[1:-1]
 
-    def signal_stop(signal, frame):
-        dlog.logger.info('Stop!')
-        dlog.close()
-        os._exit(0)
+    if len(sys.argv) > 2 : 
+       config    = sys.argv[-2]
+       cfg       = sr_config()
+       cfg.general()
+       ok,config = cfg.config_path('log',config,mandatory=False)
+       if ok     : args = sys.argv[1:-2]
+       if not ok : config = None
 
-    # =========================================
-    # signal handling
-    # =========================================
+    srlog = sr_log(config,args)
 
-    signal.signal(signal.SIGINT, signal_stop)
-
-    dlog.run()
+    if   action == 'reload' : srlog.reload_parent()
+    elif action == 'restart': srlog.restart_parent()
+    elif action == 'start'  : srlog.start_parent()
+    elif action == 'stop'   : srlog.stop_parent()
+    elif action == 'status' : srlog.status_parent()
+    else :
+           srlog.logger.error("action unknown %s" % action)
+           sys.exit(1)
 
     sys.exit(0)
 
-if __name__ == '__main__':
-    main()
+# =========================================
+# direct invocation
+# =========================================
 
+if __name__=="__main__":
+   main()

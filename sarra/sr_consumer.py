@@ -169,18 +169,19 @@ class sr_consumer:
 
     def random_queue_name(self) :
 
-        queuedir   = self.parent.user_queue_dir
-        queuefile  = '.'
-        queuefile += self.parent.program_name
+        # queue file : fix it 
 
+        queuefile  = self.parent.program_name
         if self.parent.config_name :
            queuefile += '.' + self.parent.config_name
+        queuefile += '.' + self.broker.username
 
-        queuefile += '.queue'
-        queuepath = queuedir + os.sep + queuefile
+        # queue path
 
-        if os.path.isfile(queuepath) :
-           f = open(queuepath)
+        self.queuepath = self.parent.user_cache_dir + os.sep + queuefile
+
+        if os.path.isfile(self.queuepath) :
+           f = open(self.queuepath)
            self.queue_name = f.read()
            f.close()
            return
@@ -189,7 +190,7 @@ class sr_consumer:
         self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
         self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
 
-        f = open(queuepath,'w')
+        f = open(self.queuepath,'w')
         f.write(self.queue_name)
         f.close()
 
@@ -239,7 +240,7 @@ def self_test():
     cfg.durable        = True
     cfg.expire         = 30
     cfg.message_ttl    = 30
-    cfg.user_queue_dir = os.getcwd()
+    cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None
     cfg.option( opt1.split()  )
@@ -260,9 +261,9 @@ def self_test():
              msg = None
              break
 
-    consumer.close()
+    os.unlink(consumer.queuepath)
 
-    os.unlink("./.sr_consumer.test.queue")
+    consumer.close()
 
     if msg != None :
        if yyyy in msg.notice :

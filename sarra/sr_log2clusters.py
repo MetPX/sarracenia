@@ -75,8 +75,6 @@ class sr_log2clusters(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-        self.configure()
 
     def check(self):
 
@@ -101,25 +99,6 @@ class sr_log2clusters(sr_instances):
     def close(self):
         self.consumer.close()
         self.hc.close()
-
-    def configure(self):
-
-        # overwrite defaults
-
-        self.broker               = self.manager
-        self.exchange             = 'xlog'
-        self.topic_prefix         = 'v02.log'
-        self.subtopic             = '#'
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
 
     def connect(self):
 
@@ -205,6 +184,15 @@ class sr_log2clusters(sr_instances):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        # overwrite defaults
+
+        self.broker               = self.manager
+        self.exchange             = 'xlog'
+        self.topic_prefix         = 'v02.log'
+        self.subtopic             = '#'
+
     # =============
     # process message  
     # =============
@@ -243,10 +231,6 @@ class sr_log2clusters(sr_instances):
 
 
     def run(self):
-
-        # configure
-
-        self.configure()
 
         # set instance
 
@@ -348,9 +332,8 @@ def test_sr_log2clusters():
     # setup sr_log2clusters for 1 user (just this instance)
 
     log2clusters         = sr_log2clusters()
-    log2clusters.logger  = logger
     log2clusters.debug   = True
-    log2clusters.configure()
+    log2clusters.logger  = logger
     log2clusters.bindings = [ ('xlog','v02.log.this.#') ]
     log2clusters.nbr_instances   = 1
 

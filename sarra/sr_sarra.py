@@ -103,8 +103,6 @@ class sr_sarra(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.defaults()
-        self.configure()
 
     def check(self):
 
@@ -140,51 +138,6 @@ class sr_sarra(sr_instances):
     def close(self):
         self.consumer.close()
         self.hc_pst.close()
-
-    def configure(self):
-
-        # overwrite defaults
-        # the default settings in most cases :
-        # sarra receives directly from sources  onto itself
-        # or it consumes message from another pump
-        # we cannot define a default broker exchange
-
-        # default broker and exchange None
-
-        self.broker   = None
-        self.exchange = None
-        # FIX ME  log_exchange set to NONE
-        # instead of xlog and make it mandatory perhaps ?
-        # since it can be xlog or xs_remotepumpUsername ?
-
-        # in most cases, sarra downloads and repost for itself.
-        # default post_broker and post_exchange are
-
-        self.post_broker    = None
-        self.post_exchange  = 'xpublic'
-        if hasattr(self,'manager'):
-           self.post_broker = self.manager
-
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = True
-
-        # most of the time we want to mirror product directory and share queue
-
-        self.mirror         = True
-        self.queue_share    = True
-
-        # load/reload all config settings
-
-        self.general()
-        self.args   (self.user_args)
-        self.config (self.user_config)
-
-        # verify / complete settings
-
-        self.check()
-
-        self.setlog()
 
     def connect(self):
 
@@ -358,6 +311,39 @@ class sr_sarra(sr_instances):
 
         return ok
 
+    def overwrite_defaults(self):
+
+        # overwrite defaults
+        # the default settings in most cases :
+        # sarra receives directly from sources  onto itself
+        # or it consumes message from another pump
+        # we cannot define a default broker exchange
+
+        # default broker and exchange None
+
+        self.broker   = None
+        self.exchange = None
+        # FIX ME  log_exchange set to NONE
+        # instead of xlog and make it mandatory perhaps ?
+        # since it can be xlog or xs_remotepumpUsername ?
+
+        # in most cases, sarra downloads and repost for itself.
+        # default post_broker and post_exchange are
+
+        self.post_broker    = None
+        self.post_exchange  = 'xpublic'
+        if hasattr(self,'manager'):
+           self.post_broker = self.manager
+
+        # Should there be accept/reject option used unmatch are accepted
+
+        self.accept_unmatch = True
+
+        # most of the time we want to mirror product directory and share queue
+
+        self.mirror         = True
+        self.queue_share    = True
+
     # =============
     # process message  
     # =============
@@ -508,10 +494,6 @@ class sr_sarra(sr_instances):
 
     def run(self):
 
-        # configure
-
-        self.configure()
-
         # present basic config
 
         self.logger.info("sr_sarra run")
@@ -622,28 +604,21 @@ def main():
     args   = None
     config = None
 
+    if len(sys.argv) >= 2 : 
+       action = sys.argv[-1]
+
     if len(sys.argv) >= 3 : 
-       action    = sys.argv[-1]
-       config    = sys.argv[-2]
-       cfg       = sr_config()
-       cfg.general()
-       ok,config = cfg.config_path('sarra',config)
-       args = sys.argv[1:-2]
-       if not ok : 
-          print("error : no config file")
-          sys.exit(1)
+       config = sys.argv[-2]
+       args   = sys.argv[1:-2]
 
     sarra = sr_sarra(config,args)
 
-
-    if   action == 'foreground' :
-         sarra.nbr_instances = 0
-         sarra.start()
-    elif action == 'reload' : sarra.reload_parent()
-    elif action == 'restart': sarra.restart_parent()
-    elif action == 'start'  : sarra.start_parent()
-    elif action == 'stop'   : sarra.stop_parent()
-    elif action == 'status' : sarra.status_parent()
+    if   action == 'foreground' : sarra.foreground_parent()
+    elif action == 'reload'     : sarra.reload_parent()
+    elif action == 'restart'    : sarra.restart_parent()
+    elif action == 'start'      : sarra.start_parent()
+    elif action == 'stop'       : sarra.stop_parent()
+    elif action == 'status'     : sarra.status_parent()
     else :
            sarra.logger.error("action unknown %s" % action)
            sys.exit(1)

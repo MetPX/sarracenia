@@ -48,25 +48,27 @@ except :
 class sr_config:
 
     def __init__(self,config=None,args=None):
+        # IN BIG DEBUG
+        #self.debug = True
+        #self.logpath = None
+        #self.setlog()
 
         # appdirs setup... on linux it gives :
-        # site_data_dir   = /usr/share/default/sarra
+        # site_data_dir   = /usr/share/default/sarra   ** unused
+        # user_data_dir   = ~/.local/share/sarra       ** unused
+        #
         # site_config_dir = /etc/xdg/xdg-default/sarra
-        # user_data_dir   = ~/.local/share/sarra
         # user_cache_dir  = ~/.cache/sarra
         # user_log_dir    = ~/.cache/sarra/log
         # user_config_dir = ~/.config/sarra
          
         self.appname          = 'sarra'
         self.appauthor        = 'science.gc.ca'
-        self.site_data_dir    = site_data_dir  (self.appname,self.appauthor)
+
         self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
-        self.user_data_dir    = user_data_dir  (self.appname,self.appauthor)
-        self.user_cache_dir   = user_cache_dir (self.appname,self.appauthor)
         self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
-
-        self.user_queue_dir   = self.user_cache_dir + '/queue'
+        self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
         self.user_scripts_dir = self.user_config_dir + '/scripts'
 
         # umask change for directory creation and chmod
@@ -76,21 +78,18 @@ class sr_config:
 
         # make sure the users directories exist
 
-        try    : os.makedirs(self.user_cache_dir,  0o775,True)
-        except : pass
         try    : os.makedirs(self.user_config_dir, 0o775,True)
         except : pass
-        try    : os.makedirs(self.user_data_dir,   0o775,True)
-        except : pass
         try    : os.makedirs(self.user_log_dir,    0o775,True)
-        except : pass
-        try    : os.makedirs(self.user_queue_dir,  0o775,True)
         except : pass
         try    : os.makedirs(self.user_scripts_dir,0o775,True)
         except : pass
 
         # logging is interactive at start
 
+        # IN BIG DEBUG
+        #self.debug = True
+        self.debug = False
         self.setlog()
         self.logger.debug("sr_config __init__")
 
@@ -113,6 +112,14 @@ class sr_config:
            ok, self.user_config = self.config_path(self.program_dir,config)
            self.logger.debug("sr_config config_name  %s " % self.config_name ) 
            self.logger.debug("sr_config user_config  %s " % self.user_config ) 
+
+        # build user_cache_dir/program_name/[config_name|None] and make sure it exists
+
+        self.user_cache_dir   = user_cache_dir (self.appname,self.appauthor)
+        self.user_cache_dir  += os.sep + self.program_name.replace('sr_','')
+        self.user_cache_dir  += os.sep + "%s" % self.config_name
+        try    : os.makedirs(self.user_cache_dir,  0o775,True)
+        except : pass
 
         # check arguments
 
@@ -141,6 +148,8 @@ class sr_config:
                  if n == 0 : n = 1
               i = i + n
 
+    def check(self):
+        self.logger.debug("sr_config check")
 
     def config(self,path):
         self.logger.debug("sr_config config")
@@ -195,10 +204,27 @@ class sr_config:
 
         return False,config
 
+    def configure(self):
+        
+        self.defaults()
+        self.general()
+
+        self.overwrite_defaults()
+
+        # load/reload all config settings
+
+        self.args   (self.user_args)
+        self.config (self.user_config)
+
+        # verify / complete settings
+
+        self.check()
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
+        # IN BIG DEBUG
+        #self.debug = True
         self.debug                = False
 
         self.logrotate            = 5
@@ -321,7 +347,7 @@ class sr_config:
     def execfile(self, opname, path):
 
         ok,script = self.config_path('scripts',path)
-        self.logger.info("installing script %s " % script ) 
+        self.logger.debug("installing script %s " % script ) 
 
         try    : 
                  exec(compile(open(script).read(), script, 'exec'))
@@ -332,13 +358,6 @@ class sr_config:
 
     def general(self):
         self.logger.debug("sr_config general")
-
-        # state variables that need to be reinitialized
-
-        self.bindings             = []     
-        self.masks                = []       
-        self.currentDir           = '.'      
-        self.currentFileOption    = None 
 
         # read in provided credentials
         credent = self.user_config_dir + os.sep + 'credentials.conf'
@@ -587,11 +606,13 @@ class sr_config:
     def option(self,words):
         self.logger.debug("sr_config option %s" % words[0])
 
+        words0 = words[0].strip('-')
+
         needexit = False
         n        = 0
         try:
-                if   words[0] in ['accept','get','reject']:
-                     accepting   = words[0] == 'accept' or words[0] == 'get'
+                if   words0 in ['accept','get','reject']:
+                     accepting   = words0 == 'accept' or words0 == 'get'
                      pattern     = words[1]
                      mask_regexp = re.compile(pattern)
                      n = 2
@@ -604,7 +625,7 @@ class sr_config:
                      self.logger.debug("Masks")
                      self.logger.debug("Masks %s"% self.masks)
 
-                elif words[0] in ['accept_unmatch','-au','--accept_unmatch']:
+                elif words0 in ['accept_unmatch','au']:
                      if words[0][0:1] == '-' : 
                         self.accept_unmatch = True
                         n = 1
@@ -614,7 +635,7 @@ class sr_config:
 
                 # admin: suppose to appear directly under the broker declaration
                 # of the default manager account of the cluster in defaults.conf
-                elif words[0] in ['admin','-admin','--admin']:
+                elif words0 == 'admin':
                      admin_user  = words[1]
                      manager_str = self.manager.geturl()
                      user_pass   = self.manager.username+':'+self.manager.password
@@ -626,7 +647,7 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] in ['broker','-b','--broker'] :
+                elif words0 in ['broker','b'] :
                      urlstr      = words[1]
                      ok, url     = self.validate_urlstr(urlstr)
                      self.broker = url
@@ -635,27 +656,27 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] in ['bufsize','-bufsize','--bufsize']:
+                elif words0 == 'bufsize' :
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif words[0] in ['chmod','-chmod','--chmod']:
+                elif words0 == 'chmod':
                      self.chmod = int(words[1])
                      n = 2
 
-                elif words[0] in ['cluster','-cl','--cluster']:
+                elif words0 in ['cluster','cl']:
                      self.cluster = words[1] 
                      n = 2
 
-                elif words[0] in ['cluster_aliases','-ca','--cluster_aliases']:
+                elif words0 in ['cluster_aliases','ca']:
                      self.cluster_aliases = words[1].split(',')
                      n = 2
 
-                elif words[0] in ['config','-c','--config']:
+                elif words0 in ['config','-c']:
                      self.config(words[1])
                      n = 2
 
-                elif words[0] in ['debug','-debug','--debug']:
+                elif words0 == 'debug':
                      if words[0][0:1] == '-' : 
                         self.debug = True
                         n = 1
@@ -665,7 +686,7 @@ class sr_config:
                      if self.debug :
                         self.logger.setLevel(logging.DEBUG)
 
-                elif words[0] in ['destination','-destination','--destination'] :
+                elif words0 == 'destination' :
                      urlstr           = words[1]
                      ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words[1]
@@ -674,11 +695,11 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] == 'directory':
+                elif words0 == 'directory':
                      self.currentDir = words[1]
                      n = 2
 
-                elif words[0] in ['discard','-d','--discard','--download-and-discard']:
+                elif words0 in ['discard','d','download-and-discard']:
                      if words[0][0:1] == '-' : 
                         self.discard = True
                         n = 1
@@ -686,14 +707,14 @@ class sr_config:
                         self.discard = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['document_root','-dr','--document_root']:
+                elif words0 in ['document_root','dr']:
                      if sys.platform == 'win32':
                          self.document_root = words[1].replace('\\','/')
                      else:
                          self.document_root = words[1]
                      n = 2
 
-                elif words[0] in ['destfn_script','-destfn_script','--destfn_script']:
+                elif words0 == 'destfn_script':
                      self.destfn_script = None
                      self.execfile("destfn_script",words[1])
                      if self.destfn_script == None :
@@ -701,7 +722,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['do_download','-do_download','--do_download']:
+                elif words0 == 'do_download':
                      self.do_download = None
                      self.execfile("do_download",words[1])
                      if self.do_download == None :
@@ -709,7 +730,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['do_poll','-do_poll','--do_poll']:
+                elif words0 == 'do_poll':
                      self.do_poll = None
                      self.execfile("do_poll",words[1])
                      if self.do_poll == None :
@@ -717,7 +738,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['do_send','-do_send','--do_send']:
+                elif words0 == 'do_send':
                      self.do_send = None
                      self.execfile("do_send",words[1])
                      if self.do_send == None :
@@ -725,7 +746,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] == 'durable'   : 
+                elif words0 == 'durable'   : 
                      if words[0][0:1] == '-' : 
                         self.durable = True
                         n = 1
@@ -733,7 +754,7 @@ class sr_config:
                         self.durable = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['events','-e','--events']:
+                elif words0 in ['events','e']:
                      i = 0
                      if 'IN_CLOSE_WRITE' in words[1] : i = i + 1
                      if 'IN_DELETE'      in words[1] : i = i + 1
@@ -743,29 +764,31 @@ class sr_config:
                      self.events = words[1]
                      n = 2
 
-                elif words[0] in ['exchange','-ex','--exchange'] :
+                elif words0 in ['exchange','ex'] :
                      self.exchange = words[1]
                      n = 2
 
-                elif words[0] == 'expire'     : self.expire = int(words[1]) * 60 * 1000
+                elif words0 == 'expire' :
+                     self.expire = int(words[1]) * 60 * 1000
+                     n = 2
 
-                elif words[0] in ['filename','-filename','--filename']:
+                elif words0 == 'filename':
                      self.currentFileOption = words[1]
                      n = 2
 
-                elif words[0] in ['flow','-f','--flow']:
+                elif words0 in ['flow','f']:
                      self.flow = words[1] 
                      n = 2
 
-                elif words[0] in ['gateway_for','-gf','--gateway_for']:
+                elif words0 in ['gateway_for','gf']:
                      self.gateway_for = words[1].split(',')
                      n = 2
 
-                elif words[0] in ['help','-h','-help','--help']:
+                elif words0 in ['help','h']:
                      self.help()
                      needexit = True
 
-                elif words[0] in ['inplace','-in','--inplace']:
+                elif words0 in ['inplace','in']:
                      if words[0][0:1] == '-' : 
                         self.inplace = True
                         n = 1
@@ -773,31 +796,31 @@ class sr_config:
                         self.inplace = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['instances','-i','--instances']:
+                elif words0 in ['instances','i']:
                      self.nbr_instances = int(words[1])
                      n = 2
 
-                elif words[0] in ['interface','-interface','--interface']:
+                elif words0 == 'interface':
                      self.interface = words[1]
                      n = 2
 
-                elif words[0] in ['kbytes_ps','-kbytes_ps','--kbytes_ps']:
+                elif words0 == 'kbytes_ps':
                      self.kbytes_ps = int(words[1])
                      n = 2
 
-                elif words[0] in ['lock','-lk','--lock']:
+                elif words0 == 'lock':
                      self.lock = words[1] 
                      n = 2
 
-                elif words[0] in ['log','-l','-log','--log']:
+                elif words0 in ['log','l']:
                      self.logpath = words[1]
                      n = 2
 
-                elif words[0] in ['logrotate','-lr','--logrotate']:
+                elif words0 in ['logrotate','lr']:
                      self.logrotate = int(words[1])
                      n = 2
 
-                elif words[0] in ['manager','-manager','--manager'] :
+                elif words0 == 'manager' :
                      urlstr       = words[1]
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
@@ -806,9 +829,11 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] == 'message-ttl': self.message_ttl = int(words[1]) * 60 * 1000
+                elif words0 == 'message_ttl':
+                     self.message_ttl = int(words[1]) * 60 * 1000
+                     n = 2
 
-                elif words[0] in ['mirror','-mirror','--mirror']:
+                elif words0 == 'mirror':
                      if words[0][0:1] == '-' : 
                         self.mirror = True
                         n = 1
@@ -816,11 +841,11 @@ class sr_config:
                         self.mirror = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['--no']:
+                elif words0 == 'no':
                      self.no = int(words[1])
                      n = 2
 
-                elif words[0] in ['no_logback','-nlb','--no_logback']:
+                elif words0 in ['no_logback','-nlb']:
                      if words[0][0:1] == '-' : 
                         self.no_logback = True
                         n = 1
@@ -828,12 +853,12 @@ class sr_config:
                         self.no_logback = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['notify_only','-n','--notify_only','--no-download']:
+                elif words0 in ['notify_only','n','--no-download']:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
 
-                elif words[0] in ['on_file','-on_file','--on_file']:
+                elif words0 == 'on_file':
                      self.on_file = None
                      self.execfile("on_file",words[1])
                      if self.on_file == None :
@@ -841,7 +866,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['on_line','-on_line','--on_line']:
+                elif words0 == 'on_line':
                      self.on_line = None
                      self.execfile("on_line",words[1])
                      if self.on_line == None :
@@ -849,7 +874,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['on_message','-on_message','--on_message']:
+                elif words0 == 'on_message':
                      self.on_message = None
                      self.execfile("on_message",words[1])
                      if self.on_message == None :
@@ -857,7 +882,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['on_part','-on_part','--on_part']:
+                elif words0 == 'on_part':
                      self.on_part = None
                      self.execfile("on_part",words[1])
                      if self.on_part == None :
@@ -865,7 +890,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['on_post','-on_post','--on_post']:
+                elif words0 == 'on_post':
                      self.on_post = None
                      self.execfile("on_post",words[1])
                      if self.on_post == None :
@@ -873,7 +898,7 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words[0] in ['overwrite','-o','--overwrite'] :
+                elif words0 in ['overwrite','o'] :
                      if words[0][0:1] == '-' : 
                         self.overwrite = True
                         n = 1
@@ -881,13 +906,13 @@ class sr_config:
                         self.overwrite = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['parts','-p','--parts']:
+                elif words0 in ['parts','p']:
                      self.parts   = words[1]
                      ok = self.validate_parts()
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['post_broker','-pb','--post_broker'] :
+                elif words0 in ['post_broker','pb'] :
                      urlstr      = words[1]
                      ok, url     = self.validate_urlstr(urlstr)
                      self.post_broker = url
@@ -896,22 +921,22 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words[0] in ['post_document_root','-pdr','--post_document_root']:
+                elif words0 in ['post_document_root','pdr']:
                      if sys.platform == 'win32':
                          self.post_document_root = words[1].replace('\\','/')
                      else:
                          self.post_document_root = words[1]
                      n = 2
 
-                elif words[0] in ['post_exchange','-pe','--post_exchange']:
+                elif words0 in ['post_exchange','pe']:
                      self.post_exchange = words[1]
                      n = 2
 
-                elif words[0] in ['queue_name','-qn','--queue_name'] :
+                elif words0 in ['queue_name','qn'] :
                      self.queue_name = words[1]
                      n = 2
 
-                elif words[0] in ['queue_share','-qs','--queue_share'] :
+                elif words0 in ['queue_share','qs'] :
                      if words[0][0:1] == '-' : 
                         self.queue_share = True
                         n = 1
@@ -919,7 +944,7 @@ class sr_config:
                         self.queue_share = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['randomize','-r','--randomize']:
+                elif words0 in ['randomize','r']:
                      if words[0][0:1] == '-' : 
                         self.randomize = True
                         n = 1
@@ -927,7 +952,7 @@ class sr_config:
                         self.randomize = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['recompute_chksum','-rc','--recompute_chksum']:
+                elif words0 in ['recompute_chksum','rc']:
                      if words[0][0:1] == '-' : 
                         self.recompute_chksum = True
                         n = 1
@@ -935,7 +960,7 @@ class sr_config:
                         self.recompute_chksum = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['reconnect','-rr','--reconnect']:
+                elif words0 in ['reconnect','rr']:
                      if words[0][0:1] == '-' : 
                         self.reconnect = True
                         n = 1
@@ -943,7 +968,7 @@ class sr_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['recursive','-rec','--recursive']:
+                elif words0 in ['recursive','rec']:
                      if words[0][0:1] == '-' : 
                         self.recursive = True
                         n = 1
@@ -951,15 +976,15 @@ class sr_config:
                         self.recursive = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['rename','-rn','--rename']:
+                elif words0 in ['rename','rn']:
                      self.rename = words[1]
                      n = 2
 
-                elif words[0] in ['sleep','-sleep','--sleep']:
+                elif words0 == 'sleep':
                      self.sleep = int(words[1])
                      n = 2
 
-                elif words[0] in ['source_from_exchange','-sfe','--source_from_exchange']:
+                elif words0 in ['source_from_exchange','sfe']:
                      if words[0][0:1] == '-' : 
                         self.source_from_exchange = True
                         n = 1
@@ -967,11 +992,11 @@ class sr_config:
                         self.source_from_exchange = self.isTrue(words[1])
                         n = 2
 
-                elif words[0] in ['strip','-strip','--strip']:
+                elif words0 == 'strip':
                      self.strip = int(words[1])
                      n = 2
 
-                elif words[0] in ['subtopic','-sub','--subtopic'] :
+                elif words0 in ['subtopic','sub'] :
                      self.subtopic = words[1]
                      key = self.topic_prefix + '.' + self.subtopic
                      self.bindings.append( (self.exchange,key) )
@@ -979,24 +1004,24 @@ class sr_config:
                      self.logger.debug("BINDINGS %s"% self.bindings)
                      n = 2
 
-                elif words[0] in ['sum','-sum','--sum']:
+                elif words0 == 'sum':
                      self.sumflg = words[1]
                      ok = self.validate_sum()
                      if not ok : needexit = True
                      n = 2
 
-                elif words[0] in ['to','-to','--to']:
+                elif words0 == 'to':
                      self.to_clusters = words[1]
                      n = 2
 
-                elif words[0] in ['topic_prefix','-tp','--topic_prefix'] :
+                elif words0 in ['topic_prefix','tp'] :
                      self.topic_prefix = words[1]
 
-                elif words[0] in ['url','-u','--url']:
+                elif words0 in ['url','u']:
                      self.url = urllib.parse.urlparse(words[1])
                      n = 2
 
-                elif words[0] in ['vip','-vip','--vip']:
+                elif words0 == 'vip':
                      self.vip = words[1]
                      n = 2
 
@@ -1012,6 +1037,9 @@ class sr_config:
            sys.exit(1)
 
         return n
+
+    def overwrite_defaults(self):
+        self.logger.debug("sr_config overwrite_defaults")
 
     def setlog(self):
 
@@ -1166,12 +1194,12 @@ def self_test():
        cfg.logger.error("TEST FAILED")
        os.unlink("./scrpt.py")
        sys.exit(1)
+    os.unlink("./scrpt.py")
 
     # general ... 
 
     cfg.general()
-    if not os.path.isdir(cfg.user_data_dir)    or \
-       not os.path.isdir(cfg.user_cache_dir)   or \
+    if not os.path.isdir(cfg.user_cache_dir)   or \
        not os.path.isdir(cfg.user_log_dir)     or \
        not os.path.isdir(cfg.user_config_dir)  :
        cfg.logger.error("problem with general user directories ")
