@@ -1,3 +1,13 @@
+metpx-sarracenia (2.16.01a4) unstable; urgency=medium
+
+  * sr_config : parsing changed, method configure added
+  *             .cache/.config overlaps nicely
+  * sr_*      : impact for sr_config changes
+  * sr_log.py : uses sr_instances
+  * sr        : manage sr_log
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Thu, 21 Jan 2016 12:16:39 -0500
+
 metpx-sarracenia (2.16.01a3) unstable; urgency=medium
 
   * Added sr_winnow.
