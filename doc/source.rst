@@ -13,13 +13,39 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 
 .. contents::
 
-.. NOTE::
-   FIXME:  introduction what is a data pump?
-   should refer to 
+A Sarracenia data pump is a web (or sftp) server with notifications
+for subscribers to know, quickly, when new data has arrived.
+To find out what data is already available on a pump,
+view the tree with a web browser.  For simple immediate needs, one can 
+download data using the browser itself, or a standard tool such as wget.
+The usual intent is for sr_subscribe to automatically download the data 
+wanted to a directory on a subscriber machine where other software 
+can process it. 
+
 Regardless of how it is done, injecting data means telling the pump where the data 
-is so that it can be forwarded to and/or by the pump.   In the simplest case, it 
-takes the data from your account, wherever you have it, providing you give it 
-permission.  we describe that case first.
+is so that it can be forwarded to and/or by the pump.   This can be done by either
+using the active and explicit sr_post command, or just using sr_watch on a directory.  
+Where there are large numbers of file, and/or tight timeliness constraints, invocation
+of sr_post directly by the producer of the file is optimal, as sr_watch may provide
+disappointing performance.
+
+While sr_watch is written as an optimal directory watching system, there simply is no 
+quick way to watch large directories. On dd.weather.gc.ca, as an example, there are 60 million 
+files in about a million directories. To walk that directory tree once takes several hours.  
+To find new files, the best temporal resolution is every few (say 3) hours.  So on average 
+notification will occur 1.5 hours after the file has showed up. Using I_NOTIFY (on Linux), 
+it still takes several hours to start up, because it needs to do an initial file tree walk 
+to set up all the watches.  After that it will be instant, but if there are too many files 
+(and 60 million is very likely too many) it will just crash and refuse to work. These are 
+just inherent limitations of watching directories, no matter how it is done.
+
+With sr_post, the program that puts the file anywhere in the arbitrarily deep tree tells 
+the broker (who will tell subscribers) exactly where to look. There are no system limits 
+to worry about. That’s how dd.weather.gc.ca works, and notifications are sub-second, with
+60 million files on the disk.
+
+In the simplest case, the pump takes data from your account, wherever you have it
+, providing you give it permission.  we describe that case first.
 
 SFTP Injection
 --------------
@@ -50,9 +76,7 @@ credentials safely:
 
 
 .. Note::
-
-  Passwords are always stored in the credentials.conf file, never
-  in other files.
+  Passwords are always stored in the credentials.conf file, 
 
 Now we just need to figure out where to send the file to.  
 Aim a browser at:
@@ -101,10 +125,6 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 |                    | Provides direct delivery into Government HPC environment.    |
 |                    | Contact: SSC.HPCOptimization-OptimisationCHP.SSC@canada.ca   |
 +--------------------+--------------------------------------------------------------+
-| BROADCAST          | Send to all pumps. Probably best to avoid.                   |
-|                    | All contacts for all of the above.                           |
-|                    | GEDS_                                                        |
-+--------------------+--------------------------------------------------------------+
 
 .. _GEDS: http://sage-geds.tpsgc-pwgsc.gc.ca/en/GEDS?pgid=015&dn=CN%3Dpeter.silva%40canada.ca%2COU%3DDI-ED%2COU%3DESIOS-SESES%2COU%3DSC-SI%2COU%3DSMDC-GSCD%2COU%3DSSC-SPC%2CO%3DGC%2CC%3DCA
 
@@ -118,6 +138,7 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 
 Lets assume the places you want to send to are:  DDIEDM,DDIDOR,ARCHPC. 
 so the sr_post command will look like this:
+
 
   sr_post -to DDIEDM,DDIDOR,ARCHPC \
           -broker amqps://rnd@ddsr.cmc.ec.gc.ca/  \
@@ -139,13 +160,48 @@ file on grumpy:
 
   sr_post -url treefrog/frog.dna
 
-.. note::
-  FIXME: provide real example.
+a more real example::
 
+  sr_post -to test_cluster \
+  -broker amqp://guest:guest@localhost/ \
+  -dr /var/www/posts/ \
+  -u http://localhost:81/frog.dna
+  
+  2016-01-20 14:53:49,014 [INFO] Output AMQP  broker(localhost) user(guest) vhost(/)
+  2016-01-20 14:53:49,019 [INFO] message published :
+  2016-01-20 14:53:49,019 [INFO] exchange xs_guest topic v02.post.frog.dna
+  2016-01-20 14:53:49,019 [INFO] notice   20160120145349.19 http://localhost:81/ frog.dna
+  2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  
+  There is a sr_subscribe to subscribe to all “*.dna” posts. The subscribe log said. Here is the config file:
+  
+  broker amqp://guest:guest@localhost
+  directory /var/www/subscribed
+  subtopic #
+  accept .*dna*
+  
+  and here is the related output from the subscribe log file.
+  
+  2016-01-20 14:53:49,418 [INFO] Received notice  20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
+  2016-01-20 14:53:49,419 [INFO] downloading/copying into /var/www/subscribed/frog.dna 
+  2016-01-20 14:53:49,420 [INFO] Downloads: http://localhost:80/20160120/guest/frog.dna  into /var/www/subscribed/frog.dna 0-16
+  2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.log.20160120.guest.frog.dna 20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
+  
+  Also here is the log from from the sr_sarra instance: 
+  
+  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://localhost:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
+  2016-01-20 14:53:49,377 [INFO] Downloads: http://localhost:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16 
+  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.log.frog.dna 20160120145349.19 http://localhost:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
+  2016-01-20 14:53:49,381 [INFO] message published :
+  2016-01-20 14:53:49,381 [INFO] exchange xpublic topic v02.post.20160120.guest.frog.dna
+  2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
+  @                                                                                                                   
+  
 Either way, the command asks ddsr to retrieve the treefrog/frog.dna file by logging 
 in to grumpy as peter (using the pump's private key.) to retrieve it, and posting it 
 on the pump, for forwarding to the other pump destinations.
-
+  
 similar to sr_subscribe, one can also place configuration files in an sr_post specific
 directory:: 
 
@@ -161,9 +217,6 @@ and then:
 
   sr_post -c dissem -url treefrog/frog.dna
 
-.. note::
-  FIXME: real example.
-
 If there are different varieties of posting used, configurations can be saved for each
 one. 
 
@@ -171,8 +224,6 @@ one.
    FIXME: Need to do a real example. this made up stuff isn´t sufficiently helpful.
    FIXME: sr_post does not accept config files right now, says the man page.  True/False?
    sr_post command lines can be a lot simpler if it did.
-   FIXME: I invented base_url, does not exist.  If it did, is that the right thing?
-   should it have another name?
 
 sr_post typically returns immediately as its only job is to advice the pump of the availability
 of files.  The files are not transferred when sr_post returns, so one should note delete files 
@@ -199,10 +250,7 @@ If we take a similar case, but in this case there is some http accessible space,
 the steps are the same or even simpler if no authentication is required for the pump
 to acquire the data.  One needs to install a web server of some kind.  
 
-.. note::
-  FIXME: replace with shs3.py provide real example.
-
-This configuration will show all files under /var/www as folders, running under
+Assume a configuration that show all files under /var/www as folders, running under
 the www-data users.  Data posted in such directories must be readable to the www-data
 user, to allow the web server to read it.  The server running the web server
 is called *blacklab*, and the user on the server is *peter*.  running as peter on blacklab,
