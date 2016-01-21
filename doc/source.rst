@@ -28,7 +28,9 @@ is so that it can be forwarded to and/or by the pump.   This can be done by eith
 using the active and explicit sr_post command, or just using sr_watch on a directory.  
 Where there are large numbers of file, and/or tight timeliness constraints, invocation
 of sr_post directly by the producer of the file is optimal, as sr_watch may provide
-disappointing performance.
+disappointing performance. Another explicit, but low frequency approach is the
+sr_poll command, which allows one to query remote systems to pull data
+into the network efficiently.
 
 While sr_watch is written as an optimal directory watching system, there simply is no 
 quick way to watch large (say, more than 100,000 files) directory trees. On 
@@ -303,7 +305,14 @@ One can configure sr_poll to pull in data from external sources, typically web s
 The sr_poll command typically runs as a singleton that tracks what is new at a source tree
 and creates source messages for the pump network to process.  
 
-FIXME: sr_poll example neeeded.
+External servers, especially web servers often have different ways of posting their
+product listings, so custom processing of the list is often needed.  That is why sr_poll
+has the do_poll setting, meaning that use of a plugin script is virtually required
+to use it.  
+
+.. note::
+  FIXME: sr_poll example neeeded.
+  FIXME: example do_poll scripts should be in distribution.
 
 
 
