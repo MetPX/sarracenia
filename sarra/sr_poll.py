@@ -176,8 +176,8 @@ class sr_poll(sr_instances):
         if url.scheme == 'ftp'  : self.dest = sr_ftp(self)
         if url.scheme == 'ftps' : self.dest = sr_ftp(self)
         if url.scheme == 'sftp' :
-           try    : from sr_sftp       import sftp_download
-           except : from sarra.sr_sftp import sftp_download
+           try    : from sr_sftp       import sr_sftp
+           except : from sarra.sr_sftp import sr_sftp
            self.dest = sr_sftp(self)
 
         # General Attributes
