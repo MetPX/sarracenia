@@ -864,20 +864,6 @@ and consumers obtain it from the first source that makes it availble,
 using checksums to determine whether the given datum has been obtained
 or not.
 
-We looked over all the approaches, and ended up back where we
-started... Approach 6 was kind of the unspoken default that we
-were trying to get away from, but after looking at the other
-options, it remains the simplest.
-
-FIXME: clean this up to a real demonstration.
-
-Just implement a local dataless pump with sr_winnow.  The sr_winnow
-is fed by shovels from upstream sources, and the local clients just
-connect to this local pump.  sr_winnow takes care of only presenting
-the products from the first server to make them available.
-
-This requires no code at all.  sr_winnow just works as it already
-does for sources, just at a different scale.
-
-
+This filtering requires implementation of a local dataless pump with 
+sr_winnow.  See the Administrator Guide for more information.
 
