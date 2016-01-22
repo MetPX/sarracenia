@@ -245,6 +245,7 @@ class sr_config:
         self.queue_name           = None
         self.durable              = False
         self.expire               = None
+        self.reset                = False
         self.message_ttl          = None
         self.queue_share          = False
 
@@ -981,6 +982,14 @@ class sr_config:
                 elif words0 in ['rename','rn']:
                      self.rename = words[1]
                      n = 2
+
+                elif words0 in ['reset']:
+                     if words[0][0:1] == '-' : 
+                        self.reset = True
+                        n = 1
+                     else :
+                        self.reset = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'sleep':
                      self.sleep = int(words[1])

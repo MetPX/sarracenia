@@ -276,7 +276,7 @@ class Publisher:
 
 class Queue:
 
-   def __init__(self,hc,qname,auto_delete=False,durable=False):
+   def __init__(self,hc,qname,auto_delete=False,durable=False,reset=False):
 
        self.hc          = hc
        self.logger      = self.hc.logger
@@ -284,6 +284,7 @@ class Queue:
        self.qname       = qname
        self.auto_delete = False
        self.durable     = durable
+       self.reset       = reset
 
        self.expire      = 0
        self.message_ttl = 0
@@ -315,6 +316,11 @@ class Queue:
        if self.message_ttl > 0 :
           args   = {'x-message-ttl' : self.message_ttl }
 
+       # reset 
+       if self.reset :
+          try    : self.channel.queue_delete( self.name )
+          except : self.logger.debug("could not delete queue %s" % self.name)
+                  
        # create queue
        self.qname, msg_count, consumer_count = \
        self.channel.queue_declare( self.name,
