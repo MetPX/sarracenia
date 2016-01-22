@@ -571,6 +571,7 @@ class sr_poll(sr_instances):
               self.logger.info("poll %s is waking up" % self.config_name )
 
               self.sleeping = not self.has_vip()
+
               if self.sleeping :
                  self.logger.info("poll is sleeping ")
               else :

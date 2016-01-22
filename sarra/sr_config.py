@@ -424,12 +424,14 @@ class sr_config:
            self.logger.warning("option vip or interface missing...")
            return False
 
-        a = netifaces.ifaddresses(self.interface)
-        if netifaces.AF_INET in a :
-           for inet in a[netifaces.AF_INET]:
-               if 'addr' in inet :
-                   if inet['addr'] == self.vip :
-                      return True
+        try   :
+                a = netifaces.ifaddresses(self.interface)
+                if netifaces.AF_INET in a :
+                   for inet in a[netifaces.AF_INET]:
+                       if 'addr' in inet :
+                           if inet['addr'] == self.vip :
+                              return True
+        except: pass
 
         return False
 
