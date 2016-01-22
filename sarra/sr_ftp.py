@@ -322,6 +322,12 @@ def ftp_download( parent ):
 
             msg.log_publish(201,'Downloaded')
 
+            if parent.delete :
+               try   :
+                       ftp.delete(remote_file)
+                       msg.loggger.info ('file  deleted on remote site %s' % remote_file)
+               except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+
             ftp.close()
 
             return True

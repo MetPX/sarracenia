@@ -255,6 +255,7 @@ class sr_config:
         self.currentPattern       = None     # defaults to all
         self.currentDir           = '.'      # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
+        self.delete               = False
 
         self.log_exchange         = 'xlog'
         # 
@@ -689,6 +690,22 @@ class sr_config:
                      if self.debug :
                         self.logger.setLevel(logging.DEBUG)
 
+                elif words0 == 'delete':
+                     if words[0][0:1] == '-' : 
+                        self.delete = True
+                        n = 1
+                     else :
+                        self.delete = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 == 'destfn_script':
+                     self.destfn_script = None
+                     self.execfile("destfn_script",words[1])
+                     if self.destfn_script == None :
+                        self.logger.error("destfn_script script incorrect (%s)" % words[1])
+                        ok = False
+                     n = 2
+
                 elif words0 == 'destination' :
                      urlstr           = words[1]
                      ok, url          = self.validate_urlstr(urlstr)
@@ -715,14 +732,6 @@ class sr_config:
                          self.document_root = words[1].replace('\\','/')
                      else:
                          self.document_root = words[1]
-                     n = 2
-
-                elif words0 == 'destfn_script':
-                     self.destfn_script = None
-                     self.execfile("destfn_script",words[1])
-                     if self.destfn_script == None :
-                        self.logger.error("destfn_script script incorrect (%s)" % words[1])
-                        ok = False
                      n = 2
 
                 elif words0 == 'do_download':

@@ -362,6 +362,12 @@ def sftp_download( parent ):
 
             msg.log_publish(201,'Downloaded')
 
+            if parent.delete :
+               try   :
+                       sftp.delete(remote_file)
+                       msg.loggger.info ('file  deleted on remote site %s' % remote_file)
+               except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+
             sftp.close()
 
             return True
@@ -469,7 +475,7 @@ def self_test():
     cfg = sr_config()
     cfg.defaults()
     cfg.general()
-    cfg.debug  = True
+    #cfg.debug  = True
     opt1 = "destination sftp://localhost"
     cfg.option( opt1.split()  )
     cfg.logger = logger
