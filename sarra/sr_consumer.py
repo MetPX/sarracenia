@@ -106,6 +106,7 @@ class sr_consumer:
         self.bindings    = self.parent.bindings
         self.durable     = self.parent.durable
         self.expire      = self.parent.expire
+        self.reset       = self.parent.reset
         self.message_ttl = self.parent.message_ttl
 
         self.broker_str  = self.broker.geturl().replace(':'+self.broker.password+'@','@')
@@ -114,7 +115,7 @@ class sr_consumer:
         self.set_queue_name()
 
         # queue settings
-        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable)
+        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable,reset=self.reset)
 
         if self.expire != None :
            self.msg_queue.add_expire(self.expire)
