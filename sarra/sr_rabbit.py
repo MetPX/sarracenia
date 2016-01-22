@@ -14,7 +14,7 @@ rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
 # rabbitmqadmin
 #===========================
 
-def exec_rabbitmqadmin(url,options):
+def exec_rabbitmqadmin(url,options,logger=None):
     
     if not os.path.isfile(rabbitmqadmin):
        try :
@@ -41,6 +41,7 @@ def exec_rabbitmqadmin(url,options):
            command += ' '    + options
 
            # (status, answer) = subprocess.getstatusoutput(command)
+           if logger != None : logger.debug("command = %s" % command)
            return subprocess.getstatusoutput(command)
     except :
            #(stype, svalue, tb) = sys.exc_info()
