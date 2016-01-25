@@ -182,8 +182,8 @@ class sr_sender(sr_instances):
                      return ftp_send(self)
 
                 elif self.details.url.scheme == 'sftp' :
-                     try    : from sr_sftp       import sftp_download
-                     except : from sarra.sr_sftp import sftp_download
+                     try    : from sr_sftp       import sftp_send
+                     except : from sarra.sr_sftp import sftp_send
                      return sftp_send(self)
 
         except :
