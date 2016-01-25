@@ -173,6 +173,92 @@ ensuring that it is tagged as coming from Alice on this cluster.  This prevents 
 types of ´spoofing´ as all messages can only be posted by proper owners.
 
 
+Users and Roles
+---------------
+
+Usernames for pump authentication are significant in that they are visible to all.
+They are used in the directory path on public trees, as well as to authenticate to the broker.
+They need to be understandable.  they are often wider scope than a person...
+perhaps call them 'Accounts'.   It can be elegant to configure the same usernames
+for use in transport engines.
+
+All Account names should be unique, but nothing will avoid clashes when sources originate from
+different pump networks, and clients at different destinations.  In practice, name clases are
+addressed by routing to avoid two different sources' with the same name having their 
+data offerings combined on a single tree.  On the other hand, name clashes are not always an error.  
+Use of a common source account name on different clusters may be used to implement folders that
+are shared between the two accounts with the same name.  
+
+
+Pump users are defined in the users.conf file. Each line of the file consists of the user name
+as the first field, and the user's role as the second field.  role can be one of:
+
+subscriber
+
+  A subscriber is user that can only subscribe to data and return log messages. Not permitted to inject data.
+  Each subscriber gets an sx_<user> named exchange on the pump, where if a user is named *Acme*, 
+  the corresponding exchange will be *sx_Acme*.  This exchange is where an sr_subscribe
+  process will send it's log messages.
+
+  By convention/default, a the *anonymous* user is created on all pumps to permit subscription without
+  a specific account.
+
+source
+
+  A user permitted to subscribe or originate data.  A source does not necessarily represent 
+  one person or type of data, but rather an organization responsible for the data produced.  
+  So if an organization gathers and makes available ten kinds of data with a single contact 
+  email or phone number for questions about the data and it's availability, then all of 
+  those collection activities might use a single 'source' account.
+  
+  Each source gets a sx_<user> exchange for injection of data posts, and, similar to a subscriber
+  to send log messages about processing and receipt of data.
+
+  Each source is able to view all of the messages for data it has injected, but the location where
+  all of these messages are available varies according to administrator configuration of log routing.
+  So a source may inject data on pumpA, but may subscribe to logs on a different pump.
+
+  When a route injects data, the path is modified by sarracenia to prepend a fixed upper part
+  of the directory tree.  The first level directory is the day of ingest into the network in 
+  YYYYMMDD format.  The second level directory is the source name.  So for a user Alice, injecting
+  data on May 4th, 2016, the root of the directory tree is:  20160504/Alice.  Note that all
+  pumps are expected to run in the UTC timezone (widely, but inaccurately, referred to as GMT.)
+
+  There are daily directories because there is a system-wide life-time for data, it is deleted
+  after a standard number of days, data is just deleted from the root.
+
+  Since all clients will see the directories, and therefore client configurations will include them.
+  it would be wise to consider the account name public, and relatively static.
+
+  Sources determine who can access their data, by specifying which cluster to send the data to.
+
+
+.. note::
+   restrictions by user name not yet implemented, but planned.
+
+
+pump
+
+  a user permitted to subscribe or originate data, but understood to represent a pump.
+  a local pump user would be used to, say, run the sarra processes.
+
+
+administrator
+  a user permitted to modify permissions on the local pump.  
+  The administrator also runs the log routing components such 
+  as log2source, 2xlog, log2cluster, etc...
+  
+
+.. note::
+  FIXME: makes more sense to me for a pump user to run the log routing stuff,
+  and just keep manager for administrative change.  throughts?
+
+  FIXME: manager run log* things. I doubt it works this way now... ie. those
+  components should use the 'manager' setting instead of the 'broker' one?
+  the 'broker' one will be the 'feeder' aka. pump ?
+
+
+
 
 Transport Engines
 -----------------
@@ -183,19 +269,22 @@ The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specif
 configuring the servers for use, please consult the documentation of the servers themselves.
 The recipes here are simply examples, and are not definitive.
 
-Sample lighttpd Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. note:: 
+   FIXME:  Not clear what to do here.  The application does not work without transport engines,
+   but configuration of those engines are vast topics in their own right, so not a good idea
+   to include configuration information here, other than to indicate the kind of settings
+   that are necessary to permit operation.
 
-Suitable when all the data being served is public, simply make the /var/www directory available::
-user, to allow the web server to read it.  so user of dd_post/dd_watch need to 
-place files under there and announce as http://<server>/...
+httpd Configuration
+~~~~~~~~~~~~~~~~~~~
 
+Suitable when all the data being served is public, simply make a directory available.
+the server needs to support byte-ranges, but that is not onerous as the popular ones do.
 
-Apache Web Server
-~~~~~~~~~~~~~~~~~
-
-FIXME:
-some configuration snippets for the apache web server.
+.. note::
+   FIXME: I believe if the server is not dedicated to being a pump, and someone wants an
+   offset from / to be the root of the pump... I think that's will not work.
+   Sarra wants to be in the document root right now. Is this a bug?
 
 
 
@@ -277,6 +366,7 @@ queue_manager.py
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means they will build up over time.  We have a script that looks for unused queues, and cleans them out. Currently, the limits are hard-coded as any queue having more than 25000 messages or 50mbytes of space will be deleted.
 
 This script is in samples/program, rather than as part of the package (as an sr_x command.)
+
 
 Routing
 -------

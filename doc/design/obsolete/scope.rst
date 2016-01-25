@@ -1,13 +1,48 @@
 
-Status: Pre-Draft
+Status: Draft
+
 
 SCOPE
 =====
 
-Scope is the logical name of a switching cluster, which must be unique in a network.
+Scope was the logical name of a switching cluster, which must be unique in a network.
 Each cluster has channels to connect to either other scopes, or single accounts.
 account is the logical name of a source and/or client, which must be unique in a network.
 
+What Happenned
+--------------
+
+This design info is completely out of date. It is the original ideas, before it went 
+into development.  Brifely, this section outlines where we ended up with afterward.
+Options:
+
+cluster 
+   identifying the current node on which the component is running.
+   the name to put into the *from_cluster*  setting of 
+
+cluster_aliases
+   other names that messages arriving might use to refer to a given cluster,
+   besides it's primary name. Example DD might be a cluster alias active on 
+   dd1, dd2, dd3, etc...
+
+gateway_for
+   represents other clusters that are reachable through the current cluster.
+   This is how administrators implement static routing.  In Sarra, when  
+   examining to_clusters=...  of a message, if the destinations includes
+   one of the cluster in gateway_for, then sarra will download (subject
+   to accept/reject.)
+
+The above options need to be interpreted by sarra and sender, and well
+that's it for data routing.  Log routing ended up being treated independently 
+by the log2cluster.conf file, which is read by the log2cluster component.
+
+As often happens, as we worked through what we were trying to accomplish,
+it got simpler.
+
+
+
+Original Ideas
+--------------
 
 account2scope.conf: -- maps accounts to scopes.
   <scope> <account>,<account>, ...
