@@ -168,11 +168,12 @@ def main():
 
     srlog = sr_log(config,args)
 
-    if   action == 'reload' : srlog.reload_parent()
-    elif action == 'restart': srlog.restart_parent()
-    elif action == 'start'  : srlog.start_parent()
-    elif action == 'stop'   : srlog.stop_parent()
-    elif action == 'status' : srlog.status_parent()
+    if   action == 'foreground': srlog.status_parent()
+    elif action == 'reload'    : srlog.reload_parent()
+    elif action == 'restart'   : srlog.restart_parent()
+    elif action == 'start'     : srlog.start_parent()
+    elif action == 'stop'      : srlog.stop_parent()
+    elif action == 'status'    : srlog.status_parent()
     else :
            srlog.logger.error("action unknown %s" % action)
            sys.exit(1)
