@@ -139,6 +139,9 @@ class sr_sarra(sr_instances):
         self.consumer.close()
         self.hc_pst.close()
 
+        if hasattr(self,'ftp_link') : self.ftp_link.close()
+        if hasattr(self,'sftp_link'): self.sftp_link.close()
+
     def connect(self):
 
         # =============
@@ -183,12 +186,16 @@ class sr_sarra(sr_instances):
                      return http_download(self)
 
                 elif self.msg.url.scheme == 'ftp' :
-                     return ftp_download(self)
+                     if not hasattr(self,'ftp_link') :
+                        self.ftp_link = ftp_transport()
+                     return self.ftp_link.download(self)
 
                 elif self.msg.url.scheme == 'sftp' :
-                     try    : from sr_sftp       import sftp_download
-                     except : from sarra.sr_sftp import sftp_download
-                     return sftp_download(self)
+                     try    : from sr_sftp       import sftp_transport
+                     except : from sarra.sr_sftp import sftp_transport
+                     if not hasattr(self,'sftp_link') :
+                        self.sftp_link = sftp_transport()
+                     return self.sftp_link.download(self)
 
                 elif self.msg.url.scheme == 'file' :
                      return file_process(self)

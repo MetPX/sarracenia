@@ -288,148 +288,204 @@ class sr_ftp():
 
 #============================================================
 #
-# wrapping of sr_ftp in ftp_download
+# wrapping of downloads/sends using sr_ftp in ftp_transport
 #
 #============================================================
 
-def ftp_download( parent ):
-    logger = parent.logger
-    msg    = parent.msg
+class ftp_transport():
+    def __init__(self) :
+        self.batch = 0
+        self.ftp   = None
+        self.cdir  = None
 
-    # seek not supported
-    if msg.partflg == 'i' :
-       logger.error("ftp, inplace part file not supported")
-       msg.log_publish(499,'ftp download problem')
-       return False
+    def check_is_connected(self):
+        self.logger.debug("ftp_transport check_connection")
 
-    url         = msg.url
-    urlstr      = msg.urlstr
-    token       = msg.url.path[1:].split('/')
-    cdir        = '/'.join(token[:-1])
-    remote_file = token[-1]
+        if self.ftp == None       : return False
+        if not self.ftp.connected : return False
 
-    try :
-            parent.destination = msg.urlcred
-            ftp = sr_ftp(parent)
-            ftp.connect()
-            ftp.cd(cdir)
+        if self.ftp.destination != self.parent.destination :
+           self.close()
+           return False
 
-            #download file
-            logger.info('Downloads: %s into %s %d-%d' % 
-                       (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
+        self.batch = self.batch + 1
+        if self.batch > self.parent.batch :
+           self.close()
+           return False
 
-            ftp.get(remote_file,msg.local_file,msg.local_offset)
+        return True
 
-            msg.log_publish(201,'Downloaded')
+    def close(self) :
+        self.logger.debug("ftp_transport close")
 
-            if parent.delete :
-               try   :
-                       ftp.delete(remote_file)
-                       msg.loggger.info ('file  deleted on remote site %s' % remote_file)
-               except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+        self.batch = 0
+        self.cdir  = None
 
-            ftp.close()
+        if self.ftp == None : return
+        try    : self.ftp.close()
+        except : pass
+        self.ftp = None
 
-            return True
-            
-    except:
-            try    : ftp.close()
-            except : pass
+    def download( self, parent ):
+        self.logger = parent.logger
+        self.logger.debug("ftp_transport download")
+    
+        self.parent = parent
+        msg         = parent.msg
+    
+        # seek not supported
+        if msg.partflg == 'i' :
+           self.logger.error("ftp, inplace part file not supported")
+           msg.log_publish(499,'ftp download problem')
+           return False
+    
+        url         = msg.url
+        urlstr      = msg.urlstr
+        token       = msg.url.path[1:].split('/')
+        cdir        = '/'.join(token[:-1])
+        remote_file = token[-1]
+    
+        try :
+                parent.destination = msg.urlcred
 
-            (stype, svalue, tb) = sys.exc_info()
-            msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-            msg.log_publish(499,'ftp download problem')
-
-            return False
-
-    msg.log_publish(499,'ftp download problem')
-
-    return False
-
-#============================================================
-#
-# wrapping of sr_ftp in ftp_send
-#
-#============================================================
-
-def ftp_send( parent ):
-    logger = parent.logger
-    msg    = parent.msg
-
-    local_file = parent.local_path
-    remote_dir = parent.remote_dir
-
-    try :
-            ftp = sr_ftp(parent)
-            ftp.connect()
-
-            ftp.cd_forced(775,remote_dir)
-
-            offset = 0
-
-            # 'i' cannot be supported by ftp/ftps
-            # we cannot offset in the remote file to inject data
-            #
-            # FIXME instead of dropping the message
-            # the inplace part could be delivered as 
-            # a separate partfile and message set to 'p'
-            if  msg.partflg == 'i':
-                logger.error("ftp, inplace part file not supported")
-                msg.log_publish(499,'ftp delivery problem')
+                ftp = self.ftp
+                if not self.check_is_connected() :
+                   self.logger.debug("ftp_transport download connects")
+                   ftp = sr_ftp(parent)
+                   ftp.connect()
+                   self.ftp = ftp
+                
+                if self.cdir != cdir :
+                   self.logger.debug("ftp_transport download cd to %s" %cdir)
+                   ftp.cd(cdir)
+                   self.cdir  = cdir
+    
+                #download file
+                self.logger.info('Downloads: %s into %s %d-%d' % 
+                           (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
+    
+                ftp.get(remote_file,msg.local_file,msg.local_offset)
+    
+                msg.log_publish(201,'Downloaded')
+    
+                if parent.delete :
+                   try   :
+                           ftp.delete(remote_file)
+                           msg.loggger.info ('file  deleted on remote site %s' % remote_file)
+                   except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+    
+                #closing after batch or when destination is changing
+                #ftp.close()
+    
+                return True
+                
+        except:
+                #closing after batch or when destination is changing
+                #try    : ftp.close()
+                #except : pass
+    
+                (stype, svalue, tb) = sys.exc_info()
+                msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
+                msg.log_publish(499,'ftp download problem')
+    
                 return False
+    
+        msg.log_publish(499,'ftp download problem')
+    
+        return False
 
-            str_range = ''
+    def send( self, parent ):
+        self.logger = parent.logger
+        self.parent = parent
+        self.logger.debug("ftp_transport send")
 
-            # deliver file
+        msg    = parent.msg
 
-            msg.logger.info('Sends: %s %s into %s %d-%d' % 
-                (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
-
-            if parent.lock == None :
-               ftp.put(local_file, parent.remote_file)
-            elif parent.lock == '.' :
-               remote_lock = '.'  + parent.remote_file
-               ftp.put(local_file, remote_lock)
-               ftp.rename(remote_lock, parent.remote_file)
-            elif parent.lock[0] == '.' :
-               remote_lock = parent.remote_file + parent.lock
-               ftp.put(local_file, remote_lock)
-               ftp.rename(remote_lock, parent.remote_file)
-            elif parent.lock == 'umask' :
-               ftp.umask()
-               ftp.put(local_file, parent.remote_file)
-
-            try   : ftp.chmod(parent.chmod,parent.remote_file)
-            except: pass
-
-            msg.log_publish(201,'Delivered')
-
-            ftp.close()
-
-            return True
-            
-    except:
-            try    : ftp.close()
-            except : pass
-
-            (stype, svalue, tb) = sys.exc_info()
-            msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+        # 'i' cannot be supported by ftp/ftps
+        # we cannot offset in the remote file to inject data
+        #
+        # FIXME instead of dropping the message
+        # the inplace part could be delivered as 
+        # a separate partfile and message set to 'p'
+        if  msg.partflg == 'i':
+            self.logger.error("ftp, inplace part file not supported")
             msg.log_publish(499,'ftp delivery problem')
-
             return False
+    
+        local_file = parent.local_path
+        remote_dir = parent.remote_dir
+    
+        try :
+                ftp = self.ftp
+                if not self.check_is_connected() :
+                   self.logger.debug("ftp_transport send connects")
+                   ftp = sr_ftp(parent)
+                   ftp.connect()
+                   self.ftp = ftp
+                
+                if self.cdir != remote_dir :
+                   self.logger.debug("ftp_transport send cd to %s" % remote_dir)
+                   ftp.cd_forced(775,remote_dir)
+                   self.cdir  = remote_dir
 
-    msg.log_publish(499,'ftp delivery problem')
-
-    return False
-                 
-                 
+                offset = 0
+    
+                str_range = ''
+    
+                # deliver file
+    
+                msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                    (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
+    
+                if parent.lock == None :
+                   ftp.put(local_file, parent.remote_file)
+                elif parent.lock == '.' :
+                   remote_lock = '.'  + parent.remote_file
+                   ftp.put(local_file, remote_lock)
+                   ftp.rename(remote_lock, parent.remote_file)
+                elif parent.lock[0] == '.' :
+                   remote_lock = parent.remote_file + parent.lock
+                   ftp.put(local_file, remote_lock)
+                   ftp.rename(remote_lock, parent.remote_file)
+                elif parent.lock == 'umask' :
+                   ftp.umask()
+                   ftp.put(local_file, parent.remote_file)
+    
+                try   : ftp.chmod(parent.chmod,parent.remote_file)
+                except: pass
+    
+                msg.log_publish(201,'Delivered')
+    
+                #closing after batch or when destination is changing
+                #ftp.close()
+    
+                return True
+                
+        except:
+                #closing after batch or when destination is changing
+                #try    : ftp.close()
+                #except : pass
+    
+                (stype, svalue, tb) = sys.exc_info()
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+                msg.log_publish(499,'ftp delivery problem')
+    
+                return False
+    
+        msg.log_publish(499,'ftp delivery problem')
+    
+        return False
 
 # ===================================
 # self_test
 # ===================================
 
-try    : from sr_config         import *
-except : from sarra.sr_config   import *
+try    : 
+         from sr_config         import *
+         from sr_message        import *
+except :
+         from sarra.sr_config   import *
+         from sarra.sr_message  import *
 
 class test_logger:
       def silence(self,str):
@@ -487,8 +543,70 @@ def self_test():
            if data != b"1\n2\n3\n" :
               logger.error("sr_ftp TEST FAILED")
               sys.exit(1)
+
+           os.unlink("bbb")
+
+           msg         = sr_message(logger)
+           msg.start_timer()
+           msg.topic   = "v02.post.test"
+           msg.notice  = "notice"
+           msg.urlcred = "ftp://localhost/"
+           msg.urlstr  = "ftp://localhost/tztz/ccc"
+           msg.url     = urllib.parse.urlparse(msg.urlcred+"tztz/ccc")
+           msg.partflg = '1'
+           msg.offset  = 0
+           msg.length  = 0
+
+           msg.local_file   = "bbb"
+           msg.local_offset = 0
+
+           cfg.msg     = msg
+           cfg.batch   = 5
        
+           dldr = ftp_transport()
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.download(cfg)
+           dldr.close()
+           dldr.close()
+           dldr.close()
+
+
+           dldr = ftp_transport()
+           cfg.local_file    = "bbb"
+           cfg.local_path    = "./bbb"
+           cfg.remote_file   = "ddd"
+           cfg.remote_path   = "tztz/ddd"
+           cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
+           cfg.remote_dir    = "tztz"
+           cfg.chmod       = 775
+           cfg.lock        = None
+           dldr.send(cfg)
+           dldr.ftp.delete("ddd")
+           cfg.lock        = '.'
+           dldr.send(cfg)
+           dldr.ftp.delete("ddd")
+           cfg.lock        = '.tmp'
+           dldr.send(cfg)
+           dldr.send(cfg)
+           dldr.send(cfg)
+           dldr.send(cfg)
+           dldr.send(cfg)
+           dldr.send(cfg)
+           dldr.close()
+           dldr.close()
+           dldr.close()
+
+           ftp = sr_ftp(cfg)
+           ftp.connect()
+           ftp.cd("tztz")
            ftp.delete("ccc")
+           ftp.delete("ddd")
            logger.info("%s" % ftp.originalDir)
            ftp.cd("")
            logger.info("%s" % ftp.ftp.pwd())
