@@ -1,3 +1,11 @@
+metpx-sarracenia (2.16.01a6) unstable; urgency=medium
+
+  * connection sftp/ftp/ftps connected until batch reached or changing destination
+  * timeout on channel sftp
+  * sr_config  include
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Tue, 26 Jan 2016 16:13:10 -0500
+
 metpx-sarracenia (2.16.01a5) trusty; urgency=medium
 
   * sr_config added delete,reset option
