@@ -285,7 +285,9 @@ class sr_config:
         self.partflg              = '1'
         #
 
+        self.batch                = 100
         self.destination          = None
+        self.timeout              = None
 
         # subscribe
 
@@ -651,6 +653,10 @@ class sr_config:
                         needexit = True
                      n = 2
 
+                elif words0 == 'batch' :
+                     self.batch = int(words[1])
+                     n = 2
+
                 elif words0 in ['broker','b'] :
                      urlstr      = words[1]
                      ok, url     = self.validate_urlstr(urlstr)
@@ -676,8 +682,10 @@ class sr_config:
                      self.cluster_aliases = words[1].split(',')
                      n = 2
 
-                elif words0 in ['config','-c']:
-                     self.config(words[1])
+                elif words0 in ['config','-c','include']:
+                     include = os.path.dirname(self.user_config) + os.sep + words[1]
+                     self.logger.debug("include %s" % include)
+                     self.config(include)
                      n = 2
 
                 elif words0 == 'debug':
@@ -1028,6 +1036,10 @@ class sr_config:
                      self.sumflg = words[1]
                      ok = self.validate_sum()
                      if not ok : needexit = True
+                     n = 2
+
+                elif words0 == 'timeout':
+                     self.timeout = float(words[1])
                      n = 2
 
                 elif words0 == 'to':

@@ -134,6 +134,8 @@ class sr_sender(sr_instances):
         if self.post_broker :
            self.poster.close()
         self.connected = False 
+        if hasattr(self,'sftp_link'): self.sftp_link.close()
+        if hasattr(self,'ftp_link') : self.ftp_link.close()
 
     def connect(self):
 
@@ -179,12 +181,16 @@ class sr_sender(sr_instances):
                      return self.do_send(self)
 
                 elif self.details.url.scheme in ['ftp','ftps']  :
-                     return ftp_send(self)
+                     if not hasattr(self,'ftp_link') :
+                        self.ftp_link = ftp_transport()
+                     return self.ftp_link.send(self)
 
                 elif self.details.url.scheme == 'sftp' :
-                     try    : from sr_sftp       import sftp_send
-                     except : from sarra.sr_sftp import sftp_send
-                     return sftp_send(self)
+                     try    : from sr_sftp       import sftp_transport
+                     except : from sarra.sr_sftp import sftp_transport
+                     if not hasattr(self,'sftp_link') :
+                        self.sftp_link = sftp_transport()
+                     return self.sftp_link.send(self)
 
         except :
                 (stype, svalue, tb) = sys.exc_info()
