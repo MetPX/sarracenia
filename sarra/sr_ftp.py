@@ -145,15 +145,17 @@ class sr_ftp():
                 return False
 
         try:
+                expire  = -999
+                if self.parent.timeout : expire = self.parent.timeout
                 if port == '' or port == None : port = 21
 
                 if not self.tls :
                    ftp = ftplib.FTP()
-                   ftp.connect(host,port,timeout=-999)
+                   ftp.connect(host,port,timeout=expire)
                    ftp.login(user, password)
                 else :
                    # ftplib supports FTPS with TLS 
-                   ftp = ftplib.FTP_TLS(host,user,password,timeout=None)
+                   ftp = ftplib.FTP_TLS(host,user,password,timeout=expire)
                    if self.prot_p : ftp.prot_p()
                    # needed only if prot_p then set back to prot_c
                    #else          : ftp.prot_c()
@@ -507,7 +509,8 @@ def self_test():
     cfg.debug  = True
     opt1 = "destination ftp://localhost"
     cfg.option( opt1.split()  )
-    cfg.logger = logger
+    cfg.logger  = logger
+    cfg.timeout = 5
 
     try:
            ftp = sr_ftp(cfg)
