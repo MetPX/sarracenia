@@ -683,7 +683,9 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','-c','include']:
-                     self.config(words[1])
+                     include = os.path.dirname(self.user_config) + os.sep + words[1]
+                     self.logger.debug("include %s" % include)
+                     self.config(include)
                      n = 2
 
                 elif words0 == 'debug':
