@@ -310,8 +310,13 @@ class test_instances(sr_instances):
       def __init__(self,config=None,args=None):
          sr_instances.__init__(self,config,args)
 
+      def close(self):
+          pass
+
       def reload(self):
           self.logger.info("reloaded")
+          self.close()
+          self.configure()
           self.run()
 
       def run(self):
