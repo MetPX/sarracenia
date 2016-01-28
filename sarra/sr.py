@@ -99,8 +99,6 @@ def main():
        print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
        sys.exit(1)
 
-    cfg = sr_config()
-
     # sarracenia program span
     LOG_PROGRAMS=['log2clusters','2xlog','log2source']
     for d in LOG_PROGRAMS:
