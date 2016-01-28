@@ -1,37 +1,34 @@
-.SUFFIXES: .1.rst .5 .7 .dia .png .pdf .html
+# Makefile to build html pages for the metpx site.
+# The files are generated using a special template and are not useful without the accompanying .css and .js files
 
-
-#Guide.rtf:   Guide.latex
-#	latex2rtf </dev/null Guide.latex >Guide.rtf
-
+MAKE = make
 VERSION = $(shell grep __version__ ../../sarra/__init__.py | sed -e 's/"//g' | cut -c14-)
 DATE = $(shell date "+%B %Y")
 
-SOURCES = $(wildcard ../*.rst)
-TARGETS = $(patsubst ../%.rst,%.html,$(SOURCES))
+HTML_SRCS = $(wildcard ../*.rst)
+HTML_TRGT = $(patsubst ../%.rst,%.html,$(HTML_SRCS))
+
+SVG_SRCS = $(wildcard ../*.dia)
+SVG_TRGT = $(patsubst ../%.dia,%.svg,$(SVG_SRCS))
+
+TARGETS = $(HTML_TRGT) $(SVG_TRGT)
 
 default: $(TARGETS) 
+ 
+%.svg: ../%.dia
+	dia -t svg $<
 
-.dia.png:
-	dia -t png $*.dia
+img:
+	cp ../*.gif .
 
-.rst.html:
-	rst2html $*.rst >$*.html
-
-# there should be a way to make an implicit rule for the man pages,
-# some sort of thing that would scan all of man tree, and do the right
-# thing...
-# but copy paste was faster...
-# when you add a man page, need to:
-#         -- add an explicit target here.
-#         -- add a link from index.html.
-#
-
+# In the html build, the TEMPLATE is provided on the command line
+# see site/Makefile
 %.html: ../%.rst	
-	rst2html $< $@	
+	rst2html --link-stylesheet --stylesheet=css/bootstrap.min.css,css/metpx-sidebar.css $(TEMPLATE) $< $@
 	sed -i 's/&\#64;Date&\#64;/$(DATE)/' $@
 	sed -i 's/&\#64;Version&\#64;/$(VERSION)/' $@
-
+	sed -i 's/<a class="toc-backref" .*">\(.*\)<\/a>/\1/' $@
+	python ../../../site/template.py $@
 
 clean: 
-	rm -f $(TARGETS) 
+	rm -f $(TARGETS)
