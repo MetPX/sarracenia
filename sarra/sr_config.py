@@ -93,6 +93,10 @@ class sr_config:
         self.setlog()
         self.logger.debug("sr_config __init__")
 
+        # hostname
+
+        self.hostname     = socket.getfqdn()
+
         # program_name
 
         self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
@@ -243,6 +247,7 @@ class sr_config:
         self.subtopic             = None
 
         self.queue_name           = None
+        self.queue_suffix         = None
         self.durable              = False
         self.expire               = None
         self.reset                = False
@@ -612,14 +617,34 @@ class sr_config:
     def option(self,words):
         self.logger.debug("sr_config option %s" % words[0])
 
+        # option strip out '-' 
+
         words0 = words[0].strip('-')
+
+        # value : variable substitutions
+
+        words1 = None
+        if len(words) > 0 :
+           buser  = ''
+           config = ''
+           words1 = words[1]
+
+           if self.broker      : buser  = self.broker.username
+           if self.config_name : config = self.config_name
+
+           words1 = words1.replace('${HOSTNAME}',   self.hostname)
+           words1 = words1.replace('${PROGRAM}',    self.program_name)
+           words1 = words1.replace('${CONFIG}',     config)
+           words1 = words1.replace('${BROKER_USER}',buser)
+          
+        # parsing
 
         needexit = False
         n        = 0
         try:
                 if   words0 in ['accept','get','reject']:
                      accepting   = words0 == 'accept' or words0 == 'get'
-                     pattern     = words[1]
+                     pattern     = words1
                      mask_regexp = re.compile(pattern)
                      n = 2
 
@@ -658,7 +683,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['broker','b'] :
-                     urlstr      = words[1]
+                     urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
                      self.broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
@@ -675,15 +700,17 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['cluster','cl']:
-                     self.cluster = words[1] 
+                     self.cluster = words1 
                      n = 2
 
                 elif words0 in ['cluster_aliases','ca']:
-                     self.cluster_aliases = words[1].split(',')
+                     self.cluster_aliases = words1.split(',')
                      n = 2
 
                 elif words0 in ['config','-c','include']:
-                     self.config(words[1])
+                     include = os.path.dirname(self.user_config) + os.sep + words1
+                     self.logger.debug("include %s" % include)
+                     self.config(include)
                      n = 2
 
                 elif words0 == 'debug':
@@ -706,23 +733,23 @@ class sr_config:
 
                 elif words0 == 'destfn_script':
                      self.destfn_script = None
-                     self.execfile("destfn_script",words[1])
+                     self.execfile("destfn_script",words1)
                      if self.destfn_script == None :
                         self.logger.error("destfn_script script incorrect (%s)" % words[1])
                         ok = False
                      n = 2
 
                 elif words0 == 'destination' :
-                     urlstr           = words[1]
+                     urlstr           = words1
                      ok, url          = self.validate_urlstr(urlstr)
-                     self.destination = words[1]
+                     self.destination = words1
                      if not ok :
                         self.logger.error("problem with destination (%s)" % urlstr)
                         needexit = True
                      n = 2
 
                 elif words0 == 'directory':
-                     self.currentDir = words[1]
+                     self.currentDir = words1
                      n = 2
 
                 elif words0 in ['discard','d','download-and-discard']:
@@ -735,32 +762,32 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']:
                      if sys.platform == 'win32':
-                         self.document_root = words[1].replace('\\','/')
+                         self.document_root = words1.replace('\\','/')
                      else:
-                         self.document_root = words[1]
+                         self.document_root = words1
                      n = 2
 
                 elif words0 == 'do_download':
                      self.do_download = None
-                     self.execfile("do_download",words[1])
+                     self.execfile("do_download",words1)
                      if self.do_download == None :
-                        self.logger.error("do_download script incorrect (%s)" % words[1])
+                        self.logger.error("do_download script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'do_poll':
                      self.do_poll = None
-                     self.execfile("do_poll",words[1])
+                     self.execfile("do_poll",words1)
                      if self.do_poll == None :
-                        self.logger.error("do_poll script incorrect (%s)" % words[1])
+                        self.logger.error("do_poll script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'do_send':
                      self.do_send = None
-                     self.execfile("do_send",words[1])
+                     self.execfile("do_send",words1)
                      if self.do_send == None :
-                        self.logger.error("do_send script incorrect (%s)" % words[1])
+                        self.logger.error("do_send script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
@@ -783,7 +810,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['exchange','ex'] :
-                     self.exchange = words[1]
+                     self.exchange = words1
                      n = 2
 
                 elif words0 == 'expire' :
@@ -795,16 +822,20 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['flow','f']:
-                     self.flow = words[1] 
+                     self.flow = words1 
                      n = 2
 
                 elif words0 in ['gateway_for','gf']:
-                     self.gateway_for = words[1].split(',')
+                     self.gateway_for = words1.split(',')
                      n = 2
 
                 elif words0 in ['help','h']:
                      self.help()
                      needexit = True
+
+                elif words0 in ['hostname']:
+                     self.hostname = words[1] 
+                     n = 2
 
                 elif words0 in ['inplace','in']:
                      if words[0][0:1] == '-' : 
@@ -831,7 +862,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['log','l']:
-                     self.logpath = words[1]
+                     self.logpath = words1
                      n = 2
 
                 elif words0 in ['logrotate','lr']:
@@ -839,7 +870,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'manager' :
-                     urlstr       = words[1]
+                     urlstr       = words1
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
                      if not ok or not url.scheme in ['amqp','amqps']:
@@ -878,41 +909,41 @@ class sr_config:
 
                 elif words0 == 'on_file':
                      self.on_file = None
-                     self.execfile("on_file",words[1])
+                     self.execfile("on_file",words1)
                      if self.on_file == None :
-                        self.logger.error("on_file script incorrect (%s)" % words[1])
+                        self.logger.error("on_file script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'on_line':
                      self.on_line = None
-                     self.execfile("on_line",words[1])
+                     self.execfile("on_line",words1)
                      if self.on_line == None :
-                        self.logger.error("on_line script incorrect (%s)" % words[1])
+                        self.logger.error("on_line script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'on_message':
                      self.on_message = None
-                     self.execfile("on_message",words[1])
+                     self.execfile("on_message",words1)
                      if self.on_message == None :
-                        self.logger.error("on_message script incorrect (%s)" % words[1])
+                        self.logger.error("on_message script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'on_part':
                      self.on_part = None
-                     self.execfile("on_part",words[1])
+                     self.execfile("on_part",words1)
                      if self.on_part == None :
-                        self.logger.error("on_part script incorrect (%s)" % words[1])
+                        self.logger.error("on_part script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
                 elif words0 == 'on_post':
                      self.on_post = None
-                     self.execfile("on_post",words[1])
+                     self.execfile("on_post",words1)
                      if self.on_post == None :
-                        self.logger.error("on_post script incorrect (%s)" % words[1])
+                        self.logger.error("on_post script incorrect (%s)" % words1)
                         ok = False
                      n = 2
 
@@ -931,7 +962,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['post_broker','pb'] :
-                     urlstr      = words[1]
+                     urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
                      self.post_broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
@@ -941,17 +972,17 @@ class sr_config:
 
                 elif words0 in ['post_document_root','pdr']:
                      if sys.platform == 'win32':
-                         self.post_document_root = words[1].replace('\\','/')
+                         self.post_document_root = words1.replace('\\','/')
                      else:
-                         self.post_document_root = words[1]
+                         self.post_document_root = words1
                      n = 2
 
                 elif words0 in ['post_exchange','pe']:
-                     self.post_exchange = words[1]
+                     self.post_exchange = words1
                      n = 2
 
                 elif words0 in ['queue_name','qn'] :
-                     self.queue_name = words[1]
+                     self.queue_name = words1
                      n = 2
 
                 elif words0 in ['queue_share','qs'] :
@@ -961,6 +992,10 @@ class sr_config:
                      else :
                         self.queue_share = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in ['queue_suffix'] :
+                     self.queue_suffix = words1
+                     n = 2
 
                 elif words0 in ['randomize','r']:
                      if words[0][0:1] == '-' : 
@@ -995,7 +1030,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['rename','rn']:
-                     self.rename = words[1]
+                     self.rename = words1
                      n = 2
 
                 elif words0 in ['reset']:
@@ -1023,7 +1058,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['subtopic','sub'] :
-                     self.subtopic = words[1]
+                     self.subtopic = words1
                      key = self.topic_prefix + '.' + self.subtopic
                      self.bindings.append( (self.exchange,key) )
                      self.logger.debug("BINDINGS")
@@ -1041,14 +1076,14 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'to':
-                     self.to_clusters = words[1]
+                     self.to_clusters = words1
                      n = 2
 
                 elif words0 in ['topic_prefix','tp'] :
-                     self.topic_prefix = words[1]
+                     self.topic_prefix = words1
 
                 elif words0 in ['url','u']:
-                     self.url = urllib.parse.urlparse(words[1])
+                     self.url = urllib.parse.urlparse(words1)
                      n = 2
 
                 elif words0 == 'vip':
@@ -1240,7 +1275,7 @@ def self_test():
     cfg.randomize = False
     cfg.inplace   = False
     cfg.logrotate = 5
-    cfg.args(['--randomize', '--inplace', 'True',  '--logrotate', 10, '-vip', '127.0.0.1', '-interface', 'lo' ])
+    cfg.args(['--randomize', '--inplace', 'True',  '--logrotate', '10', '-vip', '127.0.0.1', '-interface', 'lo' ])
     if not cfg.randomize   or \
        not cfg.inplace     or \
        cfg.logrotate != 10 :
@@ -1263,8 +1298,16 @@ def self_test():
     #def validate_sum(self):
 
 
+    opt1 = "hostname toto"
+    opt2 = "broker amqp://a:b@${HOSTNAME}"
+    opt3 = "queue_name amqp://a:b@${HOSTNAME}"
+    cfg.option(opt1.split())
+    cfg.option(opt2.split())
+    if cfg.broker.geturl() != "amqp://a:b@toto" :
+       cfg.logger.error("problem with args")
+       sys.exit(1)
+
     #cfg.config(self.user_config)
-    #cfg.option(words)
 
     print("TEST PASSED")
     sys.exit(0)

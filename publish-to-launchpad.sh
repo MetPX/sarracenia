@@ -44,7 +44,7 @@
 usage() {
 	echo "`basename $0` <git tag> <distribution1> [<distribution2> ...]"
 	echo 
-	echo "Available distributions: preicse, trusty"
+	echo "Available distributions: trusty, xenial"
 
 	exit 2
 }
@@ -95,12 +95,12 @@ fi
 shift
 
 while (( $# )); do
-	if [ $1 == 'precise' ]; then
-		build precise
+	if [ $1 == 'xenial' ]; then
+		build xenial
 	elif [ $1 == 'trusty' ]; then
 		build trusty
 	else
-		echo "Unknown distribution. `basename $0` currently only supports precise and trusty"
+		echo "Unknown distribution. `basename $0` currently only supports trusty and xenial"
 		cd $P
 		git checkout master
 		exit 1
