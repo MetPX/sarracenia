@@ -130,13 +130,6 @@ class sr_config:
         if args == [] : args = None
         self.user_args       = args
 
-        # general settings
-
-        self.users           = {}
-        self.cache_url       = {}
-        self.credentials     = sr_credentials(self.logger)
-        self.log_clusters    = {}
-
     def args(self,args):
 
         self.logger.debug("sr_config args")
@@ -370,10 +363,13 @@ class sr_config:
 
         # read in provided credentials
         credent = self.user_config_dir + os.sep + 'credentials.conf'
+        self.cache_url   = {}
+        self.credentials = sr_credentials(self.logger)
         self.credentials.read(credent)
 
         # read in provided rabbit users
         users = self.user_config_dir + os.sep + 'users.conf'
+        self.users = {}
         try :
               # users file is not mandatory
               if os.path.exists(users):
@@ -395,6 +391,7 @@ class sr_config:
 
         # read in provided log cluster infos
         log_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
+        self.log_clusters = {}
         i = 0
         try :
               if os.path.exists(log_cluster):
@@ -422,9 +419,15 @@ class sr_config:
         self.logger.debug("log_clusters = %s\n" % self.log_clusters)
 
         # defaults.conf ... defaults for the server
-        defconf = self.user_config_dir + os.sep + 'default.conf'
+        # at this level (for includes) user_config = self.user_config_dir
+
+        defconf     = self.user_config_dir + os.sep + 'default.conf'
         self.logger.debug("defconf = %s\n" % defconf)
-        if os.path.isfile(defconf) : self.config(defconf)
+        if os.path.isfile(defconf) : 
+           user_config      = self.user_config
+           self.user_config = defconf
+           self.config(defconf)
+           self.user_config = user_config
 
     def has_vip(self): 
 
@@ -624,13 +627,15 @@ class sr_config:
         # value : variable substitutions
 
         words1 = None
-        if len(words) > 0 :
+        if len(words) > 1 :
            buser  = ''
            config = ''
            words1 = words[1]
 
-           if self.broker      : buser  = self.broker.username
            if self.config_name : config = self.config_name
+
+           # options need to check if there
+           if hasattr(self,'broker') and self.broker  : buser  = self.broker.username
 
            words1 = words1.replace('${HOSTNAME}',   self.hostname)
            words1 = words1.replace('${PROGRAM}',    self.program_name)
