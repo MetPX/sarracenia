@@ -366,7 +366,27 @@ class ftp_transport():
                 self.logger.info('Downloads: %s into %s %d-%d' % 
                            (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
-                ftp.get(remote_file,msg.local_file,msg.local_offset)
+    
+                # FIXME  locking for i parts in temporary file ... should stay lock
+                # and file_reassemble... take into account the locking
+
+                if parent.lock == None :
+                   ftp.get(remote_file,msg.local_file,msg.local_offset)
+
+                elif parent.lock == '.' :
+                   local_lock = ''
+                   local_dir  = os.path.dirname (msg.local_file)
+                   if local_dir != '' : local_lock = local_dir + os.sep
+                   local_lock += '.' + os.path.basename(msg.local_file)
+                   ftp.get(remote_file,local_lock,msg.local_offset)
+                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                   os.rename(local_lock, msg.local_file)
+            
+                elif parent.lock[0] == '.' :
+                   local_lock  = msg.local_file + parent.lock
+                   ftp.get(remote_file,local_lock,msg.local_offset)
+                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                   os.rename(local_lock, msg.local_file)
     
                 msg.log_publish(201,'Downloaded')
     
@@ -567,11 +587,14 @@ def self_test():
            cfg.batch   = 5
        
            dldr = ftp_transport()
+           cfg.lock        = None
+           dldr.download(cfg)
+           dldr.download(cfg)
+           cfg.lock        = '.'
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.download(cfg)
-           dldr.download(cfg)
-           dldr.download(cfg)
+           cfg.lock        = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.download(cfg)

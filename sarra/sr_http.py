@@ -78,8 +78,30 @@ def http_download( parent ) :
             msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
             response = urllib.request.urlopen(req)
-            msg.logger.debug('response header = %s' % response.headers)
-            ok       =  http_write(response,msg,parent.bufsize)
+            #msg.logger.debug('response header = %s' % response.headers)
+
+            # FIXME  locking for i parts in temporary file ... should stay lock
+            # and file_reassemble... take into account the locking
+
+            if   parent.lock == None or msg.partflg == 'i' :
+                 ok = http_write(response,msg.local_file,msg,parent.bufsize)
+
+            elif parent.lock == '.' :
+                 local_lock = ''
+                 local_dir  = os.path.dirname (msg.local_file)
+                 if local_dir != '' : local_lock = local_dir + os.sep
+                 local_lock += '.' + os.path.basename(msg.local_file)
+                 ok = http_write(response,local_lock,msg,parent.bufsize)
+                 if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                 os.rename(local_lock, msg.local_file)
+            
+            elif parent.lock[0] == '.' :
+                 local_lock  = msg.local_file + parent.lock
+                 ok = http_write(response,local_lock,msg,parent.bufsize)
+                 if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                 os.rename(local_lock, msg.local_file)
+
+            msg.log_publish(201,'Downloaded')
 
             return ok
 
@@ -99,12 +121,12 @@ def http_download( parent ) :
 
     return False
 
-def http_write(req,msg,bufsize) :
-    if not os.path.isfile(msg.local_file) :
-       fp = open(msg.local_file,'w')
+def http_write(req,local_file,msg,bufsize) :
+    if not os.path.isfile(local_file) :
+       fp = open(local_file,'w')
        fp.close
 
-    fp = open(msg.local_file,'r+b')
+    fp = open(local_file,'r+b')
     if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
     # should not worry about length...
@@ -168,7 +190,13 @@ def self_test():
            cfg.msg.local_offset = 0
            cfg.msg.length       = 100000
                    
+           cfg.lock = None
            http_download(cfg)
+           cfg.lock = '.'
+           http_download(cfg)
+           cfg.lock = '.tmp'
+           http_download(cfg)
+
     except:
            logger.error("sr_http TEST FAILED")
            (stype, svalue, tb) = sys.exc_info()

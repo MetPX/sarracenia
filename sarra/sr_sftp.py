@@ -437,15 +437,34 @@ class sftp_transport():
                 msg.logger.info('Downloads: %s %s into %s %d-%d' % 
                     (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
-                sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length)
+                # FIXME  locking for i parts in temporary file ... should stay lock
+                # and file_reassemble... take into account the locking
+
+                if parent.lock == None or msg.partflg == 'i' :
+                   sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length)
+
+                elif parent.lock == '.' :
+                   local_lock = ''
+                   local_dir  = os.path.dirname (msg.local_file)
+                   if local_dir != '' : local_lock = local_dir + os.sep
+                   local_lock += '.' + os.path.basename(msg.local_file)
+                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length)
+                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                   os.rename(local_lock, msg.local_file)
+            
+                elif parent.lock[0] == '.' :
+                   local_lock  = msg.local_file + parent.lock
+                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length)
+                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
+                   os.rename(local_lock, msg.local_file)
     
                 msg.log_publish(201,'Downloaded')
     
                 if parent.delete :
                    try   :
                            sftp.delete(remote_file)
-                           msg.loggger.info ('file  deleted on remote site %s' % remote_file)
-                   except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                   except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
                 #sftp.close()
@@ -629,14 +648,19 @@ def self_test():
 
            cfg.msg     = msg
            cfg.batch   = 5
+           cfg.lock    = None
        
            dldr = sftp_transport()
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.download(cfg)
+           cfg.logger.info("lock .")
+           cfg.lock    = '.'
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.download(cfg)
+           cfg.logger.info("lock .tmp")
+           cfg.lock    = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.close()
