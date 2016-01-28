@@ -247,6 +247,7 @@ class sr_config:
         self.subtopic             = None
 
         self.queue_name           = None
+        self.queue_suffix         = None
         self.durable              = False
         self.expire               = None
         self.reset                = False
@@ -991,6 +992,10 @@ class sr_config:
                      else :
                         self.queue_share = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in ['queue_suffix'] :
+                     self.queue_suffix = words1
+                     n = 2
 
                 elif words0 in ['randomize','r']:
                      if words[0][0:1] == '-' : 

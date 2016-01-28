@@ -187,7 +187,12 @@ class sr_consumer:
            f.close()
            return
         
-        self.queue_name  = self.queue_prefix
+        self.queue_name  = self.queue_prefix 
+        self.queue_name += '.'  + self.parent.program_name
+
+        if self.parent.config_name : self.queue_name += '.'  + self.parent.config_name
+        if self.parent.queue_suffix: self.queue_name += '.'  + self.parent.queue_suffix
+
         self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
         self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
 
