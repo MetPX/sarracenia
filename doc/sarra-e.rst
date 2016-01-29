@@ -125,23 +125,3 @@ function over AMQP.  JMS providers are very Java oriented.
 Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
 to version 1.0, at which point they were removed.  It is hoped that these concepts will be re-introduced at some point.  Until 
 that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
-
-
-Getting Sarracenia
-------------------
-
-The latest release is available as various packages 
-To build from source follow the steps below:
-
-Getting Source Code
-~~~~~~~~~~~~~~~~~~~
-
-Currently internal installations are done, one at a time, from source. Development is done on the trunk release. When we install operationally, the process consists of creating a branch, and running the branch on a staging system, and then implementing on operational systems. There are README and INSTALL files that can be used for installation of sundew. One can follow those instructions to get an initial installed system.
-
-
-With those explanations, feel free to grab a snapshot can be obtained using subversion via::
-
-    git clone git://git.code.sf.net/p/metpx/git metpx
-
-
-Available for anonymous read-only access. One can also obtain a stable release by checking out a release branch.

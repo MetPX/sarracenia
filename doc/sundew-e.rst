@@ -60,33 +60,7 @@ Any modern Linux should do. (stock 2.6 or 2.4 with many patches.)   Python > 2.3
 Licensing: GPLv2
 
 
-.. _Download: 
-
-Download Packages
-=================
-
-[ Downloads_ ]
-
-.. _Downloads: http://sourceforge.net/project/showfiles.php?group_id=165061
-
 Sundew is rather stable for now, current work is on improving the installation process by 
 implementing Debian packages.  A package for the sundew module is available from
 the sourceforge site, in either source or .deb form.  We hope to produce packages for 
-columbo at some point.  
-
-
-Getting Source Code
-===================
-
-Currently internal installations are done, one at a time, from source.  Development
-is done on the trunk release.  When we install operationally, the process consists
-of creating a branch, and running the branch on a staging system, and then implementing
-on operational systems.  There are README and INSTALL files that can be used for 
-installation of sundew.  One can follow those instructions to get an initial installed 
-system.  
-
-To run sundew, it is critical to install the cron cleanup jobs (mr-clean) since otherwise the 
-server will slow down continuously over time until it slows to a crawl.  
-It is recommended to subscribe to the mailing list and let us know what is stopping you from 
-trying it out, it could inspire us to work on that bit faster to get some collaboration 
-going.  
+columbo at some point. 
