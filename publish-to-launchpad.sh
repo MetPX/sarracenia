@@ -57,12 +57,12 @@ build() {
 
 	VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
 	DIR=metpx-sarracenia-${VERSION}
-	CHNG=metpx-sarracenia_${VERSION}_source.changes
+	CHNG=metpx-sarracenia_${VERSION}~${DIST}1_source.changes
 
 	cd ..
 	cp -ap sarracenia $TMPDIR/$DIR
 	cd $TMPDIR/$DIR
-	sed -i "s/unstable; urgency/$DIST; urgency/g" debian/changelog
+	sed -i "s/$VERSION) unstable; urgency/$VERSION~${DIST}1) $DIST; urgency/g" debian/changelog
 	debuild -S -uc -us
 	if [ $? -gt 0 ]; then
 		echo "Please resolve issues before proceeding with build!"
