@@ -4,17 +4,21 @@ Sarracenia Documentation
 
 .. contents::
 
-* `Admin Guide <Admin.html>`_
-* `Developer Guide <Dev.html>`_
+* `Installation <Install.html>`_
+* `Subscriber Guide <subscribe.html>`_ - effective downloading from a pump.
+* `Source Guide <subscribe.html>`_ - effective uploading to a pump
+* `Admin Guide <Admin.html>`_ - Configuration of Pumps
+* `Developer Guide <Dev.html>`_ - contributing to sarracenia development.
+* `sr_config(7) <sr_subscribe.7.html>`_ - Overview of Configuration for commands.
 
 
 Unix Commands
 -------------
 
-* `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
 * `sr_post(1) <sr_post.1.html>`_ - the tool to post individual files.
-* `sr_watch(1) <sr_watch.1.html>`_ - the tool to post all changes to a given directory.
+* `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
 * `sr_log(1) <sr_log.1.html>`_ - (Does not exist yet!) the tool to read log messages.
+* `sr_watch(1) <sr_watch.1.html>`_ - the tool to post all changes to a given directory.
 
 Administrative Daemons
 -----------------------

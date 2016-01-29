@@ -1,3 +1,13 @@
+metpx-sarracenia (2.16.01a7) unstable; urgency=medium
+
+  * some variable substitution in config
+  * reload reconfigure (probably busted since not using daemon)
+  * lock .  and .tmp  put back
+  * include at  sarra level (not only at process config)
+  * etc.
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Thu, 28 Jan 2016 16:31:13 -0500
+
 metpx-sarracenia (2.16.01a6) unstable; urgency=medium
 
   * connection sftp/ftp/ftps connected until batch reached or changing destination

@@ -22,7 +22,7 @@ Installation
 The package is built for python version 3.4 or higher.  On systems where 
 they are available, debian packages are recommended.
 These can be obtained from the launchpad repository, or using pip 
-(and PYpi.) In both cases, the other python packages (or dependencies) needed 
+(and PyPI.) In both cases, the other python packages (or dependencies) needed 
 will be installed by the package manager automatically.
 
 
@@ -37,7 +37,7 @@ On Ubuntu 12.04::
   pip3 install metpx_sarracenia
   pip3 install paramiko
 
-On Ubuntu 14.04::
+On Ubuntu 14.04/16.04::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
@@ -47,21 +47,6 @@ On Ubuntu 14.04::
 .. note::
    FIXME: confirm that python3-paramiko is in our repo for 14.04?
 
-
-While the package itself is pure python and completely portable,
-Ubuntu 16.04 is not yet supported in the repositories, so
-it must be installed there using pip, or one can download 
-the .dpkg from sourceforge.net::
-
-  wget -O sarra.deb http://sourceforge.net/projects/metpx/files/sarracenia/2.16.01/python3-metpx-sarracenia_2.16.01a3_all.deb/download
-  sudo dpkg -i sarra.deb
-  sudo apt-get install -f
-  apt-get install python3-paramiko #for SFTP support.
-
-The line with *install -f* pulls in debian package dependencies. 
-
-.. note: 
-   FIXME: 16.04 (xenial) is trivial to add, all deps are already in repos...
 
 
 PIP

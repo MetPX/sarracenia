@@ -327,7 +327,9 @@ Known Bugs
 
 -- Multi-processing on windows... 
    only works as long as instance=1
+
 -- remove is not propagated among switches.
+
 -- new connection for every transfer (have connections persist.)
 
 -- reported from end user use of dd.weather.gc.ca spurious errors generated.
@@ -345,7 +347,10 @@ Known Bugs
         with the one stored in the v02 announcement.
      -- if the v02 announcement is older than the file, then squawk 
         info ´downloaded data newer than posted´
-        
+
+   after investigation, it looks like the LastModification time reflects cache, rather than
+   true file modification time, so it is really hard to get an mtime via http. and it is expensive
+   using sftp (extra round trip), so we have just decided to accept this as a limitation for now.        
 
 
 Parking Lot For Initial Release

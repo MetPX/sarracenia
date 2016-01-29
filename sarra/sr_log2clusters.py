@@ -267,10 +267,10 @@ class sr_log2clusters(sr_instances):
         self.queue_name  = 'q_' + self.broker.username + '.'
         self.queue_name += self.program_name + '.' + self.cluster_name + '.' + self.cluster_exchange
 
-
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
         self.close()
+        self.configure()
         self.run()
 
     def start(self):

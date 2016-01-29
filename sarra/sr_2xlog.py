@@ -70,6 +70,7 @@ class sr_2xlog(sr_instances):
         sr_instances.__init__(self,config,args)
 
     def check(self):
+        self.logger.debug("sr_2xlog check")
 
         # no binding allowed
 
@@ -193,6 +194,7 @@ class sr_2xlog(sr_instances):
         return ok
 
     def overwrite_defaults(self):
+        self.logger.debug("sr_2xlog overwrite_defaults")
 
         # overwrite defaults
 
@@ -279,6 +281,7 @@ class sr_2xlog(sr_instances):
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
         self.close()
+        self.configure()
         self.run()
 
     def start(self):

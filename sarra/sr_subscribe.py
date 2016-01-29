@@ -450,6 +450,7 @@ class sr_subscribe(sr_instances):
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
         self.close()
+        self.configure()
         self.run()
 
     def start(self):
