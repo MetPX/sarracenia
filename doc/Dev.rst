@@ -246,3 +246,7 @@ notes::
     python3 setup.py install
 
 
+Updating The Project Website
+----------------------------
+
+Please see `here <website-e.html>`_ for instructions on updating the website.
