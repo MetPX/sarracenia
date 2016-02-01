@@ -74,6 +74,8 @@ rabbitmq-plugins enable rabbitmq_management
 
 Sur les bunny ont a opte pour une installation en cluster. Pour ce faire on suit les instructions suivantes :
 
+        Arreter rabbitmq-server sur tous les noeuds....
+
         /var/lib/rabbitmq/.erlang.cookie  same on all nodes
 
         on each node restart  /etc/init.d/rabbitmq-server stop/start
