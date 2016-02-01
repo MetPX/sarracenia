@@ -2,6 +2,18 @@
 Sarracenia Documentation
 ========================
 
+Documentation comes in two varieties: Guides and Manual Pages.  The Guides provide give the overall idea 
+of how to use the tools, with description of several components, use cases, and some sample configurations 
+and runs.  The guides provide "Getting started" type information, describing the purpose, in general, of the various
+components needed for various jobs.
+
+The Manual Pages, on the other hand, are reference material.  For each component or format, the manual page
+provides a complete reference that shows all the options that exist for that component, and also provides
+examples of usage. To learn the application, it is best to start with Guides. The Guides are also
+best read in order, as knowledge of each guide assumes one is familiar with the previous ones.
+Once the configuration and overall picture is understood, then the reference manual provides quick answers
+to specific questions of configuration.
+
 .. contents::
 
 * `Installation <Install.html>`_
