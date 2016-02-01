@@ -64,6 +64,13 @@ class sr_log(sr_instances):
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic
            self.bindings     = [ (self.exchange,key) ]
+        else :
+           for i,tup in enumerate(self.bindings):
+               e,k   = tup
+               if e != self.exchange :
+                  self.logger.info("exchange forced to %s" % self.exchange)
+                  e = self.exchange
+               self.bindings[i] = (e,k)
 
         # pattern must be used
         # if unset we will accept unmatched... so everything
@@ -75,7 +82,6 @@ class sr_log(sr_instances):
         self.consumer.close()
 
     def overwrite_defaults(self):
-        self.exchange             = 'xl_' + self.broker.username
         self.topic_prefix         = 'v02.log'
         self.subtopic             = '#'
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
@@ -169,7 +175,7 @@ def main():
 
     srlog = sr_log(config,args)
 
-    if   action == 'foreground': srlog.status_parent()
+    if   action == 'foreground': srlog.foreground_parent()
     elif action == 'reload'    : srlog.reload_parent()
     elif action == 'restart'   : srlog.restart_parent()
     elif action == 'start'     : srlog.start_parent()
