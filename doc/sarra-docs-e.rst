@@ -2,6 +2,10 @@
 Sarracenia Documentation
 ========================
 
+.. note::
+  This package is not ready for use yet.  It is undergoing internal testing, and the documentation is incomplete.
+  This note will be removed once the package documentation is complete and usable.
+
 Documentation comes in two varieties: Guides and Manual Pages.  The Guides provide give the overall idea 
 of how to use the tools, with description of several components, use cases, and some sample configurations 
 and runs.  The guides provide "Getting started" type information, describing the purpose, in general, of the various
