@@ -59,6 +59,10 @@ class sr_log(sr_instances):
     def check(self):
         self.nbr_instances = 1
 
+        if self.broker == None :
+           self.logger.error("no broker given")
+           sys.exit(1)
+
         self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
@@ -82,9 +86,9 @@ class sr_log(sr_instances):
         self.consumer.close()
 
     def overwrite_defaults(self):
+        self.broker               = None
         self.topic_prefix         = 'v02.log'
         self.subtopic             = '#'
-        self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
