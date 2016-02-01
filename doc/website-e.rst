@@ -14,7 +14,8 @@ In order to build the HTML pages, the following software must be available on yo
 
 From a command shell::
 
-  make all
+  cd site
+  make
 
 
 Updating The Website
