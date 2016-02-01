@@ -55,7 +55,7 @@ rabbitmqctl set_user_tags root administrator
 # takeaway administrator privileges from guest
 rabbitmqctl set_user_tags guest
 rabbitmqctl list_user_permissions guest
-rabbitmqctl change_password guest unf0rgettable
+rabbitmqctl change_password guest *************
 
 # list users 
 rabbitmqctl list_users
@@ -73,6 +73,8 @@ rabbitmq-plugins enable rabbitmq_management
 3. RABBITMQ-SERVER  installation  en  cluster
 
 Sur les bunny ont a opte pour une installation en cluster. Pour ce faire on suit les instructions suivantes :
+
+        Arreter rabbitmq-server sur tous les noeuds....
 
         /var/lib/rabbitmq/.erlang.cookie  same on all nodes
 
