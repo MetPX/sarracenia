@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.01a8) unstable; urgency=medium
+
+  * fixed makefile for debian documentation 
+  * building for trusty and xenial
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Fri, 29 Jan 2016 11:37:19 -0500
+
 metpx-sarracenia (2.16.01a7) unstable; urgency=medium
 
   * some variable substitution in config

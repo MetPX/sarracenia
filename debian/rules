@@ -17,7 +17,7 @@ override_dh_auto_clean:
 #	dh_auto_configure -O--buildsystem=pybuild
 #	dh_auto_build -O--buildsystem=pybuild 
 override_dh_auto_build:
-	make -C doc all
+	make -C doc man
 	dh_auto_build
 
 %:

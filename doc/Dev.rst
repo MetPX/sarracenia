@@ -209,6 +209,12 @@ However, the steps below are a summary of what the script does:
     
 **Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
 
+Web Site
+~~~~~~~~
+
+TODO - how to update the web site (required for documentation updates)
+
+
 RPM
 ~~~
 
