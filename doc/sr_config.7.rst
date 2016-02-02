@@ -337,27 +337,19 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 2- the checksum of the amqp message matched the one of the file.
 The default is True (overwrite without checking).
 
-EXAMPLES
---------
+LOGS
+----
 
-Here is a short complete example configuration file:: 
+Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
+at the end of the day, These logs are rotated every day automatically by the components, and the old log gets a date suffix.
+The directory in which the logs are stored can be overridden by the *logpath* option, and the number of days' logs to keep 
+is set by the 'logrotate' parameter.  Log files older than *logrotate* days are deleted.
 
-  broker amqp://dd.weather.gc.ca/
+** logpath **
+   the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
 
-  subtopic model_gem_global.25km.grib2.#
-  accept .*
-
-This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
-files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
-All files which arrive in that directory or below it will be downloaded 
-into the current directory (or just printed to standard output if -n option 
-was specified.) 
-
-A variety of example configuration files are available here:
-
- `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
-
+** logrotate **
+   the number of days' log files to keep online, assuming a daily rotation.
 
 
 INSTANCES
@@ -465,6 +457,29 @@ will stop there and another message will be consumed from the broker.
 For other events, the last line of the script must be modified to correspond.
 
 More examples are available in the Guide documentation.
+
+
+EXAMPLES
+--------
+
+Here is a short complete example configuration file:: 
+
+  broker amqp://dd.weather.gc.ca/
+
+  subtopic model_gem_global.25km.grib2.#
+  accept .*
+
+This above file will connect to the dd.weather.gc.ca broker, connecting as
+anonymous with password anonymous (defaults) to obtain announcements about
+files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
+All files which arrive in that directory or below it will be downloaded 
+into the current directory (or just printed to standard output if -n option 
+was specified.) 
+
+A variety of example configuration files are available here:
+
+ `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
+
 
 
 SEE ALSO

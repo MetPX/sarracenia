@@ -133,7 +133,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
 
 
 Flow Through Exchanges
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 .. image:: e-ddsr-components.jpg
     :scale: 100%
@@ -256,6 +256,7 @@ administrator
   FIXME: manager run log* things. I doubt it works this way now... ie. those
   components should use the 'manager' setting instead of the 'broker' one?
   the 'broker' one will be the 'feeder' aka. pump ?
+
 
 
 
@@ -474,6 +475,10 @@ not need any, or pumps deployed to provide redundant HA to remote data centres.
 Note that while a configuration can be dataless, it can still make use of rabbitmq
 clustering for high availability requirements (see rabbitmq clustering below.)
 
+
+Dataless With Sr_winnow
+~~~~~~~~~~~~~~~~~~~~~~~
+
 Another example of a dataless pump would be to provide product selection from two upstream
 sources using sr_winnow.  The sr_winnow is fed by shovels from upstream sources, and 
 the local clients just connect to this local pump.  sr_winnow takes 
@@ -483,6 +488,12 @@ on the pump.
 
 subscriber just point at the output of sr_winnow on the local pump.
 
+
+Dataless With Sr_poll
+~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: 
+  need samples of sr_poll configuration.
 
 
 Standalone

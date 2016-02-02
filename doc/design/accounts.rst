@@ -1,10 +1,12 @@
 
-Status: Pre-Draft
+Status: Draft
 
 ==========
  Accounts
 ==========
 
+Introduction
+------------
 usernames for switch authentication are significant in that they are visible to all. 
 They are used in the directory path on public trees, as well as to authenticate to the broker.
 They need to be understandable.  they are often wider scope than a person... 
@@ -13,6 +15,18 @@ perhaps call them 'Accounts'.  they turn up as usernames in AMQP and HTTP.
 All Account names should be unique, but nothing will avoid clashes when sources are on 
 different origins, and clients at different destinations.  Just a matter of seeing name
 clashes in practice and fixing them.
+
+
+Status
+------
+
+Scope/Distribution has been addressed elsewhere and is now implemented.
+Permissions on the local pump have also been addressed by existing code implemented
+in December 2015, and January 2016.
+
+Design points still outstanding are related to user authorization... how does a source
+limit who can access their data on a remote pump?
+
 
 So an Account is allocated for
 ------------------------------
@@ -113,6 +127,8 @@ per org, rather than per person.)
 Distribution/Scope:
 -------------------
 	
+Distribution/Scopr control has now been implemented via the 'to' argument 
+to sr_post and sr_watch components.
 
 
 Authorization:
