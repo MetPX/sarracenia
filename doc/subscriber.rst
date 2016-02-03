@@ -33,8 +33,7 @@ machine where other software can process it.  Please note:
  - while written to be compatible with other environments, 
    the focus is on Linux usage. 
  - the tool can be used as either an end-user tool, or a system-wide transfer engine.
-   This guide is focused on the end-user case.  The Administrator Guide is likely
-   more helpful for the other case.
+   This guide is focused on the end-user case.  
  - More detailed reference material is available at the 
    traditional sr_subscribe(1) man page,
  - All documentation of the package is available 
