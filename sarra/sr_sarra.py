@@ -110,6 +110,10 @@ class sr_sarra(sr_instances):
            self.logger.error("no broker given")
            sys.exit(1)
 
+        if self.exchange == None :
+           self.logger.error("no exchange given")
+           sys.exit(1)
+
         # bindings should be defined 
 
         if self.bindings == []  :
@@ -140,6 +144,7 @@ class sr_sarra(sr_instances):
         self.hc_pst.close()
 
         if hasattr(self,'ftp_link') : self.ftp_link.close()
+        if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
 
     def connect(self):
@@ -183,7 +188,9 @@ class sr_sarra(sr_instances):
 
         try :
                 if   self.msg.url.scheme == 'http' :
-                     return http_download(self)
+                     if not hasattr(self,'http_link') :
+                        self.http_link = http_transport()
+                     return self.http_link.download(self)
 
                 elif self.msg.url.scheme == 'ftp' :
                      if not hasattr(self,'ftp_link') :
@@ -424,16 +431,22 @@ class sr_sarra(sr_instances):
            # could not download
            if not ok : return False
 
-           # force recompute checksum
+           # after download setting of sum for 'z' flag ...
 
-           if self.recompute_chksum :
-              self.msg.compute_local_checksum()
-              # When downloaded, it changed from the message... 
-              # this is weird... means the file changed in the mean time
-              # and probably reposted...
-              # now posting of this file will have accurate checksum
-              if not self.msg.local_checksum == self.msg.checksum :
-                 self.msg.set_sum(self.msg.sumflg,self.msg.local_checksum)
+           if self.msg.sumflg == 'z' :
+              self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
+              self.msg.log_publish(205,'Reset Content : checksum')
+
+           # onfly checksum is different from the message ???
+           if not self.msg.onfly_checksum == self.msg.checksum :
+              self.logger.warning("onfly_checksum %s differ from message %s" % 
+                                 (self.msg.onfly_checksum, self.msg.checksum))
+
+              # force onfly checksum  in message
+
+              if self.recompute_chksum :
+                 #self.msg.compute_local_checksum()
+                 self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
                  self.msg.log_publish(205,'Reset Content : checksum')
 
            # if the part should have been inplace... but could not
