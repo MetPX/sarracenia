@@ -58,6 +58,7 @@ class sr_poster:
         self.broker         = parent.post_broker
         self.topic_prefix   = parent.topic_prefix
         self.subtopic       = parent.subtopic
+        self.bufsize        = parent.bufsize
 
         self.build_connection()
         self.build_publisher()
@@ -141,10 +142,23 @@ class sr_poster:
         fsiz    = lstat[stat.ST_SIZE]
         partstr = '1,%d,1,0,0' % fsiz
 
-        # set sumstr
+        # compute checksum
 
         self.chkclass.from_list(sumflg)
-        checksum = self.chkclass.checksum(path,0,fsiz)
+        chkalgo = self.chkclass.checksum
+        chkalgo.set_path(path)
+
+        fp = open(path,'rb')
+        i  = 0
+        while i<fsiz :
+              buf = fp.read(self.bufsize)
+              chkalgo.update(buf)
+              i  += len(buf)
+        fp.close()
+
+        # set sumstr
+
+        checksum = chkalgo.get_value()
         sumstr   = '%s,%s' % (sumflg,checksum)
 
         filename = os.path.basename(path)
@@ -177,6 +191,7 @@ class sr_poster:
         # info setup
 
         self.chkclass.from_list(sumflg)
+        chkalgo  = self.chkclass.checksum
         filename = os.path.basename(path)
         blocks   = list(range(0,block_count))
 
@@ -210,9 +225,22 @@ class sr_poster:
               partstr = 'i,%d,%d,%d,%d' %\
                         (chunksize,block_count,remainder,current_block)
 
+              # compute checksum
+
+              chkalgo.set_path(path)
+
+              fp = open(path,'rb')
+              if offset != 0 : fp.seek(offset,0)
+              i  = 0
+              while i<length :
+                    buf = fp.read(self.bufsize)
+                    chkalgo.update(buf)
+                    i  += len(buf)
+              fp.close()
+
               # set sumstr
 
-              checksum = self.chkclass.checksum(path,offset,length)
+              checksum = chkalgo.get_value()
               sumstr   = '%s,%s' % (sumflg,checksum)
 
               ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)
@@ -334,7 +362,7 @@ def self_test():
             poster.close()
     except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+            logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
             print("sr_poster **** FAILED")
             sys.exit(1)
 
