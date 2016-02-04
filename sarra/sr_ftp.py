@@ -63,7 +63,11 @@ class sr_ftp():
         self.parent      = parent 
         self.connected   = False 
         self.ftp         = None
+        self.details     = None
 
+        self.chkalgo     = None
+        self.checksum    = None
+ 
     # cd
     def cd(self, path):
         self.logger.debug("sr_ftp cd %s" % path)
@@ -127,10 +131,11 @@ class sr_ftp():
                 port        = url.port
                 user        = url.username
                 password    = url.password
-                passive     = details.passive
-                self.binary = details.binary
-                self.tls    = details.tls
-                self.prot_p = details.prot_p
+
+                self.passive = details.passive
+                self.binary  = details.binary
+                self.tls     = details.tls
+                self.prot_p  = details.prot_p
 
                 self.bufsize   = 8192
                 self.kbytes_ps = 0
@@ -160,7 +165,7 @@ class sr_ftp():
                    # needed only if prot_p then set back to prot_c
                    #else          : ftp.prot_c()
 
-                ftp.set_pasv(passive)
+                ftp.set_pasv(self.passive)
 
                 self.originalDir = '.'
 
@@ -187,24 +192,56 @@ class sr_ftp():
         self.logger.debug("sr_ftp rm %s" % path)
         self.ftp.delete(path)
 
+    # fwrite
+    def fpwrite(self, chunk):
+        self.fp.write(chunk)
+        if self.chk : self.chk.update(chunk)
+        if self.cb  : self.cb(chunk)
+
+    # fwritel
+    def fpwritel(self, chunk):
+        self.fp.write(chunk)
+        if self.chk : self.chk.update( bytes(chunk,'utf-8') )
+        if self.cb  : self.cb(chunk)
+ 
     # get
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
         self.logger.debug("sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
+
+        # on fly checksum 
+
+        self.checksum = None
+        self.chk      = self.chkalgo
+        if self.chk   : self.chk.set_path(remote_file)
+
+        # throttling 
+
+        self.cb = None
+
+        if self.kbytes_ps > 0.0 :
+           self.cb = self.trottle
+           d1,d2,d3,d4,now = os.times()
+           self.tbytes     = 0.0
+           self.tbegin     = now + 0.0
+           self.bytes_ps   = self.kbytes_ps * 1024.0
+
         if not os.path.isfile(local_file) :
            fp = open(local_file,'w')
            fp.close()
 
         # fixme : get trottled.... instead of fp.write... call get_trottle(buf) which calls fp.write
         if self.binary :
-           fp = open(local_file,'r+b')
-           if local_offset != 0 : fp.seek(local_offset,0)
-           self.ftp.retrbinary('RETR ' + remote_file, fp.write, self.bufsize )
-           fp.close()
+           self.fp = open(local_file,'r+b')
+           if local_offset != 0 : self.fp.seek(local_offset,0)
+           self.ftp.retrbinary('RETR ' + remote_file, self.fpwrite, self.bufsize )
+           self.fp.close()
         else :
-           fp = open(local_file,'r+')
-           if local_offset != 0 : fp.seek(local_offset,0)
-           self.ftp.retrlines ('RETR ' + remote_file, fp.write )
-           fp.close()
+           self.fp = open(local_file,'r+')
+           if local_offset != 0 : self.fp.seek(local_offset,0)
+           self.ftp.retrlines ('RETR ' + remote_file, self.fpwritel )
+           self.fp.close()
+
+        if self.chk : self.checksum = self.chk.get_value()
 
     # ls
     def ls(self):
@@ -257,7 +294,7 @@ class sr_ftp():
            self.ftp.storbinary("STOR " + remote_file, fp, self.bufsize, cb)
            fp.close()
         else :
-           fp=open(local_file,'r')
+           fp=open(local_file,'rb')
            if local_offset != 0 : fp.seek(local_offset,0)
            self.ftp.storlines ("STOR " + remote_file, fp, cb)
            fp.close()
@@ -271,6 +308,11 @@ class sr_ftp():
     def rmdir(self, path):
         self.logger.debug("sr_ftp rmdir %s" % path)
         self.ftp.rmd(path)
+
+    # set_chkalgo checksum algorithm
+    def set_chkalgo(self,chkalgo) :
+        self.logger.debug("sr_ftp set_chkalgo %s" % chkalgo)
+        self.chkalgo = chkalgo
 
     # trottle
     def trottle(self,buf) :
@@ -312,6 +354,15 @@ class ftp_transport():
 
         self.batch = self.batch + 1
         if self.batch > self.parent.batch :
+           self.close()
+           return False
+
+        ok, details = self.parent.credentials.get(self.parent.destination)
+
+        if self.ftp.passive != details.passive or \
+           self.ftp.binary  != details.binary  or \
+           self.ftp.tls     != details.tls     or \
+           self.ftp.prot_p  != details.prot_p :
            self.close()
            return False
 
@@ -370,6 +421,8 @@ class ftp_transport():
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
+                ftp.set_chkalgo(msg.chkalgo)
+
                 if parent.lock == None :
                    ftp.get(remote_file,msg.local_file,msg.local_offset)
 
@@ -389,6 +442,8 @@ class ftp_transport():
                    os.rename(local_lock, msg.local_file)
     
                 msg.log_publish(201,'Downloaded')
+
+                msg.onfly_checksum = ftp.checksum
     
                 if parent.delete :
                    try   :
@@ -505,9 +560,11 @@ class ftp_transport():
 try    : 
          from sr_config         import *
          from sr_message        import *
+         from sr_util           import *
 except :
          from sarra.sr_config   import *
          from sarra.sr_message  import *
+         from sarra.sr_util     import *
 
 class test_logger:
       def silence(self,str):
@@ -531,6 +588,10 @@ def self_test():
     cfg.option( opt1.split()  )
     cfg.logger  = logger
     cfg.timeout = 5
+
+    chkclass = Checksum()
+    chkclass.from_list('d')
+    chkalgo = chkclass.checksum
 
     try:
            ftp = sr_ftp(cfg)
@@ -562,6 +623,7 @@ def self_test():
            f = open("bbb","rb")
            data = f.read()
            f.close()
+           ftp.close()
        
            if data != b"1\n2\n3\n" :
               logger.error("sr_ftp TEST FAILED")
@@ -579,12 +641,14 @@ def self_test():
            msg.partflg = '1'
            msg.offset  = 0
            msg.length  = 0
+           msg.chkalgo = None
 
            msg.local_file   = "bbb"
            msg.local_offset = 0
 
            cfg.msg     = msg
            cfg.batch   = 5
+           cfg.kbytes_ps= 0.05
        
            dldr = ftp_transport()
            cfg.lock        = None
@@ -593,15 +657,24 @@ def self_test():
            cfg.lock        = '.'
            dldr.download(cfg)
            dldr.download(cfg)
+           logger.debug("checksum = %s" % msg.onfly_checksum)
            dldr.download(cfg)
            cfg.lock        = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
+           msg.chkalgo = chkalgo
            dldr.download(cfg)
+           logger.debug("checksum = %s" % msg.onfly_checksum)
+           
+           logger.debug("change context")
+           ok, details = cfg.credentials.get(cfg.destination)
+           details.binary = False
+           cfg.credentials.credentials[cfg.destination] = details
+           dldr.download(cfg)
+           logger.debug("checksum = %s" % msg.onfly_checksum)
            dldr.close()
            dldr.close()
            dldr.close()
-
 
            dldr = ftp_transport()
            cfg.local_file    = "bbb"
@@ -621,6 +694,12 @@ def self_test():
            dldr.send(cfg)
            dldr.send(cfg)
            dldr.send(cfg)
+
+           logger.debug("change context back")
+           ok, details = cfg.credentials.get(cfg.destination)
+           details.binary = True
+           cfg.credentials.credentials[cfg.destination] = details
+
            dldr.send(cfg)
            dldr.send(cfg)
            dldr.send(cfg)
