@@ -44,6 +44,9 @@ class sr_message():
 
     def __init__(self,logger):
         self.logger        = logger
+
+        self.bufsize       = 8192
+
         self.exchange      = None
         self.log_exchange  = 'xlog'
         self.log_publisher = None
@@ -60,6 +63,7 @@ class sr_message():
         self.part_ext      = 'Part'
 
         self.chkclass      = Checksum()
+        self.chkalgo       = None
 
         self.inplace       = True
 
@@ -73,15 +77,29 @@ class sr_message():
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
 
     def checksum_match(self):
+        self.local_checksum = None
+
         if not os.path.isfile(self.local_file) : return False
-        if self.sumflg in ['0','n']            : return False
+        if self.sumflg in ['0','n','z']        : return False
 
         self.compute_local_checksum()
 
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
-        self.local_checksum = self.compute_chksum(self.local_file,self.local_offset,self.length)
+        self.chkalgo.set_path(os.path.basename(self.local_file))
+
+        fp = open(self.local_file,'rb')
+        if self.local_offset != 0 : fp.seek(self.local_offset,0)
+        i  = 0
+        while i<self.length :
+              buf = fp.read(self.bufsize)
+              self.chkalgo.update(buf)
+              i  += len(buf)
+        fp.close()
+
+        self.local_checksum = self.chkalgo.get_value()
+
 
     def from_amqplib(self, msg ):
 
@@ -475,6 +493,7 @@ class sr_message():
 
     def set_sum_str(self,sumstr):
         self.sumflg  = None
+        self.chkalgo = None
         self.sumstr  = sumstr
         if sumstr == None : return
 
@@ -482,11 +501,11 @@ class sr_message():
         self.sumflg  = token[0]
         self.checksum= token[1]
 
-        # file was removed
+        # file to be removed
         if self.sumflg == 'R' : return
 
         self.chkclass.from_list(self.sumflg)
-        self.compute_chksum = self.chkclass.checksum
+        self.chkalgo = self.chkclass.checksum
 
     def set_suffix(self):
         if self.partstr == None : return
@@ -552,10 +571,21 @@ class sr_message():
 
                  if fsiz  != self.length : return False,'wrong file size'
 
+                 # compute chksum
                  self.chkclass.from_list(self.sumflg)
-                 self.compute_chksum = self.chkclass.checksum
+                 self.chkalgo = self.chkclass.checksum
 
-                 self.checksum  = self.compute_chksum(filepath,0,fsiz)
+                 self.chkalgo.set_path(filepath)
+                 fp = open(filepath,'rb')
+                 i  = 0
+                 while i<fsiz :
+                       buf = fp.read(self.bufsize)
+                       self.chkalgo.update(buf)
+                       i  += len(buf)
+                 fp.close()
+
+                 # set chksum
+                 self.checksum  = self.chkalgo.get_value()
 
         except :
                  (stype, svalue, tb) = sys.exc_info()
