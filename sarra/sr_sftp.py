@@ -65,6 +65,9 @@ class sr_sftp():
         self.connected   = False 
         self.sftp        = None
 
+        self.chkalgo     = None
+        self.checksum    = None
+
     # cd
     def cd(self, path):
         self.logger.debug("sr_sftp cd %s" % path)
@@ -194,7 +197,12 @@ class sr_sftp():
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
 
-        # trottle
+        # on fly checksum 
+
+        chk           = self.chkalgo
+        self.checksum = None
+
+        # trottle 
 
         cb        = None
 
@@ -218,6 +226,8 @@ class sr_sftp():
 
         # get a certain length in file
 
+        if chk : chk.set_path(remote_file)
+
         if length != 0 :
 
            nc = int(length/self.bufsize)
@@ -228,14 +238,16 @@ class sr_sftp():
            while i < nc :
                  chunk = rfp.read(self.bufsize)
                  fp.write(chunk)
-                 if cb : cb(chunk)
+                 if chk : chk.update(chunk)
+                 if cb  : cb(chunk)
                  i = i + 1
 
            # remaining
            if r > 0 :
               chunk = rfp.read(r)
               fp.write(chunk)
-              if cb : cb(chunk)
+              if chk : chk.update(chunk)
+              if cb  : cb(chunk)
 
 
         # get entire file
@@ -246,10 +258,13 @@ class sr_sftp():
                  chunk = rfp.read(self.bufsize)
                  if not chunk : break
                  fp.write(chunk)
-                 if cb : cb(chunk)
+                 if chk : chk.update(chunk)
+                 if cb  : cb(chunk)
 
         rfp.close()
         fp.close()
+
+        if chk : self.checksum = chk.get_value()
 
     # ls
     def ls(self):
@@ -347,6 +362,11 @@ class sr_sftp():
         self.logger.debug("sr_sftp rmdir %s " % path)
         self.sftp.rmdir(path)
 
+    # set_chkalgo checksum algorithm
+    def set_chkalgo(self,chkalgo) :
+        self.logger.debug("sr_sftp set_chkalgo %s" % chkalgo)
+        self.chkalgo = chkalgo
+
     # trottle
     def trottle(self,buf) :
         self.logger.debug("sr_sftp trottle")
@@ -366,9 +386,9 @@ class sr_sftp():
 
 class sftp_transport():
     def __init__(self) :
-        self.batch = 0
-        self.sftp  = None
-        self.cdir  = None
+        self.batch    = 0
+        self.sftp     = None
+        self.cdir     = None
 
     def check_is_connected(self):
         self.logger.debug("sftp_transport check_connection")
@@ -440,6 +460,8 @@ class sftp_transport():
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
+                sftp.set_chkalgo(msg.chkalgo)
+
                 if parent.lock == None or msg.partflg == 'i' :
                    sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length)
 
@@ -459,6 +481,8 @@ class sftp_transport():
                    os.rename(local_lock, msg.local_file)
     
                 msg.log_publish(201,'Downloaded')
+
+                msg.onfly_checksum = sftp.checksum
     
                 if parent.delete :
                    try   :
@@ -566,9 +590,11 @@ class sftp_transport():
 try    :
          from sr_config         import *
          from sr_message        import *
+         from sr_util           import *
 except :
          from sarra.sr_config   import *
          from sarra.sr_message  import *
+         from sarra.sr_util     import *
 
 class test_logger:
       def silence(self,str):
@@ -583,6 +609,10 @@ def self_test():
 
     logger = test_logger()
 
+    chkclass = Checksum()
+    chkclass.from_list('d')
+    chkalgo = chkclass.checksum
+
     # config setup
     cfg = sr_config()
     cfg.defaults()
@@ -594,7 +624,7 @@ def self_test():
     cfg.timeout = 5.0
     # 1 bytes par 5 secs
     #cfg.kbytes_ps = 0.0001
-    cfg.kbytes_ps = 1000
+    cfg.kbytes_ps = 0.01
 
     try:
            sftp = sr_sftp(cfg)
@@ -645,6 +675,7 @@ def self_test():
 
            msg.local_file   = "bbb"
            msg.local_offset = 0
+           msg.chkalgo      = None
 
            cfg.msg     = msg
            cfg.batch   = 5
@@ -652,13 +683,16 @@ def self_test():
        
            dldr = sftp_transport()
            dldr.download(cfg)
+           logger.debug("checksum = %s" % msg.onfly_checksum)
            dldr.download(cfg)
            dldr.download(cfg)
            cfg.logger.info("lock .")
            cfg.lock    = '.'
            dldr.download(cfg)
            dldr.download(cfg)
+           msg.chkalgo = chkalgo
            dldr.download(cfg)
+           logger.debug("checksum = %s" % msg.onfly_checksum)
            cfg.logger.info("lock .tmp")
            cfg.lock    = '.tmp'
            dldr.download(cfg)
