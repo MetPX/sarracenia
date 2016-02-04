@@ -148,6 +148,18 @@ class sr_config:
     def check(self):
         self.logger.debug("sr_config check")
 
+    def chunksize_from_str(str_value):
+        factor = 1
+        if str_value[-1] in 'bB'   : str_value = str_value[:-1]
+        if str_value[-1] in 'kK'   : factor = 1024
+        if str_value[-1] in 'mM'   : factor = 1024 * 1024
+        if str_value[-1] in 'gG'   : factor = 1024 * 1024 * 1024
+        if str_value[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
+        if str_value[-1].isalpha() : str_value = str_value[:-1]
+        chunksize = int(str_value) * factor
+
+        return chunksize
+
     def config(self,path):
         self.logger.debug("sr_config config")
         self.logger.debug("sr_config %s" % path)
@@ -862,7 +874,7 @@ class sr_config:
                      self.kbytes_ps = int(words[1])
                      n = 2
 
-                elif words0 == 'lock':
+                elif words0 in ['lock','inflight']:
                      self.lock = words[1] 
                      n = 2
 
@@ -874,7 +886,7 @@ class sr_config:
                      self.logrotate = int(words[1])
                      n = 2
 
-                elif words0 == 'manager' :
+                elif words0 in ['manager','feeder'] :
                      urlstr       = words1
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
@@ -1178,17 +1190,23 @@ class sr_config:
            if len(token) != 2 :
               self.logger.error("parts invalid (%s)" % self.parts)
               return False
-           try    : self.blocksize = chunksize_from_str(token[1])
+           try    : self.blocksize = self.chunksize_from_str(token[1])
            except :
                     self.logger.error("parts invalid (%s)" % self.parts)
                     return False
         return True
 
     def validate_sum(self):
-        if self.sumflg[0] in ['0','n','d']: return True
+
+        sumflg = self.sumflg[0]
+
+        if len(sumflg) > 2 and sumflg[:2] == 'z,': sumflg = sumflg[2:]
+
+        if sumflg[0] in ['0','n','d']: return True
+
         try :
                  chkclass = Checksum()
-                 chkclass.from_list(self.sumflg)
+                 chkclass.from_list(sumflg)
                  return True
         except : 
                  (stype, svalue, tb) = sys.exc_info()
