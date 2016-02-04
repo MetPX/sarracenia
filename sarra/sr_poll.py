@@ -387,6 +387,10 @@ class sr_poll(sr_instances):
 
         self.accept_unmatch = False
 
+        # need to compute checksum with d algo... in sarra
+
+        self.sumflg         = 'z,d'
+
     # =============
     # for all directories, get urls to post
     # if True is returned it means : no sleep, retry on return
@@ -639,7 +643,6 @@ def main():
            sys.exit(1)
 
     sys.exit(0)
-
 
 
 # =========================================
