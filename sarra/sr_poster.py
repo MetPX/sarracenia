@@ -53,8 +53,6 @@ class sr_poster:
         self.parent         = parent
         self.loop           = loop
 
-        self.chkclass       = Checksum()
-
         self.broker         = parent.post_broker
         self.topic_prefix   = parent.topic_prefix
         self.subtopic       = parent.subtopic
@@ -85,7 +83,7 @@ class sr_poster:
         self.logger.debug("sr_poster get_message")
 
         if not hasattr(self.parent,'msg'):
-           self.parent.msg = sr_message(self.logger)
+           self.parent.msg = sr_message(self.parent)
 
         self.msg           = self.parent.msg
         self.msg.user      = self.broker.username
@@ -144,21 +142,21 @@ class sr_poster:
 
         # compute checksum
 
-        self.chkclass.from_list(sumflg)
-        chkalgo = self.chkclass.checksum
-        chkalgo.set_path(path)
+        self.parent.set_sumalgo(sumflg)
+        sumalgo = self.parent.sumalgo
+        sumalgo.set_path(path)
 
         fp = open(path,'rb')
         i  = 0
         while i<fsiz :
               buf = fp.read(self.bufsize)
-              chkalgo.update(buf)
+              sumalgo.update(buf)
               i  += len(buf)
         fp.close()
 
         # set sumstr
 
-        checksum = chkalgo.get_value()
+        checksum = sumalgo.get_value()
         sumstr   = '%s,%s' % (sumflg,checksum)
 
         filename = os.path.basename(path)
@@ -190,8 +188,8 @@ class sr_poster:
 
         # info setup
 
-        self.chkclass.from_list(sumflg)
-        chkalgo  = self.chkclass.checksum
+        self.parent.set_sumalgo(sumflg)
+        sumalgo  = self.parent.sumalgo
         filename = os.path.basename(path)
         blocks   = list(range(0,block_count))
 
@@ -227,20 +225,20 @@ class sr_poster:
 
               # compute checksum
 
-              chkalgo.set_path(path)
+              sumalgo.set_path(path)
 
               fp = open(path,'rb')
               if offset != 0 : fp.seek(offset,0)
               i  = 0
               while i<length :
                     buf = fp.read(self.bufsize)
-                    chkalgo.update(buf)
+                    sumalgo.update(buf)
                     i  += len(buf)
               fp.close()
 
               # set sumstr
 
-              checksum = chkalgo.get_value()
+              checksum = sumalgo.get_value()
               sumstr   = '%s,%s' % (sumflg,checksum)
 
               ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)

@@ -93,7 +93,7 @@ class sr_consumer:
         self.logger.debug("sr_consumer get_message")
 
         if not hasattr(self.parent,'msg'):
-           self.parent.msg = sr_message(self.logger)
+           self.parent.msg = sr_message(self.parent)
 
         self.raw_msg  = None
         self.msg      = self.parent.msg

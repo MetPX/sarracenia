@@ -143,7 +143,7 @@ class sr_sender(sr_instances):
         # create message
         # =============
 
-        self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer

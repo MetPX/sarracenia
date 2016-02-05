@@ -89,8 +89,9 @@ class sr_subscribe(sr_instances):
 
     def close(self):
         self.consumer.close()
-        if hasattr(self,'sftp_link'): self.sftp_link.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
+        if hasattr(self,'http_link'): self.http_link.close()
+        if hasattr(self,'sftp_link'): self.sftp_link.close()
 
     def overwrite_defaults(self):
         self.logger.debug("sr_subscribe overwrite_defaults")
@@ -112,8 +113,7 @@ class sr_subscribe(sr_instances):
         # create message if needed
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer  queue_name : let consumer takes care of it
@@ -137,7 +137,9 @@ class sr_subscribe(sr_instances):
 
         try :
                 if   self.msg.url.scheme == 'http' :
-                     return http_download(self)
+                     if not hasattr(self,'http_link') :
+                        self.http_link = http_transport()
+                     return self.http_link.download(self)
 
                 elif self.msg.url.scheme == 'ftp' :
                      if not hasattr(self,'ftp_link') :
@@ -563,7 +565,7 @@ def test_sr_subscribe():
     subscribe.close()
 
     if j != 1 or k != 1 :
-       print("sr_subscriber TEST Failed 1")
+       print("sr_subscribe TEST Failed 1")
        sys.exit(1)
 
     # FIX ME part stuff
@@ -573,7 +575,7 @@ def test_sr_subscribe():
     # make sure temporary redirection, insert, download inplace
     # truncate... etc works
 
-    print("sr_subscriber TEST PASSED")
+    print("sr_subscribe TEST PASSED")
 
     os.unlink('./on_fil_test.py')
     os.unlink('./on_msg_test.py')

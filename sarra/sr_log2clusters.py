@@ -103,11 +103,10 @@ class sr_log2clusters(sr_instances):
     def connect(self):
 
         # =============
-        # create message if needed
+        # create message
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer  queue_name : let consumer takes care of it

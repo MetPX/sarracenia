@@ -54,6 +54,9 @@ except :
 class sr_log(sr_instances):
 
     def __init__(self,config=None,args=None):
+        #start debug before it is set by args or config option
+        #self.debug = True
+        #self.setlog()
         sr_instances.__init__(self,config,args)
 
     def check(self):

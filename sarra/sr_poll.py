@@ -146,7 +146,7 @@ class sr_poll(sr_instances):
         # create message
         # =============
 
-        self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # poster

@@ -121,7 +121,7 @@ class sr_2xlog(sr_instances):
         # create message
         # =============
 
-        self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer  queue_name : let consumer takes care of it

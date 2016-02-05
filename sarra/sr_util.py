@@ -90,28 +90,3 @@ class checksum_n(object):
       def set_path(self,path):
           filename   = os.path.basename(path)
           self.value = md5(bytes(filename,'utf-8')).hexdigest()
-
-# ===================================
-# Checksum class
-# ===================================
-
-class Checksum(object):
-      def __init__(self):
-          self.checksum = checksum_d()
-
-      def from_list(self,iflgs):
-          flgs = iflgs
-
-          if len(iflgs) > 2 and iflgs[:2] == 'z,':
-             flgs = iflgs[2:]
-
-          self.checksum = checksum_d()
-          if   flgs == 'd' :
-             self.checksum = checksum_d()
-          elif flgs == 'n' :
-             self.checksum = checksum_n()
-          elif flgs == '0' :
-             self.checksum = checksum_0()
-          #FIXME ...  where are the sum_scripts?
-          else :
-             exec(compile(open(flgs).read(), flgs, 'exec'))

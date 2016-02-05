@@ -33,6 +33,7 @@
 #
 
 import logging
+import inspect
 import netifaces
 import os,re,socket,sys,random
 import urllib,urllib.parse
@@ -53,6 +54,7 @@ class sr_config:
         #self.logpath = None
         #self.setlog()
 
+        # package_dir     = where sarra is installed on system
         # appdirs setup... on linux it gives :
         # site_data_dir   = /usr/share/default/sarra   ** unused
         # user_data_dir   = ~/.local/share/sarra       ** unused
@@ -65,6 +67,7 @@ class sr_config:
         self.appname          = 'sarra'
         self.appauthor        = 'science.gc.ca'
 
+        self.package_dir      = os.path.dirname(inspect.getfile(sr_credentials))
         self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
         self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
@@ -87,9 +90,9 @@ class sr_config:
 
         # logging is interactive at start
 
+        self.debug = False
         # IN BIG DEBUG
         #self.debug = True
-        self.debug = False
         self.setlog()
         self.logger.debug("sr_config __init__")
 
@@ -105,6 +108,7 @@ class sr_config:
 
         # config
 
+        self.config_dir   = ''
         self.config_name  = None
         self.user_config  = config
 
@@ -112,18 +116,28 @@ class sr_config:
         # but if it is not... it better be an existing file
 
         if config != None :
+           cdir = os.path.dirname(config)
+           if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
            self.config_name = re.sub(r'(\.conf)','',os.path.basename(config))
            ok, self.user_config = self.config_path(self.program_dir,config)
+           if ok :
+              cdir = os.path.dirname(self.user_config)
+              if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
+           self.logger.debug("sr_config config_dir   %s " % self.config_dir  ) 
            self.logger.debug("sr_config config_name  %s " % self.config_name ) 
            self.logger.debug("sr_config user_config  %s " % self.user_config ) 
 
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
-        self.user_cache_dir   = user_cache_dir (self.appname,self.appauthor)
-        self.user_cache_dir  += os.sep + self.program_name.replace('sr_','')
-        self.user_cache_dir  += os.sep + "%s" % self.config_name
-        try    : os.makedirs(self.user_cache_dir,  0o775,True)
-        except : pass
+        self.user_cache_dir     = user_cache_dir (self.appname,self.appauthor)
+        self.user_cache_dir    += os.sep + self.program_name.replace('sr_','')
+        self.user_cache_dir    += os.sep + ".cache"
+        if self.config_name :
+           self.user_cache_dir += os.sep + "%s" % self.config_name
+        if not self.program_name in [ 'sr', 'sr_admin', 'sr_audit', 'sr_config' ]:
+           self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
+           try    : os.makedirs(self.user_cache_dir,  0o775,True)
+           except : pass
 
         # check arguments
 
@@ -178,19 +192,20 @@ class sr_config:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
 
-    def config_path(self,subdir,config, mandatory=True):
+    def config_path(self,subdir,config, mandatory=True, ctype='conf'):
 
         if config == None : return False,None
 
         # priority 1 : config given is absolute path
 
+        self.logger.debug("config = %s" % config)
         if os.path.isfile(config) :
            return True,config
 
-        config_name = re.sub(r'(\.conf|\.py)','',os.path.basename(config))
-
-        if subdir == 'scripts' : ext = '.py'
-        else                   : ext = '.conf'
+        config_file = os.path.basename(config)
+        config_name = re.sub(r'(\.inc|\.conf|\.py)','',config_file)
+        ext         = config_file.replace(config_name,'')
+        if ext == '': ext = '.' + ctype
 
         # priority 2 : config given is a user one
 
@@ -206,10 +221,18 @@ class sr_config:
         if os.path.isfile(config_path) :
            return True,config_path
 
+        # priority 4 : plugins
+
+        if subdir == 'scripts' :
+           config_path = self.package_dir + os.sep + 'plugins' + os.sep + config_name + ext
+           if os.path.isfile(config_path) :
+              return True,config_path
+
         # return bad file ... 
         if mandatory :
           if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
           else                   : self.logger.error("File incorrect %s" % config)
+          sys.exit(1)
 
         return False,config
 
@@ -240,6 +263,10 @@ class sr_config:
 
         self.bufsize              = 8192
         self.kbytes_ps            = 0
+
+        self.sumalgo              = None
+        self.lastflg              = None
+        self.set_sumalgo('d')
 
         self.admin                = None
         self.manager              = None
@@ -360,7 +387,7 @@ class sr_config:
 
     def execfile(self, opname, path):
 
-        ok,script = self.config_path('scripts',path)
+        ok,script = self.config_path('scripts',path,mandatory=True,ctype='py')
         self.logger.debug("installing script %s " % script ) 
 
         try    : 
@@ -436,10 +463,13 @@ class sr_config:
         defconf     = self.user_config_dir + os.sep + 'default.conf'
         self.logger.debug("defconf = %s\n" % defconf)
         if os.path.isfile(defconf) : 
-           user_config      = self.user_config
-           self.user_config = defconf
+           #user_config      = self.user_config
+           #self.user_config = defconf
+           config_dir       = self.config_dir
+           self.config_dir  = ''
            self.config(defconf)
-           self.user_config = user_config
+           self.config_dir  = config_dir
+           #self.user_config = user_config
 
     def has_vip(self): 
 
@@ -725,8 +755,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','-c','include']:
-                     include = os.path.dirname(self.user_config) + os.sep + words1
-                     self.logger.debug("include %s" % include)
+                     ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
                      self.config(include)
                      n = 2
 
@@ -1123,6 +1152,46 @@ class sr_config:
     def overwrite_defaults(self):
         self.logger.debug("sr_config overwrite_defaults")
 
+    def set_sumalgo(self,sumflg):
+        self.logger.debug("sr_config set_sumalgo")
+
+        if sumflg == self.lastflg : return
+
+        flgs = sumflg
+
+        if len(sumflg) > 2 and sumflg[:2] == 'z,':
+           flgs = sumflg[2:]
+
+        if flgs == self.lastflg : return
+        self.lastflg = flgs
+
+        if flgs == 'd' : 
+           self.sumalgo = checksum_d()
+           return
+
+        if flgs == 'n' :
+           self.sumalgo = checksum_n()
+           return
+
+        if flgs == '0' :
+           self.sumalgo = checksum_0()
+           return
+
+        sum_error    = False
+        self.sumalgo = None
+        self.execfile('sumflg',flgs)
+
+        if self.sumalgo == None : sum_error = True
+
+        if not sum_error and not hasattr(self.sumalgo,'set_path' ) : sum_error = True
+        if not sum_error and not hasattr(self.sumalgo,'update'   ) : sum_error = True
+        if not sum_error and not hasattr(self.sumalgo,'get_value') : sum_error = True
+
+        if sum_error :
+           self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
+           self.lastflg = 'd'
+           self.sumalgo = checksum_d()
+
     def setlog(self):
 
         import logging.handlers
@@ -1205,8 +1274,7 @@ class sr_config:
         if sumflg[0] in ['0','n','d']: return True
 
         try :
-                 chkclass = Checksum()
-                 chkclass.from_list(sumflg)
+                 self.set_sumalgo(sumflg):
                  return True
         except : 
                  (stype, svalue, tb) = sys.exc_info()
@@ -1231,11 +1299,17 @@ class test_logger:
           self.warning = print
 
 def self_test():
+    f = open("./bbb.inc","w")
+    f.write("randomize False\n")
+    f.close()
+    f = open("./aaa.conf","w")
+    f.write("include bbb.inc\n")
+    f.close()
     # instantiation
-    cfg = sr_config()
+    logger = test_logger()
+    cfg    = sr_config(config="aaa")
 
     # overwrite logs
-    logger     = test_logger()
     cfg.logger = logger
 
     # defaults + check isTrue
@@ -1260,7 +1334,7 @@ def self_test():
     f.write("self.this_script = transformer.perform\n")
     f.close()
 
-    ok, path = cfg.config_path("scripts","scrpt.py")
+    ok, path = cfg.config_path("scripts","scrpt.py",mandatory=True,ctype='py')
     if not ok :
        cfg.logger.error("problem with config_path")
        cfg.logger.error("TEST FAILED")
@@ -1287,11 +1361,9 @@ def self_test():
     # general ... 
 
     cfg.general()
-    if not os.path.isdir(cfg.user_cache_dir)   or \
-       not os.path.isdir(cfg.user_log_dir)     or \
-       not os.path.isdir(cfg.user_config_dir)  :
-       cfg.logger.error("problem with general user directories ")
-       sys.exit(1)
+    cfg.logger.info(cfg.user_cache_dir)
+    cfg.logger.info(cfg.user_log_dir)    
+    cfg.logger.info(cfg.user_config_dir)
 
     # args ... 
 
@@ -1330,7 +1402,7 @@ def self_test():
        cfg.logger.error("problem with args")
        sys.exit(1)
 
-    #cfg.config(self.user_config)
+    cfg.config(cfg.user_config)
 
     print("TEST PASSED")
     sys.exit(0)

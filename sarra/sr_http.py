@@ -39,7 +39,7 @@ import os, urllib.request, urllib.error, sys
 class http_transport():
     def __init__(self) :
         self.bufsize   = 8192
-        self.chkalgo   = None
+        self.sumalgo   = None
         self.kbytes_ps = 0
 
     def close(self) :
@@ -65,7 +65,7 @@ class http_transport():
         if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
         if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
 
-        self.chkalgo     = msg.chkalgo
+        self.sumalgo     = msg.sumalgo
         self.remote_file = remote_file
 
         try :
@@ -147,7 +147,7 @@ class http_transport():
 
         # on fly checksum 
 
-        chk           = self.chkalgo
+        chk           = self.sumalgo
         self.checksum = None
 
         # trottle 
@@ -184,8 +184,6 @@ class http_transport():
         fp.close()
 
         if chk : self.checksum = chk.get_value()
-
-        msg.log_publish(201,'Downloaded')
 
         return True
 
@@ -227,11 +225,6 @@ def self_test():
 
     logger = test_logger()
 
-    chkclass = Checksum()
-    chkclass.from_list('d')
-    chkalgo = chkclass.checksum
-
-
     # config setup
     cfg = sr_config()
     cfg.defaults()
@@ -255,7 +248,7 @@ def self_test():
           if ok: break
 
     cfg.msg = msg
-    cfg.msg.chkalgo = None
+    cfg.msg.sumalgo = None
     cfg.msg.local_file = "toto"
     cfg.msg.local_offset = 0
 
@@ -272,7 +265,7 @@ def self_test():
           cfg.lock = '.tmp'
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
-          cfg.msg.chkalgo = chkalgo
+          cfg.msg.sumalgo = cfg.sumalgo
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
           logger.debug("checksum = %s" % cfg.msg.checksum)

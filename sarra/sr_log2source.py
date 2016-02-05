@@ -90,14 +90,14 @@ class sr_log2source(sr_instances):
 
     def close(self):
         self.consumer.close()
+
     def connect(self):
 
         # =============
         # create message if needed
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer  queue_name : let consumer takes care of it

@@ -153,8 +153,7 @@ class sr_sarra(sr_instances):
         # create message if needed
         # =============
 
-        if not hasattr(self,'msg'):
-           self.msg = sr_message(self.logger)
+        self.msg = sr_message(self)
 
         # =============
         # consumer

@@ -14,7 +14,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Revision  : Feb  5 09:48:34 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,9 @@
 
 import os, stat, sys
 
+# file_insert
+# called by file_process (general file:// processing)
+
 def file_insert( parent,msg ) :
 
     # file must exists
@@ -51,11 +54,16 @@ def file_insert( parent,msg ) :
 
     return ok
 
+
+# file_insert_part
+# called by file_reassemble : rebuiding file from parts
+#
 # when inserting, anything that goes wrong means that
 # another process is working with this part_file
 # so errors are ignored silently 
 
 def file_insert_part(parent,msg,part_file):
+    chk = msg.sumalgo
     try :
              # file disappeared ...
              # probably inserted by another process in parallel
@@ -75,14 +83,22 @@ def file_insert_part(parent,msg,part_file):
              ft.seek(msg.offset,0)
 
              # no worry with length, read all of part_file
+             # compute onfly_checksum ...
+
+             if chk : chk.set_path(os.path.basename(msg.target_file))
+
              i  = 0
              while i<msg.length :
                    buf = fp.read(parent.bufsize)
                    ft.write(buf)
+                   if chk : chk.update(buf)
                    i  += len(buf)
 
              ft.close()
              fp.close()
+
+             # set checksum in msg
+             if chk : msg.onfly_checksum = self.get_value()
 
              # remove inserted part file
 
@@ -113,6 +129,11 @@ def file_insert_part(parent,msg,part_file):
     if msg.publisher : 
        msg.set_topic_url('v02.post',msg.target_url)
        msg.set_notice(msg.target_url,msg.time)
+       if chk :
+          if    msg.sumflg == 'z' :
+                msg.set_sum(msg.checksum,msg.onfly_checksum)
+          else: msg.set_sum(msg.sumflg,  msg.onfly_checksum)
+
        parent.__on_post__()
        msg.log_publish(201,'Publish')
 
@@ -128,6 +149,10 @@ def file_insert_part(parent,msg,part_file):
 
     return True
 
+
+# file_link
+# called by file_process (general file:// processing)
+
 def file_link( msg ) :
 
     try    : os.unlink(msg.local_file)
@@ -135,9 +160,14 @@ def file_link( msg ) :
     try    : os.link(msg.url.path,msg.local_file)
     except : return False
 
+    msg.compute_local_checksum()
+    msg.onfly_checksum = msg.local_checksum
+
     msg.log_publish( 201, 'Linked')
 
     return True
+
+# file_process (general file:// processing)
 
 def file_process( parent ) :
 
@@ -150,6 +180,8 @@ def file_process( parent ) :
        ok = file_link(msg)
        if ok : return ok
 
+    # This part is for 2 reasons : insert part
+    # or copy file if preceeding link did not work
     try :
              ok = file_insert(parent,msg)
              if ok : return ok
@@ -161,6 +193,7 @@ def file_process( parent ) :
 
     return False
 
+# file_reassemble : rebuiding file from parts
 # when ever a part file is processed (inserted or written in part_file)
 # this module is called to try inserting any part_file left
 
@@ -188,7 +221,6 @@ def file_reassemble(parent):
 
           msg.current_block = i
           msg.set_parts('i',msg.chunksize,msg.block_count,msg.remainder,msg.current_block)
-          #? redo sum too ?
           msg.set_suffix()
 
           # set part file
@@ -219,9 +251,17 @@ def file_reassemble(parent):
     file_truncate(parent,msg)
 
 
-# write exact length
+
+# file_write_length
+# called by file_process->file_insert (general file:// processing)
 
 def file_write_length(req,msg,bufsize):
+
+    msg.onfly_checksum = None
+
+    chk = msg.sumalgo
+    if chk : chk.set_path(os.path.basename(msg.local_file))
+
     # file should exists
     if not os.path.isfile(msg.local_file) :
        fp = open(msg.local_file,'w')
@@ -239,18 +279,26 @@ def file_write_length(req,msg,bufsize):
     while i < nc :
           chunk = req.read(bufsize)
           fp.write(chunk)
+          if chk : chk.update(chunk)
           i = i + 1
 
     # remaining
     if r > 0 :
        chunk = req.read(r)
        fp.write(chunk)
+       if chk : chk.update(chunk)
 
     fp.close()
+  
+    if chk : msg.onfly_message = chk.get_value()
 
     msg.log_publish(201,'Copied')
 
     return True
+
+# file_truncate
+# called under file_reassemble (itself and its file_insert_part)
+# when inserting lastchunk, file may need to be truncated
 
 def file_truncate(parent,msg):
 

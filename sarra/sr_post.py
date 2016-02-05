@@ -82,7 +82,7 @@ class sr_post(sr_config):
 
         # message
 
-        self.msg = sr_message( self.logger )
+        self.msg = sr_message( self )
 
         # publisher
 

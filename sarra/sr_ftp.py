@@ -65,7 +65,7 @@ class sr_ftp():
         self.ftp         = None
         self.details     = None
 
-        self.chkalgo     = None
+        self.sumalgo     = None
         self.checksum    = None
  
     # cd
@@ -211,7 +211,7 @@ class sr_ftp():
         # on fly checksum 
 
         self.checksum = None
-        self.chk      = self.chkalgo
+        self.chk      = self.sumalgo
         if self.chk   : self.chk.set_path(remote_file)
 
         # throttling 
@@ -309,10 +309,10 @@ class sr_ftp():
         self.logger.debug("sr_ftp rmdir %s" % path)
         self.ftp.rmd(path)
 
-    # set_chkalgo checksum algorithm
-    def set_chkalgo(self,chkalgo) :
-        self.logger.debug("sr_ftp set_chkalgo %s" % chkalgo)
-        self.chkalgo = chkalgo
+    # set_sumalgo checksum algorithm
+    def set_sumalgo(self,sumalgo) :
+        self.logger.debug("sr_ftp set_sumalgo %s" % sumalgo)
+        self.sumalgo = sumalgo
 
     # trottle
     def trottle(self,buf) :
@@ -421,7 +421,7 @@ class ftp_transport():
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
-                ftp.set_chkalgo(msg.chkalgo)
+                ftp.set_sumalgo(msg.sumalgo)
 
                 if parent.lock == None :
                    ftp.get(remote_file,msg.local_file,msg.local_offset)
@@ -588,11 +588,6 @@ def self_test():
     cfg.option( opt1.split()  )
     cfg.logger  = logger
     cfg.timeout = 5
-
-    chkclass = Checksum()
-    chkclass.from_list('d')
-    chkalgo = chkclass.checksum
-
     try:
            ftp = sr_ftp(cfg)
            ftp.connect()
@@ -631,7 +626,7 @@ def self_test():
 
            os.unlink("bbb")
 
-           msg         = sr_message(logger)
+           msg         = sr_message(cfg)
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
@@ -641,7 +636,7 @@ def self_test():
            msg.partflg = '1'
            msg.offset  = 0
            msg.length  = 0
-           msg.chkalgo = None
+           msg.sumalgo = None
 
            msg.local_file   = "bbb"
            msg.local_offset = 0
@@ -662,7 +657,7 @@ def self_test():
            cfg.lock        = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
-           msg.chkalgo = chkalgo
+           msg.sumalgo = cfg.sumalgo
            dldr.download(cfg)
            logger.debug("checksum = %s" % msg.onfly_checksum)
            
