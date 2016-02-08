@@ -102,6 +102,7 @@ class sr_instances(sr_config):
         except : pass
 
     def foreground_parent(self):
+        self.configure()
         self.logger.debug("sr_instances foreground_parent")
         self.nbr_instances = 0
         self.start()

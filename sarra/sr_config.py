@@ -38,6 +38,7 @@ import netifaces
 import os,re,socket,sys,random
 import urllib,urllib.parse
 from   appdirs import *
+import sarra
 
 try :
          from sr_credentials       import *
@@ -49,6 +50,9 @@ except :
 class sr_config:
 
     def __init__(self,config=None,args=None):
+        if '-V' in sys.argv :
+           print("Version %s" % sarra.__version__ )
+           sys.exit(0)
         # IN BIG DEBUG
         #self.debug = True
         #self.logpath = None
@@ -1274,7 +1278,7 @@ class sr_config:
         if sumflg[0] in ['0','n','d']: return True
 
         try :
-                 self.set_sumalgo(sumflg):
+                 self.set_sumalgo(sumflg)
                  return True
         except : 
                  (stype, svalue, tb) = sys.exc_info()
