@@ -944,7 +944,7 @@ class sr_config:
                      self.no = int(words[1])
                      n = 2
 
-                elif words0 in ['no_logback','-nlb']:
+                elif words0 in ['no_logback','nlb']:
                      if words[0][0:1] == '-' : 
                         self.no_logback = True
                         n = 1
@@ -952,7 +952,7 @@ class sr_config:
                         self.no_logback = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['notify_only','n','--no-download']:
+                elif words0 in ['notify_only','n','no-download']:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
