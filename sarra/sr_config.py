@@ -758,7 +758,7 @@ class sr_config:
                      self.cluster_aliases = words1.split(',')
                      n = 2
 
-                elif words0 in ['config','-c','include']:
+                elif words0 in ['config','c','include']:
                      ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
                      self.config(include)
                      n = 2
