@@ -108,7 +108,7 @@ def main():
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
            subprocess.check_call(['sr_'+d,sys.argv[-1]])
 
-    SR_PROGRAMS =['watch','winnow','sarra','subscribe','sender','poll','log']
+    SR_PROGRAMS =['watch','winnow','sarra','shovel','subscribe','sender','poll','log']
     for d in SR_PROGRAMS:
         scandir(cfg.user_config_dir+os.sep+d)
 
