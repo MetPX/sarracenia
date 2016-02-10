@@ -168,7 +168,8 @@ class sr_config:
     def check(self):
         self.logger.debug("sr_config check")
 
-    def chunksize_from_str(str_value):
+    def chunksize_from_str(self,str_value):
+        self.logger.debug("sr_config chunksize_from_str %s" % str_value)
         factor = 1
         if str_value[-1] in 'bB'   : str_value = str_value[:-1]
         if str_value[-1] in 'kK'   : factor = 1024
@@ -1186,7 +1187,7 @@ class sr_config:
         self.logger.debug("sr_config overwrite_defaults")
 
     def set_sumalgo(self,sumflg):
-        self.logger.debug("sr_config set_sumalgo")
+        self.logger.debug("sr_config set_sumalgo %s" % sumflg)
 
         if sumflg == self.lastflg : return
 
@@ -1279,6 +1280,7 @@ class sr_config:
 
 
     def validate_parts(self):
+        self.logger.debug("sr_config validate_parts %s" % self.parts)
         if not self.parts[0] in ['1','p','i']:
            self.logger.error("parts invalid (%s)" % self.parts)
            return False
@@ -1299,12 +1301,13 @@ class sr_config:
         return True
 
     def validate_sum(self):
+        self.logger.debug("sr_config validate_sum %s" % self.sumflg)
 
-        sumflg = self.sumflg[0]
+        sumflg = self.sumflg.split(',')[0]
 
-        if len(sumflg) > 2 and sumflg[:2] == 'z,': sumflg = sumflg[2:]
+        if sumflg == 'z' : sumflg = self.sumflg[2:]
 
-        if sumflg[0] in ['0','n','d']: return True
+        if sumflg in ['0','n','d']: return True
 
         try :
                  self.set_sumalgo(sumflg)
@@ -1468,6 +1471,17 @@ def self_test():
     if cfg.broker.geturl() != "amqp://a:b@toto" :
        cfg.logger.error("problem with args")
        sys.exit(1)
+
+    opt1 = "parts i,128"
+    cfg.option(opt1.split())
+
+
+    opt1 = "sum z,d"
+    cfg.option(opt1.split())
+
+    #opt1 = "sum checksum_AHAH.py"
+    #cfg.option(opt1.split())
+
 
     opt1 = "remote_config True"
     opt2 = "remote_config_url http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir"
