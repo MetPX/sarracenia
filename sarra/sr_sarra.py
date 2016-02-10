@@ -267,12 +267,6 @@ class sr_sarra(sr_instances):
 
     def __on_message__(self):
 
-        # no support for delete event
-
-        if self.msg.sumflg == 'R' :
-           self.logger.warning("delete message ignored")
-           return False
-
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
            self.msg.log_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
@@ -392,6 +386,21 @@ class sr_sarra(sr_instances):
 
         ok = self.__on_message__()
         if not ok : return ok
+
+        #=================================
+        # delete event, try to delete and propagate message
+        #=================================
+
+        if self.msg.sumflg == 'R' :
+           try : 
+                  if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
+                  if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
+           except:pass
+           self.msg.set_topic_url('v02.post',self.msg.local_url)
+           self.msg.set_notice(self.msg.local_url,self.msg.time)
+           self.__on_post__()
+           self.msg.log_publish(205,'Reset Content : deleted')
+           return True
 
         #=================================
         # prepare download 
