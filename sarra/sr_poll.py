@@ -125,6 +125,12 @@ class sr_poll(sr_instances):
            self.exchange   = 'xs_%s' % self.broker.username
         self.post_exchange = self.exchange
 
+        # check sumflg should start with z,
+
+        if len(self.sumflg) < 2 or self.sumflg[:2] != 'z,' :
+           self.logger.error("sum should start with z,  ex.: z,d\n")
+           sys.exit(1)
+
         # rebuild mask as pulls instructions
         # pulls[directory] = [mask1,mask2...]
 
