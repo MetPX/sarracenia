@@ -484,7 +484,7 @@ class sr_poll(sr_instances):
                 self.urlstr  = self.destination + self.destDir + '/'+ remote_file
                 self.url     = urllib.parse.urlparse(self.urlstr)
                 self.partstr = '1,%s,1,0,0' % fsiz
-                self.sumstr  = 'z,d'
+                self.sumstr  = self.sumflg
 
                 this_rename  = self.rename
 
