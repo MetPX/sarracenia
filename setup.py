@@ -45,6 +45,7 @@ setup(
               "sr_watch=sarra.sr_watch:main",
               "sr_winnow=sarra.sr_winnow:main",
               "sr_sarra=sarra.sr_sarra:main",
+              "sr_shovel=sarra.sr_shovel:main",
               "sr_sender=sarra.sr_sender:main",
               "sr_subscribe=sarra.sr_subscribe:main",
               ]
