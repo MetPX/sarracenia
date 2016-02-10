@@ -1307,7 +1307,7 @@ class sr_config:
 
         if sumflg == 'z' : sumflg = self.sumflg[2:]
 
-        if sumflg in ['0','n','d']: return True
+        if sumflg in ['0','n','d','R']: return True
 
         try :
                  self.set_sumalgo(sumflg)
@@ -1478,6 +1478,10 @@ def self_test():
 
     opt1 = "sum z,d"
     cfg.option(opt1.split())
+
+    opt1 = "sum R,0"
+    cfg.option(opt1.split())
+
 
     #opt1 = "sum checksum_AHAH.py"
     #cfg.option(opt1.split())
