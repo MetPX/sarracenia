@@ -97,7 +97,8 @@ class sr_config:
 
         # logging is interactive at start
 
-        self.debug = False
+        self.debug         = False
+        self.remote_config = False
         # IN BIG DEBUG
         #self.debug = True
         self.setlog()
