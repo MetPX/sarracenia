@@ -238,11 +238,11 @@ class sr_poster:
 
                  fp = open(path,'rb')
                  if offset != 0 : fp.seek(offset,0)
-                 i  = 0
-                 while i<length :
+                 t  = 0
+                 while t<length :
                        buf = fp.read(self.bufsize)
                        sumalgo.update(buf)
-                       i  += len(buf)
+                       t  += len(buf)
                  fp.close()
 
                  checksum = sumalgo.get_value()
@@ -302,9 +302,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
-          self.info    = print
+          self.info    = self.silence
           self.warning = print
 
 class sr_cfg_plus(sr_config):
