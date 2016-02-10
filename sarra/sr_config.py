@@ -52,7 +52,7 @@ class sr_config:
     def __init__(self,config=None,args=None):
         if '-V' in sys.argv :
            print("Version %s" % sarra.__version__ )
-           sys.exit(0)
+           os._exit(0)
         # IN BIG DEBUG
         #self.debug = True
         #self.logpath = None
@@ -76,7 +76,8 @@ class sr_config:
         self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
         self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
-        self.user_scripts_dir = self.user_config_dir + '/scripts'
+        self.user_plugins_dir = self.user_config_dir + '/plugins'
+        self.http_dir         = self.user_config_dir + '/http'
 
         # umask change for directory creation and chmod
 
@@ -89,7 +90,9 @@ class sr_config:
         except : pass
         try    : os.makedirs(self.user_log_dir,    0o775,True)
         except : pass
-        try    : os.makedirs(self.user_scripts_dir,0o775,True)
+        try    : os.makedirs(self.user_plugins_dir,0o775,True)
+        except : pass
+        try    : os.makedirs(self.http_dir,        0o775,True)
         except : pass
 
         # logging is interactive at start
@@ -133,11 +136,9 @@ class sr_config:
 
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
-        self.user_cache_dir     = user_cache_dir (self.appname,self.appauthor)
-        self.user_cache_dir    += os.sep + self.program_name.replace('sr_','')
-        self.user_cache_dir    += os.sep + ".cache"
-        if self.config_name :
-           self.user_cache_dir += os.sep + "%s" % self.config_name
+        self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
+        self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
+        self.user_cache_dir += os.sep + "%s" % self.config_name
         if not self.program_name in [ 'sr', 'sr_admin', 'sr_audit', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
            try    : os.makedirs(self.user_cache_dir,  0o775,True)
@@ -197,12 +198,13 @@ class sr_config:
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
+        self.logger.debug("config_path = %s %s" % (subdir,config))
 
         if config == None : return False,None
 
         # priority 1 : config given is absolute path
 
-        self.logger.debug("config = %s" % config)
+        self.logger.debug("config_path %s " % config )
         if os.path.isfile(config) :
            return True,config
 
@@ -214,6 +216,7 @@ class sr_config:
         # priority 2 : config given is a user one
 
         config_path = self.user_config_dir + os.sep + subdir + os.sep + config_name + ext
+        self.logger.debug("config_path %s " % config_path )
 
         if os.path.isfile(config_path) :
            return True,config_path
@@ -221,22 +224,32 @@ class sr_config:
         # priority 3 : config given to site config
 
         config_path = self.site_config_dir + os.sep + subdir + os.sep + config_name + ext
+        self.logger.debug("config_path %s " % config_path )
 
         if os.path.isfile(config_path) :
            return True,config_path
 
         # priority 4 : plugins
 
-        if subdir == 'scripts' :
+        if subdir == 'plugins' :
            config_path = self.package_dir + os.sep + 'plugins' + os.sep + config_name + ext
+           self.logger.debug("config_path %s " % config_path )
            if os.path.isfile(config_path) :
               return True,config_path
 
+        # priority 5 : if remote_config enabled, check at given remote_config_url[]
+
+        if self.remote_config :
+           wconfig = self.wget(config)
+           if wconfig != None :
+              self.logger.debug("config = %s" % wconfig)
+              return True, wconfig
+
         # return bad file ... 
         if mandatory :
-          if subdir == 'scripts' : self.logger.error("Script incorrect %s" % config)
+          if subdir == 'plugins' : self.logger.error("Script incorrect %s" % config)
           else                   : self.logger.error("File incorrect %s" % config)
-          sys.exit(1)
+          os._exit(1)
 
         return False,config
 
@@ -262,6 +275,9 @@ class sr_config:
         # IN BIG DEBUG
         #self.debug = True
         self.debug                = False
+
+        self.remote_config        = False
+        self.remote_config_url    = []
 
         self.logrotate            = 5
 
@@ -391,7 +407,7 @@ class sr_config:
 
     def execfile(self, opname, path):
 
-        ok,script = self.config_path('scripts',path,mandatory=True,ctype='py')
+        ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         self.logger.debug("installing script %s " % script ) 
 
         try    : 
@@ -1079,6 +1095,18 @@ class sr_config:
                         self.recursive = self.isTrue(words[1])
                         n = 2
 
+                elif words0 in ['remote_config']:
+                     if words[0][0:1] == '-' : 
+                        self.remote_config = True
+                        n = 1
+                     else :
+                        self.remote_config = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['remote_config_url']:
+                     self.remote_config_url.append(words[1])
+                     n = 2
+
                 elif words0 in ['rename','rn']:
                      self.rename = words1
                      n = 2
@@ -1149,7 +1177,7 @@ class sr_config:
                 self.logger.error("problem with option %s" % words[0])
 
         if needexit :
-           sys.exit(1)
+           os._exit(1)
 
         return n
 
@@ -1288,6 +1316,41 @@ class sr_config:
         return False
 
 
+    def wget(self,config):
+        self.logger.debug("sr_config wget %s" % config)
+        import urllib.request, urllib.error
+
+        if len(self.remote_config_url) == 0 : return None
+
+        for u in self.remote_config_url :
+
+            url        = u + os.sep + config
+            local_file = self.http_dir + os.sep + config
+
+            try :
+                req  = urllib.request.Request(url)
+                resp = urllib.request.urlopen(req)
+                fp   = open(local_file,'wb')
+                while True:
+                      chunk = resp.read(self.bufsize)
+                      if not chunk : break
+                      fp.write(chunk)
+                fp.close()
+                return local_file
+
+            except urllib.error.HTTPError as e:
+                self.logger.error('Download failed: %s', url)                    
+                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
+            except urllib.error.URLError as e:
+                self.logger.error('Download failed: %s', url)                                    
+                self.logger.error('Failed to reach server. Reason: %s', e.reason)            
+            except:
+                self.logger.error('Download failed: %s', url )
+                self.logger.error('Uexpected error')              
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+
+        return None
 
 # ===================================
 # self_test
@@ -1338,7 +1401,7 @@ def self_test():
     f.write("self.this_script = transformer.perform\n")
     f.close()
 
-    ok, path = cfg.config_path("scripts","scrpt.py",mandatory=True,ctype='py')
+    ok, path = cfg.config_path("plugins","scrpt.py",mandatory=True,ctype='py')
     if not ok :
        cfg.logger.error("problem with config_path")
        cfg.logger.error("TEST FAILED")
@@ -1399,12 +1462,38 @@ def self_test():
 
     opt1 = "hostname toto"
     opt2 = "broker amqp://a:b@${HOSTNAME}"
-    opt3 = "queue_name amqp://a:b@${HOSTNAME}"
     cfg.option(opt1.split())
     cfg.option(opt2.split())
     if cfg.broker.geturl() != "amqp://a:b@toto" :
        cfg.logger.error("problem with args")
        sys.exit(1)
+
+    opt1 = "remote_config True"
+    opt2 = "remote_config_url http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir"
+    cfg.option(opt1.split())
+    cfg.option(opt2.split())
+
+    cfg.inplace       = False
+    opt1 = "include inplace_true.inc"
+    cfg.option(opt1.split())
+    if cfg.inplace != True :
+       cfg.logger.error(" include http:  did not work")
+
+    cfg.reconnect     = True
+    opt1 = "config reconnect_false.conf"
+    cfg.option(opt1.split())
+    if cfg.reconnect != False :
+       cfg.logger.error(" include http:  did not work")
+
+    cfg.set_sumalgo('z,checksum_mg.py')
+
+    #cfg.remote_config = False
+    #cfg.inplace       = False
+    #opt1 = "include http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir/inplace_true.inc"
+    #cfg.option(opt1.split())
+    #if cfg.inplace == True :
+    #   cfg.logger.error(" include http: worked but should not")
+
 
     cfg.config(cfg.user_config)
 
