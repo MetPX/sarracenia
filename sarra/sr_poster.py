@@ -140,24 +140,30 @@ class sr_poster:
         fsiz    = lstat[stat.ST_SIZE]
         partstr = '1,%d,1,0,0' % fsiz
 
-        # compute checksum
+        # set sumstr
 
         self.parent.set_sumalgo(sumflg)
         sumalgo = self.parent.sumalgo
-        sumalgo.set_path(path)
 
-        fp = open(path,'rb')
-        i  = 0
-        while i<fsiz :
-              buf = fp.read(self.bufsize)
-              sumalgo.update(buf)
-              i  += len(buf)
-        fp.close()
+        if len(sumflg) > 2 and sumflg[:2] == 'z,' :
+           sumstr = sumflg
 
-        # set sumstr
+        # compute checksum
+        else:
+              sumalgo.set_path(path)
 
-        checksum = sumalgo.get_value()
-        sumstr   = '%s,%s' % (sumflg,checksum)
+              fp = open(path,'rb')
+              i  = 0
+              while i<fsiz :
+                    buf = fp.read(self.bufsize)
+                    sumalgo.update(buf)
+                    i  += len(buf)
+              fp.close()
+
+              checksum = sumalgo.get_value()
+              sumstr   = '%s,%s' % (sumflg,checksum)
+
+        # post
 
         filename = os.path.basename(path)
 
@@ -223,23 +229,26 @@ class sr_poster:
               partstr = 'i,%d,%d,%d,%d' %\
                         (chunksize,block_count,remainder,current_block)
 
-              # compute checksum
+              # compute checksum if needed
 
-              sumalgo.set_path(path)
+              if len(sumflg) > 2 and sumflg[:2] == 'z,' :
+                 sumstr = sumflg
+              else:
+                 sumalgo.set_path(path)
 
-              fp = open(path,'rb')
-              if offset != 0 : fp.seek(offset,0)
-              i  = 0
-              while i<length :
-                    buf = fp.read(self.bufsize)
-                    sumalgo.update(buf)
-                    i  += len(buf)
-              fp.close()
+                 fp = open(path,'rb')
+                 if offset != 0 : fp.seek(offset,0)
+                 i  = 0
+                 while i<length :
+                       buf = fp.read(self.bufsize)
+                       sumalgo.update(buf)
+                       i  += len(buf)
+                 fp.close()
 
-              # set sumstr
+                 checksum = sumalgo.get_value()
+                 sumstr   = '%s,%s' % (sumflg,checksum)
 
-              checksum = sumalgo.get_value()
-              sumstr   = '%s,%s' % (sumflg,checksum)
+              # post
 
               ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)
               if not ok : return ok
@@ -293,9 +302,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 class sr_cfg_plus(sr_config):
@@ -338,11 +347,14 @@ def self_test():
             part = ".26.12.0.1.d.Part"
             path_part = path + part
             url_part  = urllib.parse.urlparse("file://" + path_part)
+            try:   os.unlink(path_part)
+            except:pass
             os.link(path, path_part)
             poster.post_local_part(path_part,exchange,url_part,to_clusters)
 
             poster.post_local_file(path,exchange,url,to_clusters,sumflg='0')
             poster.post_local_file(path,exchange,url,to_clusters,sumflg='n')
+            poster.post_local_file(path,exchange,url,to_clusters,sumflg='z,d')
 
             cfg.cluster      = "mycluster"
             cfg.source       = "mysource"
