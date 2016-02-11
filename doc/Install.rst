@@ -33,7 +33,7 @@ On Ubuntu 12.04::
 
   apt-get install python3-dev
   apt-get install python3-setuptools
-  easy-install3 pip
+  easy_install3 pip
   pip3 install metpx_sarracenia
   pip3 install paramiko
 
