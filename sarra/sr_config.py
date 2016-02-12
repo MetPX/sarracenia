@@ -1208,7 +1208,7 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
-        if flgs == '0' :
+        if flgs == '0' or flgs == 'R' :
            self.sumalgo = checksum_0()
            return
 

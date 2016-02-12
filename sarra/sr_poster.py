@@ -145,8 +145,11 @@ class sr_poster:
         self.parent.set_sumalgo(sumflg)
         sumalgo = self.parent.sumalgo
 
-        if len(sumflg) > 2 and sumflg[:2] == 'z,' :
-           sumstr = sumflg
+        if   sumflg == 'R' :
+             sumstr = 'R,0'
+
+        elif len(sumflg) > 2 and sumflg[:2] == 'z,' :
+             sumstr = sumflg
 
         # compute checksum
         else:
