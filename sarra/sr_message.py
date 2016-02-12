@@ -526,6 +526,10 @@ class sr_message():
         # file to be removed
         if self.sumflg == 'R' : return
 
+        # keep complete z description in sumflg
+        if self.sumflg == 'z':
+           self.sumflg  = sumstr
+
         self.parent.set_sumalgo(self.sumflg)
         self.sumalgo = self.parent.sumalgo
 

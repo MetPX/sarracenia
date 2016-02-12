@@ -444,7 +444,7 @@ class sr_sarra(sr_instances):
 
            # after download setting of sum for 'z' flag ...
 
-           if self.msg.sumflg == 'z' :
+           if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
               self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
               self.msg.log_publish(205,'Reset Content : checksum')
 
