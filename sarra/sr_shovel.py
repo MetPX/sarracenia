@@ -95,6 +95,10 @@ class sr_shovel(sr_instances):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
+        # accept/reject
+        self.use_pattern          = self.masks != []
+        self.accept_unmatch       = self.masks == []
+
         # make a single list for clusters that we accept message for
 
         self.accept_msg_for_clusters      = [ self.cluster ]
