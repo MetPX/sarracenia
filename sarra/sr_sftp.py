@@ -237,6 +237,7 @@ class sr_sftp():
            i  = 0
            while i < nc :
                  chunk = rfp.read(self.bufsize)
+                 if not chunk : break
                  fp.write(chunk)
                  if chk : chk.update(chunk)
                  if cb  : cb(chunk)

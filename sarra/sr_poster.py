@@ -156,6 +156,7 @@ class sr_poster:
               i  = 0
               while i<fsiz :
                     buf = fp.read(self.bufsize)
+                    if not buf: break
                     sumalgo.update(buf)
                     i  += len(buf)
               fp.close()
@@ -234,13 +235,17 @@ class sr_poster:
               if len(sumflg) > 2 and sumflg[:2] == 'z,' :
                  sumstr = sumflg
               else:
+                 bufsize = self.bufsize
+                 if length < bufsize : bufsize = length
+
                  sumalgo.set_path(path)
 
                  fp = open(path,'rb')
                  if offset != 0 : fp.seek(offset,0)
                  t  = 0
                  while t<length :
-                       buf = fp.read(self.bufsize)
+                       buf = fp.read(bufsize)
+                       if not buf: break
                        sumalgo.update(buf)
                        t  += len(buf)
                  fp.close()

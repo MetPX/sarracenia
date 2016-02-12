@@ -266,6 +266,7 @@ class sr_sarra(sr_instances):
     # =============
 
     def __on_message__(self):
+        self.logger.debug("sr_sarra __on_message__")
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
@@ -392,6 +393,7 @@ class sr_sarra(sr_instances):
         #=================================
 
         if self.msg.sumflg == 'R' :
+           self.logger.debug("message is to remove %s" % self.msg.local_file)
            try : 
                   if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
                   if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
@@ -408,6 +410,7 @@ class sr_sarra(sr_instances):
         #=================================
 
         # pass no warning it may already exists
+        self.logger.debug("directory %s" % self.local_dir)
         try    : os.makedirs(self.local_dir,0o775,True)
         except : pass
 

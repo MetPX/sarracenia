@@ -144,6 +144,7 @@ class http_transport():
         return False
 
     def http_write(self,req,local_file,msg) :
+        self.logger.debug("sr_http http_write")
 
         # on fly checksum 
 
@@ -175,8 +176,9 @@ class http_transport():
         # http provides exact data
 
         while True:
+              self.logger.debug("http_write read loop")
               chunk = req.read(self.bufsize)
-              if not chunk : break
+              if not chunk: break
               fp.write(chunk)
               if chk : chk.update(chunk)
               if cb  : cb(chunk)

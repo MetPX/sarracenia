@@ -77,26 +77,48 @@ class sr_message():
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
 
     def checksum_match(self):
+        self.logger.debug("sr_message checksum_match")
         self.local_checksum = None
 
         if not os.path.isfile(self.local_file) : return False
         if self.sumflg in ['0','n','z']        : return False
+
+        # insert : file big enough to compute part checksum ?
+
+        lstat = os.stat(self.local_file)
+        fsiz  = lstat[stat.ST_SIZE] 
+        end   = self.local_offset + self.length
+
+        if end > fsiz :
+           self.logger.warning("sr_message checksum_match file not big enough (insert?)")
+           return False
 
         self.compute_local_checksum()
 
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
+        self.logger.debug("sr_message compute_local_checksum")
+
+        bufsize = self.bufsize
+        if self.length < bufsize : bufsize = self.length
+
         self.sumalgo.set_path(os.path.basename(self.local_file))
 
         fp = open(self.local_file,'rb')
         if self.local_offset != 0 : fp.seek(self.local_offset,0)
         i  = 0
         while i<self.length :
-              buf = fp.read(self.bufsize)
+              buf = fp.read(bufsize)
+              if not buf: break
               self.sumalgo.update(buf)
               i  += len(buf)
         fp.close()
+
+        if i != self.length :
+           self.logger.warning("sr_message compute_local_checksum incomplete reading %d %d" % (i,self.length))
+           self.local_checksum = '0'
+           return
 
         self.local_checksum = self.sumalgo.get_value()
 
@@ -580,9 +602,14 @@ class sr_message():
                  i  = 0
                  while i<fsiz :
                        buf = fp.read(self.bufsize)
+                       if not buf : break
                        self.sumalgo.update(buf)
                        i  += len(buf)
                  fp.close()
+
+                 if i != fsiz :
+                    self.logger.warning("sr_message verify_part_suffix incomplete reading %d %d" % (i,fsiz))
+                    return False,'problem with file'
 
                  # set chksum
                  self.checksum  = self.sumalgo.get_value()

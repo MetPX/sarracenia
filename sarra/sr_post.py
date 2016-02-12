@@ -53,6 +53,7 @@ class sr_post(sr_config):
         self.configure()
 
     def check(self):
+        self.logger.debug("sr_post check")
 
         if self.url == None :
            self.logger.error("url required")
@@ -70,9 +71,11 @@ class sr_post(sr_config):
            sys.exit(1)
 
     def close(self):
+        self.logger.debug("sr_post close")
         self.poster.close()
 
     def connect(self):
+        self.logger.debug("sr_post connect")
 
         # sr_post : no loop to reconnect to broker
 
@@ -115,6 +118,7 @@ class sr_post(sr_config):
         print("-rr : reconnect between chunks\n")
 
     def instantiate(self,i=0):
+        self.logger.debug("sr_post instantiate")
         self.instance = i
         self.setlog()
 
@@ -139,11 +143,13 @@ class sr_post(sr_config):
         return ok
 
     def overwrite_defaults(self):
+        self.logger.debug("sr_post overwrite_defaults")
 
         ok, details = self.credentials.get("amqp://guest:guest@localhost/")
         self.broker = details.url
 
     def posting(self):
+        self.logger.debug("sr_post posting")
 
         filepath = '/' + self.url.path.strip('/')
 
@@ -195,6 +201,35 @@ class sr_post(sr_config):
            return
 
         # ==============
+        # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
+        # ==============
+
+        if self.blocksize == 0 :
+           lstat   = os.stat(filepath)
+           fsiz    = lstat[stat.ST_SIZE]
+
+           # compute blocksize from Peter's algo
+
+           # tfactor of 50Mb
+           tfactor = 50 * 1024 * 1024
+
+           # file > 5Gb  block of 500Mb
+           if   fsiz > 100 * tfactor :
+                self.blocksize = 10 * tfactor
+
+           # file [ 500Mb, 5Gb]  = 1/10 of fsiz
+           elif fsiz > 10 * tfactor :
+                self.blocksize = int(fsiz / 10)
+
+           # file [ 50Mb, 500Mb[  = 1/3 of fsiz
+           elif fsiz > tfactor :
+                self.blocksize = int(fsiz / 3)
+
+           # none of the above
+           # self.blocksize=0 means entire file
+
+
+        # ==============
         # blocksize != 0
         # ==============
 
@@ -213,6 +248,7 @@ class sr_post(sr_config):
         return
 
     def watching(self, fpath, event ):
+        self.logger.debug("sr_post watching")
 
         self.event = event
 
@@ -229,29 +265,30 @@ class sr_post(sr_config):
         self.url = url
 
     def watchpath(self ):
+        self.logger.debug("sr_post watchpath")
 
-       watch_path = self.url.path
-       if watch_path == None : watch_path = ''
-
-       if self.document_root != None :
-          if not self.document_root in watch_path :
-             watch_path = self.document_root + os.sep + watch_path
-
-       watch_path = watch_path.replace('//','/')
-
-       if not os.path.exists(watch_path):
-          self.logger.error("Not found %s " % watch_path )
-          sys.exit(1)
-
-       if os.path.isfile(watch_path):
-          self.logger.info("Watching file %s " % watch_path )
-
-       if os.path.isdir(watch_path):
-          self.logger.info("Watching directory %s " % watch_path )
-          if self.rename != None and self.rename[-1] != '/' and 'IN_CLOSE_WRITE' in self.events:
-             self.logger.warning("renaming all modified files to %s " % self.rename )
-
-       return watch_path
+        watch_path = self.url.path
+        if watch_path == None : watch_path = ''
+ 
+        if self.document_root != None :
+           if not self.document_root in watch_path :
+              watch_path = self.document_root + os.sep + watch_path
+ 
+        watch_path = watch_path.replace('//','/')
+ 
+        if not os.path.exists(watch_path):
+           self.logger.error("Not found %s " % watch_path )
+           sys.exit(1)
+ 
+        if os.path.isfile(watch_path):
+           self.logger.info("Watching file %s " % watch_path )
+ 
+        if os.path.isdir(watch_path):
+           self.logger.info("Watching directory %s " % watch_path )
+           if self.rename != None and self.rename[-1] != '/' and 'IN_CLOSE_WRITE' in self.events:
+              self.logger.warning("renaming all modified files to %s " % self.rename )
+ 
+        return watch_path
 
 
 # ===================================

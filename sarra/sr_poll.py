@@ -393,6 +393,10 @@ class sr_poll(sr_instances):
 
         self.accept_unmatch = False
 
+        # set parts to '1' so we always announce download the entire file
+
+        self.parts          = '1'
+
         # need to compute checksum with d algo... in sarra
 
         self.sumflg         = 'z,d'

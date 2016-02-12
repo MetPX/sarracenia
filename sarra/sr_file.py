@@ -39,11 +39,12 @@ import os, stat, sys
 # called by file_process (general file:// processing)
 
 def file_insert( parent,msg ) :
+    parent.logger.debug("file_insert")
 
     # file must exists
     if not os.path.isfile(msg.url.path):
        fp = open(msg.url.path,'w')
-       fp.close
+       fp.close()
 
     fp = open(msg.url.path,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
@@ -63,18 +64,23 @@ def file_insert( parent,msg ) :
 # so errors are ignored silently 
 
 def file_insert_part(parent,msg,part_file):
+    parent.logger.debug("file_insert_part %s" % part_file)
     chk = msg.sumalgo
     try :
              # file disappeared ...
              # probably inserted by another process in parallel
-             if not os.path.isfile(part_file): return False
+             if not os.path.isfile(part_file):
+                parent.logger.debug("file doesnt exist %s" % part_file)
+                return False
 
              # file with wrong size
              # probably being written now by another process in parallel
 
              lstat    = os.stat(part_file)
              fsiz     = lstat[stat.ST_SIZE] 
-             if fsiz != msg.length : return False
+             if fsiz != msg.length : 
+                parent.logger.debug("file wrong size %s %d %d" % (part_file,fsiz,msg.length))
+                return False
 
              # proceed with insertion
 
@@ -85,11 +91,15 @@ def file_insert_part(parent,msg,part_file):
              # no worry with length, read all of part_file
              # compute onfly_checksum ...
 
+             bufsize = parent.bufsize
+             if bufsize > msg.length : bufsize = msg.length
+
              if chk : chk.set_path(os.path.basename(msg.target_file))
 
              i  = 0
              while i<msg.length :
-                   buf = fp.read(parent.bufsize)
+                   buf = fp.read(bufsize)
+                   if not buf: break
                    ft.write(buf)
                    if chk : chk.update(buf)
                    i  += len(buf)
@@ -97,8 +107,15 @@ def file_insert_part(parent,msg,part_file):
              ft.close()
              fp.close()
 
+             if i != msg.length :
+                msg.logger.error("file_insert_part file currupted %s" % part_file)
+                msg.logger.error("read up to  %d of %d " % (i,msg.length) )
+                lstat   = os.stat(part_file)
+                fsiz    = lstat[stat.ST_SIZE] 
+                msg.logger.error("part filesize  %d " % (fsiz) )
+
              # set checksum in msg
-             if chk : msg.onfly_checksum = self.get_value()
+             if chk : msg.onfly_checksum = chk.get_value()
 
              # remove inserted part file
 
@@ -117,6 +134,8 @@ def file_insert_part(parent,msg,part_file):
     # oops something went wrong
 
     except :
+             (stype, svalue, tb) = sys.exc_info()
+             msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
              msg.logger.debug("did not insert %s " % part_file)
              return False
 
@@ -170,6 +189,7 @@ def file_link( msg ) :
 # file_process (general file:// processing)
 
 def file_process( parent ) :
+    parent.logger.debug("file_process")
 
     msg = parent.msg
 
@@ -186,7 +206,9 @@ def file_process( parent ) :
              ok = file_insert(parent,msg)
              if ok : return ok
 
-    except : pass
+    except : 
+             (stype, svalue, tb) = sys.exc_info()
+             msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
 
     msg.log_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.url.path,msg.local_file))
@@ -198,6 +220,7 @@ def file_process( parent ) :
 # this module is called to try inserting any part_file left
 
 def file_reassemble(parent):
+    parent.logger.debug("file_reassemble")
 
     msg = parent.msg
 
@@ -256,10 +279,12 @@ def file_reassemble(parent):
 # called by file_process->file_insert (general file:// processing)
 
 def file_write_length(req,msg,bufsize):
+    msg.logger.debug("file_write_length")
 
     msg.onfly_checksum = None
 
     chk = msg.sumalgo
+    msg.logger.debug("file_write_length chk = %s" % chk)
     if chk : chk.set_path(os.path.basename(msg.local_file))
 
     # file should exists
@@ -290,7 +315,7 @@ def file_write_length(req,msg,bufsize):
 
     fp.close()
   
-    if chk : msg.onfly_message = chk.get_value()
+    if chk : msg.onfly_checksum = chk.get_value()
 
     msg.log_publish(201,'Copied')
 

@@ -330,7 +330,7 @@ class sr_config:
         #self.subtopic            = None
 
         self.to_clusters          = None
-        self.parts                = '1'
+        self.parts                = None
         self.sumflg               = 'd'
 
         self.rename               = None
@@ -927,6 +927,7 @@ class sr_config:
 
                 elif words0 in ['lock','inflight']:
                      self.lock = words[1] 
+                     if self.lock[0] != '.' : self.lock = None
                      n = 2
 
                 elif words0 in ['log','l']:
