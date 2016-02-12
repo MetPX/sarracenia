@@ -307,6 +307,7 @@ class sr_config:
         self.reset                = False
         self.message_ttl          = None
         self.queue_share          = False
+        self.max_queue_size       = 25000
 
         self.use_pattern          = False    # accept if No pattern matching
         self.accept_unmatch       = False    # accept if No pattern matching
@@ -945,6 +946,10 @@ class sr_config:
                      if not ok or not url.scheme in ['amqp','amqps']:
                         self.logger.error("problem with manager (%s)" % urlstr)
                         needexit = True
+                     n = 2
+
+                elif words0 == 'max_queue_size':
+                     self.max_queue_size = int(words[1])
                      n = 2
 
                 elif words0 == 'message_ttl':
