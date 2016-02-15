@@ -88,7 +88,7 @@ One has the choice of filtering using  **subtopic**  with only AMQP's limited wi
 more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
 difference being that the AMQP filtering is applied by the broker itself, saving the 
 notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
-messages sent by the broker to the subscriber.  In other words,  **accept/reject**  are 
+messages sent by the broker to the shovel.  In other words,  **accept/reject**  are 
 client side filters, whereas  **subtopic**  is server side filtering.  
 
 It is best practice to use server side filtering to reduce the number of announcements sent
@@ -105,7 +105,7 @@ specify a non-default protocol version of messages to subscribe to.
 AMQP QUEUE SETTINGS
 -------------------
 
-The queue is where the notifications are held on the server for each subscriber.
+The queue is where the notifications are held on the server for each shovel.
 
 - **queue_name    <name>         (default: q_<brokerUser>.sr_shovel.<configname>)** 
 - **durable       <boolean>      (default: False)** 
@@ -265,35 +265,3 @@ SEE ALSO
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
-
-
-HISTORY
--------
-
-dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
-version was deployed in 2013 on an experimental basis.  The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02.
-
-In 2007, when the MetPX was originally open sourced, the staff responsible were part of
-Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
-of disappearing species which are not furry (the furry ones get all the attention) and
-because search engines will find references to names which are more unusual more easily, 
-the original MetPX WMO switch was named after a carnivorous plant on the Species At
-Risk Registry:  The *Thread-leaved Sundew*.  
-
-The organization behind metpx have since moved to Shared Services Canada, but when
-it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
-of insectivorous pitcher plants. We like plants that eat!  
-
-
-dd_subscribe Renaming
-~~~~~~~~~~~~~~~~~~~~~
-
-The new module (MetPX-Sarracenia) has many components, is used for more than 
-distribution, and more than one web site, and causes confusion for sys-admins thinking
-it is associated with the dd(1) command (to convert and copy files).  So, we switched
-all the components to use the sr\_ prefix.
-
