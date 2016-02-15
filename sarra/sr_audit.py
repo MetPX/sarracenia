@@ -197,12 +197,15 @@ class sr_audit(sr_instances):
         # loop build list of exchanges of interest
         # empty or rabbitmq-server defaults 'amq.' are taken off
 
-        exchange_rab = ['','amq.direct','amq.fanout','amq.headers','amq.match', \
-                           'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic'  ]
+        exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match', \
+                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic'  ]
 
         exchange_lst = []
         for edict in lst_dict :
             exchange = edict['name']
+            if exchange == '' : continue
+            # if you want sr_audit to get rid of rabbitmq-server amq.* default exchanges
+            # just comment this next line
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
@@ -310,16 +313,54 @@ class sr_audit(sr_instances):
         self.logger.debug("sr_audit verify_queues")
 
         lst_dict = self.rabbitmqadmin("list queues name messages")
-
-        for edict in lst_dict :
-            queue = edict['name']
-            if queue == '' : continue
-            try    : qsize = int(edict['messages'])
-            except : qsize = -1
-            print("Q S = %s %d" % (queue,qsize))
-
         self.logger.debug("lst_dict = %s" % lst_dict)
 
+        for edict in lst_dict :
+            q = edict['name']
+            if q == '' : continue
+            try    : qsize = int(edict['messages'])
+            except : qsize = -1
+            self.logger.debug("verifying queue %s (%d)" % (q,qsize))
+
+            # queue bigger than max_queue_size are deleted right away
+            if qsize >= self.max_queue_size :
+               self.logger.debug("queue too big %s (%d)" % (q,qsize))
+               self.delete_queue(q)
+               continue
+
+            # queue name starting with cmc are tolerated for now
+            # FIX ME, when sarra really well implemented/used delete cmc queue
+
+            lq = len(q)
+            if lq > 4 and q[:4] == 'cmc.' :
+               self.logger.debug("cmc queue tolerated %s " % q)
+               continue
+
+            # at this point any queue that does not start with sarra's default is deleted
+            # so any queue should start with q_"username".
+
+            if lq < 2 or q[:2] != 'q_'  :
+               self.logger.debug("queue with invalid name %s " % q)
+               self.delete_queue(q)
+               continue
+
+            # extract username from queuename... 
+
+            parts = q.split('.')
+            username = parts[0][2:]
+
+            # verify all valid usernames
+            if username in ['root','feeder','anonymous'] or \
+               username in self.admins                   or \
+               username in self.feeders                  or \
+               username in self.sources                  or \
+               username in self.subscribes:
+               self.logger.debug("queue ok, recognized username %s " % username)
+               continue
+
+            # queue of with invalid or obsolete username
+            self.logger.debug("queue with invalid username %s " % q)
+            self.delete_queue(q)
 
     def run(self):
         self.logger.info("sr_audit run")
