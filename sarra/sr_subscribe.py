@@ -499,6 +499,7 @@ def test_sr_subscribe():
     f.write("      def __init__(self):\n")
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
+    f.write("          if parent.msg.sumflg == 'R' : return True\n")
     f.write("          self.count_ok += 1\n")
     f.write("          parent.msg.mtype_m = self.count_ok\n")
     f.write("          return True\n")
@@ -511,6 +512,7 @@ def test_sr_subscribe():
     f.write("      def __init__(self): \n")
     f.write("          self.count_ok = 0\n")
     f.write("      def perform(self, parent ):\n")
+    f.write("          if parent.msg.sumflg == 'R' : return True\n")
     f.write("          self.count_ok += 1\n")
     f.write("          parent.msg.mtype_p = self.count_ok\n")
     f.write("          return True\n")
@@ -566,6 +568,11 @@ def test_sr_subscribe():
           if not ok : continue
           if subscribe.msg.mtype_m == 1: j += 1
           if subscribe.msg.mtype_f == 1: k += 1
+          logger.debug(" local_file = %s" % msg.local_file)
+          subscribe.msg.sumflg = 'R'
+          subscribe.msg.checksum = '0'
+          ok = subscribe.process_message()
+          
           i = i + 1
           if i == 1 : break
 

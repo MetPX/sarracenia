@@ -340,7 +340,7 @@ def self_test():
             fp.close()
 
             path        = os.getcwd() + os.sep + "toto"
-            exchange    = "amq.topic"
+            exchange    = "xs_guest"
             url         = urllib.parse.urlparse("file://" + path)
             to_clusters = "ALL"
 
