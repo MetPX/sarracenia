@@ -34,10 +34,11 @@ It will perform the same actions as the currently running one.
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process. 
 
-**sr_audit** connects to the broker defined by the **feeder** option which can be overwritten by
-option **broker**. It sleeps **sleep** seconds.  When it wakes up, it builds lists of users by 
-roles from the setting of **users.conf**,  and considers the standard users :   
-**root**, **feeder**, **anonymous** with there appropriate roles : **admin**, **feeder**, **subscribe**.
+**sr_audit** manages the broker from the **admin** option (describing the user managing the broker)
+and its credentials defined in the file  **credentials.conf**. It sleeps **sleep** seconds.
+When it wakes up, it builds lists of users by roles from the setting of **users.conf**. It also
+considers the standard users :   **root**, **feeder**, **anonymous** and there appropriate roles:
+ **admin**, **feeder**, **subscribe**.
 
 Than it gets all the current queues on the broker. The queues are validated and deleted if
 they are holding more than **max_queue_size** messages, if they do not conform to the naming
@@ -75,13 +76,15 @@ Comment lines begins with **#**.
 
 There is a very limited set of options that **sr_audit** uses.
 
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+**admin          <user>    (Mandatory: broker admin user, detailed in credentials.conf)**
 **debug          <boolean> (default: false)**
 **sleep          <int>     (default: 60 in seconds)** 
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 
-The broker option defaults to the value of option 'feeder' that would
+The **admin** option must be defined it
 normally be set in the file **default.conf**
+and the credential details would be found in 
+the file **credentials.conf**
 
 
  
