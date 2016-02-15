@@ -225,12 +225,6 @@ class sr_subscribe(sr_instances):
 
         if self.notify_only : return False
 
-        # no support for delete event
-
-        if self.msg.sumflg == 'R' :
-           self.logger.warning("delete message ignored")
-           return False
-
         # invoke user defined on_message when provided
 
         if self.on_message : return self.on_message(self)
@@ -260,11 +254,24 @@ class sr_subscribe(sr_instances):
         self.msg.headers['rename'] = self.local_path
 
         #=================================
-        # now message is complete : invoke __on_message__
+        # now invoke __on_message__
         #=================================
 
         ok = self.__on_message__()
         if not ok : return ok
+
+        #=================================
+        # delete event, try to delete the local product given by message
+        #=================================
+
+        if self.msg.sumflg == 'R' :
+           self.logger.debug("message is to remove %s" % self.msg.local_file)
+           try : 
+                  if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
+                  if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
+                  self.logger.info("%s deleted" % self.msg.local_file)
+           except:pass
+           return True
 
         #=================================
         # prepare download 

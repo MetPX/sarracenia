@@ -505,8 +505,21 @@ class ftp_transport():
                    ftp.cd_forced(775,remote_dir)
                    self.cdir  = remote_dir
 
-                offset = 0
-    
+                #=================================
+                # delete event
+                #=================================
+
+                if msg.sumflg == 'R' :
+                   msg.logger.debug("message is to remove %s" % parent.remote_file)
+                   sftp.delete(parent.remote_file)
+                   msg.log_publish(205,'Reset Content : deleted')
+                   return True
+
+                #=================================
+                # send event
+                #=================================
+
+                offset    = 0
                 str_range = ''
     
                 # deliver file

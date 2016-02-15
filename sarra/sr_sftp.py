@@ -535,8 +535,21 @@ class sftp_transport():
                    sftp.cd_forced(775,remote_dir)
                    self.cdir  = remote_dir
 
+                #=================================
+                # delete event
+                #=================================
+
+                if msg.sumflg == 'R' :
+                   msg.logger.debug("message is to remove %s" % parent.remote_file)
+                   sftp.delete(parent.remote_file)
+                   msg.log_publish(205,'Reset Content : deleted')
+                   return True
+
+                #=================================
+                # send event
+                #=================================
+
                 offset = 0
-    
                 if  msg.partflg == 'i': offset = msg.offset
     
                 str_range = ''
