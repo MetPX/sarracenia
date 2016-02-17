@@ -77,7 +77,7 @@ class sr_config:
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
         self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
         self.user_plugins_dir = self.user_config_dir + '/plugins'
-        self.http_dir         = self.user_config_dir + '/http'
+        self.http_dir         = self.user_config_dir + '/Downloads'
 
         # umask change for directory creation and chmod
 
@@ -356,6 +356,7 @@ class sr_config:
         self.no_logback           = False
 
         self.recursive            = False
+        self.users_flag           = False
 
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
@@ -439,11 +440,12 @@ class sr_config:
                  lines = f.readlines()
                  f.close
                  for line in lines :
-                     line = line.strip()
+                     line  = line.strip()
                      if len(line) == 0 or line[0] == '#' : continue
-                     parts = line.split()
-                     user  = parts[0]
-                     roles = line.replace(user,'').lower().strip()
+                     parts  = line.split()
+                     user   = parts[0]
+                     remain = ' '.join(parts[1:])
+                     roles  = remain.lower().strip()
                      self.users[user] = roles
 
         except : 
@@ -1171,6 +1173,14 @@ class sr_config:
                 elif words0 in ['url','u']:
                      self.url = urllib.parse.urlparse(words1)
                      n = 2
+
+                elif words0 == 'users':
+                     if words[0][0:1] == '-' : 
+                        self.users_flag = True
+                        n = 1
+                     else :
+                        self.users_flag = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'vip':
                      self.vip = words[1]
