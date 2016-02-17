@@ -247,6 +247,28 @@ class sr_post(sr_config):
         if not ok: sys.exit(1)
         return
 
+    def scandir_and_post(self,path):
+        self.logger.debug("sr_post scandir_and_post %s " % path)
+        if os.path.isfile(path):
+           self.logger.debug("scandir_and_post it is a file %s " % path)
+           if os.access(path,os.R_OK) :
+                 self.watching(path,'IN_CLOSE_WRITE')
+           else: self.logger.warning("could not access file %s " % path)
+           return
+        if os.path.isdir(path):
+           self.logger.debug("scandir_and_post it is a directory %s " % path)
+           if os.access(path,os.R_OK) :
+                 entries = os.listdir(path)
+                 for e in entries:
+                     newpath = path + os.sep + e
+                     self.scandir_and_post(newpath)
+           else: self.logger.warning("could not access directory %s " % path)
+           return
+
+        self.logger.warning("not a file nor a directory ? %s " % path)
+
+        return
+
     def watching(self, fpath, event ):
         self.logger.debug("sr_post watching")
 
@@ -302,8 +324,15 @@ def main():
     try :
              post.instantiate()
              post.connect()
-             post.posting()
+
+             if not post.recursive :
+                post.posting()
+             else:
+                watchpath = post.watchpath()
+                post.scandir_and_post(watchpath)
+
              post.close()
+
     except :
              (stype, value, tb) = sys.exc_info()
              post.logger.error("Type: %s, Value:%s\n" % (stype, value))
