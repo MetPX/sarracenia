@@ -53,14 +53,14 @@ class sr_audit(sr_instances):
     def add_user(self,u,role):
         self.logger.info("adding user %s" % u)
 
-        if u == 'root' or role == 'admin' :
+        if role == 'admin' :
            dummy = self.rabbitmqadmin("declare user name=%s password= tags=administrator"%u)
         else:
            dummy = self.rabbitmqadmin("declare user name=%s password= tags="%u)
 
         # admin and feeder gets the same permissions
 
-        if u in ['root','feeder'] or role in ['admin,','feeder','manager']:
+        if role in ['admin,','feeder','manager']:
            c="configure='.*'"
            w="write='.*'"
            r="read='.*'"
@@ -78,16 +78,17 @@ class sr_audit(sr_instances):
            dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
            return
 
+        # anonymous was special at a certain time ... historical reasons
         # anonymous should only be a subscribe... but it is a special case...
         # to work with old versions of subscribe : queue cmc* and configure permission on xpublic
 
-        if u == 'anonymous' :
-           c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-           w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
-           r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
-           self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
-           return
+        #if u == 'anonymous' :
+        #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
+        #   w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
+        #   r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
+        #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
+        #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+        #   return
 
         # subscribe
 
@@ -114,6 +115,7 @@ class sr_audit(sr_instances):
 
         picked      = []
         self.admins = []
+        self.logger.debug("users = %s" % self.users)
         for user in self.users :
             roles = self.users[user]
             if 'admin' in roles :
@@ -146,9 +148,6 @@ class sr_audit(sr_instances):
             roles = self.users[user]
             if 'subscribe' in roles and not user in picked :
                self.subscribes.append(user)
-
-        if not 'anonymous' in self.subscribes :
-           self.subscribes.append('anonymous')
 
     def delete_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
@@ -261,18 +260,9 @@ class sr_audit(sr_instances):
 
         self.logger.debug("user_lst = %s" % user_lst)
 
-        # mandatory  root,feeder,anonymous
-
-        for u in ['root','feeder','anonymous'] :
-            if u in user_lst :
-               user_lst.remove(u)
-               continue
-            self.add_user(u,None)
-
         # admins
 
         for u in self.admins :
-            if u == 'root'   : continue
             if u in user_lst :
                user_lst.remove(u)
                continue
@@ -281,7 +271,6 @@ class sr_audit(sr_instances):
         # feeders
 
         for u in self.feeders:
-            if u == 'feeder' : continue
             if u in user_lst :
                user_lst.remove(u)
                continue
@@ -298,7 +287,6 @@ class sr_audit(sr_instances):
         # subscribes
 
         for u in self.subscribes:
-            if u == 'anonymous' : continue
             if u in user_lst :
                user_lst.remove(u)
                continue
@@ -332,7 +320,7 @@ class sr_audit(sr_instances):
             # FIX ME, when sarra really well implemented/used delete cmc queue
 
             lq = len(q)
-            if lq > 4 and q[:4] == 'cmc.' :
+            if lq > 3 and q[:3] == 'cmc' :
                self.logger.debug("cmc queue tolerated %s " % q)
                continue
 
@@ -346,21 +334,21 @@ class sr_audit(sr_instances):
 
             # extract username from queuename... 
 
-            parts = q.split('.')
-            username = parts[0][2:]
+            if self.users_flag :
+               parts = q.split('.')
+               username = parts[0][2:]
 
-            # verify all valid usernames
-            if username in ['root','feeder','anonymous'] or \
-               username in self.admins                   or \
-               username in self.feeders                  or \
-               username in self.sources                  or \
-               username in self.subscribes:
-               self.logger.debug("queue ok, recognized username %s " % username)
-               continue
+               # verify all valid usernames
+               if username in self.admins                   or \
+                  username in self.feeders                  or \
+                  username in self.sources                  or \
+                  username in self.subscribes:
+                  self.logger.debug("queue ok, recognized username %s " % username)
+                  continue
 
-            # queue of with invalid or obsolete username
-            self.logger.debug("queue with invalid username %s " % q)
-            self.delete_queue(q)
+               # queue of with invalid or obsolete username
+               self.logger.debug("queue with invalid username %s " % q)
+               self.delete_queue(q)
 
     def run(self):
         self.logger.info("sr_audit run")
@@ -372,8 +360,8 @@ class sr_audit(sr_instances):
                       self.logger.info("sr_audit waking up")
                       self.configure()
                       self.verify_queues()
-                      self.verify_users()
-                      self.verify_exchanges()
+                      if self.users_flag : self.verify_users()
+                      if self.users_flag : self.verify_exchanges()
               except:
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
@@ -414,7 +402,7 @@ def main():
        config    = sys.argv[-2]
        cfg       = sr_config()
        cfg.general()
-       ok,config = cfg.config_path('log',config,mandatory=False)
+       ok,config = cfg.config_path('audit',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
        if not ok : config = None
 
