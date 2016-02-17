@@ -99,8 +99,8 @@ def main():
        print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
        sys.exit(1)
 
-    # sarracenia program span
-    LOG_PROGRAMS=['log2clusters','2xlog','log2source']
+    # sarracenia program that may start without config file
+    LOG_PROGRAMS=['audit','log2clusters','2xlog','log2source']
     for d in LOG_PROGRAMS:
         if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
            scandir(cfg.user_config_dir+os.sep+d)
@@ -108,6 +108,7 @@ def main():
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
            subprocess.check_call(['sr_'+d,sys.argv[-1]])
 
+    # sarracenia program requiring configs
     SR_PROGRAMS =['watch','winnow','sarra','shovel','subscribe','sender','poll','log']
     for d in SR_PROGRAMS:
         scandir(cfg.user_config_dir+os.sep+d)
