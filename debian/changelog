@@ -1,3 +1,14 @@
+metpx-sarracenia (2.16.02a2) unstable; urgency=medium
+
+  * message with sum=R,0 (deletion) processed
+  * sr_post able to post file,directory, and directory tree
+  * config, scripts and checksum can be http://... urls
+  * sr_audit first release
+  * sr_watch uses sr_instances
+  * and more...
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Wed, 17 Feb 2016 12:09:50 -0500
+
 metpx-sarracenia (2.16.01a8) unstable; urgency=medium
 
   * fixed makefile for debian documentation 
