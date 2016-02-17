@@ -247,25 +247,28 @@ class sr_post(sr_config):
         if not ok: sys.exit(1)
         return
 
-    def scandir_and_post(self,path):
+    def scandir_and_post(self,path,recursive):
         self.logger.debug("sr_post scandir_and_post %s " % path)
-        if os.path.isfile(path):
-           self.logger.debug("scandir_and_post it is a file %s " % path)
-           if os.access(path,os.R_OK) :
-                 self.watching(path,'IN_CLOSE_WRITE')
-           else: self.logger.warning("could not access file %s " % path)
-           return
-        if os.path.isdir(path):
-           self.logger.debug("scandir_and_post it is a directory %s " % path)
-           if os.access(path,os.R_OK) :
-                 entries = os.listdir(path)
-                 for e in entries:
-                     newpath = path + os.sep + e
-                     self.scandir_and_post(newpath)
-           else: self.logger.warning("could not access directory %s " % path)
+
+        if not os.path.isdir(path):
+           self.logger.debug("sr_post scandir_and_post not a directory %s " % path)
            return
 
-        self.logger.warning("not a file nor a directory ? %s " % path)
+        try :
+               entries = os.listdir(path)
+               for e in entries:
+                   newpath = path + os.sep + e
+
+                   if os.path.isfile(newpath) and os.access(newpath,os.R_OK):
+                      self.watching(newpath,'IN_CLOSE_WRITE')
+                      continue
+
+                   if os.path.isdir(newpath) and recursive :
+                      self.scandir_and_post(newpath,recursive)
+                      continue
+
+                   self.logger.warning("skipped : %s " % newpath)
+        except: self.logger.debug("sr_post scandir_and_post not accessible  %s " % path)
 
         return
 
@@ -303,10 +306,10 @@ class sr_post(sr_config):
            sys.exit(1)
  
         if os.path.isfile(watch_path):
-           self.logger.info("Watching file %s " % watch_path )
+           self.logger.info("file %s " % watch_path )
  
         if os.path.isdir(watch_path):
-           self.logger.info("Watching directory %s " % watch_path )
+           self.logger.info("directory %s " % watch_path )
            if self.rename != None and self.rename[-1] != '/' and 'IN_CLOSE_WRITE' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
  
@@ -325,11 +328,11 @@ def main():
              post.instantiate()
              post.connect()
 
-             if not post.recursive :
+             watchpath = post.watchpath()
+             if os.path.isfile(watchpath) : 
                 post.posting()
-             else:
-                watchpath = post.watchpath()
-                post.scandir_and_post(watchpath)
+             else :
+                post.scandir_and_post(watchpath,post.recursive)
 
              post.close()
 
