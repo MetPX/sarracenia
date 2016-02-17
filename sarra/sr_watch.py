@@ -15,8 +15,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Daluma Sen     - Shared Services Canada
-#  Last Changed   : Dec 11 16:07:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Feb 12 07:41:41 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,87 +32,173 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
+#============================================================
+# usage example
 #
+# sr_watch [options] [config] [start|stop|restart|reload|status]
+#
+# sr_watch watch a file or a directory. When event occurs on file, sr_watch connects
+# to a broker and an amqp message is sent...
+#
+# conditions:
+#
+# (messaging)
+# broker                  = where the message is announced
+# exchange                = xs_source_user
+# subtopic                = default to the path of the URL with '/' replaced by '.'
+# topic_prefix            = v02.post
+# document_root           = the root directory from which the url path is exposed
+# url                     = taken from the destination
+# sum                     = 0   no sum computed... if we dont download the product
+#                           x   if we download the product
+# rename                  = which path under root, the file should appear
+# to                      = message.headers['to_clusters'] MANDATORY
+#
+#============================================================
 
-import os, signal, sys, time
+import os, sys, time
+
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
-try :    from sr_post      import *
-except : from sarra.sr_post import *
+try :    
+         from sr_instances       import *
+         from sr_post            import *
+except : 
+         from sarra.sr_instances import *
+         from sarra.sr_post      import *
+
+class sr_watch(sr_instances):
+
+    def __init__(self,config=None,args=None):
+        self.post = sr_post(config,args)
+        sr_instances.__init__(self,config,args)
+        self.post.logger       = self.logger
+        self.post.program_name = 'sr_watch'
+
+    def close(self):
+        self.post.close()
+        self.observer.unschedule(self.obs_watched)
+        self.observer.stop()
+
+    def overwrite_defaults(self):
+        pass
+        
+    def check(self):
+        self.nbr_instances  = 1
+        self.accept_unmatch = True
+
+        self.post.configure()
+
+    def event_handler(self,meh):
+        self.myeventhandler = meh
+
+    def help(self):
+        self.post.help()
+
+    def run(self):
+
+        self.logger.info("sr_watch run")
+
+        self.post.logger = self.logger
+        self.post.configure()
+        self.post.instantiate()
+        self.post.connect()
+
+        self.watch_path = self.post.watchpath()
+
+        try:
+            self.observer = Observer()
+            self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
+            self.observer.start()
+        except OSError as err:
+            self.logger.error("Can't watch directory: %s" % str(err))
+            os._exit(0)
+
+        self.observer.join()
+
+    def reload(self):
+        self.logger.info("%s reload" % self.program_name)
+        self.close()
+        self.configure()
+        self.run()
+
+    def start(self):
+        self.logger.info("%s start" % self.program_name)
+        self.run()
+
+    def stop(self):
+        self.logger.info("%s stop" % self.program_name)
+        self.close()
+        os._exit(0)
 
 # ===================================
 # MAIN
 # ===================================
+
 def main():
 
-    post = sr_post(config=None,args=sys.argv[1:])
-    post.configure()
-    post.instantiate()
-    post.connect()
+    action = None
+    args   = None
+    config = None
+
+    if len(sys.argv) >= 2 : 
+       action = sys.argv[-1]
+
+    if len(sys.argv) >= 3 : 
+       config = sys.argv[-2]
+       args   = sys.argv[1:-2]
 
     # =========================================
-    # watch_path ready
+    # instantiate sr_watch
     # =========================================
-    watch_path = post.watchpath()
+
+    watch = sr_watch(config,args)
 
     # =========================================
     # setup watchdog
     # =========================================
+    
     class MyEventHandler(PatternMatchingEventHandler):
-        ignore_patterns = ["*.tmp"]
-        def event_post(self, event, tag):
-            if not event.is_directory:
-                try:
-                    post.watching(event.src_path, tag)
-                except PermissionError as err:
-                    post.logger.error(str(err))
+          ignore_patterns = ["*.tmp"]
+          def event_post(self, event, tag):
+              if not event.is_directory:
+                  try:
+                         if watch.isMatchingPattern(event.src_path, accept_unmatch=True) :
+                            watch.post.watching(event.src_path, tag)
+                  except PermissionError as err:
+                         watch.logger.error(str(err))
+    
+          def on_created(self, event):
+              self.event_post(event, 'IN_CLOSE_WRITE')
+                        
+          def on_deleted(self, event):
+              if event.src_path == watch.watch_path:
+                 watch.logger.error('Exiting!')
+                 os._exit(0)
+              self.event_post(event, 'IN_DELETE')
+    
+          def on_modified(self, event):
+              self.event_post(event, 'IN_CLOSE_WRITE')
 
-        def on_created(self, event):
-            self.event_post(event, 'IN_CLOSE_WRITE')
-                    
-        def on_deleted(self, event):
-            if event.src_path == watch_path:
-                post.logger.error('Exiting!')
-                os._exit(0)
-            self.event_post(event, 'IN_DELETE')
+    watch.event_handler(MyEventHandler())
 
-        def on_modified(self, event):
-            self.event_post(event, 'IN_CLOSE_WRITE')
+    if   action == 'foreground' : watch.foreground_parent()
+    elif action == 'reload'     : watch.reload_parent()
+    elif action == 'restart'    : watch.restart_parent()
+    elif action == 'start'      : watch.start_parent()
+    elif action == 'stop'       : watch.stop_parent()
+    elif action == 'status'     : watch.status_parent()
+    else :
+           watch.logger.error("action unknown %s" % action)
+           sys.exit(1)
 
-    try:
-        observer = Observer()
-        obs_watched = observer.schedule(MyEventHandler(), watch_path, recursive=post.recursive)
-        observer.start()
-    except OSError as err:
-        post.logger.error("Can't watch directory: %s" % str(err))
-        os._exit(0)
-
-    # =========================================
-    # signal reload
-    # =========================================
-    def signal_reload(signal, frame):
-        post.logger.info('Reloading!')
-        post.close()
-        observer.unschedule(obs_watched)
-        main()
-
-    signal.signal(signal.SIGHUP, signal_reload)
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        post.logger.info('Stop!')
-        post.close()
-        post.stop = True
-        observer.stop()
-
-    observer.join()
     sys.exit(0)
+
 
 # =========================================
 # direct invocation
 # =========================================
+
 if __name__=="__main__":
    main()
