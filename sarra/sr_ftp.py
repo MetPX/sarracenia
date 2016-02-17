@@ -511,7 +511,7 @@ class ftp_transport():
 
                 if msg.sumflg == 'R' :
                    msg.logger.debug("message is to remove %s" % parent.remote_file)
-                   sftp.delete(parent.remote_file)
+                   ftp.delete(parent.remote_file)
                    msg.log_publish(205,'Reset Content : deleted')
                    return True
 
