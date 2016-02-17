@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.02a3) unstable; urgency=medium
+
+  * sr_audit omitted in setup.py
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Wed, 17 Feb 2016 12:39:35 -0500
+
 metpx-sarracenia (2.16.02a2) unstable; urgency=medium
 
   * message with sum=R,0 (deletion) processed
