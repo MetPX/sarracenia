@@ -7,7 +7,7 @@
 Poll products from a remote server
 ------------------------------------------
 
-:Manual section: 8
+:Manual section: 1
 :Date: @Date@
 :Version: @Version@
 :Manual group: MetPx Sarracenia Suite

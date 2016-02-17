@@ -26,7 +26,7 @@ Acquires the files and ReAnnounces them at their new locations.
 
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
-**sr_sarra** connects to a *source_broker* (often the same as the remote file server 
+**sr_sarra** connects to a *broker* (often the same as the remote file server 
 itself) and subscribes to the notifications of interest. It uses the notification 
 information to download the file on the local server its running on. 
 After, it produces a new notification for the local file on a broker (usually on the local server).
