@@ -27,17 +27,19 @@ to specific questions of configuration.
 * `Developer Guide <Dev.html>`_ - contributing to sarracenia development.
 
 
-Unix Commands
--------------
+User-Facing Components
+----------------------
 
-* `sr_post(1) <sr_post.1.html>`_ - the tool to post individual files.
+* `sr_post(1) <sr_post.1.html>`_ - to post individual files.
+* `sr_poll(1) <sr_poll.1.html>`_ - to list files to pull from remote servers.
 * `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
-* `sr_log(1) <sr_log.1.html>`_ - (Does not exist yet!) the tool to read log messages.
-* `sr_watch(1) <sr_watch.1.html>`_ - the tool to post all changes to a given directory.
+* `sr_log(1) <sr_log.1.html>`_ - to read log messages.
+* `sr_watch(1) <sr_watch.1.html>`_ - to post all changes to a given directory.
 
 Administrative Daemons
 -----------------------
 
+* `sr_audit(8) <sr_audit.8.html>`_ - Audit the running configuration, looking for issues.
 * `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
 * `sr_log2clusters(8) <sr_log2clusters.8.html>`_ - daemon to copy log messages to other clusters.
 * `sr_log2source(8) <sr_log2source.8.html>`_ - daemon to copy log messages to the originating source.
@@ -49,4 +51,4 @@ Formats/Protocols
 * `sr_post(7) <sr_post.7.html>`_ - the format of postings. Posted by watch and post, consumed by subscribe.
 * `sr_log(7) <sr_log.7.html>`_ - the format of log messages. Sent by consumers, for sources to measure reach.
 * `log2clusters(7) <log2clusters.7.html>`_ - configuration of log routing between clusters.
-* `sr_config(7) <sr_subscribe.7.html>`_ - Overview of Configuration for commands.
+* `sr_config(7) <sr_config.7.html>`_ - reference for options used by many components.
