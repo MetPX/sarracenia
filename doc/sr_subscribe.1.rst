@@ -124,19 +124,9 @@ The queue is where the notifications are held on the server for each subscriber.
 - **message-ttl   <minutes>      (default: None)** 
 
 By default, sr_subscribe** creates a queue name that should be unique and starts with  **q_** 
-and is usually followe
-and puts it into a file .<configname>.queue, where <configname> is the config filename.
-The  **queue**  option sets a queue name. It should always start with  **cmc** .
-
-.. NOTE::
-   FIXME: is this **cmc** default correct?  Has it changed to something less cmc centric?
-   makes things easier to clean up if exchanges and queues are associated with login users.
-   I think the correct default might be something like: qs_Alice for user 'Alice' for the 
-   sx_Alice exchange, and ql_Alice for the sl_Alice exchange.  Is that right?
-   have to be able to permit people to create only the queues they should... 
-   so. Alice would only be able to create queues ^q._Alice.* ... and Bob only q._Bob.*$
-   does it matter to differentiate s vs. l? or just use same queue names for all (q_Alice?)
-
+and is usually followed by the broker user name. sr_subscribe writes the queue name
+ in a file named .<configname>.queue, where <configname> is the config filename.
+The  **queue**  option sets a queue name. It should always start with  **q_<user>** .
 
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
@@ -229,7 +219,7 @@ would result in the creation of the directories and the file
 
 You can modify the mirrored directoties with the option **strip**  .
 If set to N  (an integer) the first 'N' directories are withdrawn.
-For example :
+For example ::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -334,10 +324,10 @@ Should you want to implement tasks in various part of the execution of the progr
 - **on_file     <script>        (default: None)** 
 - **on_parts    <script>        (default: None)** 
 
-A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be:
-(this one being for **on_file**)
+A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
+(this one being for **on_file**)::
 
-class Transformer(object): 
+ class Transformer(object): 
       def __init__(self):
           pass
 
@@ -348,8 +338,8 @@ class Transformer(object):
 
           return True
 
-transformer  = Transformer()
-self.on_file = transformer.perform
+ transformer  = Transformer()
+ self.on_file = transformer.perform
 
 The only arguments the script receives it **parent**, which is an instance of
 the **sr_subscribe** class
