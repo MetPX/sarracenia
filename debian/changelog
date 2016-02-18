@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.02a4) unstable; urgency=medium
+
+  * sr_post easier to use as a class (check not that picky)
+  * sr_watch according to sr_post changes
+
+ -- Michel Grenier <michel.grenier@canada.ca>  Thu, 18 Feb 2016 14:38:46 -0500
+
 metpx-sarracenia (2.16.02a3) unstable; urgency=medium
 
   * sr_audit omitted in setup.py
