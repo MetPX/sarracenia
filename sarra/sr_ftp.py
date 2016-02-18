@@ -448,8 +448,8 @@ class ftp_transport():
                 if parent.delete :
                    try   :
                            ftp.delete(remote_file)
-                           msg.loggger.info ('file  deleted on remote site %s' % remote_file)
-                   except: msg.loggger.error('unable to delete remote file %s' % remote_file)
+                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                   except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
                 #ftp.close()
