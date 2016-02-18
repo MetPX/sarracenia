@@ -51,13 +51,16 @@ class sr_post(sr_config):
     def __init__(self,config=None,args=None):
         sr_config.__init__(self,config,args)
         self.configure()
+        self.in_error = False
 
     def check(self):
         self.logger.debug("sr_post check")
 
+        self.in_error = False
         if self.url == None :
            self.logger.error("url required")
-           sys.exit(1)
+           self.in_error = True
+           return
 
         # sarra exchange default value is xs_username
         # username being the broker's
@@ -67,8 +70,8 @@ class sr_post(sr_config):
 
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
-           self.help()
-           sys.exit(1)
+           self.in_error = True
+           return
 
     def close(self):
         self.logger.debug("sr_post close")
@@ -116,11 +119,6 @@ class sr_post(sr_config):
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
-
-    def instantiate(self,i=0):
-        self.logger.debug("sr_post instantiate")
-        self.instance = i
-        self.setlog()
 
     # =============
     # __on_post__ internal posting of message
@@ -323,9 +321,9 @@ class sr_post(sr_config):
 def main():
 
     post = sr_post(config=None,args=sys.argv[1:])
+    if post.in_error : self.exit(1)
 
     try :
-             post.instantiate()
              post.connect()
 
              watchpath = post.watchpath()

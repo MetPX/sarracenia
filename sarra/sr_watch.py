@@ -89,6 +89,7 @@ class sr_watch(sr_instances):
         self.accept_unmatch = True
 
         self.post.configure()
+        if self.post.in_error : sys.exit(1)
 
     def event_handler(self,meh):
         self.myeventhandler = meh
@@ -102,7 +103,7 @@ class sr_watch(sr_instances):
 
         self.post.logger = self.logger
         self.post.configure()
-        self.post.instantiate()
+        if self.post.in_error : sys.exit(1)
         self.post.connect()
 
         self.watch_path = self.post.watchpath()

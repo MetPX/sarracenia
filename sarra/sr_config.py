@@ -271,6 +271,10 @@ class sr_config:
 
         self.check()
 
+        # resetting logs if needed
+
+        if self.logpath != self.lpath : self.setlog()
+
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
