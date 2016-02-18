@@ -142,9 +142,7 @@ class sr_post(sr_config):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_post overwrite_defaults")
-
-        ok, details = self.credentials.get("amqp://guest:guest@localhost/")
-        self.broker = details.url
+        pass
 
     def posting(self):
         self.logger.debug("sr_post posting")
