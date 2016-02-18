@@ -1,6 +1,8 @@
 
+
 sr_watch
-   need to watch for writes without file close
+   need to watch for writes without waiting for file close
+    
 
   sample usage:
       -- logs (always appending)
