@@ -300,14 +300,22 @@ class sr_audit(sr_instances):
     def verify_queues(self):
         self.logger.debug("sr_audit verify_queues")
 
-        lst_dict = self.rabbitmqadmin("list queues name messages")
+        lst_dict = self.rabbitmqadmin("list queues name messages state")
         self.logger.debug("lst_dict = %s" % lst_dict)
 
         for edict in lst_dict :
+            # skip empty name
             q = edict['name']
             if q == '' : continue
+            # get queue size
             try    : qsize = int(edict['messages'])
             except : qsize = -1
+            # skip running queue
+            try    : s = edict['state']
+            except : s= ''
+            if s == 'running' :
+               self.logger.debug("running queue %s (%d) discarded" % (q,qsize))
+               continue
             self.logger.debug("verifying queue %s (%d)" % (q,qsize))
 
             # queue bigger than max_queue_size are deleted right away
