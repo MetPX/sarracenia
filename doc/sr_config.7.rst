@@ -85,13 +85,13 @@ for example:
 
 sequence #1::
 
-  reject *gif
+  reject .*gif
   accept .*
 
 sequence #2::
 
   accept .*
-  reject *gif
+  reject .*gif
 
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
@@ -132,6 +132,14 @@ value in the script with the code :
 - **ok, details = parent.credentials.get(msg.urlcred)**
 - **if details  : url = details.url**
 
+The details options are element of the details class (hardcoded):
+
+- **print(details.ssh_keyfile)**
+- **print(details.passive)**
+- **print(details.binary)**
+- **print(details.tls)**
+- **print(details.prot_p)**
+
 
 BROKER
 ------
@@ -162,6 +170,10 @@ to an exchange.  These options define which messages (URL notifications) the pro
  - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
+In AMQP all messages are published under an **exchange**. 
+The exchanges sarracenia use are of type topic.
+Each message is publish with its topic string that can be used for filtering.
+
 Several topic options may be declared. To give a correct value to the subtopic,
 browse the our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
 For each directories write an  **subtopic**  option as follow:
@@ -188,26 +200,24 @@ client side mechanisms, saving bandwidth and processing for all.
 topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
 specify a non-default protocol version of messages to subscribe to. 
 
-.. NOTE:: 
-  FIXME: no mention of the use of exchange argument.
-
-
 AMQP QUEUE SETTINGS
 -------------------
 
 The queue is where the notifications are held on the server for each subscriber.
 
-- **queue_name    <name>         (default: q_<brokerUser>)** 
+- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
 - **durable       <boolean>      (default: False)** 
 - **expire        <minutes>      (default: None)** 
 - **message-ttl   <minutes>      (default: None)** 
 
-By default, components create a queue name that should be unique and starts with  **q_** 
-and is usually followe
-and puts it into a file .<configname>.queue, where <configname> is the config filename.
+By default, components create a queue name that should be unique. The default queue_name
+components create follows :  **q_<brokerUser>.<programName>.<configName>** .
 
-.. note::
-   FIXME, this file placement is obsolete, goes in .cache now?
+**sr_subscribe** is used by several users. Because we want queue_names to be unique
+we feared **queue_name** collision. **sr_subscribe** adds 2 dot separated random values
+to the default queue_name and save into file sr_subscribe.<configName>.<brokerUser> 
+under his cache directory .cache/sarra/subscribe/<configName>.
+On restart/reload ... etc  the queue_name is read from the file and reused.
 
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
@@ -216,10 +226,6 @@ The  **message-ttl**  option set the time in minutes a message can live in the q
 Past that time, the message is taken out of the queue by the broker.
 
 
-
-.. note::
-   FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
-   non url elements of the entry. details.ssh_keyfile?
 
 ROUTING
 -------
@@ -335,21 +341,23 @@ would result in the creation of the filepath ::
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 1- the file to be downloaded is already on the user's file system at the right place and
 2- the checksum of the amqp message matched the one of the file.
-The default is True (overwrite without checking).
+The default is True for **sr_subscribe** (overwrite without checking), False for the others.
 
 LOGS
 ----
 
 Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
 at the end of the day, These logs are rotated every day automatically by the components, and the old log gets a date suffix.
-The directory in which the logs are stored can be overridden by the *logpath* option, and the number of days' logs to keep 
+The directory in which the logs are stored can be overridden by the *log* option, and the number of days' logs to keep 
 is set by the 'logrotate' parameter.  Log files older than *logrotate* days are deleted.
 
-** logpath **
+** log **
    the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
 
 ** logrotate **
    the number of days' log files to keep online, assuming a daily rotation.
+
+Note: for **sr-post** only,  option **log** should be a logfile
 
 
 INSTANCES
@@ -360,14 +368,19 @@ It is possible that one instance of a component and configuration is not enough 
 **instances      <integer>     (default:1)**
 
 will result in launching N instances of the component using that config.
-In the ~/.cache/sarra directory, a number of runtime files are created::
+When running sr_sender for example, a number of runtime files that are created.
+In the ~/.cache/sarra/sender/configName directory::
 
+  A .sr_sender_configname.state         is created, containing the number instances.
   A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
-  A sr_sender_configname_$instance.log  is created as a log of $instance process.
+
+In directory ~/.cache/sarra/var/log::
+
+  A .sr_sender_configname_$instance.log  is created as a log of $instance process.
 
 The logs can be written in another directory than the default one with option :
 
-**log            <directory logpath>  (default:~/.cache/<component>/log)**
+**log            <directory logpath>  (default:~/.cache/sarra/var/log)**
 
 .. note::  
   FIXME: indicate windows location also... dot files on windows?
@@ -376,12 +389,16 @@ The logs can be written in another directory than the default one with option :
 .. Note::
 
   While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not accessed for 
-  a long (implementation dependent) period will be destroyed.  A queue which is not
+  brokers, and are cleaned up from time to time.  A queue which is not
   accessed and has too many (implementation defined) files queued will be destroyed.
   Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.
+  loss of notifications.  A queue which is not accessed for a long (implementation dependent)
+  period will be destroyed. 
 
+.. Note::
+   FIXME  The last sentence is not really right...sr_audit does track the queues'age... 
+          sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
+          
 
 RABBITMQ LOGGING
 ----------------
@@ -403,15 +420,18 @@ MetPX comes with a variety of scripts which can act as examples.
 Users can place their own scripts in the script sub-directory 
 of their config directory tree.
 
-.. note:: 
-   FIXME: where the default scripts are stored is an unresolved issue. 
-   sr components are supposed to look there, but we have not figured that out yet.
+A user script should be placed in the
+ ~/.config/sarra/plugins directory::
 
 There are two varieties of
 scripts:  do\_* and on\_*.  Do\_* scripts are used to implement functions, replacing built-in
 functionality, for example, to implement additional transfer protocols.  
 
-- do_download - to implement additional protocols.
+- do_download - to implement additional download protocols.
+
+- do_poll - to implement additional polling protocols and processes.
+
+- do_send - to implement additional sending protocols and processes.
 
 
 On\_* scripts are used more often. They allow actions to be inserted to augment the default 
@@ -420,10 +440,9 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
 
-- on_log -- when an sr_log message is received by sr_log, or about to be sent by any other
-  component.
+- on_line -- In **sr_post** a line from the ls on the remote host is read in.
 
-- on_msg -- when an sr_post(7) message has been received.  For example, a message has been received 
+- on_message -- when an sr_post(7) message has been received.  For example, a message has been received 
   and additional criteria are being evaluated for download of the corresponding file.  if the on_msg 
   script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
   which decides that data that is too old is not worth downloading.)
