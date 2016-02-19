@@ -271,10 +271,6 @@ class sr_config:
 
         self.check()
 
-        # resetting logs if needed
-
-        if self.logpath != self.lpath : self.setlog()
-
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
@@ -938,7 +934,11 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['log','l']:
-                     self.logpath = words1
+                     self.logpath         = words1
+                     if os.path.isdir(words1) :
+                        self.user_log_dir = words1
+                     else :
+                        self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
                 elif words0 in ['logrotate','lr']:
