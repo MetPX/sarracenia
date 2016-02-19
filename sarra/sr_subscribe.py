@@ -221,13 +221,15 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
+        # invoke user defined on_message when provided
+
+        if self.on_message : 
+           ok = self.on_message(self)
+           if not ok : return ok
+
         # notify only : we are done with this message
 
         if self.notify_only : return False
-
-        # invoke user defined on_message when provided
-
-        if self.on_message : return self.on_message(self)
 
         return True
 
