@@ -73,6 +73,10 @@ class sr_post(sr_config):
            self.in_error = True
            return
 
+        # resetting logs if needed
+
+        if self.logpath != self.lpath : self.setlog()
+
     def close(self):
         self.logger.debug("sr_post close")
         self.poster.close()
