@@ -2,9 +2,9 @@
  SR_Shovel 
 ==============
 
------------------------------------------------
-Shovel selected messages from a broker to another
------------------------------------------------
+-----------------------------
+Copy Messages Between Brokers
+-----------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -22,11 +22,10 @@ DESCRIPTION
 ===========
 
 
-sr_shovel is a program to easily subscribe, select and repost messages from a broker to 
-another one. 
-
-The **sr_shovel** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+sr_shovel is a program to easily subscribe to messages on one broker and 
+repost them on another one.  Sr_shovel does not copy any data, only post or log
+messages.  The component takes two argument: a configuration file described below,
+and an action start|stop|restart|reload|status... (self described).
 
 The **foreground** action is different. It would be used when building a configuration
 or debugging things. It is used when the user wants to run the program and its configfile 
@@ -214,7 +213,9 @@ RABBITMQ LOGGING
 
 The fact of shovelling messages is not logged back to the source broker.
 
-FIXME  should it ?
+.. note::
+  FIXME  should it ?
+  thinking:  log me
 
 
 ADVANCED FEATURES

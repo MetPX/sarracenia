@@ -171,14 +171,14 @@ and under which name.
 - **accept    <regexp pattern> (must be set)** 
 - **directory <path>           (default: .)** 
 - **flatten   <boolean>        (default: false)** 
-- **lock      <.string>        (default: .tmp)** 
+- **inflight      <.string>        (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>         (default: 0)**
 
-The  **lock**  option is a suffix given to the file during the download
-and taken away when it is completed... If  **lock**  is set to  **.** 
+The  **inflight**  option is a suffix given to the file during the download
+and taken away when it is completed... If  **inflight**  is set to  **.** 
 then it is prefixed with it and taken away when it is completed...
 This gives a mean to avoid processing the file prematurely.
 
@@ -360,6 +360,8 @@ These settings pertain to previous versions of the client, and have been superce
 - **topic         <amqp pattern> (deprecated)** 
 - **exchange_type <type>         (default: topic)** 
 - **exchange_key  <amqp pattern> (deprecated)** 
+- **lock  <locktext> (renamed inflight)** 
+
 
 SEE ALSO
 --------
