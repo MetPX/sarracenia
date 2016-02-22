@@ -356,6 +356,8 @@ class sr_config:
         self.no_logback           = False
 
         self.recursive            = False
+
+        self.pump_flag            = False
         self.users_flag           = False
 
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
@@ -942,7 +944,7 @@ class sr_config:
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
-                elif words0 in ['logrotate','lr']:  See: sr_config.7 FIXME++ too many others?
+                elif words0 in ['logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
                      self.logrotate = int(words[1])
                      n = 2
 
@@ -1061,6 +1063,14 @@ class sr_config:
                 elif words0 in ['post_exchange','pe']: # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
                      self.post_exchange = words1
                      n = 2
+
+                elif words0 == 'pump':  # See: FIXME! what is this?
+                     if words[0][0:1] == '-' : 
+                        self.pump_flag = True
+                        n = 1
+                     else :
+                        self.pump_flag = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
                      self.queue_name = words1
