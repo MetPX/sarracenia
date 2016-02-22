@@ -41,7 +41,7 @@ format of argument to the *url* option::
        or
        [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to/what_to_watch
        or
-       file://absolute_path_to/what_to_watch
+       file:/absolute_path_to/what_to_watch
 
 The double-slash at the beginning of the path marks it as absolute, whereas a single
 slash is relative to a *document_root* provided as another option.
