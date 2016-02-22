@@ -303,7 +303,7 @@ class sr_config:
         self.queue_name           = None
         self.queue_suffix         = None
         self.durable              = False
-        self.expire               = None
+        self.expire               = 1000 *60 *60 *24 *7    # 1 week= 1000millisec * 60s * 60m *24hr * 7d
         self.reset                = False
         self.message_ttl          = None
         self.queue_share          = False
@@ -888,7 +888,12 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'expire' : # See: sr_config.7 ++ everywhere FIXME?
-                     self.expire = int(words[1]) * 60 * 1000
+                     if    words1.lower() == 'none' :
+                           self.expire = None
+                     else:
+                           # should be expressed in mins (and in rabbitmq millisec hence 60000 factor)
+                           self.expire = int(words[1]) * 60 * 1000
+                           if self.expire <= 0 : self.expire = None
                      n = 2
 
                 elif words0 == 'filename': # See: sr_poll.1, sr_sender.1
