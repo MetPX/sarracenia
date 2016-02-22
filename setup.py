@@ -33,7 +33,6 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts":[
-              "sr_admin=sarra.sr_admin:main",
               "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
               "sr_2xlog=sarra.sr_2xlog:main",
