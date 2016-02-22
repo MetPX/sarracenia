@@ -241,9 +241,15 @@ class sr_audit(sr_instances):
             self.add_exchange(e)
 
         # delete leftovers
+        # MG : Peter specified that we may need other exchanges to work with 
+        #      others than the standards... they would be created manually and
+        #      by convention all start with 'x' ... so keep the the 'x' starting exchanges
         for e in exchange_lst :
-            self.logger.warning("unnecessary exchange %s" % e)
-            self.delete_exchange(e)
+            if e[0] != 'x' :
+               self.logger.warning("unnecessary exchange %s" % e)
+               self.delete_exchange(e)
+            else:
+               self.logger.warning("tolerated exchange %s" % e)
 
     def verify_users(self):
         self.logger.debug("sr_audit verify_users")
