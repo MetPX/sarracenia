@@ -101,6 +101,8 @@ class sr_config:
         self.remote_config = False
         # IN BIG DEBUG
         #self.debug = True
+        #self.loglevel = logging.DEBUG
+        self.loglevel = logging.INFO
         self.setlog()
         self.logger.debug("sr_config __init__")
 
@@ -281,6 +283,7 @@ class sr_config:
         self.remote_config        = False
         self.remote_config_url    = []
 
+        self.loglevel             = logging.INFO
         self.logrotate            = 5
 
         self.bufsize              = 8192
@@ -794,8 +797,10 @@ class sr_config:
                      else :
                         self.debug = self.isTrue(words[1])
                         n = 2
+
                      if self.debug :
-                        self.logger.setLevel(logging.DEBUG)
+                        self.loglevel = logging.DEBUG
+                        self.logger.setLevel(self.loglevel)
 
                 elif words0 == 'delete': # See: FIXME... not explicitly documented? just do include?
                      if words[0][0:1] == '-' : 
@@ -952,6 +957,16 @@ class sr_config:
                 elif words0 in ['logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
                      self.logrotate = int(words[1])
                      n = 2
+
+                elif words0 in ['loglevel','ll']:  # FIXME : undocumented
+                     level = words1.lower()
+                     if level in 'critical' : self.loglevel = logging.CRITICAL
+                     if level in 'error'    : self.loglevel = logging.ERROR
+                     if level in 'info'     : self.loglevel = logging.INFO
+                     if level in 'warning'  : self.loglevel = logging.WARNING
+                     if level in 'debug'    : self.loglevel = logging.DEBUG
+                     n = 2
+
 
                 elif words0 in ['manager','feeder'] : # See: sr_config.7, sr_sarra.8
                      urlstr       = words1
@@ -1269,7 +1284,7 @@ class sr_config:
         LOG_FORMAT  = ('%(asctime)s [%(levelname)s] %(message)s')
 
         if not hasattr(self,'logger') :
-           logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+           logging.basicConfig(level=self.loglevel, format=LOG_FORMAT)
            self.logger = logging.getLogger()
            self.lpath  = None
            self.logger.debug("sr_config setlog 1")
@@ -1297,7 +1312,7 @@ class sr_config:
         del self.logger
 
         self.logger = logging.RootLogger(logging.WARNING)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
 
         if self.debug :
