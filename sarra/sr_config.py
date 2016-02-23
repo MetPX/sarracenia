@@ -1222,7 +1222,9 @@ class sr_config:
                      n = 2
 
                 else :
-                     self.logger.error("problem with option %s" % words[0])
+                     self.logger.warning("unrecognized %s %s" % (words[0],words[1]))
+                     self.logger.warning("extend self.%s = '%s'" % (words[0],words[1]))
+                     setattr(self,words[0],words[1])
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
@@ -1563,6 +1565,12 @@ def self_test():
     #cfg.option(opt1.split())
     #if cfg.inplace == True :
     #   cfg.logger.error(" include http: worked but should not")
+
+    opt1 = "surplus_opt surplus_value"
+    cfg.option(opt1.split())
+
+    if cfg.surplus_opt != "surplus_value" :
+       cfg.logger.error(" extended option:  did not work")
 
 
     cfg.config(cfg.user_config)
