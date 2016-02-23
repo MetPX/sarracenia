@@ -251,3 +251,33 @@ Updating The Project Website
 ----------------------------
 
 Please see `here <website-e.html>`_ for instructions on updating the website.
+
+
+Conventions
+===========
+
+Below are some coding practices that are meant to guide developers when contributing to sarracenia.
+They are not hard and fast rules, just guidance.
+
+
+When to Log
+-----------
+
+sr_log(7) messages should be emitted to indicate final disposition of the data itself, not 
+any notifications or log messages (don't log log messages, it becomes an infinite loop!)
+For debugging and other information, the local log file is used.  For example, sr_shovel does 
+not emit any sr_log(7) messages, because no data is transferred, only messages.
+
+
+
+Where to Put Option Documentation
+---------------------------------
+
+Most options are documented in sr_config(7), because they are common to many components.  Any options used 
+by multiple components should be documented there.  Options which are unique to a single component, should
+be documented in the man page for that component.
+
+Where the default value for an option varies among components, sr_config(7) should indicate only that 
+the default varies.  Each component's man page should indicate the option's default for that component.
+
+
