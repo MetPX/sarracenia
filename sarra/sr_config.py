@@ -309,6 +309,7 @@ class sr_config:
         self.expire               = 1000 *60 *60 *24 *7    # 1 week= 1000millisec * 60s * 60m *24hr * 7d
         self.reset                = False
         self.message_ttl          = None
+        self.prefetch             = 1
         self.queue_share          = False
         self.max_queue_size       = 25000
 
@@ -1084,6 +1085,10 @@ class sr_config:
                      self.post_exchange = words1
                      n = 2
 
+                elif words0 == 'prefetch': # See: FIXME! what is this
+                     self.prefetch = int(words1)
+                     n = 2
+
                 elif words0 == 'pump':  # See: FIXME! what is this?
                      if words[0][0:1] == '-' : 
                         self.pump_flag = True
@@ -1572,6 +1577,11 @@ def self_test():
     if cfg.surplus_opt != "surplus_value" :
        cfg.logger.error(" extended option:  did not work")
 
+    opt1 = "prefetch 10"
+    cfg.option(opt1.split())
+
+    if cfg.prefetch != 10 :
+       cfg.logger.error(" prefetch option:  did not work")
 
     cfg.config(cfg.user_config)
 
