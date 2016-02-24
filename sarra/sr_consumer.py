@@ -77,7 +77,7 @@ class sr_consumer:
         self.consumer    = Consumer(self.hc)
 
         if self.queue_share :
-            self.consumer.add_prefetch(1)
+            self.consumer.add_prefetch(self.parent.prefetch)
 
         self.consumer.build()
 
