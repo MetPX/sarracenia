@@ -21,8 +21,8 @@ to specific questions of configuration.
 .. contents::
 
 * `Installation <Install.html>`_
-* `Subscriber Guide <subscribe.html>`_ - effective downloading from a pump.
-* `Source Guide <subscribe.html>`_ - effective uploading to a pump
+* `Subscriber Guide <subscriber.html>`_ - effective downloading from a pump.
+* `Source Guide <source.html>`_ - effective uploading to a pump
 * `Admin Guide <Admin.html>`_ - Configuration of Pumps
 * `Developer Guide <Dev.html>`_ - contributing to sarracenia development.
 

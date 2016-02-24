@@ -380,6 +380,7 @@ The default is True for **sr_subscribe** (overwrite without checking), False for
 .. note::
   FIXME: Is it correct for this to be different for sr_subscribe? why is default not False everywhere?
 
+
 LOGS
 ----
 

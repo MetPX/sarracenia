@@ -394,7 +394,7 @@ Logs
 
 Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end,
 as well as *feeders* as the messages traverse pumps.  log messages are posted to
-the xl_<user> exchange, and after log validation send through the xlog exchange.
+the xl_<user> exchange, and after log validation sent to the xlog exchange by the 2xlog component.
 
 Messages in xlog destined for other clusters are routed to destinations by
 log2cluster component using log2cluster.conf configuration file.  log2cluster.conf
@@ -458,6 +458,7 @@ Data Dissemination
 
 FIXME: 
   ok, opened big mouth, now need to work through the examples.
+
 
 Dataless or S=0
 ~~~~~~~~~~~~~~~
