@@ -170,7 +170,7 @@ This wildcarding in subtopic is a limited feature supported by AMQP.
  supports it.  So far we used only one exchange).
 
 
-regexp messages filtering 
+Regexp messages filtering 
 =========================
 
 We have selected our messages through **exchange**, **subtopic** and 
