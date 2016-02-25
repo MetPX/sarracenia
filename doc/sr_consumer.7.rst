@@ -54,7 +54,7 @@ and also to spend some time on the **credentials** section in it.
 
 
 Setting the broker 
-------------------
+==================
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -66,7 +66,7 @@ that it is always **/**.
 
 
 Creating the queue 
-------------------
+==================
 
 As described above, the next step is to create a queue.
 The following are broker level options to create/set the queue.
@@ -121,7 +121,7 @@ ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
 
 
 Binding messages to the queue 
------------------------------
+=============================
 
 The options in this section are often used.
 
@@ -172,7 +172,7 @@ This wildcarding in subtopic is a limited feature supported by AMQP.
 
 
 regexp messages filtering 
--------------------------
+=========================
 
 We have selected our messages through **exchange**, **subtopic** and 
 perhaps patterned  **subtopic** with only AMQP's limited wildcarding.
@@ -237,7 +237,7 @@ client side mechanisms, saving bandwidth and processing for all.
 
 
 Verification and on_message plugins
------------------------------------
+===================================
 
 Once a message passes through the selection process, the component verifies
 if the message is correct. (has requiered infos, is properly routed?). 
