@@ -112,8 +112,8 @@ Broker queue options not presented here have fixed settings.
 
 Having reasonable defaults, the reader will rarely use any of these options.
 
-(Note: Sometime on clusters, all nodes running the same component and its
-config file default to an identical **queue_name**. Targetting the 
+(Note: On clusters, all nodes that run a component with the
+same config file create an identical **queue_name**. Targetting the 
 same broker, it forces the queue to be shared. If it should be avoided,
 the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
 Each node will have its own queue, only shared by the node instances.
