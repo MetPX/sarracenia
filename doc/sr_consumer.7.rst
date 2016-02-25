@@ -167,8 +167,7 @@ This wildcarding in subtopic is a limited feature supported by AMQP.
 
 (Note: just to mention that it is supported to declare an exchange followed by
  some of its subtopics, another exchange some if its subtopics... the code
- supports it.  So far we used only one exchange)
-
+ supports it.  So far we used only one exchange).
 
 
 regexp messages filtering 
