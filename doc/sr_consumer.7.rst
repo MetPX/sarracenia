@@ -181,7 +181,7 @@ The component now consumes these messages.
 Sarracenia consumers implement a the more powerful client side filtering
 using regular expression based mechanisms. 
 
-- **accept    <regexp pattern> (must be set)** 
+- **accept    <regexp pattern> (optional)** 
 - **reject    <regexp pattern> (optional)** 
 - **accept_unmatch   <boolean> (default: False)** 
 
