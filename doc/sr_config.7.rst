@@ -75,7 +75,9 @@ For example::
 
 sets the *debug* option to enable more verbose logging.  To provide non-functional 
 description of configuration, or comments, use lines that begin with a **#**.  
-
+All options are case sensitive.  **debug** is not the same as **Debug** or **DEBUG**.
+Those are three different options (two of which do not exist and will have no effect,
+but should generate an ´unknown option warning´.)
 
 Options and command line arguments are equivalent.  Every command line argument 
 has a corresponding long version starting with '--'.  For example *-u* has the 

@@ -1,9 +1,9 @@
-============
+=============
  SR_CONSUMER 
-============
+=============
 
 --------------------------------------------------------
-Overview of Sarra Configuration to consume amqp messages
+Overview of Sarra Configuration to Consume AMQP Messages
 --------------------------------------------------------
 
 :Manual section: 7
@@ -15,41 +15,30 @@ Overview of Sarra Configuration to consume amqp messages
 DESCRIPTION
 ===========
 
-Most Metpx Sarracenia components loop and proceed with their specific tasks
-on the reception of sarracenia AMQP messages.
-This document is meant to be the reference to explain and detail this
-important task called "consuming" a message in AMQP jargon. 
+Most Metpx Sarracenia components loop on reception of sarracenia AMQP messages.
+Usually, the messages of interest are sr_post messages, announcing the availability 
+of a file by publishing it´s URL ( or a part of a file ), but there are also
+sr_log(7) messages which can be processed using the same tools.  AMQP messages are 
+published to an exchange on a broker (AMQP server.)  The exchange delivers
+messages to queues.  To receive messages, one must provide the credentials to connect to 
+the broker (AMQP message pump).  Once connected, a consumer needs to create a queue to 
+hold pending messages.  The consumer must then bind the queue to one or more exchanges so that 
+they put messages in its queue.
 
-To summarize what this document covers : to receive AMQP messages, one must 
-provide the credentials for a broker (AMQP message switch). On the broker,
-a queue must be created and configured in order to hold AMQP messages for
-the process.  To put messages in that queue, the users must bind one or more
-exchanges and specify topics of interest within them.
+Once the bindings are set, the program can receive messages. When a message is received, 
+further filtering is possible using regular expression onto the AMQP messages.
+After a message passes this selection process, and other internal validation, the 
+component can run an **on_message** plugin script to perform additional message processing. 
+If this plugin returns False, the message is discarded. If True, processing continues.
 
-Once this set, the program can receive messages... We have found that having
-messages through exchanges/topics bindings was not enough granular for our needs.
-When a message is received, the user can also make more selections using 
-regular expression onto the AMQP messages.
-
-Once a message passes this selection process, the process verifies if the message
-is correct. (has all infos, is properly routed?). At this point, the user
-can run a plugin on the message and perform a task on the message.
-(ex.: do stats, renaming the product, changing its destination... whatever...) 
-If this plugin return False, the message is discarded. With True, process resumes.
-
-This document explains all the options one can use to set this "consuming"
-part of sarracenia programs. It will be referenced in the documentation of
-the programs where applicable.
-
-When a component does not comply to the standards in this document, it is
-explained in the component's document.
+This document explains all the options used to set this "consuming" part of sarracenia programs. 
 
 
 OPTIONS
 =======
 
 Since this document focuses on the consuming options. We invite the reader to
-read the option's syntax fully explained in  `sr_config(7) <sr_config.7.html>`_ 
+read the option syntax fully explained in  `sr_config(7) <sr_config.7.html>`_ 
 and also to spend some time on the **credentials** section in it. 
 
 
@@ -58,17 +47,19 @@ Setting the broker
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-This option defines the essentials to connect to a message switch called broker.
-Some of the sarracenia programs already set a reasonable default to that option.
-You provide the normal user,password,host,port of secured connections. The **vhost**
-is a particular AMQP option that sarracenia could use. But it is enough to say 
-that it is always **/**.
+A AMQP URI to configure a connection to a message pump ( aka AMQP broker.)
+Some sarracenia components set a reasonable default for that option.
+You provide the normal user,host,port of connections.  In most configuration files, 
+the password is missing.  The password is normally only included in the credentials.conf file.
+
+Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
+
+for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
 
 
-Creating the queue 
+Creating the Queue 
 ==================
 
-As described above, the next step is to create a queue.
 The following are broker level options to create/set the queue.
 
 - **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
@@ -78,16 +69,16 @@ The following are broker level options to create/set the queue.
 - **prefetch      <N>            (default: 1)** 
 - **reset         <boolean>      (default: False)** 
 
-By default, sarracenia components create a queue name automatically.
+Sarracenia components create a queue name automatically.
 The default queue_name is:  **q_<brokerUser>.<programName>.<configName>** .
-The user can specify its own queue_name provided that it starts with **q_<brokerUser>**.
+The user can override the defaul provided that it starts with **q_<brokerUser>**.
 Some variables can also be used within the queue_name like 
 **${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 The  **expire**  option is expressed in minutes...
 it sets how long should live a queue without connections.
 Default is set to one week.  (Note: on broker the real
-mesure is millisec. but we implemented it in minutes)
+unit is milliseconds but we implemented it in minutes)
 
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
@@ -99,59 +90,52 @@ The  **prefetch**  option set the number of messages distributed amongst
 connections that share the queue... This rabbitmq option is applied to the queue
 if the sarracenia option **queue_share** is True (the default).
 
-When a component is (re)started, with the argument **--reset**,
+.. note::
+   FIXME: why does the queue_share option exist and what does it do other than interfere with prefetch?
+   Why would one set it to false?
+   Why isn´t it in the list above?
+   PS
+
+When **--reset** is set, and a component is (re)started,
 its queue is deleted (if it already exists) and recreated 
-according to the component's queue options.
+according to the component's queue options.  This is 
+when a broker option is modified, as the broker will refuse access 
+to a queue declared with options that differ from what was 
+set at creation.  It can also be used to discard a queue
+quickly when a receiver has been shut down for a long period.
 
-(Note: Usefull everytime a broker option is modified. The
-broker will not grant access to a queue declared 
-options that differs from the one at creation)
+AMQP queue options not presented are fixed to a sensible value.
 
-Broker queue options not presented here have fixed settings.
-(auto_delete False, FIXME others?)
-
-Having reasonable defaults, the reader will rarely use any of these options.
-
-(Note: On clusters, all nodes that run a component with the
-same config file create an identical **queue_name**. Targetting the 
-same broker, it forces the queue to be shared. If it should be avoided,
-the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
-Each node will have its own queue, only shared by the node instances.
-ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
+As the default settings are usually appropriate, these options should 
+rarely be needed.
 
 
-Binding messages to the queue 
-=============================
+Binding a Queue to an Exchange
+==============================
 
 The options in this section are often used.
 
-Now we have a queue, we need to bind messages to it.
-AMQP messages are all published to a broker under one exchange.
+Now we have a queue, it needs to be bound to one or more exchanges.
+types of exchanges, but Sarracenia uses 'topic' exchanges exclusively.
 
-The exchange sarracenia uses is of type 'topic'.
-In such an exchange, a message is always published with an attached
-topic.
+In Sarracenia, the root of the topic tree is fixed to indicate the protocol version 
+and type of the message (but developers can override it with the **topic_prefix**  
+option.)
 
-In sarracenia, the topic is reimplemented into a **topic_prefix** and
-a **subtopic**. The topic_prefix is a developer option. The reader should
-not use it. Internaly, it is used to define the protocol version of the message.
+
 Hence the queue binding options:
-
+a **subtopic**.  
 
  - **exchange      <name>         (default: xpublic)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
-Usually, the user would declare one exchange, and several subtopic options.
-Internally, a patterned topic is generated from the topic_prefix.subtopic pair.
-The component binds the messages from the derived list of  exchange,topic
-to the queue.
+Usually, the user specifies one exchange, and several subtopic options.
+**Subtopic** is what is normally used to indicate messages of interest.
+To use the subtopic to filter the products, match the subtopic string with 
+the relative path of the product.
 
-In sarracenia the message's main purpose is to announce the readyness of a
-product giving its url. To use the subtopic to filter the products,
-we have match subtopic string with the relative path of the product.
-
-For example, consuming from DD, to give a correct value to the subtopic, one can
+For example, consuming from DD, to give a correct value to subtopic, one can
 browse the our website  **http://dd.weather.gc.ca** and write down all directories
 of interest.  For each directories write an  **subtopic**  option as follow:
 
@@ -164,10 +148,6 @@ of interest.  For each directories write an  **subtopic**  option as follow:
        #                stands for the remaining possibilities
 
 This wildcarding in subtopic is a limited feature supported by AMQP.
-
-(Note: just to mention that it is supported to declare an exchange followed by
- some of its subtopics, another exchange some if its subtopics... the code
- supports it.  So far we used only one exchange).
 
 
 Regexp messages filtering 
@@ -192,21 +172,17 @@ The regexp is applied to the the message's URL for a match.
 If the message's URL of a file matches a **reject**  pattern, the message
 is acknowledged as consumed to the broker and skipped.
 
-One that matches an  **accept**  pattern is processed by the
-component.
+One that matches an **accept** pattern is processed by the component.
 
-In some components, the **accept/reject** are interlace under
-a **directory** option. They then relate accepted messages to the **directory**
-value they are specified under.
+In many configurations, **accept** and **reject** options are mixed 
+with the **directory** option.  They then relate accepted messages 
+to the **directory** value they are specified under.
 
-When using **accept** / **reject**  there are cases where after
-going through all occurences of theses options, the URL did not matched.
-The **accept_unmatch** option defines what to do in this case.
-If set to **True** it will be accepted and **False** rejected. 
-
-If no **accept** / **reject** is specified,
-the program assumes it accepts all URL and sets
-**accept_unmatch** to True.
+After all **accept** / **reject**  options are processed, normally
+the message acknowledged as consumed and skipped. To override that
+default, set **accept_unmatch** to True.   However,  if 
+no **accept** / **reject** are specified, the program assumes it 
+should accept all messages and sets **accept_unmatch** to True.
 
 The **accept/reject** are interpreted in order.
 Each option is processed orderly from top to bottom.
@@ -223,10 +199,6 @@ sequence #2::
   reject .*\.gif
 
 
-.. note::
-   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
-   will it match something like .gif2 ? is there an assumed .* at the end?
-
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
 
@@ -235,11 +207,11 @@ to the component to a small superset of what is relevant, and perform only a fin
 client side mechanisms, saving bandwidth and processing for all.
 
 
-Verification and on_message plugins
+Verification and On_message Plugins
 ===================================
 
 Once a message passes through the selection process, the component verifies
-if the message is correct. (has requiered infos, is properly routed?). 
+if the message is correct. (has required infos, is properly routed?). 
 If it is found correct at this point, the user can run a plugin on the message
 and perform any task on the message.  (ex.: do stats, renaming the product,
 changing its destination... whatever...) 
@@ -250,13 +222,8 @@ The plugin scripts are fully explained in  `sr_config(7) <sr_config.7.html>`_
 
 The **on_message** plugin scripts is the very last step in consuming messages.
 As all plugin scripts, it returns a boolean. If False is returned, the component
-acknowledge the message to the broker and does not process it.
-
-
-If no on_message is provided or if it returns True,
-the message has gone through all selecting mecanism
-and it is processed by the component.
-
+acknowledge the message to the broker and does not process it.  If no on_message is 
+provided or if it returns True, the message is processed by the component.  
 
 
 SEE ALSO

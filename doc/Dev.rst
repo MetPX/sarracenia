@@ -254,7 +254,7 @@ Please see `here <website-e.html>`_ for instructions on updating the website.
 
 
 Conventions
-===========
+-----------
 
 Below are some coding practices that are meant to guide developers when contributing to sarracenia.
 They are not hard and fast rules, just guidance.
