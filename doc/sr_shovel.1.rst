@@ -47,181 +47,117 @@ For example::
   **debug true**
 
 would be a demonstration of setting the option to enable more verbose logging.
+The options are described in two sections; the consuming and the posting options.
 
 
-RABBITMQ CREDENTIAL OPTIONS
----------------------------
+Consuming options
+=================
 
-The broker option sets all the credential information to connect to the  **RabbitMQ** server 
+This program consumes AMQP messages. The options that cover this task are
+fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
+as a reference, they are simply listed:
 
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+Setting the source broker :
 
-::
+**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+(Note: missing broker informations are fetched from its corresponding
+entry in the credential file : ~/.config/sarra/credentials.conf)
 
 
-AMQP QUEUE BINDINGS
--------------------
+Setting the queue on broker :
 
-Once connected to an AMQP broker, the user needs to create a queue and bind it
-to an exchange.  These options define which messages (URL notifications) the program receives:
+- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
+- **durable       <boolean>      (default: False)** 
+- **expire        <minutes>      (default: 10080 mins = 1 week)** 
+- **message-ttl   <minutes>      (default: None)** 
+- **prefetch      <N>            (default: 1)** 
+- **reset         <boolean>      (default: False)** 
+
+Setting the bindings on the queue :
 
  - **exchange      <name>         (default: xpublic)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
-Several topic options may be declared. To give a correct value to the subtopic,
-browse the our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
-For each directories write an  **subtopic**  option as follow:
+Using regular expression filtering messages
 
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
+- **accept       <regexp pattern> (optional)** 
+- **reject       <regexp pattern> (optional)** 
+- **accept_unmatch      <boolean> (default: False)** 
 
-::
+Running a plugin on selected messages
 
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding, or the 
-more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
-difference being that the AMQP filtering is applied by the broker itself, saving the 
-notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
-messages sent by the broker to the shovel.  In other words,  **accept/reject**  are 
-client side filters, whereas  **subtopic**  is server side filtering.  
-
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
-client side mechanisms, saving bandwidth and processing for all.
-
-topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
-specify a non-default protocol version of messages to subscribe to. 
-
-.. NOTE:: 
-  FIXME: no mention of the use of exchange argument.
+- **on_message      <script_name> (optional)** 
 
 
-AMQP QUEUE SETTINGS
--------------------
 
-The queue is where the notifications are held on the server for each shovel.
+Specific consuming requierements for **sr_shovel**
+--------------------------------------------------
 
-- **queue_name    <name>         (default: q_<brokerUser>.sr_shovel.<configname>)** 
-- **durable       <boolean>      (default: False)** 
-- **expire        <minutes>      (default: None)** 
-- **message-ttl   <minutes>      (default: None)** 
+To consume messages, the mandatory options are:
+ **broker**, **exchange**, **topic_prefix**, **subtopic**.
 
-By default, **sr_shovel** creates a queue name that should be unique and starts with  **q_** 
-followed by the broker username, than dot separated follows the program name **sh_shovel**,
-and the configuration name.
-The  **queue_name**  option sets a queue name. It should always start with  **q_brokerUser** .
+The program will not process message that :
 
-The  **expire**  option is expressed in minutes... it sets how long should live
-a queue without connections The  **durable** option set to True, means writes the queue
-on disk if the broker is restarted.
-The  **message-ttl**  option set the time in minutes a message can live in the queue.
-Past that time, the message is taken out of the queue by the broker.
-
-CREDENTIALS 
------------
-
-The configuration for credentials that concerns product download is stored in the
- ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
-
-- **amqp://user:passwd@host:port/**
-- **amqps://user:passwd@host:port/**
-
-- **sftp://user:passwd@host:port/**
-- **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
-
-- **ftp://user:passwd@host:port/**
-- **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
-
-- **http://user:passwd@host:port/**
-
-to implement supported of additional protocols, one would write 
-a **_do_download** script.  the scripts would access the credentials 
-value in the script with the code :   
-
-- **ok, details = parent.credentials.get(msg.urlcred)**
-- **if details  : url = details.url**
-
-.. note::
-   FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
-   non url elements of the entry. details.ssh_keyfile?
-
-MORE MESSAGE SELECTION
------------------------
-
-Theses options set what files the user wants and where it will be placed,
-and under which name.
-
-- **accept    <regexp pattern> (must be set)** 
-- **reject    <regexp pattern> (optional)** 
-
-With  **accept** / **reject**  options, the user can select the
-messages of interest.  These options use regular expressions (regexp) to match
-the message URL.  Theses options are processed sequentially. 
-The URL of a file that matches a  **reject**  pattern is not reposted.
-One that match an  **accept**  pattern it is processed.
-If no  **accept** / **reject** is specified, all messages are processed.
-If it is used, only messages that match **accept** pattern are processed
-
-::
-
-        accept    .*RADAR.*
-        reject    .*Reg.*
-        accept    .*GRIB.*
+1- has no source      (message.headers['source'])
+2- has no origin      (message.headers['from_cluster'])
+3- has no destination (message.headers['to_clusters'])
+4- the to_clusters destination list has no match with
+   this pump's **cluster,cluster_aliases,gateway_for**  options
 
  
-OUTPUT NOTIFICATION OPTIONS
----------------------------
+POSTING OPTIONS
+===============
 
-The program needs to set all the rabbitmq configurations for an output broker.
+There is no requiered option for posting messages.
+By default, **sr_shovel** publishes the selected consumed message with its exchange
+onto the current cluster, with the feeder account.
 
-The post_broker option sets all the credential information to connect to the
-  output **RabbitMQ** server 
+The user can overwrite the defaults with options :
 
-**post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-      (default to the value of the feeder option in default.conf) 
+- **post_broker    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+- **post_exchange   <name>        (default: None)** 
+- **on_post         <script_name> (optional)** 
 
-The **post_exchange** option can set under which exchange the notification 
-will be reposted.  If it is not specified,  the message will be reposted with
-the same exchange they were annonced with.
+The post_broker option sets the credential informations to connect to the
+output **RabbitMQ** server. The default is the value of the **feeder** option
+in default.conf.
 
-Whenever a publish happens for a product, a user can set to trigger a script.
-The option **on_post** would be used to do such a setup.
+The **post_exchange** option sets a new exchange for the selected messages.
+The default is to publish under the exchange it was consumed.
+
+Before a message is published, a user can set to trigger a script.
+The option **on_post** would be used to do such a setup. If the script returns
+True, the message is published... and False it wont.
 
 
 MULTIPLE STREAMS
-----------------
+================
 
-When executed,  **sr_shovel**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to sr_shovel**
-with a .queue suffix ( ."configfile".queue). 
+When executed,  **sr_shovel**  uses the default queue name.
 If sr_shovel is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, it uses the queuename 
-stored in that file to connect to the same queue, and not lose any messages.
+broker in the queue.  When the program is restarted, the queue name 
+is reused, and no messages are lost.
 
-The message reposting can be parallelized by running multiple sr_shovel using
-the same queue.  The processes will share the queue and messages will be 
-distributed  between processes.  Simply launch sr_shovel with option instances
-set to an integer greater than 1.
+The message reposting can be parallelized by running multiple sr_shovel. 
+The program shares the same queue. The will be distributed  between processes.
+Simply launch sr_shovel with option instances set to an integer greater than 1.
+
 
 RABBITMQ LOGGING
-----------------
+================
 
-The fact of shovelling messages is not logged back to the source broker.
+When a message is shoveled (consumed and published), an AMQP log message is published
+on the consuming cluster under the log_exchange 'xlog'.
 
-.. note::
-  FIXME  should it ?
-  thinking:  log me
+- **log_exchange <log_exchangename> (default: xlog)** 
 
 
-ADVANCED FEATURES
------------------
+PLUGINS ADVANCED FEATURES
+=========================
 
-There are ways to insert scripts into the flow of messages:
+As mentionned below, one can insert scripts into the flow of messages:
 Should you want to implement tasks in various part of the execution of the program:
 
 - **on_message  <script>        (default: None)** 
