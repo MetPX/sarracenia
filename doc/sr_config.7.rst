@@ -43,7 +43,7 @@ Finding Option Files
 --------------------
 
 Metpx Sarracenia is configured using a tree of text files using a common
-syntax.  The location of config dir is platform dependent::
+syntax.  The location of config dir is platform dependent (see python appdirs)::
 
  - linux: ~/.config/sarra
  - Windows: %AppDir%/science.gc.ca/sarra, this might be:
@@ -57,10 +57,22 @@ suffix assumed.)  If it is not found as file path, then the component will
 look in the component's config directory ( **config_dir** / **component** )
 for a matching .conf file.
 
+If it is still not found, it will look for it in the site config dir 
+(linux: /usr/share/default/sarra/**component**). Finally, if the user has
+ configured web sites where configurations can be found (option **remote_config_url**),
+the program will attempt to download the given named config file from each
+site until found.  If successfull, the file will be downloaded into 
+**config_dir/Downloads** and interpreted by the program from there.
+
+There is a similar process for all plugins that can be interpreted and executed
+within sarracenia programs. In this case the **component** mentionned previously
+is set to **plugins**. And before searching in given web sites, the program will
+check for a plugins with the given name provided in the sarracenia package.
+
 .. note::
    FIXME: should we keep going to describe http remote loading here... or if we move it elsewhere,
    perhaps move this whole thing to a 'finding config files' section that does the whole job.
-
+   MG  Peter's question still valid... I added more searching descriptions...
 
 Option Syntax
 -------------
@@ -170,6 +182,14 @@ The details options are element of the details class (hardcoded):
 - **print(details.binary)**
 - **print(details.tls)**
 - **print(details.prot_p)**
+
+For the credential that defines protocol for download (upload),
+the connection, once opened, is kept opened. It is reset
+(closed and reopened) only when the number of downloads (uploads)
+reaches the number given by the  **batch**  option (default 100)
+ 
+All download (upload) operations uses a buffer. The size, in bytes,
+of the buffer used is given by the **bufsize** option (default 8192)
 
 
 BROKER
@@ -300,6 +320,7 @@ and under which name.
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>         (default: 0)**
+- **accept_unmatch   <boolean> (default: False)**
 
 The  **inflight**  option is a change to the file name used
 the download so that other programs reading the directory ignore 
@@ -320,6 +341,13 @@ The URL of a file that matches a  **reject**  pattern is not downloaded.
 One that matches an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept**  
 option.
+
+When using **accept** / **reject**  there might be cases where after
+going through all occurences of theses options that the URL was not matched.
+The **accept_unmatch** option defines what to do with such a URL. If set to
+**True** it will be accepted and **False** rejected.   If no **accept** / **reject**
+is specified... the program assumes to accept all URL and will set **accept_unmatch**
+to True.
 
 ::
 
