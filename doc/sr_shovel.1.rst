@@ -34,20 +34,38 @@ but should the configured instances be running it shares the same (configured) m
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process. 
 
+
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
+This document focuses on detailing the program's options. We invite the reader to
+read the document `sr_config(7) <sr_config.7.html>`_  first. It fully explains the
+option syntax, the configuration file location, the credentials ... etc.
 
-**option <value>** 
+Standard sarracenia configuration would expect the config file to be found in :
 
-Comment lines begins with **#**. 
-For example::
+ - linux: ~/.config/sarra/shovel/configfile.conf
+ - Windows: %AppDir%/science.gc.ca/sarra/shovel, this might be:
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\shovel\configfile.conf
 
-  **debug true**
+When creating a new configuration file, the user can take advantage of executing
+the program with  **--debug configfile foreground**  with a configfile.conf in
+the current working directory.
 
-would be a demonstration of setting the option to enable more verbose logging.
-The options are described in two sections; the consuming and the posting options.
+The options used in the configfile are described in the next sections.
+
+
+Multiple streams
+================
+
+When executed,  the program  uses the default queue name.
+If it is stopped, the posted messages continue to accumulate on the 
+broker in the queue.  When the program is restarted, the queue name 
+is reused, and no messages are lost.
+
+The message processing can be parallelized by running multiple instances of the program. 
+The program shares the same queue. The messages will be distributed  between processes.
+Simply launch the program with option instances set to an integer greater than 1.
 
 
 Consuming options
@@ -86,8 +104,8 @@ Running a plugin on selected messages
 
 - **on_message      <script_name> (optional)** 
 
-Specific consuming requierements for **sr_shovel**
---------------------------------------------------
+Specific consuming requierements
+--------------------------------
 
 To consume messages, the mandatory options are:
  **broker**, **exchange**, **topic_prefix**, **subtopic**.
@@ -105,7 +123,7 @@ POSTING OPTIONS
 ===============
 
 There is no requiered option for posting messages.
-By default, **sr_shovel** publishes the selected consumed message with its exchange
+By default, the program publishes the selected consumed message with its exchange
 onto the current cluster, with the feeder account.
 
 The user can overwrite the defaults with options :
@@ -125,18 +143,6 @@ Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. If the script returns
 True, the message is published... and False it wont.
 
-
-MULTIPLE STREAMS
-================
-
-When executed,  **sr_shovel**  uses the default queue name.
-If sr_shovel is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, the queue name 
-is reused, and no messages are lost.
-
-The message reposting can be parallelized by running multiple sr_shovel. 
-The program shares the same queue. The will be distributed  between processes.
-Simply launch sr_shovel with option instances set to an integer greater than 1.
 
 
 RABBITMQ LOGGING
@@ -175,7 +181,7 @@ transformer  = Transformer()
 self.on_file = transformer.perform
 
 The only arguments the script receives it **parent**, which is an instance of
-the **sr_shovel** class
+the program class.
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
