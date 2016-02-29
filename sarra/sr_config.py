@@ -734,7 +734,7 @@ class sr_config:
                      self.logger.debug("Masks")
                      self.logger.debug("Masks %s"% self.masks)
 
-                elif words0 in ['accept_unmatch','au']: # See: FIXME nowhere!
+                elif words0 in ['accept_unmatch','au']: # See: sr_config.7
                      if words[0][0:1] == '-' : 
                         self.accept_unmatch = True
                         n = 1
@@ -757,11 +757,11 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 == 'batch' : # See: FIXME: undocumented!
+                elif words0 == 'batch' : # See: sr_config.7
                      self.batch = int(words[1])
                      n = 2
 
-                elif words0 in ['broker','b'] : # See: sr_config.7 ++ FIXME: everywhere, perhaps reduce
+                elif words0 in ['broker','b'] : # See: sr_consumer.7 ++   fixme: everywhere, perhaps reduce
                      urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
                      self.broker = url
@@ -770,7 +770,7 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 == 'bufsize' :   # See: FIXME: nowhere!
+                elif words0 == 'bufsize' :   # See: sr_config.7
                      self.bufsize = int(words[1])
                      n = 2
 
@@ -786,7 +786,7 @@ class sr_config:
                      self.cluster_aliases = words1.split(',')
                      n = 2
 
-                elif words0 in ['config','c','include']: # See: FIXME... not explicitly documented? just do include?
+                elif words0 in ['config','c','include']: # See: sr_config.7
                      ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
                      self.config(include)
                      n = 2
@@ -803,7 +803,7 @@ class sr_config:
                         self.loglevel = logging.DEBUG
                         self.logger.setLevel(self.loglevel)
 
-                elif words0 == 'delete': # See: FIXME... not explicitly documented? just do include?
+                elif words0 == 'delete': # See: sr_sarra.8
                      if words[0][0:1] == '-' : 
                         self.delete = True
                         n = 1
@@ -832,7 +832,7 @@ class sr_config:
                      self.currentDir = words1
                      n = 2
 
-                elif words0 in ['discard','d','download-and-discard']:  # See: FIXME... not explicitly documented? just do include?
+                elif words0 in ['discard','d','download-and-discard']:  # sr_subscribe.1
                      if words[0][0:1] == '-' : 
                         self.discard = True
                         n = 1
@@ -889,11 +889,11 @@ class sr_config:
                      self.events = words[1]
                      n = 2
 
-                elif words0 in ['exchange','ex'] : # See: sr_config.7 ++ everywhere FIXME?
+                elif words0 in ['exchange','ex'] : # See: sr_config.7 ++ everywhere fixme?
                      self.exchange = words1
                      n = 2
 
-                elif words0 == 'expire' : # See: sr_config.7 ++ everywhere FIXME?
+                elif words0 == 'expire' : # See: sr_config.7 ++ everywhere fixme?
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
@@ -959,7 +959,7 @@ class sr_config:
                      self.logrotate = int(words[1])
                      n = 2
 
-                elif words0 in ['loglevel','ll']:  # FIXME : undocumented
+                elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
                      if level in 'critical' : self.loglevel = logging.CRITICAL
                      if level in 'error'    : self.loglevel = logging.ERROR
@@ -982,7 +982,7 @@ class sr_config:
                      self.max_queue_size = int(words[1])
                      n = 2
 
-                elif words0 == 'message_ttl':  # FIXME: not documented.
+                elif words0 == 'message_ttl':  # See: sr_consumer.7
                      self.message_ttl = int(words[1]) * 60 * 1000
                      n = 2
 
@@ -994,11 +994,14 @@ class sr_config:
                         self.mirror = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'no': # See: FIXME: not documented
+                # Internal use only: when instances>1 is used, and the instances are started
+                # there are N instances asked to start each one having its own number (no)
+                # -no 1,  -no 2, ...  -no N
+                elif words0 == 'no':
                      self.no = int(words[1])
                      n = 2
 
-                elif words0 in ['no_logback','nlb']:  # See: FIXME: not documented
+                elif words0 in ['no_logback','nlb']:  # See: sr_subscribe.1
                      if words[0][0:1] == '-' : 
                         self.no_logback = True
                         n = 1
@@ -1006,7 +1009,7 @@ class sr_config:
                         self.no_logback = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['notify_only','n','no-download']: # See: FIXME: sr_subscribe  FIXME... doesn't work for sarra? sender?
+                elif words0 in ['notify_only','n','no-download']: # See: sr_subscribe.1  FIXME... doesn't work for sarra? sender?
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
@@ -1085,11 +1088,11 @@ class sr_config:
                      self.post_exchange = words1
                      n = 2
 
-                elif words0 == 'prefetch': # See: FIXME! what is this
+                elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
                      self.prefetch = int(words1)
                      n = 2
 
-                elif words0 == 'pump':  # See: FIXME! what is this?
+                elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
                      if words[0][0:1] == '-' : 
                         self.pump_flag = True
                         n = 1
@@ -1109,7 +1112,7 @@ class sr_config:
                         self.queue_share = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['queue_suffix'] : # See: FIXME nowhere!
+                elif words0 in ['queue_suffix'] : # See: sr_consumer.1 : but not very usefull... could be removed
                      self.queue_suffix = words1
                      n = 2
 
@@ -1137,7 +1140,7 @@ class sr_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['recursive','rec']: # See: FIXME nowhere. sr_config?
+                elif words0 in ['recursive','rec']: # See: sr_post.1, sr_watch.1
                      if words[0][0:1] == '-' : 
                         self.recursive = True
                         n = 1
@@ -1145,7 +1148,7 @@ class sr_config:
                         self.recursive = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['remote_config']: # See: FIXME nowhere. sr_config?
+                elif words0 in ['remote_config']: # See: sr_config.7
                      if words[0][0:1] == '-' : 
                         self.remote_config = True
                         n = 1
@@ -1153,7 +1156,7 @@ class sr_config:
                         self.remote_config = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['remote_config_url']: # See: FIXME nowhere. sr_config?
+                elif words0 in ['remote_config_url']: # See: sr_config.7
                      self.remote_config_url.append(words[1])
                      n = 2
 
@@ -1161,7 +1164,7 @@ class sr_config:
                      self.rename = words1
                      n = 2
 
-                elif words0 in ['reset']:  # See: FIXME nowhere.
+                elif words0 in ['reset']:  # See: sr_consumer.1
                      if words[0][0:1] == '-' : 
                         self.reset = True
                         n = 1
@@ -1199,7 +1202,7 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
-                elif words0 == 'timeout': # See: FIXME? not mentioned anywhere
+                elif words0 == 'timeout': # See: sr_sarra.8
                      self.timeout = float(words[1])
                      n = 2
 
@@ -1214,7 +1217,7 @@ class sr_config:
                      self.url = urllib.parse.urlparse(words1)
                      n = 2
 
-                elif words0 == 'users':  # See: FIXME! what is this?
+                elif words0 == 'users':  # See: sr_audit.1
                      if words[0][0:1] == '-' : 
                         self.users_flag = True
                         n = 1
