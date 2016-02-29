@@ -183,13 +183,112 @@ By default, the topic is made of the default topic_prefix : version  *V02* , an 
 followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
 You can overwrite the topic_prefix by setting this option.
 
+**[-rec|--recursive <boolean>]**
+
+The recursive default is False. When the **url** given (possibly combined with **document_root**)
+describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
+files are watched.
+
+
 **[-sub|--subtopic <key>]**
 
 The subtopic default can be overwritten with the  *subtopic*  option.
 
 **[-u|--url <url>]**
 
-The *url*  is the download url to be used by the subscribers.
+**sr_post** evaluates the filesystem path from the **url** path 
+and possibly the **document_root** if the option is used.
+
+If this path defines a file then only this file is watched...
+The **url** will be the actual download url to be used by the subscribers.
+
+If this path defines a directory then all files in that directory are
+watched... posting will use that **url** with the added products watched.
+
+If this path defines a directory and the option **recursice** is true
+then all files in that directory tree are watched.
+
+
+ADVANCED OPTIONS
+================
+
+**[-p|--parts <value>]**
+
+The user can suggest how to download a file.  By default it suggests to download the entire file.
+In this case, the amqp message header will have an entry parts with value '1,filesize_in_bytes'.
+To suggest to download a file in blocksize of 10Mb, the user can specify *-p i,10M*. *i* stands for
+"inplace" and means to put the part directly into the file.  *-p p,10M* suggests the same blocksize but to put the part
+in a separate filepart. If the *blocksize* is bigger than the filesize, the program will fall back to the default.
+There will be one post per suggested part.
+
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+
+When suggesting parts, the value put in the amqp message header varies.
+For example if headers[parts] as value 'p,256,12,11,4' it stands for :
+*p* suggesting part, a blocksize in bytes *256*,
+the number of block of that size *12*, the remaining bytes *11*, 
+and the current block *4*,
+
+**[-sum|--sum <string>]**
+
+All file posts include a checksum.  It is placed in the amqp message header will have as an
+entry *sum* with default value 'd,md5_checksum_on_data'.
+The *sum* option tell the program how to calculate the checksum.
+It is a comma separated string.  Valid checksum flags are ::
+
+    [0|n|d|c=<scriptname>]
+    where 0 : no checksum... value in post is 0
+          n : do checksum on filename
+          d : do md5sum on file content
+
+Then using a checksum script, it must be registered with the pumping network, so that consumers
+of the postings have access to the algorithm.
+
+
+DEVELOPER SPECIFIC OPTIONS
+==========================
+
+**[-debug|--debug]**
+
+Active if *-debug|--debug* appears in the command line... or
+*debug* is set to True in the configuration file used.
+
+**[-r|--randomize]**
+
+Active if *-r|--randomize* appears in the command line... or
+*randomize* is set to True in the configuration file used.
+If there are several posts because the file is posted
+by block because the *blocksize* option was set, the block 
+posts are randomized meaning that the will not be posted
+ordered by block number.
+
+**[-rr|--reconnect]**
+
+Active if *-rc|--reconnect* appears in the command line... or
+*reconnect* is set to True in the configuration file used.
+*If there are several posts because the file is posted
+by block because the *blocksize* option was set, there is a
+reconnection to the broker everytime a post is to be sent.
+
+SEE ALSO
+========
+
+`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+
+`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+
+`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
+
+`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
+
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+
+
+
+ZZZ
 
 ADVANCED OPTIONS
 ================

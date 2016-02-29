@@ -58,7 +58,9 @@ look in the component's config directory ( **config_dir** / **component** )
 for a matching .conf file.
 
 If it is still not found, it will look for it in the site config dir 
-(linux: /usr/share/default/sarra/**component**). Finally, if the user has
+(linux: /usr/share/default/sarra/**component**). 
+
+Finally, if the user has set option **remove_config** to True and if he has
  configured web sites where configurations can be found (option **remote_config_url**),
 the program will attempt to download the given named config file from each
 site until found.  If successfull, the file will be downloaded into 
@@ -126,6 +128,16 @@ sequence #2::
 
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
+
+
+Several options that need to be reused in different config file can be grouped in a file.
+In each config where the options subset should appear, the user would then use :
+
+  - **--include <includeConfigPath>**
+
+The includeConfigPath would normally reside under the same config dir of its master configs.
+There is no restriction, any option  can be placed in a config file included. The user must
+be aware that, for most options, several declarations means overwriting their values.
 
 
 OPTIONS
@@ -416,12 +428,17 @@ LOGS
 
 Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
 at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
-The directory in which the logs are stored can be overridden by the *log* option, and the number of days' logs to keep 
-is set by the 'logrotate' parameter.  Log files older than *logrotate* days are deleted.
+The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep 
+is set by the 'logrotate' parameter.  Log files older than **logrotate** days are deleted.
 
-- ** log ** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
+- **debug**  setting option debug is identical to use  **loglevel debug**
 
-- ** logrotate ** the number of days' log files to keep online, assuming a daily rotation.
+- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
+
+- **logrotate** the number of days' log files to keep online, assuming a daily rotation.
+
+- **loglevel** the level of logging as expressed by python's logging. 
+               possible values are :  critical, error, info, warning, debug.
 
 Note: for **sr-post** only,  option **log** should be a logfile
 

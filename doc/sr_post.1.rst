@@ -148,14 +148,33 @@ common settings, and methods of specifying them.
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
   You can overwrite the topic_prefix by setting this option.
 
+**[-rec|--recursive <boolean>]**
+
+The recursive default is False. When the **url** given (possibly combined with **document_root**)
+describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
+files are posted.
+
 **[-sub|--subtopic <key>]**
 
 The subtopic default can be overwritten with the *subtopic* option.
 
 **[-u|--url <url>]**
 
-*url* is the actual download url to be
-used by the subscribers.
+**sr_post** evaluates the filesystem path from the **url** path 
+and possibly the **document_root** if the option is used.
+
+If this path defines a file then the **url** is the actual download url
+to be used by the subscribers. One announce is made for that product.
+
+If this path defines a directory then all files in that directory are
+announced... using that **url** with the added products.
+
+If this path defines a directory and the option **recursice** is true
+then all files in that directory are posted and should **sr_post** finds
+one (or more) directory(ies), it scans it(them) are posts announcements
+until all the tree is scanned.
+
+
 
 ADVANCED OPTIONS
 ================

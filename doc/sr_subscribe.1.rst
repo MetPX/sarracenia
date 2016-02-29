@@ -175,7 +175,8 @@ and under which name.
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
-- **strip     <count>         (default: 0)**
+- **strip     <count>          (default: 0)**
+- **discard   <boolean>        (default: false)**
 
 The  **inflight**  option is a suffix given to the file during the download
 and taken away when it is completed... If  **inflight**  is set to  **.** 
@@ -252,6 +253,10 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 2- the checksum of the amqp message matched the one of the file.
 The default is True (overwrite without checking).
 
+The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
+usefull when debugging or testing a configuration.
+
+
 EXAMPLES
 --------
 
@@ -307,11 +312,12 @@ and that download stream can be multi-streamed as well.
 RABBITMQ LOGGING
 ----------------
 
-For each download, an amqp log message is sent back to the broker.
-Should you want to turned them off the option is :
+For each download, by default, an amqp log message is sent back to the broker.
+This is done with option :
 
-- **log_back <boolean>        (default: true)** 
+- **no_logback <boolean>        (default: False)** 
 
+Should you want to turned them off you would set this option to **True**.
 
 ADVANCED FEATURES
 -----------------

@@ -43,113 +43,220 @@ or debugging things. It is used when the user wants to run the program and its c
 interactively...   The **foreground** instance is not concerned by other actions, 
 but should the configured instances be running it shares the same (configured) message queue.
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process.
+or use other means to kill its process. 
+
 
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
+This document focuses on detailing the program's options. We invite the reader to
+read the document `sr_config(7) <sr_config.7.html>`_  first. It fully explains the
+option syntax, the configuration file location, the credentials ... etc.
 
-**option <value>** 
+Standard sarracenia configuration would expect the config file to be found in :
 
-Comment lines begins with **#**. 
-Empty lines are skipped.
-For example::
+ - linux: ~/.config/sarra/sarra/configfile.conf
+ - Windows: %AppDir%/science.gc.ca/sarra/sarra, this might be:
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\configfile.conf
 
-  **debug true**
+When creating a new configuration file, the user can take advantage of executing
+the program with  **--debug configfile foreground**  with a configfile.conf in
+the current working directory.
 
-would be a demonstration of setting the option to enable more verbose logging.
-The configuration default for all sr_* commands is stored in 
-the ~/.config/sarra/default.conf file, and while the name given on the command 
-line may be a file name specified as a relative or absolute path, sr_sarra 
-will also look in the ~/.config/sarra/sarra directory for a file 
-named *config.conf*  The configuration in specific file always overrides
-the default, and the command line overrides any configuration file.
+The options used in the configfile are described in the next sections.
 
 
-INSTANCES
----------
+Multiple streams
+================
 
-It is possible that one instance of sr_sarra using a certain config
-is not enough to process & download all available notifications.
+When executed,  the program  uses the default queue name.
+If it is stopped, the posted messages continue to accumulate on the 
+broker in the queue.  When the program is restarted, the queue name 
+is reused, and no messages are lost.
 
-**instances      <integer>     (default:1)**
-
-Invoking the command::
-
-  sr_sarra "configname" start 
-
-will result in launching N instances of sr_sarra using that config.
-In the ~/.cache/sarra directory, a number of runtime files are created::
-
-  A .sr_sarra_configname_$instance.pid is created, containing the PID  of $instance process.
-  A sr_sarra_configname_$instance.log  is created as a log of $instance process.
-
-The logs can be written in another directory than the default one with option :
-
-**log            <directory logpath>  (default:~/.cache/sarra/log)**
+The message processing can be parallelized by running multiple instances of the program. 
+The program shares the same queue. The messages will be distributed  between processes.
+Simply launch the program with option instances set to an integer greater than 1.
 
 
-.. NOTE:: 
-  FIXME: standard installation/setup explanations ...
+Consuming options
+=================
 
+This program consumes AMQP messages. The options that cover this task are
+fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
+as a reference, they are simply listed:
 
-
-SOURCE NOTIFICATION OPTIONS
----------------------------
-
-First, the program needs to set all the rabbitmq configurations for a source 
-broker.  The broker option sets all the credential information to connect 
-to the **AMQP** server 
+Setting the source broker :
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-::
+Setting the queue on broker :
 
-      (default: None and it is mandatory to set it ) 
+- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
+- **durable       <boolean>      (default: False)** 
+- **expire        <minutes>      (default: 10080 mins = 1 week)** 
+- **message-ttl   <minutes>      (default: None)** 
+- **prefetch      <N>            (default: 1)** 
+- **reset         <boolean>      (default: False)** 
+
+Setting the bindings on the queue :
+
+ - **exchange      <name>         (default: xpublic)** 
+ - **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
+ - **subtopic      <amqp pattern> (subtopic need to be set)** 
+
+Using regular expression filtering messages
+
+- **accept       <regexp pattern> (optional)** 
+- **reject       <regexp pattern> (optional)** 
+- **accept_unmatch      <boolean> (default: False)** 
+
+Running a plugin on selected messages
+
+- **on_message      <script_name> (optional)** 
 
 
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+Specific consuming requierements
+--------------------------------
 
-QUEUE BINDINGS OPTIONS
-----------------------
+To consume messages, the mandatory options are:
+ **broker**, **exchange**. The default bindings is
+all post messages from that exchange.
 
-First, the program needs to set all the rabbitmq configurations for a source broker.
-These options define which messages (URL notifications) the program receives:
+The program will not process message that :
 
-- **exchange      <name>         (MANDATORY)** 
-- **topic_prefix  <name>         (default: v02.post)**
-- **subtopic      <amqp pattern> (default: #)**
+1- has no source      (message.headers['source'])
+2- has no origin      (message.headers['from_cluster'])
+3- has no destination (message.headers['to_clusters'])
+4- the to_clusters destination list has no match with
+   this pump's **cluster,cluster_aliases,gateway_for**  options
 
-The **exchange** is mandatory.
 
-If **sr_sarra** is to be used to get products from a source 
-(**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
-be name 'xs\_'SourceUserName.  SourceUserName is the amqp username the source
-uses to announce his products.
+Important note 1:
 
-If **sr_sarra** is to be used to dessiminate products from another pump
-then the exchange would usially be  'xpublic'.
+If the messages are posted directly from a source,
+the exchange used is 'xs_<brokerSourceUsername>'.
+Such message does not contain a source nor an origin cluster.
+The user must set this option to **True**:
 
-topic_prefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to subscribe to. 
+- **source_from_exchange  <boolean> (default: False)** 
 
-To give a correct value to the subtopic, browse the remote server and
-write down the directory of interest separated by a dot
-as follow:
+Upon reception, the program will set these values
+in the parent class (here cluster is the value of
+option **cluster** taken from default.conf):
 
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
+self.msg.headers['source']       = <brokerUser>
+self.msg.headers['from_cluster'] = cluster
 
-::
 
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
+Important note 2:
 
-The concatenation of the topic_prefix + . + subtopic gives the AMQP topic
-One has the choice of filtering using  **topic**  with only AMQP's limited 
-wildcarding. 
+The **on_message** plugin (if provided)  is envoked
+after the determination of the product destination 
+described in the next section.
+
+
+LOCAL DESTINATION OPTIONS
+=========================
+
+Theses options set where the program downloads the file
+(or the part) described by the message.
+
+- **document_root <path>           (default: .)** 
+- **mirror        <boolean>        (default: true)** 
+- **strip         <integer>        (default: 0)** 
+- **inplace       <boolean>        (default: true)** 
+
+The program starts by setting the relative path
+of the product straight from the message url:
+
+**relative_path = message's url path**
+
+If message has self.msg.headers['rename'] than :
+
+**relative_path = message's rename path**
+
+When **mirror** is true, we are usually in a pump to pump
+configuration and we are satisfied with the message's path as is.
+
+If **mirror** is false, it means that we need to add the sarracenia
+standard   yyyymmdd/source pair in front of the relative_path
+
+**if not mirror: relative_path = YYYYMMDD/<brokerUser>/relative_path**
+
+Next, the **strip** option is applied, if set to N>0. The relative_path
+has its N first directories removed... if N is too big, the filename
+is kept.
+
+The **document_root** sets a directory the root of the download tree.
+This directory never appears in the newly created amqp notifications.
+But it serves to set the absolute path of the local file (destination)
+
+path = document_root + relative_path (after all options applied)
+
+The **inplace** option defaults to True. The program receiving notifications 
+of file parts, will put these parts inplace in the file in an orderly fashion. 
+Each part, once inserted in the file, is announced to subscribers.
+
+Depending of **inplace** and if the message was a part, the path can
+change again (adding a part suffix if necessary). The resulting variables used for
+the local destination to download a file (or a part) are :
+
+self.msg.local_file   :  the local path where to download the file(part)
+self.msg.local_offset :  offset position in the local file
+self.msg.offset       :  offset position of the remote file
+self.msg.length       :  length of file or part
+self.msg.in_partfile  :  T/F file temporary in part file
+self.msg.local_url    :  url for reannouncement
+
+These variables are important to know if one wants to use an **on_message**,
+**on_part** or **on_file** plugin.
+
+
+DOWNLOAD OPTIONS
+================
+
+There are a few options that impact the dowload of a product:
+
+- **delete            <boolean> (default: False)** 
+- **timeout           <float>   (default: None)** 
+- **overwrite         <boolean> (default: False)** 
+- **recompute_chksum  <boolean> (default: False)** 
+- **do_download   <script>         (default: None)**
+- **on_file       <script>         (default: None)**
+
+Once the path is defined in the program, if the **overwrite** option is set to 
+True, the program checks if the file is already there. If it is, it computes 
+the checksum on it according to the notification'settings. If the local file 
+checksum matches the one of the notification, the file is not downloaded, the 
+incoming notification is acknowledge, and the file is not announced. If the 
+file is not there, or the checksum differs, the file is overwritten and a 
+new notification is sent to the destination broker.
+
+**timeout** when the protocol supports it, this option set 
+the number of seconds to raise a TCP connect timeout. (ftp/ftps/sftp supports it)
+
+If **delete** is set to True, when the product is downloaded, it is removed from
+the remote server.
+
+The **do_download** option defaults to None. If used it defines a script that 
+will be called when an unsupported protocol is received in a message. The user 
+can use all the **sr_sarra** class elements including the message in order to 
+set the proper download of the product.
+
+The **on_file** option defaults to None. If used it defines a script that will 
+be called once the file is downloaded. The user can do whatever he wants with 
+the downloaded file perform checks... etc. Again it should return True to tell 
+the program to resume processing.  If false, it will continue to the next 
+message.
+
+.. NOTE:: 
+  - FIXME: destfn script  : should it support a destination script
+  - FIXME: renamer script : should it support a file renamer script
+
+
+
+
 
 BROKER LOGGING OPTIONS
 ----------------------
@@ -162,108 +269,6 @@ pulls products from sources and announces the products on himself, the
 **log_exchange** should be set to 'xlog'.  In a broker to broker dessimination 
 this option should be set to 'xs\_'brokerUserName.
 
-
-QUEUE SETTING OPTIONS
----------------------
-
- - **durable      <boolean>         (default: False)** 
- - **expire       <minutes>         (default: None)**
- - **message-ttl  <minutes>         (default: None)**
- - **queue_share  <boolean>         (default: True)**
-
-These options (except for queue_share)  are all AMQP queue attributes.
-The queue's name is automatically build by the program. The name has
-the form :  q\_'brokerUsername'.sr_sarra.'config_name'
-It is easier to have this fix name when it is time to determine if 
-the program such a config on that broker has a problem.
-A program running several instances must set **queue_share** to True
-
-
-MESSAGE SELECTION OPTIONS
--------------------------
-
- - **accept        <regexp pattern> (default: False)** 
- - **reject        <regexp pattern> (default: False)** 
- - **source_from_exchange <boolean> (default: False)** 
- - **on_message            <script> (default: None)** 
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited 
-wildcarding, or the more powerful regular expression based  **accept/reject**  
-mechanisms described below.  The difference being that the AMQP filtering is 
-applied by the broker itself, saving the notices from being delivered to the 
-client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber.  In other words,  **accept/reject**  are client 
-side filters, whereas  **subtopic**  is server side filtering.  
-
-It is best practice to use server side filtering to reduce the number of 
-announcements sent to the client to a small superset of what is relevant, and 
-perform only a fine-tuning with the client side mechanisms, saving bandwidth 
-and processing for all.
-
-**sr_sarra** checks, in the received message, the destination clusters. A 
-message without this information in the header is discarted as incorrect.  It 
-compares it to his cluster name, his cluster_alias list, and his gateway list 
-(options CLUSTER,cluster_alias and gateway_for set in default.conf).  If the 
-message was not designated to be process by this instance, the message is 
-discarded. 
-
-All messages should contain the entry 'source'in the message.headers. But 
-this restriction does not apply for suppliers (**sr_post**,**sr_watch**). In 
-this case, **sr_sarra** would be used with option **source_from_exchange**  
-and if the message is processed and published, its 'source' would be set to 
-the suppliers broker's username.
-
-The user can provide an **on_message** script. When a message is accepted up 
-to this level of verification, the **on_message** script is called... with 
-the **sr_sarra** class instance as argument.  The script can perform whatever 
-you want... if it returns False, the processing of the message will stop 
-there. If True, the program will continue processing from there.  
-
-DESTINATION OPTIONS
--------------------
-
-Theses options set where and how the program will place the files to be 
-downloaded.
-
-- **document_root <path>           (default: .)** 
-- **mirror        <boolean>        (default: true)** 
-- **strip         <integer>        (default: 0)** 
-- **overwrite     <boolean>        (default: true)** 
-- **inplace       <boolean>        (default: true)** 
-- **do_download   <script>         (default: None)**
-- **on_file       <script>         (default: None)**
-
-The **document_root** sets a directory the root of the download tree.
-This directory never appears in the newly created amqp notifications.
-
-By default, **mirror** option is True, the default path for a file is :
-
-path = document_root + 'notification filepath'
-
-**sr_sarra** expects the notification filepath to start with YYYYMMDD/sourceid.
-The user will set **mirror** to False, if it is not the case. The path
-for the file becomes :
-
-path = document_root + YYYYMMDD/sourceid + 'notification_filepath'
-
-The **strip** option defines the number of directories to remove
-from the path... This applies for subdirectories starting after the document_root
-If the number of directories is greated than the subdirectories the path would
-become :
-
-path = document_root + filename
-
-Once the path is defined in the program, if the **overwrite** option is set to 
-True, the program checks if the file is already there. If it is, it computes 
-the checksum on it according to the notification'settings. If the local file 
-checksum matches the one of the notification, the file is not downloaded, the 
-incoming notification is acknowledge, and the file is not announced. If the 
-file is not there, or the checksum differs, the file is overwritten and a 
-new notification is sent to the destination broker.
-
-The **inplace** option defaults to True. The program receiving notifications 
-of file parts, will put these parts inplace in the file in an orderly fashion. 
-Each part, once inserted in the file, is announced to subscribers.
 
 The **do_download** option defaults to None. If used it defines a script that 
 will be called when an unsupported protocol is received in a message. The user 

@@ -96,6 +96,13 @@ if the sarracenia option **queue_share** is True (the default).
    Why isn´t it in the list above?
    PS
 
+   MG : PS is right, queue_share I guess could be removed... and prefetch set only if >0.
+        another option  **queue_suffix**  is also coded... when a queue name is automatically 
+        created (no program default and no setting in config... possible in sr_subscribe only)
+        it is set to  q_brokeruser.component.config.random.random    ... 
+        if queue_suffix is declared :  q_brokeruser.component.config.suffix.random.random
+        I think it can be withdrawn too.
+
 When **--reset** is set, and a component is (re)started,
 its queue is deleted (if it already exists) and recreated 
 according to the component's queue options.  This is 
@@ -108,6 +115,7 @@ AMQP queue options not presented are fixed to a sensible value.
 
 As the default settings are usually appropriate, these options should 
 rarely be needed.
+
 
 
 Binding a Queue to an Exchange
