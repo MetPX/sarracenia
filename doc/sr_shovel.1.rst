@@ -61,10 +61,6 @@ Setting the source broker :
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-(Note: missing broker informations are fetched from its corresponding
-entry in the credential file : ~/.config/sarra/credentials.conf)
-
-
 Setting the queue on broker :
 
 - **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
@@ -89,8 +85,6 @@ Using regular expression filtering messages
 Running a plugin on selected messages
 
 - **on_message      <script_name> (optional)** 
-
-
 
 Specific consuming requierements for **sr_shovel**
 --------------------------------------------------
@@ -190,6 +184,8 @@ SEE ALSO
 --------
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+
+`sr_consumer(7) <sr_consumer.7.html>`_ - the options for message consuming in MetPX-Sarracenia.
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
