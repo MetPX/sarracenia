@@ -100,7 +100,6 @@ class sr_subscribe(sr_instances):
         self.inplace        = True
         self.lock           = '.tmp'
         self.mirror         = False
-        self.overwrite      = True
         self.no_logback     = False
 
     def connect(self):
