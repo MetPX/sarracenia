@@ -116,7 +116,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
   If someone knows AMQP, they understand. If not, they can research.
 
   - Users configure a *broker*, instead of a pump.
-  - by convention, the default vhost '/' is always used.  Use of other vhosts is untested.
+  - by convention, the default vhost '/' is always used. (did not feel the need to use other vhosts yet)
   - users explicitly can pick their *queue* names.
   - users set *subtopic*, 
   - topics with dot separator are minimally transformed, rather than encoded.
@@ -129,7 +129,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
       - exchanges start with x. 
         - xs_Weather - the exchange for the source (amqp user) named Weather to post messages
         - xpublic -- exchange used for most subscribers.
-      - queues start with q
+      - queues start with q_
 
 
 Flow Through Exchanges
@@ -183,7 +183,7 @@ perhaps call them 'Accounts'.   It can be elegant to configure the same username
 for use in transport engines.
 
 All Account names should be unique, but nothing will avoid clashes when sources originate from
-different pump networks, and clients at different destinations.  In practice, name clases are
+different pump networks, and clients at different destinations.  In practice, name clashes are
 addressed by routing to avoid two different sources' with the same name having their 
 data offerings combined on a single tree.  On the other hand, name clashes are not always an error.  
 Use of a common source account name on different clusters may be used to implement folders that
@@ -196,12 +196,12 @@ as the first field, and the user's role as the second field.  role can be one of
 subscriber
 
   A subscriber is user that can only subscribe to data and return log messages. Not permitted to inject data.
-  Each subscriber gets an sx_<user> named exchange on the pump, where if a user is named *Acme*, 
-  the corresponding exchange will be *sx_Acme*.  This exchange is where an sr_subscribe
+  Each subscriber gets an xs_<user> named exchange on the pump, where if a user is named *Acme*, 
+  the corresponding exchange will be *xs_Acme*.  This exchange is where an sr_subscribe
   process will send it's log messages.
 
-  By convention/default, a the *anonymous* user is created on all pumps to permit subscription without
-  a specific account.
+  By convention/default, the *anonymous* user is created on all pumps to permit subscription without
+  a specific account. 
 
 source
 
@@ -211,12 +211,13 @@ source
   email or phone number for questions about the data and it's availability, then all of 
   those collection activities might use a single 'source' account.
   
-  Each source gets a sx_<user> exchange for injection of data posts, and, similar to a subscriber
+  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
   to send log messages about processing and receipt of data.
 
   Each source is able to view all of the messages for data it has injected, but the location where
   all of these messages are available varies according to administrator configuration of log routing.
-  So a source may inject data on pumpA, but may subscribe to logs on a different pump.
+  So a source may inject data on pumpA, but may subscribe to logs on a different pump. The logs
+  corresponding to the data the source injected are written in exchange xl_<user>. 
 
   When a route injects data, the path is modified by sarracenia to prepend a fixed upper part
   of the directory tree.  The first level directory is the day of ingest into the network in 
@@ -237,34 +238,24 @@ source
    restrictions by user name not yet implemented, but planned.
 
 
-pump
+feeder
 
   a user permitted to subscribe or originate data, but understood to represent a pump.
-  a local pump user would be used to, say, run the sarra processes.
+  this local pump user would be used to, run processes like sarra, log2source, 2xlog,
+  log2cluster... etc
 
 
-administrator
-  a user permitted to modify permissions on the local pump.  
-  The administrator also runs the log routing components such 
-  as log2source, 2xlog, log2cluster, etc...
+admin
+  a user permitted to manage the local pump.  
+  It is the real rabbitmq-server administrator.
+  The administrator runs sr_audit to create/delete
+  exchanges, users, or clean unused queues... etc.
   
-
-.. note::
-  FIXME: makes more sense to me for a pump user to run the log routing stuff,
-  and just keep manager for administrative change.  throughts?
-
-  FIXME: manager run log* things. I doubt it works this way now... ie. those
-  components should use the 'manager' setting instead of the 'broker' one?
-  the 'broker' one will be the 'feeder' aka. pump ?
-
-
-
-
 
 Transport Engines
 -----------------
 
-Transport engines are the data servers queried by subscribers, be they end users, or other pumps.
+Transport engines are the data servers queried by subscribers, by the end users, or other pumps.
 The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
 The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of 
 configuring the servers for use, please consult the documentation of the servers themselves.
@@ -310,33 +301,36 @@ To operate a pump, there needs to be a user designated as the pump administrator
 The administrator is different from the others mostly in the permission granted
 to create exchanges, and the ability to run processes that address the common
 exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
-access only their own queues.
+access only their own resources (exchange and queues).
 
 The administrative user name is an installation choice, and exactly as for any other 
 user, the configuration files are placed under ~/.config/sarra/, with the 
 defaults under default.conf, and the configurations for components under
 directories named after each component.  In the component directories,
 Configuration files have the .conf suffix.  User roles are configured by
-the users.conf file.
+the users.conf file. Possible roles are: admin,feeder,source,subscriber.
+The full credential informations for the users are held in file credentials.conf.
 
 ..note:: 
   FIXME: missing users.conf(7) man page.
-  joe [subscriber|source|pump|admin]
+  joe [subscriber|source|feeder|admin]
 
 
 The administrative processes perform validation of postings from sources, and once
 they are validated, forward them to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
+
+              "sr_shovel=sarra.sr_shovel:main",
  
-- sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
-- sr_sarra   - to pull data in from local sources to make it available from the pump.
-- sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_audit   - kill off useless queues, create exchanges, users and set permissions according to their roles.
 - sr_poll    - for sources without advertisements, revert to explicit polling for initial injection.
+- sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
+- sr_sender  - for client or pump that cannot pull data, deliver announced products (if a pump send announcements)
+- sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_shovel  - pull and reannounce advertisements from another pump, and usually feed sr_winnow.
 - sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
 - sr_2xlog   - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
 - sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
-- sr_police  - aka. queue_manager.py, kill off useless or empty queues.
-- sr_police2 - look for dead instances, and restart them? (cron job in sundew.)
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once.  To do so easily, one can invoke:
@@ -344,17 +338,20 @@ to set up, and all of them may need to run at once.  To do so easily, one can in
   sr start
 
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
-To run as a broker administrator, the Manager option is set in ~/.config/sarra/default.conf like so:
+There are two users/roles that need to be set to use a pump. They are the admin and feeder options.
+They are set in ~/.config/sarra/default.conf like so:
 
-  manager amqp://adminuser:adminpw@localhost/
+  feeder amqp://pumpUser:pumpPw@localhost/
+  admin  adminUser
 
-Then the log and police components are started as well.  It is standard practice to use a different
-AMQP user for administrative tasks, such as exchange or user creation, from data flow tasks, such as
-pulling and posting data.  Normally one would place credentials in ~/.config/sarra/credentials.conf
+Then the log and audit components are started as well.  It is standard practice to use a different
+AMQP user for administrative tasks, such as exchange or user creation, which are performed by the admin
+user,  from data flow tasks, such as pulling and posting data, performed by the feeder user.
+Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.
 
 
-Housekeeping - sr_police
+Housekeeping - sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a client connects to a broker, it creates a queue which is then bound to an exchange.  The user 
@@ -362,12 +359,11 @@ can choose to have the client self-destruct when disconnected (*auto-delete*), o
 it *durable* which means it should remain, waiting for the client to connect again, even across
 reboots.  Clients often want to pick up where they left off, so the queues need to stay around.
 
-queue_manager.py
+sr_audit.py
 
-The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means they will build up over time.  We have a script that looks for unused queues, and cleans them out. Currently, the limits are hard-coded as any queue having more than 25000 messages or 50mbytes of space will be deleted.
-
-This script is in samples/program, rather than as part of the package (as an sr_x command.)
-
+The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
+they will build up over time.  We have a script that looks for unused queues, and cleans them out.
+Currently, the limits are hard-coded as any unused queue having more than 25000 messages will be deleted.
 
 Routing
 -------
@@ -404,8 +400,8 @@ originating from that cluster to) Sample, log2cluster.conf::
 
       clustername amqp://user@broker/vhost exchange=xlog
 
-Where message destination is the local cluster, log2user (log2source?) will copy
-the messages where source=<user> to sx_<user>, ready for consumption by sr_log.
+Where message destination is the local cluster, log2source will copy
+the messages where source=<user> to xl_<user>, ready for consumption by sr_log.
 
 
 What is Going On?
@@ -418,7 +414,7 @@ in order to get log information for an entire broker.
 .. NOTE:: 
    config sample of looking at xlog.
 
-Canned sr_log configuration with an onmessage action can be configured to gather statisical 
+Canned sr_log configuration with an *on_message* action can be configured to gather statisical 
 information is a speedo on various aspects of operations.
 
 .. NOTE::
@@ -493,8 +489,10 @@ subscriber just point at the output of sr_winnow on the local pump.
 Dataless With Sr_poll
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: 
-  need samples of sr_poll configuration.
+The sr_poll program can verify if products on a remote server are ready or modified.
+For each of the product, it emits an announcement on the local pump. One could use
+sr_subscribe anywhere, listen to announcements and get the products (privided the
+having the credentials to access it)
 
 
 Standalone
@@ -520,16 +518,11 @@ global to the pump.
 
 
 Note: On such clusters, all nodes that run a component with the
-same config file create an identical **queue_name**. Targetting the
+same config file create by default an identical **queue_name**. Targetting the
 same broker, it forces the queue to be shared. If it should be avoided,
 the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
 Each node will have its own queue, only shared by the node instances.
 ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
-
-
-
-
-
 
 Rabbitmq Setup 
 --------------
@@ -549,6 +542,7 @@ https://www.rabbitmq.com/install-debian.html
   - the one in the wheezy depot is < 3.  too old?
 
 apt-get update
+apt-get install erlang-nox
 apt-get install rabbitmq-server
 
 in upto-date distros, you likely can just take the distro version.
@@ -619,8 +613,8 @@ That is a user with all permissions should be used on sarracenia broker...
 Feeders read from user queues, validate that there is no spoofing, and then further process.
 
 At the operating system level...
-sr_sarra is usually invoked by the feeder user, so it needs to have permission
-users?
+sr_sarra is usually invoked by the feeder user,
+so it needs to have permission on all exchanges.
 
 
 Add User
@@ -818,8 +812,8 @@ Sarracenia users are actually users defined on rabbitmq brokers.
 Each user Alice, on a broker to which she has access:
 
  - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
- - has an exchange xl_Alice, where she writes her log messages.
- - can create queues qs_Alice\_.* to bind to exchanges.
+ - has an exchange xl_Alice, where she reads her log messages.
+ - can configure (read from and acknowledge) queues named qs_Alice\_.* to bind to exchanges
  - Alice can create and destroy her own queues, but no-one else's.
  - Alice can only write to her exchange (xs_Alice),
  - Exchanges are managed by the administrator, and not any user.
@@ -832,16 +826,9 @@ objects, but not their types.  Thus, given the ability to create a queue named q
 a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
 queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.
 
-To prevent such mis-use, sr_police is a component that is invoked regularly looking
+To prevent such mis-use, sr_audit is a component that is invoked regularly looking
 for mis-use, and cleaning it up.
 
-.. NOTE::
-   FIXME:  sr_police is a renaming of queue_manager.py queue_manager currently only looks for
-   obsolete queues with high number of items queued, or which have not been accessed in a long
-   time.  Need to add the feature of looking for exchanges that do not start with x and delete
-   them.
-
-   
 
 Input Validation
 ~~~~~~~~~~~~~~~~
@@ -851,14 +838,15 @@ user exchanges have a responsibility for validation.   The process that reads xs
 will overwrite any *source* or *cluster* heading written into the message with the correct values for
 the current cluster, and the user which posted the message.  
 
-The checksum algorithm used must also be validated.  The algorithm must be known.  Similarly, the
+The checksum algorithm used must also be validated.  The algorithm must be known.  Similarly, if
 there is a malformed header of some kind, it should be rejected immediately.  Only well-formed messages
 should be forwarded for further processing.
 
-In the case of sr_sarra, using the onpart trigger, the checksum must be re-calculated from the data,
-to ensure they match.  If they do not match, the file will not be forwarded.  Depending on the level of 
-confidence between a pair of pumps, the level of validation may be relaxed to improve performance.  That 
-is the reason for the *recompute_checksum* option.  If set to false, there should be a performance improvement.
+In the case of sr_sarra, the checksum is re-calculated when downloading the data, it
+ensures it matches the message.  If they do not match, an error log message is published.
+If the *recompute_checksum* option is True, the newly calculated checksum is put into the message.
+Depending on the level of confidence between a pair of pumps, the level of validation may be
+relaxed to improve performance.  
 
 Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
 users on the remote pumps and any other pumps the pump is forwarding for.  In that case the validation
@@ -867,8 +855,7 @@ constraints are a little different:
 - source doesn´t matter. (feeders can represent other users, so do not overwrite.) 
 - ensure cluster is not local cluster (as that indicates either a loop or misuse.)
 
-If the message fails the non-local cluster test, it should be rejected (and the rejection logged back to...
-hmm...)
+If the message fails the non-local cluster test, it should be rejected, and logged (published ... hmm...)
 
 FIXME:
    - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
@@ -888,13 +875,14 @@ the files will belong to the pump administrator, and privileged access is not re
 Content Scanning
 ~~~~~~~~~~~~~~~~
 
-In cases where security scanning of file being transferred is deemed necessary, one configures sarra with an on_part hook.
+In cases where security scanning of file being transferred is deemed necessary,
+one configures sarra with an *on_part* and/or *on_file* plugin.
 
 
 .. NOTE::
   FIXME: need an example of an on_part hook to call Amavis.  Have it check which part of a file is in question, 
   and only scan the initial part.  
-  use on_part hook, check which part it is, if > 2 don't bother.
+  use on_part plugin, check which part it is, if > 2 don't bother.
 
 
 Hooks from Sundew
