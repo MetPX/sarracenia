@@ -467,6 +467,10 @@ def main():
 
     toxlog = sr_2xlog(config,args)
 
+    if action != 'TEST' and  not toxlog.log_daemons :
+       toxlog.logger.info("sr_2xlog will not run (log_daemons), action '%s' ignored " % action)
+       sys.exit(0)
+
     if   action == 'reload' : toxlog.reload_parent()
     elif action == 'restart': toxlog.restart_parent()
     elif action == 'start'  : toxlog.start_parent()

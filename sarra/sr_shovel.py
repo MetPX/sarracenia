@@ -284,9 +284,6 @@ class sr_shovel(sr_instances):
 
         self.accept_unmatch = True
 
-        # most of the time we want to mirror product directory and share queue
-
-        self.queue_share    = True
 
     # =============
     # process message  

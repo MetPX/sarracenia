@@ -285,6 +285,7 @@ class sr_config:
 
         self.loglevel             = logging.INFO
         self.logrotate            = 5
+        self.log_daemons          = False
 
         self.bufsize              = 8192
         self.kbytes_ps            = 0
@@ -310,7 +311,6 @@ class sr_config:
         self.reset                = False
         self.message_ttl          = None
         self.prefetch             = 1
-        self.queue_share          = False
         self.max_queue_size       = 25000
 
         self.use_pattern          = False    # accept if No pattern matching
@@ -955,6 +955,14 @@ class sr_config:
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
+                elif words0 == 'log_daemons': # See: sr_config.7
+                     if words[0][0:1] == '-' : 
+                        self.log_daemons = True
+                        n = 1
+                     else :
+                        self.log_daemons = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 in ['logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
                      self.logrotate = int(words[1])
                      n = 2
@@ -1103,14 +1111,6 @@ class sr_config:
                 elif words0 in ['queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
                      self.queue_name = words1
                      n = 2
-
-                elif words0 in ['queue_share','qs'] : # See: sr_sarra,sender,winnow .. FIXME -> sr_config?
-                     if words[0][0:1] == '-' : 
-                        self.queue_share = True
-                        n = 1
-                     else :
-                        self.queue_share = self.isTrue(words[1])
-                        n = 2
 
                 elif words0 in ['queue_suffix'] : # See: sr_consumer.1 : but not very usefull... could be removed
                      self.queue_suffix = words1
