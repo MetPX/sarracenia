@@ -218,79 +218,74 @@ DOWNLOAD OPTIONS
 
 There are a few options that impact the dowload of a product:
 
-- **delete            <boolean> (default: False)** 
-- **timeout           <float>   (default: None)** 
-- **overwrite         <boolean> (default: False)** 
-- **recompute_chksum  <boolean> (default: False)** 
-- **do_download   <script>         (default: None)**
-- **on_file       <script>         (default: None)**
+- **delete           <boolean> (default: False)** 
+- **do_download      <script>  (default: None)**
+- **on_file          <script>  (default: None)**
+- **on_part          <script>  (default: None)**
+- **overwrite        <boolean> (default: False)** 
+- **recompute_chksum <boolean> (default: False)** 
+- **timeout          <float>   (default: None)** 
 
 Once the path is defined in the program, if the **overwrite** option is set to 
 True, the program checks if the file is already there. If it is, it computes 
 the checksum on it according to the notification'settings. If the local file 
 checksum matches the one of the notification, the file is not downloaded, the 
-incoming notification is acknowledge, and the file is not announced. If the 
+incoming notification is acknowledge, and the file is not reannounced. If the 
 file is not there, or the checksum differs, the file is overwritten and a 
 new notification is sent to the destination broker.
-
-**timeout** when the protocol supports it, this option set 
-the number of seconds to raise a TCP connect timeout. (ftp/ftps/sftp supports it)
 
 If **delete** is set to True, when the product is downloaded, it is removed from
 the remote server.
 
-The **do_download** option defaults to None. If used it defines a script that 
-will be called when an unsupported protocol is received in a message. The user 
-can use all the **sr_sarra** class elements including the message in order to 
-set the proper download of the product.
-
-The **on_file** option defaults to None. If used it defines a script that will 
-be called once the file is downloaded. The user can do whatever he wants with 
-the downloaded file perform checks... etc. Again it should return True to tell 
-the program to resume processing.  If false, it will continue to the next 
-message.
-
-.. NOTE:: 
-  - FIXME: destfn script  : should it support a destination script
-  - FIXME: renamer script : should it support a file renamer script
-
-
-
-
-
-BROKER LOGGING OPTIONS
-----------------------
-
- - **log_exchange     <nane>   (MANDATORY)**
-
-The state and actions performed with the messages/products of the broker
-are logged back to it again through AMQP LOG MESSAGES.  When the broker
-pulls products from sources and announces the products on himself, the
-**log_exchange** should be set to 'xlog'.  In a broker to broker dessimination 
-this option should be set to 'xs\_'brokerUserName.
-
+**timeout** when the protocol supports it, this option set 
+the number of seconds to raise a TCP connect timeout. (ftp/ftps/sftp supports it)
 
 The **do_download** option defaults to None. If used it defines a script that 
 will be called when an unsupported protocol is received in a message. The user 
 can use all the **sr_sarra** class elements including the message in order to 
-set the proper download of the product.
+set the proper download of the product. It returns True if the download succeeded.
+
+The **on_part** option defaults to None. If used it defines a script that will 
+be called when a part is downloaded. The same ideas apply, the user
+can do whatever he wants with the downloaded part... etc. Again 
+it should return True to tell the program to resume processing.
+If false, it will continue to the next message.
 
 The **on_file** option defaults to None. If used it defines a script that will 
-be called once the file is downloaded. The user can do whatever he wants with 
-the downloaded file perform checks... etc. Again it should return True to tell 
-the program to resume processing.  If false, it will continue to the next 
-message.
+be called once the file is downloaded (or all its parts are inplace). The user
+can do whatever he wants with the downloaded file perform checks... etc. Again 
+it should return True to tell the program to resume processing.
+If false, it will continue to the next message.
+
+For each download, the checksum is computed during transfer. If **recompute_chksum** 
+is set to True, and the recomputed checksum differ from the on in the message,
+the new value will overwrite the one from the incoming amqp message. 
 
 .. NOTE:: 
-  - FIXME: destfn script  : should it support a destination script
-  - FIXME: renamer script : should it support a file renamer script
+  - FIXME PS: destfn script  : should it support a destination script
+  - FIXME PS: renamer script : should it support a file renamer script
 
+  - MG  the destfn script and other sundew style naming keywords
+        were only implemented in sr_sender (to keep these options to
+        deliver to clients)  In sarracenia strategy, the source fix
+        the destination and filename that is spread amoungst pumps
+        and we do not interfere.
+
+        The renamer script would be a designated on_message script
+        that would change  self.msg.local_file and self.msg.headers['rename']
+        and self.msg.local_url with the desired modifications.
+  
 
 CREDENTIALS 
 -----------
 
 Ther username and password or keys used to access servers are credentials.
-The confidential parts of credentials are stored only in ~/.conf/sarra/credentials.conf.  This includes all download, upload, or broker passwords and settings 
+
+The message url of the product to download may not have all the details
+of the credentials for the connection, the pump administrator needs to define them.
+
+The confidential parts of credentials are stored only in ~/.conf/sarra/credentials.conf.
+This includes all download, upload, or broker passwords and settings 
 needed by the various configurations.  The format is one entry per line.  Examples:
 
 - **amqp://user1:password1@host/**
@@ -319,33 +314,21 @@ The post_broker option sets all the credential information to connect to the
 
 **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-::
-      FIXME: do not understand following parenthetical
-      (default: manager defined in default.conf) 
+The program seeks for the **feeder** option (usually defined in default.conf)
+and (if found) sets it as the default for **post_broker**. It is usually from
+that account that the pump deals internally with AMQP messages.
 
 Once connected to the source AMQP broker, the program builds notifications after
 the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **url               <url>          (MANDATORY)**
- - **recompute_chksum  <boolean>      (False)** 
  - **post_exchange     <name>         (default: xpublic)** 
  - **on_post           <script>       (default: None)** 
 
 The **url** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the credentials. It is a good practice not to 
 notify the credentials and separately inform the consumers about it.
-
-If **recompute_chksum** is set to True, the checksum will be recomputed
-on file download and value will overwrite the one from the incoming amqp 
-message.  If a file is repeatedly modified, the download may occur after the 
-file is overwritten but with its old notification... resulting in a checksum 
-mismatch and potential looping in a network of pumps.
-
-.. NOTE::
-   FIXME:  this is pathological case.  It ignores the incoming checksum.
-   so data is forwarded in spite of checksum mismatch. We should think more about this.
-   not sure this option is a good thing.
 
 The **post_exchange** option set under which exchange the new notification 
 will be posted.  Im most cases it is 'xpublic'.
