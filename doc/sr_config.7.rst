@@ -562,9 +562,14 @@ Should you want to turned them off the option is :
 
 - **log_back <boolean>        (default: true)** 
 - **log_daemons <boolean>     (default: false)**
+- **log_exchange <log_exchangename> (default: xlog)**
 
 The *log_daemons* option indicates to sr whether the sr_log2source, sr_2xlog, and sr_log2cluster 
 component configurations should be included in processing for start, stop, etc...
+
+When a log message is generated, it is sent to the configured *log_exchange*. Administrive 
+components log directly to xlog, whereas user components log to their own exchanges.  The 
+log_daemons copy the messages to *xlog* after validation.
 
 Administration-Specific Options
 -------------------------------

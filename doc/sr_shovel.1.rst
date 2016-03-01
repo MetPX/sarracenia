@@ -21,9 +21,16 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-sr_shovel copies messages on one broker to another. 
+sr_shovel copies messages on one broker (given by the *broker* option) to 
+another (given by the *post_broker* option.) subject to filtering 
+by (*subtopic*, *accept*, and *reject*) 
 
-The sr_shovel component takes two argument: a configuration file described below,
+The *topic_prefix* option is set to:
+
+ - **v02.post** to shovel sr_post(7) messages
+ - **v02.log** to shovel sr_log(7) messages
+
+On startup, the sr_shovel component takes two argument: a configuration file described below,
 and an action start|stop|restart|reload|status... (self explanatory.)
 
 
@@ -32,37 +39,10 @@ CONFIGURATION
 
 In General, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first. 
-
 It fully explains the option syntax, the configuration file location, 
-credentials ... etc.
-
-Standard sarracenia configuration would expect the config file to be found in :
-
- - linux: ~/.config/sarra/shovel/configfile.conf
- - Windows: %AppDir%/science.gc.ca/sarra/shovel, this might be:
-   C:\Users\peter\AppData\Local\science.gc.ca\sarra\shovel\configfile.conf
-
-When creating a new configuration file, the user can executing the program 
-with  **--debug configfile foreground**  where a configfile.conf in the current 
-working directory.
-
-The options used in the configfile are described in the next sections.
 
 
-Multiple streams
-================
-
-When executed,  the program  uses the default queue name.
-If it is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, the queue name 
-is reused, and no messages are lost.
-
-The message processing can be parallelized by running multiple instances of the program. 
-The program shares the same queue. The messages will be distributed  between processes.
-Simply launch the program with option instances set to an integer greater than 1.
-
-
-Consuming options
+Consuming Options
 =================
 
 This program consumes sr_post(7) or sr_log(7) messages. The options that cover this task are
@@ -122,48 +102,6 @@ The default is to publish under the exchange it was consumed.
 Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. If the script returns
 True, the message is published... and False it wont.
-
-
-
-RABBITMQ LOGGING
-================
-
-When a message is shoveled (consumed and published), an AMQP log message is published
-on the consuming cluster under the log_exchange 'xlog'.
-
-- **log_exchange <log_exchangename> (default: xlog)** 
-
-
-PLUGINS ADVANCED FEATURES
-=========================
-
-As mentionned below, one can insert scripts into the flow of messages:
-Should you want to implement tasks in various part of the execution of the program:
-
-- **on_message  <script>        (default: None)** 
-- **on_post     <script>        (default: None)** 
-
-A do_nothing.py script for **on_message**, and **on_post** could be:
-(this one being for **on_file**)
-
-class Transformer(object): 
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          logger = parent.logger
-
-          logger.info("I have no effect but adding this log line")
-
-          return True
-
-transformer  = Transformer()
-self.on_file = transformer.perform
-
-The only arguments the script receives it **parent**, which is an instance of
-the program class.
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
 
 
 SEE ALSO
