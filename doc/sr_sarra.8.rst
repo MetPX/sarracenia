@@ -225,6 +225,7 @@ There are a few options that impact the dowload of a product:
 - **overwrite        <boolean> (default: False)** 
 - **recompute_chksum <boolean> (default: False)** 
 - **timeout          <float>   (default: None)** 
+- **kbytes_ps        <int>     (default: 0)** 
 
 Once the path is defined in the program, if the **overwrite** option is set to 
 True, the program checks if the file is already there. If it is, it computes 
@@ -239,6 +240,10 @@ the remote server.
 
 **timeout** when the protocol supports it, this option set 
 the number of seconds to raise a TCP connect timeout. (ftp/ftps/sftp supports it)
+
+**kbytes_ps** can be use to set a target for the download speed in Kbytes per second.
+Default is 0, meaning no control over speed. (ftp/ftps/sftp supports it)
+
 
 The **do_download** option defaults to None. If used it defines a script that 
 will be called when an unsupported protocol is received in a message. The user 
