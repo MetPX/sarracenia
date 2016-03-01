@@ -23,16 +23,16 @@ DESCRIPTION
 
 sr_shovel copies messages on one broker (given by the *broker* option) to 
 another (given by the *post_broker* option.) subject to filtering 
-by (*subtopic*, *accept*, and *reject*) 
+by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.) 
 
-The *topic_prefix* option is set to:
+The *topic_prefix* option must to be set to:
 
- - **v02.post** to shovel sr_post(7) messages
+ - **v02.post** to shovel sr_post(7) messages 
  - **v02.log** to shovel sr_log(7) messages
 
-On startup, the sr_shovel component takes two argument: a configuration file described below,
-and an action start|stop|restart|reload|status... (self explanatory.)
-
+There is no default.  On startup, the sr_shovel component takes two 
+argument: a configuration file described below, and 
+an action start|stop|restart|reload|status... (self explanatory.)
 
 CONFIGURATION
 =============
@@ -40,7 +40,6 @@ CONFIGURATION
 In General, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first. 
 It fully explains the option syntax, the configuration file location, 
-
 
 Consuming Options
 =================
@@ -53,20 +52,11 @@ Setting the source broker :
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-Setting the queue on broker :
-
-- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
-- **durable       <boolean>      (default: False)** 
-- **expire        <minutes>      (default: 10080 mins = 1 week)** 
-- **message-ttl   <minutes>      (default: None)** 
-- **prefetch      <N>            (default: 1)** 
-- **reset         <boolean>      (default: False)** 
-
 Setting the bindings on the queue :
 
- - **exchange      <name>         (default: xpublic)** 
- - **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
- - **subtopic      <amqp pattern> (subtopic need to be set)** 
+- **exchange      <name>         (default: xpublic)** 
+- **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
+- **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Using regular expression filtering messages
 
