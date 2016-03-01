@@ -388,6 +388,10 @@ def main():
 
     log2source = sr_log2source(config,args)
 
+    if action != 'TEST' and  not log2source.log_daemons :
+       log2source.logger.info("sr_log2source will not run (log_daemons), action '%s' ignored " % action)
+       sys.exit(0)
+
     if   action == 'reload' : log2source.reload_parent()
     elif action == 'restart': log2source.restart_parent()
     elif action == 'start'  : log2source.start_parent()

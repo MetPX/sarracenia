@@ -77,10 +77,6 @@ class sr_subscribe(sr_instances):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # queue must be shared
-
-        self.queue_share = True
-
         # pattern must be used
         # if unset we will accept unmatched... so everything
 

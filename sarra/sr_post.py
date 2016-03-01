@@ -75,7 +75,7 @@ class sr_post(sr_config):
 
         # resetting logs if needed
 
-        if self.logpath != self.lpath : self.setlog()
+        if self.program_name != 'sr_watch' and self.logpath != self.lpath : self.setlog()
 
     def close(self):
         self.logger.debug("sr_post close")

@@ -73,10 +73,9 @@ class sr_consumer:
     def build_consumer(self):
         self.logger.debug("sr_consumer build_consumer")
 
-        self.queue_share = self.parent.queue_share
-        self.consumer    = Consumer(self.hc)
+        self.consumer = Consumer(self.hc)
 
-        if self.queue_share :
+        if self.parent.prefetch > 0 :
             self.consumer.add_prefetch(self.parent.prefetch)
 
         self.consumer.build()
@@ -241,7 +240,6 @@ def self_test():
     cfg.logger         = logger
     cfg.debug          = False
     cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@ddi.cmc.ec.gc.ca/")
-    cfg.queue_share    = True
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = True

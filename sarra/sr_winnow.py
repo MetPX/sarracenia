@@ -85,10 +85,6 @@ class sr_winnow(sr_instances):
 
     def check(self):
 
-        # When doing winnowing we might switch server...
-
-        self.queue_share = True
-
         # no queue name allowed
 
         if self.queue_name == None:

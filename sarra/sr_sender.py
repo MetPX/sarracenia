@@ -319,10 +319,9 @@ class sr_sender(sr_instances):
            self.broker = self.manager
         self.exchange  = 'xpublic'
 
-        # most of the time we want to mirror product directory and share queue
+        # most of the time we want to mirror product directory
 
         self.mirror      = True
-        self.queue_share = True
 
         # Should there be accept/reject option used unmatch are accepted
 

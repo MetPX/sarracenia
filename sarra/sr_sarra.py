@@ -350,7 +350,6 @@ class sr_sarra(sr_instances):
         # most of the time we want to mirror product directory and share queue
 
         self.mirror         = True
-        self.queue_share    = True
 
     # =============
     # process message  
