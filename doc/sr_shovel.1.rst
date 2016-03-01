@@ -39,7 +39,8 @@ CONFIGURATION
 
 In General, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first. 
-It fully explains the option syntax, the configuration file location, 
+It fully explains the option configuration language, and how to find 
+the option settings.
 
 Consuming Options
 =================
