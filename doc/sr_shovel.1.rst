@@ -90,8 +90,8 @@ The **post_exchange** option sets a new exchange for the selected messages.
 The default is to publish under the exchange it was consumed.
 
 Before a message is published, a user can set to trigger a script.
-The option **on_post** would be used to do such a setup. If the script returns
-True, the message is published... and False it wont.
+The option **on_post** would be used to do such a setup. 
+The message is only published if the script returns True.
 
 
 SEE ALSO
