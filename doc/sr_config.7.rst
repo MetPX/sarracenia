@@ -35,8 +35,21 @@ a configuration file and an operation are specified.  The operation is one of:
  - status: check if the configuration is running.
  - stop: stop the configuration from running 
 
-For example:  *sr_subscribe dd foreground* runs the sr_subcribe component with the dd configuration
-as a single foreground instance.
+For example:  *sr_subscribe dd foreground* runs the sr_subcribe component with 
+the dd configuration as a single foreground instance.
+
+The **foreground** action is used when building a configuration or for debugging. 
+The **foreground** instance will run regardless of other instances which are currently 
+running.  Should instances be running, it shares the same message queue with them.
+A user stop the **foreground** instance by simply using <ctrl-c> on linux
+or use other means to kill the process.
+
+HELP
+----
+
+**help** has a component print a list of valid options.
+
+**-V**  has a component print out a version identifier and exit.
 
 
 Finding Option Files
@@ -60,21 +73,15 @@ for a matching .conf file.
 If it is still not found, it will look for it in the site config dir 
 (linux: /usr/share/default/sarra/**component**). 
 
-Finally, if the user has set option **remove_config** to True and if he has
- configured web sites where configurations can be found (option **remote_config_url**),
-the program will attempt to download the given named config file from each
-site until found.  If successfull, the file will be downloaded into 
-**config_dir/Downloads** and interpreted by the program from there.
+Finally, if the user has set option **remote_config** to True and if he has
+configured web sites where configurations can be found (option **remote_config_url**),
+The program will try to download the named file from each site until it finds one.  
+If successful, the file is downloaded to **config_dir/Downloads** and interpreted 
+by the program from there.  There is a similar process for all *plugins* that can 
+be interpreted and executed within sarracenia components.  Components will first 
+look in the *plugins* directory in the users config tree, then in the site 
+directory, then in the sarracenia package itself, and finally it will look remotely.
 
-There is a similar process for all plugins that can be interpreted and executed
-within sarracenia programs. In this case the **component** mentionned previously
-is set to **plugins**. And before searching in given web sites, the program will
-check for a plugins with the given name provided in the sarracenia package.
-
-.. note::
-   FIXME: should we keep going to describe http remote loading here... or if we move it elsewhere,
-   perhaps move this whole thing to a 'finding config files' section that does the whole job.
-   MG  Peter's question still valid... I added more searching descriptions...
 
 Option Syntax
 -------------
@@ -179,6 +186,7 @@ up in credentials.conf.
    it is like rocket maintenance inserted into a paragraph about baby carriages.
    it is developer info... we leave it here for now, but keep an eye open
    for some place more developerish to move it to.   
+   
 
 To implement support of additional protocols, one would write 
 a **_do_download** script.  the scripts would access the credentials 
@@ -289,6 +297,8 @@ On restart/reload ... etc  the queue_name is read from the file and reused.
    config file name, they share a queue?  that's actually what we do want, so it turns out
    elegant.  I guess that's the reasoning? hmm... 
    
+
+
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
 on disk if the broker is restarted.
@@ -316,6 +326,29 @@ for all data injected.  Components which transfer data between bumps, such as sr
 interpret *cluster, cluster_aliases*, and *gateway_for*, such that products which are not 
 meant for the destination cluster are not transferred.  
 
+The network will not process a message that ::
+
+ 1- has no source     (message.headers['source'])
+ 2- has no origin      (message.headers['from_cluster'])
+ 3- has no destination (message.headers['to_clusters']) (**to** option on post/watch/poll)
+ 4- the to_clusters destination list has no match with
+    this pump's **cluster,cluster_aliases,gateway_for**  options
+
+.. Important note 1::
+
+  If messages are posted directly from a source,
+  the exchange used is 'xs_<brokerSourceUsername>'.
+  Such message does not contain a source nor an origin cluster.
+  Initial validation of these messages the **source_from_exchange**
+
+  Upon reception, a component will set these values
+  in the parent class (here cluster is the value of
+  option **cluster** taken from default.conf):
+
+    self.msg.headers['source']       = <brokerUser>
+    self.msg.headers['from_cluster'] = cluster
+
+
 
 
 DELIVERY SPECIFICATIONS
@@ -333,6 +366,8 @@ and under which name.
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>         (default: 0)**
 - **accept_unmatch   <boolean> (default: False)**
+- **kbytes_ps** <count>       (default: 0)**
+
 
 The  **inflight**  option is a change to the file name used
 the download so that other programs reading the directory ignore 
@@ -414,13 +449,15 @@ results in the creating ::
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
 
-The  **overwrite**  option,if set to false, avoids unnecessary downloads under these conditions :
-1- the file to be downloaded is already on the user's file system at the right place and
-2- the checksum of the amqp message matches the one of the file.
-The default is True for **sr_subscribe** (overwrite without checking), False for the others.
+The  **overwrite**  option, when set, forces overwriting of an existing file even if it 
+has the same checksum as the newly advertised version.
 
 .. note::
   FIXME: Is it correct for this to be different for sr_subscribe? why is default not False everywhere?
+
+
+**kbytes_ps** is greater than 0, the process attempts to respect this delivery 
+speed in kilobytes per second... ftp,ftps,or sftp)
 
 
 LOGS
@@ -489,6 +526,34 @@ The logs can be written in another directory than the default one with option :
           sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
           
 
+
+POSTING OPTIONS
+===============
+
+These options are only used when more than one broker needs to be configured for a component,
+( such as sr_sarra(8), sr_sender(1), sr_shovel(1), sr_winnow(1).)
+These options specify the broker to which messages are output, or "posted."
+By default, components publishes the selected consumed message with its 
+exchange onto the current cluster, with the feeder account.
+
+The user can overwrite the defaults with options :
+
+- **post_broker    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+- **post_exchange   <name>        (default: None)**
+- **on_post         <script_name> (optional)**
+
+The post_broker option sets the credential informations to connect to the
+output **RabbitMQ** server. The default is the value of the **feeder** option
+in default.conf.
+
+The **post_exchange** option sets a new exchange for the selected messages.
+The default is to publish under the exchange it was consumed.  
+Before a message is published, a user can set to trigger a script.
+The option **on_post** would be used to do such a setup. If the script returns
+True, the message is published... and False it wont.
+
+
+
 RABBITMQ LOGGING
 ----------------
 
@@ -496,7 +561,28 @@ For each download, an amqp log message is sent back to the broker.
 Should you want to turned them off the option is :
 
 - **log_back <boolean>        (default: true)** 
+- **log_daemons <boolean>     (default: false)**
 
+The *log_daemons* option indicates to sr whether the sr_log2source, sr_2xlog, and sr_log2cluster 
+component configurations should be included in processing for start, stop, etc...
+
+Administration-Specific Options
+-------------------------------
+
+The *feeder* option specifies the account used by default system transfers for components such as 
+sr_2xlog, sr_log2source, sr_log2cluster, sr_sarra and sr_sender (when posting).
+
+- **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+
+- **admin   <name>        (default: None)**
+
+When set, the feeder option will trigger start up of the sr_2xlog, sr_log2source, and sr_log2cluster daemons.
+When set, the admin option will cause sr start to start up the sr_audit daemon.
+
+.. note::
+  FIXME:: feeder is perhaps an archeological artifact. perhaps should disappear and just use broker
+  for this, when run as the admin user.  then the trigger to run all admin daemons would be the presence
+  of the admin user in the configuration.
 
 
 PLUGIN SCRIPTS
@@ -509,12 +595,11 @@ MetPX comes with a variety of scripts which can act as examples.
 Users can place their own scripts in the script sub-directory 
 of their config directory tree.
 
-A user script should be placed in the
- ~/.config/sarra/plugins directory::
+A user script should be placed in the ~/.config/sarra/plugins directory.
 
-There are two varieties of
-scripts:  do\_* and on\_*.  Do\_* scripts are used to implement functions, replacing built-in
-functionality, for example, to implement additional transfer protocols.  
+There are two varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used 
+to implement functions, replacing built-in functionality, for example, to implement 
+additional transfer protocols.  
 
 - do_download - to implement additional download protocols.
 
@@ -565,6 +650,8 @@ will stop there and another message will be consumed from the broker.
 For other events, the last line of the script must be modified to correspond.
 
 More examples are available in the Guide documentation.
+
+
 
 
 EXAMPLES

@@ -774,7 +774,7 @@ class sr_config:
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif words0 == 'chmod':    # See: FIXME: nowhere!
+                elif words0 == 'chmod':    # See: function not actually implemented, stub of ftp support.
                      self.chmod = int(words[1])
                      n = 2
 
@@ -791,7 +791,7 @@ class sr_config:
                      self.config(include)
                      n = 2
 
-                elif words0 == 'debug': # See: FIXME... not explicitly documented? just do include?
+                elif words0 == 'debug': # See: sr_config.7
                      if words[0][0:1] == '-' : 
                         self.debug = True
                         n = 1
@@ -811,7 +811,7 @@ class sr_config:
                         self.delete = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'destfn_script': # See: FIXME not documented.
+                elif words0 == 'destfn_script': # See: sr_sender(1)
                      self.destfn_script = None
                      self.execfile("destfn_script",words1)
                      if self.destfn_script == None :
@@ -914,7 +914,7 @@ class sr_config:
                      self.gateway_for = words1.split(',')
                      n = 2
 
-                elif words0 in ['help','h']: # See: FIXME: only post and watch? interesting... should have customized list?
+                elif words0 in ['help','h']: # See: sr_config.7
                      self.help()
                      needexit = True
 

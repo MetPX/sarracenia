@@ -21,26 +21,20 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+sr_shovel copies messages on one broker to another. 
 
-sr_shovel is a program to easily subscribe to messages on one broker and 
-repost them on another one.  Sr_shovel does not copy any data, only post or log
-messages.  The component takes two argument: a configuration file described below,
-and an action start|stop|restart|reload|status... (self described).
-
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions, 
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process. 
+The sr_shovel component takes two argument: a configuration file described below,
+and an action start|stop|restart|reload|status... (self explanatory.)
 
 
 CONFIGURATION
 =============
 
-This document focuses on detailing the program's options. We invite the reader to
-read the document `sr_config(7) <sr_config.7.html>`_  first. It fully explains the
-option syntax, the configuration file location, the credentials ... etc.
+In General, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first. 
+
+It fully explains the option syntax, the configuration file location, 
+credentials ... etc.
 
 Standard sarracenia configuration would expect the config file to be found in :
 
@@ -48,9 +42,9 @@ Standard sarracenia configuration would expect the config file to be found in :
  - Windows: %AppDir%/science.gc.ca/sarra/shovel, this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\shovel\configfile.conf
 
-When creating a new configuration file, the user can take advantage of executing
-the program with  **--debug configfile foreground**  with a configfile.conf in
-the current working directory.
+When creating a new configuration file, the user can executing the program 
+with  **--debug configfile foreground**  where a configfile.conf in the current 
+working directory.
 
 The options used in the configfile are described in the next sections.
 
@@ -71,7 +65,7 @@ Simply launch the program with option instances set to an integer greater than 1
 Consuming options
 =================
 
-This program consumes AMQP messages. The options that cover this task are
+This program consumes sr_post(7) or sr_log(7) messages. The options that cover this task are
 fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
 as a reference, they are simply listed:
 
@@ -104,25 +98,11 @@ Running a plugin on selected messages
 
 - **on_message      <script_name> (optional)** 
 
-Specific consuming requierements
---------------------------------
 
-To consume messages, the mandatory options are:
- **broker**, **exchange**, **topic_prefix**, **subtopic**.
-
-The program will not process message that :
-
-1- has no source      (message.headers['source'])
-2- has no origin      (message.headers['from_cluster'])
-3- has no destination (message.headers['to_clusters'])
-4- the to_clusters destination list has no match with
-   this pump's **cluster,cluster_aliases,gateway_for**  options
-
- 
 POSTING OPTIONS
 ===============
 
-There is no requiered option for posting messages.
+There is no required option for posting messages.
 By default, the program publishes the selected consumed message with its exchange
 onto the current cluster, with the feeder account.
 

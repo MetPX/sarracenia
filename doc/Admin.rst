@@ -341,7 +341,7 @@ to start all the files with named configurations of each component (sarra, subsc
 There are two users/roles that need to be set to use a pump. They are the admin and feeder options.
 They are set in ~/.config/sarra/default.conf like so:
 
-  feeder amqp://pumpUser:pumpPw@localhost/
+  feeder amqp://pumpUser@localhost/
   admin  adminUser
 
 Then the log and audit components are started as well.  It is standard practice to use a different

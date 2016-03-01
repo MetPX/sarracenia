@@ -86,22 +86,12 @@ on disk if the broker is restarted.
 The  **message-ttl** option set the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-The  **prefetch**  option set the number of messages distributed amongst
-connections that share the queue... This rabbitmq option is applied to the queue
-if the sarracenia option **queue_share** is True (the default).
-
-.. note::
-   FIXME: why does the queue_share option exist and what does it do other than interfere with prefetch?
-   Why would one set it to false?
-   Why isn´t it in the list above?
-   PS
-
-   MG : PS is right, queue_share I guess could be removed... and prefetch set only if >0.
-        another option  **queue_suffix**  is also coded... when a queue name is automatically 
-        created (no program default and no setting in config... possible in sr_subscribe only)
-        it is set to  q_brokeruser.component.config.random.random    ... 
-        if queue_suffix is declared :  q_brokeruser.component.config.suffix.random.random
-        I think it can be withdrawn too.
+The **prefetch** option sets the number of messages to fetch at one time.
+When multiple instances are running and prefetch is 4, each instance will obtain upto four 
+messages at a time.  To minimize the number of messages lost if an instance dies and have 
+optimal load sharing, the prefetch should be set as low as possible.  However, over long
+haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
+of 10 or more may be needed. 
 
 When **--reset** is set, and a component is (re)started,
 its queue is deleted (if it already exists) and recreated 
