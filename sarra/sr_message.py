@@ -141,11 +141,13 @@ class sr_message():
 
         # retransmission case :
         # topic is name of the queue...
-        # rebuild topic : v02.post....
-        if self.topic[:2] == 'q_':
+        # set exchange to xpublic
+        # rebuild topic from notice : v02.post....
+        if self.exchange == '' and self.topic[:2] == 'q_':
            self.logger.debug(" retransmit topic = %s" % self.topic)
            token = self.notice.split(' ')
-           self.topic = 'v02.post.' + token[2].replace('/','.')
+           self.exchange = 'xpublic'
+           self.topic    = 'v02.post.' + token[2].replace('/','.')
            self.logger.debug(" modified for topic = %s" % self.topic)
 
         token        = self.topic.split('.')
