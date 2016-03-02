@@ -219,11 +219,10 @@ class sr_post(sr_config):
 
            # file [ 500Mb, 5Gb]  = 1/10 of fsiz
            elif fsiz > 10 * tfactor :
-                self.blocksize = int(fsiz / 10)
-
+                self.blocksize = int(fsiz / 10) + 1
            # file [ 50Mb, 500Mb[  = 1/3 of fsiz
            elif fsiz > tfactor :
-                self.blocksize = int(fsiz / 3)
+                self.blocksize = int(fsiz / 3) + 1
 
            # none of the above
            # self.blocksize=0 means entire file
