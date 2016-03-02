@@ -342,7 +342,7 @@ There are two users/roles that need to be set to use a pump. They are the admin 
 They are set in ~/.config/sarra/default.conf like so:
 
   feeder amqp://pumpUser@localhost/
-  admin  adminUser
+  admin  amqp://adminUser@localhost/
 
 Then the log and audit components are started as well.  It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, which are performed by the admin
@@ -359,11 +359,12 @@ can choose to have the client self-destruct when disconnected (*auto-delete*), o
 it *durable* which means it should remain, waiting for the client to connect again, even across
 reboots.  Clients often want to pick up where they left off, so the queues need to stay around.
 
-sr_audit.py
+sr_audit
 
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
 they will build up over time.  We have a script that looks for unused queues, and cleans them out.
-Currently, the limits are hard-coded as any unused queue having more than 25000 messages will be deleted.
+Currently, the limits is set as any unused queue having more than 25000 messages will be deleted.
+One can change this limit by having  option *max_queue_size 50000* in default.conf.
 
 Routing
 -------
@@ -547,31 +548,6 @@ apt-get install rabbitmq-server
 
 in upto-date distros, you likely can just take the distro version.
 
-The initial configuration of a broker set up as a Sarracenia data pump involves creating a number
-of exchanges and using a number of conventions around permissions. this setup needs to be done
-as root. We assume that admin work is done on the same server that is running the broker.
-
-The following configure rabbit for initial use::
-
-  # enabling management web application
-  # this is important since sr_rabbit uses this management facility/port access
-  # to retrieve some important info
-
-  rabbitmq-plugins enable rabbitmq_management
-  /etc/init.d/rabbitmq-server restart
-
-  # Obtain the rabbitmqadmin script from the broker just installed.  
-  cd /usr/local/sbin
-  wget http://localhost:15672/cli/rabbitmqadmin
-  chmod 755 rabbitmqadmin
-
-  # within sarracenia,  the creation of exchanges is done by the broker administrator
-  # mandatory exchanges should be created (xpublic, xlog)
-
-  rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xpublic type=topic auto_delete=false durable=true
-  rabbitmqadmin -H broker.domain.com -u root -p ********* declare exchange name=xlog    type=topic auto_delete=false durable=true
-
-
 SSL Setup
 ~~~~~~~~~
 
@@ -599,7 +575,6 @@ And another administrator should be defined... we usually call it root...
   rabbitmqctl set_permissions root   ".*" ".*" ".*"
 
 
-
 Add a Feeder
 ~~~~~~~~~~~~
 
@@ -617,28 +592,109 @@ sr_sarra is usually invoked by the feeder user,
 so it needs to have permission on all exchanges.
 
 
-Add User
-~~~~~~~~
+Managing Users on a pump using sr_audit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This just shows how to add a user to Rabbitmq broker with appropriate permissions.
+This just shows how to manage users to Rabbitmq broker with appropriate permissions
+and requiered exchanges.
+
 You will need to cover authentication as needed by the payload transport protocol
 (SFTP, FTP, or HTTP(S)) separately.
 
-These users have the permissions to allow use the client programs sr_post, sr_subscribe, etc... 
-They can declare queues for their own use (with names that identify them clearly) and they can 
-read from xpublic, and their own log exchange but they are only able to write their xs_<user> 
-exchange.
+As described below, building up a pump, you would have an admin user (we suggested root)
+and a feeder user (we suggested feeder).
 
-Adding a user at the broker level and its permission (conf,write,read)::
+The management of users can be done using the sr_audit program.
+
+First, write the correct credentials for the admin and feeder users in 
+the credentials file  .config/sarra/credentials.conf. 
+
+amqp://root:*******@yourbroker.fqdn/
+amqp://feeder:*******@yourbroker.fqdn/
+
+Then write in .config/sarra/default.conf file to define their presence/role:
+
+admin  amqp://root@yourbroker.fqdn/
+feeder amqp://feeder@yourbroker.fqdn/
+
+Specify all knows users that you want to implement with their roles 
+in the file  .config/sarra/users.conf (user role) :
+
+root      admin
+feeder    feeder
+anonymous subscribe
+joe       source
+
+
+Now to configure the pump execute the following 
+(<ctrl-c> when it is going to sleep...)
+
+*sr_audit --users foreground*
+
+The *sr_audit* program will :
+
+- use account  *admin* from .config/sarra/default.conf 
+- create exchanges *xpublic* and *xlog* if requiered
+
+- load users and roles from .config/sarra/users.conf
+- get  users and exchanges on the pump
+
+- for each user in users.conf 
+      create user if requiered
+      set    user permissions from its role (on creation)
+      create user exchanges   from its role
+  
+- exceeding users are deleted
+- exceeding exchanges are deleted ('xl_*,xs_*' and the none starting with 'x')
+
+
+The *sr_audit* program won't :
+
+- set a password to a new user... you have to do it manually on the pump
+
+  rabbitmqctl change_password <user> <password>
+
+
+In short, here are the permissions and exchanges *sr_audit* manages:
+
+  admin user        : the only one creating users...
+  admin/feeder users: have all permission over queues and exchanges
+
+  subscribe user    : can write log messages to exchange   xs_<brokerUser> created for him
+                      can read post messages from exchange xpublic
+                      have all permissions on queue named  q_<brokerUser>*
+
+  source user       : can write post messages   to exchange xs_<brokerUser> created for him
+                      can read post messages from exchange  xpublic
+                      can read  log messages from exchange  xl_<brokerUser> created for him
+                      have all permissions on queue named   q_<brokerUser>*
+
+
+Note:  at the moment the *anonymous* user should be defined, and have role *subscribe*
+       but because of historical reasons... this user gets special permissions...
+
+
+
+Should you want to add a user, set its permissions and create its exchanges
+by yourself, you would do, for user Alice as a source ::
+
+  wget -q http://localhost:15672/cli/rabbitmqadmin
+  chmod 755 rabbitmqadmin
 
   rabbitmqctl add_user Alice <password>
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
+
+  ./rabbitmqadmin -u root -p ***** declare exchange name=xs_Alice type=topic auto_delete=false durable=true
+  ./rabbitmqadmin -u root -p ***** declare exchange name=xl_Alice type=topic auto_delete=false durable=true
 
 or, parametrized::
 
   u=Alice
   rabbitmqctl add_user ${u} <password>
   rabbitmqctl set_permissions -p / ${u} "^q_${u}.$" "^q_${u}.*$|^xs_${u}$" "^q_${u}.*$|^xl_${u}$|^xpublic$"
+
+  ./rabbitmqadmin -u root -p ***** declare exchange name=xs_${u} type=topic auto_delete=false durable=true
+  ./rabbitmqadmin -u root -p ***** declare exchange name=xl_${u} type=topic auto_delete=false durable=true
 
 
 Then you need to do the same work for sftp and or apache servers as required.
