@@ -241,6 +241,7 @@ def self_test():
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None
+    cfg.reset          = True
 
     consumer = sr_consumer(cfg)
 
