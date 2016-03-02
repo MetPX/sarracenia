@@ -123,7 +123,7 @@ class sr_poster:
         # optional
 
         if self.parent.cluster != None : self.msg.headers['from_cluster'] = self.parent.cluster
-        if self.parent.source  != None : self.msg.headers['from_source']  = self.parent.source
+        if self.parent.source  != None : self.msg.headers['source']       = self.parent.source
         if self.parent.flow    != None : self.msg.headers['flow']         = self.parent.flow
         if filename            != None : self.msg.headers['filename']     = filename
 
