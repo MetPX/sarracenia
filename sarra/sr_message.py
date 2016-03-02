@@ -147,6 +147,9 @@ class sr_message():
            self.logger.debug(" retransmit topic = %s" % self.topic)
            token = self.notice.split(' ')
            self.exchange = 'xpublic'
+           if hasattr(self.headers,'exchange') :
+              self.exchange = self.headers['exchange']
+              del self.headers['exchange']
            self.topic    = 'v02.post.' + token[2].replace('/','.')
            self.logger.debug(" modified for topic = %s" % self.topic)
 
@@ -315,6 +318,10 @@ class sr_message():
 
         if 'message' in self.headers :
            self.hdrstr  += '%s=%s ' % ('message',self.headers['message'])
+
+        # retransmit case...
+        if 'exchange' in self.headers :
+           self.hdrstr  += '%s=%s ' % ('exchange',self.headers['exchange'])
 
         # added for v00 compatibility (old version of sr_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe

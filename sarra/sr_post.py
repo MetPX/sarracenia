@@ -135,6 +135,7 @@ class sr_post(sr_config):
         # if a queue_name is provided
 
         if self.queue_name != None :
+           self.msg.headers['exchange'] = self.msg.exchange
            self.msg.exchange = ''
            self.msg.topic    =  self.queue_name
 
