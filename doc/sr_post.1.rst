@@ -238,6 +238,26 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
+ADMINISTRATOR SPECIFIC
+======================
+
+**[-queue_name]**
+
+If a client wants a product to be reannounced,
+the broker administrator can use *sr_post*  and publish
+directly into the client's queue. The client could provide
+his queue_name... or the administrator would find it on
+the broker... From the log where the product was processed on
+the broker, the administrator would find all the messages
+properties. The administrator should pay attention on slight
+differences between the logs properties and the *sr_post* arguments.
+The logs would mention *from_cluster*  *to_clusters* and associated
+values...  **sr_post** arguments would be *-cluster* and  *-to*
+respectively. The administrator would execute **sr_post** providing
+all the options setting everything found in the log plus the 
+targetted queue_name  *-queue_name q_....*
+
+
 SEE ALSO
 ========
 
