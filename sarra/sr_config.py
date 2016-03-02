@@ -742,18 +742,12 @@ class sr_config:
                         self.accept_unmatch = self.isTrue(words[1])
                         n = 2
 
-                # admin: suppose to appear directly under the broker declaration
-                # of the default manager account of the cluster in default.conf
-
                 elif words0 == 'admin': # See: sr_audit.8 
-                     admin_user  = words[1]
-                     manager_str = self.manager.geturl()
-                     user_pass   = self.manager.username+':'+self.manager.password
-                     admin_str   = manager_str.replace(user_pass,admin_user)
-                     ok, url     = self.validate_urlstr(admin_str)
-                     self.admin  = url
+                     urlstr     = words1
+                     ok, url    = self.validate_urlstr(urlstr)
+                     self.admin = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with admin (%s)" % admin_str)
+                        self.logger.error("problem with admin (%s)" % urlstr)
                         needexit = True
                      n = 2
 
