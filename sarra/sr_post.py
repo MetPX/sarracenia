@@ -131,7 +131,12 @@ class sr_post(sr_config):
     def __on_post__(self):
         self.logger.debug("sr_post __on_post__")
 
-        # invoke on_post when provided
+        # *** special retransmit setting...
+        # if a queue_name is provided
+
+        if self.queue_name != None :
+           self.msg.exchange = ''
+           self.msg.topic    =  self.queue_name
 
         if self.on_post :
            self.logger.debug("sr_post user on_post")

@@ -139,6 +139,15 @@ class sr_message():
         self.partstr     = None
         self.sumstr      = None
 
+        # retransmission case :
+        # topic is name of the queue...
+        # rebuild topic : v02.post....
+        if self.topic[:2] == 'q_':
+           self.logger.debug(" retransmit topic = %s" % self.topic)
+           token = self.notice.split(' ')
+           self.topic = 'v02.post.' + token[2].replace('/','.')
+           self.logger.debug(" modified for topic = %s" % self.topic)
+
         token        = self.topic.split('.')
         self.version = token[0]
 
