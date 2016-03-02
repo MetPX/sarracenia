@@ -1170,6 +1170,10 @@ class sr_config:
                      self.sleep = int(words[1])
                      n = 2
 
+                elif words0 == 'source': # See: sr_post.1 sr_watch.1
+                     self.source = words[1]
+                     n = 2
+
                 elif words0 in ['source_from_exchange','sfe']: # See: sr_sarra.8
                      if words[0][0:1] == '-' : 
                         self.source_from_exchange = True
