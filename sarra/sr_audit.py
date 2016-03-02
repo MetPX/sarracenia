@@ -81,14 +81,15 @@ class sr_audit(sr_instances):
         # anonymous was special at a certain time ... historical reasons
         # anonymous should only be a subscribe... but it is a special case...
         # to work with old versions of subscribe : queue cmc* and configure permission on xpublic
+        # this anonymous code will be deprecated at a certain point...
 
-        #if u == 'anonymous' :
-        #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-        #   w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
-        #   r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
-        #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-        #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
-        #   return
+        if u == 'anonymous' :
+           c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
+           w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
+           r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
+           self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
+           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+           return
 
         # subscribe
 
@@ -242,12 +243,24 @@ class sr_audit(sr_instances):
 
         # delete leftovers
         # MG : Peter specified that we may need other exchanges to work with 
-        #      others than the standards... they would be created manually and
-        #      by convention all start with 'x' ... so keep the the 'x' starting exchanges
+        #      Such an exchange would be created manually and would start with 'x'
+        #
+        #      So  get rid of all exceeding 'xl_' 'xs_' exchanges as deprecated
+        #      and get rid of all exchanges that does not start with 'x'
         for e in exchange_lst :
-            if e[0] != 'x' :
+
+            # deprecated exchanges  (from deleted users?)
+            if 'xs_' in e or 'xl_' in e :
+               self.logger.warning("deprecated exchange %s" % e)
+               self.delete_exchange(e)
+
+            # weird queue... not starting with 'x'
+            elif e[0] != 'x' :
                self.logger.warning("unnecessary exchange %s" % e)
                self.delete_exchange(e)
+
+            # leading 'x' exchanges that might be there for a reason
+            # leave but warn ...
             else:
                self.logger.warning("tolerated exchange %s" % e)
 
