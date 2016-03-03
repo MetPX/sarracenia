@@ -2,9 +2,9 @@
  SR_Winnow 
 ==========
 
------------------------------------------------------------
-winnows messages, suppressing redundant product notification
------------------------------------------------------------
+---------------------------
+Suppress Redundant Messages
+---------------------------
 
 :Manual section: 8 
 :Date: @Date@
@@ -20,26 +20,27 @@ DESCRIPTION
 ===========
 
 **sr_winnow** is a program that Subscribes to file notifications, 
-and reposts the notifications suppressing the redundant files.
-
-To understand what the **sum** is, the notification protocol is
-defined here `sr_post(7) <sr_post.7.html>`_
+and reposts the notifications, suppressing the redundant ones by comparing their 
+fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
+in the `sr_post(7) <sr_post.7.html>`_ man page.
 
 **sr_winnow** connects to a *broker* (often the same as the posting broker)
 and subscribes to the notifications of interest. On reception if a notification,
-it uses its **sum** to verify if the file is already in its cache... 
-if it is, the notification is ignored, if not, the **sum** is added to the cache
-and the notification is posted.  
+it looks up its **sum** in its cache.  if it is found, the file has already come through,
+so the notification is ignored. If not, then the file is new, and the **sum** is added 
+to the cache and the notification is posted.  
 
 **sr_winnow** can be used to trim messages from `sr_post(1) <sr_post.1.html>`_,
-`sr_poll(1) <sr_poll.1.html>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc...
+`sr_poll(1) <sr_poll.1.html>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc... It is 
+used when there are multiple sources of the same data, so that clients only download the
+source data once, from the first source that posted it.
 
 The **sr_winnow** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
 
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions. 
+The **foreground** is used when debugging a configuration, when the user wants to 
+run the program and its configfile interactively...   The **foreground** instance 
+is not concerned by other actions. 
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
 

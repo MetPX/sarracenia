@@ -589,6 +589,36 @@ When set, the admin option will cause sr start to start up the sr_audit daemon.
   for this, when run as the admin user.  then the trigger to run all admin daemons would be the presence
   of the admin user in the configuration.
 
+Most users are defined using the *role* option.  
+
+- **role <role> <name>   (no defaults)**
+
+Role:
+
+subscriber
+
+  A subscriber is user that can only subscribe to data and return log messages. Subscribers are
+  not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump, 
+  where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange 
+  is where an sr_subscribe process will send it's log messages.
+
+  By convention/default, the *anonymous* user is created on all pumps to permit subscription without
+  a specific account.
+
+source
+
+  A user permitted to subscribe or originate data.  A source does not necessarily represent
+  one person or type of data, but rather an organization responsible for the data produced.
+  So if an organization gathers and makes available ten kinds of data with a single contact
+  email or phone number for questions about the data and it's availability, then all of
+  those collection activities might use a single 'source' account.
+
+  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
+  to send log messages about processing and receipt of data. source may also have an xl_<user>
+  exchange where, as per log routing configurations, log messages of consumers will be sent.
+
+
+
 
 PLUGIN SCRIPTS
 --------------

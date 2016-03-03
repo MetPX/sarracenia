@@ -65,7 +65,7 @@ MANAGING USERS
 ==============
 
 When **sr_audit** is envoked with **--users**, the broker's users and exchanges are verified.
-To verify the users, the program builds a list of users by roles from the setting of **users.conf**.
+To verify the users, the program builds a list of users by *role*s. 
 It also considers the standard users :   **root**, **feeder**, **anonymous** and there appropriate roles: 
 **admin**, **feeder**, **subscribe**.  After, it makes sure the users are configured on the broker.
 Missing users are added... with the permissions requiered for their role. Extra users,
@@ -75,15 +75,16 @@ To verify the exchanges, **sr_audit** gets the present exchanges on the broker.
 From the users and roles, it determines the exchanges that should be present and creates the one
 missing. Extra exchanges are deleted if their names dont start with 'x'.
 
-When adding/deleting a user, the broker administrator would simply add/delete the username and its role
-in the **users.conf** file.  Than he runs **sr_audit --users configfile foreground**. The log on standard
-output would tell the administrator what broker resources were added/deleted (user,exchanges, queue, etc).
-If the broker does not use ldap, the administrator adding a user, has to set this user's password
+When adding/deleting a user, the broker administrator adds or delete the role declaration for a
+username and in the **default.conf** file.  Than he runs **sr_audit --users configfile foreground**. 
+The log on standard output would tell the administrator what broker resources were 
+added/deleted (user,exchanges, queue, etc).  If the broker does not use ldap, the administrator 
+adding a user, has to set this user's password
 (once created by sr_audit) with the command run as root on the broker'server :
 
 **rabbitmqctl change_password "user" "password"**
 
-where "user"  is the username added in **users.conf** and "password" its password
+where "user"  is the username added and "password" its password
 on the broker.
 
 
