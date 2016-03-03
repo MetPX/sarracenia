@@ -35,6 +35,8 @@ User-Facing Components
 * `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
 * `sr_log(1) <sr_log.1.html>`_ - to read log messages.
 * `sr_watch(1) <sr_watch.1.html>`_ - to post all changes to a given directory.
+* `sr_sender(1) <sr_sender.1.html>`_ - to send files from a pump.
+
 
 Administrative Daemons
 -----------------------
@@ -43,6 +45,8 @@ Administrative Daemons
 * `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
 * `sr_log2clusters(8) <sr_log2clusters.8.html>`_ - daemon to copy log messages to other clusters.
 * `sr_log2source(8) <sr_log2source.8.html>`_ - daemon to copy log messages to the originating source.
+* `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
+* `sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
 
 
 Formats/Protocols
@@ -52,3 +56,4 @@ Formats/Protocols
 * `sr_log(7) <sr_log.7.html>`_ - the format of log messages. Sent by consumers, for sources to measure reach.
 * `log2clusters(7) <log2clusters.7.html>`_ - configuration of log routing between clusters.
 * `sr_config(7) <sr_config.7.html>`_ - reference for options used by many components.
+* `sr_consumer(7) <sr_consumer.7.html>`_ - reference for options used by components that consume messages.

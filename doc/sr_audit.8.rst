@@ -6,7 +6,7 @@
 Audit the state of the broker 
 -----------------------------
 
-:Manual section: 1
+:Manual section: 8
 :Date: @Date@
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite

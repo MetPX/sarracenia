@@ -6,7 +6,7 @@
 winnows messages, suppressing redundant product notification
 -----------------------------------------------------------
 
-:Manual section: 1 
+:Manual section: 8 
 :Date: @Date@
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
