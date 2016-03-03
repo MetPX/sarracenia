@@ -124,6 +124,14 @@ class sr_post(sr_config):
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
 
+    def lock_set(self):
+        self.logger.debug("sr_post lock_set")
+        if self.caching :
+           self.poster.cache_load()
+
+    def lock_unset(self):
+        if self.caching : self.poster.cache_close()
+
     # =============
     # __on_post__ internal posting of message
     # =============
@@ -225,10 +233,10 @@ class sr_post(sr_config):
 
            # file [ 500Mb, 5Gb]  = 1/10 of fsiz
            elif fsiz > 10 * tfactor :
-                self.blocksize = int(fsiz / 10) + 1
+                self.blocksize = int((fsiz+9)/10)
            # file [ 50Mb, 500Mb[  = 1/3 of fsiz
            elif fsiz > tfactor :
-                self.blocksize = int(fsiz / 3) + 1
+                self.blocksize = int((fsiz+2)/ 3)
 
            # none of the above
            # self.blocksize=0 means entire file
@@ -317,6 +325,8 @@ class sr_post(sr_config):
            self.logger.info("directory %s " % watch_path )
            if self.rename != None and self.rename[-1] != '/' and 'IN_CLOSE_WRITE' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
+
+        self.watch_path = watch_path
  
         return watch_path
 
@@ -334,11 +344,15 @@ def main():
              post.connect()
 
              watchpath = post.watchpath()
+
+             post.lock_set()
+
              if os.path.isfile(watchpath) : 
                 post.posting()
              else :
                 post.scandir_and_post(watchpath,post.recursive)
 
+             post.lock_unset()
              post.close()
 
     except :

@@ -325,6 +325,7 @@ class sr_config:
         # 
 
         # publish
+        self.caching              = False
         self.document_root        = None
         self.post_document_root   = None
         self.url                  = None
@@ -764,9 +765,21 @@ class sr_config:
                         needexit = True
                      n = 2
 
+                elif words0 == 'blocksize' :   # See: sr_config.7
+                     self.blocksize = self.chunksize_from_str(words[1])
+                     n = 2
+
                 elif words0 == 'bufsize' :   # See: sr_config.7
                      self.bufsize = int(words[1])
                      n = 2
+
+                elif words0 == 'caching': # See: sr_post.1 sr_watch.1
+                     if words[0][0:1] == '-' : 
+                        self.caching = True
+                        n = 1
+                     else :
+                        self.caching = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'chmod':    # See: function not actually implemented, stub of ftp support.
                      self.chmod = int(words[1])
