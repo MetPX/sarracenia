@@ -57,8 +57,8 @@ VERIFY PUMP SETTINGS
 
 When installing a pump, using **sr_audit** envoke with **--pump**, tells the program to verify the basic
 configurations requiered on a pump. It makes sure the **feeder** user credentials are given and the **admin**
-user is defined and valid.  It warns and explains if options **cluster,gateway_for** and/or files  **users.conf**
-and  **log2clusters.conf** are missing.
+user is defined and valid.  It warns and explains if options **cluster,gateway_for,roles**, as well as
+the **log2clusters.conf** are missing.
 
 
 MANAGING USERS
