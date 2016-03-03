@@ -6,7 +6,7 @@
 Copy Messages Between Brokers
 -----------------------------
 
-:Manual section: 1
+:Manual section: 8
 :Date: @Date@
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
