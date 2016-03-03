@@ -30,7 +30,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import os,sys,random
+import os,sys,random,shelve
 
 try :    
          from sr_amqp           import *
@@ -52,15 +52,19 @@ class sr_poster:
         self.logger.debug("sr_poster __init__")
         self.parent         = parent
         self.loop           = loop
+        self.cache          = None
 
         self.broker         = parent.post_broker
         self.topic_prefix   = parent.topic_prefix
         self.subtopic       = parent.subtopic
         self.bufsize        = parent.bufsize
+        self.caching        = parent.caching
+        self.batch          = parent.batch
 
         self.build_connection()
         self.build_publisher()
         self.get_message()
+
 
     def build_connection(self):
         self.logger.debug("sr_poster build_broker")
@@ -79,6 +83,64 @@ class sr_poster:
         self.publisher = Publisher(self.hc)
         self.publisher.build()
 
+    def cache_close(self):
+        self.logger.debug("sr_poster cache_close")
+        if not self.caching : return
+        if not self.cache   : return
+        self.logger.debug("save cache and release lock")
+        self.cache.close()
+        os.unlink(self.cache_lock)
+        self.cache = None
+
+    def cache_load(self):
+        self.logger.debug("sr_poster cache_load")
+        if not self.caching : return
+
+        if not hasattr(self.parent,'watch_path') : 
+           self.logger.error("could not cache posting... no watch_path")
+           self.caching = False
+           return
+
+        if self.parent.blocksize == 0: 
+           self.logger.error("could not cache posting... no fix blocksize")
+           self.caching = False
+           return
+
+        self.cache_acces = 0
+
+        self.cache_file  = self.parent.user_cache_dir 
+        self.cache_file += '/' + self.parent.watch_path.replace('/','_')
+        self.cache_file += '_%d' % self.parent.blocksize
+
+        self.cache_lock  = self.cache_file + '.lck'
+
+        self.logger.debug("check for lock file %s" % self.cache_lock)
+        while os.path.exists(self.cache_lock) :
+              self.logger.debug("still locked")
+              time.sleep(1)
+
+        self.logger.debug("acquiring lock")
+        f=open(self.cache_lock,'wb')
+        f.write(b'lock')
+        f.close()
+
+        self.logger.debug("load cache")
+        self.cache = shelve.open(self.cache_file)
+
+    def cache_save(self):
+        self.logger.debug("sr_poster cache_save")
+        if not self.caching       : return
+        if not self.cache         : return
+        if self.parent.batch <= 0 : return
+        batch_reached = self.cache_acces % self.parent.batch
+        if batch_reached     != 0 : return
+        self.cache.sync()
+
+    def close(self):
+        self.logger.debug("sr_poster close")
+        self.cache_close()
+        self.hc.close()
+
     def get_message(self):
         self.logger.debug("sr_poster get_message")
 
@@ -89,12 +151,19 @@ class sr_poster:
         self.msg.user      = self.broker.username
         self.msg.publisher = self.publisher
 
-    def close(self):
-        self.logger.debug("sr_poster close")
-        self.hc.close()
-
     def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None):
         self.logger.debug("sr_poster post")
+
+        # if caching is enabled make sure it was not already posted
+        if self.caching :
+           key = url.path + '.' + partstr
+           if key in self.cache and self.cache[key] == sumstr :
+              self.logger.info("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
+              return True
+           self.cache[key] = sumstr
+           if sumstr == 'R,0' : del self.cache[key]
+           self.cache_acces += 1
+           self.cache_save()
 
         # set message exchange
 
