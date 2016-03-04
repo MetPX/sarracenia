@@ -27,8 +27,8 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topic_prefix* option must to be set to:
 
- - **v02.post** to shovel sr_post(7) messages 
- - **v02.log** to shovel sr_log(7) messages
+ - **v02.post** to shovel `sr_post(7) <sr_post.7.html>`_ messages 
+ - **v02.log** to shovel `sr_log(7) <sr_log.7.html>`_ messages
 
 There is no default.  On startup, the sr_shovel component takes two 
 argument: a configuration file described below, and 
@@ -37,7 +37,7 @@ an action start|stop|restart|reload|status... (self explanatory.)
 CONFIGURATION
 =============
 
-In General, the options for this component are described by the
+In general, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first. 
 It fully explains the option configuration language, and how to find 
 the option settings.
@@ -45,11 +45,8 @@ the option settings.
 Consuming Options
 =================
 
-This program consumes sr_post(7) or sr_log(7) messages. The options that cover this task are
-fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
-as a reference, they are simply listed:
-
-Setting the source broker :
+This program consumes `sr_post(7) <sr_post.7.html>`_ or `sr_log(7) <sr_log.7.html>`_ 
+messages.  One needs to set the options to connect to the broker to receive messages from:
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -59,13 +56,13 @@ Setting the bindings on the queue :
 - **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
 - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
-Using regular expression filtering messages
+Using regular expression filtering messages :
 
 - **accept       <regexp pattern> (optional)** 
 - **reject       <regexp pattern> (optional)** 
 - **accept_unmatch      <boolean> (default: False)** 
 
-Running a plugin on selected messages
+Running a plugin on selected messages :
 
 - **on_message      <script_name> (optional)** 
 
@@ -99,8 +96,6 @@ SEE ALSO
 --------
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
-
-`sr_consumer(7) <sr_consumer.7.html>`_ - the options for message consuming in MetPX-Sarracenia.
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 

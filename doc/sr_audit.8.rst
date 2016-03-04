@@ -2,9 +2,9 @@
  SR_Audit 
 ==============
 
------------------------------
-Audit the state of the broker 
------------------------------
+------------------
+Audit Broker State
+------------------
 
 :Manual section: 8
 :Date: @Date@
@@ -24,63 +24,65 @@ DESCRIPTION
 ===========
 
 
-sr_audit is a program to ensure the correctness of the broker.
+Sr_audit configures a broker to reflect sarracenia configuration settings.
+**Sr_audit** takes one argument: the action to perform.  One can also set
+a few settings in a configuration file: **debug**, **max_queue_size** and **sleep**
 
-The **sr_audit** command takes one argument the action start|stop|restart|reload|status... (self described).
-A configuration file may be used to set options: **debug**, **max_queue_size** and **sleep**
+When **Sr_audit** is *started*, it connects to the broker using the **admin** account. 
 
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and/or its configfile 
-interactively...   The **foreground** instance is not concerned by other running instances.
-It will perform the same actions as the currently running one.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process. 
-
-**sr_audit** manages the broker from the **admin** option (describing the user managing the broker)
-and its credentials defined in the file  **credentials.conf**. It sleeps **sleep** seconds.
+It sleeps **sleep** seconds.
 
 The default behavior of **sr_audit** is to manage and control the queues on the broker.
-When it wakes up, it gets all the current queues on the broker. The queues are validated and deleted if
-they have no connection and holding more than **max_queue_size** messages, if they do not conform
-to the naming standard (name starting with **q_"brokerusername"** where "brokername" is a valid
-user on the broker).
-**(NOTE: currently for backward support, sr_audit tolerates queues that starts with cmc)**
+The queues are validated and deleted if there is no client connected to it and has more 
+than **max_queue_size** messages waiting.  If there are queues or exchanges that do not conform
+to sarracenia naming conventions (queue names start with **q_"brokerusername"** 
+where "brokerusername" is a valid user on the broker).
 
+**(FIXME, NOTE: currently for backward support, sr_audit tolerates queues that starts with cmc)**
 
 When configuring a pump, there are other ways of using **sr_audit**.
-When **sr_audit** is envoked with **--pump** it helps configuring the pump.
-When envoked with **--users** the program manages the users, permissions and exchanges.
+When **sr_audit** is invoked with **--pump** it helps configuring the pump.
+When invoked with **--users** the program manages the users, permissions and exchanges.
+
+
+OPTIONS
+=======
+
+
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+It fully explains the option configuration language, and how to find
+option settings.
 
 
 VERIFY PUMP SETTINGS
 ====================
 
-When installing a pump, using **sr_audit** envoke with **--pump**, tells the program to verify the basic
-configurations requiered on a pump. It makes sure the **feeder** user credentials are given and the **admin**
-user is defined and valid.  It warns and explains if options **cluster,gateway_for,roles**, as well as
-the **log2clusters.conf** are missing.
+Use **sr_audit** invoke with **--pump**  to set up it's configuration.  It makes sure the **feeder** 
+user credentials are given and the **admin** user is defined and valid.  It warns and explains 
+if options **cluster,gateway_for,roles**, as well as the **log2clusters.conf** are missing.
 
 
 MANAGING USERS
 ==============
 
-When **sr_audit** is envoked with **--users**, the broker's users and exchanges are verified.
-To verify the users, the program builds a list of users by *role*s. 
-It also considers the standard users :   **root**, **feeder**, **anonymous** and there appropriate roles: 
-**admin**, **feeder**, **subscribe**.  After, it makes sure the users are configured on the broker.
-Missing users are added... with the permissions requiered for their role. Extra users,
-not configured in metpx-sarracenia, are deleted. 
+When **sr_audit** is invoked with **--users**, the broker's users and exchanges are verified.
+The program builds a list of users by *roles*. 
+It checks that users :   **root**, **feeder**, **anonymous** and have appropriate roles: **admin**, **feeder**, **subscribe**.  
+Next, it makes sure that users configured in sarracenia configurations are present on the broker.  
+Missing users are added... with the permissions required for their role. Extra users,
+not configured in sarracenia, are deleted. 
 
-To verify the exchanges, **sr_audit** gets the present exchanges on the broker.
+To verify user exchanges, **sr_audit** gets the list of exchanges present on the broker.
 From the users and roles, it determines the exchanges that should be present and creates the one
-missing. Extra exchanges are deleted if their names dont start with 'x'.
+missing. Extra exchanges are deleted if their names do not start with 'x'.
 
-When adding/deleting a user, the broker administrator adds or delete the role declaration for a
-username and in the **default.conf** file.  Than he runs **sr_audit --users configfile foreground**. 
+When adding or deleting a user, the broker administrator adds or delete the role declaration for a
+username and in the **default.conf** file.  Then he runs **sr_audit --users configfile foreground**. 
 The log on standard output would tell the administrator what broker resources were 
 added/deleted (user,exchanges, queue, etc).  If the broker does not use ldap, the administrator 
-adding a user, has to set this user's password
-(once created by sr_audit) with the command run as root on the broker'server :
+adding a user, has to set this user's password (after it has been created by sr_audit) with 
+the following command run as root on the broker'server :
 
 **rabbitmqctl change_password "user" "password"**
 
@@ -92,23 +94,15 @@ on the broker.
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
-
-**option <value>** 
-
-Comment lines begins with **#**. 
-
-There is a very limited set of options that **sr_audit** uses.
+There are very few options that **sr_audit** uses.
 
 **admin          <user>    (Mandatory: broker admin user, detailed in credentials.conf)**
 **debug          <boolean> (default: false)**
 **sleep          <int>     (default: 60 in seconds)** 
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 
-The **admin** option must be defined it
-normally be set in the file **default.conf**
-and the credential details would be found in 
-the file **credentials.conf**
+The **admin** option must be defined it normally be set in the file **default.conf**
+and the credential details would be found in the file **credentials.conf**
 
 
  

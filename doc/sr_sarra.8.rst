@@ -66,7 +66,7 @@ the current working directory.
 The options used in the configfile are described in the next sections.
 
 
-Multiple streams
+Multiple Streams
 ================
 
 When executed,  the program  uses the default queue name.
@@ -79,12 +79,8 @@ The program shares the same queue. The messages will be distributed  between pro
 Simply launch the program with option instances set to an integer greater than 1.
 
 
-Consuming options
+Consuming Options
 =================
-
-This program consumes AMQP messages. The options that cover this task are
-fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
-as a reference, they are simply listed:
 
 Setting the source broker :
 
