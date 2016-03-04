@@ -40,22 +40,13 @@ followed by an action start|stop|restart|reload|status... (self described).
 CONFIGURATION
 =============
 
-Options are placed in the command line in the form:: 
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first. 
+It fully explains the option configuration language, and how to find 
+the option settings.
 
-  **-option <value>** 
-
-For example::
-
-  **debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
-
-
-BROKER
-------
-
-First, the program needs to set the rabbitmq configurations of a source broker.
-The broker option sets all the credential information to connect to the **AMQP** server 
+The broker option sets all the credential information to connect to 
+the **AMQP** server: 
 
 **--broker|-b amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -63,34 +54,7 @@ The broker option sets all the credential information to connect to the **AMQP**
 
       (default: amqp://guest:guest@localhost/ ) 
 
-
-Once connected to an AMQP broker, **sr_log2source** use exchange xlog, and topic v02.log.#
-to get all logs messages. 
-
-
-
-INSTANCES
----------
-
-It is possible that one instance of sr_log2source 
-is not enough to process & download all available log notifications.
-
-**--instances|-i    <integer>     (default:1)**
-
-
-sr_log2source -i 10 start   will fork  10 instances of sr_log2source.
-.sr_log2source_$instance.pid  are created and contain the PID  of $instance process.
-sr_log2source_$instance.log  are created and contain the logs of $instance process.
-
-The logs can be written in another directory than the current one with option :
-
-**log            <directory logpath>  (default:$PWD)**
-
-
-.. NOTE:: 
-  FIXME: standard installation/setup explanations ...
-  FIXME: a standard place where all the logs ?
-  FIXME: a standard place where all the pid files ?
+Once connected to an AMQP broker, **sr_log2source** it will process all log messages. 
 
 
 

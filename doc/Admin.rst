@@ -129,7 +129,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
       - exchanges start with x. 
         - xs_Weather - the exchange for the source (amqp user) named Weather to post messages
         - xpublic -- exchange used for most subscribers.
-      - queues start with q_
+      - queues start with q\_
 
 
 Flow Through Exchanges
@@ -190,8 +190,9 @@ Use of a common source account name on different clusters may be used to impleme
 are shared between the two accounts with the same name.  
 
 
-Pump users are defined in the users.conf file. Each line of the file consists of the user name
-as the first field, and the user's role as the second field.  role can be one of:
+Pump users are defined with the *role* option. Each option starts with the *role*
+keyword, followed by the specified role, and lastly the user name which has that role.
+role can be one of:
 
 subscriber
 
@@ -263,7 +264,7 @@ The recipes here are simply examples, and are not definitive.
 
 .. note:: 
    FIXME:  Not clear what to do here.  The application does not work without transport engines,
-   but configuration of those engines are vast topics in their own right, so not a good idea
+   but configuration of those engines is a vast topics in its own right, so not a good idea
    to include configuration information here, other than to indicate the kind of settings
    that are necessary to permit operation.
 
@@ -307,13 +308,15 @@ The administrative user name is an installation choice, and exactly as for any o
 user, the configuration files are placed under ~/.config/sarra/, with the 
 defaults under default.conf, and the configurations for components under
 directories named after each component.  In the component directories,
-Configuration files have the .conf suffix.  User roles are configured by
-the users.conf file. Possible roles are: admin,feeder,source,subscriber.
+Configuration files have the .conf suffix.  User roles are set with the roles
+option in configuration files. Possible roles are: source and subscriber.
 The full credential informations for the users are held in file credentials.conf.
 
 ..note:: 
-  FIXME: missing users.conf(7) man page.
+  FIXME: ... replaced missing users.conf(7) man page with role option in main config.
   joe [subscriber|source|feeder|admin]
+  role source Alice
+  role subscriber Bob
 
 
 The administrative processes perform validation of postings from sources, and once
@@ -363,7 +366,7 @@ sr_audit
 
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
 they will build up over time.  We have a script that looks for unused queues, and cleans them out.
-Currently, the limits is set as any unused queue having more than 25000 messages will be deleted.
+Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
 One can change this limit by having  option *max_queue_size 50000* in default.conf.
 
 Routing
@@ -592,70 +595,60 @@ sr_sarra is usually invoked by the feeder user,
 so it needs to have permission on all exchanges.
 
 
-Managing Users on a pump using sr_audit
+Managing Users on a Pump Using Sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This just shows how to manage users to Rabbitmq broker with appropriate permissions
-and requiered exchanges.
 
-You will need to cover authentication as needed by the payload transport protocol
-(SFTP, FTP, or HTTP(S)) separately.
-
-As described below, building up a pump, you would have an admin user (we suggested root)
-and a feeder user (we suggested feeder).
-
-The management of users can be done using the sr_audit program.
+To set up a pump, one needs a broker administrative user (in the examples: root.) 
+and a feeder user (in the examples: feeder.) Management of other users is done with 
+the sr_audit program.
 
 First, write the correct credentials for the admin and feeder users in 
-the credentials file  .config/sarra/credentials.conf. 
+the credentials file  .config/sarra/credentials.conf ::
 
-amqp://root:*******@yourbroker.fqdn/
-amqp://feeder:*******@yourbroker.fqdn/
+ amqp://root:*******@yourbroker.fqdn/
+ amqp://feeder:*******@yourbroker.fqdn/
 
-Then write in .config/sarra/default.conf file to define their presence/role:
+Then write in .config/sarra/default.conf file to define their presence/role::
 
-admin  amqp://root@yourbroker.fqdn/
-feeder amqp://feeder@yourbroker.fqdn/
+ admin  amqp://root@yourbroker.fqdn/
+ feeder amqp://feeder@yourbroker.fqdn/
 
 Specify all knows users that you want to implement with their roles 
-in the file  .config/sarra/users.conf (user role) :
+in the file  .config/sarra/default.conf (user role)::
 
-root      admin
-feeder    feeder
-anonymous subscribe
-joe       source
+ role subscriber anonymous 
+ role source joe
 
-
-Now to configure the pump execute the following 
+Now to configure the pump execute the following:
 (<ctrl-c> when it is going to sleep...)
+
+.. Note:: 
+  FIXME: what does the text in parenthesis mean or refer to?
 
 *sr_audit --users foreground*
 
 The *sr_audit* program will :
 
 - use account  *admin* from .config/sarra/default.conf 
-- create exchanges *xpublic* and *xlog* if requiered
-
-- load users and roles from .config/sarra/users.conf
-- get  users and exchanges on the pump
-
-- for each user in users.conf 
-      create user if requiered
+- create exchanges *xpublic* and *xlog* if required
+- load roles from .config/sarra/default.conf
+- obtain a list of users and exchanges on the pump
+- for each user in a *role* option:: 
+      create user if required
       set    user permissions from its role (on creation)
       create user exchanges   from its role
   
-- exceeding users are deleted
-- exceeding exchanges are deleted ('xl_*,xs_*' and the none starting with 'x')
+- users which have no declared role are deleted.
+- user exchanges which do not correspond to users' roles are deleted ('xl_*,xs_*') 
+- exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
-
-The *sr_audit* program won't :
-
-- set a password to a new user... you have to do it manually on the pump
+The *sr_audit* program does not set a password to a new user. To do it manually on the pump::
 
   rabbitmqctl change_password <user> <password>
 
 
-In short, here are the permissions and exchanges *sr_audit* manages:
+In short, here are the permissions and exchanges *sr_audit* manages::
 
   admin user        : the only one creating users...
   admin/feeder users: have all permission over queues and exchanges
@@ -670,13 +663,7 @@ In short, here are the permissions and exchanges *sr_audit* manages:
                       have all permissions on queue named   q_<brokerUser>*
 
 
-Note:  at the moment the *anonymous* user should be defined, and have role *subscribe*
-       but because of historical reasons... this user gets special permissions...
-
-
-
-Should you want to add a user, set its permissions and create its exchanges
-by yourself, you would do, for user Alice as a source ::
+To add Alice as source user mannually, one would::
 
   wget -q http://localhost:15672/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
@@ -697,8 +684,9 @@ or, parametrized::
   ./rabbitmqadmin -u root -p ***** declare exchange name=xl_${u} type=topic auto_delete=false durable=true
 
 
-Then you need to do the same work for sftp and or apache servers as required.
-
+Then you need to do the same work for sftp and or apache servers as required, as 
+authentication needed by the payload transport protocol (SFTP, FTP, or HTTP(S)) 
+is managed separately.
 
 
 Advanced Installations
@@ -722,6 +710,7 @@ On some configurations (we usually call them *bunny*), we use a clusterd rabbitm
         # here all queues that starts with "cmc." will be highly available on all the cluster nodes
 
         rabbitmqctl set_policy ha-all "^cmc\." '{"ha-mode":"all"}'
+
 
 Clustered Broker Keepalived Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -845,6 +834,7 @@ The answer I got from the Rabbitmq gurus ::
   Cheers, Simon
   
 
+
 Security Considerations
 -----------------------
 
@@ -913,7 +903,8 @@ constraints are a little different:
 
 If the message fails the non-local cluster test, it should be rejected, and logged (published ... hmm...)
 
-FIXME:
+.. NOTE::
+ FIXME:
    - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
 
 

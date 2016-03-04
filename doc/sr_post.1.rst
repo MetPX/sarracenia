@@ -23,7 +23,7 @@ DESCRIPTION
 
 **sr_post** posts the availability of a file by creating an announcment.
 In contrast to most other components of sarracenia that act as service daemon
-processes, sr_post is a one shot invocation which posts the notice and exits.
+processes, sr_post is a one shot invocation which posts and exits.
 Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
 to consume the announcement and download the file.  To make files available 
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
@@ -32,7 +32,7 @@ also called a broker.  Format of argument to the *broker* option::
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
 The [*-u|--url url*] option specifies the location 
-from which subscribers will download the file.  There is usually one post per file.
+subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/filename
@@ -65,13 +65,10 @@ a topic_prefix (see option)  version *V02*, an action *post*,
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*
 
-.. NOTE::
-  FIXME: the topic does not contain the user?  Should it contain the source user? some docs say yes.  (MG... this is no longer the case... source being in amqp headers)
-
 The second field in the log line is the message notice.  It consists of a time 
 stamp *20150813161959.854*, and the source url of the file in the last 2 fields.
 
-the rest of the information comes message headers, consisting of key-value pairs.
+The rest of the information is stored in AMQP message headers, consisting of key=value pairs.
 The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
 ) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
 is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes

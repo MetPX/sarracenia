@@ -21,9 +21,15 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+.. note:: 
+   FIXME: think the config file scheme has changed is this right? PS.
+   FIXME: log_routing.conf entry? what's that? no documentation.
+   accepts broker as argument... hmm..
+   P.S. not sure I understand any of this...
+
 **sr_log2clusters** is a program that reads the file `log2clusters(7) <log2clusters.7.html>`_.
 An instance of **sr_log2clusters** is started for each line of the config file
-that defines a cluster name log targer : 'cluster_Name broker_Url exchange_Log'.
+that defines a cluster name log target : 'cluster_Name broker_Url exchange_Log'.
 
 Each **sr_log2clusters** instance connects to the <broker> from the command line
 and the **broker_Url** from the **log_routing.conf** entry.
@@ -34,38 +40,7 @@ all other notifications are ignored.
 
 
 The **sr_log2clusters** command can takes 2 arguments: a broker,
-followed by an action start|stop|restart|reload|status... (self described).
-
-CONFIGURATION
-=============
-
-Options are placed in the command line in the form:: 
-
-  **-option <value>** 
-
-For example::
-
-  **debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
-
-
-BROKER
-------
-
-First, the program needs to set the rabbitmq configurations of a source broker.
-The broker option sets all the credential information to connect to the **AMQP** server 
-
-**--broker|-b amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-::
-
-      (default: amqp://guest:guest@localhost/ ) 
-
-
-Once connected to an AMQP broker, **sr_log2clusters** use exchange xlog, and topic v02.log.#
-to get all logs messages. 
-
+followed by an action start|stop|restart|reload|status... (self explanatory).
 
 
 SEE ALSO
@@ -74,5 +49,5 @@ SEE ALSO
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 
-:: FIXME
+:: FIXME add full SEE ALSO links.
 

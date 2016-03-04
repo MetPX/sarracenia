@@ -21,7 +21,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_poll** is a program that connects to a remote server to 
+**sr_poll** is a component that connects to a remote server to 
 check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product.
@@ -35,65 +35,28 @@ a notification for that product and sends it to the *broker*. The matching conte
 of the *directory* is kept in a file for reference. Should a matching file be changed,
 or created at a later iteration, a new notification is sent.
 
-**sr_poll** can be used to acquire remote files. an `sr_sarra(1) <sr_sarra.1.html>`_  can
-subscribe to the posted notifications, to download and repost them from a data pump.
+**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.html>`_  
+subscribed to the posted notifications, to download and repost them from a data pump.
 
 The **sr_poll** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... 
 
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions, 
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process.
-
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
-
-**option <value>** 
-
-Comment lines begins with **#**. 
-Empty lines are skipped.
-For example::
-
-  **debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
-The configuration default for all sr_* commands is stored in 
-the ~/.config/sarra/default.conf file, and while the name given on the command 
-line may be a file name specified as a relative or absolute path, sr_poll 
-will also look in the ~/.config/sarra/poll directory for a file 
-named *config.conf*  The configuration in specific file always overrides
-the default, and the command line overrides any configuration file.
-
-Invoking the command::
-
-  sr_poll "configname" start 
-
-will result in one instance of sr_poll for that config.
-In the ~/.cache/sarra directory, a number of runtime files are created::
-
-  A .sr_poll_configname_$instance.pid is created, containing the PID  of $instance process.
-  A log/sr_poll_configname_$instance.log  is created as a log of $instance process.
-
-The logs can be written in another directory than the default one with option :
-
-**log            <directory logpath>  (default:~/.cache/sarra/log)**
-
-
-.. NOTE:: 
-  FIXME: standard installation/setup explanations ...
-
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first. 
+It fully explains the option configuration language, and how to find 
+the option settings.
 
 VIP, INTERFACE, INSTANCE
 ------------------------
 
 As only one instance of sr_poll that should be used for each configuration,
 the *instances* option is forced to 1. It also behaves as a singleton: **sr_poll** perform 
-its task if invoked on a server where the ip *vip* from an *interface* is present...
+sr_poll is often configured on multiple servers, and have the posting occur only from 
+whichever one owns the virtual IP address, at a given time.  Its task if invoked on a 
+server where the ip *vip* from an *interface* is present...
 If not, **sr_poll** will sleep.  When asleep, it will wakeup 
 on the server every *sleep* seconds, to update its reference file and be perhaps
 take over the work.
@@ -102,44 +65,25 @@ take over the work.
 **interface <string>     (MANDATORY)**
 
 
-CREDENTIALS 
------------
-
-The configuration for credentials that concerns destination to be reached
-is stored in the ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
-
-- **sftp://user:passwd@host:port/**
-- **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
-- **ftp://user:passwd@host:port/**
-- **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
-
-- **ftps://user:passwd@host:port/ tls**
-- **ftps://user:passwd@host:port/ [passive|active] [binary|ascii] tls [prot_p]**
-
-
 DESTINATION OPTIONS
 -------------------
 
-The program needs to set all the configurations of the destination. 
-The destination option sets the information to connect to the remote server 
+The destination option specify what is needed to connect to the remote server 
 
-**destination protocol://<user>:<pw>@<server>[:port]**
+**destination protocol://<user>@<server>[:port]**
 
 ::
-
       (default: None and it is mandatory to set it ) 
 
-
 The *destination* should be set with the minimum required information...
-**sr_poll**  uses *destination* in the *AMQP* notification. It is accepted, but not a good
-practice to have a password in a notification. To reach the remote server,
-the *destination*, is resolved from the credential file.
+**sr_poll**  uses *destination* setting not only when polling, but also
+in the sr_post messages produced.
 
 For example, the user can set :
 
 **destination ftp://myself@myserver**
 
-And complete the requiered information in the credential file with the line  :
+And complete the needed information in the credentials file with the line  :
 
 **ftp://myself:mypassword@myserver:2121  passive,binary**
 
@@ -147,7 +91,7 @@ And complete the requiered information in the credential file with the line  :
 POLLING SPECIFICATIONS
 ----------------------
 
-Theses options set what files the user wants to be notified for and where
+These options set what files the user wants to be notified for and where
  it will be placed, and under which name.
 
 - **filename  <option>         (optional)** 
@@ -155,7 +99,7 @@ Theses options set what files the user wants to be notified for and where
 - **accept    <regexp pattern> [rename=] (must be set)** 
 - **reject    <regexp pattern> (optional)** 
 
-The option *filename* can be uses to set a global rename to the products.
+The option *filename* can be used to set a global rename to the products.
 Ex.:
 
 **filename  rename=/naefs/grib2/**
@@ -169,7 +113,7 @@ files of interest and their directories of residence. **get** is a synonym
 for **accept** and is defined for backward compatibility.
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-Theses options are processed sequentially. 
+These options are processed sequentially. 
 The URL of a file that matches a  **reject**  pattern is never notified.
 One that match an  **accept**  pattern is notified from its residing directory.
 Again a *rename*  can be added to the *accept* option... matching products
@@ -206,7 +150,7 @@ They are fixed...
 POSTING SPECIFICATIONS
 ----------------------
 
-Theses options set what files the user wants to be notified for and where
+These options set what files the user wants to be notified for and where
 **sr_poll** polls the availability of file on a remote server by creating
 an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
 to consume the announcement and download the file (or **sr_sarra**).
@@ -215,22 +159,27 @@ an AMQP server, also called a broker.  Format of argument to the *broker* option
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
-The announcement will have its url build from the *destination* option, with
+The announcement will have its url built from the *destination* option, with
 the product's path (*directory*/"matched file").  There is one post per file.
-The file'size is taken from the directory "ls"... but the "sum" is set to "0,0"
+The file's size is taken from the directory "ls"... but it's checksum cannot
+be determined, so the "sum" header in the posting is set to "0,0."
 
-By default, sr_poll sends its post message, to the broker with default exchange 
+By default, sr_poll sends its post message to the broker with default exchange 
 is the prefix *xs_* followed by the broker username. The *broker* is mandatory.
 It can be given incomplete if, it is well defined in the credentials.conf file.
 
-Refer to `sr_post(1) <sr_post.1.html>`_ - to understand the complete notification.
+Refer to `sr_post(1) <sr_post.1.html>`_ - to understand the complete notification process.
+Refer to `sr_post(7) <sr_post.7.html>`_ - to understand the complete notification format.
+
 Here it is important to say that : 
 
 The *sum=0,0* is used because no checksum computation was performed... 
 
-The *parts=1,fsiz,1,0,0* is used and the file'size is taken from the ls of the file.
-Under **sr_sarra** these fields could be reset. **FIXME  recompute_checksum in sr_sarra
-is available ... but reset filesize does not exist**
+The *parts=1,fsiz,1,0,0* is used and the file's size is taken from the ls of the file.
+Under **sr_sarra** these fields could be reset. 
+
+.. note::
+  **FIXME  recompute_checksum in sr_sarra is available ... but reset filesize does not exist**
 
 
 POSTING OPTIONS

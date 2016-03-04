@@ -211,37 +211,6 @@ However, the steps below are a summary of what the script does:
 **Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
 
 
-RPM
-~~~
-
-TODO
-
-Windows
-~~~~~~~
-
-Install winpython from github.io version 3.4 or higher.  Then use pip to install from PyPI.
-
-
-SourceForge
-~~~~~~~~~~~
-
-TODO
-
-Development Environment
------------------------
-
-
-Local Python 
-~~~~~~~~~~~~
-
-Working with a non-packaged version:
-
-notes::
-
-    python3 setup.py build
-    python3 setup.py install
-
-
 Updating The Project Website
 ----------------------------
 
@@ -271,6 +240,29 @@ and have the required permissions to modify the site.
 From a shell, run::
 
   make SFUSER=myuser deploy 
+
+
+
+Development Environment
+-----------------------
+
+
+Local Python 
+~~~~~~~~~~~~
+
+Working with a non-packaged version:
+
+notes::
+
+    python3 setup.py build
+    python3 setup.py install
+
+
+Windows
+~~~~~~~
+
+Install winpython from github.io version 3.4 or higher.  Then use pip to install from PyPI.
+
 
 
 Conventions

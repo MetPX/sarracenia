@@ -56,4 +56,3 @@ Formats/Protocols
 * `sr_log(7) <sr_log.7.html>`_ - the format of log messages. Sent by consumers, for sources to measure reach.
 * `log2clusters(7) <log2clusters.7.html>`_ - configuration of log routing between clusters.
 * `sr_config(7) <sr_config.7.html>`_ - reference for options used by many components.
-* `sr_consumer(7) <sr_consumer.7.html>`_ - reference for options used by components that consume messages.

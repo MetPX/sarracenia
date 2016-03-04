@@ -66,25 +66,21 @@ the current working directory.
 The options used in the configfile are described in the next sections.
 
 
-Multiple streams
+Multiple Streams
 ================
 
-When executed,  the program  uses the default queue name.
+When executed,  the program uses the default queue name.
 If it is stopped, the posted messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, the queue name 
 is reused, and no messages are lost.
 
-The message processing can be parallelized by running multiple instances of the program. 
-The program shares the same queue. The messages will be distributed  between processes.
+Message processing can be parallelized by running multiple instances of the program. 
+The program shares the same queue. The messages will be distributed between instances.
 Simply launch the program with option instances set to an integer greater than 1.
 
 
-Consuming options
+Consuming Options
 =================
-
-This program consumes AMQP messages. The options that cover this task are
-fully explained in `sr_consumer(7) <sr_consumer.7.html>`_ . In this section,
-as a reference, they are simply listed:
 
 Setting the source broker :
 
@@ -116,7 +112,7 @@ Running a plugin on selected messages
 - **on_message      <script_name> (optional)** 
 
 
-Specific consuming requierements
+Specific consuming requirements
 --------------------------------
 
 To consume messages, the mandatory options are:
@@ -159,7 +155,7 @@ described in the next section.
 LOCAL DESTINATION OPTIONS
 =========================
 
-Theses options set where the program downloads the file
+These options set where the program downloads the file
 (or the part) described by the message.
 
 - **document_root <path>           (default: .)** 
@@ -235,6 +231,10 @@ incoming notification is acknowledge, and the file is not reannounced. If the
 file is not there, or the checksum differs, the file is overwritten and a 
 new notification is sent to the destination broker.
 
+.. note:: 
+   FIXME: overwrite explanation is backwards, if 'overwrite' is true, it should overwrite the files
+   regardless of checksum ?  PS.
+
 If **delete** is set to True, when the product is downloaded, it is removed from
 the remote server.
 
@@ -266,48 +266,6 @@ For each download, the checksum is computed during transfer. If **recompute_chks
 is set to True, and the recomputed checksum differ from the on in the message,
 the new value will overwrite the one from the incoming amqp message. 
 
-.. NOTE:: 
-  - FIXME PS: destfn script  : should it support a destination script
-  - FIXME PS: renamer script : should it support a file renamer script
-
-  - MG  the destfn script and other sundew style naming keywords
-        were only implemented in sr_sender (to keep these options to
-        deliver to clients)  In sarracenia strategy, the source fix
-        the destination and filename that is spread amoungst pumps
-        and we do not interfere.
-
-        The renamer script would be a designated on_message script
-        that would change  self.msg.local_file and self.msg.headers['rename']
-        and self.msg.local_url with the desired modifications.
-  
-
-CREDENTIALS 
------------
-
-Ther username and password or keys used to access servers are credentials.
-
-The message url of the product to download may not have all the details
-of the credentials for the connection, the pump administrator needs to define them.
-
-The confidential parts of credentials are stored only in ~/.conf/sarra/credentials.conf.
-This includes all download, upload, or broker passwords and settings 
-needed by the various configurations.  The format is one entry per line.  Examples:
-
-- **amqp://user1:password1@host/**
-- **amqps://user2:password2@host:5671/dev**
-
-- **http://user3:password3@host**
-- **https://user4:password4@host:8282**
-
-- **sftp://user5:password5@host**
-- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
-
-- **ftp://user7:password7@host  passive,binary**
-- **ftp://user8:password8@host:2121  active,ascii**
-
-In other configuration files or on the command line, the url simply lacks the 
-password or key specification.  The url given in the other files is looked 
-up in credentials.conf. 
  
 OUTPUT NOTIFICATION OPTIONS
 ---------------------------
