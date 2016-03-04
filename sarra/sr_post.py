@@ -126,6 +126,10 @@ class sr_post(sr_config):
 
     def lock_set(self):
         self.logger.debug("sr_post lock_set")
+
+        if self.reset   :
+           self.poster.cache_reset()
+
         if self.caching :
            self.poster.cache_load()
 

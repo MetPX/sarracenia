@@ -78,18 +78,19 @@ class sr_audit(sr_instances):
            dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
            return
 
+        # PS asked not to implement this (Fri Mar  4 2016)
         # anonymous was special at a certain time ... historical reasons
         # anonymous should only be a subscribe... but it is a special case...
         # to work with old versions of subscribe : queue cmc* and configure permission on xpublic
         # this anonymous code will be deprecated at a certain point...
 
-        if u == 'anonymous' :
-           c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-           w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
-           r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
-           self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
-           return
+        #if u == 'anonymous' :
+        #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
+        #   w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
+        #   r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
+        #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
+        #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+        #   return
 
         # subscribe
 
