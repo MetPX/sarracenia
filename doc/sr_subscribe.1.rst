@@ -49,16 +49,10 @@ or use other means to kill its process. That would be the old **dd_subscribe** b
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
-
-**option <value>** 
-
-Comment lines begins with **#**. 
-For example::
-
-  **debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+It fully explains the option configuration language, and how to find
+the option settings.
 
 
 RABBITMQ CREDENTIAL OPTIONS
@@ -72,6 +66,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
+for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -84,16 +79,8 @@ to an exchange.  These options define which messages (URL notifications) the pro
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Several topic options may be declared. To give a correct value to the subtopic,
-browse the our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
-For each directories write an  **subtopic**  option as follow:
 
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
-
-::
-
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
+for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding, or the 
 more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
@@ -109,58 +96,6 @@ client side mechanisms, saving bandwidth and processing for all.
 topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
 specify a non-default protocol version of messages to subscribe to. 
 
-.. NOTE:: 
-  FIXME: no mention of the use of exchange argument.
-
-
-AMQP QUEUE SETTINGS
--------------------
-
-The queue is where the notifications are held on the server for each subscriber.
-
-- **queue_name    <name>         (default: q_<brokerUser>)** 
-- **durable       <boolean>      (default: False)** 
-- **expire        <minutes>      (default: None)** 
-- **message-ttl   <minutes>      (default: None)** 
-
-By default, sr_subscribe** creates a queue name that should be unique and starts with  **q_** 
-and is usually followed by the broker user name. sr_subscribe writes the queue name
- in a file named .<configname>.queue, where <configname> is the config filename.
-The  **queue**  option sets a queue name. It should always start with  **q_<user>** .
-
-The  **expire**  option is expressed in minutes... it sets how long should live
-a queue without connections The  **durable** option set to True, means writes the queue
-on disk if the broker is restarted.
-The  **message-ttl**  option set the time in minutes a message can live in the queue.
-Past that time, the message is taken out of the queue by the broker.
-
-CREDENTIALS 
------------
-
-The configuration for credentials that concerns product download is stored in the
- ~/.config/sarra/credentials.conf. There is one entry per line. Pseudo example :
-
-- **amqp://user:passwd@host:port/**
-- **amqps://user:passwd@host:port/**
-
-- **sftp://user:passwd@host:port/**
-- **sftp://user@host:port/ ssh_keyfile=/abs/path/to/key_file**
-
-- **ftp://user:passwd@host:port/**
-- **ftp://user:passwd@host:port/ [passive|active] [binary|ascii]**
-
-- **http://user:passwd@host:port/**
-
-to implement supported of additional protocols, one would write 
-a **_do_download** script.  the scripts would access the credentials 
-value in the script with the code :   
-
-- **ok, details = parent.credentials.get(msg.urlcred)**
-- **if details  : url = details.url**
-
-.. note::
-   FIXME: how does this work with ssh_keyfile, active/passive, ascii/binary ?
-   non url elements of the entry. details.ssh_keyfile?
 
 DELIVERY SPECIFICATIONS
 -----------------------
@@ -278,6 +213,7 @@ A variety of example configuration files are available here:
 
  `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
 
+for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 
 QUEUES and MULTIPLE STREAMS
@@ -319,6 +255,7 @@ This is done with option :
 
 Should you want to turned them off you would set this option to **True**.
 
+
 ADVANCED FEATURES
 -----------------
 
@@ -351,6 +288,8 @@ The only arguments the script receives it **parent**, which is an instance of
 the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
+
+for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 
 DEPRECATED SETTINGS
@@ -390,8 +329,8 @@ SEE ALSO
 HISTORY
 -------
 
-dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. it is from
+Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
+where a wide variety of meteorological products are made available to the public. It is from
 the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.
@@ -403,10 +342,10 @@ because search engines will find references to names which are more unusual more
 the original MetPX WMO switch was named after a carnivorous plant on the Species At
 Risk Registry:  The *Thread-leaved Sundew*.  
 
-The organization behind metpx have since moved to Shared Services Canada, but when
+The organization behind Metpx have since moved to Shared Services Canada, but when
 it came time to name a new module, we kept with a theme of carnivorous plants, and 
 chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
-of insectivorous pitcher plants. We like plants that eat!  
+of insectivorous pitcher plants. We like plants that eat meat!  
 
 
 dd_subscribe Renaming

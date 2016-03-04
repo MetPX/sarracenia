@@ -47,23 +47,11 @@ or use other means to kill its process.
 CONFIGURATION
 =============
 
-Options are placed in the configuration file, one per line, of the form: 
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+It fully explains the option configuration language, and how to find
+the option settings.
 
-**option <value>** 
-
-Comment lines begins with **#**. 
-Empty lines are skipped.
-For example::
-
-  **debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
-The configuration default for all sr_* commands is stored in 
-the ~/.config/sarra/default.conf file, and while the name given on the command 
-line may be a file name specified as a relative or absolute path, sr_winnow 
-will also look in the ~/.config/sarra/winnow directory for a file 
-named *config.conf*  The configuration in specific file always overrides
-the default, and the command line overrides any configuration file.
 
 ACTIVE/PASSIVE OPTIONS
 ----------------------
@@ -93,21 +81,6 @@ moving vip.
 When **sr_winnow** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and process a message and than rechecks for the vip.
 
-CREDENTIALS 
------------
-
-Ther username and password or keys used to access servers are credentials.
-For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.conf/sarra/credentials.conf.  This includes the broker passwords and settings 
-needed by **sr_winnow**.  The format is one entry per line.  Examples:
-
-- **amqp://user1:password1@host/**
-- **amqps://user2:password2@host:5671/dev**
-
-In other configuration files or on the command line, the url simply lacks the 
-password or key specification.  The url given in the other files is looked 
-up in credentials.conf. 
-
 
 SOURCE NOTIFICATION OPTIONS
 ---------------------------
@@ -126,8 +99,8 @@ to the **AMQP** server
 Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the messages of interest.
 
-QUEUE BINDINGS OPTIONS
-----------------------
+QUEUE BINDING OPTIONS
+---------------------
 
 First, the program needs to set all the rabbitmq configurations for a source broker.
 These options define which messages (URL notifications) the program receives:
@@ -140,45 +113,9 @@ The **exchange** is mandatory.
 
 If **sr_winnow** is to be used to winnow products from a source 
 (**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
-be name 'xs\_'SourceUserName.  SourceUserName is the amqp username the source
-uses to announce his products.
+be named 'xs\_'SourceUserName.  SourceUserName is the one set in the broker
+option, (the amqp user the source uses to announce products.)
 
-topic_prefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to subscribe to. 
-
-To give a correct value to the subtopic, browse the remote server and
-write down the directory of interest separated by a dot
-as follow:
-
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
-
-::
-
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
-
-The concatenation of the topic_prefix + . + subtopic gives the AMQP topic
-One has the choice of filtering using  **topic**  with only AMQP's limited 
-wildcarding. 
-
-QUEUE SETTING OPTIONS
----------------------
-
- - **queue_name   <string>          (default: None)** 
- - **durable      <boolean>         (default: False)** 
- - **expire       <minutes>         (default: None)**
- - **message-ttl  <minutes>         (default: None)**
-
-These options (except for queue_share)  are all AMQP queue attributes.
-If a **queue_name** is not provided, it is automatically build by the program.
-The name has the form :  q\_'brokerUsername'.sr_winnow.'config_name'
-It is easier to have this fix name when it is time to look on the broker
-and determine the queue of the program... to see if it is on problem for example.
-The program forces the option **queue_share** to True and the option **instances** to 1.
-This means, only one instance on one server running (cannot share cache),
-but it also means, another instance on another server can access the queue
-(when vip fallover another server)
 
 MESSAGE SELECTION OPTIONS
 -------------------------
@@ -210,15 +147,7 @@ you want... if it returns False, the processing of the message will stop
 there. If True, the program will continue processing from there.  
 
 
-BROKER LOGGING OPTIONS
-----------------------
-
- - **log_exchange     <nane>   (default xlog)**
-
-The state and actions performed with the messages/products of the broker
-are logged back to it again through AMQP LOG MESSAGES.  When the broker
-pulls products from sources and announces the products on himself, the
-**log_exchange** should be set to 'xlog'.  
+See `sr_config(7) <sr_config.7.html>`_  for more details.
 
  
 OUTPUT NOTIFICATION OPTIONS

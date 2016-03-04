@@ -35,9 +35,8 @@ a notification is created and sent to that broker.
 
 The primary purpose of this program is to replicate (or partially replicate) a pump
 onto another that would not be allowed to acquire the products directly (PAZ, or 
-firewalled network pump)...  But we discovered that, if we do not have to repost
-the notification, it can serves as a product disseminator. For this second objective
-we added **metpx-sundew** like options and option behaviors.
+firewalled network pump)...  or to provide direct file delivery to clients.
+For this second objective, we added **metpx-sundew** like options and behaviors.
 
 The **sr_sender** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status... (self described).
@@ -49,77 +48,13 @@ but should the configured instances be running it shares the same (configured) m
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
 
-CONFIGURATION
-=============
+In general, the options for this component are described by the
+`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+It fully explains the option configuration language, and how to find
+the option settings.
 
-Options are placed in the configuration file, one per line, of the form: 
-
-**option <value>** 
-
-Comment lines begins with **#**. 
-Empty lines are skipped.
-For example:
-
-**debug true**
-
-would be a demonstration of setting the option to enable more verbose logging.
-The configuration default for all sr_* commands is stored in 
-the ~/.config/sarra/default.conf file, and while the name given on the command 
-line may be a file name specified as a relative or absolute path, sr_sender 
-will also look in the ~/.config/sarra/sender directory for a file 
-named *config.conf*  The configuration in specific file always overrides
-the default, and the command line overrides any configuration file.
-
-CREDENTIALS 
------------
-
-Ther username and password or keys used to access servers are credentials.
-For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.conf/sarra/credentials.conf.  This includes the destination and the broker
-passwords and settings needed by **sr_sender**.  The format is one entry per line.  Examples:
-
-- **amqp://user1:password1@host/**
-- **amqps://user2:password2@host:5671/dev**
-
-- **sftp://user5:password5@host**
-- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
-
-- **ftp://user7:password7@host  passive,binary**
-- **ftp://user8:password8@host:2121  active,ascii**
-
-- **ftps://user7:password7@host  passive,binary,tls**
-- **ftps://user8:password8@host:2121  active,ascii,tls,prot_p**
-
-In other configuration files or on the command line, the url simply lacks the 
-password or key specification.  The url given in the other files is looked 
-up in credentials.conf. 
-
-INSTANCES
----------
-
-It is possible that one instance of sr_sender using a certain config
-is not enough to process & send all available notifications.
-
-**instances      <integer>     (default:1)**
-
-Invoking the command::
-
-  sr_sender "configname" start 
-
-will result in launching N instances of sr_sender using that config.
-In the ~/.cache/sarra directory, a number of runtime files are created::
-
-  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
-  A sr_sender_configname_$instance.log  is created as a log of $instance process.
-
-The logs can be written in another directory than the default one with option :
-
-**log            <directory logpath>  (default:~/.cache/sarra/log)**
-
-
-.. NOTE:: 
-  FIXME: standard installation/setup explanations ...
-
+sr_sender is a standard consumer, using all the normal AMQP settings for brokers,exchanges,
+queues, and all the standard client side filtering with accept, reject, on_message.
 
 
 SOURCE NOTIFICATION OPTIONS
@@ -135,7 +70,6 @@ to the **AMQP** server
 
       (default: None and it is mandatory to set it ) 
 
-
 Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the messages of interest.
 
@@ -149,43 +83,7 @@ These options define which messages (URL notifications) the program receives:
 - **topic_prefix  <name>         (default: v02.post)**
 - **subtopic      <amqp pattern> (default: #)**
 
-topic_prefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to subscribe to. 
-
-To give a correct value to the subtopic, browse the remote server and
-write down the directory of interest separated by a dot
-as follow:
-
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
-
-::
-
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
-
-The concatenation of the topic_prefix + . + subtopic gives the AMQP topic
-One has the choice of filtering using  **topic**  with only AMQP's limited 
-wildcarding. 
-
-QUEUE SETTING OPTIONS
----------------------
-
- - **queue_name   <string>          (default: None)** 
- - **queue_share  <boolean>         (default: True)** 
- - **durable      <boolean>         (default: False)** 
- - **expire       <minutes>         (default: None)**
- - **message-ttl  <minutes>         (default: None)**
-
-These options (except for queue_share)  are all AMQP queue attributes.
-If a **queue_name** is not provided, it is automatically build by the program.
-The name has the form :  q\_'brokerUsername'.sr_sender.'config_name'
-It is easier to have this fix name when it is time to look on the broker
-and determine the queue of the program... to see if it is in problem 
-for example... you exactly know for which program/config it belongs to.
-
-The option **queue_share** defaults to True because most of the time
-sr_sender is used with multiple instances sharing the same queue.
+as described in `sr_config(7) <sr_config.7.html>`_  
 
 MESSAGE SELECTION OPTIONS 
 -------------------------
@@ -193,6 +91,8 @@ MESSAGE SELECTION OPTIONS
  - **accept        <regexp pattern> (default: None)** 
  - **reject        <regexp pattern> (default: None)** 
  - **on_message            <script> (default: None)** 
+
+as described in `sr_config(7) <sr_config.7.html>`_  
 
 One has the choice of filtering using  **subtopic**  with only AMQP's limited 
 wildcarding, and/or with the more powerful regular expression based  **accept/reject**  
@@ -345,17 +245,6 @@ Topic:
 
 Notice:
 **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
-
-
-BROKER LOGGING OPTIONS
-----------------------
-
- - **log_exchange     <nane>   (default xlog)**
-
-The state and actions performed with the messages/products of the broker
-are logged back to it again through AMQP LOG MESSAGES.  When the broker
-sends products to a destination it logs it to the
-**log_exchange**. The default is 'xlog'.  
 
 
 SUNDEW COMPATIBILITY OPTIONS
