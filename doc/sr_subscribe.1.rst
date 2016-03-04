@@ -165,7 +165,7 @@ value in the script with the code :
 DELIVERY SPECIFICATIONS
 -----------------------
 
-Theses options set what files the user wants and where it will be placed,
+These options set what files the user wants and where it will be placed,
 and under which name.
 
 - **accept    <regexp pattern> (must be set)** 

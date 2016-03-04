@@ -26,7 +26,7 @@ DESCRIPTION
 
 Sr_audit configures a broker to reflect sarracenia configuration settings.
 **Sr_audit** takes one argument: the action to perform.  One can also set
-a few settings in a configuration file: **debug**, **max_queue_size** and **sleep**
+a few option in a configuration file: **debug**, **max_queue_size** and **sleep**
 
 When **Sr_audit** is *started*, it connects to the broker using the **admin** account. 
 
@@ -88,7 +88,6 @@ the following command run as root on the broker'server :
 
 where "user"  is the username added and "password" its password
 on the broker.
-
 
 
 CONFIGURATION

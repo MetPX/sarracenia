@@ -112,7 +112,7 @@ Running a plugin on selected messages
 - **on_message      <script_name> (optional)** 
 
 
-Specific consuming requierements
+Specific consuming requirements
 --------------------------------
 
 To consume messages, the mandatory options are:
@@ -155,7 +155,7 @@ described in the next section.
 LOCAL DESTINATION OPTIONS
 =========================
 
-Theses options set where the program downloads the file
+These options set where the program downloads the file
 (or the part) described by the message.
 
 - **document_root <path>           (default: .)** 
