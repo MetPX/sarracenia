@@ -44,6 +44,10 @@ running.  Should instances be running, it shares the same message queue with the
 A user stop the **foreground** instance by simply using <ctrl-c> on linux
 or use other means to kill the process.
 
+
+.. contents::
+
+
 HELP
 ----
 
@@ -110,7 +114,8 @@ For example::
 
 sets the *debug* option to enable more verbose logging.  To provide non-functional 
 description of configuration, or comments, use lines that begin with a **#**.  
-All options are case sensitive.  **debug** is not the same as **Debug** or **DEBUG**.
+
+**All options are case sensitive.**  **Debug** is not the same as **debug** or **DEBUG**.
 Those are three different options (two of which do not exist and will have no effect,
 but should generate an ´unknown option warning´.)
 
@@ -440,7 +445,7 @@ is set, or if the plugin provided returns True, the message is processed by the 
 
 
 ROUTING
--------
+=======
 
 Sources of data need to indicate the clusters to which they would like data to be delivered.
 Data Pumps need to identify themselves, and their neighbors in order to pass data to them.
@@ -454,7 +459,7 @@ Data Pumps need to identify themselves, and their neighbors in order to pass dat
 - **to** <cluster>,<cluster>,<cluster>... destination pumps targetted by injectors.
 
 Components which inject data into a network (sr_post, sr_poll, sr_watch) need to set 'to' addresses
-for all data injected.  Components which transfer data between bumps, such as sr_sarra and sr_sender, 
+for all data injected.  Components which transfer data between pumps, such as sr_sarra and sr_sender, 
 interpret *cluster, cluster_aliases*, and *gateway_for*, such that products which are not 
 meant for the destination cluster are not transferred.  
 
@@ -466,7 +471,7 @@ The network will not process a message that ::
  4- the to_clusters destination list has no match with
     this pump's **cluster,cluster_aliases,gateway_for**  options
 
-.. Imporenant note 1::
+.. Important note 1::
 
   If messages are posted directly from a source,
   the exchange used is 'xs_<brokerSourceUsername>'.
@@ -481,10 +486,12 @@ The network will not process a message that ::
     self.msg.headers['from_cluster'] = cluster
 
 
+.. note::
+   FIXME: all of the above, I'm a bit confused about, explanation seems complicated
+   need to rephrase...
 
-
-DELIVERY SPECIFICATIONS
------------------------
+DELIVERY 
+========
 
 These options set what files will be downloaded, where they will be placed,
 and under which name.
@@ -498,11 +505,9 @@ and under which name.
 - **kbytes_ps** <count>       (default: 0)**
 
 
-The  **inflight**  option is a change to the file name used
-the download so that other programs reading the directory ignore 
-the files until they are complete.  
-
-The modification and taken away when the transfer is complete... 
+The  **inflight**  option sets a temporary file name used
+during the download so that other programs reading the directory ignore 
+them.  The file is renamed to a permanent name when the transfer is complete.
 It is usually a suffix applied to file names, but if **inflight**  is set to  **.**,
 then it is prefix, to conform with the standard for "hidden" files on unix/linux.
 
@@ -575,7 +580,7 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 
 LOGS
-----
+====
 
 Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
 at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
@@ -600,8 +605,9 @@ Note: for **sr-post** only,  option **log** should be a logfile
    FIXME: We need a verbosity setting. should probably be documented here.  on INFO, the logs are way over the top
    verbose.  Probably need to trim that down. log_level?
 
+
 INSTANCES
----------
+=========
 
 Sometimes one instance of a component and configuration is not enough to process & send all available notifications.  
 
@@ -669,7 +675,7 @@ True, the message is published... and False it wont.
 
 
 RABBITMQ LOGGING
-----------------
+================
 
 For each download, an amqp log message is sent back to the broker.
 Should you want to turned them off the option is :
@@ -686,7 +692,7 @@ components log directly to xlog, whereas user components log to their own exchan
 log_daemons copy the messages to *xlog* after validation.
 
 Administration-Specific Options
--------------------------------
+===============================
 
 The *feeder* option specifies the account used by default system transfers for components such as 
 sr_2xlog, sr_log2source, sr_log2cluster, sr_sarra and sr_sender (when posting).
@@ -735,7 +741,7 @@ source
 
 
 PLUGIN SCRIPTS
---------------
+==============
 
 Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
 flexibility to override those common cases with user plugins scripts, written in python.  
@@ -804,7 +810,7 @@ More examples are available in the Guide documentation.
 
 
 EXAMPLES
---------
+========
 
 Here is a short complete example configuration file:: 
 
@@ -827,7 +833,7 @@ A variety of example configuration files are available here:
 
 
 SEE ALSO
---------
+========
 
 `sr_log(7) <sr_log.7.html>`_ - the format of log messages.
 
