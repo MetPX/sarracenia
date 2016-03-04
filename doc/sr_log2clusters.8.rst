@@ -22,9 +22,8 @@ DESCRIPTION
 ===========
 
 .. note:: 
-   FIXME: I think this is totally out of date... think the config file scheme has changed. PS.
-   FIXME: log2cluster.7 man page non-existent.
-   FIXME: log_routing.conf entry? what's that?
+   FIXME: think the config file scheme has changed is this right? PS.
+   FIXME: log_routing.conf entry? what's that? no documentation.
    accepts broker as argument... hmm..
    P.S. not sure I understand any of this...
 
@@ -50,5 +49,5 @@ SEE ALSO
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 
-:: FIXME
+:: FIXME add full SEE ALSO links.
 

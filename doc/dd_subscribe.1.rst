@@ -120,8 +120,6 @@ client side mechanisms, saving bandwidth and processing for all.
 topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
 specify a non-default protocol version of messages to subscribe to. 
 
-.. NOTE:: 
-  FIXME: no mention of the use of exchange argument.
 
 
 AMQP QUEUE SETTINGS
@@ -139,16 +137,6 @@ The queue is where the notifications are held on the server for each subscriber.
 By default, dd_subscribe creates a queue name that should be unique and starts with  **cmc** 
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
 The  **queue**  option sets a queue name. It should always start with  **cmc** .
-
-.. NOTE::
-   FIXME: is this **cmc** default correct?  Has it changed to something less cmc centric?
-   makes things easier to clean up if exchanges and queues are associated with login users.
-   I think the correct default might be something like: qs_Alice for user 'Alice' for the 
-   sx_Alice exchange, and ql_Alice for the sl_Alice exchange.  Is that right?
-   have to be able to permit people to create only the queues they should... 
-   so. Alice would only be able to create queues ^q._Alice.* ... and Bob only q._Bob.*$
-   does it matter to differentiate s vs. l? or just use same queue names for all (q_Alice?)
-
 
 The  **expire**  option is expressed in minutes... it sets how long should live
 a queue without connections The  **durable** option set to True, means writes the queue
