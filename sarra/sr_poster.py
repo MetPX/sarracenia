@@ -65,6 +65,10 @@ class sr_poster:
         self.build_publisher()
         self.get_message()
 
+        # total = 1 sec span than .5 for other iteration
+        self.sleep_list = [0.01,0.03,0.06,0.15,0.25,0.5]
+        self.sleep_idx  = 0
+        self.sleep_max  = 5
 
     def build_connection(self):
         self.logger.debug("sr_poster build_broker")
@@ -92,9 +96,11 @@ class sr_poster:
         os.unlink(self.cache_lock)
         self.cache = None
 
-    def cache_load(self):
-        self.logger.debug("sr_poster cache_load")
-        if not self.caching : return
+    def cache_files_set(self):
+        self.logger.debug("sr_poster cache_files_set")
+
+        self.cache_file = None
+        self.cache_lock = None
 
         if not hasattr(self.parent,'watch_path') : 
            self.logger.error("could not cache posting... no watch_path")
@@ -106,18 +112,64 @@ class sr_poster:
            self.caching = False
            return
 
-        self.cache_acces = 0
-
         self.cache_file  = self.parent.user_cache_dir 
         self.cache_file += '/' + self.parent.watch_path.replace('/','_')
         self.cache_file += '_%d' % self.parent.blocksize
 
         self.cache_lock  = self.cache_file + '.lck'
 
+
+    def cache_reset(self):
+        self.logger.debug("sr_poster cache_reset")
+
+        self.cache_files_set()
+        self.logger.debug("cache_file = %s" % self.cache_file)
+        self.logger.debug("cache_lock = %s" % self.cache_lock)
+
+        # unfortunately have to try several implementation extensions...
+        if self.cache_file:
+           try   : os.unlink(self.cache_file)
+           except: pass
+           try   : os.unlink(self.cache_file+'.pag')
+           except: pass
+           try   : os.unlink(self.cache_file+'.dir')
+           except: pass
+           try   : os.unlink(self.cache_file+'.db')
+           except: pass
+           try   : os.unlink(self.cache_file+'.dat')
+           except: pass
+
+        if self.cache_lock:
+           try   : os.unlink(self.cache_lock)
+           except: pass
+
+        self.logger.info("posting cache was reset...")
+
+        os._exit(0)
+
+
+    def cache_load(self):
+        self.logger.debug("sr_poster cache_load")
+        if not self.caching : return
+
+        self.cache_files_set()
+        self.logger.debug("cache_file = %s" % self.cache_file)
+        self.logger.debug("cache_lock = %s" % self.cache_lock)
+
+        if not self.cache_file: return
+
+        self.cache_acces = 0
+
+        # increase sleeping time when it taks more time..
         self.logger.debug("check for lock file %s" % self.cache_lock)
         while os.path.exists(self.cache_lock) :
-              self.logger.debug("still locked")
-              time.sleep(1)
+              self.logger.debug("cache locked sleeping for %f" % self.sleep_list[self.sleep_idx])
+              time.sleep(self.sleep_list[self.sleep_idx])
+              self.sleep_idx = self.sleep_idx + 1
+              if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
+
+        # out of the loop will start over with a short sleep time
+        self.sleep_idx = 0
 
         self.logger.debug("acquiring lock")
         f=open(self.cache_lock,'wb')
