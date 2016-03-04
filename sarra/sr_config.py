@@ -329,6 +329,8 @@ class sr_config:
         self.document_root        = None
         self.post_document_root   = None
         self.url                  = None
+        self.postpath             = []
+        self.movepath             = []
 
         #self.broker              = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         #self.exchange            = None
@@ -1009,6 +1011,12 @@ class sr_config:
                         self.mirror = self.isTrue(words[1])
                         n = 2
 
+                elif words0 == 'move': # See: sr_post.1
+                     self.movepath = []
+                     self.movepath.append(words[1])
+                     self.movepath.append(words[2])
+                     n = 3
+
                 # Internal use only: when instances>1 is used, and the instances are started
                 # there are N instances asked to start each one having its own number (no)
                 # -no 1,  -no 2, ...  -no N
@@ -1077,11 +1085,28 @@ class sr_config:
                         self.overwrite = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['parts','p']: # See: sr_poll.1, sr_watch.1
+                elif words0 == 'parts': # See: sr_poll.1, sr_watch.1
                      self.parts   = words[1]
                      ok = self.validate_parts()
                      if not ok : needexit = True
                      n = 2
+
+                elif words0 in ['path','p']: # See: sr_post.1, sr_watch.1
+                     n  = 1
+                     # adding existing file/directory...
+                     for w in words[1:]:
+                         try:
+                               path = os.path.abspath(w)
+                               path = os.path.realpath(path)
+                               if os.path.exists(path) :
+                                  self.postpath.append(path)
+                                  n = n + 1
+                               else: break
+                         except: break
+
+                     if n == 1 :
+                        self.logger.error("problem with path option")
+                        needexit = True
 
                 elif words0 in ['post_broker','pb'] : # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
                      urlstr      = words1
@@ -1265,7 +1290,7 @@ class sr_config:
 
         flgs = sumflg
 
-        if len(sumflg) > 2 and sumflg[:2] == 'z,':
+        if len(sumflg) > 2 and sumflg[:2] in ['z,','M,']:
            flgs = sumflg[2:]
 
         if flgs == self.lastflg : return
@@ -1554,6 +1579,13 @@ def self_test():
     opt1 = "sum R,0"
     cfg.option(opt1.split())
 
+    opt1 = "move toto titi"
+    cfg.option(opt1.split())
+    cfg.logger.debug(cfg.movepath)
+
+    opt1 = "path .. ."
+    cfg.option(opt1.split())
+    cfg.logger.debug(cfg.postpath)
 
     #opt1 = "sum checksum_AHAH.py"
     #cfg.option(opt1.split())
