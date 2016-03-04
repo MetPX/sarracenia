@@ -477,7 +477,7 @@ class sr_config:
                      urlstr  = parts[1]
                      ok, url = self.validate_urlstr(urlstr)
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with %s" % parts[1])
+                        self.logger.error("invalid URL %s" % parts[1])
                      # fixme parts[2] exchange should be optional
                      exch  = parts[2]
                      self.log_clusters[i] = (name,url,exch)
@@ -748,7 +748,7 @@ class sr_config:
                      ok, url    = self.validate_urlstr(urlstr)
                      self.admin = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with admin (%s)" % urlstr)
+                        self.logger.error("invalid admin URL (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -761,7 +761,7 @@ class sr_config:
                      ok, url     = self.validate_urlstr(urlstr)
                      self.broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with broker (%s)" % urlstr)
+                        self.logger.error("invalid broker URL (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -831,7 +831,7 @@ class sr_config:
                      ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words1
                      if not ok :
-                        self.logger.error("problem with destination (%s)" % urlstr)
+                        self.logger.error("could not understand destination (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -989,7 +989,7 @@ class sr_config:
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with manager (%s)" % urlstr)
+                        self.logger.error("invalid manager url (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -1088,7 +1088,7 @@ class sr_config:
                      ok, url     = self.validate_urlstr(urlstr)
                      self.post_broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with post_broker (%s)" % urlstr)
+                        self.logger.error("invalid post_broker url (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -1248,7 +1248,7 @@ class sr_config:
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("problem with option %s" % words[0])
+                self.logger.error("unknown option %s" % words[0])
 
         if needexit :
            os._exit(1)
