@@ -146,13 +146,13 @@ class sr_log2clusters(sr_instances):
         # check for from_cluster and it the cluster match  cluster_name
 
         if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster_name :
-           self.logger.info("skipped : not for cluster %s" % self.cluster_name)
+           self.logger.debug("skipped : not for cluster %s" % self.cluster_name)
            return False
 
         # avoid bad message (no source) and looping no repost on this cluster
 
         if not 'source' in self.msg.headers or self.msg.headers['from_cluster'] == self.cluster :
-           self.logger.info("skipped : invalid message or looping avoided")
+           self.logger.debug("skipped : invalid message or looping avoided")
            return False
 
         # yup this is one valid message from that post broker
@@ -202,9 +202,9 @@ class sr_log2clusters(sr_instances):
                  ok, self.msg = self.consumer.consume()
                  if not ok : return ok
 
-                 self.logger.info("Received topic   %s" % self.msg.topic)
-                 self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s" % self.msg.hdrstr)
+                 self.logger.debug("Received topic   %s" % self.msg.topic)
+                 self.logger.debug("Received notice  %s" % self.msg.notice)
+                 self.logger.debug("Received headers %s" % self.msg.hdrstr)
 
                  # invoke __on_message__
 

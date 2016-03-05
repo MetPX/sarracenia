@@ -333,7 +333,7 @@ class sr_sender(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.info("Accepting to send %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # setting up message with sr_sender config options

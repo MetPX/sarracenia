@@ -156,13 +156,13 @@ class sr_2xlog(sr_instances):
         # is the log message for this cluster
 
         if not 'from_cluster' in self.msg.headers or not 'source' in self.msg.headers :
-           self.logger.info("skipped : no cluster or source in message")
+           self.logger.debug("skipped : no cluster or source in message")
            return False
 
         # is the log message from a source on this cluster
 
         if not hasattr(self.msg,'log_user')  or self.msg.log_user != self.subscriber:
-           self.logger.info("skipped : log_user is not subscriber %s " % self.subscriber)
+           self.logger.debug("skipped : log_user is not subscriber %s " % self.subscriber)
            return False
 
         # yup this is one valid message from that suscriber
@@ -213,9 +213,9 @@ class sr_2xlog(sr_instances):
                  ok, self.msg = self.consumer.consume()
                  if not ok : return ok
 
-                 self.logger.info("Received topic   %s" % self.msg.topic)
-                 self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s" % self.msg.hdrstr)
+                 self.logger.debug("Received topic   %s" % self.msg.topic)
+                 self.logger.debug("Received notice  %s" % self.msg.notice)
+                 self.logger.debug("Received headers %s" % self.msg.hdrstr)
 
                  # invoke __on_message__
 

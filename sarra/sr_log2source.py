@@ -132,14 +132,14 @@ class sr_log2source(sr_instances):
         # is the log message for this cluster
 
         if not 'from_cluster' in self.msg.headers or self.msg.headers['from_cluster'] != self.cluster :
-           self.logger.info("skipped : not for cluster %s" % self.cluster)
-           self.logger.info("hdr from_cluster %s" % self.msg.headers['from_cluster'])
+           self.logger.debug("skipped : not for cluster %s" % self.cluster)
+           self.logger.debug("hdr from_cluster %s" % self.msg.headers['from_cluster'])
            return False
 
         # is the log message from a source on this cluster
 
         if not 'source' in self.msg.headers or not self.msg.headers['source'] in self.source_users:
-           self.logger.info("skipped : source not in %s" % self.source_users)
+           self.logger.debug("skipped : source not in %s" % self.source_users)
            return False
 
         # yup this is one message we want to ship to our source
@@ -189,9 +189,9 @@ class sr_log2source(sr_instances):
                  ok, self.msg = self.consumer.consume()
                  if not ok : return ok
 
-                 self.logger.info("Received topic   %s" % self.msg.topic)
-                 self.logger.info("Received notice  %s" % self.msg.notice)
-                 self.logger.info("Received headers %s" % self.msg.hdrstr)
+                 self.logger.debug("Received topic   %s" % self.msg.topic)
+                 self.logger.debug("Received notice  %s" % self.msg.notice)
+                 self.logger.debug("Received headers %s" % self.msg.hdrstr)
 
                  # invoke __on_message__
 

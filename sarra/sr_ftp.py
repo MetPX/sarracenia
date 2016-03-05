@@ -189,7 +189,7 @@ class sr_ftp():
 
     # delete
     def delete(self, path):
-        self.logger.debug("sr_ftp rm %s" % path)
+        self.logger.debug( "sr_ftp rm %s" % path)
         self.ftp.delete(path)
 
     # fwrite
@@ -206,7 +206,7 @@ class sr_ftp():
  
     # get
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
-        self.logger.debug("sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
+        self.logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
 
         # on fly checksum 
 
@@ -414,7 +414,7 @@ class ftp_transport():
                    self.cdir  = cdir
     
                 #download file
-                self.logger.info('Downloads: %s into %s %d-%d' % 
+                self.logger.debug('Download: %s into %s %d-%d' % 
                            (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
     
@@ -448,7 +448,7 @@ class ftp_transport():
                 if parent.delete :
                    try   :
                            ftp.delete(remote_file)
-                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                           msg.logger.debug('file deleted on remote site %s' % remote_file)
                    except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
@@ -524,7 +524,7 @@ class ftp_transport():
     
                 # deliver file
     
-                msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                msg.logger.info('Send: %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
     
                 if parent.lock == None :

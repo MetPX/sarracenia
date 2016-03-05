@@ -455,7 +455,7 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.info('Downloads: %s %s into %s %d-%d' % 
+                msg.logger.debug('Downloads: %s %s into %s %d-%d' % 
                     (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
@@ -488,7 +488,7 @@ class sftp_transport():
                 if parent.delete :
                    try   :
                            sftp.delete(remote_file)
-                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
                    except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
@@ -558,7 +558,7 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                msg.logger.debug('Sends: %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
     
                 if parent.lock == None or msg.partflg == 'i' :

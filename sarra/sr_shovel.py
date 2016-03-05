@@ -291,7 +291,7 @@ class sr_shovel(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # now message is complete : invoke __on_message__

@@ -193,7 +193,7 @@ class Consumer:
                      self.logger.error("Could not consume in queue %s" % queuename )
                      if self.hc.loop :
                         self.hc.reconnect()
-                        self.logger.info("consume resume ok")
+                        self.logger.debug("consume resume ok")
                         if not self.hc.asleep : msg = self.consume(queuename)
        else:
               time.sleep(5)

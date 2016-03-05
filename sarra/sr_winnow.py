@@ -223,7 +223,7 @@ class sr_winnow(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -238,10 +238,10 @@ class sr_winnow(sr_instances):
 
         if self.cache_find(self.msg.checksum) :
             self.msg.log_publish(304,'Not modified')
-            self.logger.info("Ignored %s" % (self.msg.notice))
+            self.logger.debug("Ignored %s" % (self.msg.notice))
             return True
 
-        self.logger.info("Added %s" % (self.msg.notice))
+        self.logger.debug("Added %s" % (self.msg.notice))
         self.cache_add(self.msg.checksum) 
 
         # announcing the first and unique message
@@ -266,7 +266,7 @@ class sr_winnow(sr_instances):
               try  :
                       #  is it sleeping ?
                       if not self.has_vip() :
-                         self.logger.info("sr_winnow is sleeping")
+                         self.logger.debug("sr_winnow is sleeping")
                          time.sleep(5)
                          continue
 
