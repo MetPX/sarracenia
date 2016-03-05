@@ -273,7 +273,7 @@ class sr_message():
            ok = self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
 
         if ok :
-                self.printlog = self.logger.info
+                self.printlog = self.logger.debug
                 self.printlog("message published :")
         else  :
                 self.printlog = self.logger.error
