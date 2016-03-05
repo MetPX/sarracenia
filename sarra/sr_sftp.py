@@ -503,11 +503,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp download problem')
+                msg.log_publish(499,'sftp download failed')
     
                 return False
     
-        msg.log_publish(499,'sftp download problem')
+        msg.log_publish(499,'sftp download failed')
     
         return False
 
@@ -531,7 +531,7 @@ class sftp_transport():
                    self.sftp = sftp
                 
                 if self.cdir != remote_dir :
-                   self.logger.debug("sftp_transport download cd to %s" % remote_dir)
+                   self.logger.debug("sftp_transport send cd to %s" % remote_dir)
                    sftp.cd_forced(775,remote_dir)
                    self.cdir  = remote_dir
 
@@ -589,11 +589,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp delivery problem')
+                msg.log_publish(499,'sftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'sftp delivery problem')
+        msg.log_publish(499,'sftp delivery failed')
     
         return False
 

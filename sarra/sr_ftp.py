@@ -389,7 +389,7 @@ class ftp_transport():
         # seek not supported
         if msg.partflg == 'i' :
            self.logger.error("ftp, inplace part file not supported")
-           msg.log_publish(499,'ftp download problem')
+           msg.log_publish(499,'ftp does not support partitioned file transfers')
            return False
     
         url         = msg.url
@@ -463,11 +463,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp download problem')
+                msg.log_publish(499,'ftp download failed')
     
                 return False
     
-        msg.log_publish(499,'ftp download problem')
+        msg.log_publish(499,'ftp download failed')
     
         return False
 
@@ -485,8 +485,8 @@ class ftp_transport():
         # the inplace part could be delivered as 
         # a separate partfile and message set to 'p'
         if  msg.partflg == 'i':
-            self.logger.error("ftp, inplace part file not supported")
-            msg.log_publish(499,'ftp delivery problem')
+            self.logger.error("ftp cannot send partitioned files")
+            msg.log_publish(499,'ftp delivery failed')
             return False
     
         local_file = parent.local_path
@@ -558,11 +558,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp delivery problem')
+                msg.log_publish(499,'ftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'ftp delivery problem')
+        msg.log_publish(499,'ftp delivery failed')
     
         return False
 

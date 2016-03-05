@@ -631,7 +631,7 @@ class sr_message():
 
                  if i != fsiz :
                     self.logger.warning("sr_message verify_part_suffix incomplete reading %d %d" % (i,fsiz))
-                    return False,'problem with file'
+                    return False,'missing data from file'
 
                  # set chksum
                  self.checksum  = self.sumalgo.get_value()

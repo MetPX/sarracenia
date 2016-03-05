@@ -155,7 +155,7 @@ class sr_consumer:
         except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                 self.logger.error("problem with message %s"% vars(self.raw_msg))
+                 self.logger.error("malformed message %s"% vars(self.raw_msg))
                  return None
 
         # make use of accept/reject

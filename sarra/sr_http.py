@@ -138,7 +138,7 @@ class http_transport():
                msg.logger.error('Download failed %s ' % urlstr)
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
 
-        msg.log_publish(499,'http download problem')
+        msg.log_publish(499,'http download failed')
         msg.logger.error("Could not download")
 
         return False

@@ -277,7 +277,7 @@ class sr_sender(sr_instances):
             # a separate partfile and message set to 'p'
             if  self.msg.partflg == 'i':
                 logger.error("ftp, inplace part file not supported")
-                msg.log_publish(499,'ftp delivery problem')
+                msg.log_publish(499,'ftp cannot deliver partitioned files')
                 return False
 
         # invoke user defined on_message when provided

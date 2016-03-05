@@ -1345,7 +1345,7 @@ class sr_config:
 
         ok, details = self.credentials.get(urlstr)
         if details == None :
-           self.logger.error("credential problem with %s"% urlstr)
+           self.logger.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
 
         return True, details.url
