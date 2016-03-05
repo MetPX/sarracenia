@@ -21,9 +21,12 @@ proposal:  Nowadays HTML5 has web sockets.  These are connections that start
 
 Note that "Everyone" has this "problem".   There are many different approaches people
 have taken to solving it.  Some approaches are general, others highly specific.
+It also breaks down into client, and server problems.  Both need to be solved,
+and in order to have some flexibility, there would be some standards around that.
+It hasn't gelled in a significant way yet.
 
 
-	- KAAZING - is commercial, proprietary.
+	- KAAZING - is commercial, and huge.
 	  here's a demo:
 
 http://blog.kaazing.com/2013/04/01/remote-controlling-a-car-over-the-web-ingredients-smartphone-websocket-and-raspberry-pi/
@@ -32,6 +35,12 @@ http://blog.kaazing.com/2013/04/01/remote-controlling-a-car-over-the-web-ingredi
 
 	  at any rate, there is a direct AMQP gateway option.  
 	  The project involves setting it up.
+
+          This is the method likely to work most easily, but it is completely custom.
+          no standards compliance (ie. you need to use kaazing libraries on client and server.)
+
+	  rather complicated.
+
 
 	- jwebsocket.org. is opeen source.
 
@@ -66,6 +75,14 @@ some approaches:
            implement new clients in php.
 	5. Other?
 
+There is also a new AMQP standards proposed web socket binding for AMQP... (in 2014)
+	http://docs.oasis-open.org/amqp-bindmap/amqp-wsb/v1.0/csprd01/amqp-wsb-v1.0-csprd01.html
 
-None of these are straightforward or obvious.  So this is deferred for now.
+        That would be great, but haven't found any server implementations or 
+        client-side bindings for that yet.
+
+None of these are straightforward and guaranteed to actually work in practice.
+All of them require a lot of work to validate.
+Choosing among the options is not obvious either.
+So this is deferred for now.
 
