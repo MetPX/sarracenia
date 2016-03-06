@@ -585,10 +585,6 @@ in the file  .config/sarra/default.conf (user role)::
  role source joe
 
 Now to configure the pump execute the following:
-(<ctrl-c> when it is going to sleep...)
-
-.. Note:: 
-  FIXME: what does the text in parenthesis mean or refer to?
 
 *sr_audit --users foreground*
 
@@ -607,10 +603,20 @@ The *sr_audit* program will :
 - user exchanges which do not correspond to users' roles are deleted ('xl_*,xs_*') 
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
-The *sr_audit* program does not set a password to a new user. To do it manually on the pump::
+.. Note:: 
+   The program runs as a deamon.  After the initial pass to create the users,
+   It will go into to sleep, and then audit the configuration again.
+   To stop it from running in the foreground, stop it with: <ctrl-c>  
+   (most common linux default intterupt character)
+   or find some other way to kill the running process.
+   
+   FIXME: when invoked with --users, sr_audit, should set a 'one_shot' flag,
+   and exist immediately, rather than looping.  
+
+
+The *sr_audit* program does not set user passwords. To do it manually, on the pump::
 
   rabbitmqctl change_password <user> <password>
-
 
 In short, here are the permissions and exchanges *sr_audit* manages::
 
@@ -627,7 +633,33 @@ In short, here are the permissions and exchanges *sr_audit* manages::
                       have all permissions on queue named   q_<brokerUser>*
 
 
-To add Alice as source user mannually, one would::
+To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf::
+
+  role souce Alice
+
+then run:: 
+
+  sr_audit --users foreground
+
+which would create the user, then:
+ 
+  rabbitmqctl add_user Alice <password>
+
+
+To set Alice's password.   
+
+To remove users, just remove *role source Alice* from the default.conf file, and run::
+
+  sr_audit --users foreground 
+
+again.  
+
+
+
+Manually Adding Users
+~~~~~~~~~~~~~~~~~~~~~
+
+Altenatively, to add Alice as source user manually, one would::
 
   wget -q http://localhost:15672/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
