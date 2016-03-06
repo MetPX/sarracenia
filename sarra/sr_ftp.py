@@ -524,7 +524,7 @@ class ftp_transport():
     
                 # deliver file
     
-                msg.logger.info('Send: %s %s into %s %d-%d' % 
+                msg.logger.debug('Beginning put of %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
     
                 if parent.lock == None :
