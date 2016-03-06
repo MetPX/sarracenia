@@ -55,6 +55,7 @@ HELP
 
 .. note::
    FIXME: Cannot find a component where help works.  Remove? 
+   FIXME: OK: sr_post -h works. but not sr_post 'help' (interpreted as a file, naturally.)
 
 **-V**  has a component print out a version identifier and exit.
 

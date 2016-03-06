@@ -297,15 +297,15 @@ DEPRECATED SETTINGS
 
 These settings pertain to previous versions of the client, and have been superceded.
 
-- **host          <broker host> (unsupported)** 
-- **amqp-user     <broker user> (unsupported)** 
-- **amqp-password <broker pass> (unsupported)** 
-- **http-user     <url    user> (now in credentials.conf)** 
-- **http-password <url    pass> (now in credentials.conf)** 
+- **host          <broker host>  (unsupported)** 
+- **amqp-user     <broker user>  (unsupported)** 
+- **amqp-password <broker pass>  (unsupported)** 
+- **http-user     <url    user>  (now in credentials.conf)** 
+- **http-password <url    pass>  (now in credentials.conf)** 
 - **topic         <amqp pattern> (deprecated)** 
 - **exchange_type <type>         (default: topic)** 
 - **exchange_key  <amqp pattern> (deprecated)** 
-- **lock  <locktext> (renamed inflight)** 
+- **lock      <locktext>         (renamed to inflight)** 
 
 
 SEE ALSO

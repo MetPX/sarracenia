@@ -420,14 +420,14 @@ excluding temporary files.  Temporary files are used to store file
 fragments until a complete file is received, so it is important to avoid processing 
 them until the complete file is received.  Sometimes existing software already scans 
 directories, and has fixed ideas about the files it will ingest and/or ignore.
-The *lock* option allows one to set the name of the temporary files during transfer
+The *inflight* option allows one to set the name of the temporary files during transfer
 to conform to other software´s expectations.  the default setting is '.tmp' so
 that temporary files have that suffix.
 
-Setting *lock* to ´.´ will cause the temporary files to begin a dot, the tradition
-for making hidden files on linux.  Setting a lock to something other than that, 
-such as 'lock .temp´ will cause the name of the temporary files to be suffixed with ´.temp´
-When a file is completely received, it will be renamed, removing the locking 
+Setting *inflight* to ´.´ will cause the temporary files to begin a dot, the tradition
+for making hidden files on linux.  Setting *inflight* to something other than that, 
+such as 'inflight .temp´ will cause the name of the temporary files to be suffixed with ´.temp´
+When a file is completely received, it will be renamed, removing the *inflight* 
 .temp suffix.  Another possibility is to use *tempdir* dir option.  When software 
 is particularly stubborn about ingesting anything it sees::
 
@@ -436,9 +436,6 @@ is particularly stubborn about ingesting anything it sees::
 Setting the tempdir option to a tree outside the actual destination dir will cause 
 the file to be assembled elsewhere and only renamed into the destination directory 
 once it is complete.
-
-.. NOTE::
-  the lock option may change names to 'inflight' at some point. under debate.
 
 
 The 'ls' method works especially well if ''do_something'' erases the file after it 
@@ -684,7 +681,7 @@ below::
   'randomize': False,
   'vip': None,
   'parts': '1',
-  'lock': '.tmp',
+  'inflight': '.tmp',
   'cache_url': {},
   'queue_share': True,
   'overwrite': True,
