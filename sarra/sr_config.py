@@ -206,7 +206,7 @@ class sr_config:
 
         if config == None : return False,None
 
-        # priority 1 : config given is absolute path
+        # priority 1 : config given is a valid path
 
         self.logger.debug("config_path %s " % config )
         if os.path.isfile(config) :
@@ -216,6 +216,11 @@ class sr_config:
         config_name = re.sub(r'(\.inc|\.conf|\.py)','',config_file)
         ext         = config_file.replace(config_name,'')
         if ext == '': ext = '.' + ctype
+
+        # priority 1.5: config file given without extenion...
+        config_path = config_name + ext
+        if os.path.isfile(config_path) :
+           return True,config_path
 
         # priority 2 : config given is a user one
 
@@ -1035,6 +1040,7 @@ class sr_config:
                      if self.on_file == None :
                         self.logger.error("on_file script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
@@ -1043,6 +1049,7 @@ class sr_config:
                      if self.on_line == None :
                         self.logger.error("on_line script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_message': # See: sr_config.1, others...
@@ -1051,6 +1058,7 @@ class sr_config:
                      if self.on_message == None :
                         self.logger.error("on_message script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
@@ -1059,6 +1067,7 @@ class sr_config:
                      if self.on_part == None :
                         self.logger.error("on_part script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config, ++ FIXME many others?
@@ -1067,6 +1076,7 @@ class sr_config:
                      if self.on_post == None :
                         self.logger.error("on_post script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7, FIXME: others.
