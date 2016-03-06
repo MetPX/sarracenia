@@ -95,7 +95,7 @@ class http_transport():
                        
                 #download file
 
-                msg.logger.info('Downloading: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
                 response = urllib.request.urlopen(req)
                 #msg.logger.debug('response header = %s' % response.headers)

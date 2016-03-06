@@ -455,7 +455,7 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.debug('Downloading: %s %s into %s %d-%d' % 
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
                     (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
