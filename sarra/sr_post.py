@@ -112,17 +112,23 @@ class sr_post(sr_config):
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
         print("-l   <logpath>         default:stdout")
-        print("-p   <parts>           default:1")
         print("-to  <name1,name2,...> defines target clusters, mandatory")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
+        print("-recursive             default:enable recursive post")
+        print("-blocksize <integer>   default:0")
+        print("-caching               default:enable caching")
+        print("-reset                 default:enable reset")
+        print("-path <path1... pathN> default:requiered")
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
+        print("DEVELOPPER:")
+        print("-parts <parts>         default:1")
 
     def lock_set(self):
         self.logger.debug("sr_post lock_set")
@@ -173,7 +179,7 @@ class sr_post(sr_config):
 
         # urllib keeps useless repetitive '/' so rebuild url smartly
         if filepath != self.url.path :
-           if self.document_root == None and self.url.scheme[-3:] == 'ftp' :
+           if self.document_root == None and 'ftp' in self.url.scheme :
               filepath = '/' + filepath
            urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
            self.url = urllib.parse.urlparse(urlstr)
@@ -198,6 +204,19 @@ class sr_post(sr_config):
         if self.rename != None and self.rename[-1] == os.sep :
            rename += os.path.basename(self.url.path)
 
+        # strip option when no rename option
+        # strip 'N' heading directories from url.path
+
+        if self.strip != 0:
+           if rename != None :
+              self.logger.error("option strip used with option rename conflicts")
+              sys.exit(1)
+           strip  = self.strip
+           token  = self.url.path.split(os.sep)
+           if self.url.path[0] == os.sep : strip += 1
+           if len(token) <= self.strip   : strip = len(token)-1
+           rename = os.sep+os.sep.join(token[strip:])
+              
         filename = os.path.basename(filepath)
 
         # ==============
@@ -298,7 +317,14 @@ class sr_post(sr_config):
            fpath = fpath.replace('\\','/')
 
         if self.document_root != None :
-           fpath = fpath.replace(self.document_root,'')
+           dr = os.path.abspath(self.document_root)
+           dr = os.path.realpath(dr)
+           rpath = fpath.replace(dr,'')
+           if rpath == fpath  :
+              self.logger.error("document_root %s not present in %s" % (dr,fpath))
+              self.logger.error("no posting")
+              return
+           fpath = rpath
            if fpath[0] == '/' : fpath = fpath[1:]
 
         url = self.url
@@ -309,18 +335,24 @@ class sr_post(sr_config):
     def watchpath(self ):
         self.logger.debug("sr_post watchpath")
 
-        watch_path = self.url.path
-        if watch_path == None : watch_path = ''
+        watch_path = ''
+        l = len(self.postpath)
+        if l != 0 :
+           watch_path = self.postpath[0]
+           if l > 1 and self.program_name == 'sr_watch' :
+             self.logger.error("only one path should be given for sr_watch")
+             sys.exit(1)
  
         if self.document_root != None :
            if not self.document_root in watch_path :
               watch_path = self.document_root + os.sep + watch_path
  
-        watch_path = watch_path.replace('//','/')
- 
         if not os.path.exists(watch_path):
            self.logger.error("Not found %s " % watch_path )
            sys.exit(1)
+
+        watch_path = os.path.abspath (watch_path)
+        watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):
            self.logger.info("file %s " % watch_path )
@@ -342,21 +374,40 @@ class sr_post(sr_config):
 def main():
 
     post = sr_post(config=None,args=sys.argv[1:])
-    if post.in_error : self.exit(1)
+    if post.in_error : sys.exit(1)
 
     try :
              post.connect()
 
-             watchpath = post.watchpath()
+             # if len(post.movepath) > 0 :
+             #    ?post move events
+             #    post.close()
+             #    sys.exit(0)
 
-             post.lock_set()
+             if len(post.postpath) == 0 :
+                i = len(sys.argv)
+                while i>1:
+                      if not os.path.exists(sys.argv[i-1]) : break
+                      post.postpath.append(sys.argv[i-1])
+                      i = i - 1
 
-             if os.path.isfile(watchpath) : 
-                post.posting()
-             else :
-                post.scandir_and_post(watchpath,post.recursive)
+             if len(post.postpath) == 0 :
+                post.logger.error("no path to post")
+                os._exit(1)
 
-             post.lock_unset()
+             for watchpath in post.postpath :
+
+                 post.watch_path = watchpath
+
+                 post.lock_set()
+
+                 if os.path.isfile(watchpath) : 
+                    post.watching(watchpath,'IN_CLOSE_WRITE')
+                 else :
+                    post.scandir_and_post(watchpath,post.recursive)
+
+                 post.lock_unset()
+
              post.close()
 
     except :

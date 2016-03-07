@@ -382,6 +382,7 @@ class sr_config:
         self.cluster              = None
         self.cluster_aliases      = []
         self.gateway_for          = []
+        self.users                = {}
 
         self.sleep                = 0
         self.strip                = 0
@@ -444,28 +445,6 @@ class sr_config:
         self.credentials = sr_credentials(self.logger)
         self.credentials.read(credent)
 
-        # read in provided rabbit users
-        users = self.user_config_dir + os.sep + 'users.conf'
-        self.users = {}
-        try :
-              # users file is not mandatory
-              if os.path.exists(users):
-                 f = open(users,'r')
-                 lines = f.readlines()
-                 f.close
-                 for line in lines :
-                     line  = line.strip()
-                     if len(line) == 0 or line[0] == '#' : continue
-                     parts  = line.split()
-                     user   = parts[0]
-                     remain = ' '.join(parts[1:])
-                     roles  = remain.lower().strip()
-                     self.users[user] = roles
-
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("users = %s\n" % self.users)
 
         # read in provided log cluster infos
         log_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
@@ -754,6 +733,7 @@ class sr_config:
                      urlstr     = words1
                      ok, url    = self.validate_urlstr(urlstr)
                      self.admin = url
+                     self.users[url.username] = 'admin'
                      if not ok or not url.scheme in ['amqp','amqps']:
                         self.logger.error("invalid admin URL (%s)" % urlstr)
                         needexit = True
@@ -995,6 +975,7 @@ class sr_config:
                      urlstr       = words1
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
+                     self.users[url.username] = 'feeder'
                      if not ok or not url.scheme in ['amqp','amqps']:
                         self.logger.error("invalid manager url (%s)" % urlstr)
                         needexit = True
@@ -1213,6 +1194,12 @@ class sr_config:
                      else :
                         self.reset = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in ['role']:  # See: sr_audit.1
+                     roles  = words[1].lower()
+                     user   = words[2]
+                     self.users[user] = roles
+                     n = 3
 
                 elif words0 == 'sleep': # See: sr_audit.8 sr_poll.1
                      self.sleep = int(words[1])
