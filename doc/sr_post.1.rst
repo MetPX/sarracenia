@@ -16,7 +16,7 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post** [ *-u|--url url* ] [ *-b|--broker broker* ]...[ *OPTIONS* ]
+**sr_post** [ *-u|--url url* ] [ *-p|--path path1 path2...pathN] [ *-b|--broker broker* ]...[ *OPTIONS* ]
 
 DESCRIPTION
 ===========
@@ -35,17 +35,23 @@ The [*-u|--url url*] option specifies the location
 subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *url* option::
 
-       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to_the/filename
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
-       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to_the/filename
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
-       file://absolute_path_to_the/filename
+       file:
 
-The double-slash at the beginning of the path marks it as absolute, whereas a single
-slash is relative to a *document_root* provided as another option.
+The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
+to be announced. There is usually one post per file.
+Format of argument to the *path* option::
+
+       /absolute_path_to_the/filename
+       or
+       relative_path_to_the/filename
+
 An example invocation of *sr_post*::
 
- sr_post -u sftp://stanley@mysftpserver.com//data/shared/products/foo -b amqp://broker.com
+ sr_post -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -b amqp://broker.com
 
 By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
@@ -76,7 +82,7 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- sr_post -dr /data/web/public_data -u http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com
+ sr_post -dr /data/web/public_data -u http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com
 
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path)
@@ -97,9 +103,63 @@ common settings, and methods of specifying them.
 
   the broker to which the post is sent.
 
+**[--blocksize <value>]**
+
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+Any files bigger than this value will get announced using parts of max. size of *blocksize*.
+
 **[-c|--config <configfile>]**
 
   A list of settings in a configuration file 
+
+**[--caching]**
+
+  When one is planning reposting directories, this option caches
+  what was posted and will post only files (parts) that were new
+  or that changed
+
+**[-dr|--document_root <path>]**
+
+  The *document_root* option supplies the directory path that,
+  when combined with the relative one from *url*, 
+  gives the local absolute path to the data file to be posted.
+
+**[-ex|--exchange <exchange>]**
+
+  By default, the exchange used is *xs_*"broker_username".
+  This exchange must be previously created on broker by its administrator.
+  The default can be overwritten with this *exchange* option.
+
+**[-f|--flow <string>]**
+
+  An arbitrary label that allows the user to identify a specific flow.
+  The flow string is sets in the amqp message header.  By default, there is no flow.
+
+**[-h|-help|--help**
+
+  Display program options.
+
+**[-rn|--rename <path>]**
+
+  With the *rename*  option, the user can suggest a destination path to its files. If the given
+  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+
+**[--blocksize <value>]**
+
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+Any files bigger than this value will get announced using parts of max. size of *blocksize*.
+
+**[-c|--config <configfile>]**
+
+  A list of settings in a configuration file 
+
+**[--caching]**
+
+  When one is planning reposting directories, this option caches
+  what was posted and will post only files (parts) that were new
+  or that changed
 
 **[-dr|--document_root <path>]**
 
@@ -150,6 +210,60 @@ common settings, and methods of specifying them.
 The recursive default is False. When the **url** given (possibly combined with **document_root**)
 describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
 files are posted.
+
+**[--reset]**
+
+  When one has used **--caching** this option will get rid of the
+  cached informations.
+
+**[-sub|--subtopic <key>]**
+
+The subtopic default can be overwritten with the *subtopic* option.
+
+**[-p|--path path1 path2 ... pathN]**
+
+FICME**sr_post** evaluates the filesystem path from the **url** path 
+and possibly the **document_root** if the option is used.
+
+If this path defines a file then the **url** is the actual download url
+to be used by the subscribers. One announce is made for that product.
+
+If this path defines a directory then all files in that directory are
+announced... using that **url** with the added products.
+
+If this path defines a directory and the option **recursice** is true
+then all files in that directory are posted and should **sr_post** finds
+one (or more) directory(ies), it scans it(them) are posts announcements
+until all the tree is scanned.
+
+**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
+
+  A comma-separated list of destination clusters to which the posted data should be sent.
+  Ask pump administrators for a list of valid destinations.
+
+  default: None.
+
+.. note:: 
+  FIXME: a good list of destination should be discoverable.
+
+
+**[-tp|--topic_prefix <key>]**
+
+  *Not usually used*
+  By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
+  followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+  You can overwrite the topic_prefix by setting this option.
+
+**[-rec|--recursive <boolean>]**
+
+The recursive default is False. When the **url** given (possibly combined with **document_root**)
+describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
+files are posted.
+
+**[--reset]**
+
+  When one has used **--caching** this option will get rid of the
+  cached informations.
 
 **[-sub|--subtopic <key>]**
 
