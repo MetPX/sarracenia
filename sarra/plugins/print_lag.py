@@ -34,7 +34,7 @@ class Transformer(object):
         then=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
         now=time.time()
 
-        logger.info("posted: %s, lag: %g sec. to deliver: %s, " % (msg.time, (now-then), msg.local_file))
+        logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " % (msg.time, (now-then), msg.local_file))
 
         return True
 

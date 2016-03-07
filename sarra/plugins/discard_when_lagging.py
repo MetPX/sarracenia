@@ -38,7 +38,7 @@ class Transformer(object):
         lag=now-then
 
         if lag > maxlag :
-           logger.info("Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
+           logger.info("discard_when_lagging, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
            return False
 
         return True
