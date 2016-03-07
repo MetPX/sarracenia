@@ -34,8 +34,8 @@ class ClamAvScan(object):
         logger = parent.logger
         msg    = parent.msg
 
-        # it is possible to optimize scanning by not 
-        if (( parent.partflg == 'i' ) or (parent.partflg == 'p' )) and hasattr(parent,'clamav_maxblock'):
+        # it is possible to optimize scanning by not  ... FIXME! this is not tested. not sure how PS!
+        if hasattr(parent,'clamav_maxblock'):
             if parent.current_block > parent.clamav_maxblock :
                logger.info("clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
                return True  
