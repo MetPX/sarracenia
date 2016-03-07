@@ -835,10 +835,12 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
+                     path = os.path.abspath(words1)
+                     path = os.path.realpath(path)
                      if sys.platform == 'win32':
-                         self.document_root = words1.replace('\\','/')
+                         self.document_root = path.replace('\\','/')
                      else:
-                         self.document_root = words1
+                         self.document_root = path
                      n = 2
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
@@ -1082,17 +1084,22 @@ class sr_config:
                      if not ok : needexit = True
                      n = 2
 
+                # adding paths in command line might be a mess...
                 elif words0 in ['path','p']: # See: sr_post.1, sr_watch.1
                      n  = 1
-                     # adding existing file/directory...
+                     dr = self.document_root
                      for w in words[1:]:
+
+                         # stop if next option
+                         if words[0][0:1] == '-' : 
+                            if w[0:1] == '-'     : break
+
+                         # adding path (cannot check if it exists we may post a delete)
                          try:
-                               path = os.path.abspath(w)
-                               path = os.path.realpath(path)
-                               if os.path.exists(path) :
-                                  self.postpath.append(path)
-                                  n = n + 1
-                               else: break
+                                 path = w
+                                 if dr and not dr in w: path = dr + os.sep + w
+                                 self.postpath.append(path)
+                                 n = n + 1
                          except: break
 
                      if n == 1 :
