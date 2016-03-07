@@ -12,6 +12,15 @@
  to transfer the data selected.  if the lag keeps increasing, then likely instances should be 
  increased.
 
+ It is mandatory to set the threshold for discarding messages (in seconds) in the configuration 
+ file. For example:
+
+ discard_maxlag 10
+
+ will result in messages which are more than 10 seconds old being skipped. 
+
+ If this option is not set, every message received will result in an error message.
+
 
 """
 
@@ -21,7 +30,7 @@ class Transformer(object):
 
 
     def __init__(self):
-          pass
+        pass
           
     def perform(self,parent):
         logger = parent.logger
@@ -34,10 +43,9 @@ class Transformer(object):
         now=time.time()
 
         # Set the maximum age, in seconds, of a message to retrieve.
-        maxlag=10
         lag=now-then
 
-        if lag > maxlag :
+        if lag > int(parent.discard_maxlag) :
            logger.info("discard_when_lagging, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
            return False
 
