@@ -11,12 +11,12 @@ class Transformer(object):
           logger = parent.logger
           msg    = parent.msg
 
-          logger.info("local file %s " % msg.local_file)
-          logger.info("partflg    %s " % msg.partflg)
-          logger.info("sumflg     %s " % msg.sumflg )
-          logger.info("filesize   %s " % msg.filesize)
-          logger.info("offset     %d " % msg.offset)
-          logger.info("length     %d " % msg.length)
+          logger.info("check_file local file %s " % msg.local_file)
+          logger.info("check_file partflg    %s " % msg.partflg)
+          logger.info("check_file sumflg     %s " % msg.sumflg )
+          logger.info("check_file filesize   %s " % msg.filesize)
+          logger.info("check_file offset     %d " % msg.offset)
+          logger.info("check_file length     %d " % msg.length)
 
           if msg.partflg != '1' or msg.sumflg != 'd'  :
              logger.warning("ignore parts or not md5sum on data")
