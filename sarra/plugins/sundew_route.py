@@ -10,7 +10,7 @@
 class SundewRoute(object):
 
 
-    def __init__(self):
+    def __init__(self,parent):
 
  
         """
@@ -76,7 +76,10 @@ class SundewRoute(object):
             return False
 
 
-sundewroute=SundewRoute()
+
+# at this point the parent is  "self"
+
+sundewroute=SundewRoute(self)
 self.on_message = sundewroute.perform
 
 
