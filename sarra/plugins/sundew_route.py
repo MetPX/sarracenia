@@ -5,6 +5,14 @@
   Make it easier to feed clients exactly the same products with sarracenia,
   that they are used to with sundew.  
 
+  the pxrouting option must be set in the configuration before the on_message
+  plugin is configured, like so:
+
+  pxrouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
+  pxclient  navcan-amis
+  on_message sundew_route.py
+
+
 """
 
 class SundewRoute(object):
@@ -20,16 +28,17 @@ class SundewRoute(object):
           Abbreviated Header Lines (AHL's) are configured to be sent to 'target'
           being careful to account for membership in clientAliases.
 
+          init sets 'ahls_to_route' according to the contents of pxrouting
+
         """
-        self.pxroute="/local/home/peter/src/pdspx/routing/etc/pxRouting.conf"
-        self.target='navcan-amis'
         self.ahls_to_route={}
 
-        pxrf=open(self.pxroute,'r')
-        possible_references=[ self.target ]
+        pxrf=open(parent.pxrouting,'r')
+        possible_references=parent.pxclient.split(',')
+        print( "sundew_route, target clients: %s" % possible_references )
 
         for line in pxrf:
-            #print("line: ", line)
+            print("line: ", line)
             words = line.split()
             
             if (len(words) < 2) or words[0] == '#' : 
@@ -42,8 +51,8 @@ class SundewRoute(object):
                 for i in possible_references :
                     if i in expansion:
                        possible_references.append( words[1] )
-                       #print( "adding clientAlias %s to possible_reference %s, for target %s"  % \
-                       #        (words[1], possible_references, target) )
+                       print( "adding clientAlias %s to possible_reference %s"  % \
+                               (words[1], possible_references) )
                        continue
                     
             if words[0] == 'key' :
@@ -56,7 +65,7 @@ class SundewRoute(object):
         
         pxrf.close()
         
-        #print( "For %s, the following headers are routed %s" % ( self.target, self.ahls_to_route.keys() ) )
+        #print( "For %s, the following headers are routed %s" % ( parent.pxclient, self.ahls_to_route.keys() ) )
         
     def perform(self,parent):
         logger = parent.logger
@@ -78,8 +87,9 @@ class SundewRoute(object):
 
 
 # at this point the parent is  "self"
-
 sundewroute=SundewRoute(self)
+
+
 self.on_message = sundewroute.perform
 
 
