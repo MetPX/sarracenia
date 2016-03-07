@@ -33,7 +33,7 @@ that defines a cluster name log target : 'cluster_Name broker_Url exchange_Log'.
 
 Each **sr_log2clusters** instance connects to the <broker> from the command line
 and the **broker_Url** from the **log_routing.conf** entry.
-From the <broker> it subscribes to all log notifications. 
+From the <broker> it subscribes to all log messages. 
 When the notification **headers['from_cluster']** matches the **cluster_Name**,
 **sr_log2clusters** publish it back to the **broker_Url** under exchange **exchange_Log**.
 all other notifications are ignored.

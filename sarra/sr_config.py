@@ -206,7 +206,7 @@ class sr_config:
 
         if config == None : return False,None
 
-        # priority 1 : config given is absolute path
+        # priority 1 : config given is a valid path
 
         self.logger.debug("config_path %s " % config )
         if os.path.isfile(config) :
@@ -216,6 +216,11 @@ class sr_config:
         config_name = re.sub(r'(\.inc|\.conf|\.py)','',config_file)
         ext         = config_file.replace(config_name,'')
         if ext == '': ext = '.' + ctype
+
+        # priority 1.5: config file given without extenion...
+        config_path = config_name + ext
+        if os.path.isfile(config_path) :
+           return True,config_path
 
         # priority 2 : config given is a user one
 
@@ -479,7 +484,7 @@ class sr_config:
                      urlstr  = parts[1]
                      ok, url = self.validate_urlstr(urlstr)
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with %s" % parts[1])
+                        self.logger.error("invalid URL %s" % parts[1])
                      # fixme parts[2] exchange should be optional
                      exch  = parts[2]
                      self.log_clusters[i] = (name,url,exch)
@@ -750,7 +755,7 @@ class sr_config:
                      ok, url    = self.validate_urlstr(urlstr)
                      self.admin = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with admin (%s)" % urlstr)
+                        self.logger.error("invalid admin URL (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -763,7 +768,7 @@ class sr_config:
                      ok, url     = self.validate_urlstr(urlstr)
                      self.broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with broker (%s)" % urlstr)
+                        self.logger.error("invalid broker URL (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -833,7 +838,7 @@ class sr_config:
                      ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words1
                      if not ok :
-                        self.logger.error("problem with destination (%s)" % urlstr)
+                        self.logger.error("could not understand destination (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -991,7 +996,7 @@ class sr_config:
                      ok, url      = self.validate_urlstr(urlstr)
                      self.manager = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with manager (%s)" % urlstr)
+                        self.logger.error("invalid manager url (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -1043,6 +1048,7 @@ class sr_config:
                      if self.on_file == None :
                         self.logger.error("on_file script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
@@ -1051,6 +1057,7 @@ class sr_config:
                      if self.on_line == None :
                         self.logger.error("on_line script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_message': # See: sr_config.1, others...
@@ -1059,6 +1066,7 @@ class sr_config:
                      if self.on_message == None :
                         self.logger.error("on_message script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
@@ -1067,6 +1075,7 @@ class sr_config:
                      if self.on_part == None :
                         self.logger.error("on_part script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config, ++ FIXME many others?
@@ -1075,6 +1084,7 @@ class sr_config:
                      if self.on_post == None :
                         self.logger.error("on_post script incorrect (%s)" % words1)
                         ok = False
+                        needexit = True
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7, FIXME: others.
@@ -1113,7 +1123,7 @@ class sr_config:
                      ok, url     = self.validate_urlstr(urlstr)
                      self.post_broker = url
                      if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("problem with post_broker (%s)" % urlstr)
+                        self.logger.error("invalid post_broker url (%s)" % urlstr)
                         needexit = True
                      n = 2
 
@@ -1273,7 +1283,7 @@ class sr_config:
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("problem with option %s" % words[0])
+                self.logger.error("unknown option %s" % words[0])
 
         if needexit :
            os._exit(1)
@@ -1370,7 +1380,7 @@ class sr_config:
 
         ok, details = self.credentials.get(urlstr)
         if details == None :
-           self.logger.error("credential problem with %s"% urlstr)
+           self.logger.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
 
         return True, details.url

@@ -128,7 +128,7 @@ class sr_subscribe(sr_instances):
     def __do_download__(self):
 
 
-        self.logger.info("downloading/copying into %s " % self.msg.local_file)
+        self.logger.debug("downloading/copying into %s " % self.msg.local_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -266,7 +266,7 @@ class sr_subscribe(sr_instances):
            try : 
                   if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
                   if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
-                  self.logger.info("%s deleted" % self.msg.local_file)
+                  self.logger.debug("%s deleted" % self.msg.local_file)
            except:pass
            return True
 
@@ -292,7 +292,7 @@ class sr_subscribe(sr_instances):
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
            self.msg.log_publish(304, 'not modified')
-           self.logger.info("file not modified %s " % self.msg.local_file)
+           self.logger.debug("file not modified %s " % self.msg.local_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False

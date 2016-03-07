@@ -189,7 +189,7 @@ class sr_ftp():
 
     # delete
     def delete(self, path):
-        self.logger.debug("sr_ftp rm %s" % path)
+        self.logger.debug( "sr_ftp rm %s" % path)
         self.ftp.delete(path)
 
     # fwrite
@@ -206,7 +206,7 @@ class sr_ftp():
  
     # get
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
-        self.logger.debug("sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
+        self.logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
 
         # on fly checksum 
 
@@ -389,7 +389,7 @@ class ftp_transport():
         # seek not supported
         if msg.partflg == 'i' :
            self.logger.error("ftp, inplace part file not supported")
-           msg.log_publish(499,'ftp download problem')
+           msg.log_publish(499,'ftp does not support partitioned file transfers')
            return False
     
         url         = msg.url
@@ -414,7 +414,7 @@ class ftp_transport():
                    self.cdir  = cdir
     
                 #download file
-                self.logger.info('Downloads: %s into %s %d-%d' % 
+                self.logger.debug('Download: %s into %s %d-%d' % 
                            (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
     
@@ -448,7 +448,7 @@ class ftp_transport():
                 if parent.delete :
                    try   :
                            ftp.delete(remote_file)
-                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                           msg.logger.debug('file deleted on remote site %s' % remote_file)
                    except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
@@ -463,11 +463,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp download problem')
+                msg.log_publish(499,'ftp download failed')
     
                 return False
     
-        msg.log_publish(499,'ftp download problem')
+        msg.log_publish(499,'ftp download failed')
     
         return False
 
@@ -485,8 +485,8 @@ class ftp_transport():
         # the inplace part could be delivered as 
         # a separate partfile and message set to 'p'
         if  msg.partflg == 'i':
-            self.logger.error("ftp, inplace part file not supported")
-            msg.log_publish(499,'ftp delivery problem')
+            self.logger.error("ftp cannot send partitioned files")
+            msg.log_publish(499,'ftp delivery failed')
             return False
     
         local_file = parent.local_path
@@ -524,7 +524,7 @@ class ftp_transport():
     
                 # deliver file
     
-                msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                msg.logger.debug('Beginning put of %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
     
                 if parent.lock == None :
@@ -558,11 +558,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp delivery problem')
+                msg.log_publish(499,'ftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'ftp delivery problem')
+        msg.log_publish(499,'ftp delivery failed')
     
         return False
 

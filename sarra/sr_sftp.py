@@ -455,7 +455,7 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.info('Downloads: %s %s into %s %d-%d' % 
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
                     (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
@@ -488,7 +488,7 @@ class sftp_transport():
                 if parent.delete :
                    try   :
                            sftp.delete(remote_file)
-                           msg.logger.info ('file  deleted on remote site %s' % remote_file)
+                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
                    except: msg.logger.error('unable to delete remote file %s' % remote_file)
     
                 #closing after batch or when destination is changing
@@ -503,11 +503,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp download problem')
+                msg.log_publish(499,'sftp download failed')
     
                 return False
     
-        msg.log_publish(499,'sftp download problem')
+        msg.log_publish(499,'sftp download failed')
     
         return False
 
@@ -531,7 +531,7 @@ class sftp_transport():
                    self.sftp = sftp
                 
                 if self.cdir != remote_dir :
-                   self.logger.debug("sftp_transport download cd to %s" % remote_dir)
+                   self.logger.debug("sftp_transport send cd to %s" % remote_dir)
                    sftp.cd_forced(775,remote_dir)
                    self.cdir  = remote_dir
 
@@ -558,7 +558,7 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.info('Sends: %s %s into %s %d-%d' % 
+                msg.logger.debug('Sends: %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_path,offset,offset+msg.length-1))
     
                 if parent.lock == None or msg.partflg == 'i' :
@@ -589,11 +589,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp delivery problem')
+                msg.log_publish(499,'sftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'sftp delivery problem')
+        msg.log_publish(499,'sftp delivery failed')
     
         return False
 

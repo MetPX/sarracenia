@@ -20,7 +20,7 @@ to specific questions of configuration.
 
 .. contents::
 
-* `Installation <Install.html>`_
+* `Installation <Install.html>`_ - initial installation, and a Glossary.
 * `Subscriber Guide <subscriber.html>`_ - effective downloading from a pump.
 * `Source Guide <source.html>`_ - effective uploading to a pump
 * `Admin Guide <Admin.html>`_ - Configuration of Pumps

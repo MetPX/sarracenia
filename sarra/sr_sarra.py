@@ -421,7 +421,7 @@ class sr_sarra(sr_instances):
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
            self.msg.log_publish(304, 'not modified')
-           self.logger.info("file not modified %s " % self.msg.local_file)
+           self.logger.debug("file not modified %s " % self.msg.local_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False

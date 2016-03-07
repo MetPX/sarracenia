@@ -95,7 +95,7 @@ class http_transport():
                        
                 #download file
 
-                msg.logger.info('Downloads: %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
 
                 response = urllib.request.urlopen(req)
                 #msg.logger.debug('response header = %s' % response.headers)
@@ -138,7 +138,7 @@ class http_transport():
                msg.logger.error('Download failed %s ' % urlstr)
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
 
-        msg.log_publish(499,'http download problem')
+        msg.log_publish(499,'http download failed')
         msg.logger.error("Could not download")
 
         return False

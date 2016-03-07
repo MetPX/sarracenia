@@ -273,7 +273,7 @@ class sr_message():
            ok = self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
 
         if ok :
-                self.printlog = self.logger.info
+                self.printlog = self.logger.debug
                 self.printlog("message published :")
         else  :
                 self.printlog = self.logger.error
@@ -631,7 +631,7 @@ class sr_message():
 
                  if i != fsiz :
                     self.logger.warning("sr_message verify_part_suffix incomplete reading %d %d" % (i,fsiz))
-                    return False,'problem with file'
+                    return False,'missing data from file'
 
                  # set chksum
                  self.checksum  = self.sumalgo.get_value()

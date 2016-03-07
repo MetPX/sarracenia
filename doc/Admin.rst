@@ -260,39 +260,6 @@ Transport engines are the data servers queried by subscribers, by the end users,
 The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
 The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of 
 configuring the servers for use, please consult the documentation of the servers themselves.
-The recipes here are simply examples, and are not definitive.
-
-.. note:: 
-   FIXME:  Not clear what to do here.  The application does not work without transport engines,
-   but configuration of those engines is a vast topics in its own right, so not a good idea
-   to include configuration information here, other than to indicate the kind of settings
-   that are necessary to permit operation.
-
-httpd Configuration
-~~~~~~~~~~~~~~~~~~~
-
-Suitable when all the data being served is public, simply make a directory available.
-the server needs to support byte-ranges, but that is not onerous as the popular ones do.
-
-.. note::
-   FIXME: I believe if the server is not dedicated to being a pump, and someone wants an
-   offset from / to be the root of the pump... I think that's will not work.
-   Sarra wants to be in the document root right now. Is this a bug?
-
-
-
-OpenSSH Configuration
-~~~~~~~~~~~~~~~~~~~~~
-
-So any server to which ssh, or sftp, restricted or even chrooted will be accessible to the pump.
-The configuration of such services is out of scope of this
-FIXME... special tunable notices here.
-
-
-SFTP Configuration
-~~~~~~~~~~~~~~~~~~
-
-Open SSH with restricted shell.
 
 
 Operations
@@ -308,9 +275,9 @@ The administrative user name is an installation choice, and exactly as for any o
 user, the configuration files are placed under ~/.config/sarra/, with the 
 defaults under default.conf, and the configurations for components under
 directories named after each component.  In the component directories,
-Configuration files have the .conf suffix.  User roles are set with the roles
-option in configuration files. Possible roles are: source and subscriber.
-The full credential informations for the users are held in file credentials.conf.
+Configuration files have the .conf suffix.  User roles are set with the *roles*
+option in configuration files. Possible *roles* are: source and subscriber.
+The full user credentials are placed in file credentials.conf.
 
 ..note:: 
   FIXME: ... replaced missing users.conf(7) man page with role option in main config.
@@ -318,22 +285,19 @@ The full credential informations for the users are held in file credentials.conf
   role source Alice
   role subscriber Bob
 
-
-The administrative processes perform validation of postings from sources, and once
-they are validated, forward them to the public exchanges for subscribers to access.
+The administrative processes perform validation of postings from sources. Once
+they are validated, forward the postings to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
 
-              "sr_shovel=sarra.sr_shovel:main",
- 
-- sr_audit   - kill off useless queues, create exchanges, users and set permissions according to their roles.
+- sr_audit   - purge useless queues, create exchanges and users, set user permissions according to their roles.
 - sr_poll    - for sources without advertisements, revert to explicit polling for initial injection.
 - sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
-- sr_sender  - for client or pump that cannot pull data, deliver announced products (if a pump send announcements)
+- sr_sender  - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
 - sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
-- sr_shovel  - pull and reannounce advertisements from another pump, and usually feed sr_winnow.
-- sr_log2cluster - when a log message is destined for another cluster, send it where it should go.
-- sr_2xlog   - when a log message is posted by a user, copy it to xlog exchange for routing and monitoring.
-- sr_log2source - when a log message is on the xlog exchange, copy to the source that should get it.
+- sr_shovel  - copy advertisements from pump to another, usually to feed sr_winnow.
+- sr_log2cluster - copy log messages from the xlog exchange for data that came from another cluster, to where they should go.
+- sr_2xlog   - copy log message is posted users on this cluster to the xlog exchange. 
+- sr_log2source - copy log messages from the xlog exchange to the source that should get it.
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once.  To do so easily, one can invoke:
@@ -621,10 +585,6 @@ in the file  .config/sarra/default.conf (user role)::
  role source joe
 
 Now to configure the pump execute the following:
-(<ctrl-c> when it is going to sleep...)
-
-.. Note:: 
-  FIXME: what does the text in parenthesis mean or refer to?
 
 *sr_audit --users foreground*
 
@@ -643,10 +603,20 @@ The *sr_audit* program will :
 - user exchanges which do not correspond to users' roles are deleted ('xl_*,xs_*') 
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
-The *sr_audit* program does not set a password to a new user. To do it manually on the pump::
+.. Note:: 
+   The program runs as a deamon.  After the initial pass to create the users,
+   It will go into to sleep, and then audit the configuration again.
+   To stop it from running in the foreground, stop it with: <ctrl-c>  
+   (most common linux default intterupt character)
+   or find some other way to kill the running process.
+   
+   FIXME: when invoked with --users, sr_audit, should set a 'one_shot' flag,
+   and exist immediately, rather than looping.  
+
+
+The *sr_audit* program does not set user passwords. To do it manually, on the pump::
 
   rabbitmqctl change_password <user> <password>
-
 
 In short, here are the permissions and exchanges *sr_audit* manages::
 
@@ -663,7 +633,33 @@ In short, here are the permissions and exchanges *sr_audit* manages::
                       have all permissions on queue named   q_<brokerUser>*
 
 
-To add Alice as source user mannually, one would::
+To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf::
+
+  role souce Alice
+
+then run:: 
+
+  sr_audit --users foreground
+
+which would create the user, then:
+ 
+  rabbitmqctl add_user Alice <password>
+
+
+To set Alice's password.   
+
+To remove users, just remove *role source Alice* from the default.conf file, and run::
+
+  sr_audit --users foreground 
+
+again.  
+
+
+
+Manually Adding Users
+~~~~~~~~~~~~~~~~~~~~~
+
+Altenatively, to add Alice as source user manually, one would::
 
   wget -q http://localhost:15672/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
@@ -935,7 +931,9 @@ one configures sarra with an *on_part* and/or *on_file* plugin.
 Hooks from Sundew
 -----------------
 
-The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. It assumes a deep understanding of MetPX-Sundew. Currently the dd_notify.py script creates messages for the protocol exp., v00. and v02 (latest sarracenia protocol version)
+This information is very likely irrelevant to almost all users.  Sundew is another module of MetPX which is essentially being
+replaced by Sarracenia.  This information is only useful to those with an installed based of Sundew wishing to bridge
+to sarracenia.  The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. It assumes a deep understanding of MetPX-Sundew. Currently the dd_notify.py script creates messages for the protocol exp., v00. and v02 (latest sarracenia protocol version)
 
 
 Notifications on DD 
