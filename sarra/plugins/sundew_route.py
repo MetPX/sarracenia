@@ -76,7 +76,7 @@ class SundewRoute(object):
             return False
 
 
-parent=Parent()
-sundewroute.perform(parent)
+sundewroute=SundewRoute()
+self.on_message = sundewroute.perform
 
 
