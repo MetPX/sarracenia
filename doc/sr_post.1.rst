@@ -61,8 +61,7 @@ A subscriber can download the file /data/shared/products/foo by authenticating a
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 The output of the command is as follows ::
 
- [INFO] v02.post.data.shared.products.foo  '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
-              sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
+ [INFO] Published xs_guest v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
@@ -107,7 +106,11 @@ common settings, and methods of specifying them.
 
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
-Any files bigger than this value will get announced using parts of max. size of *blocksize*.
+Files bigger than this value will get announced with *blocksize* sized parts.
+
+By default, **sr_post** computes a reasonable blocksize that depends on the file'size.
+The user can set a fixed *blocksize* if it is better for its products or if he wants to
+take advantage of the **caching** mechanism.
 
 **[-c|--config <configfile>]**
 
@@ -117,12 +120,14 @@ Any files bigger than this value will get announced using parts of max. size of 
 
   When one is planning reposting directories, this option caches
   what was posted and will post only files (parts) that were new
-  or that changed
+  (or changed) when envoked again.  For caching purpose, 
+  it needs to have a fixed blocksize. So **blocksize** needs to
+  be declared.
 
 **[-dr|--document_root <path>]**
 
   The *document_root* option supplies the directory path that,
-  when combined with the relative one from *url*, 
+  when combined (or found) in the given *path*, 
   gives the local absolute path to the data file to be posted.
 
 **[-ex|--exchange <exchange>]**
@@ -140,101 +145,46 @@ Any files bigger than this value will get announced using parts of max. size of 
 
   Display program options.
 
-**[-rn|--rename <path>]**
-
-  With the *rename*  option, the user can suggest a destination path to its files. If the given
-  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
-
-**[--blocksize <value>]**
-
-The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
-Files bigger than this value will get announced with *blocksize* sized parts.
-
-**[-c|--config <configfile>]**
-
-  A list of settings in a configuration file 
-
-**[--caching]**
-
-  When one is planning reposting directories, this option caches
-  what was posted and will post only files (parts) that were new
-  or that changed
-
-**[-dr|--document_root <path>]**
-
-  The *document_root* option supplies the directory path that,
-  when combined with the relative one from *url*, 
-  gives the local absolute path to the data file to be posted.
-
-**[-ex|--exchange <exchange>]**
-
-  By default, the exchange used is *xs_*"broker_username".
-  This exchange must be previously created on broker by its administrator.
-  The default can be overwritten with this *exchange* option.
-
-**[-f|--flow <string>]**
-
-  An arbitrary label that allows the user to identify a specific flow.
-  The flow string is sets in the amqp message header.  By default, there is no flow.
-
-**[-h|-help|--help**
-
-  Display program options.
-
-**[-rn|--rename <path>]**
-
-  With the *rename*  option, the user can suggest a destination path to its files. If the given
-  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
-
-**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
-
-  A comma-separated list of destination clusters to which the posted data should be sent.
-  Ask pump administrators for a list of valid destinations.
-
-  default: None.
-
-.. note:: 
-  FIXME: a good list of destination should be discoverable.
-
-
-**[-tp|--topic_prefix <key>]**
-
-  *Not usually used*
-  By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
-  followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-  You can overwrite the topic_prefix by setting this option.
-
-**[-rec|--recursive <boolean>]**
-
-The recursive default is False. When the **url** given (possibly combined with **document_root**)
-describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
-files are posted.
-
-**[--reset]**
-
-  When one has used **--caching** this option will get rid of the
-  cached informations.
-
-**[-sub|--subtopic <key>]**
-
-The subtopic default can be overwritten with the *subtopic* option.
 
 **[-p|--path path1 path2 ... pathN]**
 
-FIXME **sr_post** evaluates the filesystem path from the **url** path 
+**sr_post** evaluates the filesystem paths from the **path** option 
 and possibly the **document_root** if the option is used.
 
-If this path defines a file then the **url** is the actual download url
-to be used by the subscribers. One announce is made for that product.
+If a path defines a file this file is announced.
 
-If this path defines a directory then all files in that directory are
-announced... using that **url** with the added products.
+If a path defines a directory then all files in that directory are
+announced... 
 
 If this path defines a directory and the option **recursice** is true
 then all files in that directory are posted and should **sr_post** finds
 one (or more) directory(ies), it scans it(them) are posts announcements
 until all the tree is scanned.
+
+The AMQP announcements are made of the tree fields, the announcement time,
+the **url** option value and the resolved paths to which were withdrawn
+the *document_root* present and needed.
+
+**[-rec|--recursive <boolean>]**
+
+The recursive default is False. When the **path** given (possibly combined with **document_root**)
+describes one or several directories,  if **recursive** is True, the directory tree is scanned down and all subtree
+files are posted.
+
+**[--reset]**
+
+  When one has used **--caching** this option will get rid of the
+  cached informations.
+
+
+**[-rn|--rename <path>]**
+
+  With the *rename*  option, the user can suggest a destination path to its files. If the given
+  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+
+**[-sub|--subtopic <key>]**
+
+The subtopic default can be overwritten with the *subtopic* option.
 
 **[-to|--to <destination>,<destination>,... ]** -- MANDATORY
 
@@ -254,37 +204,18 @@ until all the tree is scanned.
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
   You can overwrite the topic_prefix by setting this option.
 
-**[-rec|--recursive <boolean>]**
-
-The recursive default is False. When the **url** given (possibly combined with **document_root**)
-describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
-files are posted.
-
-**[--reset]**
-
-  When one has used **--caching** this option will get rid of the
-  cached informations.
-
-**[-sub|--subtopic <key>]**
-
-The subtopic default can be overwritten with the *subtopic* option.
 
 **[-u|--url <url>]**
 
-**sr_post** evaluates the filesystem path from the **url** path 
-and possibly the **document_root** if the option is used.
+The **url** option sets the protocol, credentials, host and port under
+which the product can be fetched.
 
-If this path defines a file then the **url** is the actual download url
-to be used by the subscribers. One announce is made for that product.
+The AMQP announcememet is made of the tree fields, the announcement time,
+this **url** value and the given **path** to which was withdrawn the *document_root*
+if necessary.
 
-If this path defines a directory then all files in that directory are
-announced... using that **url** with the added products.
-
-If this path defines a directory and the option **recursice** is true
-then all files in that directory are posted and should **sr_post** finds
-one (or more) directory(ies), it scans it(them) are posts announcements
-until all the tree is scanned.
-
+If the concatenation of the two last fields of the announcement that defines
+what the subscribers will use to download the product. 
 
 
 ADVANCED OPTIONS
