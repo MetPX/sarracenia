@@ -348,8 +348,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
-        self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
+        self.events               = 'created|deleted|modified'
+        self.event                = 'created|deleted|modified'
 
         self.randomize            = False
         self.reconnect            = False
@@ -877,8 +877,8 @@ class sr_config:
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
-                     if 'IN_CLOSE_WRITE' in words[1] : i = i + 1
-                     if 'IN_DELETE'      in words[1] : i = i + 1
+                     if 'modified' in words[1] : i = i + 1
+                     if 'deleted'  in words[1] : i = i + 1
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
