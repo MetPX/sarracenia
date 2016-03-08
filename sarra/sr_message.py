@@ -275,9 +275,8 @@ class sr_message():
         self.set_hdrstr()
 
         if ok :
-                self.printlog = self.logger.debug
-                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
-                self.logger.info("Published: %s %s"   % (self.notice, self.hdrstr))
+                self.logger.info("Published: %s %s '%s' %s" %\
+                                            (self.exchange,self.topic,self.notice, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
