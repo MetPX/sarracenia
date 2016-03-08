@@ -11,7 +11,7 @@ Status: Pre-Draft
 
 .. note::
   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
+  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. contents::
 
@@ -28,16 +28,16 @@ The usual intent is for sr_subscribe to automatically
 download the data wanted to a directory on a subscriber
 machine where other software can process it.  Please note:
 
- - the tool is entirely command line driven (there is no GUI) More accurately, it is mostly config file driven.
-   most of the *interface* involves using a text editor to modify configuration files.
- - while written to be compatible with other environments, 
-   the focus is on Linux usage. 
- - the tool can be used as either an end-user tool, or a system-wide transfer engine.
-   This guide is focused on the end-user case.  
- - More detailed reference material is available at the 
-   traditional sr_subscribe(1) man page,
- - All documentation of the package is available 
-   at http://metpx.sf.net
+- the tool is entirely command line driven (there is no GUI) More accurately, it is mostly config file driven.
+  most of the *interface* involves using a text editor to modify configuration files.
+- while written to be compatible with other environments, 
+  the focus is on Linux usage. 
+- the tool can be used as either an end-user tool, or a system-wide transfer engine.
+  This guide is focused on the end-user case.  
+- More detailed reference material is available at the 
+  traditional sr_subscribe(1) man page,
+- All documentation of the package is available 
+  at http://metpx.sf.net
 
 While Sarracenia can work with any web tree, or any URL 
 that sources choose to post, there is a conventional layout.
@@ -186,7 +186,7 @@ sr_subscribe will find it without having to give the full path.
 
 
 .. note::
-   directory where configuration is stored is platform and (on Windows)
+   Directory where configuration is stored is platform and (on Windows)
    configuration dependent. Reasonable places they might be:
 
    on Windows:  C:\\\\Users\\\\peter\\AppData\\\\Local\\\\science.gc.ca\\sarra
@@ -272,8 +272,8 @@ sr stop will also do what you would expect.  As will sr status.  Back to file re
 Refining Selection
 ------------------
 
-..note:: 
-  FIXME: Make a picture, with a 
+.. note:: 
+  **FIXME**: Make a picture, with a 
   - broker at one end, and the subtopic apply there.
   - client at the other end, and the accept/reject apply there.
 
@@ -514,7 +514,7 @@ completely avoided.
    On the same configuration, there is slight probability that notifications
    may corrupt one another in the named pipe.  
    We should probably verify whether this probability is negligeable or not.
-   FIXME.
+   **FIXME**
 
 
 Advanced File Reception
@@ -828,15 +828,15 @@ local file is sufficient::
 on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
-message per part. Checking the xxx...FIXME to find out which part 
+message per part. Checking the xxx...**FIXME** to find out which part 
 you have.
 
 .. note:: 
-   FIXME: perhaps show a way of checking the parts header to 
+   **FIXME**: perhaps show a way of checking the parts header to 
    with an if statement in order to act on only the first part message
    for long files.
 
-   FIXME: is .py needed on on\_ triggers?
+   **FIXME**: is .py needed on on\_ triggers?
 
 Partial File Updates
 --------------------

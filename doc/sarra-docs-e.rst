@@ -2,7 +2,7 @@
 Sarracenia Documentation
 ========================
 
-.. note::
+.. danger::
   This package is not ready for use yet.  It is undergoing internal testing, and the documentation is incomplete.
   This note will be removed once the package documentation is complete and usable.
 
