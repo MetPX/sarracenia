@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.03a3) unstable; urgency=medium
+
+  *  sr_config/sr_post  fix for document_root and paths
+  *  seems that I did not install  2.16.03.a2 also  :-(
+
+ -- Michel Grenier <aspymjg@zerocool>  Tue, 08 Mar 2016 14:38:36 -0500
+
 metpx-sarracenia (2.16.03a1) unstable; urgency=medium
 
   * sr_audit add old sr_admin func through --pump
