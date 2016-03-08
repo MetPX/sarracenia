@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.03a4) unstable; urgency=medium
+
+  * sr_watch Daluma's last version... with defaults for blocksize(200Mb) and caching True
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Tue, 08 Mar 2016 17:19:27 -0500
+
 metpx-sarracenia (2.16.03a3) unstable; urgency=medium
 
   *  sr_config/sr_post  fix for document_root and paths
