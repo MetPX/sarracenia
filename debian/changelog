@@ -1,3 +1,37 @@
+metpx-sarracenia (2.16.03a1) unstable; urgency=medium
+
+  * sr_audit add old sr_admin func through --pump
+             tolerate exchanges that starts with 'x'
+             delete queue > max_queue_size if not running
+
+  * sr_config add options: loglevel,prefetch
+          expire = 1 week (queue expire after 1 week)
+          log = sets a log directory (not a file)
+          unrecognized option :log warning BUT added as attribute of class with value
+          log_daemons option : True  attempt to start sr_2xlog,sr_log2source,sr_log2clusters
+          (may not work if no configuration to make them run)
+          admin : use url (instead of username completed by feeder option)
+
+   * sr_consumer : prefetch from parent (sr_config modifs)
+
+   * sr_post : if log is configured or given as argument, set it as log file.
+               queue_name now used for retransmission directly to client's queue source can also be used.
+               lock_set, lock_unset for caching lock.
+
+   * sr_poster: caching, reset, blocksize implemented.
+
+   * sr_message : processes correctly retransmitted message from sr_post to queue_name
+                  on_message called before notify_only is tested
+                  overwrite default to False 
+                  
+
+   * queue_share option removed : sr_config,sr_consumer,sr_sarra,sr_sender,sr_shovel,sr_subscribe,sr_winnow
+
+   * lots of log level changes for all classes.
+
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Tue, 08 Mar 2016 09:53:30 -0500
+
 metpx-sarracenia (2.16.02a4) unstable; urgency=medium
 
   * sr_post easier to use as a class (check not that picky)
