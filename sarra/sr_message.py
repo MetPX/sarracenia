@@ -272,17 +272,19 @@ class sr_message():
         if self.publisher != None :
            ok = self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
 
+        self.set_hdrstr()
+
         if ok :
                 self.printlog = self.logger.debug
-                self.printlog("message published :")
+                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
+                self.logger.info("Published: %s %s"   % (self.notice, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
 
-        self.set_hdrstr()
-        self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
-        self.printlog("notice   %s"           % self.notice )
-        self.printlog("headers  %s"           % self.hdrstr )
+                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
+                self.printlog("notice   %s"           % self.notice )
+                self.printlog("headers  %s"           % self.hdrstr )
 
         return ok
 

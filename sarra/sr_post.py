@@ -317,13 +317,15 @@ class sr_post(sr_config):
            fpath = fpath.replace('\\','/')
 
         if self.document_root != None :
-           dr = os.path.abspath(self.document_root)
-           dr = os.path.realpath(dr)
+           dr = self.document_root
            rpath = fpath.replace(dr,'')
-           if rpath == fpath  :
-              self.logger.error("document_root %s not present in %s" % (dr,fpath))
-              self.logger.error("no posting")
-              return
+           if rpath == fpath :
+              if fpath[0] != os.sep :
+                 rpath = dr + os.sep + fpath
+              else :
+                 self.logger.error("document_root %s not present in %s" % (dr,fpath))
+                 self.logger.error("no posting")
+                 return
            fpath = rpath
            if fpath[0] == '/' : fpath = fpath[1:]
 
