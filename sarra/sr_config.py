@@ -835,10 +835,12 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
+                     path = os.path.abspath(words1)
+                     path = os.path.realpath(path)
                      if sys.platform == 'win32':
-                         self.document_root = words1.replace('\\','/')
+                         self.document_root = path.replace('\\','/')
                      else:
-                         self.document_root = words1
+                         self.document_root = path
                      n = 2
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
@@ -1096,6 +1098,9 @@ class sr_config:
                          try:
                                  path = w
                                  if dr and not dr in w: path = dr + os.sep + w
+
+                                 path = os.path.abspath(path)
+                                 path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
