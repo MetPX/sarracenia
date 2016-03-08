@@ -10,7 +10,7 @@
 
   pxrouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
   pxclient  navcan-amis
-  on_message sundew_route.py
+  on_message sundew_pxroute.py
 
 
 """
@@ -36,7 +36,7 @@ class SundewRoute(object):
         logger = parent.logger
         pxrf=open(parent.pxrouting,'r')
         possible_references=parent.pxclient.split(',')
-        logger.info( "sundew_route, target clients: %s" % possible_references )
+        logger.info( "sundew_pxroute, target clients: %s" % possible_references )
 
         for line in pxrf:
             words = line.split()
@@ -49,7 +49,7 @@ class SundewRoute(object):
                 for i in possible_references :
                     if i in expansion:
                        possible_references.append( words[1] )
-                       logger.debug( "sundew_route adding clientAlias %s to possible_reference %s"  % \
+                       logger.debug( "sundew_pxroute adding clientAlias %s to possible_reference %s"  % \
                                (words[1], possible_references) )
                        continue
                     
@@ -62,7 +62,7 @@ class SundewRoute(object):
         
         pxrf.close()
         
-        logger.debug( "sundew_route For %s, the following headers are routed %s" % ( parent.pxclient, self.ahls_to_route.keys() ) )
+        logger.debug( "sundew_pxroute For %s, the following headers are routed %s" % ( parent.pxclient, self.ahls_to_route.keys() ) )
         
     def perform(self,parent):
         logger = parent.logger
@@ -71,14 +71,14 @@ class SundewRoute(object):
         ahl = msg.local_file.split('/')[-1][0:11]
 
         if ( len(ahl) < 11 ) or ( ahl[6] != '_' ): 
-            logger.debug("sundew_route not an AHL: %s, " % ahl )
+            logger.debug("sundew_pxroute not an AHL: %s, " % ahl )
             return False
 
         if ( ahl in self.ahls_to_route.keys() ) :
-            logger.debug("sundew_route yes, deliver: %s, " % ahl )
+            logger.debug("sundew_pxroute yes, deliver: %s, " % ahl )
             return True
         else:
-            logger.debug("sundew_route no, do not deliver: %s, " % ahl )
+            logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl )
             return False
 
 
