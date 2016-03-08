@@ -14,7 +14,7 @@ watch a directory and post messages when files in it change
 SYNOPSIS
 ========
 
-**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *OPTIONS* ]
+**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path ] path] [reload|restart|start|status|stop]
 
 DESCRIPTION
 ===========
@@ -22,39 +22,42 @@ DESCRIPTION
 Watches a directory and publishes posts when files in the directory change
 (are added, modified, or deleted.) Its arguments are very similar to  `sr_post <sr_post.1.html>`_.
 In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
-of one's files. Subscribers use  *dd_subscribe*  to consume the post and download the files.
+of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
 
 Posts are sent to an AMQP server, also called a broker, specified with the option [ *-b|--broker broker_url* ]. 
 Format of argument to the *broker* option:: 
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
-The [*-u|--url url*] option specifies the location from which subscribers 
-will download the file.  There is usually one post per file.
-If the URL specifies a directory, *sr_watches* create a posts for any time
-a file in that directory that is created, modified or deleted. 
-If the *url* specifies a file,  *sr_watch*  watches that only that file.
+The [*-u|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
+will connect to get the file. 
 
 format of argument to the *url* option::
 
-       [ftp|http|sftp]://[user[:password]@]host[:port]//absolute_path_to/what_to_watch
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
-       [ftp|http|sftp]://[user[:password]@]host[:port]/relative_path_to/what_to_watch
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
-       file:/absolute_path_to/what_to_watch
+       file:
 
-The double-slash at the beginning of the path marks it as absolute, whereas a single
-slash is relative to a *document_root* provided as another option.
+
+The [*-p|--path path*] option tells *sr_watch* what to look for.
+If the *path* specifies a directory, *sr_watches* create a posts for any time
+a file in that directory that is created, modified or deleted. 
+If the *path* specifies a file,  *sr_watch*  watches that only that file.
+In the announcement, it is specified with the *path* of the product.
+There is usually one post per file.
+
 
 An example of an excution of  *sr_watch*  checking a file::
 
- sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+ sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -b amqp://broker.com start
 
 Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
 Default events settings reports if the file the file is modified or deleted.
 When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
 and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post to defaults vhost '/' and exchange 'amq.topic' (default exchange)
+and sends the post to defaults vhost '/' and exchange 'xs_stanley' (default exchange)
 
 A subscriber can download the file /data/shared/products/foo  by logging as user stanley
 on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
@@ -62,7 +65,7 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 The output of the command is as follows ::
 
  [INFO] v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
-       source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de event=IN_CLOSE_WRITE
+       source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de 
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 After the '[INFO]' the next information gives the \fBtopic*  of the
@@ -79,14 +82,11 @@ which suggest to download the file in 1 part of 256 bytes (the actual filesize),
 gives the number of block, the remaining in bytes and the current 
 block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
 here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de* 
-is the checksum value.  The  *event=IN_CLOSE_WRITE*  means, in our case, that the file was modified.
-
-.. NOTE::
-   FIXME: reference to event... remove?
+is the checksum value.  When the event on a file is a deletion, sum=R,0  R stands for remove.
 
 Another example watching a file::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com start
 
 By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path).
@@ -98,7 +98,7 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/bulletins/alphanumeric -pb amqp://broker.com
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -b amqp://broker.com start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the document_root and relative path of the source url to obtain the directory path).
@@ -130,6 +130,7 @@ gives the local absolute path to the data file to be posted.
 
 **[-e|--events <exchange>]**
 
+FIXME  :  Daluma is making changes HERE.
 By default, the events for sr_watch are IN_CLOSE_WRITE|IN_DELETE.
 If you want to consider only one of these simply use the  *events*  option
 and set it to IN_CLOSE_WRITE for creation/modification or  IN_DELETE for deletion.
@@ -194,19 +195,41 @@ files are watched.
 
 The subtopic default can be overwritten with the  *subtopic*  option.
 
-**[-u|--url <url>]**
 
-**sr_post** evaluates the filesystem path from the **url** path 
+**[-p|--path path]**
+
+**sr_post** evaluates the filesystem path from the **path** option 
 and possibly the **document_root** if the option is used.
 
-If this path defines a file then only this file is watched...
-The **url** will be the actual download url to be used by the subscribers.
+If a path defines a file this file is watched.
 
-If this path defines a directory then all files in that directory are
-watched... posting will use that **url** with the added products watched.
+If a path defines a directory then all files in that directory are
+watched... 
 
 If this path defines a directory and the option **recursice** is true
-then all files in that directory tree are watched.
+then all files in that directory are watched and should **sr_watch** finds
+one (or more) directory(ies), it watches it(them) recursively
+until all the tree is scanned.
+
+The AMQP announcements are made of the tree fields, the announcement time,
+the **url** option value and the resolved paths to which were withdrawn
+the *document_root* present and needed.
+
+**[-u|--url <url>]**
+
+The **url** option sets the protocol, credentials, host and port under
+which the product can be fetched.
+
+The AMQP announcememet is made of the tree fields, the announcement time,
+this **url** value and the given **path** to which was withdrawn the *document_root*
+if necessary.
+
+If the concatenation of the two last fields of the announcement that defines
+what the subscribers will use to download the product. 
+
+
+FIXME :  Daluma :  **caching** **blocksize** **reset**   how will Daluma
+         deals/uses these to have an sr_watch that uses caching... etc.
 
 
 ADVANCED OPTIONS
