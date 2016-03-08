@@ -102,7 +102,7 @@ Subscribers
 
   Subscribers use `<sr_subscribe(1) <sr_subscribe.1.html>`_
   
-Post, Notice, Notification, Advertisement.
+Post, Notice, Notification, Advertisement, Announcement
    
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users know that a particular 
   file is ready.   The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.html>`_ 

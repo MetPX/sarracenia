@@ -16,16 +16,16 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post** [ *-u|--url url* ] [ *-p|--path path1 path2...pathN] [ *-b|--broker broker* ]...[ *OPTIONS* ]
+**sr_post** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] [ *-p|--path ] path1 path2...pathN
 
 DESCRIPTION
 ===========
 
-**sr_post** posts the availability of a file by creating an announcment.
-In contrast to most other components of sarracenia that act as service daemon
-processes, sr_post is a one shot invocation which posts and exits.
+**sr_post** posts the availability of a file by creating an announcement.
+In contrast to most other sarracenia components that act as daemons,
+sr_post is a one shot invocation which posts and exits.
 Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
-to consume the announcement and download the file.  To make files available 
+to consume announcements and download the file.  To make files available 
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
 also called a broker.  Format of argument to the *broker* option:: 
 
@@ -51,7 +51,7 @@ Format of argument to the *path* option::
 
 An example invocation of *sr_post*::
 
- sr_post -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -b amqp://broker.com
+ sr_post -b amqp://broker.com -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
 
 By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
@@ -82,7 +82,7 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- sr_post -dr /data/web/public_data -u http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com
+ sr_post -b amqp://broker.com -dr /data/web/public_data -u http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path)
@@ -127,9 +127,9 @@ Any files bigger than this value will get announced using parts of max. size of 
 
 **[-ex|--exchange <exchange>]**
 
-  By default, the exchange used is *xs_*"broker_username".
-  This exchange must be previously created on broker by its administrator.
-  The default can be overwritten with this *exchange* option.
+  Sr_post publishes to an exchange named *xs_*"broker_username" by default.
+  Use the *exchange* option to override that default.
+  Note that the administrator must have created the exchange before one can post to it.
 
 **[-f|--flow <string>]**
 
@@ -149,7 +149,7 @@ Any files bigger than this value will get announced using parts of max. size of 
 
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
-Any files bigger than this value will get announced using parts of max. size of *blocksize*.
+Files bigger than this value will get announced with *blocksize* sized parts.
 
 **[-c|--config <configfile>]**
 
@@ -222,7 +222,7 @@ The subtopic default can be overwritten with the *subtopic* option.
 
 **[-p|--path path1 path2 ... pathN]**
 
-FICME**sr_post** evaluates the filesystem path from the **url** path 
+FIXME **sr_post** evaluates the filesystem path from the **url** path 
 and possibly the **document_root** if the option is used.
 
 If this path defines a file then the **url** is the actual download url
