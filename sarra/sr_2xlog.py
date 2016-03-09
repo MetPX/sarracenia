@@ -460,6 +460,7 @@ def main():
     if len(sys.argv) >= 3 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
+       cfg.defaults()
        cfg.general()
        ok,config = cfg.config_path('2xlog',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]

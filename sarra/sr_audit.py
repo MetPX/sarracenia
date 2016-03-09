@@ -418,8 +418,8 @@ class sr_audit(sr_instances):
            error += 1
 
         # verify if some users were defined
-        if self.users :
-           self.logger.info("**** users.conf file present *****")
+        if len(self.users) > 0 :
+           self.logger.info("**** users defined *****")
            for u in self.users :
                self.logger.info("user %15s  roles %s" % (u,self.users[u]))
         else :
@@ -540,6 +540,7 @@ def main():
     if len(sys.argv) > 2 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
+       cfg.defaults()
        cfg.general()
        ok,config = cfg.config_path('audit',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]

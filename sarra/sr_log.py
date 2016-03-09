@@ -175,6 +175,7 @@ def main():
     if len(sys.argv) > 2 : 
        config    = sys.argv[-2]
        cfg       = sr_config()
+       cfg.defaults()
        cfg.general()
        ok,config = cfg.config_path('log',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
