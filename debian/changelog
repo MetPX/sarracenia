@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.03a5) unstable; urgency=medium
+
+  * make sure sr_config.defaults() preceeds sr_config.general() everywhere...
+  * would cause harmless but annoying log errors 
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Wed, 09 Mar 2016 08:19:26 -0500
+
 metpx-sarracenia (2.16.03a4) unstable; urgency=medium
 
   * sr_watch Daluma's last version... with defaults for blocksize(200Mb) and caching True
