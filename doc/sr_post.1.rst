@@ -120,7 +120,7 @@ take advantage of the **caching** mechanism.
 
   When one is planning reposting directories, this option caches
   what was posted and will post only files (parts) that were new
-  (or changed) when envoked again.  For caching purpose, 
+  (or changed) when invoked again.  For caching purpose, 
   it needs to have a fixed blocksize. So **blocksize** needs to
   be declared.
 
