@@ -525,7 +525,7 @@ class sr_config:
 
     def isTrue(self,S):
         s = S.lower()
-        if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+        if  s == '' or s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
         return False
 
     # modified from metpx SenderFTP
