@@ -142,7 +142,7 @@ class sr_config:
         self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
         self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
         self.user_cache_dir += os.sep + "%s" % self.config_name
-        if not self.program_name in [ 'sr', 'sr_admin', 'sr_audit', 'sr_config' ]:
+        if not self.program_name in [ 'sr', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
            try    : os.makedirs(self.user_cache_dir,  0o775,True)
            except : pass
