@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.03a8) unstable; urgency=medium
+
+  * sr_config.py should not prevent the creation of sr_audit user_cache_dir
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Wed, 09 Mar 2016 14:36:15 -0500
+
 metpx-sarracenia (2.16.03a7) unstable; urgency=medium
 
   * sr_audit bug fix when adding subscribe user
