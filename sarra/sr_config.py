@@ -525,7 +525,7 @@ class sr_config:
 
     def isTrue(self,S):
         s = S.lower()
-        if  s == '' or s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+        if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
         return False
 
     # modified from metpx SenderFTP
@@ -722,7 +722,7 @@ class sr_config:
                      self.logger.debug("Masks %s"% self.masks)
 
                 elif words0 in ['accept_unmatch','au']: # See: sr_config.7
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.accept_unmatch = True
                         n = 1
                      else :
@@ -761,7 +761,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'caching': # See: sr_post.1 sr_watch.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.caching = True
                         n = 1
                      else :
@@ -786,7 +786,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.debug = True
                         n = 1
                      else :
@@ -798,7 +798,7 @@ class sr_config:
                         self.logger.setLevel(self.loglevel)
 
                 elif words0 == 'delete': # See: sr_sarra.8
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.delete = True
                         n = 1
                      else :
@@ -827,7 +827,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['discard','d','download-and-discard']:  # sr_subscribe.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.discard = True
                         n = 1
                      else :
@@ -868,7 +868,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'durable'   : # See sr_config.7 ++
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.durable = True
                         n = 1
                      else :
@@ -919,7 +919,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['inplace','in']: # See: sr_sarra.8, sr_post.1, sr_watch.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.inplace = True
                         n = 1
                      else :
@@ -952,7 +952,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'log_daemons': # See: sr_config.7
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.log_daemons = True
                         n = 1
                      else :
@@ -992,7 +992,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 FIXME++ too many others?
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.mirror = True
                         n = 1
                      else :
@@ -1013,7 +1013,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['no_logback','nlb']:  # See: sr_subscribe.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.no_logback = True
                         n = 1
                      else :
@@ -1071,7 +1071,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7, FIXME: others.
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.overwrite = True
                         n = 1
                      else :
@@ -1134,7 +1134,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
-                     if words[0][0:1] == '-' : 
+                     if (words1 in None) or words[0][0:1] == '-' : 
                         self.pump_flag = True
                         n = 1
                      else :
@@ -1150,7 +1150,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['randomize','r']: # See: sr_watch.1, sr_post.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.randomize = True
                         n = 1
                      else :
@@ -1158,7 +1158,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.recompute_chksum = True
                         n = 1
                      else :
@@ -1166,7 +1166,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['reconnect','rr']: # See: sr_post.1, sr_watch.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.reconnect = True
                         n = 1
                      else :
@@ -1174,7 +1174,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['recursive','rec']: # See: sr_post.1, sr_watch.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.recursive = True
                         n = 1
                      else :
@@ -1182,7 +1182,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['remote_config']: # See: sr_config.7
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.remote_config = True
                         n = 1
                      else :
@@ -1198,7 +1198,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['reset']:  # See: sr_consumer.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.reset = True
                         n = 1
                      else :
@@ -1220,7 +1220,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['source_from_exchange','sfe']: # See: sr_sarra.8
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None ) or words[0][0:1] == '-' : 
                         self.source_from_exchange = True
                         n = 1
                      else :
@@ -1261,7 +1261,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'users':  # See: sr_audit.1
-                     if words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.users_flag = True
                         n = 1
                      else :
