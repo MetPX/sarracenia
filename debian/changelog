@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.03a6) unstable; urgency=medium
+
+  * fix typo in testing argument pump
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Wed, 09 Mar 2016 09:24:07 -0500
+
 metpx-sarracenia (2.16.03a5) unstable; urgency=medium
 
   * make sure sr_config.defaults() preceeds sr_config.general() everywhere...
