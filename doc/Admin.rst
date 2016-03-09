@@ -4,8 +4,9 @@
 =====================================
 
 .. note::
-  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
+   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!  
+
+   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. Contents::
 
@@ -13,8 +14,8 @@
 Revision Record
 ---------------
 
-Pre-Draft.  This document is still being built and should not be reviewed or relied upon.
-the term FIXME is present to indicate locations where content addition is expected.
+.. warning:: 
+   **Pre-Draft.**  This document is still being built and should not be reviewed or relied upon.
 
 :version: @Version@ 
 :date: @Date@

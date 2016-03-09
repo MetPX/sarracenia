@@ -147,7 +147,7 @@ class sr_post(sr_config):
            self.poster.cache_close()
 
     def move(self,src,dst):
-        self.logger.error("moved not implemented for now")
+        self.logger.warning("file moved support not implemented. Event ignored.")
 
     # =============
     # __on_post__ internal posting of message

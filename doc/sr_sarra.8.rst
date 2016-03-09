@@ -147,8 +147,8 @@ self.msg.headers['from_cluster'] = cluster
 
 Important note 2:
 
-The **on_message** plugin (if provided)  is envoked
-after the determination of the product destination 
+The **on_message** plugin (if provided)  is invoked
+after a product has been selected for download as
 described in the next section.
 
 
