@@ -1134,7 +1134,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
-                     if (words1 in None) or words[0][0:1] == '-' : 
+                     if (words1 is None) or words[0][0:1] == '-' : 
                         self.pump_flag = True
                         n = 1
                      else :
