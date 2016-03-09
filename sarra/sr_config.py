@@ -348,8 +348,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'IN_CLOSE_WRITE|IN_DELETE'
-        self.event                = 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF'
+        self.events               = 'created|deleted|modified'
+        self.event                = 'created|deleted|modified'
 
         self.randomize            = False
         self.reconnect            = False
@@ -525,7 +525,7 @@ class sr_config:
 
     def isTrue(self,S):
         s = S.lower()
-        if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+        if  s == '' or s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
         return False
 
     # modified from metpx SenderFTP
@@ -835,10 +835,12 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
+                     path = os.path.abspath(words1)
+                     path = os.path.realpath(path)
                      if sys.platform == 'win32':
-                         self.document_root = words1.replace('\\','/')
+                         self.document_root = path.replace('\\','/')
                      else:
-                         self.document_root = words1
+                         self.document_root = path
                      n = 2
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
@@ -875,8 +877,8 @@ class sr_config:
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
-                     if 'IN_CLOSE_WRITE' in words[1] : i = i + 1
-                     if 'IN_DELETE'      in words[1] : i = i + 1
+                     if 'modified' in words[1] : i = i + 1
+                     if 'deleted'  in words[1] : i = i + 1
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
@@ -1096,6 +1098,9 @@ class sr_config:
                          try:
                                  path = w
                                  if dr and not dr in w: path = dr + os.sep + w
+
+                                 path = os.path.abspath(path)
+                                 path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break

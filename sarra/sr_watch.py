@@ -15,7 +15,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Daluma Sen     - Shared Services Canada
-#  Last Changed   : Feb 12 07:41:41 EST 2016
+#  Last Changed   : Feb 29 11:25:05 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@
 
 import os, sys, time
 
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserverVFS
 from watchdog.events import PatternMatchingEventHandler
 
 try :    
@@ -73,8 +73,6 @@ class sr_watch(sr_instances):
     def __init__(self,config=None,args=None):
         self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
-        self.post.logger       = self.logger
-        self.post.program_name = 'sr_watch'
 
     def close(self):
         self.post.close()
@@ -82,14 +80,25 @@ class sr_watch(sr_instances):
         self.observer.stop()
 
     def overwrite_defaults(self):
-        pass
+        self.blocksize = 200 * 1024 * 1024
+        self.caching   = True
+        self.sleep     = 5
         
     def check(self):
         self.nbr_instances  = 1
         self.accept_unmatch = True
-
         self.post.configure()
-        if self.post.in_error : sys.exit(1)
+        self.watch_path        = self.post.watchpath()
+        self.post.logger       = self.logger
+        self.post.program_name = 'sr_watch'
+        self.post.blocksize    = self.blocksize
+        self.post.caching      = self.caching
+        self.post.watch_path   = self.watch_path
+        self.time_interval     = self.sleep
+
+        if self.reset :
+           self.post.connect()
+           self.post.poster.cache_reset()
 
     def event_handler(self,meh):
         self.myeventhandler = meh
@@ -98,22 +107,16 @@ class sr_watch(sr_instances):
         self.post.help()
 
     def run(self):
-
         self.logger.info("sr_watch run")
 
-        self.post.logger = self.logger
-        self.post.configure()
-        if self.post.in_error : sys.exit(1)
         self.post.connect()
 
-        self.watch_path = self.post.watchpath()
-
         try:
-            self.observer = Observer()
+            self.observer = PollingObserverVFS(os.stat, os.listdir, self.time_interval)
             self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
             self.observer.start()
         except OSError as err:
-            self.logger.error("Can't watch directory: %s" % str(err))
+            self.logger.error("Unable to start Observer: %s" % str(err))
             os._exit(0)
 
         self.observer.join()
@@ -161,26 +164,48 @@ def main():
     # =========================================
     
     class MyEventHandler(PatternMatchingEventHandler):
-          ignore_patterns = ["*.tmp"]
-          def event_post(self, event, tag):
-              if not event.is_directory:
-                  try:
-                         if watch.isMatchingPattern(event.src_path, accept_unmatch=True) :
-                            watch.post.watching(event.src_path, tag)
-                  except PermissionError as err:
-                         watch.logger.error(str(err))
+        ignore_patterns = ["*.tmp"]
+
+        def event_post(self, path, tag):
+            try:
+                if watch.isMatchingPattern(path, accept_unmatch=True) :
+                    watch.post.lock_set()
+                    watch.post.watching(path, tag)
+                    watch.post.lock_unset()
+            except PermissionError as err:
+                watch.logger.error(str(err))
+
+        def on_created(self, event):
+            if event.key[0] in watch.events:
+                if (not event.is_directory):
+                    self.event_post(event.src_path, 'created')
+ 
+        def on_deleted(self, event):
+            if event.key[0] in watch.events:
+                if event.src_path == watch.watch_path:
+                    watch.stop_touch()
+                    watch.logger.error('Exiting!')
+                    os._exit(0)
+                if (not event.is_directory):
+                    self.event_post(event.src_path, 'deleted')
     
-          def on_created(self, event):
-              self.event_post(event, 'IN_CLOSE_WRITE')
-                        
-          def on_deleted(self, event):
-              if event.src_path == watch.watch_path:
-                 watch.logger.error('Exiting!')
-                 os._exit(0)
-              self.event_post(event, 'IN_DELETE')
-    
-          def on_modified(self, event):
-              self.event_post(event, 'IN_CLOSE_WRITE')
+        def on_modified(self, event):
+            if event.key[0] in watch.events:
+                if (not event.is_directory):
+                    self.event_post(event.src_path, 'modified')
+
+
+        def on_moved(self, event):
+            if event.key[0] in watch.events:
+                if (not event.is_directory):
+                   # not so sure about testing accept/reject on src and dst
+                   # but we dont care for now... it is not supported
+                   if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
+                      watch.isMatchingPattern(event.dst_path, accept_unmatch=True) :
+                      watch.post.lock_set()
+                      watch.post.move(event.src_path,event.dst_path)
+                      watch.post.lock_unset()
+
 
     watch.event_handler(MyEventHandler())
 

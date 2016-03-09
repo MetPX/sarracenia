@@ -107,7 +107,7 @@ class sr_post(sr_config):
         print("-b   <broker>          default:amqp://guest:guest@localhost/")
         print("-c   <config_file>")
         print("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : print("-e   <events>          default:IN_CLOSE_WRITE\n")
+        if self.program_name == 'sr_watch' : print("-e   <events>          default:created|deleted|modified\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
@@ -137,10 +137,17 @@ class sr_post(sr_config):
            self.poster.cache_reset()
 
         if self.caching :
+           self.logger.debug("sr_post lock_set cache_load")
            self.poster.cache_load()
 
     def lock_unset(self):
-        if self.caching : self.poster.cache_close()
+        self.logger.debug("sr_post lock_unset")
+        if self.caching :
+           self.logger.debug("sr_post lock_unset cache_close")
+           self.poster.cache_close()
+
+    def move(self,src,dst):
+        self.logger.warning("file moved support not implemented. Event ignored.")
 
     # =============
     # __on_post__ internal posting of message
@@ -194,7 +201,7 @@ class sr_post(sr_config):
 
         # verify that file exists
 
-        if not os.path.isfile(filepath) and self.event != 'IN_DELETE' :
+        if not os.path.isfile(filepath) and self.event != 'deleted' :
            self.logger.error("File not found %s " % filepath )
            return False
 
@@ -223,7 +230,7 @@ class sr_post(sr_config):
         # delete event...
         # ==============
 
-        if self.event == 'IN_DELETE' :
+        if self.event == 'deleted' :
            ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
            if not ok : sys.exit(1)
            return
@@ -296,7 +303,7 @@ class sr_post(sr_config):
                    newpath = path + os.sep + e
 
                    if os.path.isfile(newpath) and os.access(newpath,os.R_OK):
-                      self.watching(newpath,'IN_CLOSE_WRITE')
+                      self.watching(newpath,'modified')
                       continue
 
                    if os.path.isdir(newpath) and recursive :
@@ -361,7 +368,7 @@ class sr_post(sr_config):
  
         if os.path.isdir(watch_path):
            self.logger.info("directory %s " % watch_path )
-           if self.rename != None and self.rename[-1] != '/' and 'IN_CLOSE_WRITE' in self.events:
+           if self.rename != None and self.rename[-1] != '/' and 'modified' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
 
         self.watch_path = watch_path
@@ -404,7 +411,7 @@ def main():
                  post.lock_set()
 
                  if os.path.isfile(watchpath) : 
-                    post.watching(watchpath,'IN_CLOSE_WRITE')
+                    post.watching(watchpath,'modified')
                  else :
                     post.scandir_and_post(watchpath,post.recursive)
 
