@@ -89,8 +89,10 @@ class sr_poster:
 
     def cache_close(self):
         self.logger.debug("sr_poster cache_close")
-        if not self.caching : return
-        if not self.cache   : return
+        self.logger.debug("sr_poster caching %s" % self.caching)
+        self.logger.debug("sr_poster cache %s" % self.cache)
+        if not self.caching   : return
+        if self.cache == None : return
         self.logger.debug("save cache and release lock")
         self.cache.close()
         os.unlink(self.cache_lock)
@@ -186,6 +188,7 @@ class sr_poster:
         if self.parent.batch <= 0 : return
         batch_reached = self.cache_acces % self.parent.batch
         if batch_reached     != 0 : return
+        self.logger.debug("sr_poster cache_save sync")
         self.cache.sync()
 
     def close(self):
@@ -208,13 +211,27 @@ class sr_poster:
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
-           key = url.path
-           if partstr : key = key + '.' + partstr
-           if key in self.cache and self.cache[key] == sumstr :
-              self.logger.info("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
-              return True
-           self.cache[key] = sumstr
-           if sumstr == 'R,0' : del self.cache[key]
+           key    = url.path
+
+           # new
+           if not key in self.cache :
+                kdict = {}
+                kdict[partstr]  = sumstr
+                self.cache[key] = kdict
+                 
+           # delete
+           elif sumstr == 'R,0':
+                del self.cache[key]
+
+           # modified, or repost
+           else:
+                kdict = self.cache[key]
+                if partstr in kdict and kdict[partstr] == sumstr :
+                   self.logger.info("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
+                   return True
+                kdict[partstr]  = sumstr
+                self.cache[key] = kdict
+
            self.cache_acces += 1
            self.cache_save()
 
