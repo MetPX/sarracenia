@@ -208,7 +208,8 @@ class sr_poster:
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
-           key = url.path + '.' + partstr
+           key = url.path
+           if partstr : key = key + '.' + partstr
            if key in self.cache and self.cache[key] == sumstr :
               self.logger.info("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
               return True
