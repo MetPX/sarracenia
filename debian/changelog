@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.03a9) unstable; urgency=medium
+
+  * sr_poster caching issues on delete... 
+
+ -- Michel Grenier <michel.grenier2@canada.ca>  Thu, 10 Mar 2016 15:49:37 -0500
+
 metpx-sarracenia (2.16.03a8) unstable; urgency=medium
 
   * sr_config.py should not prevent the creation of sr_audit user_cache_dir
