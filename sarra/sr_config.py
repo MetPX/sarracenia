@@ -65,7 +65,7 @@ class sr_config:
         #
         # site_config_dir = /etc/xdg/xdg-default/sarra
         # user_cache_dir  = ~/.cache/sarra
-        # user_log_dir    = ~/.cache/sarra/log
+        # user_log_dir    = ~/.cache/sarra/var/log
         # user_config_dir = ~/.config/sarra
          
         self.appname          = 'sarra'

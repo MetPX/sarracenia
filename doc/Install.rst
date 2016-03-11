@@ -83,7 +83,7 @@ all dependencies for Sarracenia. You can obtain winpython from http://winpython.
 
 
 Glossary
-========
+--------
 
 Sarracenia documentation uses a number of words in a particular way.  
 This glossary should make it easier to understand the rest of the documentation. 
