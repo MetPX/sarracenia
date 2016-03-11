@@ -201,9 +201,9 @@ def main():
                    # not so sure about testing accept/reject on src and dst
                    # but we dont care for now... it is not supported
                    if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
-                      watch.isMatchingPattern(event.dst_path, accept_unmatch=True) :
+                      watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
                       watch.post.lock_set()
-                      watch.post.move(event.src_path,event.dst_path)
+                      watch.post.move(event.src_path,event.dest_path)
                       watch.post.lock_unset()
 
 

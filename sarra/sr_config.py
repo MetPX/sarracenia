@@ -879,6 +879,8 @@ class sr_config:
                      i = 0
                      if 'modified' in words[1] : i = i + 1
                      if 'deleted'  in words[1] : i = i + 1
+                     if 'created'  in words[1] : i = i + 1
+                     if 'moved'  in words[1] : i = i + 1
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
