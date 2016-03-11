@@ -342,8 +342,7 @@ def test_sr_log2clusters():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2clusters.credentials.get("amqp://ddi1.edm.ec.gc.ca/")
-    ok, details = log2clusters.credentials.get("amqp://root:An0therR00T@ddi1.edm.ec.gc.ca/")
+    ok, details = log2clusters.credentials.get("amqp://root@ddi1.edm.ec.gc.ca/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")
