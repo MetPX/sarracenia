@@ -510,9 +510,10 @@ https://www.rabbitmq.com/install-debian.html
   - enable their repo. get the latest rabbitmq
   - the one in the wheezy depot is < 3.  too old?
 
-apt-get update
-apt-get install erlang-nox
-apt-get install rabbitmq-server
+::
+ apt-get update
+ apt-get install erlang-nox
+ apt-get install rabbitmq-server
 
 in upto-date distros, you likely can just take the distro version.
 
@@ -530,13 +531,13 @@ Change Defaults
 ~~~~~~~~~~~~~~~
 
 By default, an installation of a rabbitmq-server makes user guest the administrator... with password guest
-This should be changed for operational implementations... To void the guest user we suggest
+This should be changed for operational implementations... To void the guest user we suggest::
 
   rabbitmqctl set_user_tags guest
   rabbitmqctl list_user_permissions guest
   rabbitmqctl change_password guest ************
 
-And another administrator should be defined... we usually call it root...
+And another administrator should be defined... we usually call it root...::
 
   rabbitmqctl add_user root   *********
   rabbitmqctl set_user_tags root administrator
@@ -605,7 +606,7 @@ The *sr_audit* program will :
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
 .. Note:: 
-   The program runs as a deamon.  After the initial pass to create the users,
+   The program runs as a daemon.  After the initial pass to create the users,
    It will go into to sleep, and then audit the configuration again.
    To stop it from running in the foreground, stop it with: <ctrl-c>  
    (most common linux default intterupt character)
@@ -755,7 +756,7 @@ Keepalived moves the vip between the two::
 LDAP Integration 
 ~~~~~~~~~~~~~~~~
 
-To enable LDAP authentication for rabbitmq:
+To enable LDAP authentication for rabbitmq::
 
          rabbitmq-plugins enable rabbitmq_auth_backend_ldap
 
@@ -798,7 +799,7 @@ And you need to set up LDAP parameters in the broker configuration file:
 
 
 
-requires RABBITMQ > 3.3.x
+Requires RABBITMQ > 3.3.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Was searching on how to use LDAP strictly for password authentication
@@ -908,7 +909,7 @@ If the message fails the non-local cluster test, it should be rejected, and logg
 Privileged System Access
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-No sarracenia accounts of require privileged system of any kind.  The pump administrator account requires
+No sarracenia accounts require privileged system of any kind.  The pump administrator account requires
 privileges only on the AMQP broker, but nothing on the underlying operating system.   
 
 The may be a single task which must operate with privileges: cleaning up the database, which is an easily

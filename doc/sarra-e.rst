@@ -64,6 +64,8 @@ Sarracenia imposes a single interface mechanism, but that mechanism is
 completely portable and generic.  It should run without issue on any modern
 platform (Linux, Windows, Mac)
 
+For more information about Sarra, Please proceed to the `documentation <sarra-docs-e.html>`_
+
 
 Why Not Just Use Rsync?
 -----------------------
