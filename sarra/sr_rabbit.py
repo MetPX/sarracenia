@@ -41,9 +41,9 @@ def exec_rabbitmqadmin(url,options,logger=None):
 
     try :
            command  = rabbitmqadmin 
-           command += ' -H ' + url.hostname
-           command += ' -u ' + url.username
-           command += ' -p \'' + url.password
+           command += ' -H \'' + url.hostname
+           command += '\' -u \'' + url.username
+           command += '\' -p \'' + url.password
            command += '\' -f raw_json '
            command += ' '    + options
 
