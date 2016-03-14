@@ -8,7 +8,8 @@ import re
 import socket
 import subprocess
 
-rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
+#rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
+rabbitmqadmin = 'rabbitmqadmin'
 
 #===========================
 # rabbitmqadmin
@@ -16,6 +17,11 @@ rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
 
 def exec_rabbitmqadmin(url,options,logger=None):
     
+    """
+    #  This logic downloads rabbitmqadmin into cwd wherever it is invoked.
+    #  ends up littering file system with rabbitmqadmin copies.  disabled in favour of 
+    #  having it downloaded once during installation.
+
     if not os.path.isfile(rabbitmqadmin):
        try :
              import urllib.request, urllib.error
@@ -31,13 +37,14 @@ def exec_rabbitmqadmin(url,options,logger=None):
              #(stype, svalue, tb) = sys.exc_info()
              #print("Type: %s, Value: %s" % (stype, svalue))
              pass
+    """
 
     try :
            command  = rabbitmqadmin 
            command += ' -H ' + url.hostname
            command += ' -u ' + url.username
-           command += ' -p ' + url.password
-           command += ' -f raw_json '
+           command += ' -p \'' + url.password
+           command += '\' -f raw_json '
            command += ' '    + options
 
            # (status, answer) = subprocess.getstatusoutput(command)
