@@ -47,16 +47,16 @@ class sr_audit(sr_instances):
         sr_instances.__init__(self,config,args)
 
     def add_exchange(self,e):
-        self.logger.info("adding exchange %s" % e)
-        dummy = self.rabbitmqadmin("declare exchange name=%s type=topic auto_delete=false durable=true"%e)
+        self.logger.info("adding exchange '%s'" % e)
+        dummy = self.rabbitmqadmin("declare exchange name='%s' type=topic auto_delete=false durable=true"%e)
 
     def add_user(self,u,role):
         self.logger.info("adding user %s" % u)
 
         if role == 'admin' :
-           dummy = self.rabbitmqadmin("declare user name=%s password= tags=administrator"%u)
+           dummy = self.rabbitmqadmin("declare user name='%s' password= tags=administrator"%u)
         else:
-           dummy = self.rabbitmqadmin("declare user name=%s password= tags="%u)
+           dummy = self.rabbitmqadmin("declare user name='%s' password= tags="%u)
 
         # admin and feeder gets the same permissions
 
@@ -64,8 +64,8 @@ class sr_audit(sr_instances):
            c="configure='.*'"
            w="write='.*'"
            r="read='.*'"
-           self.logger.info("permission user %s role %s  %s %s %s " % (u,'feeder',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'feeder',c,w,r))
+           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
 
         # source
@@ -74,8 +74,8 @@ class sr_audit(sr_instances):
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
            r="read='^q_%s.*|^xl_%s$|^xpublic$'"%(u,u)
-           self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
+           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
 
         # PS asked not to implement this (Fri Mar  4 2016)
@@ -98,8 +98,8 @@ class sr_audit(sr_instances):
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
            r="read='^q_%s.*|^xpublic$'"%u
-           self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
+           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
 
     def check(self):
@@ -161,7 +161,7 @@ class sr_audit(sr_instances):
 
     def delete_user(self,u):
         self.logger.info("deleting user %s" % u)
-        dummy = self.rabbitmqadmin("delete user name=%s"%u)
+        dummy = self.rabbitmqadmin("delete user name='%s'"%u)
 
     def overwrite_defaults(self):
         self.logger.debug("sr_audit overwrite_defaults")
@@ -505,8 +505,11 @@ class sr_audit(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-              self.logger.info("audit is sleeping %d seconds " % self.sleep)
-              time.sleep(self.sleep)
+              if self.users_flag or self.pump_flag :
+                  return
+              else :
+                  self.logger.info("audit is sleeping %d seconds " % self.sleep)
+                  time.sleep(self.sleep)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
