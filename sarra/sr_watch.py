@@ -56,7 +56,7 @@
 #
 #============================================================
 
-import os, sys, time
+import os, sys, time, shelve, psutil
 
 from watchdog.observers.polling import PollingObserverVFS
 from watchdog.events import PatternMatchingEventHandler
@@ -73,6 +73,7 @@ class sr_watch(sr_instances):
     def __init__(self,config=None,args=None):
         self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
+        self.validate_cache()
 
     def close(self):
         self.post.close()
@@ -99,6 +100,27 @@ class sr_watch(sr_instances):
         if self.reset :
            self.post.connect()
            self.post.poster.cache_reset()
+
+    def validate_cache(self):
+        self.cache_file  = self.user_cache_dir
+        self.cache_file += '/' + self.watch_path.replace('/','_')
+        self.cache_file += '_%d' % self.blocksize
+        self.cache = shelve.open(self.cache_file)
+        current_pid = os.getpid()
+        k_pid = "pid"
+
+        if "pid" in self.cache:
+            if not self.cache[k_pid] == current_pid:
+                if psutil.pid_exists(self.cache[k_pid]):
+                    self.logger.error("Another sr_watch instance with same configuration is already running.")
+                    os._exit(1)
+                else:
+                    self.logger.debug("Reusing cache with pid=%s" % str(current_pid))
+                    self.cache["pid"] = current_pid
+        else:
+            self.logger.debug("Creating new cache with pid=%s" % str(current_pid))
+            self.cache["pid"] = current_pid
+        self.cache.close()
 
     def event_handler(self,meh):
         self.myeventhandler = meh
@@ -158,7 +180,7 @@ def main():
     # =========================================
 
     watch = sr_watch(config,args)
-
+   
     # =========================================
     # setup watchdog
     # =========================================
