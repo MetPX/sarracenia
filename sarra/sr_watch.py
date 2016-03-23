@@ -176,36 +176,30 @@ def main():
                 watch.logger.error(str(err))
 
         def on_created(self, event):
-            if event.key[0] in watch.events:
-                if (not event.is_directory):
-                    self.event_post(event.src_path, 'created')
+            if (not event.is_directory):
+                self.event_post(event.src_path, 'created')
  
         def on_deleted(self, event):
-            if event.key[0] in watch.events:
-                if event.src_path == watch.watch_path:
-                    watch.stop_touch()
-                    watch.logger.error('Exiting!')
-                    os._exit(0)
-                if (not event.is_directory):
-                    self.event_post(event.src_path, 'deleted')
+            if event.src_path == watch.watch_path:
+                watch.stop_touch()
+                watch.logger.error('Exiting!')
+                os._exit(0)
+            if (not event.is_directory):
+                self.event_post(event.src_path, 'deleted')
     
         def on_modified(self, event):
-            if event.key[0] in watch.events:
-                if (not event.is_directory):
-                    self.event_post(event.src_path, 'modified')
-
+            if (not event.is_directory):
+                self.event_post(event.src_path, 'modified')
 
         def on_moved(self, event):
-            if event.key[0] in watch.events:
-                if (not event.is_directory):
-                   # not so sure about testing accept/reject on src and dst
-                   # but we dont care for now... it is not supported
-                   if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
-                      watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-                      watch.post.lock_set()
-                      watch.post.move(event.src_path,event.dest_path)
-                      watch.post.lock_unset()
-
+            if (not event.is_directory):
+               # not so sure about testing accept/reject on src and dst
+               # but we dont care for now... it is not supported
+               if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
+                  watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
+                  watch.post.lock_set()
+                  watch.post.move(event.src_path,event.dest_path)
+                  watch.post.lock_unset()
 
     watch.event_handler(MyEventHandler())
 

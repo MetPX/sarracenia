@@ -93,16 +93,17 @@ class sr_poster:
         self.logger.debug("sr_poster cache %s" % self.cache)
         if not self.caching   : return
         if self.cache == None : return
-        self.logger.debug("save cache and release lock")
+        #self.logger.debug("save cache and release lock")
+        self.logger.debug("save cache")
         self.cache.close()
-        os.unlink(self.cache_lock)
+        #os.unlink(self.cache_lock)
         self.cache = None
 
     def cache_files_set(self):
         self.logger.debug("sr_poster cache_files_set")
 
         self.cache_file = None
-        self.cache_lock = None
+        #self.cache_lock = None
 
         if not hasattr(self.parent,'watch_path') : 
            self.logger.error("could not cache posting... no watch_path")
@@ -118,7 +119,7 @@ class sr_poster:
         self.cache_file += '/' + self.parent.watch_path.replace('/','_')
         self.cache_file += '_%d' % self.parent.blocksize
 
-        self.cache_lock  = self.cache_file + '.lck'
+        #self.cache_lock  = self.cache_file + '.lck'
 
 
     def cache_reset(self):
@@ -126,7 +127,7 @@ class sr_poster:
 
         self.cache_files_set()
         self.logger.debug("cache_file = %s" % self.cache_file)
-        self.logger.debug("cache_lock = %s" % self.cache_lock)
+        #self.logger.debug("cache_lock = %s" % self.cache_lock)
 
         # unfortunately have to try several implementation extensions...
         if self.cache_file:
@@ -141,9 +142,9 @@ class sr_poster:
            try   : os.unlink(self.cache_file+'.dat')
            except: pass
 
-        if self.cache_lock:
-           try   : os.unlink(self.cache_lock)
-           except: pass
+        #if self.cache_lock:
+        #   try   : os.unlink(self.cache_lock)
+        #   except: pass
 
         self.logger.info("posting cache was reset...")
 
@@ -156,27 +157,27 @@ class sr_poster:
 
         self.cache_files_set()
         self.logger.debug("cache_file = %s" % self.cache_file)
-        self.logger.debug("cache_lock = %s" % self.cache_lock)
+        #self.logger.debug("cache_lock = %s" % self.cache_lock)
 
         if not self.cache_file: return
 
         self.cache_acces = 0
 
         # increase sleeping time when it taks more time..
-        self.logger.debug("check for lock file %s" % self.cache_lock)
-        while os.path.exists(self.cache_lock) :
-              self.logger.debug("cache locked sleeping for %f" % self.sleep_list[self.sleep_idx])
-              time.sleep(self.sleep_list[self.sleep_idx])
-              self.sleep_idx = self.sleep_idx + 1
-              if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
+        #self.logger.debug("check for lock file %s" % self.cache_lock)
+        #while os.path.exists(self.cache_lock) :
+        #      self.logger.debug("cache locked sleeping for %f" % self.sleep_list[self.sleep_idx])
+        #      time.sleep(self.sleep_list[self.sleep_idx])
+        #      self.sleep_idx = self.sleep_idx + 1
+        #      if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
 
         # out of the loop will start over with a short sleep time
-        self.sleep_idx = 0
+        #self.sleep_idx = 0
 
-        self.logger.debug("acquiring lock")
-        f=open(self.cache_lock,'wb')
-        f.write(b'lock')
-        f.close()
+        #self.logger.debug("acquiring lock")
+        #f=open(self.cache_lock,'wb')
+        #f.write(b'lock')
+        #f.close()
 
         self.logger.debug("load cache")
         self.cache = shelve.open(self.cache_file)
@@ -236,21 +237,17 @@ class sr_poster:
            self.cache_save()
 
         # set message exchange
-
         self.msg.exchange = exchange
-
+        
         # set message topic
-
         self.msg.set_topic_url(self.topic_prefix,url)
         if self.subtopic != None :
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # set message notice
-
         self.msg.set_notice(url)
 
         # set message headers
-
         self.msg.headers = {}
 
         self.msg.headers['to_clusters'] = to_clusters
@@ -267,7 +264,6 @@ class sr_poster:
         if filename            != None : self.msg.headers['filename']     = filename
 
         ok = self.parent.__on_post__()
-
         return ok
 
     def post_local_file(self,path,exchange,url,to_clusters,sumflg='d',rename=None):

@@ -131,19 +131,21 @@ class sr_post(sr_config):
         print("-parts <parts>         default:1")
 
     def lock_set(self):
-        self.logger.debug("sr_post lock_set")
+        #self.logger.debug("sr_post lock_set")
 
         if self.reset   :
            self.poster.cache_reset()
 
         if self.caching :
-           self.logger.debug("sr_post lock_set cache_load")
+           #self.logger.debug("sr_post lock_set cache_load")
+           self.logger.debug("sr_post cache_load")
            self.poster.cache_load()
 
     def lock_unset(self):
-        self.logger.debug("sr_post lock_unset")
+        #self.logger.debug("sr_post lock_unset")
         if self.caching :
-           self.logger.debug("sr_post lock_unset cache_close")
+           #self.logger.debug("sr_post lock_unset cache_close")
+           self.logger.debug("sr_post cache_close")
            self.poster.cache_close()
 
     def move(self,src,dst):
@@ -170,8 +172,9 @@ class sr_post(sr_config):
            if not ok: return ok
 
         # should always be ok
-
-        ok = self.msg.publish( )
+        ok = True
+        if self.event in self.events:
+           ok = self.msg.publish( )
 
         return ok
 
@@ -319,7 +322,6 @@ class sr_post(sr_config):
         self.logger.debug("sr_post watching")
 
         self.event = event
-
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
            fpath = fpath.replace('\\','/')
 
