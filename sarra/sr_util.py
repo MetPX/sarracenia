@@ -38,11 +38,38 @@ import urllib
 import urllib.parse
 from hashlib import md5
 
+"""
+
+A single checksum class is chosen by the source of data being injected into the network.
+The following checksum classes are alternatives that are built-in.  Sources may define 
+new algorithms that need to be added to networks.
+
+checksums are used by:
+    sr_post to generate the initial post.
+    sr_post to compare against cached values to see if a given block is the same as what was already posted.
+    sr_sarra to ensure that the post received is accurate before echoing further.
+    sr_subscribe to compare the post with the file which is already on disk.
+    sr_winnow to determine if a given post has been seen before.
+
+
+The API of a checksum class (in calling sequence order):
+   __init__   -- initialize the value of a checksum for a part.
+   set_path   -- identify the checksumming algorithm to be used by update.
+   update     -- given this chunk of the file, update the checksum for the part
+   get_value  -- return the current calculated checksum value.
+
+The API allows for checksums to be calculated while transfer is in progress 
+rather than after the fact as a second pass through the data.  
+
+"""
 # ===================================
 # checksum_0 class
 # ===================================
 
 class checksum_0(object):
+      """
+      Trivial minimalist checksumming algorithm, returns 0 for any file.
+      """
       def __init__(self):
           self.value = '0'
 
@@ -60,6 +87,9 @@ class checksum_0(object):
 # ===================================
 
 class checksum_d(object):
+      """
+      The default algorithm is to do a checksum of the entire contents of the file, which is called 'd'.
+      """
       def __init__(self):
           self.value = '0'
 
@@ -78,6 +108,12 @@ class checksum_d(object):
 # ===================================
 
 class checksum_n(object):
+      """
+      when there is more than one processing chain producing products, it can happen that files are equivalent
+      without being identical, for example if each server tags a product with ''generated on server 16', then
+      the generation tags will differ.   The simplest option for checksumming then is to use the name of the
+      product, which is generally the same from all the processing chains.  
+      """
       def __init__(self):
           self.value = '0'
 
