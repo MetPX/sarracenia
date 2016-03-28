@@ -20,7 +20,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
     """
     #  This logic downloads rabbitmqadmin into cwd wherever it is invoked.
     #  ends up littering file system with rabbitmqadmin copies.  disabled in favour of 
-    #  having it downloaded once during installation.
+    #  having it manually downloaded once during installation.
 
     if not os.path.isfile(rabbitmqadmin):
        try :
@@ -41,10 +41,10 @@ def exec_rabbitmqadmin(url,options,logger=None):
 
     try :
            command  = rabbitmqadmin 
-           command += ' -H \'' + url.hostname
-           command += '\' -u \'' + url.username
+           command += ' --host \'' + url.hostname
+           command += '\' --user \'' + url.username
            command += '\' -p \'' + url.password
-           command += '\' -f raw_json '
+           command += '\' --format raw_json '
            if url.scheme == 'amqps':
                command += ' -ssl --port=15671 ' 
            command += ' '    + options
