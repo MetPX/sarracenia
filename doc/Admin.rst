@@ -643,7 +643,7 @@ To void the guest user we suggest::
 
   rabbitmqctl delete_user guest
 
-Another administrator should be defined... let's call it bunnymaster, setting the password to MaestroDelConejito ...::
+Some other administrator must be defined... let's call it *bunnymaster*, setting the password to *MaestroDelConejito* ...::
 
   root@boule:~# rabbitmqctl add_user bunnymaster MaestroDelConejito
   Creating user "bunnymaster" ...
@@ -658,11 +658,19 @@ Another administrator should be defined... let's call it bunnymaster, setting th
   ...done.
   root@boule:~# 
 
-Make sure to store the credentials in an appropriate linux account (say 'sarra')::
+Create a local linux account under which sarra administrative tasks will run (say Sarra).
+This is where credentials and configuration for pump level activities will be stored.
+As the configuration is maintained with this user, it is expected to be actively used
+by humans, and so should have a proper interactive shell environment.  Some administrative 
+access is needed, so the user is added to the sudo group.  
 
   root@boule:~# useradd -m sarra
+  root@boule:~# usermod -a -G sudo sarra
   root@boule:~# mkdir ~sarra/.config
   root@boule:~# mkdir ~sarra/.config/sarra
+
+first need entries in the credentials.conf and default.conf files::
+
   root@boule:~# echo "amqps://bunnymaster:MaestroDelConejito@boule.example.com/" >~sarra/.config/sarra/credentials.conf
   root@boule:~# echo "admin amqps://bunnymaster@boule.example.com/" >~sarra/.config/sarra/default.conf
   root@boule:~# chown -R sarra.sarra ~sarra/.config
@@ -673,8 +681,9 @@ Make sure to store the credentials in an appropriate linux account (say 'sarra')
   root@boule:~# 
   root@boule:~# chsh -s /bin/bash sarra  # for comfort
 
-All other sarra configuration operations can be accomplished as the sarra user, but
-there is a little more to be done as root::
+When Using SSL (aka amqps), verification prevents the use of *localhost*. 
+Even for access on the local machine, the fully qualified hostname must be used.
+Next::
 
   root@boule:~#  cd /usr/local/bin
   root@boule:/usr/local/bin# wget https://boule.example.com:15671/cli/rabbitmqadmin
@@ -698,8 +707,12 @@ that it will be found when it is called by sr_admin::
 
   root@boule:/usr/local/bin#  su - sarra
 
-From this point root will not usually be needed.
+From this point root will not usually be needed, as all configuration can be done from the
+un-privileged *sarra* account.
 
+.. NOTE::
+   out of scope of this discussion, but aside from file system permissions, the sarra user needs 
+   access only to rabbitmqctl as root.
 
 
 Managing Users on a Pump Using Sr_audit
@@ -714,6 +727,8 @@ the credentials file  .config/sarra/credentials.conf ::
 
  amqps://bunnymaster:MaestroDelConejito@boule.example.com/
  amqps://feeder:NoHayPanDuro@boule.example.com/
+ amqps://anonymous:anonyomous@boule.example.com/
+ amqps://peter:piper@boule.example.com/
 
 Then write in .config/sarra/default.conf file to define their presence/role::
 
@@ -731,6 +746,7 @@ Now to configure the pump execute the following:
 *sr_audit --users foreground*
 
 Sample run:: 
+
   sarra@boule:~/.config/sarra$ sr_audit --debug --users foreground
   2016-03-28 00:41:25,380 [INFO] sr_audit start
   2016-03-28 00:41:25,380 [INFO] sr_audit run
@@ -756,9 +772,10 @@ The *sr_audit* program will :
 - load roles from .config/sarra/default.conf
 - obtain a list of users and exchanges on the pump
 - for each user in a *role* option:: 
-      create user if required
-      set    user permissions from its role (on creation)
-      create user exchanges   from its role
+
+      declare the user on the broker if missing.
+      set    user permissions corresponding to its role (on creation)
+      create user exchanges   corresponding to its role
   
 - users which have no declared role are deleted.
 - user exchanges which do not correspond to users' roles are deleted ('xl_*,xs_*') 
@@ -771,16 +788,62 @@ The *sr_audit* program will :
    (most common linux default intterupt character)
    or find some other way to kill the running process.
    
-   FIXME: when invoked with --users, sr_audit, should set a 'one_shot' flag,
+   FIXME: when invoked with --users, sr_audit, should set a 'once' flag,
    and exist immediately, rather than looping.  
 
-Sample run:
+One can inspect whether the sr_audit command did all it should using either the Management GUI
+or the command line tool::
 
+  sarra@boule:~$ sudo rabbitmqctl  list_exchanges
+  Listing exchanges ...
+  	direct
+  amq.direct	direct
+  amq.fanout	fanout
+  amq.headers	headers
+  amq.match	headers
+  amq.rabbitmq.log	topic
+  amq.rabbitmq.trace	topic
+  amq.topic	topic
+  xl_peter	topic
+  xlog	topic
+  xpublic	topic
+  xs_anonymous	topic
+  xs_peter	topic
+  ...done.
+  sarra@boule:~$
+  sarra@boule:~$ sudo rabbitmqctl  list_users
+  Listing users ...
+  anonymous	[]
+  bunnymaster	[administrator]
+  feeder	[]
+  peter	[]
+  ...done.
+  sarra@boule:~$ sudo rabbitmqctl  list_permissions
+  Listing permissions in vhost "/" ...
+  anonymous	^q_anonymous.*	^q_anonymous.*|^xs_anonymous$	^q_anonymous.*|^xpublic$
+  bunnymaster	.*	.*	.*
+  feeder	.*	.*	.*
+  peter	^q_peter.*	^q_peter.*|^xs_peter$	^q_peter.*|^xl_peter$|^xpublic$
+  ...done.
+  sarra@boule:~$ 
 
+The above looks like *sr_audit* did it's job, but the *sr_audit* program does not set user passwords. 
+To do it manually, one must use the root account on the pump (via sudo)::
 
-The *sr_audit* program does not set user passwords. To do it manually, on the pump::
+  sudo rabbitmqctl change_password <user> <password>
 
-  rabbitmqctl change_password <user> <password>
+example::
+
+  sarra@boule:~% sudo rabbitmqctl change_password anonymous anonymous
+  Changing password for user "anonymous" ...
+  ...done.
+  sarra@boule:~% sudo rabbitmqctl change_password feeder 'NoHayPanDuro'
+  Changing password for user "feeder" ...
+  ...done.
+  sarra@boule:~% sudo rabbitmqctl change_password peter 'piper'
+  Changing password for user "peter" ...
+  ...done.
+  sarra@boule:~% 
 
 In short, here are the permissions and exchanges *sr_audit* manages::
 
@@ -807,7 +870,7 @@ then run::
 
 which would create the user, then:
  
-  rabbitmqctl add_user Alice <password>
+  rabbitmqctl change_password Alice <password>
 
 
 To set Alice's password.   
@@ -819,12 +882,144 @@ To remove users, just remove *role source Alice* from the default.conf file, and
 again.  
 
 
+First Subscribe
+~~~~~~~~~~~~~~~
+
+When setting up a pump, normally the purpose is to connect it to some other pump.  To set
+the parameters setting up a subscription helps us set parameters for sarra later.  So first
+try a subscription to an upstream pump::
+
+  sarra@boule:~$ ls
+  sarra@boule:~$ cd ~/.config/sarra/
+  sarra@boule:~/.config/sarra$ mkdir subscribe
+  sarra@boule:~/.config/sarra$ cd subscribe
+  sarra@boule:~/.config/sarra/subscribe$  cat >dd.conf <<EOT
+  broker amqp://anonymous@dd.weather.gc.ca/
+
+  mirror True
+  directory /var/www/html
+
+  # GRIB files will overwhelm a small server.
+  reject .*/grib2/.*
+
+  accept .*
+  EOT
+
+add the password for the upstream pump to credentials.conf ::
+
+  sarra@boule:~/.config/sarra$ echo "amqp://anonymous:anonymous@dd.weather.gc.ca/" >>../credentials.conf
+
+then do a short foreground run, to see if it is working. hit Ctrl-C to stop it after a few messages::
+
+  2016-03-28 09:21:27,708 [INFO] sr_subscribe start
+  2016-03-28 09:21:27,708 [INFO] sr_subscribe run
+  2016-03-28 09:21:27,708 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-03-28 09:21:28,375 [INFO] Binding queue q_anonymous.sr_subscribe.dd.78321126.82151209 with key v02.post.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-03-28 09:21:28,933 [INFO] Received notice  20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml
+  2016-03-28 09:21:29,297 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160328.CWRM 20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml 201 boule.example.com anonymous 1128.560235 parts=1,6451,1,0,0 sum=d,f17299b2afd78ae8d894fe85d3236488 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml message=Downloaded 
+  2016-03-28 09:21:29,389 [INFO] Received notice  20160328130240.646 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml
+  2016-03-28 09:21:29,662 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160328.CWSK 20160328130240.646 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml 201 boule.example.com anonymous 1128.924688 parts=1,7041,1,0,0 sum=d,8cdc3420109c25910577af888ae6b617 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml message=Downloaded 
+  2016-03-28 09:21:29,765 [INFO] Received notice  20160328130240.647 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml
+  2016-03-28 09:21:30,045 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160328.CWWA 20160328130240.647 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml 201 boule.example.com anonymous 1129.306662 parts=1,7027,1,0,0 sum=d,aabb00e0403ebc9caa57022285ff0e18 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml message=Downloaded 
+  2016-03-28 09:21:30,138 [INFO] Received notice  20160328130240.649 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml
+  2016-03-28 09:21:30,431 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160328.CXVG 20160328130240.649 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml 201 boule.example.com anonymous 1129.690082 parts=1,7046,1,0,0 sum=d,186fa9627e844a089c79764feda781a7 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml message=Downloaded 
+  2016-03-28 09:21:30,524 [INFO] Received notice  20160328130240.964 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/CA/CWAO/13/CACN00_CWAO_281300__TBO_05037
+  ^C2016-03-28 09:21:30,692 [INFO] signal stop
+  2016-03-28 09:21:30,693 [INFO] sr_subscribe stop
+  sarra@boule:~/.config/sarra/subscribe$ 
+  
+So the connection to upstream is functional, now lets make sure the subscription does not start automatically::
+
+  sarra@boule:~/.config/sarra/subscribe$ mv dd.conf dd.off
+
+and turn to a sarra set up.
+  
+
+
+First Sarra
+~~~~~~~~~~~
+
+Sarra is used to have a downstream pump re-advertise products from an upstream one.  Sarra needs all the configuration of a subscription,
+but also needs the configuration to post to the downstream broker.  The feeder account on the broker is used for this sort 
+of work, and is a semi-administrative user, able to publish data to any exchange.  Assume Apache is set up (not covered here) with a 
+document root of /var/www/html.  The linux account we have created to run all the sr processes is '*sarra*', so we make sure 
+the document root is writable to those processes::
+
+  sarra@boule:~$ cd ~/.config/sarra/sarra
+  sarra@boule:~/.config/sarra/sarra$ sudo chown sarra.sarra /var/www/html
+
+Then we create a configuration::
+
+  sarra@boule:~$ cat >>dd.off <<EOT
+
+  broker amqp://anonymous@dd.weather.gc.ca/
+  exchange xpublic
+
+  gateway_for DD
+
+  # GRIB files will overwhelm a small server.
+  reject .*/grib2/.*
+
+  directory /var/www/html
+  accept .*
+
+  url http://boule.example.com/
+  document_root /var/www/html
+  post_broker amqps://feeder@boule.example.com/
+  
+  EOT
+
+We have added:
+
+exchange xpublic
+
+  sarra is often used for specialized transfers, so the xpublic exchange is not assumed, as it is with subscribe.
+
+gateway_for DD
+
+   sarra implements routing by cluster, so if data is not destined for this cluster, it will skip (not download) a product.
+   Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so lets pretend to route
+   for that.
+
+url and document_root
+
+   these are needed to build the local posts that will be posted to the ...
+
+post_broker
+  
+   where we will re-announce the files we have downloaded.
+
+
+so then try it out::
+
+  sarra@boule:~/.config/sarra/sarra$ sr_sarra --reset dd.off foreground
+  2016-03-28 10:38:16,999 [INFO] sr_sarra start
+  2016-03-28 10:38:16,999 [INFO] sr_sarra run
+  2016-03-28 10:38:17,000 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-03-28 10:38:17,604 [INFO] Binding queue q_anonymous.sr_sarra.dd.off with key v02.post.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-03-28 10:38:19,172 [INFO] Received v02.post.bulletins.alphanumeric.20160328.UA.CWAO.14 '20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422' parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM 
+  2016-03-28 10:38:19,172 [INFO] downloading/copying into /var/www/html/bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 
+  2016-03-28 10:38:19,515 [INFO] 201 Downloaded : v02.log.bulletins.alphanumeric.20160328.UA.CWAO.14 20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 201 boule.bsqt.example.com anonymous -0.736602 parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM message=Downloaded 
+  2016-03-28 10:38:19,517 [INFO] Published: '20160328143820.166 http://boule.bsqt.example.com/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422' parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM 
+  2016-03-28 10:38:19,602 [INFO] 201 Published : v02.log.bulletins.alphanumeric.20160328.UA.CWAO.14.UANT01_CWAO_281438___22422 20160328143820.166 http://boule.bsqt.example.com/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 201 boule.bsqt.example.com anonymous -0.648599 parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM message=Published 
+  ^C2016-03-28 10:38:20,328 [INFO] signal stop
+  2016-03-28 10:38:20,328 [INFO] sr_sarra stop
+  sarra@boule:~/.config/sarra/sarra$ 
+
+The file has the suffix 'off' so that it will not be invoked by default when the entire sarra configuration is started.
+One can still start the file when it is in the off setting, by specifying the path (in this case, it is in the current directory)
+so initially have 'off' files while debugging the settings.
+As the configuration is working properly, rename it to so that it will be used on startup::
+
+  sarra@boule:~/.config/sarra/sarra$ mv dd.off dd.conf
+  sarra@boule:~/.config/sarra/sarra$ 
+
 
 
 Manually Adding Users
 ~~~~~~~~~~~~~~~~~~~~~
 
-Altenatively, to add Alice as source user manually, one would::
+To avoid the use of sr_admin, or work around issues, one can adjust user settings manually::
 
   wget -q https://boule.example.com:15671/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
