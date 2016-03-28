@@ -171,7 +171,7 @@ class sr_audit(sr_instances):
         try :
                  (status, answer) = exec_rabbitmqadmin(self.admin,options,self.logger)
                  if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
-                    self.logger.error("Error could not execute")
+                    self.logger.error("rabbitmqadmin invocation failed")
                     return []
 
                  if answer == None or len(answer) == 0 : return []

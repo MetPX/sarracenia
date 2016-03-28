@@ -252,7 +252,23 @@ admin
   It is the real rabbitmq-server administrator.
   The administrator runs sr_audit to create/delete
   exchanges, users, or clean unused queues... etc.
+
+Example of a complete valid default.conf, for a host named *blacklab* ::
+ 
+  cluster blacklab
+  manager amqps://hbic@blacklab/
+  feeder  amqps://feeder@blacklab/
+  role source goldenlab 
+  role subscriber anonymous
+
+A corresponding credentials.conf would look like::
+
+  amqps://hbic:hbicpw@blacklab/
+  amqps://feeder:feederpw@blacklab/
+  amqps://goldenlab:puppypw@blacklab/
+  amqps://anonymous:anonymous@blacklab/
   
+
 
 Transport Engines
 -----------------
@@ -276,15 +292,7 @@ The administrative user name is an installation choice, and exactly as for any o
 user, the configuration files are placed under ~/.config/sarra/, with the 
 defaults under default.conf, and the configurations for components under
 directories named after each component.  In the component directories,
-Configuration files have the .conf suffix.  User roles are set with the *roles*
-option in configuration files. Possible *roles* are: source and subscriber.
-The full user credentials are placed in file credentials.conf.
-
-..note:: 
-  FIXME: ... replaced missing users.conf(7) man page with role option in main config.
-  joe [subscriber|source|feeder|admin]
-  role source Alice
-  role subscriber Bob
+Configuration files have the .conf suffix.  
 
 The administrative processes perform validation of postings from sources. Once
 they are validated, forward the postings to the public exchanges for subscribers to access.
@@ -493,6 +501,7 @@ the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**
 Each node will have its own queue, only shared by the node instances.
 ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
 
+
 Rabbitmq Setup 
 --------------
 
@@ -507,8 +516,6 @@ Installation
 Generally speaking, we want to stay above 3.x version.  
 
 https://www.rabbitmq.com/install-debian.html
-  - enable their repo. get the latest rabbitmq
-  - the one in the wheezy depot is < 3.  too old?
 
 ::
  apt-get update
@@ -517,83 +524,235 @@ https://www.rabbitmq.com/install-debian.html
 
 in upto-date distros, you likely can just take the distro version.
 
+
+Web UI Setup
+~~~~~~~~~~~~
+
+Sr_audit makes use of a variety of calls to the web management interface.
+sr_audit is the component which, as the name implies, audits configurations
+for left over queues, or attempts at malicious usage.  Without this sort 
+of auditing, the switch is likely to accumulate messages rapidly, which 
+slows it down to a greater degree as the amount of messages pending increases
+potentially overflowing to disk.
+
+Basically, from a root shell one must::
+
+ rabbitmq-plugins enable rabbitmq_management
+
+which will enable the webUI for the broker.  To prevent access to the management
+interface for undesirables, use of firewalls, or listening only to localhost
+interface for the management ui is suggested.
+
 SSL Setup
 ~~~~~~~~~
 
-This should be mandatory, and included here as part of setup.
-Wait until December 3rd, 2015... see if letsencrypt provides a simpler setup method.
+One should encrypt broker traffic.  One method to do so is to obtain
+certificates from `letsencrypt <http://www.letsencrypt.org>`_ ::
+
+    root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
+    Cloning into 'letsencrypt'...
+    remote: Counting objects: 33423, done.
+    remote: Total 33423 (delta 0), reused 0 (delta 0), pack-reused 33423
+    Receiving objects: 100% (33423/33423), 8.80 MiB | 5.74 MiB/s, done.
+    Resolving deltas: 100% (23745/23745), done.
+    Checking connectivity... done.
+    root@boule:~# cd letsencrypt
+    root@boule:~/letsencrypt# 
+    root@boule:~/letsencrypt# ./letsencrypt-auto certonly --standalone -d boule.example.com
+    Checking for new version...
+    Requesting root privileges to run letsencrypt...
+       /root/.local/share/letsencrypt/bin/letsencrypt certonly --standalone -d boule.example.com
+    IMPORTANT NOTES:
+     - Congratulations! Your certificate and chain have been saved at
+       /etc/letsencrypt/live/boule.example.com/fullchain.pem. Your
+       cert will expire on 2016-06-26. To obtain a new version of the
+       certificate in the future, simply run Let's Encrypt again.
+     - If you like Let's Encrypt, please consider supporting our work by:
+    
+       Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+       Donating to EFF:                    https://eff.org/donate-le
+    
+    root@boule:~# ls /etc/letsencrypt/live/boule.example.com/
+    cert.pem  chain.pem  fullchain.pem  privkey.pem
+    root@boule:~#  
+
+This process produces key files readable only by root.  To make the files
+readable by the broker (which runs under the rabbitmq users name) one will have 
+to adjust the permissions to allow the broker to read the files.
+probably the simplest way to do this is to copy them elsewhere::
+
+    root@boule:~# cd /etc/letsencrypt/live/boule*
+    root@boule:/etc/letsencrypt/archive# mkdir /etc/rabbitmq/boule.example.com
+    root@boule:/etc/letsencrypt/archive# cp -r * /etc/rabbitmq/boule.example.com
+    root@boule:~# cd /etc/rabbitmq
+    root@boule:~# chown -R rabbitmq.rabbitmq boule*
+
+Now that we have proper certificate chain, configure rabbitmq to disable
+tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (see also 
+`RabbitMQ Management <https://www.rabbitmq.com/management.html`_ )::
+
+    root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
+
+    [
+      {rabbit, [
+         {tcp_listeners, []},
+         {ssl_listeners, [5671]},
+         {ssl_options, [{cacertfile,"/etc/letsencrypt/live/boule.example.com/fullchain.pem"},
+                        {certfile,"/etc/letsencrypt/live/boule.example.com/cert.pem"},
+                        {keyfile,"/etc/letsencrypt/live/boule.example.com/privkey.pem"},
+                        {verify,verify_peer},
+                        {fail_if_no_peer_cert,false}]}
+       ]}
+      {rabbitmq_management, [{listener, 
+         [{port,     15671},
+               {ssl,      true},
+               {ssl_opts, [{cacertfile,"/etc/letsencrypt/live/boule.example.com/fullchain.pem"},
+                              {certfile,"/etc/letsencrypt/live/boule.example.com/cert.pem"},
+                              {keyfile,"/etc/letsencrypt/live/boule.example.com/privkey.pem"} ]}
+         ]} 
+      ]}
+    ].
+
+    EOT
+
+Now the broker and management interface are both configured to encrypt all traffic
+passed between client and broker.
 
 .. NOTE::
-   FIXME: Document this.
+
+  currently, sr_audit expects the Management interface to be on port 15671 if encrypted,
+  15672 otherwise.  There is no configuration possible to tell it otherwise.  Choosing another 
+  port will break sr_audit.  FIXME.
 
 
 Change Defaults 
 ~~~~~~~~~~~~~~~
 
-By default, an installation of a rabbitmq-server makes user guest the administrator... with password guest
-This should be changed for operational implementations... To void the guest user we suggest::
+In order to perform any configuration changes the broker needs to be running.
+One needs to start up the rabbitmq broker.  on older ubuntu systems, that would be done by::
 
-  rabbitmqctl set_user_tags guest
-  rabbitmqctl list_user_permissions guest
-  rabbitmqctl change_password guest ************
+  service rabbitmq-server start
 
-And another administrator should be defined... we usually call it root...::
+on newer systems with systemd, the best method is::
 
-  rabbitmqctl add_user root   *********
-  rabbitmqctl set_user_tags root administrator
-  rabbitmqctl set_permissions root   ".*" ".*" ".*"
+  systemctl start rabbitmq-server 
 
+By default, an installation of a rabbitmq-server makes user guest the administrator... with password guest.
+With a running rabbitmq server, one can now change that for an operational implementation... 
+To void the guest user we suggest::
 
-Add a Feeder
-~~~~~~~~~~~~
+  rabbitmqctl delete_user guest
 
-Each pump has a user that does the pump's activities, such as for use by sr_sarra running locally.
-It is usually feeder users that subscribe to other pumps to pull data in.
-That is a user with all permissions should be used on sarracenia broker...
+Another administrator should be defined... let's call it bunnymaster, setting the password to MaestroDelConejito ...::
 
-  rabbitmqctl add_user feeder <password>
-  rabbitmqctl set_permissions feeder   ".*" ".*" ".*"
+  root@boule:~# rabbitmqctl add_user bunnymaster MaestroDelConejito
+  Creating user "bunnymaster" ...
+  ...done.
+  root@boule:~# 
 
-Feeders read from user queues, validate that there is no spoofing, and then further process.
+  root@boule:~# rabbitmqctl set_user_tags bunnymaster administrator
+  Setting tags for user "bunnymaster" to [administrator] ...
+  ...done.
+  root@boule:~# rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+  Setting permissions for user "bunnymaster" in vhost "/" ...
+  ...done.
+  root@boule:~# 
 
-At the operating system level...
-sr_sarra is usually invoked by the feeder user,
-so it needs to have permission on all exchanges.
+Make sure to store the credentials in an appropriate linux account (say 'sarra')::
+
+  root@boule:~# useradd -m sarra
+  root@boule:~# mkdir ~sarra/.config
+  root@boule:~# mkdir ~sarra/.config/sarra
+  root@boule:~# echo "amqps://bunnymaster:MaestroDelConejito@boule.example.com/" >~sarra/.config/sarra/credentials.conf
+  root@boule:~# echo "admin amqps://bunnymaster@boule.example.com/" >~sarra/.config/sarra/default.conf
+  root@boule:~# chown -R sarra.sarra ~sarra/.config
+  root@boule:~# passwd sarra
+  Enter new UNIX password: 
+  Retype new UNIX password: 
+  passwd: password updated successfully
+  root@boule:~# 
+  root@boule:~# chsh -s /bin/bash sarra  # for comfort
+
+All other sarra configuration operations can be accomplished as the sarra user, but
+there is a little more to be done as root::
+
+  root@boule:~#  cd /usr/local/bin
+  root@boule:/usr/local/bin# wget https://boule.example.com:15671/cli/rabbitmqadmin
+  --2016-03-27 23:13:07--  https://boule.example.com:15671/cli/rabbitmqadmin
+  Resolving boule.example.com (boule.example.com)... 192.184.92.216
+  Connecting to boule.example.com (boule.example.com)|192.184.92.216|:15671... connected.
+  HTTP request sent, awaiting response... 200 OK
+  Length: 32406 (32K) [text/plain]
+  Saving to: ‘rabbitmqadmin’
+  
+  rabbitmqadmin              100%[=======================================>]  31.65K  --.-KB/s   in 0.04s  
+  
+  2016-03-27 23:13:07 (863 KB/s) - ‘rabbitmqadmin’ saved [32406/32406]
+  
+  root@boule:/usr/local/bin#  
+  root@boule:/usr/local/bin# chmod 755 rabbitmqadmin
+
+It is necessary to download *rabbitmqadmin*, a helper command that is included in RabbitMQ, but not installed automatically.
+One must download it from the management interface, and place it in a reasonable location in the path, so
+that it will be found when it is called by sr_admin::
+
+  root@boule:/usr/local/bin#  su - sarra
+
+From this point root will not usually be needed.
+
 
 
 Managing Users on a Pump Using Sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-To set up a pump, one needs a broker administrative user (in the examples: root.) 
+To set up a pump, one needs a broker administrative user (in the examples: sarra.) 
 and a feeder user (in the examples: feeder.) Management of other users is done with 
 the sr_audit program.
 
 First, write the correct credentials for the admin and feeder users in 
 the credentials file  .config/sarra/credentials.conf ::
 
- amqp://root:*******@yourbroker.fqdn/
- amqp://feeder:*******@yourbroker.fqdn/
+ amqps://bunnymaster:MaestroDelConejito@boule.example.com/
+ amqps://feeder:NoHayPanDuro@boule.example.com/
 
 Then write in .config/sarra/default.conf file to define their presence/role::
 
- admin  amqp://root@yourbroker.fqdn/
- feeder amqp://feeder@yourbroker.fqdn/
+ admin  amqps://root@boule.example.com/
+ feeder amqps://feeder@boule.example.com/
 
 Specify all knows users that you want to implement with their roles 
 in the file  .config/sarra/default.conf (user role)::
 
  role subscriber anonymous 
- role source joe
+ role source peter
 
 Now to configure the pump execute the following:
 
 *sr_audit --users foreground*
 
+Sample run:: 
+  sarra@boule:~/.config/sarra$ sr_audit --debug --users foreground
+  2016-03-28 00:41:25,380 [INFO] sr_audit start
+  2016-03-28 00:41:25,380 [INFO] sr_audit run
+  2016-03-28 00:41:25,380 [INFO] sr_audit waking up
+  2016-03-28 00:41:25,673 [INFO] adding user feeder
+  2016-03-28 00:41:25,787 [INFO] permission user 'feeder' role feeder  configure='.*' write='.*' read='.*' 
+  2016-03-28 00:41:25,897 [INFO] adding user peter
+  2016-03-28 00:41:26,018 [INFO] permission user 'peter' role source  configure='^q_peter.*' write='^q_peter.*|^xs_peter$' read='^q_peter.*|^xl_peter$|^xpublic$' 
+  2016-03-28 00:41:26,136 [INFO] adding user anonymous
+  2016-03-28 00:41:26,247 [INFO] permission user 'anonymous' role source  configure='^q_anonymous.*' write='^q_anonymous.*|^xs_anonymous$' read='^q_anonymous.*|^xpublic$' 
+  2016-03-28 00:41:26,497 [INFO] adding exchange 'xlog'
+  2016-03-28 00:41:26,610 [INFO] adding exchange 'xpublic'
+  2016-03-28 00:41:26,730 [INFO] adding exchange 'xs_peter'
+  2016-03-28 00:41:26,854 [INFO] adding exchange 'xl_peter'
+  2016-03-28 00:41:26,963 [INFO] adding exchange 'xs_anonymous'
+  sarra@boule:~/.config/sarra$ 
+
+
 The *sr_audit* program will :
 
-- use account  *admin* from .config/sarra/default.conf 
-- create exchanges *xpublic* and *xlog* if required
+- use account *admin* from .config/sarra/default.conf to authenticate to broker.
+- create exchanges *xpublic* and *xlog* if they don't exist.
 - load roles from .config/sarra/default.conf
 - obtain a list of users and exchanges on the pump
 - for each user in a *role* option:: 
@@ -614,6 +773,9 @@ The *sr_audit* program will :
    
    FIXME: when invoked with --users, sr_audit, should set a 'one_shot' flag,
    and exist immediately, rather than looping.  
+
+Sample run:
+
 
 
 The *sr_audit* program does not set user passwords. To do it manually, on the pump::
@@ -658,12 +820,13 @@ again.
 
 
 
+
 Manually Adding Users
 ~~~~~~~~~~~~~~~~~~~~~
 
 Altenatively, to add Alice as source user manually, one would::
 
-  wget -q http://localhost:15672/cli/rabbitmqadmin
+  wget -q https://boule.example.com:15671/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
 
   rabbitmqctl add_user Alice <password>
@@ -685,6 +848,7 @@ or, parametrized::
 Then you need to do the same work for sftp and or apache servers as required, as 
 authentication needed by the payload transport protocol (SFTP, FTP, or HTTP(S)) 
 is managed separately.
+
 
 
 Advanced Installations

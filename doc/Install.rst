@@ -3,8 +3,6 @@
  MetPX-Sarracenia Installation
 ==============================
 
-.. Contents::
-
 
 Revision Record
 ---------------
@@ -16,8 +14,8 @@ Pre-Draft.  This document is still being built and should not be reviewed or rel
 
 
 
-Installation 
-------------
+Client Installation 
+-------------------
 
 The package is built for python version 3.4 or higher.  On systems where 
 they are available, debian packages are recommended.

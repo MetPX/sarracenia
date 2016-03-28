@@ -1,8 +1,8 @@
-#!/bin/ksh
+#!/bin/bash
 
 # This test suppose rabbitmq server installed on localhost
 
-# some setting requiered  
+# some setting required  
 
 # amqp://guest:guest@localhost/
 # all permissions for guest on localhost broker
@@ -13,7 +13,7 @@
 # exchange   xs_tester  created
 
 # run from metpx-git/sarracenia/test
-# envoking  ../sarra/sr_post.py for testing purpose
+# invoking  ../sarra/sr_post.py for testing purpose
 
 # the end of the script finishes with a
 # desired error section

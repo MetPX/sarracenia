@@ -1,7 +1,7 @@
 
-=========
+================
  Release process
-=========
+================
 
 ------------------------------------
 Developping and releasing sarracenia

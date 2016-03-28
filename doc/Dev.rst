@@ -60,9 +60,6 @@ Development occurs on the master branch, which may be in any state at any given
 time, and should note be relied upon.  From time to time releases are tagged, and
 maintenance results in a branch.  Releases are classified as follows:
 
-Release Process
----------------
-
 Alpha
   snapshot releases taken directly from master, with no other qualitative guarantees.
   no gurantee of functionality, some components may be partially implemented, some
@@ -84,13 +81,154 @@ RC - Release Candidate.
 
 Final versions have no suffix and are considered stable and supported.
 Stable should receive bug-fixes if necessary from time to time.
+One can build python wheels, or debian packages for local testing purposes
+during development.
+
+.. Note:: If you change default settings for exchanges / queues  as 
+      part of a new version, keep in mind that all components have to use 
+      the same settings or the bind will fail, and they will not be able 
+      to connect.  If a new version declares different queue or exchange 
+      settings, then the simplest means of upgrading (preserving data) is to 
+      drain the queues prior to upgrading, for example by 
+
+      setting, the access to the resource will not be granted by the server.
+      (??? perhaps there is a way to get access to a resource as is... no declare)
+      (??? should be investigated)
+
+      Changing the default require the removal and recreation of the resource.
+      This has a major impact on processes...
+
+
+Python Wheel
+~~~~~~~~~~~~
+
+For testing and development::
+
+    python3 setup.py bdist_wheel 
+
+should build a wheel in the dist sub-directory.
+
+
+Debian/Ubuntu
+~~~~~~~~~~~~~
+
+This process builds a local .deb in the parent directory using standard debian mechanisms.
+- check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
+- The following steps will build sarracenia but not sign the changes or the source package::
+
+    cd metpx/sarracenia
+    debuild -uc -us
+    sudo dpkg -i ../<the package just built>
+
+
+
+
+Testing
+~~~~~~~
+
+FIXME: 'Testing' section extracted from design/releasing_process.rst... it needs testing ;-)
+
+Before releasing, as a Quality Assurance measure one should run all available self-tests.
+It is assumed that the specific changes in the code have already been unit
+tested.  If it is possible to add self tests, then please adjust this process
+to reflect the new ones.
+
+NOTE :: 
+   ONE must review all credentials to match test brokers.
+   Accounts needed:
+   guest with all permissions on local broker (like a feeder)
+   tester with all permissions on localhost
+
+
+
+1- rerun basic self test
+
+   cd sarracenia
+   export PYTHONPATH="`pwd`"
+   cd test/testree
+   ../trivialserver.py &  # perhaps in a separate window if you want to see output separately.
+   cd ../../sarra/
+   ../test/some_self_test.sh
+
+   FIXME: so far got first sr_credentials, sr_config, sr_consumer PASS.
+   FIXME: working on sr_poster.
+   FIXME: many tests refer to sites only accessible within EC zone.
+   FIXME: self-test target is to work standalone running broker and servers on localhost
+
+
+2- rerun and check results for
+
+   cd ../test
+
+   test_sr_post.sh
+   test_sr_watch.sh
+   test_sr_subscribe.sh
+   test_sr_sarra.sh
+
+   Note :  some tests error ...
+           in test_sr_sarra.sh ... there are lots of ftp/sftp connections
+           so some config settings like sshd_config (MaxStartups 500) might
+           might be requiered to have successfull tests.
+
+
+3- making a local wheel and installing on your workstation
+
+   in the git clone tree ...    metpx-git/sarracenia
+   create a wheel by running
+
+   python3 setup.py bdist_wheel
+
+   it creates a wheel package under  dist/metpx*.whl
+   than as root  install that new package
+
+   pip3 install --upgrade ...<path>/dist/metpx*.whl
+
+
+
+4- Have a sarracenia environment in your home...
+   with copies of some of our operational settings ...
+   correctly modified not to impact the operations.
+   (like no "delete True"  etc...)
+   And other sarra configurations ... try running sarra.
+
+   sr start
+
+   Watch for errors... check in logs... etc.
+
+   Should you see things that are suspicious 
+   
+       a) stop the process
+       b) run the process in debug and foreground
+          <sr_program> --debug <configname> foreground
+       c) check interactive output for any hint
+
+
+
+Building a Release
+------------------
+
+MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
+Packaged releases are always preferable to one off builds, because they are reproducible.
+
+When development requires testing across a wide range of servers, it is preferred to make an alpha
+release, rather than installing one off packages.  So the preferred mechanisms is to build
+the ubuntu and pip packages at least, and install on the test machines using the relevant public
+repositories.
+ 
+To publish a release one needs to:
+
+  - Set the version.
+  - upload the release to pypi.org so that installation with pip succeeds.
+  - upload the release to launchpad.org, so that the installation of debian packages
+    using the repository succeeds.
+  - upload the packages to sourceforge for other users to download the package directly
+  - upload updated documentation to sourceforge.
 
 
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
 
 Each release will be versioned as ``<protocol version>.<YY>.<MM> <segment>``
-
 
 Where:
 
@@ -108,8 +246,9 @@ Example:
 
 The first alpha release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 
-Cutting a New Release
-~~~~~~~~~~~~~~~~~~~~~
+
+Setting the Version
+~~~~~~~~~~~~~~~~~~~
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
 * Run ```release.sh```
@@ -132,30 +271,6 @@ A convenience script has been created to automate the release process. Simply ru
    git checkout -t sarra-v2.16.01a01  ?
 
 
-Building a Release
-------------------
-
-MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
-Packaged releases are always preferable to one off builds, because they are reproducible.
-
-When development requires testing across a wide range of servers, it is preferred to make an alpha
-release, rather than installing one off packages.  So the preferred mechanisms is to build
-the ubuntu and pip packages at least, and install on the test machines using the relevant public
-repositories.
- 
-
-
-
-Python Wheel
-~~~~~~~~~~~~
-
-For testing and development::
-
-    python3 setup.py bdist_wheel 
-
-should build a wheel in the dist sub-directory.
-
-
 PyPi
 ~~~~
 
@@ -173,16 +288,10 @@ A convenience script has been created to build and publish the *wheel* file. Sim
 
    pip3 install --upgrade --pre metpx-sarracenia
 
+   on occasion you may wish to install a specific version:
 
-Debian/Ubuntu
-~~~~~~~~~~~~~
+   pip3 install --upgrade metpx-sarracenia==2.16.03a9
 
-This process builds a local .deb in the parent directory using standard debian mechanisms.
-- check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
-- The following steps will build sarracenia but not sign the changes or the source package::
-
-    cd metpx/sarracenia
-    debuild -uc -us
 
 
 Launchpad
@@ -209,6 +318,8 @@ However, the steps below are a summary of what the script does:
     dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
     
 **Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
+
+
 
 
 Updating The Project Website

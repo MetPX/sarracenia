@@ -1601,7 +1601,8 @@ def self_test():
 
 
     opt1 = "remote_config True"
-    opt2 = "remote_config_url http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir"
+    #opt2 = "remote_config_url http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir"
+    opt2 = "remote_config_url http://localhost:8000/keep_this_test_dir"
     cfg.option(opt1.split())
     cfg.option(opt2.split())
 
