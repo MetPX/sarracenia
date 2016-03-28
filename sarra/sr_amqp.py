@@ -138,7 +138,11 @@ class HostConnect:
        self.port     = url.port
        self.vhost    = url.path
 
-       if self.protocol == 'amqps' : self.ssl = True
+       if self.protocol == 'amqps' : 
+          self.ssl = True
+          if self.port == None :
+               self.port=5671
+
        if self.vhost    == None    : self.vhost = '/'
        if self.vhost    == ''      : self.vhost = '/'
 
