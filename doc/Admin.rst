@@ -40,7 +40,7 @@ broker could be on a different server from both ends of a given hop of a data tr
 
 The best way for data transfers to occur is to avoid polling (use of sr_watch.) It is more
 efficient if writers can be coaxed into emitting appropriate sr_post messages.  Similarly, 
-when delivering, it is ideal if the receivers use sr_subscribe, and a file_received hook
+when delivering, it is ideal if the receivers use sr_subscribe, and a on_file hook
 to trigger their further processing, so that the file is handed to them without polling.
 This is the most efficient way of working, but it is understood that not all software
 can be made co-operative.
@@ -48,7 +48,7 @@ can be made co-operative.
 Generally speaking, Linux is the main deployment target, and the only platform on which
 server configurations are deployed.  Other platforms are used as client end points.
 This isn´t a limitation, it is just what is used and tested.  Implementations of
-the pump on Windows should work, they just are not well tested.
+the pump on Windows should work, they just are not tested.
 
 
 Mapping AMQP Concepts to Sarracenia
@@ -132,6 +132,9 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
         - xpublic -- exchange used for most subscribers.
       - queues start with q\_
 
+A lot of the processes in this guide cover rabbitmq administration because those are
+the tasks required to operate a sarracenia pump.
+
 
 Flow Through Exchanges
 ----------------------
@@ -171,7 +174,7 @@ A description of the conventional flow of messages through exchanges on a pump:
 The purpose of these conventions is to encourage a reasonably secure means of operating.
 If a message is taken from xs_Alice, then the process doing the reading is responsible for 
 ensuring that it is tagged as coming from Alice on this cluster.  This prevents certain 
-types of ´spoofing´ as all messages can only be posted by proper owners.
+types of ´spoofing´ as messages can only be posted by proper owners.
 
 
 Users and Roles
@@ -189,7 +192,6 @@ addressed by routing to avoid two different sources' with the same name having t
 data offerings combined on a single tree.  On the other hand, name clashes are not always an error.  
 Use of a common source account name on different clusters may be used to implement folders that
 are shared between the two accounts with the same name.  
-
 
 Pump users are defined with the *role* option. Each option starts with the *role*
 keyword, followed by the specified role, and lastly the user name which has that role.
@@ -239,6 +241,8 @@ source
 .. note::
    restrictions by user name not yet implemented, but planned.
 
+   FIXME: monitor role is missing.  someone who can read all logs, but not change anything.
+   Ideal for service desks, and security monitoring.
 
 feeder
 
@@ -256,7 +260,7 @@ admin
 Example of a complete valid default.conf, for a host named *blacklab* ::
  
   cluster blacklab
-  manager amqps://hbic@blacklab/
+  admin amqps://hbic@blacklab/
   feeder  amqps://feeder@blacklab/
   role source goldenlab 
   role subscriber anonymous
@@ -326,6 +330,26 @@ user,  from data flow tasks, such as pulling and posting data, performed by the 
 Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.
 
+Minimum Requirements
+~~~~~~~~~~~~~~~~~~~~
+
+The AMQP broker is extremely light on today's servers.  The examples in this manual were implemented
+on a commercial virtual private server with 256 MB of RAM, and about twice that of swap space, and a
+20 GByte disk.  Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
+(which includes, all public facing weather and environmental data from Environment and Climate Change
+Canada.) the large numerical prediction files (GRIB and multiple GRIB's in tar files) were excluded
+to reduce bandwidth usage, but in terms of performance in message passing, it kept up with one client
+quite well.
+
+Each sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
+enough of them to keep up (on the smalle VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
+The broker's RAM usage is what determines the number of clients which can be served.  Slower clients require
+more RAM for their queues.  So running brokerage tasks and aggressive cleaning can reduce the overall 
+memory footprint.  The broker was configured to use 128 MB of RAM in the examples in this manual.
+
+Equipment should be sized for disk capacity and throughput rate to be acheived.  1GB of RAM for all 
+the sarra related activities should be ample for many cases. 
+
 
 Housekeeping - sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -354,11 +378,6 @@ sr_sarra configurations from one pump to the next.  Each sr_sarra link is config
 .. note::
   FIXME:: sample sender to push to another pump.
 
-.. note::
-  DB cleanup is not described... (cleaning up old days)
-  cron? root? pump admin? 
-  need to talk about permissions with people delivering via sftp?
-
 Logs
 ~~~~
 
@@ -384,9 +403,6 @@ What is Going On?
 the sr_log command can be invoked, overriding the default exchange to bind to 'xlog' instead
 in order to get log information for an entire broker.
 
-
-.. NOTE:: 
-   config sample of looking at xlog.
 
 Canned sr_log configuration with an *on_message* action can be configured to gather statisical 
 information is a speedo on various aspects of operations.
@@ -933,8 +949,8 @@ and turn to a sarra set up.
   
 
 
-First Sarra
-~~~~~~~~~~~
+Sarra from Another Pump
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Sarra is used to have a downstream pump re-advertise products from an upstream one.  Sarra needs all the configuration of a subscription,
 but also needs the configuration to post to the downstream broker.  The feeder account on the broker is used for this sort 
@@ -955,7 +971,7 @@ Then we create a configuration::
 
   gateway_for DD
 
-  mirror False
+  mirror False  # usually True, except for this server!
 
   # GRIB files will overwhelm a small server.
   reject .*/grib2/.*
@@ -969,7 +985,7 @@ Then we create a configuration::
   
   EOT
 
-We have added:
+Compared to the subscription example provided in the previous example, We have added:
 
 exchange xpublic
 
@@ -996,10 +1012,9 @@ mirror False
   ease of cleanup.
 
 
-
 so then try it out::
 
-  sarra@boule:~/.config/sarra/sarra$ sr_sarra --reset dd.off foreground
+  sarra@boule:~/.config/sarra/sarra$ sr_sarra dd.off foreground
   2016-03-28 10:38:16,999 [INFO] sr_sarra start
   2016-03-28 10:38:16,999 [INFO] sr_sarra run
   2016-03-28 10:38:17,000 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
@@ -1063,11 +1078,26 @@ blacklab% sr_log boulelog.conf foreground
 From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.
 
 
+Sarra From a Source
+~~~~~~~~~~~~~~~~~~~
+
+When reading posts directly from a source, one needs to turn on validation.
+FIXME: example of how user posts are handled.
+
+  - set source_from_exchange
+  - set mirror False to get date/source tree prepended
+  - validate that the checksum works...
+
+anything else?
+
+
+
 
 Cleanup 
 ~~~~~~~
 
-Given a reasonably small tree as given above, it can be practical to scan the tree and prune the old files from it.
+These are examples, the implementation of cleanup is not covered by sarracenia.  Given a reasonably small tree as 
+given above, it can be practical to scan the tree and prune the old files from it.
 a cron job like so::
 
   root@boule:/etc/cron.d# more sarra_clean
@@ -1091,7 +1121,7 @@ Replace the contents above with::
 
   34 4 * * * root find /var/www/html -mindepth 1 -maxdepth 1  -type d -regex '/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -mtime +1 | xargs rm -rf 
 
-where the +1 can be replaced by the number of days to retain.
+where the +1 can be replaced by the number of days to retain. ( would have preferred to use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
 
 Startup
 ~~~~~~~
@@ -1114,8 +1144,8 @@ To avoid the use of sr_admin, or work around issues, one can adjust user setting
   rabbitmqctl add_user Alice <password>
   rabbitmqctl set_permissions -p / Alice   "^q_Alice.*$" "^q_Alice.*$|^xs_Alice$" "^q_Alice.*$|^xl_Alice$|^xpublic$"
 
-  ./rabbitmqadmin -u root -p ***** declare exchange name=xs_Alice type=topic auto_delete=false durable=true
-  ./rabbitmqadmin -u root -p ***** declare exchange name=xl_Alice type=topic auto_delete=false durable=true
+  rabbitmqadmin -u root -p ***** declare exchange name=xs_Alice type=topic auto_delete=false durable=true
+  rabbitmqadmin -u root -p ***** declare exchange name=xl_Alice type=topic auto_delete=false durable=true
 
 or, parametrized::
 
@@ -1123,8 +1153,8 @@ or, parametrized::
   rabbitmqctl add_user ${u} <password>
   rabbitmqctl set_permissions -p / ${u} "^q_${u}.$" "^q_${u}.*$|^xs_${u}$" "^q_${u}.*$|^xl_${u}$|^xpublic$"
 
-  ./rabbitmqadmin -u root -p ***** declare exchange name=xs_${u} type=topic auto_delete=false durable=true
-  ./rabbitmqadmin -u root -p ***** declare exchange name=xl_${u} type=topic auto_delete=false durable=true
+  rabbitmqadmin -u root -p ***** declare exchange name=xs_${u} type=topic auto_delete=false durable=true
+  rabbitmqadmin -u root -p ***** declare exchange name=xl_${u} type=topic auto_delete=false durable=true
 
 
 Then you need to do the same work for sftp and or apache servers as required, as 
