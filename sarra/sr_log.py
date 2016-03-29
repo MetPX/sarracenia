@@ -66,6 +66,7 @@ class sr_log(sr_instances):
            self.logger.error("no broker given")
            sys.exit(1)
 
+        print( "self.exchange is: +%s+ " % self.exchange )
         self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
@@ -94,8 +95,8 @@ class sr_log(sr_instances):
         self.subtopic             = '#'
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
-        print("Or   : %s [OPTIONS] -b <broker> [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
+        print("Or   : %s [OPTIONS] -b <broker> [foreground|start|stop|restart|reload|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
 
