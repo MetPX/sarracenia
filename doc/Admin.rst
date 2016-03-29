@@ -352,9 +352,6 @@ The inter-connection of multiple pumps is done, on the data side, simply by dais
 sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
 
 .. note::
-  FIXME: sample sarra used to pull from another pump.
-
-.. note::
   FIXME:: sample sender to push to another pump.
 
 .. note::
@@ -955,7 +952,10 @@ Then we create a configuration::
   broker amqp://anonymous@dd.weather.gc.ca/
   exchange xpublic
 
+
   gateway_for DD
+
+  mirror False
 
   # GRIB files will overwhelm a small server.
   reject .*/grib2/.*
@@ -989,6 +989,13 @@ post_broker
   
    where we will re-announce the files we have downloaded.
 
+mirror False
+
+  This is usually unnecessary, when copying between pumps, it is normal to just make direct copies.  
+  However, the dd.weather.gc.ca pump predates the day/source prefix standard, so it is necessary for
+  ease of cleanup.
+
+
 
 so then try it out::
 
@@ -1015,12 +1022,92 @@ As the configuration is working properly, rename it to so that it will be used o
   sarra@boule:~/.config/sarra/sarra$ 
 
 
+Log Setup
+~~~~~~~~~
+
+Now that data is flowing, we need to take a look at the flow of log messages, which essentially are used by each pump to tell
+upstream that data has been downloaded. add the following line to ~sarra/.config/sarrra/default.conf::
+
+  log_daemons
+
+This will cause the log routing daemons to be started. that will mean that messages that are logged by feeder or other
+subscriber processes will all end up in the xlog exchange.  To monitor overall system activity, start up an sr_log that
+is bound to the xlog exchange::
+
+  blacklab% more boulelog.conf
+
+  broker amqps://feeder@boule.example.com/
+  exchange xlog
+  accept .*
+
+  blacklab%
+
+
+blacklab% sr_log boulelog.conf foreground
+  2016-03-28 16:29:53,721 [INFO] sr_log start
+  2016-03-28 16:29:53,721 [INFO] sr_log run
+  2016-03-28 16:29:53,722 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
+  2016-03-28 16:29:54,484 [INFO] Binding queue q_feeder.sr_log.boulelog.06413933.71328785 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-03-28 16:29:55,732 [INFO] Received notice  20160328202955.139 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.040751
+  2016-03-28 16:29:56,393 [INFO] Received notice  20160328202956.212 http://boule.example.com/ radar/CAPPI/GIF/XMB/201603282030_XMB_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.159043
+  2016-03-28 16:29:56,479 [INFO] Received notice  20160328202956.179 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.0_SNOW.gif 201 blacklab anonymous 0.143819
+  2016-03-28 16:29:56,561 [INFO] Received notice  20160328202956.528 http://boule.example.com/ radar/CAPPI/GIF/XMB/201603282030_XMB_CAPPI_1.0_SNOW.gif 201 blacklab anonymous -0.119164
+  2016-03-28 16:29:57,557 [INFO] Received notice  20160328202957.405 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01910 201 blacklab anonymous -0.161522
+  2016-03-28 16:29:57,642 [INFO] Received notice  20160328202957.406 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01911 201 blacklab anonymous -0.089808
+  2016-03-28 16:29:57,729 [INFO] Received notice  20160328202957.408 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01912 201 blacklab anonymous -0.043441
+  2016-03-28 16:29:58,723 [INFO] Received notice  20160328202958.471 http://boule.example.com/ radar/CAPPI/GIF/WKR/201603282030_WKR_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.131236
+^C2016-03-28 16:29:59,400 [INFO] signal stop
+  2016-03-28 16:29:59,400 [INFO] sr_log stop
+  blacklab% 
+
+From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.
+
+
+
+Cleanup 
+~~~~~~~
+
+Given a reasonably small tree as given above, it can be practical to scan the tree and prune the old files from it.
+a cron job like so::
+
+  root@boule:/etc/cron.d# more sarra_clean
+  # remove files one hour after they show up.
+  # for weather production, 37 minutes passed the hour is a good time.
+  37 * * * * root find /var/www/html -type f -mmin +59 -delete
+  # remove directories the day after the last time they were touched.
+  37 4 * * * root find /var/www/html -type d -mtime 1 -delete
+
+This might see a bit aggressive, but this file was on a very small virtual server that was only intended for real-time
+data transfer so keeping data around for extended periods would have filled the disk and stopped all transfers.
+In large scale transfers, there is always a trade off between the practicality of keeping the data around forever, and
+the need for performance, which requires us to prune directory trees regularly.  File system performance is optimal with
+reasonably sized trees, and when the trees get to large, the 'find' process to traverse it, can become too onerous.
+
+One can more easily maintain smaller directory trees by having them roll over regularly.  If you have enough disk
+space to last one or more days, then a single logical cron job that would operate on the daily trees without
+incurring the penalty of a find, is a good approach.
+
+Replace the contents above with::
+
+  34 4 * * * root find /var/www/html -mindepth 1 -maxdepth 1  -type d -regex '/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -mtime +1 | xargs rm -rf 
+
+where the +1 can be replaced by the number of days to retain.
+
+Startup
+~~~~~~~
+
+FIXME: /etc/init.d/ integration missing.
+
+
+
+
 
 Manually Adding Users
 ~~~~~~~~~~~~~~~~~~~~~
 
 To avoid the use of sr_admin, or work around issues, one can adjust user settings manually::
 
+  cd /usr/local/bin
   wget -q https://boule.example.com:15671/cli/rabbitmqadmin
   chmod 755 rabbitmqadmin
 
@@ -1043,7 +1130,6 @@ or, parametrized::
 Then you need to do the same work for sftp and or apache servers as required, as 
 authentication needed by the payload transport protocol (SFTP, FTP, or HTTP(S)) 
 is managed separately.
-
 
 
 Advanced Installations
