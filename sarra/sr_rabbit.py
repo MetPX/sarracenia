@@ -46,7 +46,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
            command += '\' -p \'' + url.password
            command += '\' --format raw_json '
            if url.scheme == 'amqps':
-               command += ' -ssl --port=15671 ' 
+               command += ' --ssl --port=15671 ' 
            command += ' '    + options
 
            # (status, answer) = subprocess.getstatusoutput(command)
