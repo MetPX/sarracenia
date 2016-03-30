@@ -1,7 +1,7 @@
 Source: metpx-sarracenia
 Section: python
 Priority: optional
-Maintainer: Michel Grenier <michel.grenier@ec.gc.ca>
+Maintainer: Shared Services Canada Supercomputing <ssc.hpc-chp.spc@canada.ca>
 Build-Depends: debhelper (>= 9), python3, python3-setuptools, python-docutils
 Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
