@@ -532,18 +532,18 @@ also `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_ )::
       {rabbit, [
          {tcp_listeners, [{"127.0.0.1", 5672}]},
          {ssl_listeners, [5671]},
-         {ssl_options, [{cacertfile,"/etc/letsencrypt/live/boule.example.com/fullchain.pem"},
-                        {certfile,"/etc/letsencrypt/live/boule.example.com/cert.pem"},
-                        {keyfile,"/etc/letsencrypt/live/boule.example.com/privkey.pem"},
+         {ssl_options, [{cacertfile,"/etc/rabbitmq/boule.example.com/fullchain.pem"},
+                        {certfile,"/etc/rabbitmq/boule.example.com/cert.pem"},
+                        {keyfile,"/etc/rabbitmq/boule.example.com/privkey.pem"},
                         {verify,verify_peer},
                         {fail_if_no_peer_cert,false}]}
        ]}
       {rabbitmq_management, [{listener, 
          [{port,     15671},
                {ssl,      true},
-               {ssl_opts, [{cacertfile,"/etc/letsencrypt/live/boule.example.com/fullchain.pem"},
-                              {certfile,"/etc/letsencrypt/live/boule.example.com/cert.pem"},
-                              {keyfile,"/etc/letsencrypt/live/boule.example.com/privkey.pem"} ]}
+               {ssl_opts, [{cacertfile,"/etc/rabbitmq/boule.example.com/fullchain.pem"},
+                              {certfile,"/etc/rabbitmq/boule.example.com/cert.pem"},
+                              {keyfile,"/etc/rabbitmq/boule.example.com/privkey.pem"} ]}
          ]} 
       ]}
     ].
@@ -1360,7 +1360,7 @@ of the application prior to implementation.
 Authentication used by transport engines is independent of that used for the brokers.  A security 
 assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate 
 the overall security of a given deployment.  All credentials used by the application are stored 
-in the ~/.config/sarra/credentials.conf file, and that that file is forced to 600 permissions.  
+in the ~/.config/sarra/credentials.conf file, and that file is forced to 600 permissions.  
 
 The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
 storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
@@ -1381,7 +1381,7 @@ Each user Alice, on a broker to which she has access:
  - Exchanges are managed by the administrator, and not any user.
  - Alice can only post data that she is publishing (it will refer back to her)
 
-Cannot create any exchanges or other queues not shown above.
+Alice cannot create any exchanges or other queues not shown above.
 
 Rabbitmq provides the granularity of security to restrict the names of
 objects, but not their types.  Thus, given the ability to create a queue named q_Alice,
@@ -1411,7 +1411,7 @@ Depending on the level of confidence between a pair of pumps, the level of valid
 relaxed to improve performance.  
 
 Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
-users on the remote pumps and any other pumps the pump is forwarding for.  In that case the validation
+users on the remote pumps and any other pumps the pump is forwarding for.  In that case, the validation
 constraints are a little different:
 
 - source doesn´t matter. (feeders can represent other users, so do not overwrite.) 
@@ -1427,8 +1427,10 @@ If the message fails the non-local cluster test, it should be rejected, and logg
 Privileged System Access
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-No sarracenia accounts require privileged system of any kind.  The pump administrator account requires
-privileges only on the AMQP broker, but nothing on the underlying operating system.   
+Ordinary (sources, and subscribers) users operate sarra within their own permissions on the system, 
+like an scp command.  The pump administrator account also runs under a normal linux user account and,
+given requires privileges only on the AMQP broker, but nothing on the underlying operating system.   
+It is convenient to grant the pump administrator sudo privileges for the rabbitmqctl command.
 
 The may be a single task which must operate with privileges: cleaning up the database, which is an easily
 auditable script that must be run on a regular basis.  If all acquisition is done via sarra, then all of
@@ -1439,13 +1441,17 @@ Content Scanning
 ~~~~~~~~~~~~~~~~
 
 In cases where security scanning of file being transferred is deemed necessary,
-one configures sarra with an *on_part* and/or *on_file* plugin.
+one configures sarra with an *on_part* plugin.  The sample *clamav_scan.py* plugin is included
+with the package. It depends on some additional packages::
 
+  sudo apt-get install python3-pyclamd
 
-.. NOTE::
-  FIXME: need an example of an on_part hook to call Amavis.  Have it check which part of a file is in question, 
-  and only scan the initial part.  
-  use on_part plugin, check which part it is, if > 2 don't bother.
+By default, all parts of a file are scanned.  one can set an option in the configuration for the component
+invoking the plugin like so::
+
+  clamav_maxblock 3
+
+to limit scanning to only the first three parts of a file.
 
 
 Hooks from Sundew
