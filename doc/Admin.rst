@@ -353,6 +353,18 @@ data from disk after only an hour, and the number of clients supportable is like
 1GB of RAM for all the sarra related activities should be ample for many useful cases.
 
 
+IPv6
+~~~~
+
+The configuration shown in this manual was implemented on a small VPS with IPv6 enabled.
+A client from far away connected to the rabbitmq broker using IPv6, and the subscription to the apache httpd
+worked without issues.  It just works.  There is no difference between IPv4 and IPv6 for sarra tools which are
+agnostic of IP addresses.  
+
+On the other hand, one is expected to use hostnames, since use of IP addresses will break SSL.
+No testing of ip addresses in URLs (in either IP version) has been done. 
+
+
 Housekeeping - sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -378,7 +390,8 @@ The inter-connection of multiple pumps is done, on the data side, simply by dais
 sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
 
 .. note::
-  FIXME:: sample sender to push to another pump.
+  FIXME: sample sender to push to another pump.
+  describe the to_cluster, gateway_for , and cluster options.
 
 Logs
 ~~~~
@@ -402,12 +415,12 @@ the messages where source=<user> to xl_<user>, ready for consumption by sr_log.
 What is Going On?
 -----------------
 
-the sr_log command can be invoked, overriding the default exchange to bind to 'xlog' instead
-in order to get log information for an entire broker.
+The sr_log command can be invoked to bind to 'xlog' instead of the default user exchange
+to get log information for an entire broker.
 
 
-Canned sr_log configuration with an *on_message* action can be configured to gather statisical 
-information is a speedo on various aspects of operations.
+Canned sr_log configuration with an *on_message* action can be configured to 
+gather statisical information. 
 
 .. NOTE::
    FIXME:
@@ -415,6 +428,9 @@ information is a speedo on various aspects of operations.
    speedo: total rate of posts/second, total rate of logs/second.
    question: should posts go to the log as well?
    before operations, we need to figure out how Nagios will monitor it.
+
+   sr_log is weird... works on one server, but not another... dunno bug?
+   more testing needed.
 
    Is any of this needed, or is the rabbit GUI enough on it's own?
 
@@ -879,7 +895,6 @@ Then we create a configuration::
   broker amqp://anonymous@dd.weather.gc.ca/
   exchange xpublic
 
-
   gateway_for DD
 
   mirror False  # usually True, except for this server!
@@ -906,7 +921,7 @@ gateway_for DD
 
    sarra implements routing by cluster, so if data is not destined for this cluster, it will skip (not download) a product.
    Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so lets pretend to route
-   for that.
+   for that, so that downloading happens.   
 
 url and document_root
 
@@ -1030,6 +1045,9 @@ Replace the contents above with::
   34 4 * * * root find /var/www/html -mindepth 1 -maxdepth 1  -type d -regex '/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -mtime +1 | xargs rm -rf 
 
 where the +1 can be replaced by the number of days to retain. ( would have preferred to use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
+
+Note that the logs will clean up themselves, by default after 5 days they will be discarded.  Can shorten to a single day by
+adding *logrotate 1* to default.conf.
 
 Startup
 ~~~~~~~
