@@ -1459,7 +1459,11 @@ Hooks from Sundew
 
 This information is very likely irrelevant to almost all users.  Sundew is another module of MetPX which is essentially being
 replaced by Sarracenia.  This information is only useful to those with an installed based of Sundew wishing to bridge
-to sarracenia.  The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. It assumes a deep understanding of MetPX-Sundew. Currently the dd_notify.py script creates messages for the protocol exp., v00. and v02 (latest sarracenia protocol version)
+to sarracenia.  The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module 
+from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination 
+and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source. 
+It assumes a deep understanding of MetPX-Sundew. Currently, the dd_notify.py script creates messages for the 
+protocol exp., v00. and v02 (latest sarracenia protocol version)
 
 
 Notifications on DD 
@@ -1520,6 +1524,3 @@ file has been placed on dd (with the / replaced by .)  For example, here is a lo
 - the file is placed under: http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS
 - the complete URL for the product is: http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS/201306061440_XSS_24_HR_ACCUM_MM.gif
 
-
-
-   
