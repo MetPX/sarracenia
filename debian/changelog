@@ -1,3 +1,11 @@
+metpx-sarracenia (2.16.03a10) UNRELEASED; urgency=medium
+
+  * support sr_post cache for multiple sr_watch
+  * disable lock mechanism in sr_post/sr_poster
+  * selected events in sr_watch are now handled by sr_post 
+
+ -- Daluma Sen <daluma.sen@canada.ca>  Wed, 30 Mar 2016 16:14:50 +0000
+
 metpx-sarracenia (2.16.03a9) unstable; urgency=medium
 
   * sr_poster caching issues on delete... 
