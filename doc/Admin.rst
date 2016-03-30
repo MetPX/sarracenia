@@ -334,21 +334,23 @@ Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
 The AMQP broker is extremely light on today's servers.  The examples in this manual were implemented
-on a commercial virtual private server with 256 MB of RAM, and about twice that of swap space, and a
-20 GByte disk.  Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
+on a commercial virtual private server (VPS) with 256 MB of RAM, and 700MB of swap taken from a 20 GByte 
+disk. Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
 (which includes, all public facing weather and environmental data from Environment and Climate Change
 Canada.) the large numerical prediction files (GRIB and multiple GRIB's in tar files) were excluded
 to reduce bandwidth usage, but in terms of performance in message passing, it kept up with one client
 quite well.
 
-Each sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
-enough of them to keep up (on the smalle VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
+Each Sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
+enough of them to keep up (on the small VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
 The broker's RAM usage is what determines the number of clients which can be served.  Slower clients require
 more RAM for their queues.  So running brokerage tasks and aggressive cleaning can reduce the overall 
 memory footprint.  The broker was configured to use 128 MB of RAM in the examples in this manual.
+The rest of the RAM was used by the apache processes for the web transport engine.
 
-Equipment should be sized for disk capacity and throughput rate to be acheived.  1GB of RAM for all 
-the sarra related activities should be ample for many cases. 
+While the above was adequate for proof of concept, it would be impractical to be clearing out
+data from disk after only an hour, and the number of clients supportable is likely quite limited.
+1GB of RAM for all the sarra related activities should be ample for many useful cases.
 
 
 Housekeeping - sr_audit
