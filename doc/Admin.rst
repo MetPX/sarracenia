@@ -25,9 +25,9 @@ Revision Record
 Introduction
 ------------
 
-Sarracenia pumps form a network.  Each network uses a rabbitmq broker as a transfer manager
+Sarracenia pumps form a network.  The network use rabbitmq brokers as a transfer manager
 which sends advertisements in one direction and log messages in the opposite direction.
-Administrators manually configure the paths that data flow at each pump, as each broker acts 
+Administrators configure the paths that data flows through at each pump, as each broker acts 
 independently, managing transfers from transfer engines it can reach, with no knowledge of 
 the overall network.  The locations of pump and the directions of traffic flow are 
 chosen to work with permitted flows.  Ideally, no firewall exceptions are needed.
@@ -40,7 +40,7 @@ broker could be on a different server from both ends of a given hop of a data tr
 
 The best way for data transfers to occur is to avoid polling (use of sr_watch.) It is more
 efficient if writers can be coaxed into emitting appropriate sr_post messages.  Similarly, 
-when delivering, it is ideal if the receivers use sr_subscribe, and a on_file hook
+when delivering, it is ideal if the receivers use sr_subscribe, and a on_file plugin
 to trigger their further processing, so that the file is handed to them without polling.
 This is the most efficient way of working, but it is understood that not all software
 can be made co-operative.
@@ -49,6 +49,41 @@ Generally speaking, Linux is the main deployment target, and the only platform o
 server configurations are deployed.  Other platforms are used as client end points.
 This isn´t a limitation, it is just what is used and tested.  Implementations of
 the pump on Windows should work, they just are not tested.
+
+Minimum Requirements
+~~~~~~~~~~~~~~~~~~~~
+
+The AMQP broker is extremely light on today's servers.  The examples in this manual were implemented
+on a commercial virtual private server (VPS) with 256 MB of RAM, and 700MB of swap taken from a 20 GByte 
+disk. Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
+(which includes, all public facing weather and environmental data from Environment and Climate Change
+Canada.) the large numerical prediction files (GRIB and multiple GRIB's in tar files) were excluded
+to reduce bandwidth usage, but in terms of performance in message passing, it kept up with one client
+quite well.
+
+Each Sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
+enough of them to keep up (on the small VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
+The broker's RAM usage is what determines the number of clients which can be served.  Slower clients require
+more RAM for their queues.  So running brokerage tasks and aggressive cleaning can reduce the overall 
+memory footprint.  The broker was configured to use 128 MB of RAM in the examples in this manual.
+The rest of the RAM was used by the apache processes for the web transport engine.
+
+While the above was adequate for proof of concept, it would be impractical to be clearing out
+data from disk after only an hour, and the number of clients supportable is likely quite limited.
+1GB of RAM for all the sarra related activities should be ample for many useful cases.
+
+
+IPv6
+~~~~
+
+The configuration shown in this manual was implemented on a small VPS with IPv6 enabled.  A client 
+from far away connected to the rabbitmq broker using IPv6, and the subscription to the apache httpd
+worked without issues.  It just works.  There is no difference between IPv4 and IPv6 for sarra tools,
+which are agnostic of IP addresses.  
+
+On the other hand, one is expected to use hostnames, since use of IP addresses will break certificate
+use for securing the transport layer (TLS, aka SSL) No testing of ip addresses in URLs (in either IP 
+version) has been done. 
 
 
 Mapping AMQP Concepts to Sarracenia
@@ -322,7 +357,7 @@ There are two users/roles that need to be set to use a pump. They are the admin 
 They are set in ~/.config/sarra/default.conf like so:
 
   feeder amqp://pumpUser@localhost/
-  admin  amqp://adminUser@localhost/
+  admin  amqps://adminUser@boule.example.com/
 
 Then the log and audit components are started as well.  It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, which are performed by the admin
@@ -330,39 +365,7 @@ user,  from data flow tasks, such as pulling and posting data, performed by the 
 Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.
 
-Minimum Requirements
-~~~~~~~~~~~~~~~~~~~~
 
-The AMQP broker is extremely light on today's servers.  The examples in this manual were implemented
-on a commercial virtual private server (VPS) with 256 MB of RAM, and 700MB of swap taken from a 20 GByte 
-disk. Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
-(which includes, all public facing weather and environmental data from Environment and Climate Change
-Canada.) the large numerical prediction files (GRIB and multiple GRIB's in tar files) were excluded
-to reduce bandwidth usage, but in terms of performance in message passing, it kept up with one client
-quite well.
-
-Each Sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
-enough of them to keep up (on the small VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
-The broker's RAM usage is what determines the number of clients which can be served.  Slower clients require
-more RAM for their queues.  So running brokerage tasks and aggressive cleaning can reduce the overall 
-memory footprint.  The broker was configured to use 128 MB of RAM in the examples in this manual.
-The rest of the RAM was used by the apache processes for the web transport engine.
-
-While the above was adequate for proof of concept, it would be impractical to be clearing out
-data from disk after only an hour, and the number of clients supportable is likely quite limited.
-1GB of RAM for all the sarra related activities should be ample for many useful cases.
-
-
-IPv6
-~~~~
-
-The configuration shown in this manual was implemented on a small VPS with IPv6 enabled.
-A client from far away connected to the rabbitmq broker using IPv6, and the subscription to the apache httpd
-worked without issues.  It just works.  There is no difference between IPv4 and IPv6 for sarra tools which are
-agnostic of IP addresses.  
-
-On the other hand, one is expected to use hostnames, since use of IP addresses will break SSL.
-No testing of ip addresses in URLs (in either IP version) has been done. 
 
 
 Housekeeping - sr_audit
@@ -481,8 +484,9 @@ interface for the management ui is suggested.
 TLS
 ~~~
 
-One should encrypt broker traffic.  One method to do so is to obtain
-certificates from `letsencrypt <http://www.letsencrypt.org>`_ ::
+One should encrypt broker traffic.  Obtaining certificates is outside the scope
+of these instructions, so it is not discussed in detail.  For the purposes of
+the example, one method is to obtain certificates from `letsencrypt <http://www.letsencrypt.org>`_ ::
 
     root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
     Cloning into 'letsencrypt'...
@@ -664,14 +668,18 @@ First, write the correct credentials for the admin and feeder users in
 the credentials file  .config/sarra/credentials.conf ::
 
  amqps://bunnymaster:MaestroDelConejito@boule.example.com/
- amqps://feeder:NoHayPanDuro@localhost/
+ amqp://feeder:NoHayPanDuro@localhost/
+ amqps://feeder:NoHayPanDuro@boule.example.com/
  amqps://anonymous:anonyomous@boule.example.com/
  amqps://peter:piper@boule.example.com/
 
-Then write in .config/sarra/default.conf file to define their presence/role::
+Note that the feeder credentials are presented twice, once to allow un-encrypted access via
+localhost, and a second time to permit access over TLS, potentially from other hosts (necessary
+when a broker is operating in a cluster, with feeder processes running on multiple transport
+engine nodes.)  Next step is to put roles in .config/sarra/default.conf ::
 
  admin  amqps://root@boule.example.com/
- feeder amqps://feeder@localhost/
+ feeder amqp://feeder@localhost/
 
 Specify all knows users that you want to implement with their roles 
 in the file  .config/sarra/default.conf (user role)::
@@ -879,7 +887,7 @@ and turn to a sarra set up.
 Sarra from Another Pump
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Sarra is used to have a downstream pump re-advertise products from an upstream one.  Sarra needs all the configuration of a subscription,
+Sarra is used to have a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
 but also needs the configuration to post to the downstream broker.  The feeder account on the broker is used for this sort 
 of work, and is a semi-administrative user, able to publish data to any exchange.  Assume Apache is set up (not covered here) with a 
 document root of /var/www/html.  The linux account we have created to run all the sr processes is '*sarra*', so we make sure 
@@ -1446,13 +1454,22 @@ with the package. It depends on some additional packages::
 
   sudo apt-get install python3-pyclamd
 
-By default, all parts of a file are scanned.  one can set an option in the configuration for the component
+By default, all parts of a file are scanned.  One can set an option in the configuration for the component
 invoking the plugin like so::
 
   clamav_maxblock 3
+  on_part clamav_scan.py
 
-to limit scanning to only the first three parts of a file.
+to limit scanning to only the first three parts of a file.  When a file is scanned, the log of the component
+with scanning configured will have an entry like so::
 
+  2016-03-30 00:41:55,497 [INFO] clamav_scan took 0.000952244 seconds, no viruses in /home/peter/test/boule/20160330/metpx/bulletins/alphanumeric/20160330/CA/CWAO/04/CACN00_CWAO_300400__PBD_05042
+
+When plugged into Sarra, as the plugin returns True, the re-advertisement proceeds.  If a virus were found, an error
+message is printed and the plugin returns False so that the part's advertisement would not be posted (so subscribers and 
+downstream pumps will not pick it up.)
+
+**FIXME: set minimum/maximum part size?**
 
 Hooks from Sundew
 -----------------
@@ -1469,7 +1486,9 @@ protocol exp., v00. and v02 (latest sarracenia protocol version)
 Notifications on DD 
 ~~~~~~~~~~~~~~~~~~~
 
-As a higher performance replacement for Atom/RSS feeds which tell subscribers when new data is available, we put a broker on our data dissemination server (dd.weather.gc.ca.) Clients can subscribe to it.  To create the notifications, we have one Sundew Sender (named wxo-b1-oper-dd.conf) with a send script::
+As a higher performance replacement for Atom/RSS feeds which tell subscribers when new data is available, we put a broker 
+on our data dissemination server (dd.weather.gc.ca.) Clients can subscribe to it.  To create the notifications, we have 
+one Sundew Sender (named wxo-b1-oper-dd.conf) with a send script::
 
   type script
   send_script sftp_amqp.py
