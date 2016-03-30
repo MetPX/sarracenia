@@ -419,103 +419,6 @@ information is a speedo on various aspects of operations.
    Is any of this needed, or is the rabbit GUI enough on it's own?
 
 
-Configurations
---------------
-
-There are many different arrangements in which sarracenia can be used. The guide
-will work through a few examples:
-
-Dataless 
-  where one runs just sarracenia on top of a broker with no local transfer engines.
-  This is used, for example to run sr_winnow on a site to provide redundant data sources.
-
-Standalone 
-  the most obvious one, run the entire stack on a single server, openssh and a web server
-  as well the broker and sarra itself.  Makes a complete data pump, but without any redundancy.
-
-Switching/Routing
-  Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
-  a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
-  a given source with a given node.  This has the effect of pumping different parts of large files 
-  through different nodes.  So one will see parts of files announced by such pump, to be
-  re-assembled by subscribers.
-
-Data Dissemination
-  Where in order to serve a large number of clients, multiple identical servers, each with a complete
-  mirror of data 
-
-FIXME: 
-  ok, opened big mouth, now need to work through the examples.
-
-
-Dataless or S=0
-~~~~~~~~~~~~~~~
-
-A configuration which includes only the AMQP broker.  This configuration can be used when users
-have access to disk space on both ends and only need a mediator.  This is the configuration
-of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
-not need any, or pumps deployed to provide redundant HA to remote data centres.
-
-.. note:: 
-
-  FIXME: sample configuration of shovels, and sr_winnow (with output to xpublic) to allow 
-  subscribers in the SPC to obtain data from either edm or dor.
-
-Note that while a configuration can be dataless, it can still make use of rabbitmq
-clustering for high availability requirements (see rabbitmq clustering below.)
-
-
-Dataless With Sr_winnow
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Another example of a dataless pump would be to provide product selection from two upstream
-sources using sr_winnow.  The sr_winnow is fed by shovels from upstream sources, and 
-the local clients just connect to this local pump.  sr_winnow takes 
-care of only presenting the products from the first server to make 
-them available.   one would configure sr_winnow to output to the xpublic exchange
-on the pump.
-
-subscriber just point at the output of sr_winnow on the local pump.
-
-
-Dataless With Sr_poll
-~~~~~~~~~~~~~~~~~~~~~
-
-The sr_poll program can verify if products on a remote server are ready or modified.
-For each of the product, it emits an announcement on the local pump. One could use
-sr_subscribe anywhere, listen to announcements and get the products (privided the
-having the credentials to access it)
-
-
-Standalone
-~~~~~~~~~~
-
-In a standalone configuration, there is only one node in the configuration.  It runs all components
-and shares none with any other nodes.  That means the Broker and data services such as sftp and
-apache are on the one node.
-
-One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
-queueing and transmission away from the instrument.  It is restarted when the opportunity arises.
-It is just a matter of installing and configuring all a data flow engine, a broker, and the package
-itself on a single server.
-
-
-
-Switching/Routing
-~~~~~~~~~~~~~~~~~
-
-In switching/routing configuration, there is a pair of machines running a single broker for a pool
-of transfer engines.  So each transfer engine´s view of the file space is local, but the queues are 
-global to the pump.
-
-
-Note: On such clusters, all nodes that run a component with the
-same config file create by default an identical **queue_name**. Targetting the
-same broker, it forces the queue to be shared. If it should be avoided,
-the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
-Each node will have its own queue, only shared by the node instances.
-ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
-
 
 Rabbitmq Setup 
 --------------
@@ -532,7 +435,8 @@ Generally speaking, we want to stay above 3.x version.
 
 https://www.rabbitmq.com/install-debian.html
 
-::
+.. Briefly::
+
  apt-get update
  apt-get install erlang-nox
  apt-get install rabbitmq-server
@@ -540,8 +444,8 @@ https://www.rabbitmq.com/install-debian.html
 in upto-date distros, you likely can just take the distro version.
 
 
-Web UI Setup
-~~~~~~~~~~~~
+WebUI 
+~~~~~
 
 Sr_audit makes use of a variety of calls to the web management interface.
 sr_audit is the component which, as the name implies, audits configurations
@@ -558,8 +462,8 @@ which will enable the webUI for the broker.  To prevent access to the management
 interface for undesirables, use of firewalls, or listening only to localhost
 interface for the management ui is suggested.
 
-SSL Setup
-~~~~~~~~~
+TLS
+~~~
 
 One should encrypt broker traffic.  One method to do so is to obtain
 certificates from `letsencrypt <http://www.letsencrypt.org>`_ ::
@@ -603,14 +507,14 @@ probably the simplest way to do this is to copy them elsewhere::
     root@boule:~# chown -R rabbitmq.rabbitmq boule*
 
 Now that we have proper certificate chain, configure rabbitmq to disable
-tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (see also 
-`RabbitMQ Management <https://www.rabbitmq.com/management.html`_ )::
+tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (see 
+also `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_ )::
 
     root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
 
     [
       {rabbit, [
-         {tcp_listeners, []},
+         {tcp_listeners, [{"127.0.0.1", 5672}]},
          {ssl_listeners, [5671]},
          {ssl_options, [{cacertfile,"/etc/letsencrypt/live/boule.example.com/fullchain.pem"},
                         {certfile,"/etc/letsencrypt/live/boule.example.com/cert.pem"},
@@ -631,12 +535,14 @@ tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`
     EOT
 
 Now the broker and management interface are both configured to encrypt all traffic
-passed between client and broker.
+passed between client and broker.  An unencrypted listener was configured for localhost, 
+where encryption on the local machine is useless, and adds cpu load. But management only
+has a single encrypted listener configured.
 
 .. NOTE::
 
   currently, sr_audit expects the Management interface to be on port 15671 if encrypted,
-  15672 otherwise.  There is no configuration possible to tell it otherwise.  Choosing another 
+  15672 otherwise.  Sarra has no configuration setting to tell it otherwise.  Choosing another 
   port will break sr_audit.  FIXME.
 
 
@@ -696,7 +602,7 @@ first need entries in the credentials.conf and default.conf files::
   root@boule:~# 
   root@boule:~# chsh -s /bin/bash sarra  # for comfort
 
-When Using SSL (aka amqps), verification prevents the use of *localhost*. 
+When Using TLS (aka amqps), verification prevents the use of *localhost*. 
 Even for access on the local machine, the fully qualified hostname must be used.
 Next::
 
@@ -726,8 +632,9 @@ From this point root will not usually be needed, as all configuration can be don
 un-privileged *sarra* account.
 
 .. NOTE::
-   out of scope of this discussion, but aside from file system permissions, the sarra user needs 
-   access only to rabbitmqctl as root.
+   out of scope of this discussion, but aside from file system permissions, 
+   it is convenient to provide the sarra user sudo access to rabbitmqctl. 
+   With that, the entire system can be administered without system administrative access.
 
 
 Managing Users on a Pump Using Sr_audit
@@ -741,14 +648,14 @@ First, write the correct credentials for the admin and feeder users in
 the credentials file  .config/sarra/credentials.conf ::
 
  amqps://bunnymaster:MaestroDelConejito@boule.example.com/
- amqps://feeder:NoHayPanDuro@boule.example.com/
+ amqps://feeder:NoHayPanDuro@localhost/
  amqps://anonymous:anonyomous@boule.example.com/
  amqps://peter:piper@boule.example.com/
 
 Then write in .config/sarra/default.conf file to define their presence/role::
 
  admin  amqps://root@boule.example.com/
- feeder amqps://feeder@boule.example.com/
+ feeder amqps://feeder@localhost/
 
 Specify all knows users that you want to implement with their roles 
 in the file  .config/sarra/default.conf (user role)::
@@ -756,9 +663,9 @@ in the file  .config/sarra/default.conf (user role)::
  role subscriber anonymous 
  role source peter
 
-Now to configure the pump execute the following:
+Now to configure the pump execute the following::
 
-*sr_audit --users foreground*
+ *sr_audit --users foreground*
 
 Sample run:: 
 
@@ -780,12 +687,12 @@ Sample run::
   sarra@boule:~/.config/sarra$ 
 
 
-The *sr_audit* program will :
+The *sr_audit* program:
 
-- use account *admin* from .config/sarra/default.conf to authenticate to broker.
-- create exchanges *xpublic* and *xlog* if they don't exist.
-- load roles from .config/sarra/default.conf
-- obtain a list of users and exchanges on the pump
+- uses the *admin* account from .config/sarra/default.conf to authenticate to broker.
+- creates exchanges *xpublic* and *xlog* if they don't exist.
+- reads roles from .config/sarra/default.conf
+- obtains a list of users and exchanges on the pump
 - for each user in a *role* option:: 
 
       declare the user on the broker if missing.
@@ -797,6 +704,8 @@ The *sr_audit* program will :
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
 .. Note:: 
+   PS changed this so that with --users it exits after one pass... um.. not great ...
+   but otherwise:
    The program runs as a daemon.  After the initial pass to create the users,
    It will go into to sleep, and then audit the configuration again.
    To stop it from running in the foreground, stop it with: <ctrl-c>  
@@ -877,7 +786,7 @@ In short, here are the permissions and exchanges *sr_audit* manages::
 
 To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf::
 
-  role souce Alice
+  role source Alice
 
 then run:: 
 
@@ -1039,8 +948,8 @@ As the configuration is working properly, rename it to so that it will be used o
   sarra@boule:~/.config/sarra/sarra$ 
 
 
-Log Setup
-~~~~~~~~~
+Logs
+~~~~
 
 Now that data is flowing, we need to take a look at the flow of log messages, which essentially are used by each pump to tell
 upstream that data has been downloaded. add the following line to ~sarra/.config/sarrra/default.conf::
@@ -1059,8 +968,7 @@ is bound to the xlog exchange::
 
   blacklab%
 
-
-blacklab% sr_log boulelog.conf foreground
+  blacklab% sr_log boulelog.conf foreground
   2016-03-28 16:29:53,721 [INFO] sr_log start
   2016-03-28 16:29:53,721 [INFO] sr_log run
   2016-03-28 16:29:53,722 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
@@ -1073,7 +981,7 @@ blacklab% sr_log boulelog.conf foreground
   2016-03-28 16:29:57,642 [INFO] Received notice  20160328202957.406 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01911 201 blacklab anonymous -0.089808
   2016-03-28 16:29:57,729 [INFO] Received notice  20160328202957.408 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01912 201 blacklab anonymous -0.043441
   2016-03-28 16:29:58,723 [INFO] Received notice  20160328202958.471 http://boule.example.com/ radar/CAPPI/GIF/WKR/201603282030_WKR_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.131236
-^C2016-03-28 16:29:59,400 [INFO] signal stop
+  2016-03-28 16:29:59,400 [INFO] signal stop
   2016-03-28 16:29:59,400 [INFO] sr_log stop
   blacklab% 
 
@@ -1091,8 +999,6 @@ FIXME: example of how user posts are handled.
   - validate that the checksum works...
 
 anything else?
-
-
 
 
 Cleanup 
@@ -1131,6 +1037,25 @@ Startup
 FIXME: /etc/init.d/ integration missing.
 
 
+Sr_Poll
+~~~~~~~
+
+FIXME: feed the sarra from source configured with an sr_poll. set up.
+
+
+Sr_winnow
+~~~~~~~~~
+
+FIXME: sample sr_winnow configuration explained, with some shovels also.
+
+
+Sr_sender
+~~~~~~~~~
+
+Where firewalls prevent use of sarra to pull from a pump like a subscriber would, one can reverse the feed by having the
+upstream pump explicitly feed the downstream one.
+
+FIXME:  elaborate sample sr_sender configuration.
 
 
 
@@ -1162,6 +1087,104 @@ or, parametrized::
 Then you need to do the same work for sftp and or apache servers as required, as 
 authentication needed by the payload transport protocol (SFTP, FTP, or HTTP(S)) 
 is managed separately.
+
+
+Configurations
+--------------
+
+There are many different arrangements in which sarracenia can be used. The guide
+will work through a few examples:
+
+Dataless 
+  where one runs just sarracenia on top of a broker with no local transfer engines.
+  This is used, for example to run sr_winnow on a site to provide redundant data sources.
+
+Standalone 
+  the most obvious one, run the entire stack on a single server, openssh and a web server
+  as well the broker and sarra itself.  Makes a complete data pump, but without any redundancy.
+
+Switching/Routing
+  Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
+  a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
+  a given source with a given node.  This has the effect of pumping different parts of large files 
+  through different nodes.  So one will see parts of files announced by such pump, to be
+  re-assembled by subscribers.
+
+Data Dissemination
+  Where in order to serve a large number of clients, multiple identical servers, each with a complete
+  mirror of data 
+
+FIXME: 
+  ok, opened big mouth, now need to work through the examples.
+
+
+Dataless or S=0
+~~~~~~~~~~~~~~~
+
+A configuration which includes only the AMQP broker.  This configuration can be used when users
+have access to disk space on both ends and only need a mediator.  This is the configuration
+of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
+not need any, or pumps deployed to provide redundant HA to remote data centres.
+
+.. note:: 
+
+  FIXME: sample configuration of shovels, and sr_winnow (with output to xpublic) to allow 
+  subscribers in the SPC to obtain data from either edm or dor.
+
+Note that while a configuration can be dataless, it can still make use of rabbitmq
+clustering for high availability requirements (see rabbitmq clustering below.)
+
+
+Dataless With Sr_winnow
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Another example of a dataless pump would be to provide product selection from two upstream
+sources using sr_winnow.  The sr_winnow is fed by shovels from upstream sources, and 
+the local clients just connect to this local pump.  sr_winnow takes 
+care of only presenting the products from the first server to make 
+them available.   one would configure sr_winnow to output to the xpublic exchange
+on the pump.
+
+subscriber just point at the output of sr_winnow on the local pump.
+
+
+Dataless With Sr_poll
+~~~~~~~~~~~~~~~~~~~~~
+
+The sr_poll program can verify if products on a remote server are ready or modified.
+For each of the product, it emits an announcement on the local pump. One could use
+sr_subscribe anywhere, listen to announcements and get the products (privided the
+having the credentials to access it)
+
+
+Standalone
+~~~~~~~~~~
+
+In a standalone configuration, there is only one node in the configuration.  It runs all components
+and shares none with any other nodes.  That means the Broker and data services such as sftp and
+apache are on the one node.
+
+One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
+queueing and transmission away from the instrument.  It is restarted when the opportunity arises.
+It is just a matter of installing and configuring all a data flow engine, a broker, and the package
+itself on a single server.
+
+
+
+Switching/Routing
+~~~~~~~~~~~~~~~~~
+
+In switching/routing configuration, there is a pair of machines running a single broker for a pool
+of transfer engines.  So each transfer engine´s view of the file space is local, but the queues are 
+global to the pump.
+
+
+Note: On such clusters, all nodes that run a component with the
+same config file create by default an identical **queue_name**. Targetting the
+same broker, it forces the queue to be shared. If it should be avoided,
+the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
+Each node will have its own queue, only shared by the node instances.
+ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
 
 
 Advanced Installations
