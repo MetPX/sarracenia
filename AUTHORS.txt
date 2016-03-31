@@ -1,4 +1,20 @@
-Michel Grenier <michel.grenier@ssc-spc.gc.ca>
-Jun Hu <jun.hu@ssc-spc.gc.ca>
-Peter Silva <peter.silva@ssc-spc.gc.ca>
+Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
+  dd_subscribe, sr_subscribe, sr_sarra, sr_post, 
+  All of the code, really.  
+
+Jun Hu <jun.hu3@canada.ca>
+  Documentation Diagrams, lead on deployments (head tester!)
+
+Peter Silva <peter.silva@canada.ca>
+  Project Manager & Evangelist. A lot of Documentation, and Review of Docs.
+  Architect?  Much discussion with Michel.  Small bug fixes.
+
 Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>
+  Packaging & Process (Debian, Launchpad, some pypi, the vagrant self-test)
+
+Daluma Sen <Daluma.Sen@canada.ca>
+  sr_watch, and worked on sr_post as well for caching.
+
+Murray Rennie <Murray.Rennie@canada.ca>
+  sr_winnow, worked on that with Michel.
+
