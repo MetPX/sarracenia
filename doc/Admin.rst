@@ -847,7 +847,9 @@ try a subscription to an upstream pump::
   mirror True
   directory /var/www/html
 
-  # GRIB files will overwhelm a small server.
+  # numerical weather model files will overwhelm a small server.
+  reject .*/\.tar
+  reject .*/model_giops/.*
   reject .*/grib2/.*
 
   accept .*
@@ -907,7 +909,9 @@ Then we create a configuration::
 
   mirror False  # usually True, except for this server!
 
-  # GRIB files will overwhelm a small server.
+  # Numerical Weather Model files will overwhelm a small server.
+  reject .*/\.tar
+  reject .*/model_giops/.*
   reject .*/grib2/.*
 
   directory /var/www/html
@@ -1034,9 +1038,8 @@ a cron job like so::
   root@boule:/etc/cron.d# more sarra_clean
   # remove files one hour after they show up.
   # for weather production, 37 minutes passed the hour is a good time.
-  37 * * * * root find /var/www/html -type f -mmin +59 -delete
   # remove directories the day after the last time they were touched.
-  37 4 * * * root find /var/www/html -type d -mtime 1 -delete
+  37 4 * * *  root find /var/www/html -mindepth 1 -maxdepth 1 -type d -mtime +0  | xargs rm -rf
 
 This might see a bit aggressive, but this file was on a very small virtual server that was only intended for real-time
 data transfer so keeping data around for extended periods would have filled the disk and stopped all transfers.
