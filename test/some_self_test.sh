@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# credential requierements to run this self test
+# credential requirements to run this self test
 # access to 
 #
 #./sr_consumer.py

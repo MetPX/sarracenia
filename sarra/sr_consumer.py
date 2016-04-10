@@ -223,7 +223,7 @@ class test_logger:
       def __init__(self):
           self.debug   = self.silence
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 def self_test():

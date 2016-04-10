@@ -442,8 +442,18 @@ class sr_poster:
 # ===================================
 
 class test_logger:
+      """
+
+        Instead of using the real logging classes, when doing self-test, override with the test logger.
+        test logger prints to stdout.  to suppress logginc set the logging routing to self.silence.
+
+      """
       def silence(self,str):
+          """
+          to removed prints from output
+          """
           pass
+
       def __init__(self):
           self.debug   = self.silence
           self.error   = print
@@ -453,6 +463,7 @@ class test_logger:
 class sr_cfg_plus(sr_config):
       def __init__(self,config=None,args=None):
           sr_config.__init__(self,config,args)
+
       def __on_post__(self):
           return self.msg.publish()
 
@@ -463,10 +474,14 @@ def self_test():
 
             #setup consumer to catch first post
             cfg = sr_cfg_plus()
+
             cfg.defaults()
+            cfg.general()
+	     
             cfg.logger         = logger
             cfg.debug          = False
-            cfg.broker         = urllib.parse.urlparse("amqp://guest:guest@localhost/")
+            ok, cfg.post_broker    = cfg.validate_urlstr("amqp://tsource@localhost/")
+            ok, cfg.broker         = cfg.validate_urlstr("amqp://tsub@localhost/")
 
             poster = sr_poster(cfg)
 
@@ -475,7 +490,7 @@ def self_test():
             fp.close()
 
             path        = os.getcwd() + os.sep + "toto"
-            exchange    = "xs_guest"
+            exchange    = "xs_tsource"
             url         = urllib.parse.urlparse("file://" + path)
             to_clusters = "ALL"
 

@@ -603,7 +603,7 @@ Create a local linux account under which sarra administrative tasks will run (sa
 This is where credentials and configuration for pump level activities will be stored.
 As the configuration is maintained with this user, it is expected to be actively used
 by humans, and so should have a proper interactive shell environment.  Some administrative 
-access is needed, so the user is added to the sudo group.  
+access is needed, so the user is added to the sudo group::
 
   root@boule:~# useradd -m sarra
   root@boule:~# usermod -a -G sudo sarra

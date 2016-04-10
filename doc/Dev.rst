@@ -128,27 +128,68 @@ Testing
 
 FIXME: 'Testing' section extracted from design/releasing_process.rst... it needs testing ;-)
 
+Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
+can start a browser.
+
 Before releasing, as a Quality Assurance measure one should run all available self-tests.
 It is assumed that the specific changes in the code have already been unit
-tested.  If it is possible to add self tests, then please adjust this process
-to reflect the new ones.
+tested.  Please add self-tests as appropriate to this process to reflect the new ones.
 
-NOTE :: 
-   ONE must review all credentials to match test brokers.
-   Accounts needed:
-   guest with all permissions on local broker (like a feeder)
-   tester with all permissions on localhost
+0 - Install servers on localhost
+
+Install a minimal localhost broker, configure test users.
+with credentials stored for localhost::
+   
+   sudo apt-get install rabbitmq-server
+   sudo rabbitmq-plugins enable rabbitmq_management
+   echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
+   echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
+   echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
+   echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
+
+   cat >~/.config/sarra/default.conf <<EOT
+   cluster localhost
+   admin amqp://bunnymaster@localhost/
+   feeder amqp://tfeed@localhost/
+   role source tsource
+   role sub tsub
+   EOT
+
+   sudo rabbitmqctl delete_user guest
+   sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
+   sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+   sudo rabbitmqctl set_user_tags bunnymaster administrator
+   cd /usr/local/bin
+   sudo wget http://localhost:15672/cli/rabbitmqadmin 
+   chmod 755 rabbbitmqadmin
+   sr_audit --users foreground
+   sudo rabbitmqctl change_password bunnymaster MaestroDelConejito
+
+   sudo rabbitmqctl change_password tsource TestSOUrCs
+   sudo rabbitmqctl change_password tsub TestSUBSCibe
+   sudo rabbitmqctl change_password tfeed TestFeeding
+   
+.. Notes::
+   Please use other passwords in credentials for your configuration, just in case.
+   passwords are not to be hard coded in self test suite.
+   users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.
+
+
+Trivial web server for a test tree, running on port 8000 (by default.)
+
+   cd sarracenia/test/testree
+   ../trivialserver.py &  # perhaps in a separate window if you want to see output separately.
 
 
 
-1- rerun basic self test
+1- rerun basic self test::
 
    cd sarracenia
    export PYTHONPATH="`pwd`"
-   cd test/testree
-   ../trivialserver.py &  # perhaps in a separate window if you want to see output separately.
    cd ../../sarra/
    ../test/some_self_test.sh
+
+.. notes::
 
    FIXME: so far got first sr_credentials, sr_config, sr_consumer PASS.
    FIXME: working on sr_poster.

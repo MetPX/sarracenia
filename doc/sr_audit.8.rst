@@ -93,11 +93,14 @@ on the broker.
 CONFIGURATION
 =============
 
-There are very few options that **sr_audit** uses.
+There are very few options that **sr_audit** uses:
 
 **admin          <user>    (Mandatory: broker admin user, detailed in credentials.conf)**
+
 **debug          <boolean> (default: false)**
+
 **sleep          <int>     (default: 60 in seconds)** 
+
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 
 The **admin** option must be defined it normally be set in the file **default.conf**

@@ -164,7 +164,7 @@ class Consumer:
       self.hc.add_build(self.build)
 
       # total = 1 sec span than .5 for other iteration
-      self.sleep_list = [0.01,0.03,0.06,0.15,0.25,0.5]
+      self.sleep_list = [0.01,0.03,0.06,0.13,0.25,0.5]
       self.sleep_idx  = 0
       self.sleep_max  = 5
 
