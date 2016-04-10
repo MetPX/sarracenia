@@ -150,6 +150,17 @@ class sr_audit(sr_instances):
             roles = self.users[user]
             if 'subscribe' in roles and not user in picked :
                self.subscribes.append(user)
+               picked.append(user)
+
+        # invalid roles left...
+        for user in self.users :
+            roles = self.users[user]
+            if not user in picked :
+                self.logger.error("unknown role '%s' for user '%s' " % (roles,user) )
+
+
+
+
 
     def delete_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
