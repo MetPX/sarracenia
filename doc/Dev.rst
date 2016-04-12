@@ -152,7 +152,7 @@ with credentials stored for localhost::
    admin amqp://bunnymaster@localhost/
    feeder amqp://tfeed@localhost/
    role source tsource
-   role sub tsub
+   role subscribe tsub
    EOT
 
    sudo rabbitmqctl delete_user guest
@@ -163,7 +163,6 @@ with credentials stored for localhost::
    sudo wget http://localhost:15672/cli/rabbitmqadmin 
    chmod 755 rabbbitmqadmin
    sr_audit --users foreground
-   sudo rabbitmqctl change_password bunnymaster MaestroDelConejito
 
    sudo rabbitmqctl change_password tsource TestSOUrCs
    sudo rabbitmqctl change_password tsub TestSUBSCibe
@@ -175,18 +174,26 @@ with credentials stored for localhost::
    users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.
 
 
-Trivial web server for a test tree, running on port 8000 (by default.)
+The idea here is to use tsource, tsub, and tfeed as broker accounts for all
+self-test operations, and store the credentials in the normal credentials.conf file.
+No passwords or key files should be stored in the source tree, as part of a self-test
+suite.
+
+In order to have a web server on localhost to run some tests, a
+Trivial web server for a test tree, running on port 8000 is started like so:
 
    cd sarracenia/test/testree
-   ../trivialserver.py &  # perhaps in a separate window if you want to see output separately.
+   ../trivialserver.py &  
 
+Perhaps in a separate window if you want to see output separately, a log message is 
+printed for each GET the server answers.
 
 
 1- rerun basic self test::
 
    cd sarracenia
    export PYTHONPATH="`pwd`"
-   cd ../../sarra/
+   cd sarra/
    ../test/some_self_test.sh
 
 .. notes::
