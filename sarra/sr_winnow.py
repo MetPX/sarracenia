@@ -17,6 +17,7 @@
 #  Murray Rennie  - Shared Services Canada
 #  Last Changed   : Dec  8 15:22:58 GMT 2015
 #  Last Revision  : Jan  8 15:03:11 EST 2016
+#  Last Revision  : Apr  11 09:00:00 CDT 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -58,17 +59,16 @@ class sr_winnow(sr_instances):
         self.cache          = {}
         self.maxEntries     = 12000
 
-    def cache_add(self, key):
+    def cache_add(self, key,filename,block_count):
         if len(self.cache) >= self.maxEntries: self.cache_clean()
-        self.cache[key] = time.time()
+        newkey=str(filename) + "|" + str(block_count) + "|" +str(key)
+        self.cache[newkey] = time.time()
+        #print("Size of cache: %d  new_key: %s" % (len(self.cache),newkey))
 
     def cache_clean(self):
         temp = [ (item[1],item[0]) for item in self.cache.items() ]
-#       self.logger.info("In cache_clean: is it here? 3")
         temp.sort()
-#       self.logger.info("In cache_clean: is it here? 2 {0}"  .format(temp[self.maxEntries//2]))
         half,md5 = temp[self.maxEntries//2]
-#       self.logger.info("In cache_clean: is it here? half: %s" % (half))
         for item  in self.cache.items():
             if item[1] <= half: 
 #               self.logger.info("In cache_clean: delete {0}" .format(item)) 
@@ -223,7 +223,7 @@ class sr_winnow(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("Received %s '%s' %s  filesize: %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr,self.msg.filesize))
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -242,7 +242,7 @@ class sr_winnow(sr_instances):
             return True
 
         self.logger.debug("Added %s" % (self.msg.notice))
-        self.cache_add(self.msg.checksum) 
+        self.cache_add(self.msg.checksum,self.msg.headers['filename'],self.msg.block_count)
 
         # announcing the first and unique message
 
