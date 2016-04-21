@@ -16,6 +16,7 @@
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015
 #  Last Revision  : Sep 22 10:41:32 EDT 2015
+#  Last Revision  : Apr 19 13:20:00 CDT 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -67,7 +68,8 @@ class sr_log(sr_instances):
            sys.exit(1)
 
         print( "self.exchange is: +%s+ " % self.exchange )
-        self.exchange = 'xl_' + self.broker.username
+        if self.exchange == 'None':
+             self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic
