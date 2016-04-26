@@ -67,8 +67,7 @@ class sr_log(sr_instances):
            self.logger.error("no broker given")
            sys.exit(1)
 
-        print( "self.exchange is: +%s+ " % self.exchange )
-        if self.exchange == 'None':
+        if self.exchange == None:
              self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
