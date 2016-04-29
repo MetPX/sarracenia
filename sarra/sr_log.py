@@ -68,7 +68,10 @@ class sr_log(sr_instances):
            sys.exit(1)
 
         if self.exchange == None:
-             self.exchange = 'xl_' + self.broker.username
+           if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
+              self.exchange = 'xlog'
+           else:
+              self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic
