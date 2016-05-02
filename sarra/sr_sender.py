@@ -87,6 +87,9 @@ class sr_sender(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
+        self.sleep_connect_try_interval_min=0.01
+        self.sleep_connect_try_interval_max=30
+        self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
 
     def check(self):
         self.connected     = False 
@@ -357,8 +360,17 @@ class sr_sender(sr_instances):
         #=================================
 
         while True : 
-              ok = self.__do_send__()
-              if ok : break
+              ok =self.__do_send__()
+              if ok :
+                   self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
+                   break
+              else:
+                   #========================
+                   # Connection failed.  increment interval, sleep and try again
+                   #========================
+                   time.sleep(self.sleep_connect_try_interval)       
+                   if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
+                        self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
 
         #=================================
         # publish our sending
