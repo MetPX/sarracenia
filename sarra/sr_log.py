@@ -67,11 +67,24 @@ class sr_log(sr_instances):
            self.logger.error("no broker given")
            sys.exit(1)
 
+        print("self.broker.username: %s" % self.broker.username)
+        print(type(self.users))
+        if 'tester' in self.users.keys():
+           print("admin YaY")
+        else:
+           print("dmin Boo")
+        if 'anonymous' in self.users.keys():
+           print("anonymous YaY")
+        else:
+           print("anonymous Boo")
         if self.exchange == None:
-           if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
-              self.exchange = 'xlog'
-           else:
-              self.exchange = 'xl_' + self.broker.username
+             if self.broker.username in self.users.keys():
+                  if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
+                       self.exchange = 'xlog'
+                  else:
+                       self.exchange = 'xl_' + self.broker.username
+             else:
+                self.exchange = 'xl_' + self.broker.username
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic
