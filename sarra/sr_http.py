@@ -220,7 +220,7 @@ class test_logger:
       def __init__(self):
           self.debug   = self.silence
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 def self_test():
@@ -236,7 +236,8 @@ def self_test():
     cfg.kbytes_ps = 10.0
 
     #setup consumer to catch first post
-    cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
+    ok, cfg.broker     = cfg.validate_urlstr("amqp://anonymous@dd.weather.gc.ca/")
+    #ok, cfg.broker     = cfg.validate_urlstr("amqp://tsub@localhost/")
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"

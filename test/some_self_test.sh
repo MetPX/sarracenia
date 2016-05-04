@@ -1,77 +1,86 @@
-#!/bin/sh
+#../sarra/bi../sarra/sh
 
 # credential requirements to run this self test
 # access to 
 #
-#./sr_consumer.py
-#    amqp://anonymous:anonymous@ddi.cmc.ec.gc.ca/
+#../sarra/sr_consumer.py
+#    amqp../sarra//anonymous:anonymous@ddi.cmc.ec.gc.c../sarra/
 #
-#./sr_poster.py
-#    amqp://guest:guest@localhost/"
+#../sarra/sr_poster.py
+#    amqp../sarra//guest:guest@localhos../sarra/"
 #
-#./sr_http.py
-#    amqp://anonymous:anonymous@ddi.cmc.ec.gc.ca/
+#../sarra/sr_http.py
+#    amqp../sarra//anonymous:anonymous@ddi.cmc.ec.gc.c../sarra/
 #
-#./sr_ftp.py
-#    in credentials.conf :  declare valid ftp://...@localhost/
+#../sarra/sr_ftp.py
+#    in credentials.conf :  declare valid ftp../sarra//...@localhos../sarra/
 #
-#./sr_sftp.py
-#    in credentials.conf :  declare valid sftp://...@localhost/
+#../sarra/sr_sftp.py
+#    in credentials.conf :  declare valid sftp../sarra//...@localhos../sarra/
 #
-#./sr_2xlog.py
-#    credentials.conf    :  declare valid amqp://ddi2.edm.ec.gc.ca/
+#../sarra/sr_2xlog.py
+#    credentials.conf    :  declare valid amqp../sarra//ddi2.edm.ec.gc.c../sarra/
 #
-#./sr_log2clusters.py
-#    credentials.conf    :  declare valid amqp://ddi1.edm.ec.gc.ca/
-#                           declare valid amqp://ddi1.cmc.ec.gc.ca/
-#./sr_log2source.py
-#    credentials.conf    :  declare valid amqp://ddi1.cmc.ec.gc.ca/
+#../sarra/sr_log2clusters.py
+#    credentials.conf    :  declare valid amqp../sarra//ddi1.edm.ec.gc.c../sarra/
+#                           declare valid amqp../sarra//ddi1.cmc.ec.gc.c../sarra/
+#../sarra/sr_log2source.py
+#    credentials.conf    :  declare valid amqp../sarra//ddi1.cmc.ec.gc.c../sarra/
+
+# once we are sure we can read credentials and configurations, we
+# can set up more elaborate tests.
 
 echo 'sr_credentials' 
-./sr_credentials.py TEST
+../sarra/sr_credentials.py TEST
 echo $?
 echo 'sr_config' 
 touch aaa
-./sr_config.py aaa start
+../sarra/sr_config.py aaa start
 rm aaa
 echo $?
+
 echo 'sr_consumer' 
-./sr_consumer.py TEST
+echo 'reading 100 messages, this may take a while the first time... a little patience.'
+echo "on subsequent passes, messages are likely to be queues"
+../sarra/sr_consumer.py TEST
 echo $?
+
+
+
 echo 'sr_poster' 
-./sr_poster.py TEST
+../sarra/sr_poster.py TEST
 echo $?
 echo 'sr_file' 
-./sr_file.py TEST
+../sarra/sr_file.py TEST
 echo $?
 echo 'sr_http' 
-./sr_http.py TEST
+../sarra/sr_http.py TEST
 echo $?
 echo 'sr_ftp' 
-./sr_ftp.py TEST
+../sarra/sr_ftp.py TEST
 echo $?
 echo 'sr_sftp' 
-./sr_sftp.py TEST
+../sarra/sr_sftp.py TEST
 echo $?
 echo 'sr_2xlog' 
-./sr_2xlog.py TEST
+../sarra/sr_2xlog.py TEST
 echo $?
 echo 'sr_log2clusters' 
-./sr_log2clusters.py TEST
+../sarra/sr_log2clusters.py TEST
 echo $?
 echo 'sr_log2source' 
-./sr_log2source.py TEST
+../sarra/sr_log2source.py TEST
 echo $?
 echo 'sr_subscribe' 
-./sr_subscribe.py TEST
+../sarra/sr_subscribe.py TEST
 echo $?
 echo 'sr_instances' 
-./sr_instances.py --instances 10 start
+../sarra/sr_instances.py --instances 10 start
 sleep 3
 echo $?
-./sr_instances.py --instances 10 status
+../sarra/sr_instances.py --instances 10 status
 echo $?
-./sr_instances.py --instances 10 stop
+../sarra/sr_instances.py --instances 10 stop
 echo $?
 
 # Self test yet to be developed
@@ -87,3 +96,4 @@ echo $?
 # sr_util.py
 # sr_watch.py
 # sr_winnow.py
+
