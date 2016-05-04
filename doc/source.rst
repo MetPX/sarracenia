@@ -13,6 +13,12 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 
 .. contents::
 
+.. note::
+  FIXME: known missing elements: good discussion of checksum choice.
+  Caveat about file update strategies.  use case of a file file that is constantly updated,
+  rather than issuing new files.)
+   
+
 A Sarracenia data pump is a web (or sftp) server with notifications for subscribers 
 to know, quickly, when new data has arrived.  To find out what data is already available 
 on a pump, view the tree with a web browser.  For simple immediate needs, one can 

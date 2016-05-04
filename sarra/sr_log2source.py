@@ -263,9 +263,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 def test_sr_log2source():
@@ -319,7 +319,7 @@ def test_sr_log2source():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2source.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    ok, details = log2source.credentials.get("amqp://tfeed@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")

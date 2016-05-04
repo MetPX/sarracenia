@@ -218,9 +218,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
 
 def self_test():

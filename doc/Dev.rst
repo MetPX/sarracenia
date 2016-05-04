@@ -168,10 +168,11 @@ with credentials stored for localhost::
    sudo rabbitmqctl change_password tsub TestSUBSCibe
    sudo rabbitmqctl change_password tfeed TestFeeding
    
-.. Notes::
+.. Note::
+
    Please use other passwords in credentials for your configuration, just in case.
-   passwords are not to be hard coded in self test suite.
-   users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.
+   Passwords are not to be hard coded in self test suite.
+   The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
 
 
 The idea here is to use tsource, tsub, and tfeed as broker accounts for all
