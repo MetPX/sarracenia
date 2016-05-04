@@ -238,7 +238,7 @@ def self_test():
     cfg = sr_config()
     cfg.defaults()
     cfg.logger         = logger
-    cfg.debug          = False
+    cfg.debug          = True
     #cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@ddi.cmc.ec.gc.ca/")
     cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
     cfg.prefetch       = 10
@@ -263,6 +263,7 @@ def self_test():
           if ok: break
 
           i = i + 1
+          print("sr_consumer nth try %i" % i )
           if i == 100 : 
              msg = None
              break

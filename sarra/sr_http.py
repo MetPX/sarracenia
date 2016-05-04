@@ -236,7 +236,8 @@ def self_test():
     cfg.kbytes_ps = 10.0
 
     #setup consumer to catch first post
-    cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
+    ok, cfg.broker     = cfg.validate_urlstr("amqp://anonymous@dd.weather.gc.ca/")
+    #ok, cfg.broker     = cfg.validate_urlstr("amqp://tsub@localhost/")
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"

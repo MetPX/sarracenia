@@ -126,14 +126,18 @@ This process builds a local .deb in the parent directory using standard debian m
 Testing
 ~~~~~~~
 
-FIXME: 'Testing' section extracted from design/releasing_process.rst... it needs testing ;-)
-
-Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
-can start a browser.
-
 Before releasing, as a Quality Assurance measure one should run all available self-tests.
 It is assumed that the specific changes in the code have already been unit
 tested.  Please add self-tests as appropriate to this process to reflect the new ones.
+
+.. note::
+
+  FIXME: 'Testing' section extracted from design/releasing_process.rst... it needs testing ;-)
+  It was built with internal services in minde and specific development support configuration.
+  work is in progress to have a self-contained localhost self-test environment.
+
+Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
+can start a browser.
 
 0 - Install servers on localhost
 
@@ -180,34 +184,26 @@ self-test operations, and store the credentials in the normal credentials.conf f
 No passwords or key files should be stored in the source tree, as part of a self-test
 suite.
 
-In order to have a web server on localhost to run some tests, a
-Trivial web server for a test tree, running on port 8000 is started like so:
-
-   cd sarracenia/test/testree
-   ../trivialserver.py &  
-
 Perhaps in a separate window if you want to see output separately, a log message is 
-printed for each GET the server answers.
+printed for each GET the server answers. the setup script starts a trivial web server,
+and defines some fixed test clients that will be used during self-tests::
+
+   cd sarracenia/test
+   . ./setup_self_tests.sh
 
 
 1- rerun basic self test::
 
-   cd sarracenia
-   export PYTHONPATH="`pwd`"
-   cd sarra/
-   ../test/some_self_test.sh
+   ./some_self_test.sh
 
 .. notes::
 
-   FIXME: so far got first sr_credentials, sr_config, sr_consumer PASS.
+   FIXME: so far got first sr_credentials, sr_config, sr_consumer, sr_subscribe, sr_instances PASS.
    FIXME: working on sr_poster.
    FIXME: many tests refer to sites only accessible within EC zone.
-   FIXME: self-test target is to work standalone running broker and servers on localhost
 
 
 2- rerun and check results for
-
-   cd ../test
 
    test_sr_post.sh
    test_sr_watch.sh
@@ -219,6 +215,11 @@ printed for each GET the server answers.
            so some config settings like sshd_config (MaxStartups 500) might
            might be requiered to have successfull tests.
 
+   When done testing, run::
+ 
+    . ./cleanup.sh
+   
+   which will kill the running web server.
 
 3- making a local wheel and installing on your workstation
 

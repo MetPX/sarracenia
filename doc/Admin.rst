@@ -1046,24 +1046,27 @@ a cron job like so::
   # remove directories the day after the last time they were touched.
   37 4 * * *  root find /var/www/html -mindepth 1 -maxdepth 1 -type d -mtime +0  | xargs rm -rf
 
-This might see a bit aggressive, but this file was on a very small virtual server that was only intended for real-time
-data transfer so keeping data around for extended periods would have filled the disk and stopped all transfers.
-In large scale transfers, there is always a trade off between the practicality of keeping the data around forever, and
-the need for performance, which requires us to prune directory trees regularly.  File system performance is optimal with
-reasonably sized trees, and when the trees get to large, the 'find' process to traverse it, can become too onerous.
+This might see a bit aggressive, but this file was on a very small virtual server that was only 
+intended for real-time data transfer so keeping data around for extended periods would have 
+filled the disk and stopped all transfers.  In large scale transfers, there is always a trade 
+off between the practicality of keeping the data around forever, and the need for performance, 
+which requires us to prune directory trees regularly.  File system performance is optimal with 
+reasonably sized trees, and when the trees get to large, the 'find' process to traverse it, can 
+become too onerous.
 
-One can more easily maintain smaller directory trees by having them roll over regularly.  If you have enough disk
-space to last one or more days, then a single logical cron job that would operate on the daily trees without
-incurring the penalty of a find, is a good approach.
+One can more easily maintain smaller directory trees by having them roll over regularly.  If you 
+have enough disk space to last one or more days, then a single logical cron job that would operate 
+on the daily trees without incurring the penalty of a find, is a good approach.
 
 Replace the contents above with::
 
   34 4 * * * root find /var/www/html -mindepth 1 -maxdepth 1  -type d -regex '/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -mtime +1 | xargs rm -rf 
 
-where the +1 can be replaced by the number of days to retain. ( would have preferred to use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
+where the +1 can be replaced by the number of days to retain. ( would have preferred to 
+use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
 
-Note that the logs will clean up themselves, by default after 5 days they will be discarded.  Can shorten to a single day by
-adding *logrotate 1* to default.conf.
+Note that the logs will clean up themselves, by default after 5 days they will be discarded.  
+Can shorten to a single day by adding *logrotate 1* to default.conf.
 
 Startup
 ~~~~~~~
