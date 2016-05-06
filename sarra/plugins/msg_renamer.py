@@ -9,7 +9,7 @@ import sys, os, os.path, time, stat
 
 class Renamer(object):
 
-      def __init__(self) :
+      def __init__(self,parent) :
           pass
 
       # old in metpx
@@ -28,7 +28,7 @@ class Renamer(object):
 
           return True
 
-renamer=Renamer()
+renamer=Renamer(self)
 self.on_message=renamer.perform
 
 # test interactif

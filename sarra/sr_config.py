@@ -395,7 +395,8 @@ class sr_config:
         self.do_send              = None
         self.on_file              = None
         self.on_line              = None
-        self.on_message           = None
+   
+
         self.on_part              = None
         self.on_post              = None
 
@@ -423,6 +424,12 @@ class sr_config:
         self.interface            = None
         self.vip                  = None
 
+        if self.program_name == 'sr_log':
+            self.execfile("on_message",'msg_log')
+            if self.on_message == None :
+                self.logger.error("on_message script incorrect (%s)" % words1)
+        else:
+            self.on_message       = None
 
     def execfile(self, opname, path):
 

@@ -4,7 +4,7 @@ import os,stat,time
 from hashlib import md5
 
 class Transformer(object): 
-      def __init__(self):
+      def __init__(self,parent):
           pass
 
       def perform(self,parent):
@@ -44,6 +44,6 @@ class Transformer(object):
           os.unlink(msg.local_file)
           return False
 
-transformer = Transformer()
+transformer = Transformer(self)
 self.on_file = transformer.perform
 

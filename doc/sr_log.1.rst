@@ -22,7 +22,7 @@ DESCRIPTION
 ===========
 
 
-sr_log is a program to efficiently acquire download messages and process them.
+sr_log is a program to efficiently sr_log messages and process them.
 The message format is here: `sr_log(7) <sr_log.7.html>`_ .  The messages acquired
 are produced by consumers of messages from a sarracenia data pump.  
 
@@ -124,25 +124,41 @@ One that matches an  **accept**  pattern is processed.
 EXAMPLES
 --------
 
-Here is a short complete example configuration file:: 
 
-  broker amqp://dd.weather.gc.ca/
+Here is a short complete example configuration file (blog.conf) :: 
 
-  subtopic model_gem_global.25km.grib2.#
+  broker amqps://feeder@boule.example.com/
+  exchange xlog
   accept .*
 
-This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
-files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
-All files which arrive in that directory or below it will be downloaded 
-into the current directory (or just printed to standard output if -n option 
-was specified.) 
+Using that file, assuming feeder is a 'feeder' (Administrative) account on boule, one
+could start it up as follows::
+
+  blacklab% sr_log blog.conf foreground
+  2016-05-05 23:33:38,198 [INFO] sr_log start
+  2016-05-05 23:33:38,198 [INFO] sr_log run
+  2016-05-05 23:33:38,198 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
+  2016-05-05 23:33:39,048 [INFO] Binding queue q_feeder.sr_log.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:33:39,414 [INFO] msg_log received: 20160506033326.795 http://boule.example.com/ 20160506/metpx/bulletins/alphanumeric/20160506/UA/CWAO/03/UANT01_CWAO_060333___82718 201 blacklab anonymous 0.964417
+  2016-05-05 23:33:39,507 [INFO] msg_log received: 20160506033329.346 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CL2D/2016-05-06-0333-CL2D-AUTO-minute-swob.xml 201 boule.example.com feeder -0.722485
+  2016-05-05 23:33:39,600 [INFO] msg_log received: 20160506033329.713 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CXEG/2016-05-06-0300-CXEG-AUTO-swob.xml 201 boule.example.com feeder -0.833262
+
+
+This above file will connect to the boule.example.com broker, connecting as
+feeder with a password stored in the credentials.conf file to obtain log messages
+created by consumers of data on that pump.  By connecting to the log exchange,
+one is obtaining all of the log messages from all consumers of data on the pump.
+
+
+.. note::
+  FIXME, they aren't.
 
 A variety of example configuration files are available here:
 
  `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
 
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
+
 
 
 QUEUES and MULTIPLE STREAMS
@@ -177,16 +193,41 @@ and that download stream can be multi-streamed as well.
 ADVANCED FEATURES
 -----------------
 
-There are ways to insert scripts into the flow of messages and file downloads:
+There are ways to insert scripts into the flow of messages. 
 Should you want to implement tasks in various part of the execution of the program:
 
 - **on_message  <script>        (default: None)** 
 
-A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
-(this one being for **on_file**)::
+By default (if not on_message pluging is specified), the plugin msg_log.py is used,
+which simply prints the body of each message accepted.  sr_log can be used
+to generate statistics, are rudimentary version being to invoke it like so::
+
+  sr_log --on_message msg_speedo blog.conf foreground
+
+Using the same file as above, one can  add a command-line option to change the message 
+handling plugin used to process log messages::
+
+  blacklab% sr_log --on_message msg_speedo blog.conf foreground
+  2016-05-05 23:40:15,179 [INFO] sr_log start
+  2016-05-05 23:40:15,179 [INFO] sr_log run
+  2016-05-05 23:40:15,179 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
+  2016-05-05 23:40:16,208 [INFO] Binding queue q_feeder.sr_log.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:40:20,260 [INFO] speedo:  41 messages received:   8.1 msg/s, 15.5K bytes/s, lag: 4e+02 s
+  2016-05-05 23:40:20,260 [WARNING] speedo: Excessive lag: 395.412 seconds 
+  2016-05-05 23:40:25,313 [INFO] speedo:  55 messages received:    11 msg/s, 8.9K bytes/s, lag: 4e+02 s
+  2016-05-05 23:40:25,313 [WARNING] speedo: Excessive lag: 399.444 seconds 
+  2016-05-05 23:40:30,394 [INFO] speedo:  53 messages received:    10 msg/s, 12.6K bytes/s, lag: 3.8e+02 s
+  2016-05-05 23:40:30,394 [WARNING] speedo: Excessive lag: 380.164 seconds 
+  2016-05-05 23:40:30,508 [INFO] signal stop
+  2016-05-05 23:40:30,508 [INFO] sr_log stop
+  blacklab% 
+
+One can monitor arbitrary data by creating log configurations with a variety of selection criteria and processing options.
+
+A do_nothing.py script for **on_message**::
 
  class Transformer(object): 
-      def __init__(self):
+      def __init__(self,parent):
           pass
 
       def perform(self,parent):
@@ -196,13 +237,11 @@ A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
 
           return True
 
- transformer  = Transformer()
- self.on_file = transformer.perform
+ transformer  = Transformer(self)
+ self.on_message = transformer.perform
 
 The only arguments the script receives it **parent**, which is an instance of
-the **sr_log** class
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
+the **sr_log** class. 
 
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
