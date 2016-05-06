@@ -454,3 +454,48 @@ Where the default value for an option varies among components, sr_config(7) shou
 the default varies.  Each component's man page should indicate the option's default for that component.
 
 
+Adding Checksum Algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To add a checksum algorithm, need to add a new class to sr_util.py, and then modify sr_config.py
+to associate it with a label.  Reading of sr_util.py makes this pretty clear.
+Each algorithm needs:
+ - an initializer (sets it to 0)
+ - an algorithm selector.
+ - an updater to add info of a given block to an existing sum,
+ - get_value to obtain the hash (usually after all blocks have updated it)
+
+These are called by the code as files are downloaded, so that processing and transfer are overlapped.
+
+For example, to add SHA-2 encoding::
+
+  from hashlib import sha256
+
+  class checksum_s(object):
+      """
+      checksum the entire contents of the file, using SHA256.
+      """
+      def __init__(self):
+          self.value = '0'
+
+      def get_value(self):
+          self.value = self.filehash.hexdigest()
+          return self.value
+
+      def update(self,chunk):
+          self.filehash.update(chunk)
+
+      def set_path(self,path):
+          self.filehash = sha256()
+
+Then in sr_config.py, in the set_sumalgo routine::
+
+      if flgs == 's':
+          self.sumalgo = checksum_s()
+
+Might want to add 's' to the list of valid sums in validate_sum( as well.
+
+It is planned for a future version to make a plugin interface for this so that adding checksums
+becomes an application programmer activity.
+
+
