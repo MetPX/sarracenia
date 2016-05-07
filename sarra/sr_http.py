@@ -46,7 +46,6 @@ class http_transport():
         pass
 
     def download( self, parent ):
-        parent.logger.debug("sr_http http_transport download")
         self.logger  = parent.logger
         self.parent  = parent
 
@@ -139,7 +138,7 @@ class http_transport():
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
 
         msg.log_publish(499,'http download failed')
-        msg.logger.error("Could not download")
+        msg.logger.error("sr_http could not download")
 
         return False
 
@@ -236,8 +235,10 @@ def self_test():
     cfg.kbytes_ps = 10.0
 
     #setup consumer to catch first post
-    ok, cfg.broker     = cfg.validate_urlstr("amqp://anonymous@dd.weather.gc.ca/")
-    #ok, cfg.broker     = cfg.validate_urlstr("amqp://tsub@localhost/")
+    #dd.weather has strange permissions, so queue declare fails. 'unknown method'
+    #ok, cfg.broker     = cfg.validate_urlstr("amqp://anonymous@dd.weather.gc.ca/")
+
+    ok, cfg.broker     = cfg.validate_urlstr("amqp://tsub@localhost/")
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
