@@ -54,6 +54,7 @@ class Msg_Speedo(object):
 
         import calendar
         import humanize
+        import datetime
 
         mt=msg.time
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
@@ -80,7 +81,8 @@ class Msg_Speedo(object):
         # Set the maximum age, in seconds, of a message to retrieve.
 
         if lag > parent.msg_speedo_maxlag :
-           logger.warn("speedo: Excessive lag: %g seconds " % lag)
+           logger.warn("speedo: Excessive lag! Messages posted %s " % 
+               humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.msg_speedo_last = now
         parent.msg_speedo_msgcount = 0

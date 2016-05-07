@@ -189,12 +189,12 @@ printed for each GET the server answers. the setup script starts a trivial web s
 and defines some fixed test clients that will be used during self-tests::
 
    cd sarracenia/test
-   . ./setup_self_tests.sh
+   . ./setup.sh
 
 
 1- rerun basic self test::
 
-   ./some_self_test.sh
+   ./some_self_tests.sh
 
 .. notes::
 
