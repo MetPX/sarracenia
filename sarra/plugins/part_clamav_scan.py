@@ -40,10 +40,15 @@ class PartClamAvScan(object):
                logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
                return True  
 
- 
+        # scanner wants an absolute path name... dunno why.
+        if msg.local_file[0] != '/' : 
+             scanfn= os.getcwd() + '/' + msg.local_file
+        else:
+             scanfn= msg.local_file 
+
         # worried about how long the scan will take.
         start=time.time()
-        virus_found = self.av.scan_file(msg.local_file)
+        virus_found = self.av.scan_file(scanfn)
         end=time.time()
 
         if virus_found:
