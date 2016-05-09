@@ -419,8 +419,8 @@ Those injecting data have the freeform attribute 'flow' available to assign an a
 to a message, like a transaction id, to be able to follow a particular file though the network.
 
   
-Advanced Posting
-----------------
+Post Overrides
+--------------
 
 What if there is some piece of metadata that a data source has chosen for some reason not to
 include in the filename hierarchy?  How can data consumers know that information without having
@@ -438,8 +438,23 @@ returning false from the hook script.
   as possible as sarracenia is built to optimize routing using them.  Additional meta-data should be used
   to supplement, rather than replace, the built-in routing. 
 
-.. note::
-  FIXME: example
+To add headers to messages being posted, one can use the post_override plugin. In a configuration
+file, add the following statements::
+
+  post_override CAP_province Ontario
+  post_override CAP_area-desc Uxbridge - Beaverton - Northern Durham Region
+  post_override CAP_polygon  43.9984,-79.2175 43.9988,-79.219 44.2212,-79.3158 44.4664,-79.2343 44.5121,-79.1451 44.5135,-79.1415 44.5136,-79.1411 44.5137,-79.1407 44.5138,-79.14 44.5169,-79.0917 44.517,-79.0879 44.5169,-79.0823 44.218,-78.7659 44.0832,-78.7047 43.9984,-79.2175
+  on_post post_override
+
+So that when a file advertisement is posted, it will include the headers with the given values.
+The post_override plugin can also be used to override built-in header values, for example, source,
+or to_cluster, to alter addressing in-flight.  This example is artificial in that it statically
+assignes the header values which is appropriate to simple cases.  For this specific case,  it
+is likely more appropriate to implement a specialized on_post plugin for Common Alerting Protocol 
+files to extract the above header information and place it in the message headers for each
+alert.
+
+
 
 
 Efficiency Considerations 

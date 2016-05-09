@@ -21,7 +21,7 @@ class Transformer(object):
 
     import calendar
 
-    def __init__(self):
+    def __init__(self,parent):
           pass
           
     def perform(self,parent):
@@ -38,6 +38,6 @@ class Transformer(object):
 
         return True
 
-transformer = Transformer()
+transformer = Transformer(self)
 self.on_message = transformer.perform
 

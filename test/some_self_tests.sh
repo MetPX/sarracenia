@@ -40,8 +40,7 @@ rm aaa
 echo $?
 
 echo 'sr_consumer' 
-echo 'reading 100 messages, this may take a while the first time... a little patience.'
-echo "on subsequent passes, messages are likely to be queues"
+echo 'try to read 100 times. Take a while sometimes... a little patience.'
 ../sarra/sr_consumer.py TEST
 echo $?
 
@@ -68,9 +67,9 @@ echo $?
 echo 'sr_log2clusters' 
 ../sarra/sr_log2clusters.py TEST
 echo $?
-echo 'sr_log2source' 
-../sarra/sr_log2source.py TEST
-echo $?
+echo 'skipping ... sr_log2source ... need valid source' 
+#../sarra/sr_log2source.py TEST
+#echo $?
 echo 'sr_subscribe' 
 ../sarra/sr_subscribe.py TEST
 echo $?

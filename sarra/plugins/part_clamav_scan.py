@@ -5,7 +5,7 @@
 
  Options:
 
- clamav_maxblock 3
+ part_clamav_maxblock 3
 
  then when files are sent in more than 3 parts, only the first 3 will be scanned.
  if the option is not set, all blocks of files will be scanned.
@@ -23,9 +23,9 @@
 
 import os,stat,time
 
-class ClamAvScan(object): 
+class PartClamAvScan(object): 
 
-    def __init__(self):
+    def __init__(self,parent):
         import pyclamd
         self.av = pyclamd.ClamdAgnostic()
         print( "clam_scan on_part plugin initialized" )
@@ -35,24 +35,29 @@ class ClamAvScan(object):
         msg    = parent.msg
 
         # it is possible to optimize scanning by not  ... FIXME! this is not tested. not sure how PS!
-        if hasattr(parent,'clamav_maxblock'):
-            if parent.current_block > parent.clamav_maxblock :
-               logger.info("clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
+        if hasattr(parent,'part_clamav_maxblock'):
+            if parent.current_block > parent.part_clamav_maxblock[0] :
+               logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
                return True  
 
- 
+        # scanner wants an absolute path name... dunno why.
+        if msg.local_file[0] != '/' : 
+             scanfn= os.getcwd() + '/' + msg.local_file
+        else:
+             scanfn= msg.local_file 
+
         # worried about how long the scan will take.
         start=time.time()
-        virus_found = self.av.scan_file(msg.local_file)
+        virus_found = self.av.scan_file(scanfn)
         end=time.time()
 
         if virus_found:
-           logger.error("clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.local_file) )
+           logger.error("part_clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.local_file) )
            return False
                    
-        logger.info("clamav_scan took %g seconds, no viruses in %s" % (end-start,msg.local_file) )
+        logger.info("part_clamav_scan took %g seconds, no viruses in %s" % (end-start,msg.local_file) )
         return True
 
-clamavscan = ClamAvScan()
-self.on_part = clamavscan.perform
+partclamavscan = PartClamAvScan(self)
+self.on_part = partclamavscan.perform
 

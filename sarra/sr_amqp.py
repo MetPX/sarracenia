@@ -326,16 +326,24 @@ class Queue:
           except : self.logger.debug("could not delete queue %s" % self.name)
                   
        # create queue
-       self.qname, msg_count, consumer_count = \
-       self.channel.queue_declare( self.name,
+       try:
+           self.qname, msg_count, consumer_count = \
+               self.channel.queue_declare( self.name,
                                    passive=False, durable=self.durable, exclusive=False,
                                    auto_delete=self.auto_delete,
                                    nowait=False,
                                    arguments= args )
+       except : 
+              self.logger.error( "queue declare: %s failed. Often a permission issue." % self.name )
 
        # queue bindings
        for exchange_name,exchange_key in self.bindings:
            self.logger.debug("queue binding %s %s" % (exchange_name,exchange_key))
-           self.bind(exchange_name, exchange_key )
+           try:
+              self.bind(exchange_name, exchange_key )
+           except : 
+              self.logger.error( \
+                 "bind queue: %s to exchange: %s with key: %s failed.  Often a permission issue." % \
+                 ( self.name, exchange_name, exchange_key ) )
 
        self.logger.debug("queue build done")

@@ -115,7 +115,7 @@ class sr_log(sr_instances):
         self.logger.debug("sr_log __on_message__")
 
         self.logger.debug("Received topic   %s" % self.msg.topic)
-        self.logger.info("Received notice  %s" % self.msg.notice)
+        self.logger.debug("Received notice  %s" % self.msg.notice)
         self.logger.debug("Received headers %s\n" % self.msg.hdrstr)
 
         # user provided an on_message script

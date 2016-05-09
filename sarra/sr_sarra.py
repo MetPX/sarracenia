@@ -215,7 +215,7 @@ class sr_sarra(sr_instances):
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.msg.log_publish(503,"Unable to process")
-                self.logger.error("Could not download")
+                self.logger.error("sr_sarra: could not download")
 
         self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 

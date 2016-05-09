@@ -8,8 +8,9 @@
   the pxrouting option must be set in the configuration before the on_message
   plugin is configured, like so:
 
-  pxrouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
-  pxclient  navcan-amis
+  msg_pxrouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
+  msg_pxclient  navcan-amis
+
   on_message sundew_pxroute.py
 
 
@@ -34,8 +35,8 @@ class SundewRoute(object):
         self.ahls_to_route={}
 
         logger = parent.logger
-        pxrf=open(parent.pxrouting,'r')
-        possible_references=parent.pxclient.split(',')
+        pxrf=open(parent.msg_pxrouting[0],'r')
+        possible_references=parent.msg_pxclient[0].split(',')
         logger.info( "sundew_pxroute, target clients: %s" % possible_references )
 
         for line in pxrf:
@@ -62,7 +63,7 @@ class SundewRoute(object):
         
         pxrf.close()
         
-        logger.debug( "sundew_pxroute For %s, the following headers are routed %s" % ( parent.pxclient, self.ahls_to_route.keys() ) )
+        logger.debug( "sundew_pxroute For %s, the following headers are routed %s" % ( parent.msg_pxclient[0], self.ahls_to_route.keys() ) )
         
     def perform(self,parent):
         logger = parent.logger

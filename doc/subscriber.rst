@@ -481,6 +481,60 @@ It is worth noting that it would be more efficient, in terms of cpu and i/o of t
 if sr_subscribe would directly inform the processing software that the file has arrived.
 
 
+Plugins
+-------
+
+Default file processing is often fine, but there are also pre-built customizations that
+can be used to change processing done by components.  The list of pre-built plugins is
+in a 'plugins' directory wherever the package is installed.  here is a sample list:
+
++-----------------------------+---------------------------------------------------------+
+|destfn_sample.py             | sample destfn_script to rename files when delivering.   |
++-----------------------------+---------------------------------------------------------+
+|file_check.py                | Check file attributes to verify download correct.       |
++-----------------------------+---------------------------------------------------------+
+|file_log.py                  | Print a log message when a file is downloaded.          |
++-----------------------------+---------------------------------------------------------+
+|file_quiet.py                | Do nothing when a file is downloaded.                   |
++-----------------------------+---------------------------------------------------------+
+|msg_skip_old.py              | When consumption is lagging too far behind, drop old    |
+|                             | messages to catch up. Options:                          |
+|                             | msg_skip_threshold 20                                   |
+|                             | means discard messages older than 20 seconds.           |
++-----------------------------+---------------------------------------------------------+
+|msg_log.py                   | Print a log message for each announcement received.     |
++-----------------------------+---------------------------------------------------------+
+|msg_print_lag.py             | Print how far behind current consumption is.            |
++-----------------------------+---------------------------------------------------------+
+|msg_quiet.py                 | Do nothing when an announcement is received.            |
++-----------------------------+---------------------------------------------------------+
+|msg_renamer.py               | Adjust Messages so they download to different names.    |
++-----------------------------+---------------------------------------------------------+
+|msg_speedo.py                | print statistics, rather than per file messages.        |
++-----------------------------+---------------------------------------------------------+
+|msg_sundew_pxroute.py        | apply the sundew Bulletin routing method. Options:      |
+|                             | msg_pxrouting <filename>                                |
+|                             | msg_pxclient  <name of client>                          |
+|                             | Apply Sundew routing table by client.                   |
++-----------------------------+---------------------------------------------------------+
+|part_clamav_scan.py          | Run ClamAV Anti-virus scan on a file part. Options:     |
+|                             | part_clamav_maxblock <number>                           |
+|                             | if set, then only scan the first <number> blocks.       |
+|                             | default, scan all.                                      |
++-----------------------------+---------------------------------------------------------+
+|post_override.py             | Change headers in an announcement to be posted.         |
+|                             | Options:                                                |
+|                             | post_override <hdr> <value>                             |
+|                             | Set message header to the given value, overriding       |
+|                             | content, or creating new header if not present.         |
++-----------------------------+---------------------------------------------------------+
+
+For all plugins, the prefix indicates how the plugin is to be used: a file_ plugin is
+to be used with on_file.  An msg_ plugin is to be used with on_message, etc...
+When plugins have options, the options must be placed before the plugin declaration
+in the configuration file.
+
+
 
 Better File Reception
 ---------------------
@@ -491,7 +545,9 @@ Ideally, rather than using the file system, sr_subscribe indicates when each fil
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
-  on_file rxpipe
+
+  file_rxpipe_name /home/peter/test/.rxpipe
+  on_file file_rxpipe
   directory /tmp
   mirror True
   accept .*
@@ -517,327 +573,61 @@ completely avoided.
    **FIXME**
 
 
-Advanced File Reception
------------------------
 
-While the *on_file* directive specifies the name of an action to perform on receipt
-of a file, those actions are not fixed, but simply small scripts provided with the
-package, and customizable by end users.  The rxpipe module is just an example 
-provided with sarracenia::
+Anti-Virus Scanning
+-------------------
 
-  class RxPipe(object):
+Assuming that ClamAV is installed, as well as the python3-pyclamd
+package, then one can adding the following to an sr_subscribe 
+configuration file::
 
-      def __init__(self):
-          self.rxpipe = open( "/local/home/peter/test/npipe", "w" )
-
-      def perform(self, parent):
-          self.rxpipe.write( msg.local_file + "\n" )
-          self.rxpipe.flush()
-          return None
-
-  rxpipe =RxPipe()
-
-  self.on_file=rxpipe.perform
-
-Before running this code, at the command line, create the named pipe::
-
-  mkfifo /local/home/peter/test/npipe
-
-With this fragment of python, when sr_subscribe is first called, it ensures that
-a pipe named npipe is opened in the specified directory by executing
-the __init__ function within the declared RxPipe python class.  Then, whenever
-a file reception is completed, the assignment of *self.on_file* ensures that 
-the rx.perform function is called.  
-
-The rxpipe.perform function just writes the name of the file dowloaded to
-the named pipe.  The use of the named pipe renders data reception asynchronous
-from data processing.   as shown in the previous example, one can then 
-start a single task *do_something* which processes the list of files fed
-as standard input to it, from a named pipe.  
-
-In the examples above, file reception and processing are kept entirely separate.  If there
-is a problem with processing, the file reception directories will fill up, potentially
-growing to an unwieldy size and causing many practical difficulties.  When a plugin such 
-as on_file is used, the processing of each file downloaded is run before proceeding 
-to the next file.  
-
-If the code in the on_file script is changed to do actual processing work, then
-rather than being independent, the processing could provide back pressure to the 
-data delivery mechanism.  If the processing gets stuck, then the sr_subscriber 
-will stop downloading, and the queue will be on the server, rather than creating 
-a huge local directory on the client.  Different models apply in different
-situations.
-
-An additional point is that if the processing of files is invoked
-in each instance, providing very easy parallel processing built 
-into sr_subscribe.  
-
-
-What Fields are Available to on\_ Scripts?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Without peering into the python source code of sarracenia, it is hard to know
-what values are available to plugin scripts.  As a cheat to save developers
-from having to understant the source code, a diagnostic plugin might be helpful.
-
-if one sets the following script as a trigger in a configuration, the entire
-list of available variables can be displayed in a log file::
-
-  cat >dump_msg.py <<EOT
-  import os,stat,time
-
-  class Transformer(object):
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          parent.logger.info("PARENT = \n")
-          parent.logger.info(vars(parent))
-          parent.logger.info("message = \n")
-          parent.logger.info(vars(parent.msg))
-          return False
-
-transformer = Transformer()
-self.on_file = transformer.perform
-
-EOT
-
-Make the above file an on_file (or other trigger) script in a configuration, start up a receiver (and if it is a busy one, then stop it immediately, as it creates
-very large log messages for every message received.)  Essentially the entire program state is available to plugins. A sample output is shown
-
-below::
-
-  peter@idefix:~/test$ sr_subscribe dd.conf start
-  peter@idefix:~/test$ sr_subscribe dd.conf stop  # do this immediately for a receiver with high traffic!
-  peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log 
-  
-  # the following is reformatted to look reasonable on a page.
-  2016-01-14 17:13:01,649 [INFO] {
-  'kbytes_ps': 0, 
-  'queue_name': None, 
-  'flatten': '/', 
-  'exchange': 'xpublic',
-  'discard': False,
-  'log_back': True,
-  'source': None,
-  'pidfile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd_0001.pid',
-  'event': 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF',
-  'basic_name': 'sr_subscribe_dd',
-  'cluster_aliases': [],
-  'expire': None,
-  'currentRegexp': re.compile('.*'),
-  'handler': <logging.handlers.TimedRotatingFileHandler
-  object at 0x7f4fcdc4d780>,
-  'accept_unmatch': False,
-  'reconnect': False,
-  'isrunning': False,
-  'on_line': None,
-  'masks': [('.*/grib2/.*', '/local/home/peter/test/dd', None, re.compile('.*/grib2/.*'), False),
-  ('.*grib2.tar.*', '/local/home/peter/test/dd', None, re.compile('.*grib2.tar.*'), False),
-  ('.*', '/local/home/peter/test/dd', None, re.compile('.*'), True)],
-  'logrotate': 5,
-  'pid': 14079,
-  'consumer': <sarra.sr_consumer.sr_consumer object at 0x7f4fcdc489b0>,
-  'post_document_root': None,
-  'manager': None,
-  'publisher': <sarra.sr_amqp.Publisher object at 0x7f4fcdbdae48>,
-  'post_broker': ParseResult(scheme='amqp',
-  netloc='guest:guest@localhost',
-  path='/',
-  params='',
-  query='',
-  fragment=''),
-  'currentPattern': '.*',
-  'partflg': '1',
-  'notify_only': False,
-  'program_dir': 'subscribe',
-  'on_part': None,
-  'to_clusters': None,
-  'site_data_dir': '/usr/share/ubuntu/sarra',
-  'source_from_exchange': False,
-  'local_url': ParseResult(scheme='file', netloc='',
-  path='/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
-  params='', query='', fragment=''),
-  'sumflg': 'd',
-  'user_log_dir': '/local/home/peter/.cache/sarra/log',
-  'topic_prefix': 'v02.post',
-  'local_file': 'SACN62_CYVT_142200___11878',
-  'on_post': None,
-  'do_poll': None,
-  'message_ttl': None,
-  'user_scripts_dir': '/local/home/peter/.config/sarra/scripts',
-  'recursive': False,
-  'appname': 'sarra',
-  'debug': False,
-  'chmod': 775,
-  'destination': None,
-  'subtopic': None,
-  'events': 'IN_CLOSE_WRITE|IN_DELETE',
-  'document_root': '/local/home/peter/test/dd',
-  'inplace': True,
-  'last_nbr_instances': 6,
-  'config_name': 'dd',
-  'instance_str': 'sr_subscribe dd 0001',
-  'randomize': False,
-  'vip': None,
-  'parts': '1',
-  'inflight': '.tmp',
-  'cache_url': {},
-  'queue_share': True,
-  'overwrite': True,
-  'appauthor': 'science.gc.ca',
-  'no': 1,
-  'url': None,
-  'bindings': [('xpublic', 'v02.post.#')],
-  'blocksize': 0,
-  'cluster': None,
-  'rename': None,
-  'user_config_dir': '/local/home/peter/.config/sarra',
-  'users': {},
-  'currentDir': '/local/home/peter/test/dd',
-  'instance': 1,
-  'sleep': 0,
-  'user_cache_dir': '/local/home/peter/.cache/sarra',
-  'log_clusters': {},
-  'strip': 0,
-  'msg': <sarra.sr_message.sr_message object at 0x7f4fcdc54518>,
-  'site_config_dir': '/etc/xdg/xdg-ubuntu/sarra',
-  'user_args': ['--no', '1'],
-  'program_name': 'sr_subscribe',
-  'on_file': <bound method Transformer.perform of <sarra.sr_config.Transformer object at 0x7f4fcdc48908>>,
-  'cwd': '/local/home/peter/test',
-  'nbr_instances': 6,
-  'credentials': <sarra.sr_credentials.sr_credentials object at 0x7f4fcdc911d0>,
-  'on_message': None,
-  'currentFileOption': None,
-  'local_dir': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22',
-  'user_config': 'dd.conf',
-  'lpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
-  'bufsize': 8192,
-  'do_download': None,
-  'post_exchange': None,
-  'log_exchange': 'xlog',
-  'local_path': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
-  'instance_name': 'sr_subscribe_dd_0001',
-  'statefile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd.state',
-  'use_pattern': True,
-  'admin': None,
-  'gateway_for': [],
-  'interface': None,
-  'logpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
-  'recompute_chksum': False,
-  'user_queue_dir': '/local/home/peter/.cache/sarra/queue',
-  'mirror': True,
-  'broker': ParseResult(scheme='amqp', netloc='anonymous:anonymous@dd.weather.gc.ca', path='/', params='', query='', fragment=''),
-  'durable': False,
-  'logger': <logging.RootLogger object at 0x7f4fcdc48a20>,
-  'user_data_dir': '/local/home/peter/.local/share/sarra',
-  'flow': None}
-
-  2016-01-14 17:13:01,649 [INFO] message = 
-
-No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of this state will vary
-over time.
-
-
-Testing on\_ Scripts
-~~~~~~~~~~~~~~~~~~~~
-
-When debugging, it is useful to do initial work using a separate script,
-rather than calling it directly from sarracenia.  The following method 
-allows one to test scripts for basic function before using them in anger::
-
-  cat >fifo_test.py <<EOT
-  #!/usr/bin/python3
-
-  """
-  when a file is downloaded, write the name of it to a named pipe called .rxpipe
-  at the root of the file reception tree.
-
-  """
-  import os,stat,time
-
-  class Transformer(object):
-
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          msg    = parent.msg
-
-          # writing filename in pipe
-          f = open('/users/dor/aspy/mjg/mon_fifo','w')
-          f.write(msg.local_file)
-          f.flush()
-          f.close()
-
-          # resume process as usual ?
-          return True
-
-  transformer = Transformer()
-  #self.on_file = transformer.perform
-
-  """ 
-  for testing outside of a sr_ component plugin environment,
-  we comment out the normal activiation line of the script above
-  and insert a little wrapper, so that it can be invoked
-  at the command line:
-         python3  fifo_test.py
-
-  """
-
-  class Message() :
-      def __init__(self):
-          self.local_file = "a string"
-
-  class Parent() :
-      def __init__(self):
-          # need to create enough fields in the message to test the script.
-          self.msg = Message()
-
-  parent = Parent()
-
-  transformer.perform(parent)
-  EOT
-
-The part after the #self.on_file line is only a test harness.  Once creates a calling
-object with the fields needed to test the 
-
-
-File Notification Without Downloading
--------------------------------------
-
-If the data pump exists in a large shared environment, such as
-a Supercomputing Centre with a site file system.  In that case,
-the file might be available without downloading.  So just
-obtaining the file notification and transforming it into a 
-local file is sufficient::
-
-  blacklab% cat >../dd_swob.conf <<EOT
-
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqp://dd.weather.gc.ca
+  on_part /home/peter/test/part_clamav_scan.py
   subtopic observations.swob-ml.#
-  document_root /data/web/dd_root
-  on_message do_something
-
   accept .*
-  # do_something will catenate document_root with the path in 
-  # the notification to obtain the full local path.
 
+will cause each file downloaded (or each part of the file if it is large),
+to be AV scanned. Sample run::
 
-on_message is a scripting hook, exactly like on_file, that allows
-specific processing to be done on receipt of a message.  A message will
-usually correspond to a file, but for large files, there will be one
-message per part. Checking the xxx...**FIXME** to find out which part 
-you have.
+  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  clam_scan on_part plugin initialized
+  clam_scan on_part plugin initialized
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe start
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe run
+  2016-05-07 18:01:15,007 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:01:15,846 [INFO] Received notice  20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:15,911 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160507.CYYR 20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml 201 blacklab anonymous 0.258438 parts=1,4349,1,0,0 sum=d,399e3d9119821a30d480eeee41fe7749 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CYYR-MAN-swob.xml message=Downloaded 
+  2016-05-07 18:01:15,913 [INFO] part_clamav_scan took 0.00153089 seconds, no viruses in ./2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:17,544 [INFO] Received notice  20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml
+  2016-05-07 18:01:17,607 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160507.CVFS 20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml 201 blacklab anonymous 0.151982 parts=1,7174,1,0,0 sum=d,a8b14bd2fa8923fcdb90494f3c5f34a8 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CVFS-AUTO-swob.xml message=Downloaded 
+  
+  
+Speedo Metrics
+--------------
+  
+activating the speedo plugin lets one understand how much bandwidth
+and how many messages per second a given set of selection criteria
+result in::
+  
+  broker amqp://dd.weather.gc.ca
+  on_message msg_speedo
+  subtopic observations.swob-ml.#
+  accept .*
 
-.. note:: 
-   **FIXME**: perhaps show a way of checking the parts header to 
-   with an if statement in order to act on only the first part message
-   for long files.
+  
+Gives lines in the log like so::
 
-   **FIXME**: is .py needed on on\_ triggers?
-
+  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe start
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe run
+  2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
+  
+  
+  
+  
 Partial File Updates
 --------------------
 

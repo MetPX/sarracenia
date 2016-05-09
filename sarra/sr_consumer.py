@@ -263,7 +263,6 @@ def self_test():
           if ok: break
 
           i = i + 1
-          print("sr_consumer nth try %i" % i )
           if i == 100 : 
              msg = None
              break

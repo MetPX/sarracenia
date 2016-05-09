@@ -346,7 +346,7 @@ def test_sr_2xlog():
     toxlog.logger  = logger
     toxlog.debug   = True
 
-    subscriber = 'anonymous'
+    subscriber = 'tsource'
     exchange   = 'xs_' + subscriber
     toxlog.subscribe_users = [subscriber]
     toxlog.exchanges       = {}
@@ -360,7 +360,7 @@ def test_sr_2xlog():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = toxlog.credentials.get("amqp://ddi2.edm.ec.gc.ca/")
+    ok, details = toxlog.credentials.get("amqp://localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")

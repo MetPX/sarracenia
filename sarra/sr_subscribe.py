@@ -160,7 +160,7 @@ class sr_subscribe(sr_instances):
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.msg.log_publish(503,"Unable to process")
-                self.logger.error("Could not download")
+                self.logger.error("sr_subscribe: Could not download")
 
         self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
@@ -234,7 +234,7 @@ class sr_subscribe(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Received notice  %s" % self.msg.notice)
+        self.logger.debug("Received notice  %s" % self.msg.notice)
 
         # selected directory from accept/reject resolved in consumer
 

@@ -437,7 +437,7 @@ rename a product, changing its destination...
 Plugin scripts are more fully explained in the `Plugin Scripts <#plugin-scripts-1>`_ of 
 this manual page.
 
-- **on_message    <script_name> (must be set)**
+- **on_message    <script_name> (default: msg_log)**
 
 The **on_message** plugin scripts is the very last step in consuming messages.
 All plugin scripts return a boolean. If False is returned, the component

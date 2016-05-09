@@ -342,10 +342,10 @@ def test_sr_log2clusters():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2clusters.credentials.get("amqp://root@ddi1.edm.ec.gc.ca/")
+    ok, details = log2clusters.credentials.get("amqp://tsource@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
-       print("Need a good broker")
+       print("Need admin or feeder access on local broker to read from.")
        sys.exit(1)
     log2clusters.broker  = details.url
     log2clusters.cluster = 'DDI.EDM'
@@ -357,7 +357,7 @@ def test_sr_log2clusters():
     ok, details = log2clusters.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
-       print("Need a good broker")
+       print("Need admin or feeder access to a remote broker to write to")
        sys.exit(1)
     log2clusters.cluster_exchange = 'xlog'
 

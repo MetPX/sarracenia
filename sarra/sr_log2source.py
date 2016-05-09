@@ -322,14 +322,14 @@ def test_sr_log2source():
     ok, details = log2source.credentials.get("amqp://tfeed@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
-       print("Need a good broker")
+       print("Need feeder privileges to a broker")
        sys.exit(1)
     log2source.broker = details.url
 
     # ==================
     # define a source_users list here
 
-    log2source.source_users = ['USGS-Sioux-Falls']
+    log2source.source_users = ['tsource']
 
     # ==================
     # define the matching cluster here
