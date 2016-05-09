@@ -36,7 +36,7 @@ class PartClamAvScan(object):
 
         # it is possible to optimize scanning by not  ... FIXME! this is not tested. not sure how PS!
         if hasattr(parent,'part_clamav_maxblock'):
-            if parent.current_block > parent.part_clamav_maxblock :
+            if parent.current_block > parent.part_clamav_maxblock[0] :
                logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
                return True  
 

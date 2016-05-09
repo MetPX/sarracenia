@@ -15,11 +15,11 @@
  It is mandatory to set the threshold for discarding messages (in seconds) in the configuration 
  file. For example:
 
- discard_maxlag 10
+ msg_skip_threshold 10
 
  will result in messages which are more than 10 seconds old being skipped. 
 
- If this option is not set, every message received will result in an error message.
+ default is one hour (3600 seconds.) 
 
 
 """
@@ -30,6 +30,14 @@ class Transformer(object):
 
 
     def __init__(self,parent):
+
+        if not hasattr(parent,'msg_skip_threshold'):
+           parent.msg_skip_threshold=3600
+        else:
+           if type(parent.msg_skip_threshold) is list:
+              parent.msg_skip_threshold=int(parent.msg_skip_threshold[0])
+
+
         pass
           
     def perform(self,parent):
@@ -45,8 +53,8 @@ class Transformer(object):
         # Set the maximum age, in seconds, of a message to retrieve.
         lag=now-then
 
-        if lag > int(parent.discard_maxlag) :
-           logger.info("discard_when_lagging, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
+        if lag > int(parent.msg_skip_threshold) :
+           logger.info("msg_skip_old, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
            return False
 
         return True

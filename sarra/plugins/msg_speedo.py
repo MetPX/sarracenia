@@ -30,14 +30,20 @@ class Msg_Speedo(object):
         logger = parent.logger
 
         if hasattr(parent,'msg_speedo_maxlag'):
-            parent.msg_speedo_maxlag=int(parent.msg_speedo_maxlag)
+            if type(parent.msg_speedo_maxlag) is list:
+                parent.msg_speedo_maxlag=int(parent.msg_speedo_maxlag[0])
+            else:
+                parent.msg_speedo_maxlag=int(parent.msg_speedo_maxlag)
         else:
             parent.msg_speedo_maxlag=60
 
         logger.debug("speedo init: 2 " )
 
         if hasattr(parent,'msg_speedo_interval'):
-            parent.msg_speedo_interval=int(parent.msg_speedo_interval)
+            if type(parent.msg_speedo_interval) is list:
+                parent.msg_speedo_interval=int(parent.msg_speedo_interval[0])
+            else:
+                parent.msg_speedo_interval=int(parent.msg_speedo_interval)
         else:
             parent.msg_speedo_interval=5
 

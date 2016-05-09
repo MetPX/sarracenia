@@ -481,6 +481,60 @@ It is worth noting that it would be more efficient, in terms of cpu and i/o of t
 if sr_subscribe would directly inform the processing software that the file has arrived.
 
 
+Plugins
+-------
+
+Default file processing is often fine, but there are also pre-built customizations that
+can be used to change processing done by components.  The list of pre-built plugins is
+in a 'plugins' directory wherever the package is installed.  here is a sample list:
+
++-----------------------------+---------------------------------------------------------+
+|destfn_sample.py             | sample destfn_script to rename files when delivering.   |
++-----------------------------+---------------------------------------------------------+
+|file_check.py                | Check file attributes to verify download correct.       |
++-----------------------------+---------------------------------------------------------+
+|file_log.py                  | Print a log message when a file is downloaded.          |
++-----------------------------+---------------------------------------------------------+
+|file_quiet.py                | Do nothing when a file is downloaded.                   |
++-----------------------------+---------------------------------------------------------+
+|msg_skip_old.py              | When consumption is lagging too far behind, drop old    |
+|                             | messages to catch up. Options:                          |
+|                             | msg_skip_threshold 20                                   |
+|                             | means discard messages older than 20 seconds.           |
++-----------------------------+---------------------------------------------------------+
+|msg_log.py                   | Print a log message for each announcement received.     |
++-----------------------------+---------------------------------------------------------+
+|msg_print_lag.py             | Print how far behind current consumption is.            |
++-----------------------------+---------------------------------------------------------+
+|msg_quiet.py                 | Do nothing when an announcement is received.            |
++-----------------------------+---------------------------------------------------------+
+|msg_renamer.py               | Adjust Messages so they download to different names.    |
++-----------------------------+---------------------------------------------------------+
+|msg_speedo.py                | print statistics, rather than per file messages.        |
++-----------------------------+---------------------------------------------------------+
+|msg_sundew_pxroute.py        | apply the sundew Bulletin routing method. Options:      |
+|                             | msg_pxrouting <filename>                                |
+|                             | msg_pxclient  <name of client>                          |
+|                             | Apply Sundew routing table by client.                   |
++-----------------------------+---------------------------------------------------------+
+|part_clamav_scan.py          | Run ClamAV Anti-virus scan on a file part. Options:     |
+|                             | part_clamav_maxblock <number>                           |
+|                             | if set, then only scan the first <number> blocks.       |
+|                             | default, scan all.                                      |
++-----------------------------+---------------------------------------------------------+
+|post_override.py             | Change headers in an announcement to be posted.         |
+|                             | Options:                                                |
+|                             | post_override <hdr> <value>                             |
+|                             | Set message header to the given value, overriding       |
+|                             | content, or creating new header if not present.         |
++-----------------------------+---------------------------------------------------------+
+
+For all plugins, the prefix indicates how the plugin is to be used: a file_ plugin is
+to be used with on_file.  An msg_ plugin is to be used with on_message, etc...
+When plugins have options, the options must be placed before the plugin declaration
+in the configuration file.
+
+
 
 Better File Reception
 ---------------------
