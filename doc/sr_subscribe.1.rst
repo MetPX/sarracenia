@@ -263,8 +263,8 @@ There are ways to insert scripts into the flow of messages and file downloads:
 Should you want to implement tasks in various part of the execution of the program:
 
 - **do_download <script>        (default: None)** 
-- **on_message  <script>        (default: None)** 
-- **on_file     <script>        (default: None)** 
+- **on_message  <script>        (default: msg_log)** 
+- **on_file     <script>        (default: file_log)** 
 - **on_parts    <script>        (default: None)** 
 
 A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be

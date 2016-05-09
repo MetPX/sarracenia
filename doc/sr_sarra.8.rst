@@ -109,7 +109,7 @@ Using regular expression filtering messages
 
 Running a plugin on selected messages
 
-- **on_message      <script_name> (optional)** 
+- **on_message      <script_name> (default: msg_log)** 
 
 
 Specific consuming requirements
@@ -216,7 +216,7 @@ There are a few options that impact the dowload of a product:
 
 - **delete           <boolean> (default: False)** 
 - **do_download      <script>  (default: None)**
-- **on_file          <script>  (default: None)**
+- **on_file          <script>  (default: file_log)**
 - **on_part          <script>  (default: None)**
 - **overwrite        <boolean> (default: False)** 
 - **recompute_chksum <boolean> (default: False)** 
@@ -256,11 +256,13 @@ can do whatever he wants with the downloaded part... etc. Again
 it should return True to tell the program to resume processing.
 If false, it will continue to the next message.
 
-The **on_file** option defaults to None. If used it defines a script that will 
-be called once the file is downloaded (or all its parts are inplace). The user
-can do whatever he wants with the downloaded file perform checks... etc. Again 
-it should return True to tell the program to resume processing.
-If false, it will continue to the next message.
+The **on_file** option defaults to file_log, which writes a downloading status message. 
+If used it defines a script that will be called once the file is downloaded 
+(or all its parts are inplace). The user can do whatever he wants with 
+the downloaded file perform checks... etc. Again 
+it returns True to tell the program to resume processing.
+If it returns false, processing of the current message is stopped, and
+the program skips to the next message.
 
 For each download, the checksum is computed during transfer. If **recompute_chksum** 
 is set to True, and the recomputed checksum differ from the on in the message,
