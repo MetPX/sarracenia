@@ -73,7 +73,7 @@ class sr_audit(sr_instances):
         if role == 'source':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^xl_%s$|^xpublic$'"%(u,u)
+           r="read='^q_%s.*|^xs_%s$|^xl_%s$|^xpublic$'"%(u,u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
