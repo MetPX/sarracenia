@@ -6,16 +6,15 @@
 
 """
 
-import os,stat,time
-
 class Msg_Log(object): 
 
     def __init__(self,parent):
           pass
           
     def perform(self,parent):
-
-        parent.logger.info("msg_log received: %s" % parent.msg.notice)
+        msg = parent.msg
+        parent.logger.info("msg_log received: %s topic=%s lag=%g %s" % \
+           ( msg.notice, msg.topic, msg.get_elapse(), msg.hdrstr ) )
         return True
 
 msg_log = Msg_Log(self)

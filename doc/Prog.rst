@@ -18,11 +18,11 @@ Status: Pre-Draft
 Introduction
 ------------
 
-A Sarracenia data pump is a web server with notifications for subscribers to know, quickly, when new data has arrived.  
-To find out what data is already available on a pump, view the tree with a web browser.  
-For simple immediate needs, one can download data using the browser itself, or a standard tool such as wget.
-The usual intent is for sr_subscribe to automatically download the data wanted to a directory on a subscriber
-machine where other software can process it.  
+A Sarracenia data pump is a web server with notifications for subscribers to know, quickly, 
+when new data has arrived.  To find out what data is already available on a pump, view the 
+tree with a web browser.  For simple immediate needs, one can download data using the browser 
+itself, or a standard tool such as wget.  The usual intent is for sr_subscribe to automatically 
+download the data wanted to a directory on a subscriber machine where other software can process it.  
 
 Often, the purpose of automated downloading is to have other code ingest the files and perform further
 processing.  Rather than having a separate process have to look at a file in a directory, Sarracenia
@@ -31,9 +31,16 @@ provides a means of customizing processing via plugins written in python 3. A fi
 There are ways to insert scripts into the flow of messages and file downloads:
 Should you want to implement tasks in various part of the execution of the program:
 
-- **on_message  <script>        (default: None)**
-- **on_file     <script>        (default: None)**
+- **on_message  <script>        (default: msg_log)**
+- **on_file     <script>        (default: file_log)**
 - **on_part     <script>        (default: None)**
+- **on_post     <script>        (default: None)**
+
+There are also do\_ scripts, which provide or replace functionality in programs:
+
+- **do_download     <script>        (default: None)**
+- **do_poll         <script>        (default: None)**
+- **do_send         <script>        (default: None)**
 
 
 An example, A file_noop.py script for **on_file**, could be ::
@@ -63,6 +70,10 @@ one would set::
 
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
+
+
+
+
 
 
 
@@ -328,16 +339,79 @@ below::
 
   2016-01-14 17:13:01,649 [INFO] message = 
 
-No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of this state will vary
-over time.
+No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of this state will vary over time.
 
 
-Testing on\_ Scripts
-~~~~~~~~~~~~~~~~~~~~
+Debugging on\_ Scripts
+~~~~~~~~~~~~~~~~~~~~~~
 
-When debugging, it is useful to do initial work using a separate script,
-rather than calling it directly from sarracenia.  The following method 
-allows one to test scripts for basic function before using them in anger::
+When initially developing a plugin script, it can be painful to run it in the complete framework.
+Attempting to run even the above trivial plugin::
+
+   blacklab% python noop.py
+   Traceback (most recent call last):
+     File "noop.py", line 25, in <module>
+       filenoop  = File_Noop(self)
+   NameError: name 'self' is not defined
+   blacklab%  
+
+To do basic syntax work, one can add some debugging scaffolding.  Taking the above code just add::
+    
+    class File_Noop(object):
+          def __init__(self,parent):
+              if not hasattr(parent,'file_string'):
+                 parent.file_string='hello world'
+    
+    
+          def perform(self,parent):
+              logger = parent.logger
+    
+              logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
+    
+              return True
+    
+    #file_noop=File_Noop(self)
+    #self.on_file=file_noop.perform
+
+    ## DEBUGGING CODE START
+
+    class TestLogger:
+        def silence(self,str):
+            pass
+
+        def __init__(self):
+            self.debug   = self.silence
+            self.error   = print
+            self.info    = self.silence
+            self.warning = print
+
+
+    class TestParent(object):
+        def __init__(self):
+            self.logger=TestLogger()
+            pass
+
+    testparent=TestParent()
+
+    filenoop  = File_Noop(testparent)
+    testparent.on_file = filenoop.perform
+
+So now it can be invoked with::
+
+    blacklab% python noop.py
+    blacklab% 
+
+Which confirms that there are at least no syntax errors. One will need to add more scaffolding
+depending on the complexity of the plugin.  One can append an invocation of the plugin to the test
+script, like so::
+  
+   self.on_file(self)
+
+
+and then the routine will run. the more complex the plugin, the more needs to be added to the 
+debugging scaffolding.  Once that sort of basic testing is completed, just remove the scaffolding.
+    
+For more complicated tests, just add more testing code::
 
   cat >fifo_test.py <<EOT
   #!/usr/bin/python3
@@ -366,7 +440,7 @@ allows one to test scripts for basic function before using them in anger::
           # resume process as usual ?
           return True
 
-  transformer = Transformer()
+  transformer=Transformer()
   #self.on_file = transformer.perform
 
   """ 
@@ -377,23 +451,34 @@ allows one to test scripts for basic function before using them in anger::
          python3  fifo_test.py
 
   """
+  class TestLogger():
+      def silence(self,str):
+          pass
 
-  class Message() :
+      def __init__(self):
+          self.debug   = print
+          self.error   = print
+          self.info    = print
+          self.warning = print
+
+  class TestMessage() :
       def __init__(self):
           self.local_file = "a string"
+          self.headers = {}
 
-  class Parent() :
+  class TestParent(object):
       def __init__(self):
-          # need to create enough fields in the message to test the script.
-          self.msg = Message()
+          self.msg = TestMessage()
+          self.logger = TestLogger()
+          pass
 
-  parent = Parent()
+  testparent=TestParent()
 
-  transformer.perform(parent)
-  EOT
+  transformer.perform(testparent)
 
 The part after the #self.on_file line is only a test harness.  Once creates a calling
-object with the fields needed to test the 
+object with the fields needed to test the fields the plugin will use in the parent and Message
+classes.
 
 
 File Notification Without Downloading

@@ -256,8 +256,8 @@ class sr_config:
 
         # return bad file ... 
         if mandatory :
-          if subdir == 'plugins' : self.logger.error("Script incorrect %s" % config)
-          else                   : self.logger.error("File incorrect %s" % config)
+          if subdir == 'plugins' : self.logger.error("script not found %s" % config)
+          else                   : self.logger.error("file not found %s" % config)
           os._exit(1)
 
         return False,config
@@ -424,17 +424,25 @@ class sr_config:
         self.interface            = None
         self.vip                  = None
 
-        if self.program_name == 'sr_log':
-            self.execfile("on_message",'msg_log')
-            if self.on_message == None :
-                self.logger.error("on_message script incorrect (%s)" % words1)
-        else:
-            self.on_message       = None
+        self.on_message = None
+        self.execfile("on_message",'msg_log')
+        if self.on_message == None :
+            self.logger.error("built-in plugin script load failed, still None: msg_log" )
+
+        self.on_file = None
+        self.execfile("on_file",'file_log')
+        if self.on_file == None :
+            self.logger.error("built-in plugin script load failed, still None: file_log" )
+
+
 
     def execfile(self, opname, path):
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
-        self.logger.debug("installing script %s " % script ) 
+        if ok:
+             self.logger.info("installing script %s" % script ) 
+        else:
+             self.logger.error("installing script %s failed: not found " % path ) 
 
         try    : 
                  exec(compile(open(script).read(), script, 'exec'))
@@ -1052,7 +1060,7 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 == 'on_message': # See: sr_config.1, others...
+                elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
                      self.on_message = None
                      self.execfile("on_message",words1)
                      if self.on_message == None :
@@ -1282,9 +1290,21 @@ class sr_config:
                      n = 2
 
                 else :
-                     self.logger.warning("unrecognized %s %s" % (words[0],words[1]))
-                     self.logger.warning("extend self.%s = '%s'" % (words[0],words[1]))
-                     setattr(self,words[0],words[1])
+                     # if unknown option is supplied, then set to string value.
+                     # string value all the words on the option line.
+                     # if unknown option is supplied more than once, then make a list
+                     value = ' '.join(words[1:])
+                     self.logger.warning("unrecognized option %s %s" % (words[0],value))
+                     if not hasattr(self,words[0]):
+                         setattr(self,words[0],value)
+                     else:
+                         if type(getattr(self,words[0])) is list:
+                             value2=getattr(self,words[0])
+                             value2.append(value)
+                             setattr(self,words[0],value2)
+                         else:
+                             setattr(self,words[0],[ getattr(self,words[0]), value ] )
+                     self.logger.info("extend self.%s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
                 (stype, svalue, tb) = sys.exc_info()

@@ -520,6 +520,60 @@ completely avoided.
 
 
 
+Anti-Virus Scanning
+-------------------
+
+Assuming that ClamAV is installed, as well as the python3-pyclamd
+package, then one can adding the following to an sr_subscribe 
+configuration file::
+
+  broker amqp://dd.weather.gc.ca
+  on_part /home/peter/test/part_clamav_scan.py
+  subtopic observations.swob-ml.#
+  accept .*
+
+will cause each file downloaded (or each part of the file if it is large),
+to be AV scanned. Sample run::
+
+  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  clam_scan on_part plugin initialized
+  clam_scan on_part plugin initialized
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe start
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe run
+  2016-05-07 18:01:15,007 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:01:15,846 [INFO] Received notice  20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:15,911 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160507.CYYR 20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml 201 blacklab anonymous 0.258438 parts=1,4349,1,0,0 sum=d,399e3d9119821a30d480eeee41fe7749 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CYYR-MAN-swob.xml message=Downloaded 
+  2016-05-07 18:01:15,913 [INFO] part_clamav_scan took 0.00153089 seconds, no viruses in ./2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:17,544 [INFO] Received notice  20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml
+  2016-05-07 18:01:17,607 [INFO] 201 Downloaded : v02.log.observations.swob-ml.20160507.CVFS 20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml 201 blacklab anonymous 0.151982 parts=1,7174,1,0,0 sum=d,a8b14bd2fa8923fcdb90494f3c5f34a8 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CVFS-AUTO-swob.xml message=Downloaded 
+  
+  
+Speedo Metrics
+--------------
+  
+activating the speedo plugin lets one understand how much bandwidth
+and how many messages per second a given set of selection criteria
+result in::
+  
+  broker amqp://dd.weather.gc.ca
+  on_message msg_speedo
+  subtopic observations.swob-ml.#
+  accept .*
+
+  
+Gives lines in the log like so::
+
+  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe start
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe run
+  2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
+  
+  
+  
+  
 Partial File Updates
 --------------------
 
