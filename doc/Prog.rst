@@ -131,7 +131,7 @@ provided with sarracenia::
               parent.logger.error("Missing file_rxpipe_name parameter")
               return 
 
-          self.rxpipe = open( parent.file_rxpipe_name, "w" )
+          self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
       def perform(self, parent):
           self.rxpipe.write( msg.local_file + "\n" )
@@ -476,9 +476,9 @@ For more complicated tests, just add more testing code::
 
   transformer.perform(testparent)
 
-The part after the #self.on_file line is only a test harness.  Once creates a calling
-object with the fields needed to test the fields the plugin will use in the parent and Message
-classes.
+The part after the #self.on_file line is only a test harness.  
+One creates a calling object with the fields needed to test the 
+fields the plugin will use in the TestParent and TestMessage classes.
 
 
 File Notification Without Downloading
@@ -506,7 +506,9 @@ on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
 message per part. Checking the xxx...**FIXME** to find out which part 
-you have.
+you have. One can use sr_subscribe and set an the on_message 
+plugin to return 'False' to prevent downloading.
+
 
 .. note:: 
    **FIXME**: perhaps show a way of checking the parts header to 

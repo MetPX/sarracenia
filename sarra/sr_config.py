@@ -1296,14 +1296,11 @@ class sr_config:
                      value = ' '.join(words[1:])
                      self.logger.warning("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
-                         setattr(self,words[0],value)
+                         setattr(self, words[0],[ value ])
                      else:
-                         if type(getattr(self,words[0])) is list:
-                             value2=getattr(self,words[0])
-                             value2.append(value)
-                             setattr(self,words[0],value2)
-                         else:
-                             setattr(self,words[0],[ getattr(self,words[0]), value ] )
+                         value2=getattr(self,words[0])
+                         value2.append(value)
+                         setattr(self,words[0],value2)
                      self.logger.info("extend self.%s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
