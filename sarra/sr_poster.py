@@ -228,7 +228,7 @@ class sr_poster:
            else:
                 kdict = self.cache[key]
                 if partstr in kdict and kdict[partstr] == sumstr :
-                   self.logger.info("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
+                   self.logger.debug("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
                    return True
                 kdict[partstr]  = sumstr
                 self.cache[key] = kdict

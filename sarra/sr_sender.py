@@ -178,7 +178,7 @@ class sr_sender(sr_instances):
 
     def __do_send__(self):
 
-        self.logger.info("sending/copying %s " % self.local_path)
+        self.logger.debug("sending/copying %s " % self.local_path)
 
         try :
                 if   self.do_send :
@@ -337,7 +337,7 @@ class sr_sender(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Accepting to send %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("Accepting to send %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # setting up message with sr_sender config options
@@ -462,7 +462,7 @@ class sr_sender(sr_instances):
             last_remote_file = self.remote_file
             ok = self.destfn_script(self)
             if last_remote_file != self.remote_file :
-               self.logger.info("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
+               self.logger.debug("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
 
         destDir = self.remote_rpath
         destDir = self.metpx_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)

@@ -18,23 +18,32 @@ Status: Pre-Draft
 Introduction
 ------------
 
-A Sarracenia data pump is a web server with notifications for subscribers to know, quickly, 
-when new data has arrived.  To find out what data is already available on a pump, view the 
-tree with a web browser.  For simple immediate needs, one can download data using the browser 
-itself, or a standard tool such as wget.  The usual intent is for sr_subscribe to automatically 
-download the data wanted to a directory on a subscriber machine where other software can process it.  
+A Sarracenia data pump is a web server with notifications for subscribers to 
+know, quickly, when new data has arrived.  To find out what data is already 
+available on a pump, view the tree with a web browser.  For simple immediate 
+needs, one can download data using the browser itself, or a standard tool 
+such as wget.  The usual intent is for sr_subscribe to automatically download 
+the data wanted to a directory on a subscriber machine where other software 
+can process it.  
 
-Often, the purpose of automated downloading is to have other code ingest the files and perform further
-processing.  Rather than having a separate process have to look at a file in a directory, Sarracenia
-provides a means of customizing processing via plugins written in python 3. A first example:
+Often, the purpose of automated downloading is to have other code ingest 
+the files and perform further processing.  Rather than having a separate 
+process have to look at a file in a directory, Sarracenia provides a means 
+of customizing processing via plugins written in python 3. A first example:
 
 There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program:
+Should you want to implement tasks in various part of the execution of the 
+program:
 
 - **on_message  <script>        (default: msg_log)**
 - **on_file     <script>        (default: file_log)**
 - **on_part     <script>        (default: None)**
-- **on_post     <script>        (default: None)**
+- **on_post     <script>        (default: post_log)**
+- **on_line     <script>        (default: None)**
+
+Thisl the first four are sel-evident, the on_line plugin is a bit obscure.  It 
+is used to parse remote directories listings using sr_poll,
+as the listing format varies by implementation of the remote server.
 
 There are also do\_ scripts, which provide or replace functionality in programs:
 
@@ -61,17 +70,15 @@ An example, A file_noop.py script for **on_file**, could be ::
  filenoop  = File_Noop(self)
  self.on_file = filenoop.perform
 
-The only argument the script receives is **parent**, which has all of option settings from configuration
-files and command line as attributes, and so are available for use.  In any configuration file,
-one would set::
+The only argument the script receives is **parent**, which has all of option 
+settings from configuration files and command line as attributes, and so are 
+available for use.  In any configuration file, one would set::
 
   file_string oh my goodness
   on_file file_noop
 
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
-
-
 
 
 

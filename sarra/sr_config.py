@@ -434,9 +434,20 @@ class sr_config:
         if self.on_file == None :
             self.logger.error("built-in plugin script load failed, still None: file_log" )
 
+        self.on_post = None
+        self.execfile("on_post",'post_log')
+        if self.on_post == None :
+            self.logger.error("built-in plugin script load failed, still None: post_log" )
+
 
 
     def execfile(self, opname, path):
+
+        setattr(self,opname,None)
+
+        if path == 'None' or path == 'none' or path == 'off':
+             self.logger.info("Reset script %s to None" % opname ) 
+             return
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
@@ -445,11 +456,17 @@ class sr_config:
              self.logger.error("installing script %s failed: not found " % path ) 
 
         try    : 
-                 exec(compile(open(script).read(), script, 'exec'))
+            exec(compile(open(script).read(), script, 'exec'))
         except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-                 self.logger.error("for option %s script %s did not work" % (opname,path))
+            (stype, svalue, tb) = sys.exc_info()
+            self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error("for option %s script %s did not work" % (opname,path))
+
+        if not hasattr(self,opname):
+            self.logger.error("%s script incorrect (%s)" % (opname, words1))
+
+
+
 
     def general(self):
         self.logger.debug("sr_config general")

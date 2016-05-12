@@ -183,7 +183,7 @@ class sr_sarra(sr_instances):
 
     def __do_download__(self):
 
-        self.logger.info("downloading/copying into %s " % self.msg.local_file)
+        self.logger.debug("downloading/copying into %s " % self.msg.local_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -357,7 +357,7 @@ class sr_sarra(sr_instances):
 
     def process_message(self):
 
-        self.logger.info("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # setting source and cluster if required
@@ -601,7 +601,7 @@ class sr_sarra(sr_instances):
 
     def set_source(self):
         if self.msg.exchange[:3] != 'xs_' :
-           self.logger.info("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
+           self.logger.error("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
            self.msg.log_publish(403,"Forbidden : message without source")
            self.logger.error("Forbidden : message without source")
            return False

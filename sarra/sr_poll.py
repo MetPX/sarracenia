@@ -587,9 +587,9 @@ class sr_poll(sr_instances):
               self.sleeping = not self.has_vip()
 
               if self.sleeping :
-                 self.logger.info("poll is sleeping ")
+                 self.logger.debug("poll is sleeping ")
               else :
-                 self.logger.info("poll is NOT sleeping ")
+                 self.logger.debug("poll is NOT sleeping ")
 
               # if pull is sleeping and we delete files... nothing to do
               # if we don't delete files, we will keep the directory state
@@ -605,7 +605,7 @@ class sr_poll(sr_instances):
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
               if not ok :
-                 self.logger.info("poll is sleeping %d seconds " % self.sleep)
+                 self.logger.debug("poll is sleeping %d seconds " % self.sleep)
                  time.sleep(self.sleep)
 
     def reload(self):
