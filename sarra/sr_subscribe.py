@@ -358,7 +358,7 @@ class sr_subscribe(sr_instances):
            if self.discard :
               try    :
                         os.unlink(self.msg.local_file)
-                        self.logger.warning("Discarded  %s" % self.msg.local_file)
+                        self.logger.debug("Discarded  %s" % self.msg.local_file)
               except :
                         (stype, svalue, tb) = sys.exc_info()
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
