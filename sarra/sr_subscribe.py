@@ -69,7 +69,6 @@ class sr_subscribe(sr_instances):
         if self.discard:
            self.inplace    = False
            self.overwrite  = True
-           self.no_logback = True
 
         # if no subtopic given... make it #  for all
         if self.bindings == []  :
@@ -121,9 +120,13 @@ class sr_subscribe(sr_instances):
         # =============
 
         if not self.no_logback :
+           self.logger.warning("logback is active exchange is: %s" % self.log_exchange )
+
            self.publisher         = self.consumer.publish_back()
            self.msg.log_publisher = self.publisher
            self.msg.log_exchange  = 'xs_' + self.broker.username
+        else:
+           self.logger.warning("logback suppressed")
 
     def __do_download__(self):
 
