@@ -12,7 +12,7 @@ class Renamer(object):
       def __init__(self,parent) :
           pass
 
-      # old in metpx
+      # old in sundew
       #def perform(self,path):
           #datestr = time.strftime('%Y%m%d%H%M%S',time.localtime())
           #new_path = path + ':' + datestr

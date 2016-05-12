@@ -27,15 +27,11 @@ class Override(object):
         logger = parent.logger
         msg    = parent.msg
 
-        if type(parent.post_override) is list:
-           for o in parent.post_override:
-               ( osetting, ovalue ) = o.split()
-               parent.logger.info('post_override applying: header:%s value:%s' %  \
-                     ( osetting, ovalue ) )
-               msg.headers[ osetting ] = ovalue
-        else:
-           ( osetting, ovalue ) = parent.post_override.split()
-           msg.headers[ osetting ] = ovalue
+        for o in parent.post_override:
+            ( osetting, ovalue ) = o.split()
+            parent.logger.info('post_override applying: header:%s value:%s' %  \
+                  ( osetting, ovalue ) )
+            msg.headers[ osetting ] = ovalue
            
         return True
 
