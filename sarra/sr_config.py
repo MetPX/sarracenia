@@ -451,9 +451,9 @@ class sr_config:
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
-             self.logger.info("installing script %s" % script ) 
+             self.logger.info("installing %s script %s" % (opname, script ) ) 
         else:
-             self.logger.error("installing script %s failed: not found " % path ) 
+             self.logger.error("installing %s script %s failed: not found " % (opname, path) ) 
 
         try    : 
             exec(compile(open(script).read(), script, 'exec'))
@@ -562,7 +562,7 @@ class sr_config:
 
     def isNone(self,S):
         s = S.lower()
-        if  s == 'false' or s == 'none' or s == 'on' or s == '1': return True
+        if  s == 'false' or s == 'none' or s == 'off' or s == '0': return True
         return False
 
     # modified from metpx SenderFTP
@@ -845,7 +845,7 @@ class sr_config:
                 elif words0 == 'destfn_script': # See: sr_sender(1)
                      self.destfn_script = None
                      self.execfile("destfn_script",words1)
-                     if (self.destfn_script == None ) and not isNone(words1):
+                     if ( self.destfn_script == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
@@ -882,21 +882,21 @@ class sr_config:
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
                      self.do_download = None
                      self.execfile("do_download",words1)
-                     if ( self.do_download == None ) and not isNone(words1):
+                     if ( self.do_download == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
                      self.do_poll = None
                      self.execfile("do_poll",words1)
-                     if ( self.do_poll == None ) and not isNone(words1):
+                     if ( self.do_poll == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
                 elif words0 == 'do_send': # See sr_config.7, and sr_sender.1
                      self.do_send = None
                      self.execfile("do_send",words1)
-                     if ( self.do_send == None ) and not isNone(words1):
+                     if ( self.do_send == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
@@ -1063,7 +1063,7 @@ class sr_config:
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.on_file = None
                      self.execfile("on_file",words1)
-                     if ( self.on_file == None ) and not isNone(words1):
+                     if ( self.on_file == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
@@ -1071,7 +1071,7 @@ class sr_config:
                 elif words0 == 'on_line': # See: sr_poll.1
                      self.on_line = None
                      self.execfile("on_line",words1)
-                     if ( self.on_line == None ) and not isNone(words1):
+                     if ( self.on_line == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
@@ -1079,7 +1079,7 @@ class sr_config:
                 elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
                      self.on_message = None
                      self.execfile("on_message",words1)
-                     if ( self.on_message == None ) and not isNone(words1):
+                     if ( self.on_message == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
@@ -1087,7 +1087,7 @@ class sr_config:
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
                      self.on_part = None
                      self.execfile("on_part",words1)
-                     if ( self.on_part == None ) and not isNone(words1):
+                     if ( self.on_part == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
@@ -1095,7 +1095,7 @@ class sr_config:
                 elif words0 == 'on_post': # See: sr_config, ++ FIXME many others?
                      self.on_post = None
                      self.execfile("on_post",words1)
-                     if ( self.on_post == None ) and not isNone(words1):
+                     if ( self.on_post == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
