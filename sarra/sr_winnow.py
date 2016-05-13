@@ -144,6 +144,11 @@ class sr_winnow(sr_instances):
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.broker.username
 
+        self.logger.info("logback to %s@%s, exchange: %s" %
+               ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
+
+
+
         # =============
         # poster if post_broker different from broker
         # =============

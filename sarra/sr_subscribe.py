@@ -123,7 +123,8 @@ class sr_subscribe(sr_instances):
            self.publisher         = self.consumer.publish_back()
            self.msg.log_publisher = self.publisher
            self.msg.log_exchange  = 'xs_' + self.broker.username
-           self.logger.warning("logback is active exchange is: %s" % self.msg.log_exchange )
+           self.logger.info("logback to %s@%s, exchange: %s" % 
+               ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
         else:
            self.logger.warning("logback suppressed")
 

@@ -994,11 +994,11 @@ class sr_config:
                         self.log_daemons = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['logexchange', 'lx', 'le'] : # See: sr_config.7 ++ everywhere fixme?
+                elif words0 in ['log_exchange', 'lx', 'le'] : # See: sr_config.7 ++ everywhere fixme?
                      self.log_exchange = words1
                      n = 2
 
-                elif words0 in ['logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
+                elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
                      self.logrotate = int(words[1])
                      n = 2
 

@@ -586,13 +586,13 @@ LOGS
 Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
 at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
 The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep 
-is set by the 'logrotate' parameter.  Log files older than **logrotate** days are deleted.
+is set by the 'logdays' parameter.  Log files older than **logdays** days are deleted.
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
 
-- **logrotate** the number of days' log files to keep online, assuming a daily rotation.
+- **logdays** the number of days' log files to keep online, assuming a daily rotation.
 
 - **loglevel** the level of logging as expressed by python's logging. 
                possible values are :  critical, error, info, warning, debug.
