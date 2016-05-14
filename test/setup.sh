@@ -26,6 +26,8 @@ amqp://tsource:PickAPassword2@localhost
 amqp://tfeed:PickAPassword3@localhost
 amqp://tsub:PickAPassword4@localhost
 amqp://anonymous:PickAPassword5@localhost
+amqp://anonymous:anonymous@dd1.weather.gc.ca
+amqp://anonymous:anonymous@dd2.weather.gc.ca
 
 EOT
  exit 1
@@ -48,23 +50,35 @@ cd $testrundir
 echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 
-for d in .config .config/sarra .config/sarra/sarra .config/sarra/subscribe .config/sarra/winnow .config/sarra/log .config/sarra/shovel ; do
+for d in .config .config/sarra ; do
    if [ ! -d $HOME/$d ]; then
       mkdir $HOME/$d
    fi
 done
 
 
-sed 's+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/t_prime_dd.conf >$HOME/.config/sarra/sarra/t_prime_dd.conf
+for d in sarra subscribe winnow log shovel ; do
+   if [ ! -d $HOME/.config/sarra/$d ]; then
+      mkdir $HOME/.config/sarra/$d
+   fi
+done
 
-sed 's+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/t_sub.conf >$HOME/.config/sarra/subscribe/t_sub.conf
+templates="`cd templates; ls */*.conf */*.inc`"
+
+for cf in ${templates}; do
+    echo "installing $cf"
+    sed 's+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/${cf} >$HOME/.config/sarra/${cf}
+done
 
 # ensure users have exchanges:
 sr_audit --users foreground
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
 
-rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=xwinnow type=topic auto_delete=false durable=true
+for exchange in xsarra xwinnow ; do 
+   echo "declaring $exchange"
+   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
+done
 
 
 
