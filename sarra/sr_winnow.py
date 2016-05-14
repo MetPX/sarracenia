@@ -59,11 +59,12 @@ class sr_winnow(sr_instances):
         self.cache          = {}
         self.maxEntries     = 12000
 
-    def cache_add(self, key,filename,block_count):
-        if len(self.cache) >= self.maxEntries: self.cache_clean()
-        newkey=str(filename) + "|" + str(block_count) + "|" +str(key)
-        self.cache[newkey] = time.time()
-        #print("Size of cache: %d  new_key: %s" % (len(self.cache),newkey))
+    def cache_add(self, key):
+        if len(self.cache) >= self.maxEntries: 
+            self.cache_clean()
+        self.cache[key] = time.time()
+        self.logger.debug("Size of cache: %d  new_key: %s" % (len(self.cache),key))
+            
 
     def cache_clean(self):
         temp = [ (item[1],item[0]) for item in self.cache.items() ]
@@ -81,7 +82,7 @@ class sr_winnow(sr_instances):
         self.cache = {}
 
     def cache_find(self, key):
-        return key in self.cache
+        return key in self.cache.keys()
 
     def check(self):
 
@@ -248,13 +249,15 @@ class sr_winnow(sr_instances):
         # cache testing/adding
         # ========================================
 
-        if self.cache_find(self.msg.checksum) :
+        key=str(self.msg.headers['filename']) + "|" + str(self.msg.block_count) + "|" +str(self.msg.checksum)
+
+        if self.cache_find(key) :
             self.msg.log_publish(304,'Not modified')
             self.logger.debug("Ignored %s" % (self.msg.notice))
             return True
 
         self.logger.debug("Added %s" % (self.msg.notice))
-        self.cache_add(self.msg.checksum,self.msg.headers['filename'],self.msg.block_count)
+        self.cache_add(key)
 
         # announcing the first and unique message
 
@@ -282,7 +285,7 @@ class sr_winnow(sr_instances):
                          time.sleep(5)
                          continue
                       else:
-                         self.logger.debug("sr_winnow is active")
+                         self.logger.debug("sr_winnow is active on vip=%s", self.vip)
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
