@@ -44,7 +44,7 @@
 # (passive true and binary true are credentials default and may be omitted)
 #
 
-import os,urllib,urllib.parse,sys
+import os,urllib,urllib.parse,sys,re
 
 # a class for credential details/options
 # add any other options here... and process in parse
@@ -74,11 +74,11 @@ class sr_credentials:
     def __init__(self, logger):
         self.logger      = logger
         self.credentials = {}
-
+        self.pwre=re.compile(':[^/:]*@')
+        
         self.logger.debug("sr_credentials __init__")
 
     def add(self,urlstr,details=None):
-        self.logger.debug("sr_credentials add %s %s" % (urlstr,details))
 
         # need to create url object
         if details == None :
@@ -93,7 +93,7 @@ class sr_credentials:
         # already cached
 
         if self.has(urlstr) :
-           self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+           #self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
            return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -161,7 +161,7 @@ class sr_credentials:
         return False
 
     def parse(self,line):
-        self.logger.debug("sr_credentials parse %s" % line)
+        self.logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
                 sline = line.strip()
@@ -239,7 +239,7 @@ class sr_credentials:
                  self.logger.error("Type: %s, Value: %s" % (stype, svalue))
                  self.logger.error("sr_credentials read path = %s" % path)
 
-        self.logger.debug("credentials = %s\n" % self.credentials)
+        #self.logger.debug("credentials = %s\n" % self.credentials)
 
 
     def resolve(self,urlstr, url = None):
@@ -277,7 +277,7 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            #self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
