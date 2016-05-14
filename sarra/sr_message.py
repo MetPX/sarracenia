@@ -175,7 +175,7 @@ class sr_message():
         if self.log_publisher != None :
            self.log_publisher.publish(self.log_exchange,self.log_topic,self.log_notice,self.headers)
 
-        self.logger.info("%d %s : %s %s %s" % (code,message,self.log_topic,self.log_notice,self.hdrstr))
+        self.logger.debug("%d %s : %s %s %s" % (code,message,self.log_topic,self.log_notice,self.hdrstr))
 
         # make sure not published again
         del self.headers['message']
@@ -275,8 +275,8 @@ class sr_message():
         self.set_hdrstr()
 
         if ok :
-                self.logger.debug("Published: %s %s" % (self.exchange,self.topic))
-                self.logger.info ("Published: '%s' %s" % (self.notice, self.hdrstr))
+                self.logger.debug("Published1: %s %s" % (self.exchange,self.topic))
+                self.logger.debug("Published2: '%s' %s" % (self.notice, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
