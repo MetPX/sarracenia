@@ -48,7 +48,7 @@ cd $testrundir
 echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 
-for d in .config .config/sarra .config/sarra/sarra .config/sarra/subscribe .config/sarra/winnow .config/sarra/log ; do
+for d in .config .config/sarra .config/sarra/sarra .config/sarra/subscribe .config/sarra/winnow .config/sarra/log .config/sarra/shovel ; do
    if [ ! -d $HOME/$d ]; then
       mkdir $HOME/$d
    fi
@@ -61,5 +61,13 @@ sed 's+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/t_
 
 # ensure users have exchanges:
 sr_audit --users foreground
+
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
+
+rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=xwinnow type=topic auto_delete=false durable=true
+
+
+
+
 
 sr restart
