@@ -10,26 +10,19 @@
 
 """
 
-<<<<<<< HEAD
-import os,stat,time
-
-=======
->>>>>>> f5988286f06dadc4846955490f0e41bd050cbf10
 class Post_Log(object): 
 
     def __init__(self,parent):
           pass
           
     def perform(self,parent):
-<<<<<<< HEAD
 
         msg = parent.msg
         parent.logger.info("post_log notice=%s headers=%s" % ( msg.notice, msg.headers))
-=======
-        msg = parent.msg
-        parent.logger.info("msg_log received: %s topic=%s lag=%g %s" % \
-           ( msg.notice, msg.topic, msg.get_elapse(), msg.hdrstr ) )
->>>>>>> f5988286f06dadc4846955490f0e41bd050cbf10
+        #msg = parent.msg
+        #parent.logger.info("msg_log received: %s topic=%s lag=%g %s" % \
+        #   ( msg.notice, msg.topic, msg.get_elapse(), msg.hdrstr ) )
+
         return True
 
 post_log = Post_Log(self)
