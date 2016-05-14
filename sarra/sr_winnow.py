@@ -115,7 +115,6 @@ class sr_winnow(sr_instances):
         # no vip given... so should not matter ?
         if self.vip == None and self.interface == None :
            self.logger.info("both vip and interface missing... standalone mode")
-           return True
 
         # bindings should be defined 
 
@@ -149,6 +148,8 @@ class sr_winnow(sr_instances):
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.broker.username
 
+        self.logger.info("reading from to %s@%s, exchange: %s" %
+               ( self.broker.username, self.broker.hostname, self.msg.exchange ) )
         self.logger.info("logback to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
 
@@ -171,10 +172,11 @@ class sr_winnow(sr_instances):
            self.publisher = Publisher(self.consumer.hc)
            self.publisher.build()
            self.msg.publisher = self.publisher
-           self.logger.info("Output AMQP  broker(%s) user(%s) vhost(%s)" % \
+           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
                            (self.broker.hostname,self.broker.username,self.broker.path) )
+
         self.msg.pub_exchange  = self.post_exchange
-        self.logger.info("Output AMQP  exchange(%s)" % self.msg.pub_exchange )
+        self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
 
 
     def overwrite_defaults(self):
@@ -279,9 +281,12 @@ class sr_winnow(sr_instances):
                          self.logger.debug("sr_winnow does not have vip=%s, is sleeping", self.vip)
                          time.sleep(5)
                          continue
+                      else:
+                         self.logger.debug("sr_winnow is active")
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
+                      self.logger.debug("sr_winnow consume, ok=%s" % ok)
                       if not ok : continue
 
                       #  process message (ok or not... go to the next)
