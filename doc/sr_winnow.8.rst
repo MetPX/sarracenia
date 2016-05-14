@@ -63,14 +63,11 @@ server. Should the server go down, the **vip** is moved on another server.
 Both servers would run **sr_winnow**. It is for that reason that the 
 following options were implemented:
 
- - **vip          <string>          (mandatory)** 
- - **interface    <string>          (mandatory)**
+ - **vip          <string>          (None)** 
+ - **interface    <string>          (None)**
 
-In the case, where you run only one **sr_winnow** on one server,
-on linux, you would set these options to :
-
-**vip 127.0.0.1**
-**interface lo**
+When you run only one **sr_winnow** on one server, these options are not set,
+and sr_winnow will run in 'standalone mode'.
 
 In the case of clustered brokers, you would set the options for the 
 moving vip.

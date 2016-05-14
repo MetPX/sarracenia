@@ -523,19 +523,29 @@ class sr_config:
 
     def has_vip(self): 
 
-        # no vip given... so should not matter ?
-        if self.vip == None or self.interface == None :
-           self.logger.warning("option vip or interface missing...")
+        # no vip given... standalone always has vip.
+        if self.vip == None and self.interface == None :
+           return True
+
+        #mis-configured options.
+        if self.vip == None :
+           self.logger.error("vip missing")
+           return False
+
+        if self.interface == None :
+           self.logger.error("inteface missing")
            return False
 
         try   :
                 a = netifaces.ifaddresses(self.interface)
+                self.logger.debug("vip inteface=%s a=%s " % (self.interface, a) )
                 if netifaces.AF_INET in a :
                    for inet in a[netifaces.AF_INET]:
                        if 'addr' in inet :
                            if inet['addr'] == self.vip :
                               return True
-        except: pass
+        except: 
+               self.logger.error("interface %s lookup failed" % self.interface )
 
         return False
 

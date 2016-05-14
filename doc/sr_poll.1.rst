@@ -61,8 +61,12 @@ If not, **sr_poll** will sleep.  When asleep, it will wakeup
 on the server every *sleep* seconds, to update its reference file and be perhaps
 take over the work.
 
-**vip       <ip>         (MANDATORY)**
-**interface <string>     (MANDATORY)**
+**vip       <ip>         (None)**
+**interface <string>     (None)**
+
+
+When these options are omitted, sr_poll is always active.
+
 
 
 DESTINATION OPTIONS

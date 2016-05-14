@@ -112,6 +112,11 @@ class sr_winnow(sr_instances):
            self.logger.error("post_exchange (output) not properly set...")
            sys.exit(1)
 
+        # no vip given... so should not matter ?
+        if self.vip == None and self.interface == None :
+           self.logger.info("both vip and interface missing... standalone mode")
+           return True
+
         # bindings should be defined 
 
         if self.bindings == []  :
@@ -271,7 +276,7 @@ class sr_winnow(sr_instances):
               try  :
                       #  is it sleeping ?
                       if not self.has_vip() :
-                         self.logger.debug("sr_winnow is sleeping")
+                         self.logger.debug("sr_winnow does not have vip=%s, is sleeping", self.vip)
                          time.sleep(5)
                          continue
 
