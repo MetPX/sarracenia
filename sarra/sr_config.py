@@ -1317,9 +1317,11 @@ class sr_config:
                      n = 2
 
                 else :
-                     # if unknown option is supplied, then set to string value.
-                     # string value all the words on the option line.
-                     # if unknown option is supplied more than once, then make a list
+                     # if unknown option is supplied, create a list for the values 
+                     # FIXME: if specifying values on command line, this breaks (including all options)
+                     #        dunno solution.  having it take all values allows options with > 1 word, which is very useful
+                     #        see post_override plugin.
+                     #
                      value = ' '.join(words[1:])
                      self.logger.warning("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):

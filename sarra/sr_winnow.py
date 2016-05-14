@@ -82,7 +82,7 @@ class sr_winnow(sr_instances):
         self.cache = {}
 
     def cache_find(self, key):
-        return key in self.cache.keys()
+        return key in self.cache
 
     def check(self):
 
