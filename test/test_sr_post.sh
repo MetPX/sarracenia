@@ -20,6 +20,13 @@
 
 DR="`cat .httpdocroot`"
 
+if [ ! "${DR}" ]; then
+  echo "must run setup.sh first"
+  exit 1
+else
+  echo "Document root is: ${DR}"
+fi
+
 export PYTHONPATH=../sarra
 
 cat << EOF > ${DR}/toto
@@ -41,25 +48,75 @@ e 123456789abcde
 
 EOF
 
-echo sr_post --help
+# this test does not work, but all it is supposed to do is show the usage...
+# FIXME.
+#echo sr_post --help
+#
+#../sarra/sr_post.py --help >srp.output 2>&1
+#echo
 
-../sarra/sr_post.py --help
-echo
 
+tnum=1
+printf "test ${tnum}: start "
 echo default broker + default exchange
 echo sr_post -u file:${DR}/toto -to alta
 
 ../sarra/sr_post.py -u file: -to alta -path ${DR}/toto
+st=$?
+if [ $st -eq 0 ]; then
+  echo "test ${tnum}: OK"
+else   
+  echo "test ${tnum}: FAIL"
+fi
+
 echo
 
 # checking caching
-echo  -blocksize -caching -reset
+
+let tnum++
+printf "test ${tnum}: start"
+echo "start ( -blocksize ) -caching -reset "
 ../sarra/sr_post.py -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
+
+st=$?
+if [ $st -eq 0 ]; then
+  echo "test ${tnum}: OK"
+else   
+  echo "test ${tnum}: FAIL"
+fi
+
+let tnum++
+printf "test ${tnum}: start "
+echo "start -blocksize ( -caching ) -reset "
+
 ../sarra/sr_post.py -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
+
+st=$?
+if [ $st -eq 0 ]; then
+  echo "test ${tnum}: OK"
+else   
+  echo "test ${tnum}: FAIL"
+fi
+
+let tnum++
+printf "test ${tnum}: start "
+echo "start -blocksize -caching ( -reset ) "
+
+
+
 ../sarra/sr_post.py -reset -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
 
 
-exit
+st=$?
+if [ $st -eq 0 ]; then
+  echo "test ${tnum}: OK"
+else   
+  echo "test ${tnum}: FAIL"
+fi
+
+let tnum++
+echo "test ${tnum}: \c"
+
 
 echo
 

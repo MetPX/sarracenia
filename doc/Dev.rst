@@ -152,6 +152,8 @@ with credentials stored for localhost::
    echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
 
    cat >~/.config/sarra/default.conf <<EOT
+
+   broker amqp://tfeed@localhost/
    cluster localhost
    admin amqp://bunnymaster@localhost/
    feeder amqp://tfeed@localhost/

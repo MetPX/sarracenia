@@ -76,7 +76,7 @@ sr_audit --users foreground
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
 
-for exchange in xsarra xwinnow ; do 
+for exchange in xsarra xwinnow xs_tfeed ; do 
    echo "declaring $exchange"
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
 done
