@@ -81,8 +81,4 @@ for exchange in xsarra xwinnow ; do
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
 done
 
-
-
-
-
 sr restart

@@ -191,6 +191,14 @@ and defines some fixed test clients that will be used during self-tests::
    cd sarracenia/test
    . ./setup.sh
 
+setup.sh will install configuration files for:
+
+- two sr_shovel configurations to copy messages from from dd.weather.gc.ca
+- an sr_winnow to remove duplicates from the shovelled sources.
+- an sr_sarra to read the winnow output, and post fills mirrored on the trivial web server.
+- an sr_subscribe to down load the files from the local server.
+
+and starts this network of configurations running.
 
 1- rerun basic self test::
 
@@ -203,7 +211,27 @@ and defines some fixed test clients that will be used during self-tests::
    FIXME: many tests refer to sites only accessible within EC zone.
 
 
-2- rerun and check results for
+2- Run integration tests.
+   
+   The check.sh script reads the log files of all the components started, and compares the number
+   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the 
+   configuration to run before there is enough data to do the proper measurements.
+
+   ./check.sh
+
+   sample output::
+
+   blacklab% ./check.sh
+   initial sample building sample size 3421 need at least 1000 
+   test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
+   test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
+   test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
+   test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
+   blacklab% 
+
+
+
+3- rerun and check results for
 
    test_sr_post.sh
    test_sr_watch.sh
@@ -221,7 +249,7 @@ and defines some fixed test clients that will be used during self-tests::
    
    which will kill the running web server.
 
-3- making a local wheel and installing on your workstation
+4- making a local wheel and installing on your workstation
 
    in the git clone tree ...    metpx-git/sarracenia
    create a wheel by running
@@ -235,7 +263,7 @@ and defines some fixed test clients that will be used during self-tests::
 
 
 
-4- Have a sarracenia environment in your home...
+5- Have a sarracenia environment in your home...
    with copies of some of our operational settings ...
    correctly modified not to impact the operations.
    (like no "delete True"  etc...)

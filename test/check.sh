@@ -52,3 +52,10 @@ if [ $res -lt 900  -o $res -gt 1100 ]; then
 else
    echo "test 3: SUCCESS, subscribe (${totsub}) has the same number of items as sarra (${totsarra})"
 fi
+
+res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test 4: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
+else
+   echo "test 4: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
+fi
