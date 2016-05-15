@@ -91,7 +91,7 @@ class Msg_Total(object):
             parent.msg_total_cum_msgcount,
 	    parent.msg_total_cum_msgcount/(now-parent.msg_total_start),
 	    humanize.naturalsize(parent.msg_total_cum_bytecount/(now-parent.msg_total_start),binary=True,gnu=True),
-            parent.msg_total_cum_msgcount/parent.msg_total_lag ))
+            parent.msg_total_lag/parent.msg_total_cum_msgcount ))
         # Set the maximum age, in seconds, of a message to retrieve.
 
         if lag > parent.msg_total_maxlag :
