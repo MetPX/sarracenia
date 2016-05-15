@@ -49,9 +49,10 @@ class Msg_Total(object):
         parent.msg_total_start = now
         parent.msg_total_msgcount=0
         parent.msg_total_bytecount=0
-        parent.msg_total_cum_msgcount=0
-        parent.msg_total_cum_bytecount=0
+        parent.msg_total_msgcount=0
+        parent.msg_total_bytecount=0
         parent.msg_total_lag=0
+        logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
           
     def perform(self,parent):
@@ -67,7 +68,6 @@ class Msg_Total(object):
         now=time.time()
 
         parent.msg_total_msgcount = parent.msg_total_msgcount + 1
-        parent.msg_total_cum_msgcount = parent.msg_total_cum_msgcount + 1
 
         lag=now-msgtime
         parent.msg_total_lag = parent.msg_total_lag + lag
@@ -75,23 +75,16 @@ class Msg_Total(object):
         (method,psize,ptot,prem,pno) = msg.partstr.split(',')
 
         parent.msg_total_bytecount = parent.msg_total_bytecount + int(psize)
-        parent.msg_total_cum_bytecount = parent.msg_total_cum_bytecount + int(psize)
         
         #not time to report yet.
         if parent.msg_total_interval > now-parent.msg_total_last :
            return True
 
-
-        #logger.info("t now: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
-        #    parent.msg_total_msgcount,
-	#    parent.msg_total_msgcount/(now-parent.msg_total_last),
-	#    humanize.naturalsize(parent.msg_total_bytecount/(now-parent.msg_total_last),binary=True,gnu=True),
-        #    lag))
         logger.info("msg_total: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
-            parent.msg_total_cum_msgcount,
-	    parent.msg_total_cum_msgcount/(now-parent.msg_total_start),
-	    humanize.naturalsize(parent.msg_total_cum_bytecount/(now-parent.msg_total_start),binary=True,gnu=True),
-            parent.msg_total_lag/parent.msg_total_cum_msgcount ))
+            parent.msg_total_msgcount,
+	    parent.msg_total_msgcount/(now-parent.msg_total_start),
+	    humanize.naturalsize(parent.msg_total_bytecount/(now-parent.msg_total_start),binary=True,gnu=True),
+            parent.msg_total_lag/parent.msg_total_msgcount ))
         # Set the maximum age, in seconds, of a message to retrieve.
 
         if lag > parent.msg_total_maxlag :
@@ -99,8 +92,6 @@ class Msg_Total(object):
                humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.msg_total_last = now
-        parent.msg_total_msgcount = 0
-        parent.msg_total_bytecount = 0
 
         return True
 
