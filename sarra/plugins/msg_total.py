@@ -51,6 +51,7 @@ class Msg_Total(object):
         parent.msg_total_bytecount=0
         parent.msg_total_cum_msgcount=0
         parent.msg_total_cum_bytecount=0
+        parent.msg_total_lag=0
 
           
     def perform(self,parent):
@@ -68,6 +69,9 @@ class Msg_Total(object):
         parent.msg_total_msgcount = parent.msg_total_msgcount + 1
         parent.msg_total_cum_msgcount = parent.msg_total_cum_msgcount + 1
 
+        lag=now-msgtime
+        parent.msg_total_lag = parent.msg_total_lag + lag
+
         (method,psize,ptot,prem,pno) = msg.partstr.split(',')
 
         parent.msg_total_bytecount = parent.msg_total_bytecount + int(psize)
@@ -77,7 +81,6 @@ class Msg_Total(object):
         if parent.msg_total_interval > now-parent.msg_total_last :
            return True
 
-        lag=now-msgtime
 
         #logger.info("t now: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
         #    parent.msg_total_msgcount,
@@ -88,7 +91,7 @@ class Msg_Total(object):
             parent.msg_total_cum_msgcount,
 	    parent.msg_total_cum_msgcount/(now-parent.msg_total_start),
 	    humanize.naturalsize(parent.msg_total_cum_bytecount/(now-parent.msg_total_start),binary=True,gnu=True),
-            lag/(now-parent.msg_total_start) ))
+            parent.msg_total_cum_msgcount/parent.msg_total_lag ))
         # Set the maximum age, in seconds, of a message to retrieve.
 
         if lag > parent.msg_total_maxlag :
