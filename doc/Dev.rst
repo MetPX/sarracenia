@@ -231,7 +231,10 @@ and starts this network of configurations running.
 
 
 
-3- rerun and check results for
+3- Run and check results for
+
+   The following tests are self descriptive, but there is no obvious check of success. 
+   On must examine the output of the command and determine if the result is as intended.
 
    test_sr_post.sh
    test_sr_watch.sh
@@ -254,13 +257,21 @@ and starts this network of configurations running.
    in the git clone tree ...    metpx-git/sarracenia
    create a wheel by running
 
+   either:
+
    python3 setup.py bdist_wheel
 
    it creates a wheel package under  dist/metpx*.whl
-   than as root  install that new package
+   then as root  install that new package
 
    pip3 install --upgrade ...<path>/dist/metpx*.whl
 
+   or:
+ 
+   debuild -us -uc
+   sudo dpkg -i ../python3-metpx-...
+
+   which accomplishes the same thing using debian packaging.
 
 
 5- Have a sarracenia environment in your home...
@@ -278,7 +289,7 @@ and starts this network of configurations running.
        a) stop the process
        b) run the process in debug and foreground
           <sr_program> --debug <configname> foreground
-       c) check interactive output for any hint
+       c) check interactive output for hints
 
 
 

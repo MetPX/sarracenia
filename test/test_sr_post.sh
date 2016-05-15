@@ -8,9 +8,9 @@
 # all permissions for guest on localhost broker
 # exchange   xs_guest  created
 
-# amqp://tester:testerpw@localhost/
-# all permissions for tester on localhost broker
-# exchange   xs_tester  created
+# amqp://tsource@localhost/
+# all permissions for tsource on localhost broker
+# exchange   xs_tsource  created
 
 # run from metpx-git/sarracenia/test
 # invoking  ../sarra/sr_post.py for testing purpose
@@ -18,9 +18,11 @@
 # the end of the script finishes with a
 # desired error section
 
+DR="`cat .httpdocroot`"
+
 export PYTHONPATH=../sarra
 
-cat << EOF > toto
+cat << EOF > ${DR}/toto
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -41,56 +43,59 @@ EOF
 
 echo sr_post --help
 
-../sarra/sr_post.py --debug --help
+../sarra/sr_post.py --help
 echo
 
 echo default broker + default exchange
-echo sr_post -u file:${PWD}/toto -to alta
+echo sr_post -u file:${DR}/toto -to alta
 
-../sarra/sr_post.py --debug -u file: -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -to alta -path ${DR}/toto
 echo
 
 # checking caching
 echo  -blocksize -caching -reset
-../sarra/sr_post.py --debug        -blocksize 1000Mb --caching -u file: -to alta -path ${PWD}/toto
-../sarra/sr_post.py --debug        -blocksize 1000Mb --caching -u file: -to alta -path ${PWD}/toto
-../sarra/sr_post.py --debug -reset -blocksize 1000Mb --caching -u file: -to alta -path ${PWD}/toto
+../sarra/sr_post.py -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
+../sarra/sr_post.py -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
+../sarra/sr_post.py -reset -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto
+
+
+exit
 
 echo
 
 echo default broker + exchange amq.topic
-echo sr_post -u file: -ex amq.topic -to alta -path ${PWD}/toto
+echo sr_post -u file: -ex amq.topic -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -ex amq.topic -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -ex amq.topic -to alta -path ${DR}/toto
 echo
 
 
 echo default guest user and vhost /
-echo sr_post -u file: -b amqp://localhost -to alta -path ${PWD}/toto
+echo sr_post -u file: -b amqp://localhost -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -b amqp://localhost -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -b amqp://localhost -to alta -path ${DR}/toto
 
 echo
 
 
 echo new broker user
-echo sr_post -u file: -b amqp://tester:testerpw@localhost -to alta -path ${PWD}/toto
+echo sr_post -u file: -b amqp://tsource@localhost -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -b amqp://tester:testerpw@localhost -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -b amqp://tsource@localhost -to alta -path ${DR}/toto
 
 echo
 
 
-cat << EOF > sr_post.conf
+cat << EOF >sr_post.conf
 url file:
 EOF
 
 echo cat sr_post.conf
 cat sr_post.conf
 echo
-echo sr_post -c ${PWD}/sr_post.conf -b amqp://tester:testerpw@localhost -path ${PWD}/toto
+echo sr_post -c ${DR}/sr_post.conf -b amqp://tsource@localhost -path ${DR}/toto
 
-../sarra/sr_post.py --debug -c ${PWD}/sr_post.conf -b amqp://tester:testerpw@localhost -to alta -path ${PWD}/toto
+../sarra/sr_post.py -c ${DR}/sr_post.conf -b amqp://tsource@localhost -to alta -path ${DR}/toto
 
 rm sr_post.conf
 echo
@@ -99,50 +104,50 @@ echo
 mkdir -p ~/.config/sarra 2> /dev/null
 
 echo sr_post using ~/.config/sarra/credentials.conf 
-echo sr_post -u file: -b amqp://localhost -to alta -path ${PWD}/toto
+echo sr_post -u file: -b amqp://localhost -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -b amqp://localhost -to alta -path ${PWD}/toto
-
-echo
-
-
-echo sr_post -u file: -l ./toto.log -b amqp://localhost -to alta -path ${PWD}/toto
-echo cat ./toto.log
-
-../sarra/sr_post.py --debug -u file: -l ./toto.log -b amqp://localhost -to alta -path ${PWD}/toto
-cat ./toto.log
-rm  ./toto.log
-echo
-
-echo sr_post -u file: -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -b amqp://localhost -to alta -path ${DR}/toto
 
 echo
 
-echo sr_post -dr ${PWD} -u file: -b amqp://localhost/ -to alta -path /toto
 
-../sarra/sr_post.py --debug -dr ${PWD} -u file: -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -l ${DR}/toto.log -b amqp://localhost -to alta -path ${DR}/toto
+echo cat ${DR}/toto.log
+
+../sarra/sr_post.py -u file: -l ${DR}/toto.log -b amqp://localhost -to alta -path ${DR}/toto
+cat ${DR}/toto.log
+rm  ${DR}/toto.log
+echo
+
+echo sr_post -u file: -b amqp://localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -b amqp://localhost/ -to alta -path ${DR}/toto
 
 echo
 
-echo sr_post -u file: -f my_flow -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -dr ${DR} -u file: -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -f my_flow -b amqp://localhost/ -to alta -path ${PWD}/toto
-
+../sarra/sr_post.py -dr ${DR} -u file: -b amqp://localhost/ -to alta -path ${DR}/toto
 
 echo
 
-echo sr_post -u file: -tp v05.test -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -f my_flow -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -tp v05.test -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -f my_flow -b amqp://localhost/ -to alta -path ${DR}/toto
 
 
 echo
 
-echo sr_post -u file: -sub imposed.sub.topic -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -tp v05.test -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -sub imposed.sub.topic -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -tp v05.test -b amqp://localhost/ -to alta -path ${DR}/toto
+
+
+echo
+
+echo sr_post -u file: -sub imposed.sub.topic -b amqp://localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -sub imposed.sub.topic -b amqp://localhost/ -to alta -path ${DR}/toto
 
 echo
 
@@ -150,39 +155,39 @@ echo
 # strip rename
 echo  -strip -rename
 
-echo sr_post -u file: -rn /this/new/name -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -rn /this/new/name -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -rn /this/new/name -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -rn /this/new/name -b amqp://localhost/ -to alta -path ${DR}/toto
 
-echo sr_post -u file: -strip 3 -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -strip 3 -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -strip 3 -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-
-echo
-
-echo sr_post -u file: -rn /this/new/dir/ -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -rn "/this/new/dir/" -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-echo
-
-echo sr_post -u file: -sum 0 -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -sum 0 -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-echo
-
-echo sr_post -u file: -sum n -b amqp://localhost/ -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -sum n -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -strip 3 -b amqp://localhost/ -to alta -path ${DR}/toto
 
 
 echo
 
-echo sr_post -u file: -sum z,d -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -rn /this/new/dir/ -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -sum z,d -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -rn "/this/new/dir/" -b amqp://localhost/ -to alta -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -sum 0 -b amqp://localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -sum 0 -b amqp://localhost/ -to alta -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -sum n -b amqp://localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -sum n -b amqp://localhost/ -to alta -path ${DR}/toto
+
+
+echo
+
+echo sr_post -u file: -sum z,d -b amqp://localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -sum z,d -b amqp://localhost/ -to alta -path ${DR}/toto
 
 
 echo
@@ -201,205 +206,205 @@ class checksum_AHAH:
 self.sumalgo = checksum_AHAH()
 EOF
 
-echo sr_post -u file: -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/ -to alta -path ${PWD}/toto
+echo sr_post -u file: -sum ${DR}/checksum_AHAH.py -b amqp://localhost/ -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -sum ${PWD}/checksum_AHAH.py -b amqp://localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -sum ${DR}/checksum_AHAH.py -b amqp://localhost/ -to alta -path ${DR}/toto
 
 
-#rm ${PWD}/checksum_AHAH.py
+#rm ${DR}/checksum_AHAH.py
 echo
 
 ./rabbitmqadmin -u guest -p guest declare exchange \
      name=user_exchange type=topic auto_delete=false durable=true
 
 echo user_exchange 
-echo sr_post -u file: -ex user_exchange -to alta -path ${PWD}/toto
+echo sr_post -u file: -ex user_exchange -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -ex user_exchange -to alta -path ${PWD}/toto
-
-echo
-
-cp ./toto ./toto.256.12.0.1.d.Part
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-../sarra/sr_post.py --debug -u file: -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-
-echo sr_post -u file:  -rn /this/new/name -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-../sarra/sr_post.py --debug -u file: -rn /this/new/name -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-
-echo sr_post -u file:  -rn /this/new/dir/ -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-../sarra/sr_post.py --debug -u file: -rn /this/new/dir/ -parts p -to alta -path ${PWD}/toto.256.12.0.1.d.Part
-
-
-rm ./toto.256.12.0.1.d.Part
+../sarra/sr_post.py -u file: -ex user_exchange -to alta -path ${DR}/toto
 
 echo
 
-echo sr_post -u file: -parts i,128 -to alta -path ${PWD}/toto
+cp ${DR}/toto ${DR}/toto.256.12.0.1.d.Part
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-../sarra/sr_post.py --debug -u file: -parts i,128 -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-echo
 
-echo sr_post -u file: -parts i,64 -r -to alta -path ${PWD}/toto
+echo sr_post -u file:  -rn /this/new/name -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-../sarra/sr_post.py --debug -u file: -parts i,64 -r -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -rn /this/new/name -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-echo
 
-echo sr_post -u file: -parts i,64 -rr -to alta -path ${PWD}/toto
+echo sr_post -u file:  -rn /this/new/dir/ -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-../sarra/sr_post.py --debug -u file: -parts i,64 -rr -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -rn /this/new/dir/ -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part
 
-echo
 
-echo sr_post -u file: -to cluster1,cluster2,cluster3 -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -to cluster1,cluster2,cluster3 -path ${PWD}/toto
+rm ${DR}/toto.256.12.0.1.d.Part
 
 echo
 
-echo sr_post -u file: -debug -to alta -path ${PWD}/toto
+echo sr_post -u file: -parts i,128 -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -debug -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -parts i,128 -to alta -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -parts i,64 -r -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -parts i,64 -r -to alta -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -parts i,64 -rr -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -parts i,64 -rr -to alta -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -to cluster1,cluster2,cluster3 -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -to cluster1,cluster2,cluster3 -path ${DR}/toto
+
+echo
+
+echo sr_post -u file: -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -to alta -path ${DR}/toto
 
 echo
 
 echo ======== ERROR PART =========================
 echo
 
-echo ERROR no -to arguments
-echo sr_post -u file:  -path ${PWD}/toto
+echo result should be: ERROR no -to arguments
+echo sr_post -u file:  -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -path ${PWD}/toto
+../sarra/sr_post.py -u file: -path ${DR}/toto
 
 
-echo ERROR file not found
-echo sr_post -u file: -to alta -path ${PWD}/none_existing_file
+echo result should be: ERROR file not found
+echo sr_post -u file: -to alta -path ${DR}/none_existing_file
 
-../sarra/sr_post.py --debug -u file: -to alta -path ${PWD}/none_existing_file
-
-echo
-
-echo ERROR file not found
-echo sr_post -dr /fake/directory -u file: -to alta -path ${PWD}/none_existing_file
-
-../sarra/sr_post.py --debug -dr /fake/directory -u file: -to alta -path ${PWD}/none_existing_file
+../sarra/sr_post.py -u file: -to alta -path ${DR}/none_existing_file
 
 echo
 
+echo result should be: ERROR file not found
+echo sr_post -dr /fake/directory -u file: -to alta -path ${DR}/none_existing_file
 
-echo ERROR config file not found
-echo sr_post -c ${PWD}/none_existing_file.conf -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -c ${PWD}/none_existing_file.conf -to alta -path ${PWD}/toto
+../sarra/sr_post.py -dr /fake/directory -u file: -to alta -path ${DR}/none_existing_file
 
 echo
 
 
-echo ERROR broker not found
-echo sr_post -u file: -b amqp://mylocalhost/ -to alta -path ${PWD}/toto
+echo result should be: ERROR config file not found
+echo sr_post -c ${DR}/none_existing_file.conf -to alta -path ${DR}/toto
 
-../sarra/sr_post.py --debug -u file: -b amqp://mylocalhost/ -to alta -path ${PWD}/toto
-
-echo
-
-echo ERROR broker credential
-echo sr_post -u file: -b amqp://toto:titi@localhost/ -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -b amqp://toto:titi@localhost/ -to alta -path ${PWD}/toto
+../sarra/sr_post.py -c ${DR}/none_existing_file.conf -to alta -path ${DR}/toto
 
 echo
 
-echo ERROR broker vhost
-echo sr_post -u file: -b amqp://localhost/wrong_vhost -to alta -path ${PWD}/toto
 
-../sarra/sr_post.py --debug -u file: -b amqp://localhost/wrong_vhost -to alta -path ${PWD}/toto
+echo result should be: ERROR broker not found
+echo sr_post -u file: -b amqp://mylocalhost/ -to alta -path ${DR}/toto
 
-echo
-
-echo ERROR wrong sumflg
-echo sr_post -u file: -sum x -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -sum x -to alta -path ${PWD}/toto
+../sarra/sr_post.py -u file: -b amqp://mylocalhost/ -to alta -path ${DR}/toto
 
 echo
 
-echo ERROR wrong exchange
+echo result should be: ERROR broker credential
+echo sr_post -u file: -b amqp:${DR}/toto:titi@localhost/ -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -b amqp:${DR}/toto:titi@localhost/ -to alta -path ${DR}/toto
+
+echo
+
+echo result should be: ERROR broker vhost
+echo sr_post -u file: -b amqp://localhost/wrong_vhost -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -b amqp://localhost/wrong_vhost -to alta -path ${DR}/toto
+
+echo
+
+echo result should be: ERROR wrong sumflg
+echo sr_post -u file: -sum x -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -sum x -to alta -path ${DR}/toto
+
+echo
+
+echo result should be: ERROR wrong exchange
 echo rabbitmqadmin delete exchange name=user_exchange
-echo sr_post -u file:${PWD}/toto -ex user_exchange -to alta -path ${PWD}/toto
+echo sr_post -u file:${DR}/toto -ex user_exchange -to alta -path ${DR}/toto
 
-./rabbitmqadmin -u guest -p guest delete exchange name=user_exchange -path ${PWD}/toto
-../sarra/sr_post.py --debug -u file: -ex user_exchange -to alta -path ${PWD}/toto
-
-echo
-
-echo ERROR wrong partfile 1
-echo cp ./toto ./toto.12.256.1.d.Part
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.12.256.1.d.Part 
-
-cp ./toto ./toto.12.256.1.d.Part
-../sarra/sr_post.py --debug -u file: -parts p -to alta -path ${PWD}/toto.12.256.1.d.Part
-rm ./toto.12.256.1.d.Part
+./rabbitmqadmin -u guest -p guest delete exchange name=user_exchange -path ${DR}/toto
+../sarra/sr_post.py -u file: -ex user_exchange -to alta -path ${DR}/toto
 
 echo
 
-echo ERROR wrong partfile 2
-echo cp ./toto ./toto.1024.255.1.d.Part
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.1024.255.1.d.Part
+echo result should be: ERROR wrong partfile 1
+echo cp ${DR}/toto ${DR}/toto.12.256.1.d.Part
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.12.256.1.d.Part 
 
-cp ./toto ./toto.1024.255.1.d.Part
-../sarra/sr_post.py --debug -u file:${PWD} -parts p -to alta -path ${PWD}/toto.1024.255.1.d.Part
-rm ./toto.1024.255.1.d.Part
-
-echo
-
-echo ERROR wrong partfile 3
-echo cp ./toto ./toto.1024.256.5.d.Part
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.1024.256.5.d.Part
-
-cp ./toto ./toto.1024.256.5.d.Part
-../sarra/sr_post.py --debug -u file: -parts p -to alta -path ${PWD}/toto.1024.256.5.d.Part
-rm ./toto.1024.256.5.d.Part
+cp ${DR}/toto ${DR}/toto.12.256.1.d.Part
+../sarra/sr_post.py -u file: -parts p -to alta -path ${DR}/toto.12.256.1.d.Part
+rm ${DR}/toto.12.256.1.d.Part
 
 echo
 
-echo ERROR wrong partfile 4
-echo cp ./toto ./toto.1024.256.1.x.Part
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.1024.256.1.x.Part
+echo result should be: ERROR wrong partfile 2
+echo cp ${DR}/toto ${DR}/toto.1024.255.1.d.Part
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.1024.255.1.d.Part
 
-cp ./toto ./toto.1024.256.1.x.Part
-../sarra/sr_post.py --debug -u file: -parts p -to alta -path ${PWD}/toto.1024.256.1.x.Part
-rm ./toto.1024.256.1.x.Part
-
-echo
-
-echo ERROR wrong partfile 5
-echo cp ./toto ./toto.1024.256.1.d.bad
-echo sr_post -u file: -parts p -to alta -path ${PWD}/toto.1024.256.1.d.bad
-
-cp ./toto ./toto.1024.256.1.d.bad
-../sarra/sr_post.py --debug -u file: -parts p -to alta -path ${PWD}/toto.1024.256.1.d.bad
-rm ./toto.1024.256.1.d.bad
+cp ${DR}/toto ${DR}/toto.1024.255.1.d.Part
+../sarra/sr_post.py -u file:${DR} -parts p -to alta -path ${DR}/toto.1024.255.1.d.Part
+rm ${DR}/toto.1024.255.1.d.Part
 
 echo
 
-echo ERROR wrong partflg
-echo sr_post -u file: -parts x,128 -to alta -path ${PWD}/toto
+echo result should be: ERROR wrong partfile 3
+echo cp ${DR}/toto ${DR}/toto.1024.256.5.d.Part
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.1024.256.5.d.Part
 
-../sarra/sr_post.py --debug -u file: -parts x,128 -to alta -path ${PWD}/toto
-
-echo
-
-echo ERROR wrong part chunksize
-echo sr_post -u file: -parts d,a -to alta -path ${PWD}/toto
-
-../sarra/sr_post.py --debug -u file: -parts d,a -to alta -path ${PWD}/toto
+cp ${DR}/toto ${DR}/toto.1024.256.5.d.Part
+../sarra/sr_post.py -u file: -parts p -to alta -path ${DR}/toto.1024.256.5.d.Part
+rm ${DR}/toto.1024.256.5.d.Part
 
 echo
 
-rm ./toto
+echo result should be: ERROR wrong partfile 4
+echo cp ${DR}/toto ${DR}/toto.1024.256.1.x.Part
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.1024.256.1.x.Part
+
+cp ${DR}/toto ${DR}/toto.1024.256.1.x.Part
+../sarra/sr_post.py -u file: -parts p -to alta -path ${DR}/toto.1024.256.1.x.Part
+rm ${DR}/toto.1024.256.1.x.Part
+
+echo
+
+echo result should be: ERROR wrong partfile 5
+echo cp ${DR}/toto ${DR}/toto.1024.256.1.d.bad
+echo sr_post -u file: -parts p -to alta -path ${DR}/toto.1024.256.1.d.bad
+
+cp ${DR}/toto ${DR}/toto.1024.256.1.d.bad
+../sarra/sr_post.py -u file: -parts p -to alta -path ${DR}/toto.1024.256.1.d.bad
+rm ${DR}/toto.1024.256.1.d.bad
+
+echo
+
+echo result should be: ERROR wrong partflg
+echo sr_post -u file: -parts x,128 -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -parts x,128 -to alta -path ${DR}/toto
+
+echo
+
+echo result should be: ERROR wrong part chunksize
+echo sr_post -u file: -parts d,a -to alta -path ${DR}/toto
+
+../sarra/sr_post.py -u file: -parts d,a -to alta -path ${DR}/toto
+
+echo
+
+rm ${DR}/toto
