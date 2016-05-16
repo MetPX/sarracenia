@@ -1,4 +1,4 @@
-#../sarra/bi../sarra/sh
+#!/bin/bash
 
 export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"

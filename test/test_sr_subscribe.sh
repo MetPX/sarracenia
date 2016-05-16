@@ -1,4 +1,5 @@
 #!/bin/ksh
+
 SARRA_PATH=/usr/bin
 SR_SUBSCRIBE=${SARRA_PATH}/sr_subscribe
 
@@ -55,24 +56,24 @@ EOF
 
 # published files
 
-sudo cp toto    /var/www/test/toto
-sudo cp toto    /apps/px/test/toto
+cp toto    /var/www/test/toto
+cp toto    /apps/px/test/toto
 
 cp toto.p0 toto.128.2.0.0.d.Part
-sudo cp toto.p0 /var/www/test/toto.128.2.0.0.d.Part
-sudo cp toto.p0 /apps/px/test/toto.128.2.0.0.d.Part
+cp toto.p0 /var/www/test/toto.128.2.0.0.d.Part
+cp toto.p0 /apps/px/test/toto.128.2.0.0.d.Part
 
 cp toto.p1 toto.128.2.0.1.d.Part
-sudo cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
-sudo cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
+cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
+cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
 
-sudo chmod 777 toto* /var/www/test/toto* /apps/px/test/toto*
+chmod 666 toto* /var/www/test/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
-broker amqp://guest:guest@localhost/
+broker amqp://tsource@localhost/
 
-exchange xs_guest
+exchange xs_tsource
 topic_prefix v02.post
 subtopic #
 

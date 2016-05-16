@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 
 totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"

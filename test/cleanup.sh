@@ -1,3 +1,4 @@
+#!/bin/bash
 
 echo "cleanup"
 if [ -f .httpserverpid ]; then

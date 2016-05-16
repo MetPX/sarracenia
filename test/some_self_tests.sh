@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #../sarra/bi../sarra/sh
 
 # credential requirements to run this self test
