@@ -137,14 +137,12 @@ class sr_post(sr_config):
            self.poster.cache_reset()
 
         if self.caching :
-           #self.logger.debug("sr_post lock_set cache_load")
            self.logger.debug("sr_post cache_load")
            self.poster.cache_load()
 
     def lock_unset(self):
         #self.logger.debug("sr_post lock_unset")
         if self.caching :
-           #self.logger.debug("sr_post lock_unset cache_close")
            self.logger.debug("sr_post cache_close")
            self.poster.cache_close()
 
@@ -297,12 +295,12 @@ class sr_post(sr_config):
         self.logger.debug("sr_post scandir_and_post %s " % path)
 
         if not os.path.isdir(path):
-           self.logger.debug("sr_post scandir_and_post not a directory %s " % path)
-           return
+            self.logger.error("sr_post scandir_and_post not a directory %s " % path)
+            return False
 
         try :
-               entries = os.listdir(path)
-               for e in entries:
+            entries = os.listdir(path)
+            for e in entries:
                    newpath = path + os.sep + e
 
                    if os.path.isfile(newpath) and os.access(newpath,os.R_OK):
@@ -314,9 +312,11 @@ class sr_post(sr_config):
                       continue
 
                    self.logger.warning("skipped : %s " % newpath)
-        except: self.logger.debug("sr_post scandir_and_post not accessible  %s " % path)
+        except: 
+            self.logger.error("sr_post scandir_and_post not accessible  %s " % path)
+            return False
 
-        return
+        return True
 
     def watching(self, fpath, event ):
         self.logger.debug("sr_post watching")
@@ -334,7 +334,7 @@ class sr_post(sr_config):
               else :
                  self.logger.error("document_root %s not present in %s" % (dr,fpath))
                  self.logger.error("no posting")
-                 return
+                 return False
            fpath = rpath
            if fpath[0] == '/' : fpath = fpath[1:]
 
@@ -342,6 +342,7 @@ class sr_post(sr_config):
         self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
         self.posting()
         self.url = url
+        return True
 
     def watchpath(self ):
         self.logger.debug("sr_post watchpath")
@@ -425,7 +426,6 @@ def main():
              (stype, value, tb) = sys.exc_info()
              post.logger.error("Type: %s, Value:%s\n" % (stype, value))
              sys.exit(1)
-
 
     sys.exit(0)
 

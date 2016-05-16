@@ -451,7 +451,7 @@ class sr_config:
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
-             self.logger.info("installing %s script %s" % (opname, script ) ) 
+             self.logger.debug("installing %s script %s" % (opname, script ) ) 
         else:
              self.logger.error("installing %s script %s failed: not found " % (opname, path) ) 
 
@@ -1371,8 +1371,7 @@ class sr_config:
            return
 
         sum_error    = False
-        self.sumalgo = None
-        self.execfile('sumflg',flgs)
+        self.execfile('sumalgo',flgs)
 
         if self.sumalgo == None : sum_error = True
 

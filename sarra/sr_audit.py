@@ -223,7 +223,7 @@ class sr_audit(sr_instances):
 
         # mandatory xlog,xpublic
 
-        for e in ['xlog','xpublic'] :
+        for e in ['xlog','xpublic','xwinnow'] :
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue
@@ -258,7 +258,7 @@ class sr_audit(sr_instances):
         #      Such an exchange would be created manually and would start with 'x'
         #
         #      So  get rid of all exceeding 'xl_' 'xs_' exchanges as deprecated
-        #      and get rid of all exchanges that does not start with 'x'
+        #      and get rid of all exchanges that do not start with 'x'
         for e in exchange_lst :
 
             # deprecated exchanges  (from deleted users?)
@@ -266,15 +266,15 @@ class sr_audit(sr_instances):
                self.logger.warning("deprecated exchange %s" % e)
                self.delete_exchange(e)
 
-            # weird queue... not starting with 'x'
+            # weird exchange... not starting with 'x'
             elif e[0] != 'x' :
                self.logger.warning("unnecessary exchange %s" % e)
                self.delete_exchange(e)
 
             # leading 'x' exchanges that might be there for a reason
-            # leave but warn ...
+            # leave but notify ...
             else:
-               self.logger.warning("tolerated exchange %s" % e)
+               self.logger.info("noticed exchange %s leaving alone." % e)
 
     def verify_users(self):
         self.logger.debug("sr_audit verify_users")

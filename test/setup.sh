@@ -12,6 +12,7 @@ if [ ! -f $HOME/.config/sarra/default.conf -o ! -f $HOME/.config/sarra/credentia
  rabbitmq-server needs to be installed on localhost with admin account set and
  manually setup ~/.config/sarra/default.conf, something like this:
 
+broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
 role source tsource
