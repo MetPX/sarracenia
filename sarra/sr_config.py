@@ -446,24 +446,24 @@ class sr_config:
         setattr(self,opname,None)
 
         if path == 'None' or path == 'none' or path == 'off':
-             self.logger.info("Reset script %s to None" % opname ) 
+             self.logger.info("Reset plugin %s to None" % opname ) 
              return
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
-             self.logger.debug("installing %s script %s" % (opname, script ) ) 
+             self.logger.debug("installing %s plugin %s" % (opname, script ) ) 
         else:
-             self.logger.error("installing %s script %s failed: not found " % (opname, path) ) 
+             self.logger.error("installing %s plugin %s failed: not found " % (opname, path) ) 
 
         try    : 
             exec(compile(open(script).read(), script, 'exec'))
         except : 
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-            self.logger.error("for option %s script %s did not work" % (opname,path))
+            self.logger.error("for option %s plugin %s did not work" % (opname,path))
 
         if not hasattr(self,opname):
-            self.logger.error("%s script incorrect (%s)" % (opname, words1))
+            self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, words1, opname ))
 
 
 
