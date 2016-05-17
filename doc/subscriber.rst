@@ -529,8 +529,8 @@ in a 'plugins' directory wherever the package is installed.  here is a sample li
 |                             | content, or creating new header if not present.         |
 +-----------------------------+---------------------------------------------------------+
 
-For all plugins, the prefix indicates how the plugin is to be used: a file_ plugin is
-to be used with on_file.  An msg_ plugin is to be used with on_message, etc...
+For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
+to be used with on_file.  An msg\_ plugin is to be used with on_message, etc...
 When plugins have options, the options must be placed before the plugin declaration
 in the configuration file.
 
