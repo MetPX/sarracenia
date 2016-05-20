@@ -275,6 +275,8 @@ class sr_ftp():
     def mkdir(self, remote_dir):
         self.logger.debug("sr_ftp mkdir %s" % remote_dir)
         self.ftp.mkd(remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' + str(self.parent.chmod_dir) + ' ' + remote_dir)
+#        self.ftp.chmod(self.parent.chmod_dir,remote_dir)
 
     # put
     def put(self, local_file, remote_file, local_offset = 0, remote_offset = 0, length = 0):
