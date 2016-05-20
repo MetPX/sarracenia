@@ -404,6 +404,7 @@ class sr_config:
 
         self.lock                 = None
         self.chmod                = 775
+        self.chmod_dir            = 775 # added by Murray Rennie May 17, 2016
 
         self.notify_only          = False
 
