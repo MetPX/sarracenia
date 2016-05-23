@@ -93,7 +93,7 @@ class HostConnect:
                self.logger.debug("Connecting %s %s (ssl %s)" % (self.host,self.user,self.ssl) )
                host = self.host
                if self.port   != None : host = host + ':%s' % self.port
-               self.logger.debug("%s://%s:%s@%s%s ssl=%s" % (self.protocol,self.user,self.password,host,self.vhost,self.ssl))
+               self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" % (self.protocol,self.user,host,self.vhost,self.ssl))
                self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
                                                  virtual_host=self.vhost,ssl=self.ssl)
                self.channel    = self.new_channel()
@@ -338,7 +338,7 @@ class Queue:
 
        # queue bindings
        for exchange_name,exchange_key in self.bindings:
-           self.logger.debug("queue binding %s %s" % (exchange_name,exchange_key))
+           self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name,exchange_key))
            try:
               self.bind(exchange_name, exchange_key )
            except : 
