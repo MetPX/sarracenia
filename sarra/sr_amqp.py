@@ -163,10 +163,10 @@ class Consumer:
 
       self.hc.add_build(self.build)
 
-      # total = 1 sec span than .5 for other iteration
-      self.sleep_list = [0.01,0.03,0.06,0.13,0.25,0.5]
-      self.sleep_idx  = 0
-      self.sleep_max  = 5
+      # truncated exponential backoff for consume...
+      self.sleep_max  = 1
+      self.sleep_min = 0.01
+      self.sleep_now = self.sleep_min
 
    def add_prefetch(self,prefetch):
        self.prefetch = prefetch
@@ -208,12 +208,14 @@ class Consumer:
        # remember that instances and broker sharing messages add up to a lot of consumers
 
        if msg == None : 
-          self.logger.debug(" sleeping for %f" % self.sleep_list[self.sleep_idx])
-          time.sleep(self.sleep_list[self.sleep_idx])
-          self.sleep_idx = self.sleep_idx + 1
-          if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
+          self.logger.debug(" no messages received, sleeping for %f" % self.sleep_now)
+          time.sleep(self.sleep_now)
+          self.sleep_now = self.sleep_now * 2
+          if self.sleep_now > self.sleep_max : 
+                 self.sleep_now = self.sleep_max
+
        if msg != None :
-          self.sleep_idx = 0
+          self.sleep_now = self.sleep_min 
           self.logger.debug("--------------> GOT")
 
        return msg
