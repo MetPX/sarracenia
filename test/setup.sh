@@ -12,6 +12,9 @@ if [ ! -f $HOME/.config/sarra/default.conf -o ! -f $HOME/.config/sarra/credentia
  rabbitmq-server needs to be installed on localhost with admin account set and
  manually setup ~/.config/sarra/default.conf, something like this:
 
+cluster localhost
+gateway_for alta,cluster1,cluster2
+
 broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
@@ -30,6 +33,7 @@ amqp://anonymous:PickAPassword5@localhost
 amqp://anonymous:anonymous@dd.weather.gc.ca
 amqp://anonymous:anonymous@dd1.weather.gc.ca
 amqp://anonymous:anonymous@dd2.weather.gc.ca
+sftp://`id`@localhost ssh_keyfile=/home/`id`/.ssh/nopassphrasekey 
 
 EOT
  exit 1
