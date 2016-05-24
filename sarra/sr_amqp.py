@@ -208,7 +208,7 @@ class Consumer:
        # remember that instances and broker sharing messages add up to a lot of consumers
 
        if msg == None : 
-          self.logger.debug(" no messages received, sleeping for %f" % self.sleep_now)
+          self.logger.debug(" no messages received, sleep %5.2fs" % self.sleep_now)
           time.sleep(self.sleep_now)
           self.sleep_now = self.sleep_now * 2
           if self.sleep_now > self.sleep_max : 
