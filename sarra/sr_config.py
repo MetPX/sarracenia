@@ -425,22 +425,9 @@ class sr_config:
         self.interface            = None
         self.vip                  = None
 
-        #self.on_message = None
         self.execfile("on_message",'msg_log')
-        #if self.on_message == None :
-        #    self.logger.error("built-in plugin script load failed, still None: msg_log" )
-
-        #self.on_file = None
         self.execfile("on_file",'file_log')
-        #if self.on_file == None :
-        #    self.logger.error("built-in plugin script load failed, still None: file_log" )
-
-        #self.on_post = None
         self.execfile("on_post",'post_log')
-        #if self.on_post == None :
-        #    self.logger.error("built-in plugin script load failed, still None: post_log" )
-
-
 
     def execfile(self, opname, path):
 
@@ -891,21 +878,18 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
-                     self.do_download = None
                      self.execfile("do_download",words1)
                      if ( self.do_download == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
-                     self.do_poll = None
                      self.execfile("do_poll",words1)
                      if ( self.do_poll == None ) and not self.isNone(words1):
                         ok = False
                      n = 2
 
                 elif words0 == 'do_send': # See sr_config.7, and sr_sender.1
-                     self.do_send = None
                      self.execfile("do_send",words1)
                      if ( self.do_send == None ) and not self.isNone(words1):
                         ok = False
@@ -1076,7 +1060,6 @@ class sr_config:
                      n = 1
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
-                     self.on_file = None
                      self.execfile("on_file",words1)
                      if ( self.on_file == None ) and not self.isNone(words1):
                         ok = False
@@ -1084,7 +1067,6 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
-                     self.on_line = None
                      self.execfile("on_line",words1)
                      if ( self.on_line == None ) and not self.isNone(words1):
                         ok = False
@@ -1092,7 +1074,6 @@ class sr_config:
                      n = 2
 
                 elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
-                     self.on_message = None
                      self.execfile("on_message",words1)
                      if ( self.on_message == None ) and not self.isNone(words1):
                         ok = False
@@ -1100,7 +1081,6 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
-                     self.on_part = None
                      self.execfile("on_part",words1)
                      if ( self.on_part == None ) and not self.isNone(words1):
                         ok = False
@@ -1108,7 +1088,6 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config, ++ FIXME many others?
-                     self.on_post = None
                      self.execfile("on_post",words1)
                      if ( self.on_post == None ) and not self.isNone(words1):
                         ok = False
@@ -1572,7 +1551,6 @@ def self_test():
        sys.exit(1)
 
     cfg.this_value  = 0
-    cfg.this_script = None
     cfg.execfile("this_script",path)
     if cfg.this_script == None :
        cfg.logger.error("problem with execfile")

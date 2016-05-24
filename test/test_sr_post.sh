@@ -27,9 +27,13 @@ else
   echo "Document root is: ${DR}"
 fi
 
+POSTBIN="`pwd`/../sarra/sr_post.py"
+
 export PYTHONPATH=../sarra
 
-cat << EOF > ${DR}/toto
+cd ${DR}
+
+cat << EOF >toto
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -48,14 +52,12 @@ e 123456789abcde
 
 EOF
 
+totodsum="d,`md5sum toto | awk '{ print $1; };'`"
+
 todel=""
 
 # this test does not work, but all it is supposed to do is show the usage...
 # FIXME.
-#echo sr_post --help
-#
-#../sarra/sr_post.py --help >srp.output 2>&1
-#echo
 
 tnum=0
 tgood=0
@@ -72,7 +74,7 @@ posttest() {
 let tnum++
 printf "\nSR_POST TEST ${tnum}: start ($1)\n"
 
-cmd="../sarra/sr_post.py -dr ${DR} $2 \\\">&post.out\\\""
+cmd="$POSTBIN -dr ${DR} $2 \\\">&post.out\\\""
 echo $cmd
 
 eval $cmd
@@ -105,16 +107,15 @@ fi
 
 echo
 
-totodsum="d,604a4c44a6b44e18d92414c6924e02a9"
 
-posttest "echo default broker + default exchange" " -u file: -to alta -path ${DR}/toto " 0 $totodsum
-posttest "start ( -blocksize ) -caching -reset " " -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto" 0 
-posttest "caching" " -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto" 0 
-posttest "start -blocksize ( -caching ) -reset " "-blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto" 0  
-posttest "start -blocksize -caching ( -reset ) " "-reset -blocksize 1000Mb --caching -u file: -to alta -path ${DR}/toto" 0 
-posttest "default broker + exchange amq.topic should fail with permission" "-u file: -ex amq.topic -to alta -path ${DR}/toto" 1
-posttest "default guest user and vhost /" " -u file: -b amqp://tsource@localhost -to alta -path ${DR}/toto" 0
-posttest "new broker user" " -u file: -b amqp://tsource@localhost -to alta -path ${DR}/toto " 0
+posttest "echo default broker + default exchange" " -u file: -to alta -path toto " 0 $totodsum
+posttest "start ( -blocksize ) -caching -reset " " -blocksize 1000Mb --caching -u file: -to alta -path toto" 0 
+posttest "caching" " -blocksize 1000Mb --caching -u file: -to alta -path toto" 0 
+posttest "start -blocksize ( -caching ) -reset " "-blocksize 1000Mb --caching -u file: -to alta -path toto" 0  
+posttest "start -blocksize -caching ( -reset ) " "-reset -blocksize 1000Mb --caching -u file: -to alta -path toto" 0 
+posttest "default broker + exchange amq.topic should fail with permission" "-u file: -ex amq.topic -to alta -path toto" 1
+posttest "default guest user and vhost /" " -u file: -b amqp://tsource@localhost -to alta -path toto" 0
+posttest "new broker user" " -u file: -b amqp://tsource@localhost -to alta -path toto " 0
 
 cat << EOF >sr_post.conf
 url file:
@@ -123,22 +124,22 @@ EOF
 echo cat sr_post.conf
 cat sr_post.conf
 echo
-posttest " " "-c ${DR}/sr_post.conf -b amqp://tsource@localhost -to alta -path ${DR}/toto" 0
+posttest " " "-c ${DR}/sr_post.conf -b amqp://tsource@localhost -to alta -path toto" 0
 
 todel="$todel sr_post.conf"
 echo
 
 mkdir -p ~/.config/sarra 2> /dev/null
 
-posttest "sr_post using ~/.config/sarra/credentials.conf " " -u file: -b amqp://tsource@localhost -to alta -path ${DR}/toto " 0
-posttest " using log file " " -u file: -l ${DR}/toto.log -b amqp://tsource@localhost -to alta -path ${DR}/toto" 0
+posttest "sr_post using ~/.config/sarra/credentials.conf " " -u file: -b amqp://tsource@localhost -to alta -path toto " 0
+posttest " using log file " " -u file: -l toto.log -b amqp://tsource@localhost -to alta -path toto" 0
 
 let tnum++
-if [ -f ${DR}/toto.log ]; then
+if [ -f toto.log ]; then
    printf "\nSR_POST TEST ${tnum}: OK log file created"
-   #echo cat ${DR}/toto.log
-   #cat ${DR}/toto.log
-   todel="${todel} ${DR}/toto.log"
+   #echo cat toto.log
+   #cat toto.log
+   todel="${todel} toto.log"
    let tgood++
 else
    printf "\nSR_POST TEST ${tnum}: FAIL log file not created"
@@ -146,26 +147,26 @@ else
 fi
 echo
 
-posttest " file url " "-u file: -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
-posttest " file url with -dr " " -dr ${DR} -u file: -b amqp://tsource@localhost/ -to alta -path ${DR}/toto " 0
-posttest " with flow spec. " " -u file: -f my_flow -b amqp://tsource@localhost/ -to alta -path ${DR}/toto " 0
+posttest " file url " "-u file: -b amqp://tsource@localhost/ -to alta -path toto" 0
+posttest " file url with -dr " " -dr ${DR} -u file: -b amqp://tsource@localhost/ -to alta -path toto " 0
+posttest " with flow spec. " " -u file: -f my_flow -b amqp://tsource@localhost/ -to alta -path toto " 0
 
 
-posttest " " "-u file: -tp v05.test -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
-posttest " " "-u file: -sub imposed.sub.topic -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
-posttest "-strip -rename " " -u file: -rn /this/new/name -b amqp://tsource@localhost/ -to alta -path ${DR}/toto " 0
-posttest " -strip 3 " "-u file: -strip 3 -b amqp://tsource@localhost/ -to alta -path ${DR}/toto " 0
+posttest " " "-u file: -tp v05.test -b amqp://tsource@localhost/ -to alta -path toto" 0
+posttest " " "-u file: -sub imposed.sub.topic -b amqp://tsource@localhost/ -to alta -path toto" 0
+posttest "-strip -rename " " -u file: -rn /this/new/name -b amqp://tsource@localhost/ -to alta -path toto " 0
+posttest " -strip 3 " "-u file: -strip 3 -b amqp://tsource@localhost/ -to alta -path toto " 0
 
 echo
 
-posttest " rname " "-u file: -rn /this/new/dir/ -b amqp://tsource@localhost/ -to alta -path ${DR}/toto " 0
-posttest " " "-u file: -sum 0 -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
+posttest " rname " "-u file: -rn /this/new/dir/ -b amqp://tsource@localhost/ -to alta -path toto " 0
+posttest " " "-u file: -sum 0 -b amqp://tsource@localhost/ -to alta -path toto" 0
 
-posttest " " "-u file: -sum n -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
+posttest " " "-u file: -sum n -b amqp://tsource@localhost/ -to alta -path toto" 0
 
-posttest " " "-u file: -sum z,d -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
+posttest " " "-u file: -sum z,d -b amqp://tsource@localhost/ -to alta -path toto" 0
 
-cat << EOF > ${DR}/checksum_AHAH.py
+cat << EOF > checksum_AHAH.py
 class checksum_AHAH:
       def __init__(self):
           pass
@@ -179,28 +180,28 @@ class checksum_AHAH:
 self.sumalgo = checksum_AHAH()
 EOF
 
-posttest "my checksum" "-u file: -sum ${DR}/checksum_AHAH.py -b amqp://tsource@localhost/ -to alta -path ${DR}/toto" 0
+posttest "my checksum" "-u file: -sum ${DR}/checksum_AHAH.py -b amqp://tsource@localhost/ -to alta -path toto" 0
 
 
-posttest " pick exchange xs_tsource " "-u file: -ex xs_tsource -to alta -path ${DR}/toto" 0
+posttest " pick exchange xs_tsource " "-u file: -ex xs_tsource -to alta -path toto" 0
 
-cp ${DR}/toto ${DR}/toto.256.12.0.1.d.Part
+cp toto toto.256.12.0.1.d.Part
 
-posttest " parts p" " -u file: -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part " 0
-posttest " parts p and rename file " " -u file:  -rn /this/new/name -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part " 0
-posttest " parts p and rename dir " " -u file:  -rn /this/new/dir/ -parts p -to alta -path ${DR}/toto.256.12.0.1.d.Part " 0
+posttest " parts p" " -u file: -parts p -to alta -path toto.256.12.0.1.d.Part " 0
+posttest " parts p and rename file " " -u file:  -rn /this/new/name -parts p -to alta -path toto.256.12.0.1.d.Part " 0
+posttest " parts p and rename dir " " -u file:  -rn /this/new/dir/ -parts p -to alta -path toto.256.12.0.1.d.Part " 0
 
-todel="${todel} ${DR}/toto.256.12.0.1.d.Part"
+todel="${todel} toto.256.12.0.1.d.Part"
 
-posttest " parts i" "-u file: -parts i,128 -to alta -path ${DR}/toto" 0
+posttest " parts i" "-u file: -parts i,128 -to alta -path toto" 0
 
-posttest " parts i2"  " -u file: -parts i,64 -r -to alta -path ${DR}/toto " 0
+posttest " parts i2"  " -u file: -parts i,64 -r -to alta -path toto " 0
 
-posttest " parts i2 -rr " " -u file: -parts i,64 -rr -to alta -path ${DR}/toto " 0
+posttest " parts i2 -rr " " -u file: -parts i,64 -rr -to alta -path toto " 0
 
-posttest " multiple clusters" " -u file: -to cluster1,cluster2,cluster3 -path ${DR}/toto " 0
+posttest " multiple clusters" " -u file: -to cluster1,cluster2,cluster3 -path toto " 0
 
-posttest " huh?" " -u file: -to alta -path ${DR}/toto" 0
+posttest " huh?" " -u file: -to alta -path toto" 0
 
 
 echo
@@ -208,75 +209,75 @@ echo
 echo ======== ERROR PART =========================
 echo
 
-posttest " result should be: ERROR no -to arguments " " -u file:  -path ${DR}/toto " 1
+posttest " result should be: ERROR no -to arguments " " -u file:  -path toto " 1
 
 posttest "result should be: ERROR file not found" " -u file: -to alta -path ${DR}/non_existing_file " 0 "scandir_and_post not a directory"
 
 posttest "result should be: ERROR file not found" " -dr /fake/directory -u file: -to alta -path ${DR}/non_existing_file" 0 "scandir_and_post not a directory /fake/directory"
 
-posttest "result should be: ERROR config file not found" " -c ${DR}/none_existing_file.conf -to alta -path ${DR}/toto " 1
+posttest "result should be: ERROR config file not found" " -c ${DR}/none_existing_file.conf -to alta -path toto " 1
 
-posttest "result should be: ERROR broker not found " " -u file: -b amqp://mylocalhost/ -to alta -path ${DR}/toto " 1
-
-echo
-
-posttest "result should be: ERROR broker credential" " -u file: -b amqp:${DR}/toto:titi@localhost/ -to alta -path ${DR}/toto " 1
+posttest "result should be: ERROR broker not found " " -u file: -b amqp://mylocalhost/ -to alta -path toto " 1
 
 echo
 
-posttest "result should be: ERROR broker vhost" " -u file: -b amqp://localhost/wrong_vhost -to alta -path ${DR}/toto " 1
-
-posttest "echo result should be: ERROR wrong sumflg" " -u file: -sum x -to alta -path ${DR}/toto " 1
-
+posttest "result should be: ERROR broker credential" " -u file: -b amqp:toto:titi@localhost/ -to alta -path toto " 1
 
 echo
 
-posttest "result should be: ERROR wrong exchange" " -u file:${DR}/toto -ex hoho -to alta -path ${DR}/toto" 1
+posttest "result should be: ERROR broker vhost" " -u file: -b amqp://localhost/wrong_vhost -to alta -path toto " 1
 
-echo cp ${DR}/toto ${DR}/toto.12.256.1.d.Part
-
-posttest "result should be: ERROR wrong partfile 1" "-u file: -parts p -to alta -path ${DR}/toto.12.256.1.d.Part " 1
-
-cp ${DR}/toto ${DR}/toto.12.256.1.d.Part
-
-posttest "result should be: ERROR wrong partfile 2" " -u file: -parts p -to alta -path ${DR}/toto.12.256.1.d.Part " 1
+posttest "echo result should be: ERROR wrong sumflg" " -u file: -sum x -to alta -path toto " 1
 
 
 echo
 
-cp ${DR}/toto ${DR}/toto.1024.255.1.d.Part
+posttest "result should be: ERROR wrong exchange" " -u file:toto -ex hoho -to alta -path toto" 1
 
-posttest "result should be: ERROR wrong partfile 3" " -u file: -parts p -to alta -path ${DR}/toto.1024.255.1.d.Part " 1
+echo cp toto toto.12.256.1.d.Part
 
+posttest "result should be: ERROR wrong partfile 1" "-u file: -parts p -to alta -path toto.12.256.1.d.Part " 1
 
-cp ${DR}/toto ${DR}/toto.1024.256.5.d.Part
+cp toto toto.12.256.1.d.Part
 
-posttest "echo result should be: ERROR wrong partfile 4" " -u file: -parts p -to alta -path ${DR}/toto.1024.256.5.d.Part " 1
+posttest "result should be: ERROR wrong partfile 2" " -u file: -parts p -to alta -path toto.12.256.1.d.Part " 1
 
-echo
-
-cp ${DR}/toto ${DR}/toto.1024.256.1.x.Part
-posttest "result should be: ERROR wrong partfile 4" "-u file: -parts p -to alta -path ${DR}/toto.1024.256.1.x.Part" 1
-
-rm ${DR}/toto.1024.256.1.x.Part
 
 echo
 
-cp ${DR}/toto ${DR}/toto.1024.256.1.d.bad
-posttest "result should be: ERROR wrong partfile 5" " -u file: -parts p -to alta -path ${DR}/toto.1024.256.1.d.bad " 1
+cp toto toto.1024.255.1.d.Part
 
-rm ${DR}/toto.1024.256.1.d.bad
+posttest "result should be: ERROR wrong partfile 3" " -u file: -parts p -to alta -path toto.1024.255.1.d.Part " 1
+
+
+cp toto toto.1024.256.5.d.Part
+
+posttest "echo result should be: ERROR wrong partfile 4" " -u file: -parts p -to alta -path toto.1024.256.5.d.Part " 1
 
 echo
 
-posttest "result should be: ERROR wrong partflg" "-u file: -parts x,128 -to alta -path ${DR}/toto " 1
+cp toto toto.1024.256.1.x.Part
+posttest "result should be: ERROR wrong partfile 4" "-u file: -parts p -to alta -path toto.1024.256.1.x.Part" 1
 
-posttest "result should be: ERROR wrong part chunksize" "sr_post -u file: -parts d,a -to alta -path ${DR}/toto" 1
+rm toto.1024.256.1.x.Part
+
+echo
+
+cp toto toto.1024.256.1.d.bad
+posttest "result should be: ERROR wrong partfile 5" " -u file: -parts p -to alta -path toto.1024.256.1.d.bad " 1
+
+rm toto.1024.256.1.d.bad
+
+echo
+
+posttest "result should be: ERROR wrong partflg" "-u file: -parts x,128 -to alta -path toto " 1
+
+posttest "result should be: ERROR wrong part chunksize" "sr_post -u file: -parts d,a -to alta -path toto" 1
 
 
 echo
 echo "Summary: $tnum tests $tgood passed, $tbad failed "
 
-rm ${DR}/toto
+rm toto
 exit
 

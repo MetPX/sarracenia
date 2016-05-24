@@ -360,7 +360,7 @@ def test_sr_2xlog():
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = toxlog.credentials.get("amqp://localhost/")
+    ok, details = toxlog.credentials.get("amqp://tfeed@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")
