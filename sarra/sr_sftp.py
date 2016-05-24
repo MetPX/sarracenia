@@ -67,6 +67,7 @@ class sr_sftp():
 
         self.sumalgo     = None
         self.checksum    = None
+        print("initialized by murray: %d" % self.parent.chmod_dir)
 
     # cd
     def cd(self, path):
@@ -101,13 +102,15 @@ class sr_sftp():
             except: pass
 
             # create and go to subdir
-            self.sftp.mkdir(d,eval('0o'+ str(perm)))
+            #self.sftp.mkdir(d,eval('0o'+ str(perm)))
+            self.sftp.mkdir(d,self.parent.chmod_dir)
             self.sftp.chdir(d)
 
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_sftp chmod %s %s" % (str(perm),path))
-        self.sftp.chmod(path,eval('0o'+str(perm)))
+        #self.sftp.chmod(path,eval('0o'+str(perm)))
+        self.sftp.chmod(path,perm)
 
     # close
     def close(self):
@@ -302,7 +305,8 @@ class sr_sftp():
     # mkdir
     def mkdir(self, remote_dir):
         self.logger.debug("sr_sftp mkdir %s" % remote_dir)
-        self.sftp.mkdir(remote_dir,0o775)
+        #self.sftp.mkdir(remote_dir,0o775)
+        self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
 
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0):
