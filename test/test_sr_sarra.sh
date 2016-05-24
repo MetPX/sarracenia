@@ -4,7 +4,9 @@
 # with default configuration  tsource,tsource administrator
 
 
-SARRA_PATH=../sarra
+SARRA_PATH=`pwd`/../sarra
+SARRA_BIN=${SARRA_PATH}/sr_sarra.py
+POST_BIN=${SARRA_PATH}/sr_post.py
 
 DR="`cat .httpdocroot`"
 
@@ -17,6 +19,7 @@ fi
 
 export PYTHONPATH=../sarra
 
+cd ${DR}
 
 
 
@@ -29,7 +32,7 @@ export PYTHONPATH=../sarra
 
 echo Creating test files ...
 
-cat << EOF > ${DR}/toto
+cat << EOF > toto
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -48,7 +51,7 @@ d 123456789abcde
 e 123456789abcde
 
 EOF
-cat << EOF > ${DR}/toto.p0
+cat << EOF > toto.p0
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -58,7 +61,7 @@ cat << EOF > ${DR}/toto.p0
 6 123456789abcde
 7 123456
 EOF
-cat << EOF > ${DR}/toto.p1
+cat << EOF > toto.p1
 89abcde
 8 123456789abcde
 9 123456789abcde
@@ -70,26 +73,31 @@ e 123456789abcde
 
 EOF
 
-# published files
+# dirs to write published files
 
-if [ ! -d ${DR}/test ]; then
-   mkdir ${DR}/test
+if [ ! -d test ]; then
+   mkdir test
 fi
 
-if [ ! -d ${DR}/testf ]; then
-   mkdir ${DR}/testf
+export TL=${DR}/testlogs
+if [ ! -d ${TL} ]; then
+   mkdir ${TL}
 fi
 
-cp ${DR}/toto    ${DR}/test/toto
-cp ${DR}/toto    ${DR}/testf/toto
+if [ ! -d testf ]; then
+   mkdir testf
+fi
 
-cp ${DR}/toto.p0 ${DR}/toto.128.2.0.0.d.Part
-cp ${DR}/toto.p0 ${DR}/test/toto.128.2.0.0.d.Part
-cp ${DR}/toto.p0 ${DR}/testf/toto.128.2.0.0.d.Part
+cp toto    test/toto
+cp toto    testf/toto
 
-cp ${DR}/toto.p1 ${DR}/toto.128.2.0.1.d.Part
-cp ${DR}/toto.p1 ${DR}/test/toto.128.2.0.1.d.Part
-cp ${DR}/toto.p1 ${DR}/testf/toto.128.2.0.1.d.Part
+cp toto.p0 toto.128.2.0.0.d.Part
+cp toto.p0 test/toto.128.2.0.0.d.Part
+cp toto.p0 testf/toto.128.2.0.0.d.Part
+
+cp toto.p1 toto.128.2.0.1.d.Part
+cp toto.p1 test/toto.128.2.0.1.d.Part
+cp toto.p1 testf/toto.128.2.0.1.d.Part
 
 
 echo Creating sarra config files ...
@@ -98,81 +106,133 @@ cat << EOF > sarra_test1.conf
 
 # source
 
-broker amqp://tsource@localhost/
+broker amqp://tfeed@localhost/
 exchange xs_tsource
 subtopic #
+
+directory ${DR}
+accept .*
 
 source_from_exchange True
 cluster alta
 
 # destination
 
-post_broker amqp://tsource@localhost/
+post_broker amqp://tfeed@localhost/
 post_exchange xpublic
-document_root /
+document_root ${DR}
 
 EOF
-
-#mkdir -p ~/.config/sarra 2> /dev/null
-#echo 'cluster alta' > ~/.config/sarra/sarra.conf
-#echo 'amqp://tsource:tsource@localhost/' > ~/.config/sarra/credentials.conf
-#echo 'sftp://'$USER':'$PASSWORD'@localhost/' >> ~/.config/sarra/credentials.conf
-#echo 'ftp://'$USER':'$PASSWORD'@localhost/' >> ~/.config/sarra/credentials.conf
-
 
 echo ""
 echo "* Running INPLACE FALSE test suite:"
 
+tstart=100
+tnum=$tstart
+tnumstr="100"
+tgood=0
+tbad=0
+
+# runtest 
+#   $1 test description.
+#   $2 arguments to sr_post
+#   $3 expected exit status
+#...   $4 string to indicate correct execution.
+#   $4 file name suffix ...
+
+
+function posttest1() {
+
+
+printf "\nSR_SARRA POST TEST ${tnum}: start ($1)\n"
+
+if [ "$4" ]; then
+   suff="$4"
+else
+   suff=""
+fi
+
+tfile="test/toto_${tnumstr}"
+tlog="${TL}/test_${tnumstr}.log"
+cmd="$POST_BIN $2  >${tlog} 2>&1"
+echo "cwd=`pwd`"
+echo $cmd
+eval $cmd
+sleep  3
+# ... _07
+# DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part`
+DIFF="`diff toto${suff} ${tfile}${suff}`"
+if [[ $? != 0 ]] ; then
+   N=-1
+else
+   N=`diff toto${suff} ${tfile}${suff}|wc -l`
+fi
+
+if ((N==$3)) ; then
+   printf "SR_SARRA POST TEST ${tnum}: OK ($1)\n"
+   let tgood++
+   rm -f $tlog
+   rm ${tfile}
+else
+   printf "\nSR_SARRA POST TEST ${tnum}: FAIL ($1)\n\n"
+   let tbad++
+   cat $tlog
+fi
+
+let tnum++
+tnumstr="`printf "%03d" $tnum `"
+
+
+}
+
+
 function test1 {
       
-      $SARRA_PATH/sr_sarra $* start   > /dev/null 2>&1
-      #======== 1
-      # echo -n -e "\tRunning toto_02 test ... "
-      echo -n "sr_post -u file:${DR}/toto -rn ${DR}/test/toto_02 -to cluster1,cluster2,alta ... "
-      $SARRA_PATH/sr_post -u file:${DR}/toto -rn ${DR}/test/toto_02 -to cluster1,cluster2,alta  > /dev/null 2>&1
-      sleep 10
-      # ls -al toto ./test/*
-      DIFF=`diff ${DR}/toto ${DR}/test/toto_02`
-      if [[ $? != 0 ]] ; then
-         N=-1
-      else
-         N=`diff ${DR}toto ${DR}/test/toto_02|wc -l`
-      fi
+      $SARRA_BIN $* start   > /dev/null 2>&1
+      #sleep 5
+      echo "sarra initialized. calling post tests... pwd=`pwd`"
 
-      if ((N==0)) ; then
-         echo OK #sr_post -u file:${DR}/toto -rn ${DR}/test/toto_02 -to cluster1,cluster2,alta
-      else
-         echo ERROR          
-         exit 1
-      fi
-      rm   ${DR}/test/toto_02*
+      posttest1 "INPLACE FALSE File URL default broker" " -rn test/toto_${tnumstr} -u file: -to cluster1,cluster2,alta ${DR}/toto " 0 
+
+      posttest1 "INPLACE FALSE HTTP URL default broker" " -rn test/toto_${tnumstr} -dr ${DR} -u http://localhost:8000/ -to alta $DR/toto " 0
+
+      # echo -n -e "\tRunning toto_03 test ... "
+      posttest1 " SFTP  " " -rn test/toto_${tnumstr} -u sftp://localhost/${DR} -to alta ${DR}/testf/toto " 0
+
+      # echo -n -e "\tRunning toto_07 test ... "
+      posttest1 " running http with explicit part " \
+            " -dr ${DR} -u http://localhost:8000 -p i,128 -to alta ${DR}/test/toto " \
+            0 ".128.2.0.1.d.Part"
+
+      printf "Summary: %d tests $tgood passed, $tbad failed\n" $((tnum-tstart))
+
+      $SARRA_BIN $* stop >/dev/null 2>&1
+      exit
 
       #======== 1
       # echo -n -e "\tRunning toto_03 test ... "
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_03 -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_03 -to alta > /dev/null 2>&1
-      sleep 10
-      # ls -al toto ./test/*
-      DIFF=`diff ${DR}toto ${DR}/test/toto_03`
-      if [[ $? != 0 ]] ; then
-         N=-1
-      else
-         N=`diff ${DR}toto ${DR}/test/toto_03|wc -l`
-      fi
-      
-      if ((N==0)) ; then
-         echo OK #sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_03 -to alta
-      else
-         echo ERROR          
-         exit 1
-      fi
-      rm   ${DR}/test/toto_03*
+      #DIFF=`diff ${DR}toto ${DR}/test/toto_03`
+      #if [[ $? != 0 ]] ; then
+      #   N=-1
+      #else
+      #   N=`diff ${DR}toto ${DR}/test/toto_03|wc -l`
+      #fi
+     # 
+      #if ((N==0)) ; then
+      #   echo OK #sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_03 -to alta
+      #else
+      #   echo ERROR          
+      #   exit 1
+      #fi
+      #rm   ${DR}/test/toto_03*
+
+
 
       #======== 1
       # echo -n -e "\tRunning toto_04 test ... "
       echo -n "sr_post -u sftp://px@localhost/${DR}/testf/toto -rn ${DR}/test/toto_04 -to alta ... "
       $SARRA_PATH/sr_post -u sftp://localhost/${DR}/testf/toto -rn ${DR}/test/toto_04 -to alta > /dev/null 2>&1
-      sleep 10
+      sleep 3 
       # ls -al toto ./test/*
       DIFF=`diff toto ./test/toto_04`
       if [[ $? != 0 ]] ; then
@@ -242,8 +302,8 @@ function test1 {
 
       #======== 2
       # echo -n -e "\tRunning toto_07 test ... "
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta ... "
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta > /dev/null 2>&1
       sleep 10
       # ls -al toto ./test/*
       DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_07.128.2.0.1.d.Part`
@@ -261,7 +321,7 @@ function test1 {
       fi
 
       if ((N==0 && N2==0)) ; then
-         echo OK # sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta
+         echo OK # sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_07 -p i,128 -to alta
       else
          echo ERROR          
          exit 1
@@ -359,9 +419,9 @@ function test1 {
 
       #======== 2
       # echo -n -e "\tRunning toto_11 test ... "
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_11 -p p -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto_11 -p p -to alta > /dev/null 2>&1
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto_11 -p p -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_11 -p p -to alta ... "
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto_11 -p p -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto_11 -p p -to alta > /dev/null 2>&1
       sleep 6
       # ls -al toto ./test/*
       DIFF1=`diff toto.128.2.0.1.d.Part ./test/toto_11.128.2.0.1.d.Part`
@@ -379,7 +439,7 @@ function test1 {
       fi
 
       if ((N==0 && N2==0)) ; then
-         echo OK #sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_11 -p p -to alta
+         echo OK #sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_11 -p p -to alta
       else
          echo ERROR          
          exit 1
@@ -445,7 +505,7 @@ function test1 {
       fi
       rm   ./test/toto_13*
       
-      $SARRA_PATH/sr_sarra $* stop > /dev/null 2>&1
+      $SARRA_BIN $* stop > /dev/null 2>&1
 }
 
 test1 --debug --url file: ./sarra_test1.conf
@@ -457,7 +517,7 @@ echo "* Running INPLACE TRUE test suite:"
 function test2 {
       # echo -n -e "\tRunning toto_14 test ... "
       echo -n "sr_post -u file:${DR}/toto -rn ${DR}/test/toto_14 -to alta ... "
-      $SARRA_PATH/sr_sarra $* start > /dev/null 2>&1
+      $SARRA_BIN $* start > /dev/null 2>&1
 
       #======== 1
       $SARRA_PATH/sr_post -u file:${DR}/toto -rn ${DR}/test/toto_14 -to alta > /dev/null 2>&1
@@ -480,8 +540,8 @@ function test2 {
 
       #======== 1
       # echo -n -e "\tRunning toto_15 test ... "
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_15 -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_15 -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_15 -to alta ... "
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_15 -to alta > /dev/null 2>&1
       sleep 3
       # ls -al toto ./test/*
       DIFF=`diff toto ./test/toto_15`
@@ -492,7 +552,7 @@ function test2 {
       fi
 
       if ((N==0)) ; then
-         echo OK #sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_15 -to alta
+         echo OK #sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_15 -to alta
       else
          echo ERROR          
          exit 1
@@ -568,8 +628,8 @@ function test2 {
 
       #======== 2
       # echo -n -e "\tRunning toto_19 test ... "
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta ... "
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta > /dev/null 2>&1
       sleep 6
       # ls -al toto ./test/*
       DIFF=`diff toto ./test/toto_19`
@@ -580,7 +640,7 @@ function test2 {
       fi
 
       if ((N==0)) ; then
-         echo OK #sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta
+         echo OK #sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_19 -p i,128 -to alta
       else
          echo ERROR          
          exit 1
@@ -654,9 +714,9 @@ function test2 {
       rm   ./test/toto_22*
 
       #======== 2
-      echo -n "sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_23 -p p -to alta ... "
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto_23 -p p  -to alta > /dev/null 2>&1
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto_23 -p p  -to alta > /dev/null 2>&1
+      echo -n "sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_23 -p p -to alta ... "
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto_23 -p p  -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto_23 -p p  -to alta > /dev/null 2>&1
       sleep 6
       # ls -al toto ./test/*
       DIFF=`diff toto ./test/toto_23`
@@ -667,7 +727,7 @@ function test2 {
       fi
 
       if ((N==0)) ; then
-         echo OK #sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_23 -p p -to alta 
+         echo OK #sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.*.d.Part -rn ${DR}/test/toto_23 -p p -to alta 
       else
          echo ERROR
          exit 1
@@ -715,7 +775,7 @@ function test2 {
       fi
       rm   ./test/toto_25*
 
-      $SARRA_PATH/sr_sarra $* stop > /dev/null 2>&1
+      $SARRA_BIN $* stop > /dev/null 2>&1
 
 }
 
@@ -733,12 +793,12 @@ function test3 {
       cp ./toto.128.2.0.0.d.Part ./test/toto2.128.2.0.0.d.Part
       cp ./toto.128.2.0.1.d.Part ./test/toto2.128.2.0.1.d.Part
 
-      $SARRA_PATH/sr_sarra $* start > /dev/null 2>&1
+      $SARRA_BIN $* start > /dev/null 2>&1
       #======== 1
       $SARRA_PATH/sr_post -u file:${DR}/toto -rn ${DR}/test/toto2   -to alta > /dev/null 2>&1
 
       #======== 1
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto2  -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto2  -to alta > /dev/null 2>&1
 
       #======== 1
       $SARRA_PATH/sr_post -u sftp://localhost/${DR}/testf/toto -rn ${DR}/test/toto2  -to alta > /dev/null 2>&1
@@ -752,7 +812,7 @@ function test3 {
       $SARRA_PATH/sr_post -u file:${DR}/toto -rn ${DR}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
       #======== 2
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
 
       #======== 2
       $SARRA_PATH/sr_post -u sftp://localhost/${DR}/testf/toto -rn ${DR}/test/toto2 -p i,128  -to alta > /dev/null 2>&1
@@ -768,8 +828,8 @@ function test3 {
       $SARRA_PATH/sr_post -u file:${DR}/toto.128.2.0.0.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
 
       #======== 2
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
-      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.1.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
+      $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto.128.2.0.0.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
       #======== 2
       $SARRA_PATH/sr_post -u sftp://localhost/${DR}/testf/toto.128.2.0.1.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
       $SARRA_PATH/sr_post -u sftp://localhost/${DR}/testf/toto.128.2.0.0.d.Part -rn ${DR}/test/toto2 -p p  -to alta > /dev/null 2>&1
@@ -781,7 +841,7 @@ function test3 {
       sleep 10
       # ls -al toto ./test/*
 
-      $SARRA_PATH/sr_sarra $* stop > /dev/null 2>&1
+      $SARRA_BIN $* stop > /dev/null 2>&1
 
       N=`grep modified sr_sarra_sarra_test1_0001.log  | wc -l`
       if ((N==20)) ; then
@@ -792,7 +852,7 @@ function test3 {
       fi
       rm   ./test/toto2*
  
-      $SARRA_PATH/sr_sarra $* stop > /dev/null 2>&1
+      $SARRA_BIN $* stop > /dev/null 2>&1
 
 }
 
@@ -805,7 +865,7 @@ echo "* Running INSTANCES AND INSERTS test suite:"
 
 function test4 {
 
-         $SARRA_PATH/sr_sarra $* ./sarra_test1.conf start > /dev/null 2>&1
+         $SARRA_BIN $* ./sarra_test1.conf start > /dev/null 2>&1
 
          echo -n "Testing file ... "
          $SARRA_PATH/sr_post -u file:${DR}/toto -rn ${DR}/test/toto_26 -p i,1 -r   -to alta > /dev/null 2>&1
@@ -822,7 +882,7 @@ function test4 {
                rm   ./test/toto_26*
 
          echo -n "Testing http ... "
-         $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_27 -p i,1 -r  -to alta > /dev/null 2>&1
+         $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_27 -p i,1 -r  -to alta > /dev/null 2>&1
 
                sleep 30
                # ls -al toto ./test/*
@@ -863,7 +923,7 @@ function test4 {
                fi
                rm   ./test/toto_29*
 
-         $SARRA_PATH/sr_sarra $* ./sarra_test1.conf stop  > /dev/null 2>&1
+         $SARRA_BIN $* ./sarra_test1.conf stop  > /dev/null 2>&1
          sleep 10
 
 }
@@ -880,7 +940,7 @@ echo "* Running INSTANCES AND INSERTS AND TRUNCATE testing suite:"
 
 function test5 {
 
-         $SARRA_PATH/sr_sarra $* ./sarra_test1.conf start > /dev/null 2>&1
+         $SARRA_BIN $* ./sarra_test1.conf start > /dev/null 2>&1
 
          cat toto | sed 's/12345/abcde/' > ./test/toto_30
          echo abc >> ./test/toto_30
@@ -904,7 +964,7 @@ function test5 {
          echo abc >> ./test/toto_31
 
          echo -n "Testing http ... "
-         $SARRA_PATH/sr_post -dr ${DR} -u http://localhost/test/toto -rn ${DR}/test/toto_31 -p i,11 -r  -to alta > /dev/null 2>&1
+         $SARRA_PATH/sr_post -dr ${DR} -u http://localhost:8000/test/toto -rn ${DR}/test/toto_31 -p i,11 -r  -to alta > /dev/null 2>&1
 
                sleep 30
                # ls -al toto ./test/*
@@ -953,7 +1013,7 @@ function test5 {
                rm   ./test/toto_33*
 
          sleep 10
-         $SARRA_PATH/sr_sarra $* ./sarra_test1.conf stop > /dev/null 2>&1
+         $SARRA_BIN $* ./sarra_test1.conf stop > /dev/null 2>&1
 
 }
 

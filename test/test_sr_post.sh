@@ -58,10 +58,6 @@ todel=""
 
 # this test does not work, but all it is supposed to do is show the usage...
 # FIXME.
-#echo sr_post --help
-#
-#../sarra/sr_post.py --help >srp.output 2>&1
-#echo
 
 tnum=0
 tgood=0
