@@ -156,12 +156,12 @@ If a path defines a file this file is announced.
 If a path defines a directory then all files in that directory are
 announced... 
 
-If this path defines a directory and the option **recursice** is true
+If this path defines a directory and the option **recursive** is true
 then all files in that directory are posted and should **sr_post** finds
 one (or more) directory(ies), it scans it(them) are posts announcements
 until all the tree is scanned.
 
-The AMQP announcements are made of the tree fields, the announcement time,
+The AMQP announcements are made of the three fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
 the *document_root* present and needed.
 
