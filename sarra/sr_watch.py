@@ -219,7 +219,9 @@ def main():
                if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
                   watch.post.lock_set()
-                  watch.post.move(event.src_path,event.dest_path)
+                  #Every file rename inside the watch path will trigger new copy
+                  #watch.post.move(event.src_path,event.dest_path)
+                  self.event_post(event.dest_path, 'modified')
                   watch.post.lock_unset()
 
     watch.event_handler(MyEventHandler())
