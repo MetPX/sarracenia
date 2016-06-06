@@ -73,7 +73,6 @@ class sr_watch(sr_instances):
     def __init__(self,config=None,args=None):
         self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
-        self.validate_cache()
 
     def close(self):
         self.post.close()
@@ -130,7 +129,7 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.logger.info("sr_watch run")
-
+        self.validate_cache()
         self.post.connect()
 
         try:
