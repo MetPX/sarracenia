@@ -164,14 +164,14 @@ class sr_post(sr_config):
            self.msg.exchange = ''
            self.msg.topic    =  self.queue_name
 
-        if self.on_post :
-           self.logger.debug("sr_post user on_post")
-           ok = self.on_post(self)
-           if not ok: return ok
-
         # should always be ok
         ok = True
         if self.event in self.events:
+           if self.on_post :
+               self.logger.debug("sr_post user on_post")
+               ok = self.on_post(self)
+           if not ok: return ok
+
            ok = self.msg.publish( )
 
         return ok
