@@ -368,8 +368,8 @@ Valid checksum flags are ::
           n : do checksum on filename
           d : do md5sum on file content
 
-FILES IGNORED
-=============
+CAVEATS
+=======
 
 In order to avoid alerting for partially written (usually temporary) files, *sr_watch* does not post
 events for changes to files with certain names:
@@ -379,6 +379,13 @@ events for changes to files with certain names:
 
 .. NOTE::
    FIXME: is this right?  need better does it ignore part files? should it?
+
+Another file operation which is not currently optimally managed is file renaming. When a file is renamed
+within a directory tree, sarracenia will simply announce it under the new name, and does not communicate
+that already transferred data has simply changed name.  Subscribers who have transferred the data under the 
+old name will transfer it again under the new name, with no relation being made with the old file.
+
+
 
 DEVELOPER SPECIFIC OPTIONS
 ==========================
