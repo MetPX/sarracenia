@@ -73,7 +73,6 @@ class sr_watch(sr_instances):
     def __init__(self,config=None,args=None):
         self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
-        self.validate_cache()
 
     def close(self):
         self.post.close()
@@ -130,7 +129,7 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.logger.info("sr_watch run")
-
+        self.validate_cache()
         self.post.connect()
 
         try:
@@ -220,7 +219,9 @@ def main():
                if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
                   watch.post.lock_set()
-                  watch.post.move(event.src_path,event.dest_path)
+                  #Every file rename inside the watch path will trigger new copy
+                  #watch.post.move(event.src_path,event.dest_path)
+                  self.event_post(event.dest_path, 'modified')
                   watch.post.lock_unset()
 
     watch.event_handler(MyEventHandler())
