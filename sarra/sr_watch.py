@@ -128,6 +128,7 @@ class sr_watch(sr_instances):
         self.post.help()
 
     def run(self):
+        self.post.logger = self.logger
         self.logger.info("sr_watch run")
         self.validate_cache()
         self.post.connect()
