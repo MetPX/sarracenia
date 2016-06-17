@@ -15,6 +15,32 @@ Status: Pre-Draft
 
 .. Contents::
 
+Audience
+--------
+
+Readers of this manual should be comfortable with light scripting in python3.  Sarracenia
+includes a number of points where processing can be customized by small snippets of user
+provided code, known as plugins.  The plugins themselves are expected to be rather concise,
+and an elementary knowledge of python should suffice to build new plugins in an essentially
+copy/paste manner, with many samples being available to read.  For some examples, of how
+plugin processing might be of interest to users see the Ideas below:
+
+
+Plugin Script Ideas
+-------------------
+
+Examples of things that would be fun to do with plugins.
+
+- Common Alerting Protocol or CAP, is an XML format that provides a warnings for many types of events, indicating
+  the area of coverage.  There is a 'polygon' field in the warning, that the source could add to messages using
+  an on_post plugin.  Subscribers would have access to the 'polygon' header through use of an on_message plugin,
+  enabling them  determine whether the alert affected an area of interest without downloading the entire warning.  
+
+- A source that applies compression to products before posting, could add a header such as 'uncompressed_size'
+  and 'uncompressed_sum' to allow subscribers, with an on_message plugin to compare a file that has been locally
+  uncompressed to an upstream file offerred in compressed form.
+
+
 Introduction
 ------------
 
@@ -41,7 +67,7 @@ program:
 - **on_post     <script>        (default: post_log)**
 - **on_line     <script>        (default: None)**
 
-Thisl the first four are sel-evident, the on_line plugin is a bit obscure.  It 
+While the first four are self-evident, the on_line plugin is a bit obscure.  It 
 is used to parse remote directories listings using sr_poll,
 as the listing format varies by implementation of the remote server.
 
@@ -51,6 +77,10 @@ There are also do\_ scripts, which provide or replace functionality in programs:
 - **do_poll         <script>        (default: None)**
 - **do_send         <script>        (default: None)**
 
+
+
+Plugin Scripts Basics
+~~~~~~~~~~~~~~~~~~~~~
 
 An example, A file_noop.py script for **on_file**, could be ::
 
@@ -70,17 +100,65 @@ An example, A file_noop.py script for **on_file**, could be ::
  filenoop  = File_Noop(self)
  self.on_file = filenoop.perform
 
-The only argument the script receives is **parent**, which has all of option 
-settings from configuration files and command line as attributes, and so are 
-available for use.  In any configuration file, one would set::
+There is an initialization portion which runs when the component is started,
+a perform section which is to be invoked on the appropriate event.  Setting
+the plugin requires the magic last two lines in the sample plugin, where the last
+line needs to reflect the type of plugin (on_file for an on_file plugin, on_message,
+for an on_message one, etc...)
 
-  file_string oh my goodness
-  on_file file_noop
+The only argument the script receives is **parent**, which has all of option 
+settings from configuration files and command line as attributes.  For example,
+if a setting like::
+
+  msg_speedo_interval 10
+
+is set in a configuration file, then the plugin script will see
+*parent.msg_speedo_interval* as a variable set to '10' (the string, not the number)
+By convention when inventing new configuration settings, the name of the
+plugin is used as a prefix (In this example, msg_speedo)
+
+
+In addition to the command line options, there is also a logger available
+as shown in the sample above.  The *logger* is a python3 logger object, as documented 
+here: https://docs.python.org/3/library/logging.html.   To allow users to tune the 
+verbosity of logs, use priority specific method to classify messages:
+
+  logger.debug - something deeply wrong, spelunking in progress.
+  logger.info - informative messages that are not essential
+  logger.warn - a difficulty that is likely problematic, but the component still functions to some degree.
+  logger.error - The component failed to do something.
+
+In the above message, logger.info is used, indicating an informative message.
+Another useful attribute available in parent, is 'msg', which has all the attributes 
+of the message being processed.  All of the headers from the message, as defined
+in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the plugin,
+such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_ 
+section for an exhaustive list.
+
+A popular variable in on_file and on_part plugins, is: *parent.msg.local_file*, 
+giving the file name the downloaded product has been written to.
 
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
 
+
+Sample Plugins
+~~~~~~~~~~~~~~
+
+There is a number of examples of plugin scripts included with every
+installation.  If installed with debian packages, they are here::
+
+   /usr/lib/python3/dist-packages/sarra/plugins
+
+Another good location to browse is::
+
+  https://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/sarra/plugins/
+
+The git repository with many plugins available to reference.
+
+For example, the default settings of on_msg and on_file print log messages
+for each message and file processed.  
 
 
 
@@ -141,17 +219,13 @@ provided with sarracenia::
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
       def perform(self, parent):
-          self.rxpipe.write( msg.local_file + "\n" )
+          self.rxpipe.write( parent.msg.local_file + "\n" )
           self.rxpipe.flush()
           return None
 
   rxpipe =File_RxPipe(self)
 
   self.on_file=rxpipe.perform
-
-Before running this code, at the command line, create the named pipe::
-
-  mkfifo /local/home/peter/test/npipe
 
 With this fragment of python, when sr_subscribe is first called, it ensures that
 a pipe named npipe is opened in the specified directory by executing
@@ -183,12 +257,12 @@ in each instance, providing very easy parallel processing built
 into sr_subscribe.  
 
 
-What Fields are Available to on\_ Scripts?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Variables Available 
+~~~~~~~~~~~~~~~~~~~
 
 Without peering into the python source code of sarracenia, it is hard to know
 what values are available to plugin scripts.  As a cheat to save developers
-from having to understant the source code, a diagnostic plugin might be helpful.
+from having to understand the source code, a diagnostic plugin might be helpful.
 
 if one sets the following script as a trigger in a configuration, the entire
 list of available variables can be displayed in a log file::
@@ -212,13 +286,15 @@ self.on_file = transformer.perform
 
 EOT
 
-Make the above file an on_file (or other trigger) script in a configuration, start up a receiver (and if it is a busy one, then stop it immediately, as it creates
-very large log messages for every message received.)  Essentially the entire program state is available to plugins. A sample output is shown
+Make the above file an on_file (or other trigger) script in a configuration, start up a receiver 
+(and if it is a busy one, then stop it immediately, as it creates very large log messages for 
+every message received.)  Essentially the entire program state is available to plugins. 
 
-below::
+A sample output is shown (reformatted for legibility) is given below.  For every field *xx* listed,
+a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
 
-  peter@idefix:~/test$ sr_subscribe dd.conf start
-  peter@idefix:~/test$ sr_subscribe dd.conf stop  # do this immediately for a receiver with high traffic!
+  peter@idefix:~/test$ sr_subscribe dd.conf foreground
+  ^C to stop it immediately after the first message.
   peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log 
   
   # the following is reformatted to look reasonable on a page.
@@ -344,9 +420,71 @@ below::
   'user_data_dir': '/local/home/peter/.local/share/sarra',
   'flow': None}
 
-  2016-01-14 17:13:01,649 [INFO] message = 
 
-No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of this state will vary over time.
+No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of 
+this state will vary over time.  Similar to program configuration settings, all of the fields
+involved in processing individual messages are available in the parent.msg object.  A similar
+dump to the above is here (e.g of a python scripts can use *parent.msg.partsr* , 
+and/or *parent.msg.header.parts*  in their code.):: 
+
+
+ 2016-01-14 17:13:01,649 [INFO] message = 
+ {'partstr': '1,78,1,0,0', 
+ 'suffix': '.78.1.0.0.d.Part', 
+ 'subtopic': 'alphanumeric.20160617.CA.CWAO.12', 
+ 'in_partfile': False, 
+ 'notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
+ 'checksum': 'ab1ba0020e91119fb024a2c115ccd908', 
+ 'pub_exchange': None, 
+ 'local_checksum': None, 
+ 'chunksize': 78, 
+ 'time': '20160617120454.820', 
+ 'path': 'bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
+ 'log_exchange': 'xs_anonymous', 
+ 'part_ext': 'Part', 
+ 'topic_prefix': 'v02.post', 
+ 'current_block': 0, 
+ 'tbegin': 1466165094.82, 
+ 'local_file': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
+ 'remainder': 0, 
+ 'to_clusters': ['DD', 'DDI.CMC', 'DDI.EDM'], 
+ 'local_offset': 0, 
+ 'mtype': 'post', 
+  'user': 'anonymous', 
+  'bufsize': 8192, 'local_url': 
+  ParseResult(scheme='file', netloc='', path='/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 'exchange': 'xpublic', 'url': ParseResult(scheme='http', netloc='dd2.weather.gc.ca', path='/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 
+ 'onfly_checksum': 'ab1ba0020e91119fb024a2c115ccd908', 
+  'host': 'blacklab', 
+  'filesize': 78, 
+  'block_count': 1, 
+ 'sumalgo': <sarra.sr_util.checksum_d object at 0x7f77554234e0>, 
+ 'headers': { 
+      'sum': 'd,ab1ba0020e91119fb024a2c115ccd908', 
+      'parts': '1,78,1,0,0', 
+      'filename': 'CACN00_CWAO_171133__WAR_00919', 
+      'to_clusters': 'DD,DDI.CMC,DDI.EDM', 
+      'source': 'metpx', 
+      'rename': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
+      'from_cluster': 'DD'}, 
+ 'hdrstr': 'parts=1,78,1,0,0 sum=d,ab1ba0020e91119fb024a2c115ccd908 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 message=Downloaded ', 
+  'log_notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 201 blacklab anonymous 3.591402', 
+  'version': 'v02', 
+  'parent': <sarra.sr_subscribe.sr_subscribe object at 0x7f775682b4a8>, 
+  'logger': <logging.RootLogger object at 0x7f77563359e8>, 
+  'length': 78, 
+  'topic': 'v02.post.bulletins.alphanumeric.20160617.CA.CWAO.12', 
+  'inplace': True, 
+  'urlcred': 'http://dd2.weather.gc.ca/', 
+  'sumstr': 'd,ab1ba0020e91119fb024a2c115ccd908', 
+  'log_topic': 'v02.log.bulletins.alphanumeric.20160617.CA.CWAO.12', 
+  'publisher': None, 
+  'code': 201, 
+  'urlstr': 'http://dd2.weather.gc.ca/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
+  'lastchunk': True, 
+  'sumflg': 'd', 
+  'offset': 0, 
+  'partflg': '1', 
+  'log_publisher': <sarra.sr_amqp.Publisher object at 0x7f77551c7518>}
 
 
 Debugging on\_ Scripts
@@ -541,6 +679,9 @@ Checksum Plugins
 ----------------
 
 FIXME
+
+
+
 
 
 Accessing Messages without Sarracenia
