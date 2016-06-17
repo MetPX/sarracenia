@@ -364,18 +364,30 @@ As each part is announced, so there is a corresponding log message for
 each part.  This allows senders to monitor progress of delivery of large
 files.
 
-Fingerprints
-------------
+Reliability and Checksums
+-------------------------
 
-Every piece of data injected into the pumping network needs to have a unique fingerprint,
-The fingerprinting algorithm to apply to such data needs to be chosen by the data source. 
-This is used by consumers of the data, which could be other pumps, or end subscribers,
-to determine if they already have the data or not. Normally, the 'd' algorithm is used,
-which applies the well-known Message-Digest 5 (md5sum) algorithm to the data in the file.
+Every piece of data injected into the pumping network needs to have a unique fingerprint (or checksum.)
+Data will flow if it is new, and determining if the data is new is based on the fingerprint.
+To get reliability in a sarracenia network, multiple independent sources are provisioned.
+Each source announces their products, and if they have the same name and fingerprint, then
+the products are considered the same.
+
+The sr_winnow component of sarracenia looks at incoming announcements and notes which products
+are received (by file name and checksum.)  If a product is new, it is forwarded on to other components
+for processing.  If a product is a duplicate, then the announcement is not forwarded further.
+Similarly, when sr_subscribe or sr_sarra components receive an announcement for a product that is already 
+present on the local system, they will examine the fingerprint and not download the data unless it is different.
+Checksum methods need to be known across a network, as downstream components will re-apply them. 
+
+Different fingerprinting algorithms are appropriate for different types of data, so 
+the algorithm to apply needs to be chosen by the data source, and not imposed by the network.
+Normally, the 'd' algorithm is used, which applies the well-known Message-Digest 5 (md5sum) 
+algorithm to the data in the file.
 
 When there is one origin for data, this algorithm works well. For high availability, 
 production chains will operate in parallel, preferably with no communication between
-them.  Items produced by independent chains will naturally have different processing
+them.  Items produced by independent chains may naturally have different processing
 time and log stamps and serial numbers applied, so the same data processed through 
 different chains will not be identical at the binary level.   For products produced 
 by different production chains to be accepted as equivalent, they need to have 
