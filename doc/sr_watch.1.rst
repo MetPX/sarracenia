@@ -25,9 +25,26 @@ In the MetPX-Sarracenia suite, the main goal is to post the availability and rea
 of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
 
 Posts are sent to an AMQP server, also called a broker, specified with the option [ *-b|--broker broker_url* ]. 
-Format of argument to the *broker* option:: 
 
-       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
+CREDENTIAL OPTIONS
+------------------
+
+The broker option sets all the credential information to connect to the  **RabbitMQ** server
+
+- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+
+::
+
+      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+
+All sr_ tools store all sensitive authentication info is stored in the credentials file.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
+to thins such as private keys, or FTP modes.
+
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+
+Mandatory Settings
+------------------
 
 The [*-u|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
 will connect to get the file. 

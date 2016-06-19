@@ -25,11 +25,32 @@ DESCRIPTION
 In contrast to most other sarracenia components that act as daemons,
 sr_post is a one shot invocation which posts and exits.
 Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
-to consume announcements and download the file.  To make files available 
-to subscribers, **sr_post** sends the announcements to an AMQP server, 
-also called a broker.  Format of argument to the *broker* option:: 
 
-       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
+To consume announcements and download the file.  To make files available 
+to subscribers, **sr_post** sends the announcements to an AMQP server, 
+also called a broker.  
+
+
+CREDENTIAL OPTIONS
+------------------
+
+The broker option sets all the credential information to connect to the  **RabbitMQ** server
+
+- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+
+::
+
+      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+
+All sr_ tools store all sensitive authentication info is stored in the credentials file.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
+to thins such as private keys, or FTP modes.
+
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+
+
+Mandatory Settings
+------------------
 
 The [*-u|--url url*] option specifies the location 
 subscribers will download the file from.  There is usually one post per file.

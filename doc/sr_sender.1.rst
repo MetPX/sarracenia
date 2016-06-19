@@ -60,18 +60,23 @@ queues, and all the standard client side filtering with accept, reject, on_messa
 SOURCE NOTIFICATION OPTIONS
 ---------------------------
 
-First, the program needs to set all the rabbitmq configurations for a source 
-broker.  The broker option sets all the credential information to connect 
-to the **AMQP** server 
+CREDENTIAL OPTIONS
+------------------
 
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+The broker option sets all the credential information to connect to the  **RabbitMQ** server
+
+- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
 
-      (default: None and it is mandatory to set it ) 
+      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+All sr_ tools store all sensitive authentication info is stored in the credentials file.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
+to thins such as private keys, or FTP modes.
+
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+
 
 QUEUE BINDINGS OPTIONS
 ----------------------

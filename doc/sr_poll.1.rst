@@ -49,6 +49,23 @@ In general, the options for this component are described by the
 It fully explains the option configuration language, and how to find 
 the option settings.
 
+CREDENTIAL OPTIONS
+------------------
+
+The broker option sets all the credential information to connect to the  **RabbitMQ** server
+
+- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+
+::
+      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+
+All sr_ tools store all sensitive authentication info is stored in the credentials file.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
+to thins such as private keys, or FTP modes.
+
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+
+
 VIP, INTERFACE, INSTANCE
 ------------------------
 

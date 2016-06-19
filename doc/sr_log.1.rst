@@ -46,10 +46,10 @@ It fully explains the option configuration language, and how to find
 the option settings.
 
 
-RABBITMQ CREDENTIAL OPTIONS
----------------------------
+CREDENTIAL OPTIONS
+------------------
 
-The broker option sets all the credential information to connect to the  **RabbitMQ** server 
+The broker option sets all the credential information to connect to the  **RabbitMQ** server
 
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -57,7 +57,12 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
+All sr_ tools store all sensitive authentication info is stored in the credentials file.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
+to thins such as private keys, or FTP modes.
+
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+
 
 AMQP QUEUE BINDINGS
 -------------------
