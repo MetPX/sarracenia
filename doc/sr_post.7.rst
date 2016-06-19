@@ -190,9 +190,9 @@ appropriate.   Headers are a mandatory element included in later versions of the
 
 
 **from_cluster=<cluster_name>**
- The from_cluster defines the name of the source cluster where the data was introduced into the network.
- The cluster name should be unique within all exchanging rabbitmq clusters.
- It is used to return the logs back to the cluster whenever its products are used.
+   The from_cluster defines the name of the source cluster where the data was introduced into the network.
+   The cluster name should be unique within all exchanging rabbitmq clusters.
+   It is used to return the logs back to the cluster whenever its products are used.
 
 .. _parts:
 
@@ -311,7 +311,8 @@ appropriate.   Headers are a mandatory element included in later versions of the
  of the products and their notices through the exchanging clusters.
 
 
-All other headers are reserved for future use. 
+All other headers are reserved for future use.  
+Headers which are unknown to a given client should be forwarded without modification.
 
 
 EXAMPLE

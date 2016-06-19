@@ -1376,10 +1376,20 @@ Security Considerations
 This section is meant to provide insight to those who need to perform a security review
 of the application prior to implementation.  
 
+Client
+~~~~~~
+
+All credentials used by the application are stored 
+in the ~/.config/sarra/credentials.conf file, and that file is forced to 600 permissions.  
+
+
+Server/Broker
+~~~~~~~~~~~~~
+
 Authentication used by transport engines is independent of that used for the brokers.  A security 
 assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate 
-the overall security of a given deployment.  All credentials used by the application are stored 
-in the ~/.config/sarra/credentials.conf file, and that file is forced to 600 permissions.  
+the overall security of a given deployment.  
+
 
 The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
 storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
@@ -1481,6 +1491,9 @@ message is printed and the plugin returns False so that the part's advertisement
 downstream pumps will not pick it up.)
 
 **FIXME: set minimum/maximum part size?**
+
+
+
 
 Hooks from Sundew
 -----------------
