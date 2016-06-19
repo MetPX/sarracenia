@@ -1,11 +1,11 @@
 
-===================
- Programmers Guide
-===================
+=============================
+ Sarracenia Programming Guide
+=============================
 
-------------------------------------------
- Working with Plugins for Metpx-Sarracenia
-------------------------------------------
+---------------------
+ Working with Plugins 
+---------------------
 
 Status: Pre-Draft
 
@@ -162,6 +162,8 @@ for each message and file processed.
 
 
 
+
+
 Better File Reception
 ---------------------
 
@@ -198,7 +200,6 @@ completely avoided.
    On the same configuration, there is slight probability that notifications
    may corrupt one another in the named pipe.  
    We should probably verify whether this probability is negligeable or not.
-   **FIXME**
 
 
 Advanced File Reception
@@ -256,6 +257,32 @@ An additional point is that if the processing of files is invoked
 in each instance, providing very easy parallel processing built 
 into sr_subscribe.  
 
+
+Using Credentials in Plugins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To implement support of additional protocols, one would write
+a **_do_download** script.  the scripts would access the credentials
+value in the script with the code :
+
+- **ok, details = parent.credentials.get(msg.urlcred)**
+- **if details  : url = details.url**
+
+The details options are element of the details class (hardcoded):
+
+- **print(details.ssh_keyfile)**
+- **print(details.passive)**
+- **print(details.binary)**
+- **print(details.tls)**
+- **print(details.prot_p)**
+
+For the credential that defines protocol for download (upload),
+the connection, once opened, is kept opened. It is reset
+(closed and reopened) only when the number of downloads (uploads)
+reaches the number given by the  **batch**  option (default 100)
+
+All download (upload) operations uses a buffer. The size, in bytes,
+of the buffer used is given by the **bufsize** option (default 8192)
 
 Variables Available 
 ~~~~~~~~~~~~~~~~~~~
@@ -650,9 +677,10 @@ local file is sufficient::
 on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
-message per part. Checking the xxx...**FIXME** to find out which part 
-you have. One can use sr_subscribe and set an the on_message 
-plugin to return 'False' to prevent downloading.
+message per part. One can use the parent.msg.partstr to find out which part 
+you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding. 
+One can use sr_subscribe and set an the on_message plugin to return 'False' to 
+prevent downloading.
 
 
 .. note:: 

@@ -489,35 +489,40 @@ can be used to change processing done by components.  The list of pre-built plug
 in a 'plugins' directory wherever the package is installed.  here is a sample list:
 
 +-----------------------------+---------------------------------------------------------+
-|destfn_sample.py             | sample destfn_script to rename files when delivering.   |
+|destfn_sample                | sample destfn_script to rename files when delivering.   |
 +-----------------------------+---------------------------------------------------------+
-|file_check.py                | Check file attributes to verify download correct.       |
+|file_check                   | Check file attributes to verify download correct.       |
 +-----------------------------+---------------------------------------------------------+
-|file_log.py                  | Print a log message when a file is downloaded.          |
+|file_log                     | Print a log message when a file is downloaded.          |
 +-----------------------------+---------------------------------------------------------+
-|file_quiet.py                | Do nothing when a file is downloaded.                   |
+|file_rxpipe                  | Set your own process to read the files named from a     |
+|                             | named pipe.  Setting:                                   |
+|                             | file_rxpipe_name /tmp/file_names                        |
+|                             | then use tail -f /tmp/file_names to read them.          |
 +-----------------------------+---------------------------------------------------------+
-|msg_skip_old.py              | When consumption is lagging too far behind, drop old    |
+|file_quiet                   | Do nothing when a file is downloaded.                   |
++-----------------------------+---------------------------------------------------------+
+|msg_skip_old                 | When consumption is lagging too far behind, drop old    |
 |                             | messages to catch up. Options:                          |
 |                             | msg_skip_threshold 20                                   |
 |                             | means discard messages older than 20 seconds.           |
 +-----------------------------+---------------------------------------------------------+
-|msg_log.py                   | Print a log message for each announcement received.     |
+|msg_log                      | Print a log message for each announcement received.     |
 +-----------------------------+---------------------------------------------------------+
-|msg_print_lag.py             | Print how far behind current consumption is.            |
+|msg_print_lag                | Print how far behind current consumption is.            |
 +-----------------------------+---------------------------------------------------------+
-|msg_quiet.py                 | Do nothing when an announcement is received.            |
+|msg_quiet                    | Do nothing when an announcement is received.            |
 +-----------------------------+---------------------------------------------------------+
-|msg_renamer.py               | Adjust Messages so they download to different names.    |
+|msg_renamer                  | Adjust Messages so they download to different names.    |
 +-----------------------------+---------------------------------------------------------+
-|msg_speedo.py                | print statistics, rather than per file messages.        |
+|msg_speedo                   | print statistics, rather than per file messages.        |
 +-----------------------------+---------------------------------------------------------+
-|msg_sundew_pxroute.py        | apply the sundew Bulletin routing method. Options:      |
+|msg_sundew                   | apply the sundew Bulletin routing method. Options:      |
 |                             | msg_pxrouting <filename>                                |
 |                             | msg_pxclient  <name of client>                          |
 |                             | Apply Sundew routing table by client.                   |
 +-----------------------------+---------------------------------------------------------+
-|part_clamav_scan.py          | Run ClamAV Anti-virus scan on a file part. Options:     |
+|part_clamav_scan             | Run ClamAV Anti-virus scan on a file part. Options:     |
 |                             | part_clamav_maxblock <number>                           |
 |                             | if set, then only scan the first <number> blocks.       |
 |                             | default, scan all.                                      |
@@ -534,12 +539,22 @@ to be used with on_file.  An msg\_ plugin is to be used with on_message, etc...
 When plugins have options, the options must be placed before the plugin declaration
 in the configuration file.
 
+Plugins are all written in python, and users can create their own and place them
+in ~/.config/sarra/plugins.  For information on creating new custom plugins, see
+The `Sarracenia Programing Guide <Prog.html>`_
+
 
 
 Better File Reception
 ---------------------
 
-Ideally, rather than using the file system, sr_subscribe indicates when each file is ready:: 
+If, instead of data processors looking at a directory with an independent process every second 
+to see if new files have arrived, there were a process to directly tell those processes the 
+names of files which have arrived, processing could be done far more quickly and efficiently.
+
+The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by writing the names 
+of files downloaded to a named pipe.  setting this up required two lines in an sr_subscribe
+configuration file:
 
   blacklab% cat >../dd_swob.conf <<EOT
 
@@ -560,10 +575,11 @@ every time a file transfer has completed and is ready for post-processing, its n
 to the linux pipe (named .rxpipe) in the current working directory.  So the code for post-processing 
 becomes::
 
-  do_something <.rxpipe
+  tail -f  /home/peter/test/.rxpipe
 
-No filtering out of working files by the user is required, and ingestion of partial files is
-completely avoided.   
+No listing of directories is needed, no filtering out of working files by the user is required, and 
+ingestion of partial files is completely avoided.  A downstream process is only given files that
+have been successfully downloaded, and typically much faster than polling methods allow.
 
 .. NOTE::
    In the case where a large number of sr_subscribe instances are working
@@ -577,16 +593,17 @@ completely avoided.
 Anti-Virus Scanning
 -------------------
 
+Another example of easy use of a plugin is to achieve anti-virus scanning.
 Assuming that ClamAV is installed, as well as the python3-pyclamd
 package, then one can adding the following to an sr_subscribe 
 configuration file::
 
   broker amqp://dd.weather.gc.ca
-  on_part /home/peter/test/part_clamav_scan.py
+  on_part part_clamav_scan.py
   subtopic observations.swob-ml.#
   accept .*
 
-will cause each file downloaded (or each part of the file if it is large),
+so that each file downloaded (or each part of the file if it is large),
 to be AV scanned. Sample run::
 
   blacklab% sr_subscribe --reset ../dd_swob.conf foreground
@@ -624,7 +641,6 @@ Gives lines in the log like so::
   2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
   2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
   2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
-  
   
   
   
