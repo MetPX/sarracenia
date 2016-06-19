@@ -170,13 +170,13 @@ be aware that, for most options, several declarations means overwriting their va
 CREDENTIALS 
 -----------
 
-Ther username and password or keys used to access servers are examples of credentials.
+Usernames and passwords or keys used to access servers are examples of credentials.
 In order to reduce the sensitivity of most configuration files, the credentials
 are stored in a single file apart from all other settings.  The credentials.conf file
 is the only mandatory configuration file for all users.
 
 For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.conf/sarra/credentials.conf.  This includes the destination and the broker
+only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
 passwords and settings needed by components.  The format is one entry per line.  Examples:
 
 - **amqp://user1:password1@host/**
@@ -194,36 +194,6 @@ passwords and settings needed by components.  The format is one entry per line. 
 In other configuration files or on the command line, the url simply lacks the
 password or key specification.  The url given in the other files is looked
 up in credentials.conf.
-
-.. note::
-   FIXME: not sure, but the ''additional protocol'' stuff feels out of place here.
-   it is like rocket maintenance inserted into a paragraph about baby carriages.
-   it is developer info... we leave it here for now, but keep an eye open
-   for some place more developerish to move it to.   
-   
-
-To implement support of additional protocols, one would write 
-a **_do_download** script.  the scripts would access the credentials 
-value in the script with the code :   
-
-- **ok, details = parent.credentials.get(msg.urlcred)**
-- **if details  : url = details.url**
-
-The details options are element of the details class (hardcoded):
-
-- **print(details.ssh_keyfile)**
-- **print(details.passive)**
-- **print(details.binary)**
-- **print(details.tls)**
-- **print(details.prot_p)**
-
-For the credential that defines protocol for download (upload),
-the connection, once opened, is kept opened. It is reset
-(closed and reopened) only when the number of downloads (uploads)
-reaches the number given by the  **batch**  option (default 100)
- 
-All download (upload) operations uses a buffer. The size, in bytes,
-of the buffer used is given by the **bufsize** option (default 8192)
 
 
 CONSUMER
