@@ -97,8 +97,7 @@ directory, then in the sarracenia package itself, and finally it will look remot
 
 .. note::
    FIXME provide some sample file locations
-   sr_subscribe dd start
-     where will it look.
+   FIXME network search path... 
 
 
 
