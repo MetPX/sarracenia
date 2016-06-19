@@ -10,7 +10,6 @@
 #
 # sr_util.py : python3 utility mostly for checksum and file part
 #
-#
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015

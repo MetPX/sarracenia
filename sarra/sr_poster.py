@@ -30,7 +30,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import os,sys,random,shelve
+import os,sys,random,shelve,time
 
 try :    
          from sr_amqp           import *
@@ -207,7 +207,7 @@ class sr_poster:
         self.msg.user      = self.broker.username
         self.msg.publisher = self.publisher
 
-    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None):
+    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None):
         self.logger.debug("sr_poster post")
 
         # if caching is enabled make sure it was not already posted
@@ -255,13 +255,14 @@ class sr_poster:
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
         if rename   != None : self.msg.headers['rename']       = rename
-
-        # optional
+        if mtime    != None : self.msg.headers['mtime']        = mtime
+        if atime    != None : self.msg.headers['atime']        = atime
 
         if self.parent.cluster != None : self.msg.headers['from_cluster'] = self.parent.cluster
         if self.parent.source  != None : self.msg.headers['source']       = self.parent.source
-        if self.parent.flow    != None : self.msg.headers['flow']         = self.parent.flow
         if filename            != None : self.msg.headers['filename']     = filename
+
+        if self.parent.flow    != None : self.msg.headers['flow']         = self.parent.flow
 
         ok = self.parent.__on_post__()
         return ok
@@ -273,6 +274,14 @@ class sr_poster:
 
         lstat   = os.stat(path)
         fsiz    = lstat[stat.ST_SIZE]
+        mtimeflt   = lstat.st_mtime
+        msec = '.%d' % ((mtimeflt%1)*1000)
+        mtime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(mtimeflt)) + msec
+
+        atimeflt   = lstat.st_atime
+        msec = '.%d' % ((atimeflt%1)*1000)
+        atime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(atimeflt)) + msec
+
         partstr = '1,%d,1,0,0' % fsiz
 
         # set sumstr
@@ -306,7 +315,7 @@ class sr_poster:
 
         filename = os.path.basename(path)
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)
+        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
 
         self.logger.debug("sr_poster post_local_file")
 
@@ -318,6 +327,14 @@ class sr_poster:
         ok       = False
         lstat    = os.stat(path)
         fsiz     = lstat[stat.ST_SIZE]
+        mtimeflt = lstat.st_mtime
+        msec     = '.%d' % ((mtimeflt%1)*1000)
+        mtime    = time.strftime("%Y%m%d%H%M%S",time.gmtime(mtimeflt)) + msec
+
+
+        atimeflt = lstat.st_atime
+        msec = '.%d' % ((atimeflt%1)*1000)
+        atime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(atimeflt)) + msec
 
         # file too small for chunksize
 
@@ -393,7 +410,7 @@ class sr_poster:
 
               # post
 
-              ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)
+              ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
               if not ok : return ok
 
               # reconnect ?
@@ -432,8 +449,11 @@ class sr_poster:
         sumstr   = '%s,%s' % (self.msg.sumflg,self.msg.checksum)
 
         filename = os.path.basename(path)
+        lstat   = os.stat(path)
+        mtime   = lstat[stat.ST_MTIME]
+        atime   = lstat[stat.ST_ATIME]
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename)
+        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
 
         return ok
 

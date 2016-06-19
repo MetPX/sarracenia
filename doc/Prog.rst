@@ -294,11 +294,11 @@ from having to understand the source code, a diagnostic plugin might be helpful.
 if one sets the following script as a trigger in a configuration, the entire
 list of available variables can be displayed in a log file::
 
-  cat >dump_msg.py <<EOT
+  cat >msg_dump.py <<EOT
   import os,stat,time
 
   class Transformer(object):
-      def __init__(self):
+      def __init__(self,parent):
           pass
 
       def perform(self,parent):
@@ -308,10 +308,10 @@ list of available variables can be displayed in a log file::
           parent.logger.info(vars(parent.msg))
           return False
 
-transformer = Transformer()
-self.on_file = transformer.perform
+  transformer = Transformer(self)
+  self.on_file = transformer.perform
 
-EOT
+  EOT
 
 Make the above file an on_file (or other trigger) script in a configuration, start up a receiver 
 (and if it is a busy one, then stop it immediately, as it creates very large log messages for 
