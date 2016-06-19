@@ -46,7 +46,7 @@ All sr_ tools store all sensitive authentication info is stored in the credentia
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_
 
 
 Mandatory Settings

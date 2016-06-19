@@ -168,7 +168,7 @@ be aware that, for most options, several declarations means overwriting their va
 
 
 CREDENTIALS 
------------
+===========
 
 Usernames and passwords or keys used to access servers are examples of credentials.
 In order to reduce the sensitivity of most configuration files, the credentials
