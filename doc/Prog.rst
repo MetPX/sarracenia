@@ -18,12 +18,13 @@ Status: Pre-Draft
 Audience
 --------
 
-Readers of this manual should be comfortable with light scripting in python3.  Sarracenia
-includes a number of points where processing can be customized by small snippets of user
-provided code, known as plugins.  The plugins themselves are expected to be rather concise,
-and an elementary knowledge of python should suffice to build new plugins in an essentially
-copy/paste manner, with many samples being available to read.  For some examples, of how
-plugin processing might be of interest to users see the Ideas below:
+Readers of this manual should be comfortable with light scripting in python version 3.
+Sarracenia includes a number of points where processing can be customized by 
+small snippets of user provided code, known as plugins.  The plugins themselves 
+are expected to be rather concise, and an elementary knowledge of python should suffice to 
+build new plugins in an essentially copy/paste manner, with many samples being 
+available to read.  For some examples of how plugin processing might be of 
+interest to users see the Ideas below:
 
 
 Plugin Script Ideas
@@ -41,6 +42,7 @@ Examples of things that would be fun to do with plugins.
   uncompressed to an upstream file offerred in compressed form.
 
 
+------------
 Introduction
 ------------
 
@@ -78,9 +80,9 @@ There are also do\_ scripts, which provide or replace functionality in programs:
 - **do_send         <script>        (default: None)**
 
 
-
+---------------------
 Plugin Scripts Basics
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 An example, A file_noop.py script for **on_file**, could be ::
 
@@ -121,7 +123,7 @@ plugin is used as a prefix (In this example, msg_speedo)
 In addition to the command line options, there is also a logger available
 as shown in the sample above.  The *logger* is a python3 logger object, as documented 
 here: https://docs.python.org/3/library/logging.html.   To allow users to tune the 
-verbosity of logs, use priority specific method to classify messages:
+verbosity of logs, use priority specific method to classify messages::
 
   logger.debug - something deeply wrong, spelunking in progress.
   logger.info - informative messages that are not essential
@@ -144,7 +146,7 @@ will stop there and another message will be consumed from the broker.
 
 
 Sample Plugins
-~~~~~~~~~~~~~~
+--------------
 
 There is a number of examples of plugin scripts included with every
 installation.  If installed with debian packages, they are here::
@@ -161,9 +163,13 @@ For example, the default settings of on_msg and on_file print log messages
 for each message and file processed.  
 
 
+<<<<<<< HEAD
 
 
 
+=======
+---------------------
+>>>>>>> 0ec094e17794bad8c34ed171031ca19056588b81
 Better File Reception
 ---------------------
 
@@ -285,7 +291,7 @@ All download (upload) operations uses a buffer. The size, in bytes,
 of the buffer used is given by the **bufsize** option (default 8192)
 
 Variables Available 
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Without peering into the python source code of sarracenia, it is hard to know
 what values are available to plugin scripts.  As a cheat to save developers
@@ -495,8 +501,9 @@ and/or *parent.msg.header.parts*  in their code.)::
   'log_publisher': <sarra.sr_amqp.Publisher object at 0x7f77551c7518>}
 
 
+----------------------
 Debugging on\_ Scripts
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 When initially developing a plugin script, it can be painful to run it in the complete framework.
 Attempting to run even the above trivial plugin::
@@ -634,6 +641,7 @@ One creates a calling object with the fields needed to test the
 fields the plugin will use in the TestParent and TestMessage classes.
 
 
+-------------------------------------
 File Notification Without Downloading
 -------------------------------------
 
@@ -672,18 +680,20 @@ prevent downloading.
    **FIXME**: is .py needed on on\_ triggers?
 
 
+----------
 do_scripts
 ----------
 
 FIXME
 
-
+-------
 Polling
 -------
 
 Sample polling.
 
 
+----------------
 Checksum Plugins
 ----------------
 
@@ -692,7 +702,7 @@ FIXME
 
 
 
-
+-------------------------------------
 Accessing Messages without Sarracenia
 -------------------------------------
 
