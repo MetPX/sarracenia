@@ -30,7 +30,7 @@ Guides
 * `Subscriber Guide <subscriber.html>`_ - effective downloading from a pump.
 * `Source Guide <source.html>`_ - effective uploading to a pump
 * `Admin Guide <Admin.html>`_ - Configuration of Pumps
-* `Programmer's Guide <Prog.html>`_ - Programming custom plugins for workflow integration.
+* `Programming Guide <Prog.html>`_ - Programming custom plugins for workflow integration.
 * `Developer Guide <Dev.html>`_ - contributing to sarracenia development.
 
 

@@ -662,8 +662,8 @@ specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
 message per part. One can use the parent.msg.partstr to find out which part 
 you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding. 
-One can use sr_subscribe and set an the on_message plugin to return 'False' to 
-prevent downloading.
+
+Ensure the on_message plugin returns 'False' to prevent downloading.
 
 
 .. note:: 
