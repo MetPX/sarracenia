@@ -163,13 +163,7 @@ For example, the default settings of on_msg and on_file print log messages
 for each message and file processed.  
 
 
-<<<<<<< HEAD
-
-
-
-=======
 ---------------------
->>>>>>> 0ec094e17794bad8c34ed171031ca19056588b81
 Better File Reception
 ---------------------
 
