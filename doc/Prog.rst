@@ -163,6 +163,8 @@ For example, the default settings of on_msg and on_file print log messages
 for each message and file processed.  
 
 
+
+
 ---------------------
 Better File Reception
 ---------------------
@@ -283,6 +285,14 @@ reaches the number given by the  **batch**  option (default 100)
 
 All download (upload) operations uses a buffer. The size, in bytes,
 of the buffer used is given by the **bufsize** option (default 8192)
+
+-----------------------
+Sending vs. Subscribing
+-----------------------
+
+FIXME: local_file vs. remote_file
+if you are using 
+
 
 Variables Available 
 -------------------
