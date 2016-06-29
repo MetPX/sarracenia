@@ -1244,7 +1244,7 @@ On some configurations (we usually call them *bunny*), we use a clusterd rabbitm
         # having high availability queue...
         # here all queues that starts with "cmc." will be highly available on all the cluster nodes
 
-        rabbitmqctl set_policy ha-all "^cmc\." '{"ha-mode":"all"}'
+        rabbitmqctl set_policy ha-all "^(cmc|q_)\.*" '{"ha-mode":"all"}'
 
 
 Clustered Broker Keepalived Setup
