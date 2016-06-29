@@ -108,7 +108,9 @@ These options set what files the user wants and where it will be placed,
 and under which name.
 
 - **accept    <regexp pattern> (must be set)** 
+- **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
+- **filename (for sundew compatibility..  see that section)**
 - **flatten   <boolean>        (default: false)** 
 - **inflight      <.string>        (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
@@ -220,6 +222,10 @@ A variety of example configuration files are available here:
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 
+
+
+
+
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
@@ -328,6 +334,95 @@ SEE ALSO
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
+
+
+SUNDEW COMPATIBILITY OPTIONS
+----------------------------
+
+For compatibility with sundew, there are some additional delivery options which can be specified.
+
+**destfn_script <script> (default:None)**
+
+This option defines a script to be run when everything is ready
+for the delivery of the product.  The script receives the sr_sender class
+instance.  The script takes the parent as an argument, and for example, any
+modification to  **parent.local_file**  will change the name of the file written locally.
+
+**filename <keyword> (default:WHATFN)**
+
+From **metpx-sundew** the support of this option give all sorts of possibilities
+for setting the remote filename. Some **keywords** are based on the fact that
+**metpx-sundew** filenames are five (to six) fields strings separated by for colons.
+The possible keywords are :
+
+
+**WHATFN**
+ - the first part of the sundew filename (string before first :)
+
+**HEADFN**
+ - HEADER part of the sundew filename
+
+**SENDER**
+ - the sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+
+**NONE**
+ - deliver with the complete sundew filename (without :SENDER=...)
+
+**NONESENDER**
+ - deliver with the complete sundew filename (with :SENDER=...)
+
+**TIME**
+ - time stamp appended to filename. Example of use: WHATFN:TIME
+
+**DESTFN=str**
+ - direct filename declaration str
+
+**SATNET=1,2,3,A**
+ - cmc internal satnet application parameters
+
+**DESTFNSCRIPT=script.py**
+ - invoke a script (same as destfn_script) to generate the name of the file to write
+
+
+**accept <regexp pattern> [<keyword>]**
+
+keyword can be added to the **accept** option. The keyword is any one of the **filename**
+tion.  A message that matched against the accept regexp pattern, will have its remote_file
+plied this keyword option.  This keyword has priority over the preceeding **filename** one.
+
+e **regexp pattern** can be use to set directory parts if part of the message is put
+to parenthesis. **sr_sender** can use these parts to build the directory name. The
+rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
+the second **${1}** etc.
+
+example of use::
+
+
+      filename NONE
+
+      directory /this/first/target/directory
+
+      accept .*file.*type1.*
+
+      directory /this/target/directory
+
+      accept .*file.*type2.*
+
+      accept .*file.*type3.*  DESTFN=file_of_type3
+
+      directory /this/${0}/pattern/${1}/directory
+
+      accept .*(2016....).*(RAW.*GRIB).*
+
+
+A selected message by the first accept would be delivered unchanged to the first directory.
+A selected message by the second accept would be delivered unchanged to the second directory.
+A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+A selected message by the forth accept would be delivered unchanged to a directory
+
+named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would have a notice like :
+
+**20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
 HISTORY
