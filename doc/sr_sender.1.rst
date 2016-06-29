@@ -271,19 +271,19 @@ The possible keywords are :
 
 
 **WHATFN**
- - the first part of the metpx filename (string before first :)
+ - the first part of the sundew filename (string before first :)
 
 **HEADFN**
- - HEADER part of the metpx filename
+ - HEADER part of the sundew filename
 
 **SENDER**
- - the metpx filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - the sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
 
 **NONE**
- - deliver with the complete metpx filename (without :SENDER=...)
+ - deliver with the complete sundew filename (without :SENDER=...)
 
 **NONESENDER**
- - deliver with the complete metpx filename (with :SENDER=...)
+ - deliver with the complete sundew filename (with :SENDER=...)
 
 **TIME**
  - time stamp appended to filename. Example of use: WHATFN:TIME
@@ -297,9 +297,6 @@ The possible keywords are :
 **DESTFNSCRIPT=script.py**
  - invoke a script (same as destfn_script) to generate the name of the file to write
 
-
-
-
 **accept <regexp pattern> [<keyword>]**
 
 keyword can be added to the **accept** option. The keyword is any one of the **filename**
@@ -311,9 +308,7 @@ to parenthesis. **sr_sender** can use these parts to build the directory name. T
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
 
-
-
-example of use:
+example of use::
 
 
       filename NONE
@@ -324,18 +319,20 @@ example of use:
 
       directory /this/target/directory
 
-        accept .*file.*type2.*
+      accept .*file.*type2.*
 
-        accept .*file.*type3.*  DESTFN=file_of_type3
+      accept .*file.*type3.*  DESTFN=file_of_type3
 
-        directory /this/${0}/pattern/${1}/directory
+      directory /this/${0}/pattern/${1}/directory
 
-        accept .*(2016....).*(RAW.*GRIB).*
+      accept .*(2016....).*(RAW.*GRIB).*
 
-A selected message from the first accept would be delivered unchanged to the first directory.
-A selected message from the second accept would be delivered unchanged to the second directory.
-A selected message from the third  accept would be renamed "file_of_type3" in the second directory.
-A selected message from the forth  accept would be delivered unchanged to a directory
+
+A selected message by the first accept would be delivered unchanged to the first directory.
+A selected message by the second accept would be delivered unchanged to the second directory.
+A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+A selected message by the forth accept would be delivered unchanged to a directory
+
 named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would have a notice like :
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
