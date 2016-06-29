@@ -274,6 +274,11 @@ posttest "result should be: ERROR wrong partflg" "-u file: -parts x,128 -to alta
 
 posttest "result should be: ERROR wrong part chunksize" "sr_post -u file: -parts d,a -to alta -path toto" 1
 
+lp=ThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLongThisStringIs29CharactersLong
+
+cp toto $lp
+
+posttest "result should be: ERROR path too long" "sr_post -u file: -to alta -path $lp " 1
 
 echo
 echo "Summary: $tnum tests $tgood passed, $tbad failed "
