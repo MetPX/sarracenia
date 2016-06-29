@@ -100,6 +100,8 @@ class sr_post(sr_config):
         self.poster        = sr_poster(self, self.loop)
         self.msg.publisher = self.poster.publisher
 
+        self.msg.post_exchange_split = self.post_exchange_split
+
                                    
     def help(self):
         print("\nUsage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )

@@ -131,10 +131,9 @@ class sr_shovel(sr_instances):
         self.consumer          = sr_consumer(self)
         self.msg.log_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
+
         self.logger.info("logback to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
-
-
 
         # =============
         # publisher
@@ -151,6 +150,8 @@ class sr_shovel(sr_instances):
         self.publisher = Publisher(self.hc_pst)
         self.publisher.build()
         self.msg.publisher    = self.publisher
+
+        self.msg.post_exchange_split = self.post_exchange_split
 
 
     def help(self):

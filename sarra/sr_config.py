@@ -374,6 +374,7 @@ class sr_config:
 
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
+        self.post_exchange_split = 0
 
         self.source               = None
         self.source_from_exchange = False
@@ -1151,6 +1152,10 @@ class sr_config:
 
                 elif words0 in ['post_exchange','pe']: # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
                      self.post_exchange = words1
+                     n = 2
+
+                elif words0 in ['post_exchange_split','pes']: # FIXME: missing
+                     self.post_exchange_split = int(words[1])
                      n = 2
 
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)

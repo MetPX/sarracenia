@@ -182,6 +182,7 @@ class sr_sarra(sr_instances):
         self.publisher.build()
         self.msg.publisher    = self.publisher
         self.msg.pub_exchange = self.post_exchange
+        self.msg.post_exchange_split = self.post_exchange_split
 
 
     def __do_download__(self):

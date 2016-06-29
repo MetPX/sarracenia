@@ -269,8 +269,17 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
+        # in order to split winnowing into multiple instances, directs items with same checksum
+        # to same shard. do that by keying on the last character of the checksum.
+        # 
+        if self.post_exchange_split > 0 :
+           suffix= "%02d" % ( ord(self.sumstr[-1]) % self.post_exchange_split )
+           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.sumstr[-1], suffix) )
+        else:
+           suffix=""
+
         if self.publisher != None :
-           ok = self.publisher.publish(self.exchange,self.topic,self.notice,self.headers)
+           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers)
 
         self.set_hdrstr()
 

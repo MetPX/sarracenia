@@ -177,6 +177,7 @@ class sr_winnow(sr_instances):
                            (self.broker.hostname,self.broker.username,self.broker.path) )
 
         self.msg.pub_exchange  = self.post_exchange
+        self.msg.post_exchange_split  = self.post_exchange_split
         self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
 
 

@@ -130,7 +130,7 @@ class sr_log2clusters(sr_instances):
         # =============
 
         self.msg.publisher = self.publisher
-
+        self.msg.post_exchange_split = self.post_exchange_split
 
     def help(self):
         self.logger.info("Usage: %s [options] [config] [start|stop|restart|reload|status]  \n" % self.program_name )

@@ -629,6 +629,7 @@ exchange onto the current cluster, with the feeder account.
 The user can overwrite the defaults with options :
 
 - **post_broker    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+- **post_exchange_split   <number>        (default: 0)**
 - **post_exchange   <name>        (default: None)**
 - **on_post         <script_name> (optional)**
 
@@ -641,6 +642,19 @@ The default is to publish under the exchange it was consumed.
 Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. If the script returns
 True, the message is published... and False it wont.
+
+The **post_exchange_split** option is EXPERIMENTAL.  It appends a two digit suffix
+resulting from hashing the last character of the checksum to the post_exchange name,
+in order to divide the output amongst a number of exchanges.  This is used exclusively
+for multiple instances of sr_winnow, which cannot be instanced in the normal way.
+example::
+
+    post_exchange_split 5
+    post_exchange xwinnow
+
+will result in posting messages to five exchanges named: xwinnow00, xwinnow01, 
+xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
+of the total flow.
 
 
 

@@ -78,6 +78,7 @@ The user can overwrite the defaults with options :
 
 - **post_broker    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 - **post_exchange   <name>        (default: None)** 
+- **post_exchange_split <number> (default: 0)**
 - **on_post         <script_name> (optional)** 
 
 The post_broker option sets the credential informations to connect to the
@@ -86,6 +87,8 @@ in default.conf.
 
 The **post_exchange** option sets a new exchange for the selected messages.
 The default is to publish under the exchange it was consumed.
+
+The **post_exchange_split** is documented in sr_config.
 
 Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. 
