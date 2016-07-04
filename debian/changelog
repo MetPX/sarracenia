@@ -1,3 +1,12 @@
+metpx-sarracenia (2.16.07a1) unstable; urgency=medium
+
+  * Various updates to sr_post/sr_watch
+  * Documentation updates
+  * test suite updates
+  * Full details in CHANGES.txt
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Mon, 04 Jul 2016 14:38:45 -0400
+
 metpx-sarracenia (2.16.05a2) unstable; urgency=medium
 
   * Fix bug in default pluging that would prevernt many components from stating
