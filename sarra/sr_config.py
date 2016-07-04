@@ -1155,7 +1155,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['post_exchange_split','pes']: # FIXME: missing
-                     self.post_exchange_split = int(words[1])
+                     self.post_exchange_split = int(words1)
                      n = 2
 
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
