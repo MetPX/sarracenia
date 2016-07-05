@@ -1,3 +1,30 @@
+**2.16.07a1**
+
+* Added post_exchange_split config option (allows multiple cooperating sr_winnow instances) code, test suite mode, and documentation.
+* fix logger output to file (bug #39 on sf)
+* sr_amqp: Modified truncated exponential backoff to use multiplication instead of a table. So can modify max interval far more easily.  Also values are better.
+* nicer formatting of sleep debug print.
+* sr_post/sr_watch: added atime and mtime to post. (FR #41)
+* sr_watch: handle file rename in watch directory (addresses bug #40)
+* sr_watch: fix for on_post trigger to be called after filtering events.
+* sr_sender: Added chmod_dir support (bug #28)
+* plugin work: Made 'script incorrect' message more explicit about what is wrong in the script.
+* plugin work: word smithery, replaced 'script' by 'plugin' in execfile. so the messages refer to 'plugin' errors.
+* Added plugin part_check, which verbosely checks checksums,
+* plugin work: Added dmf_renamers, modified for current convention, and word smithery in programmers guide.
+* Tested (de-bugged) the missing file_rxpipe plugin, added it to the default list.
+* Documentation improvements: sundew compatibility options to sr_subscribe.  
+* Documentation improvements: moving code from subscriber to programming guide.  
+* Added a note for documenting difference between senders and subscription clients in the message plugins.  
+* Made reference to credentials.conf more explicit in all the command line component man pages. (Ian didn't understand he needed it... was not obvious.)
+* Moved information about how to access credentials from plugin code from subscriber guide to programming guide.
+* Turned a bit of the sr_watch man page into a CAVEAT section.
+* Added a note about how file renaming is (poorly) handled at the moment.
+* Test suite: removing overwrites of config files from test_sr_watch.sh
+* Test suite: Continuing the quest:  getting rid of passwords in debug output,
+* Test suite: adding explicit mention of exchange wherever possible.
+* Fixed self-test to authenticate to broker as tfeed, but look for messages from tsource.
+
 **0.0.1**
 
 
