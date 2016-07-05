@@ -1,3 +1,9 @@
+metpx-sarracenia (2.16.07a2) unstable; urgency=medium
+
+  * Fixed typos that prevent proper install of deb package. 
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 05 Jul 2016 10:59:39 -0400
+
 metpx-sarracenia (2.16.07a1) unstable; urgency=medium
 
   * Various updates to sr_post/sr_watch
