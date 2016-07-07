@@ -121,7 +121,7 @@ anything between two periods (a single level of the topic hierarchy.)  The
 subtopic option tells the broker what notifications are of interest to a 
 subscriber.
 
-Let´s start up a subscriber (assume the config file was called dd_swob.conf::
+Let´s start up a subscriber (assume the config file was called dd_swob.conf)::
 
   blacklab% sr_subscribe ../dd_swob.conf start
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
@@ -172,7 +172,7 @@ The sr_subscribe will get the notification and download the file into the
 current working directory. Only one download process is started, by default.  
 If higher performance is needed, then the *instance* option can be set 
 to a higher number, and that number of sr_subscribers will share
-the work of downloading, each with their own log file (0002,0003, etc...)
+the work of downloading, each with their own log file (0002,0003, etc...).
 As the start up is normal, that means the authentication information was good.
 Passwords are stored in the ~/.config/sarra/credentials.conf file.
 The format is just a complete url on each line.  Example for above would be::
