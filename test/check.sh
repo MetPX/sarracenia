@@ -20,6 +20,7 @@ while [ ! "${totsarra}" ]; do
 done
 
 while [ $totsarra -lt $smin ]; do
+   sleep 10
    totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
    totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
    totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
@@ -27,7 +28,6 @@ while [ $totsarra -lt $smin ]; do
    totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel2="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
-   sleep 10
    printf  "sample now %6d \r"  $totsarra
 
 done
