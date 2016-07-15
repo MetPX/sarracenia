@@ -404,8 +404,8 @@ class sr_config:
         self.inplace              = False
 
         self.lock                 = None
-        self.chmod                = 775
-        self.chmod_dir            = 775 # added by Murray Rennie May 17, 2016
+        self.chmod                = 0o775
+        self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
 
         self.notify_only          = False
 
@@ -805,7 +805,11 @@ class sr_config:
                         n = 2
 
                 elif words0 == 'chmod':    # See: function not actually implemented, stub of ftp support.
-                     self.chmod = int(words[1])
+                     self.chmod = int(words[1],8)
+                     n = 2
+
+                elif words0 == 'chmod_dir':    # See: function not actually implemented, stub of ftp support.
+                     self.chmod_dir = int(words[1],8)
                      n = 2
 
                 elif words0 in ['cluster','cl']: # See: sr_config.7

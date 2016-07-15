@@ -1,3 +1,7 @@
+**2.16.07a2**
+
+* Fixed typos that broke the package install in debian
+
 **2.16.07a1**
 
 * Added post_exchange_split config option (allows multiple cooperating sr_winnow instances) code, test suite mode, and documentation.
