@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.07a3) unstable; urgency=medium
+
+  * Ian's fix for sr_sender borked with post_exchange_split.
+  * Jun's fix for chmod and chmod_dir to be octal.  
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Fri, 15 Jul 2016 14:09:47 -0400
+
 metpx-sarracenia (2.16.07a2) unstable; urgency=medium
 
   * Fixed typos that prevent proper install of deb package. 
