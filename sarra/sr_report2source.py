@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log2source.py : python3 program takes all log messages and repost them to the
+# sr_report2source.py : python3 program takes all log messages and repost them to the
 #                    log exchange of the source user
 #
 #
@@ -36,7 +36,7 @@
 #============================================================
 # usage example
 #
-# sr_log2source [options] [config] [start|stop|restart|reload|status]
+# sr_report2source [options] [config] [start|stop|restart|reload|status]
 #
 # logs message have travel back to this cluster
 #
@@ -61,7 +61,7 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
 
-class sr_log2source(sr_instances):
+class sr_report2source(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
@@ -127,7 +127,7 @@ class sr_log2source(sr_instances):
     # =============
 
     def __on_message__(self):
-        self.logger.debug("sr_log2source __on_message__")
+        self.logger.debug("sr_report2source __on_message__")
 
         # is the log message for this cluster
 
@@ -220,7 +220,7 @@ class sr_log2source(sr_instances):
 
         # present basic config
 
-        self.logger.info("sr_log2source run")
+        self.logger.info("sr_report2source run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
@@ -268,7 +268,7 @@ class test_logger:
           self.info    = print
           self.warning = print
 
-def test_sr_log2source():
+def test_sr_report2source():
 
     logger = test_logger()
 
@@ -298,44 +298,44 @@ def test_sr_log2source():
     f.write("self.on_post = transformer.perform\n")
     f.close()
 
-    # setup sr_log2source to catch repost N log messages
+    # setup sr_report2source to catch repost N log messages
 
     N = 10
 
-    log2source         = sr_log2source()
-    log2source.logger  = logger
-    log2source.debug   = True
+    report2source         = sr_report2source()
+    report2source.logger  = logger
+    report2source.debug   = True
 
-    log2source.user_cache_dir = os.getcwd()
+    report2source.user_cache_dir = os.getcwd()
 
     # because following options have accept/reject
-    log2source.masks   = []
-    log2source.option( opt1.split()  )
-    log2source.option( opt2.split()  )
+    report2source.masks   = []
+    report2source.option( opt1.split()  )
+    report2source.option( opt2.split()  )
 
-    log2source.option( opt3.split()  )
-    log2source.option( opt4.split()  )
+    report2source.option( opt3.split()  )
+    report2source.option( opt4.split()  )
 
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2source.credentials.get("amqp://tfeed@localhost/")
+    ok, details = report2source.credentials.get("amqp://tfeed@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need feeder privileges to a broker")
        sys.exit(1)
-    log2source.broker = details.url
+    report2source.broker = details.url
 
     # ==================
     # define a source_users list here
 
-    log2source.source_users = ['tsource']
+    report2source.source_users = ['tsource']
 
     # ==================
     # define the matching cluster here
-    log2source.cluster = 'DDI.CMC'
+    report2source.cluster = 'DDI.CMC'
 
-    log2source.connect()
+    report2source.connect()
 
     # process N messages
 
@@ -343,21 +343,21 @@ def test_sr_log2source():
     j = 0
     k = 0
     while True :
-          if log2source.process_message():
-             if log2source.msg.mtypej == 'transformed': j += 1
-             if log2source.msg.mtypek == 'transformed': k += 1
+          if report2source.process_message():
+             if report2source.msg.mtypej == 'transformed': j += 1
+             if report2source.msg.mtypek == 'transformed': k += 1
              i = i + 1
           if i == N: break
 
-    os.unlink(log2source.consumer.queuepath)
+    os.unlink(report2source.consumer.queuepath)
 
-    log2source.close()
+    report2source.close()
 
     if j != N or k != N :
-       print("sr_log2source TEST Failed 1")
+       print("sr_report2source TEST Failed 1")
        sys.exit(1)
 
-    print("sr_log2source TEST PASSED")
+    print("sr_report2source TEST PASSED")
 
     os.unlink('./on_msg_test.py')
     os.unlink('./on_pst_test.py')
@@ -383,24 +383,24 @@ def main():
        cfg       = sr_config()
        cfg.defaults()
        cfg.general()
-       ok,config = cfg.config_path('log2source',config,mandatory=False)
+       ok,config = cfg.config_path('report2source',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
        if not ok : config = None
 
-    log2source = sr_log2source(config,args)
+    report2source = sr_report2source(config,args)
 
-    if action != 'TEST' and  not log2source.log_daemons :
-       log2source.logger.info("sr_log2source will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not report2source.log_daemons :
+       report2source.logger.info("sr_report2source will not run (log_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
-    if   action == 'reload' : log2source.reload_parent()
-    elif action == 'restart': log2source.restart_parent()
-    elif action == 'start'  : log2source.start_parent()
-    elif action == 'stop'   : log2source.stop_parent()
-    elif action == 'status' : log2source.status_parent()
-    elif action == 'TEST'   : test_sr_log2source()
+    if   action == 'reload' : report2source.reload_parent()
+    elif action == 'restart': report2source.restart_parent()
+    elif action == 'start'  : report2source.start_parent()
+    elif action == 'stop'   : report2source.stop_parent()
+    elif action == 'status' : report2source.status_parent()
+    elif action == 'TEST'   : test_sr_report2source()
     else :
-           log2source.logger.error("action unknown %s" % action)
+           report2source.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

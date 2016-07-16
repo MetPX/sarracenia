@@ -99,7 +99,7 @@ class sr_subscribe(sr_instances):
         self.inplace        = True
         self.lock           = '.tmp'
         self.mirror         = False
-        self.no_logback     = False
+        self.reportback     = True
 
     def connect(self):
 
@@ -119,14 +119,14 @@ class sr_subscribe(sr_instances):
         # publisher... (publish back to consumer)  
         # =============
 
-        if not self.no_logback :
+        if self.reportback :
            self.publisher         = self.consumer.publish_back()
            self.msg.log_publisher = self.publisher
            self.msg.log_exchange  = 'xs_' + self.broker.username
-           self.logger.info("logback to %s@%s, exchange: %s" % 
+           self.logger.info("reportback to %s@%s, exchange: %s" % 
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
         else:
-           self.logger.warning("logback suppressed")
+           self.logger.warning("reportback suppressed")
 
     def __do_download__(self):
 

@@ -365,7 +365,7 @@ class sr_config:
 
         self.discard              = False
         self.flatten              = '/'
-        self.no_logback           = False
+        self.reportback           = True
 
         self.recursive            = False
 
@@ -986,7 +986,8 @@ class sr_config:
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
-                elif words0 == 'log_daemons': # See: sr_config.7
+                elif words0 == 'report_daemons' or words0 == 'log_daemons': # See: sr_config.7 
+                     #-- log_daemons left for transition, should be removed in 2017
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.log_daemons = True
                         n = 1
@@ -1050,14 +1051,6 @@ class sr_config:
                 elif words0 == 'no':
                      self.no = int(words[1])
                      n = 2
-
-                elif words0 in ['no_logback','nlb']:  # See: sr_subscribe.1
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.no_logback = True
-                        n = 1
-                     else :
-                        self.no_logback = self.isTrue(words[1])
-                        n = 2
 
                 elif words0 in ['notify_only','n','no-download']: # See: sr_subscribe.1  FIXME... doesn't work for sarra? sender?
                      self.logger.debug("option %s" % words[0])
@@ -1229,6 +1222,14 @@ class sr_config:
                 elif words0 in ['rename','rn']: # See: FIXME... sr_poll, sarra, sender, sub, watch? why not sr_config?
                      self.rename = words1
                      n = 2
+
+                elif words0 in ['reportback','rb']:  # See: sr_subscribe.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.reportback = True
+                        n = 1
+                     else :
+                        self.reportback = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['reset']:  # See: sr_consumer.1
                      if (words1 is None) or words[0][0:1] == '-' : 

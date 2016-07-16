@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log2clusters.py : python3 this program assumes log routing
+# sr_report2clusters.py : python3 this program assumes log routing
 #                      between clusters
 #
 #
@@ -36,7 +36,7 @@
 #============================================================
 # usage example
 #
-# sr_log2clusters [options] [config] [start|stop|restart|reload|status]
+# sr_report2clusters [options] [config] [start|stop|restart|reload|status]
 #
 # On the current cluster... subscribers return their log about
 # product downloads. It is possible that this cluster "pumped" that product
@@ -45,9 +45,9 @@
 #
 # conditions :
 #
-# Each line in log2clusters.conf (self.log_clusters) contains :
+# Each line in report2clusters.conf (self.log_clusters) contains :
 # cluster_name  cluster_broker  cluster_exchange
-# One instance of sr_log2clusters is fork for each of them
+# One instance of sr_report2clusters is fork for each of them
 #
 # The instance consumes log messages on self.broker 
 # exchange = xreport     
@@ -71,7 +71,7 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
 
-class sr_log2clusters(sr_instances):
+class sr_report2clusters(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
@@ -141,7 +141,7 @@ class sr_log2clusters(sr_instances):
     # =============
 
     def __on_message__(self):
-        self.logger.debug("sr_log2clusters __on_message__")
+        self.logger.debug("sr_report2clusters __on_message__")
 
         # check for from_cluster and it the cluster match  cluster_name
 
@@ -237,7 +237,7 @@ class sr_log2clusters(sr_instances):
 
         # present basic config
 
-        self.logger.info("sr_log2clusters run")
+        self.logger.info("sr_report2clusters run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
         tup = self.bindings[0]
@@ -295,7 +295,7 @@ class test_logger:
           self.info    = self.silence
           self.warning = print
 
-def test_sr_log2clusters():
+def test_sr_report2clusters():
 
     logger = test_logger()
 
@@ -328,72 +328,72 @@ def test_sr_log2clusters():
     f.write("self.on_post = transformer.perform\n")
     f.close()
 
-    # setup sr_log2clusters for 1 user (just this instance)
+    # setup sr_report2clusters for 1 user (just this instance)
 
-    log2clusters         = sr_log2clusters()
-    log2clusters.debug   = True
-    log2clusters.logger  = logger
-    log2clusters.bindings = [ ('xreport','v02.report.this.#') ]
-    log2clusters.nbr_instances   = 1
+    report2clusters         = sr_report2clusters()
+    report2clusters.debug   = True
+    report2clusters.logger  = logger
+    report2clusters.bindings = [ ('xreport','v02.report.this.#') ]
+    report2clusters.nbr_instances   = 1
 
-    log2clusters.option( opt1.split()  )
-    log2clusters.option( opt2.split()  )
+    report2clusters.option( opt1.split()  )
+    report2clusters.option( opt2.split()  )
 
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = log2clusters.credentials.get("amqp://tsource@localhost/")
+    ok, details = report2clusters.credentials.get("amqp://tsource@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need admin or feeder access on local broker to read from.")
        sys.exit(1)
-    log2clusters.broker  = details.url
-    log2clusters.cluster = 'DDI.EDM'
+    report2clusters.broker  = details.url
+    report2clusters.cluster = 'DDI.EDM'
 
     # ==================
     # define REMOTE BROKER HERE
 
-    log2clusters.cluster_name = 'DDI.CMC'
-    ok, details = log2clusters.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
+    report2clusters.cluster_name = 'DDI.CMC'
+    ok, details = report2clusters.credentials.get("amqp://ddi1.cmc.ec.gc.ca/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need admin or feeder access to a remote broker to write to")
        sys.exit(1)
-    log2clusters.cluster_exchange = 'xreport'
+    report2clusters.cluster_exchange = 'xreport'
 
     # ==================
     # set instance
 
-    log2clusters.instance = 1
-    log2clusters.set_instance()
-    log2clusters.connect()
+    report2clusters.instance = 1
+    report2clusters.set_instance()
+    report2clusters.connect()
 
-    publisher = log2clusters.consumer.publish_back()
+    publisher = report2clusters.consumer.publish_back()
     
     # prepare a funky message good message
 
-    log2clusters.msg.exchange = 'xreport'
-    log2clusters.msg.topic    = 'v02.report.this.is.test1'
-    log2clusters.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
-    log2clusters.msg.headers  = {}
+    report2clusters.msg.exchange = 'xreport'
+    report2clusters.msg.topic    = 'v02.report.this.is.test1'
+    report2clusters.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
+    report2clusters.msg.headers  = {}
 
-    log2clusters.msg.headers['parts']        = '1,1591,1,0,0'
-    log2clusters.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
-    log2clusters.msg.headers['source']       = 'a_provider'
-    log2clusters.msg.headers['to_clusters']  = 'dont_care_forward_direction'
-    log2clusters.msg.headers['message']      = 'Downloaded'
-    log2clusters.msg.headers['filename']     = 'toto'
-    log2clusters.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
-    log2clusters.msg.notice  += '201 foreign.host.com a_remote_source 823.353824'
+    report2clusters.msg.headers['parts']        = '1,1591,1,0,0'
+    report2clusters.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
+    report2clusters.msg.headers['source']       = 'a_provider'
+    report2clusters.msg.headers['to_clusters']  = 'dont_care_forward_direction'
+    report2clusters.msg.headers['message']      = 'Downloaded'
+    report2clusters.msg.headers['filename']     = 'toto'
+    report2clusters.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    report2clusters.msg.notice  += '201 foreign.host.com a_remote_source 823.353824'
 
     # publish a bad one
-    msg = log2clusters.msg
+    msg = report2clusters.msg
     msg.headers['from_cluster'] = 'BAD'
     msg.parse_v02_post()
     publisher.publish(msg.exchange,msg.topic,msg.notice,msg.headers)
 
     # publish a good one
-    msg = log2clusters.msg
+    msg = report2clusters.msg
     msg.headers['from_cluster'] = 'DDI.CMC'
     msg.parse_v02_post()
     publisher.publish(msg.exchange,msg.topic,msg.notice,msg.headers)
@@ -403,19 +403,19 @@ def test_sr_log2clusters():
     j = 0
     k = 0
     while True :
-          ok = log2clusters.process_message()
+          ok = report2clusters.process_message()
           if not ok : continue
-          if log2clusters.msg.mtypej == 1: j += 1
-          if log2clusters.msg.mtypek == 1: k += 1
+          if report2clusters.msg.mtypej == 1: j += 1
+          if report2clusters.msg.mtypek == 1: k += 1
           break
 
-    log2clusters.close()
+    report2clusters.close()
 
     if j != 1 or k != 1 :
-       print("sr_log2clusters TEST Failed 1")
+       print("sr_report2clusters TEST Failed 1")
        sys.exit(1)
 
-    print("sr_log2clusters TEST PASSED")
+    print("sr_report2clusters TEST PASSED")
 
     os.unlink('./on_msg_test.py')
     os.unlink('./on_pst_test.py')
@@ -441,24 +441,24 @@ def main():
        cfg       = sr_config()
        cfg.defaults()
        cfg.general()
-       ok,config = cfg.config_path('log2clusters',config,mandatory=False)
+       ok,config = cfg.config_path('report2clusters',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
        if not ok : config = None
 
-    log2clusters = sr_log2clusters(config,args)
+    report2clusters = sr_report2clusters(config,args)
 
-    if action != 'TEST' and  not log2clusters.log_daemons :
-       log2clusters.logger.info("sr_log2clusters will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not report2clusters.log_daemons :
+       report2clusters.logger.info("sr_report2clusters will not run (log_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
-    if   action == 'reload' : log2clusters.reload_parent()
-    elif action == 'restart': log2clusters.restart_parent()
-    elif action == 'start'  : log2clusters.start_parent()
-    elif action == 'stop'   : log2clusters.stop_parent()
-    elif action == 'status' : log2clusters.status_parent()
-    elif action == 'TEST'   : test_sr_log2clusters()
+    if   action == 'reload' : report2clusters.reload_parent()
+    elif action == 'restart': report2clusters.restart_parent()
+    elif action == 'start'  : report2clusters.start_parent()
+    elif action == 'stop'   : report2clusters.stop_parent()
+    elif action == 'status' : report2clusters.status_parent()
+    elif action == 'TEST'   : test_sr_report2clusters()
     else :
-           log2clusters.logger.error("action unknown %s" % action)
+           report2clusters.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

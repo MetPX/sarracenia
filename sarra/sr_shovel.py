@@ -132,7 +132,7 @@ class sr_shovel(sr_instances):
         self.msg.log_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
 
-        self.logger.info("logback to %s@%s, exchange: %s" %
+        self.logger.info("reportback to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
 
         # =============

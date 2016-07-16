@@ -26,7 +26,7 @@ DESCRIPTION
 ===========
 
 Metpx Sarracenia components are the programs that can be invoked from the command line: 
-examples are: sr_subscribe, sr_sarra, sr_sender, sr_log, When any component is invoked, 
+examples are: sr_subscribe, sr_sarra, sr_sender, sr_report, When any component is invoked, 
 a configuration file and an operation are specified.  The operation is one of:
 
  - foreground:  run a single instance in the foreground logging to stderr
@@ -201,7 +201,7 @@ CONSUMER
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
 AMQP messages.  Usually, the messages of interest are sr_post messages, announcing 
 the availability of a file by publishing it´s URL ( or a part of a file ), but there are 
-also sr_log(7) messages which can be processed using the same tools.  AMQP messages are
+also sr_report(7) messages which can be processed using the same tools.  AMQP messages are
 published to an exchange on a broker (AMQP server.)  The exchange delivers
 messages to queues.  To receive messages, one must provide the credentials to connect to
 the broker (AMQP message pump).  Once connected, a consumer needs to create a queue to
@@ -658,34 +658,35 @@ of the total flow.
 
 
 
-RABBITMQ LOGGING
-================
+RABBITMQ REPORTING
+==================
 
-For each download, an amqp log message is sent back to the broker.
+For each download, an amqp report message is sent back to the broker.
 Should you want to turned them off the option is :
 
-- **log_back <boolean>        (default: true)** 
-- **log_daemons <boolean>     (default: false)**
-- **log_exchange <log_exchangename> (default: xlog)**
+- **reportback <boolean>        (default: True)** 
+- **report_daemons <boolean>     (default: False)**
+- **report_exchange <report_exchangename> (default: xreport)**
 
-The *log_daemons* option indicates to sr whether the sr_log2source, sr_2xlog, and sr_log2cluster 
-component configurations should be included in processing for start, stop, etc...
+The *report_daemons* option indicates to sr whether the sr_report2source, sr_2xreport, 
+and sr_report2cluster component configurations should be included in 
+processing for start, stop, etc...
 
-When a log message is generated, it is sent to the configured *log_exchange*. Administrive 
-components log directly to xlog, whereas user components log to their own exchanges.  The 
-log_daemons copy the messages to *xlog* after validation.
+When a report is generated, it is sent to the configured *report_exchange*. Administrive 
+components post directly to xreport, whereas user components post to their own exchanges.  The 
+report daemons copy the messages to *xreport* after validation.
 
 Administration-Specific Options
 ===============================
 
 The *feeder* option specifies the account used by default system transfers for components such as 
-sr_2xlog, sr_log2source, sr_log2cluster, sr_sarra and sr_sender (when posting).
+sr_2xreport, sr_report2source, sr_report2cluster, sr_sarra and sr_sender (when posting).
 
 - **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 
 - **admin   <name>        (default: None)**
 
-When set, the feeder option will trigger start up of the sr_2xlog, sr_log2source, and sr_log2cluster daemons.
+When set, the feeder option will trigger start up of the sr_2xreport, sr_report2source, and sr_report2cluster daemons.
 When set, the admin option will cause sr start to start up the sr_audit daemon.
 
 .. note::
@@ -819,7 +820,7 @@ A variety of example configuration files are available here:
 SEE ALSO
 ========
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
