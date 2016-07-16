@@ -49,7 +49,7 @@ class sr_message():
         self.bufsize       = parent.bufsize
 
         self.exchange      = None
-        self.log_exchange  = 'xlog'
+        self.log_exchange  = 'xreport'
         self.log_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -234,7 +234,7 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
         self.path    = token[2]
 
-        if self.mtype == 'log' :
+        if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
            self.log_code   = int(token[3])
            self.log_host   = token[4]
            self.log_user   = token[5]

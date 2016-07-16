@@ -197,14 +197,14 @@ a more real example::
   2016-01-20 14:53:49,418 [INFO] Received notice  20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
   2016-01-20 14:53:49,419 [INFO] downloading/copying into /var/www/subscribed/frog.dna 
   2016-01-20 14:53:49,420 [INFO] Downloads: http://localhost:80/20160120/guest/frog.dna  into /var/www/subscribed/frog.dna 0-16
-  2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.log.20160120.guest.frog.dna 20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
+  2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.report.20160120.guest.frog.dna 20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
   
   Also here is the log from from the sr_sarra instance: 
   
   2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://localhost:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
   2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
   2016-01-20 14:53:49,377 [INFO] Downloads: http://localhost:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16 
-  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.log.frog.dna 20160120145349.19 http://localhost:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
+  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.report.frog.dna 20160120145349.19 http://localhost:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
   2016-01-20 14:53:49,381 [INFO] message published :
   2016-01-20 14:53:49,381 [INFO] exchange xpublic topic v02.post.20160120.guest.frog.dna
   2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna

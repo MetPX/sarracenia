@@ -50,8 +50,8 @@
 # One instance of sr_log2clusters is fork for each of them
 #
 # The instance consumes log messages on self.broker 
-# exchange = xlog     
-# topic    = v02.log  
+# exchange = xreport     
+# topic    = v02.report  
 # subtopic = #        
 #
 # It validates the message : it must have the header['source']
@@ -188,8 +188,8 @@ class sr_log2clusters(sr_instances):
         # overwrite defaults
 
         self.broker               = self.manager
-        self.exchange             = 'xlog'
-        self.topic_prefix         = 'v02.log'
+        self.exchange             = 'xreport'
+        self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
 
     # =============
@@ -211,7 +211,7 @@ class sr_log2clusters(sr_instances):
                  ok = self.__on_message__()
                  if not ok : return ok
 
-                 # ok accepted... ship subscriber log to xlog
+                 # ok accepted... ship subscriber log to xreport
 
                  self.msg.exchange = self.cluster_exchange
 
@@ -333,7 +333,7 @@ def test_sr_log2clusters():
     log2clusters         = sr_log2clusters()
     log2clusters.debug   = True
     log2clusters.logger  = logger
-    log2clusters.bindings = [ ('xlog','v02.log.this.#') ]
+    log2clusters.bindings = [ ('xreport','v02.report.this.#') ]
     log2clusters.nbr_instances   = 1
 
     log2clusters.option( opt1.split()  )
@@ -359,7 +359,7 @@ def test_sr_log2clusters():
        print("UNABLE TO PERFORM TEST")
        print("Need admin or feeder access to a remote broker to write to")
        sys.exit(1)
-    log2clusters.cluster_exchange = 'xlog'
+    log2clusters.cluster_exchange = 'xreport'
 
     # ==================
     # set instance
@@ -372,8 +372,8 @@ def test_sr_log2clusters():
     
     # prepare a funky message good message
 
-    log2clusters.msg.exchange = 'xlog'
-    log2clusters.msg.topic    = 'v02.log.this.is.test1'
+    log2clusters.msg.exchange = 'xreport'
+    log2clusters.msg.topic    = 'v02.report.this.is.test1'
     log2clusters.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
     log2clusters.msg.headers  = {}
 

@@ -51,7 +51,7 @@
 # post_broker             = where sarra is running (manager)
 # post_exchange           = default to the value of exchange
 #
-# log_exchange            = xlog (sent back to broker)
+# log_exchange            = xreport (sent back to broker)
 #
 #============================================================
 #
@@ -168,7 +168,7 @@ class sr_shovel(sr_instances):
         print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
         print("\t\t\t* single directory wildcard (matches one directory)")
         print("\t\t\t# wildcard (matches rest)")
-        print("\tlog_exchange         <name>          (default: xlog)")
+        print("\tlog_exchange         <name>          (default: xreport)")
         print("\nAMQP Queue settings:")
         print("\tdurable              <boolean>       (default: False)")
         print("\texpire               <minutes>       (default: None)")
@@ -273,9 +273,9 @@ class sr_shovel(sr_instances):
         self.topic_prefix = None
 
         # FIX ME  log_exchange set to NONE
-        # instead of xlog and make it mandatory perhaps ?
-        # since it can be xlog or xs_remotepumpUsername ?
-        self.log_exchange = 'xlog'
+        # instead of xreport and make it mandatory perhaps ?
+        # since it can be xreport or xs_remotepumpUsername ?
+        self.log_exchange = 'xreport'
 
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are

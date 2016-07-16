@@ -100,7 +100,7 @@ def main():
        sys.exit(1)
 
     # sarracenia program that may start without config file
-    LOG_PROGRAMS=['audit','log2clusters','2xlog','log2source']
+    LOG_PROGRAMS=['audit','log2clusters','2xreport','log2source']
     for d in LOG_PROGRAMS:
         if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
            scandir(cfg.user_config_dir+os.sep+d)

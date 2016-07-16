@@ -8,8 +8,8 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_2xlog.py : python3 program takes log messages from various source
-#                       validates them and put the valid one in xlog
+# sr_2xreport.py : python3 program takes log messages from various source
+#                       validates them and put the valid one in xreport
 #                       to permit pump  log routing
 #
 #
@@ -37,21 +37,21 @@
 #============================================================
 # usage example
 #
-# sr_2xlog [options] [config] [start|stop|restart|reload|status]
+# sr_2xreport [options] [config] [start|stop|restart|reload|status]
 #
 # sr_subscriber logs back its downloads on the cluster it is subscribed to
 # The sr_subscribe program are using exchange xs_"username"... for that
-# This program validates these log message and if ok, integrate them in xlog
+# This program validates these log message and if ok, integrate them in xreport
 #
 # conditions :
 # exchangeS               = (from users.conf role subscriber)
 #                         = [xs_subscriber1,xs_subscriber2...]
-#                         = one sr_2xlog instance per exchange
-# topic                   = v02.log.#
+#                         = one sr_2xreport instance per exchange
+# topic                   = v02.report.#
 # header['from_cluster']  = should be defined ... for log routing
 # header['source]         = should be defined ... for log routing
 #
-# valid log messages are publish in xlog for log routing
+# valid log messages are publish in xreport for log routing
 #
 #============================================================
 
@@ -64,13 +64,13 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
 
-class sr_2xlog(sr_instances):
+class sr_2xreport(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
 
     def check(self):
-        self.logger.debug("sr_2xlog check")
+        self.logger.debug("sr_2xreport check")
 
         # no binding allowed
 
@@ -151,7 +151,7 @@ class sr_2xlog(sr_instances):
     # =============
 
     def __on_message__(self):
-        self.logger.debug("sr_2xlog __on_message__")
+        self.logger.debug("sr_2xreport __on_message__")
 
         # is the log message for this cluster
 
@@ -194,13 +194,13 @@ class sr_2xlog(sr_instances):
         return ok
 
     def overwrite_defaults(self):
-        self.logger.debug("sr_2xlog overwrite_defaults")
+        self.logger.debug("sr_2xreport overwrite_defaults")
 
         # overwrite defaults
 
         if hasattr(self,'manager'):
            self.broker            = self.manager
-        self.topic_prefix         = 'v02.log'
+        self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
 
     # =============
@@ -222,9 +222,9 @@ class sr_2xlog(sr_instances):
                  ok = self.__on_message__()
                  if not ok : return ok
 
-                 # ok accepted... ship subscriber log to xlog
+                 # ok accepted... ship subscriber log to xreport
 
-                 self.msg.exchange = 'xlog'
+                 self.msg.exchange = 'xreport'
 
                  # invoke __on_post__
 
@@ -249,7 +249,7 @@ class sr_2xlog(sr_instances):
 
         # present basic config
 
-        self.logger.info("sr_2xlog run")
+        self.logger.info("sr_2xreport run")
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
@@ -307,7 +307,7 @@ class test_logger:
           self.info    = self.silence
           self.warning = print
 
-def test_sr_2xlog():
+def test_sr_2xreport():
 
     logger = test_logger()
 
@@ -340,103 +340,103 @@ def test_sr_2xlog():
     f.write("self.on_post = transformer.perform\n")
     f.close()
 
-    # setup sr_2xlog for 1 user (just this instance)
+    # setup sr_2xreport for 1 user (just this instance)
 
-    toxlog         = sr_2xlog()
-    toxlog.logger  = logger
-    toxlog.debug   = True
+    toxreport         = sr_2xreport()
+    toxreport.logger  = logger
+    toxreport.debug   = True
 
     subscriber = 'tsource'
     exchange   = 'xs_' + subscriber
-    toxlog.subscribe_users = [subscriber]
-    toxlog.exchanges       = {}
-    toxlog.exchanges[0]    = ( exchange, 'v02.log.#' )
-    toxlog.user_queue_dir  = os.getcwd()
-    toxlog.nbr_instances   = 1
+    toxreport.subscribe_users = [subscriber]
+    toxreport.exchanges       = {}
+    toxreport.exchanges[0]    = ( exchange, 'v02.report.#' )
+    toxreport.user_queue_dir  = os.getcwd()
+    toxreport.nbr_instances   = 1
 
-    toxlog.option( opt1.split()  )
-    toxlog.option( opt2.split()  )
+    toxreport.option( opt1.split()  )
+    toxreport.option( opt2.split()  )
 
     # ==================
     # define YOUR BROKER HERE
 
-    ok, details = toxlog.credentials.get("amqp://tfeed@localhost/")
+    ok, details = toxreport.credentials.get("amqp://tfeed@localhost/")
     if not ok :
        print("UNABLE TO PERFORM TEST")
        print("Need a good broker")
        sys.exit(1)
-    toxlog.broker = details.url
+    toxreport.broker = details.url
 
     # ==================
     # define the matching cluster here
-    toxlog.cluster = 'DDI.CMC'
+    toxreport.cluster = 'DDI.CMC'
 
     # ==================
     # set instance
 
-    toxlog.instance = 1
-    toxlog.set_instance()
-    toxlog.connect()
+    toxreport.instance = 1
+    toxreport.set_instance()
+    toxreport.connect()
     
     # do an empty consume... assure AMQP's readyness
-    ok, msg = toxlog.consumer.consume()
+    ok, msg = toxreport.consumer.consume()
 
-    # use toxlog.publisher to post a log to xs_anonymous
+    # use toxreport.publisher to post a log to xs_anonymous
 
-    toxlog.msg.exchange = exchange
-    toxlog.msg.topic    = 'v02.log.this.is.test1'
-    toxlog.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
-    toxlog.msg.headers  = {}
+    toxreport.msg.exchange = exchange
+    toxreport.msg.topic    = 'v02.report.this.is.test1'
+    toxreport.msg.url      = urllib.parse.urlparse("http://me@mytest.con/this/is/test1")
+    toxreport.msg.headers  = {}
 
-    toxlog.msg.headers['parts']        = '1,1591,1,0,0'
-    toxlog.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
-    toxlog.msg.headers['from_cluster'] = 'DDI.CMC'
-    toxlog.msg.headers['source']       = 'a_provider'
-    toxlog.msg.headers['to_clusters']  = 'dont_care_forward_direction'
-    toxlog.msg.headers['message']      = 'Downloaded'
-    toxlog.msg.headers['filename']     = 'toto'
+    toxreport.msg.headers['parts']        = '1,1591,1,0,0'
+    toxreport.msg.headers['sum']          = 'd,a66d85b0b87580fb4d225640e65a37b8'
+    toxreport.msg.headers['from_cluster'] = 'DDI.CMC'
+    toxreport.msg.headers['source']       = 'a_provider'
+    toxreport.msg.headers['to_clusters']  = 'dont_care_forward_direction'
+    toxreport.msg.headers['message']      = 'Downloaded'
+    toxreport.msg.headers['filename']     = 'toto'
 
     # start with a bad one
     BAD                 = 'A_STRANGER'
-    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
-    toxlog.msg.notice  += '201 foreign.host.com '+ BAD + ' 823.353824'
-    toxlog.msg.parse_v02_post()
+    toxreport.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    toxreport.msg.notice  += '201 foreign.host.com '+ BAD + ' 823.353824'
+    toxreport.msg.parse_v02_post()
 
-    toxlog.msg.publish()
+    toxreport.msg.publish()
 
     # than post the good one
 
-    toxlog.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
-    toxlog.msg.notice  += '201 foreign.host.com '+ subscriber + ' 823.353824'
-    toxlog.msg.parse_v02_post()
+    toxreport.msg.notice   = '20151217093654.123 http://me@mytest.con/ this/is/test1 '
+    toxreport.msg.notice  += '201 foreign.host.com '+ subscriber + ' 823.353824'
+    toxreport.msg.parse_v02_post()
 
-    toxlog.msg.publish()
+    toxreport.msg.publish()
 
     # process with our on_message and on_post
     # expected only 1 hit for a good message
-    # to go to xlog
+    # to go to xreport
 
     i = 0
     j = 0
     k = 0
     c = 0
     while True :
-          ok = toxlog.process_message()
+          ok = toxreport.process_message()
           c = c + 1
           if c == 10 : break
           if not ok : continue
-          if toxlog.msg.headers['source'] != 'a_provider': continue
-          if toxlog.msg.mtypej == 1: j += 1
-          if toxlog.msg.mtypek == 1: k += 1
+          if toxreport.msg.headers['source'] != 'a_provider': continue
+          if toxreport.msg.mtypej == 1: j += 1
+          if toxreport.msg.mtypek == 1: k += 1
           i = i + 1
 
-    toxlog.close()
+    toxreport.close()
 
     if j != 1 or k != 1 :
-       print("sr_2xlog TEST Failed 1")
+       print("sr_2xreport TEST Failed 1")
        sys.exit(1)
 
-    print("sr_2xlog TEST PASSED")
+    print("sr_2xreport TEST PASSED")
 
     os.unlink('./on_msg_test.py')
     os.unlink('./on_pst_test.py')
@@ -462,24 +462,24 @@ def main():
        cfg       = sr_config()
        cfg.defaults()
        cfg.general()
-       ok,config = cfg.config_path('2xlog',config,mandatory=False)
+       ok,config = cfg.config_path('2xreport',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
        if not ok : config = None
 
-    toxlog = sr_2xlog(config,args)
+    toxreport = sr_2xreport(config,args)
 
-    if action != 'TEST' and  not toxlog.log_daemons :
-       toxlog.logger.info("sr_2xlog will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not toxreport.log_daemons :
+       toxreport.logger.info("sr_2xreport will not run (log_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
-    if   action == 'reload' : toxlog.reload_parent()
-    elif action == 'restart': toxlog.restart_parent()
-    elif action == 'start'  : toxlog.start_parent()
-    elif action == 'stop'   : toxlog.stop_parent()
-    elif action == 'status' : toxlog.status_parent()
-    elif action == 'TEST'   : test_sr_2xlog()
+    if   action == 'reload' : toxreport.reload_parent()
+    elif action == 'restart': toxreport.restart_parent()
+    elif action == 'start'  : toxreport.start_parent()
+    elif action == 'stop'   : toxreport.stop_parent()
+    elif action == 'status' : toxreport.status_parent()
+    elif action == 'TEST'   : test_sr_2xreport()
     else :
-           toxlog.logger.error("action unknown %s" % action)
+           toxreport.logger.error("action unknown %s" % action)
            sys.exit(1)
 
     sys.exit(0)

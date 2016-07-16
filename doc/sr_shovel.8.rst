@@ -28,7 +28,7 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 The *topic_prefix* option must to be set to:
 
  - **v02.post** to shovel `sr_post(7) <sr_post.7.html>`_ messages 
- - **v02.log** to shovel `sr_log(7) <sr_log.7.html>`_ messages
+ - **v02.log** to shovel `sr_report(7) <sr_report.7.html>`_ messages
 
 There is no default.  On startup, the sr_shovel component takes two 
 argument: a configuration file described below, and 
@@ -45,7 +45,7 @@ the option settings.
 Consuming Options
 =================
 
-This program consumes `sr_post(7) <sr_post.7.html>`_ or `sr_log(7) <sr_log.7.html>`_ 
+This program consumes `sr_post(7) <sr_post.7.html>`_ or `sr_report(7) <sr_report.7.html>`_ 
 messages.  One needs to set the options to connect to the broker to receive messages from:
 
 **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
@@ -100,7 +100,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

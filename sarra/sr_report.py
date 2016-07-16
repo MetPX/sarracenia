@@ -70,11 +70,11 @@ class sr_report(sr_instances):
         if self.exchange == None:
              if self.broker.username in self.users.keys():
                   if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
-                       self.exchange = 'xlog'
+                       self.exchange = 'xreport'
                   else:
-                       self.exchange = 'xl_' + self.broker.username
+                       self.exchange = 'xr_' + self.broker.username
              else:
-                self.exchange = 'xl_' + self.broker.username
+                self.exchange = 'xr_' + self.broker.username
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic

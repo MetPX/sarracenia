@@ -143,7 +143,7 @@ could start it up as follows::
   2016-05-05 23:33:38,198 [INFO] sr_report start
   2016-05-05 23:33:38,198 [INFO] sr_report run
   2016-05-05 23:33:38,198 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-05-05 23:33:39,048 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:33:39,048 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.report.# from exchange xlog on broker amqps://feeder@boule.example.com/
   2016-05-05 23:33:39,414 [INFO] msg_log received: 20160506033326.795 http://boule.example.com/ 20160506/metpx/bulletins/alphanumeric/20160506/UA/CWAO/03/UANT01_CWAO_060333___82718 201 blacklab anonymous 0.964417
   2016-05-05 23:33:39,507 [INFO] msg_log received: 20160506033329.346 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CL2D/2016-05-06-0333-CL2D-AUTO-minute-swob.xml 201 boule.example.com feeder -0.722485
   2016-05-05 23:33:39,600 [INFO] msg_log received: 20160506033329.713 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CXEG/2016-05-06-0300-CXEG-AUTO-swob.xml 201 boule.example.com feeder -0.833262
@@ -216,7 +216,7 @@ handling plugin used to process report messages::
   2016-05-05 23:40:15,179 [INFO] sr_report start
   2016-05-05 23:40:15,179 [INFO] sr_report run
   2016-05-05 23:40:15,179 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-05-05 23:40:16,208 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:40:16,208 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.report.# from exchange xlog on broker amqps://feeder@boule.example.com/
   2016-05-05 23:40:20,260 [INFO] speedo:  41 messages received:   8.1 msg/s, 15.5K bytes/s, lag: 4e+02 s
   2016-05-05 23:40:20,260 [WARNING] speedo: Excessive lag: 395.412 seconds 
   2016-05-05 23:40:25,313 [INFO] speedo:  55 messages received:    11 msg/s, 8.9K bytes/s, lag: 4e+02 s

@@ -555,7 +555,7 @@ def test_sr_subscribe():
 
     # process with our on_message and on_post
     # expected only 1 hit for a good message
-    # to go to xlog
+    # to go to xreport
 
     i = 0
     j = 0

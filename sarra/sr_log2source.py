@@ -41,14 +41,14 @@
 # logs message have travel back to this cluster
 #
 # conditions :
-# exchange                = xlog
-# topic                   = v02.log
+# exchange                = xreport
+# topic                   = v02.report
 # header['from_cluster']  = cluster        (here)
 # header['source]         in source_users  (one of our source : users.conf)
 #
 # it is a log message that our source sould be able to see so:
 #
-# publish this log message in xl_"source"
+# publish this log message in xr_"source"
 #
 #============================================================
 
@@ -175,8 +175,8 @@ class sr_log2source(sr_instances):
         # overwrite defaults
 
         self.broker               = self.manager
-        self.exchange             = 'xlog'
-        self.topic_prefix         = 'v02.log'
+        self.exchange             = 'xreport'
+        self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
 
     # =============
@@ -200,7 +200,7 @@ class sr_log2source(sr_instances):
 
                  # ok ship it back to the user exchange 
 
-                 self.msg.exchange = 'xl_' + self.msg.headers['source']
+                 self.msg.exchange = 'xr_' + self.msg.headers['source']
 
                  # invoke __on_post__
 

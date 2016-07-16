@@ -326,7 +326,7 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.log_exchange         = 'xlog'
+        self.log_exchange         = 'xreport'
         # 
 
         # publish

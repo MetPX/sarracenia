@@ -35,7 +35,7 @@ setup(
         "console_scripts":[
               "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
-              "sr_2xlog=sarra.sr_2xlog:main",
+              "sr_2xreport=sarra.sr_2xreport:main",
               "sr_report=sarra.sr_report:main",
               "sr_log2clusters=sarra.sr_log2clusters:main",
               "sr_log2source=sarra.sr_log2source:main",

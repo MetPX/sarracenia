@@ -73,7 +73,7 @@ class sr_audit(sr_instances):
         if role == 'source':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^xs_%s$|^xl_%s$|^xpublic$'"%(u,u,u)
+           r="read='^q_%s.*|^xs_%s$|^xr_%s$|^xpublic$'"%(u,u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -86,8 +86,8 @@ class sr_audit(sr_instances):
 
         #if u == 'anonymous' :
         #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-        #   w="write='^q_%s.*|^xs_%s$|xlog|^cmc.*$'"%(u,u)
-        #   r="read='^q_%s.*|^xl_%s$|xpublic|^cmc.*$'"%(u,u)
+        #   w="write='^q_%s.*|^xs_%s$|xreport|^cmc.*$'"%(u,u)
+        #   r="read='^q_%s.*|^xr_%s$|xpublic|^cmc.*$'"%(u,u)
         #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
         #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
         #   return
@@ -221,15 +221,15 @@ class sr_audit(sr_instances):
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
-        # mandatory xlog,xpublic
+        # mandatory xreport,xpublic
 
-        for e in ['xlog','xpublic','xwinnow'] :
+        for e in ['xreport','xpublic','xwinnow'] :
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue
             self.add_exchange(e)
 
-        # all sources should have: xs_ and xl_"user"
+        # all sources should have: xs_ and xr_"user"
 
         for u in self.sources :
             e = 'xs_' + u
@@ -238,7 +238,7 @@ class sr_audit(sr_instances):
             else:
                self.add_exchange(e)
 
-            e = 'xl_' + u
+            e = 'xr_' + u
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue
@@ -257,12 +257,12 @@ class sr_audit(sr_instances):
         # MG : Peter specified that we may need other exchanges to work with 
         #      Such an exchange would be created manually and would start with 'x'
         #
-        #      So  get rid of all exceeding 'xl_' 'xs_' exchanges as deprecated
+        #      So  get rid of all exceeding 'xr_' 'xs_' exchanges as deprecated
         #      and get rid of all exchanges that do not start with 'x'
         for e in exchange_lst :
 
             # deprecated exchanges  (from deleted users?)
-            if 'xs_' in e or 'xl_' in e :
+            if 'xs_' in e or 'xr_' in e :
                self.logger.warning("deprecated exchange %s" % e)
                self.delete_exchange(e)
 
@@ -494,7 +494,7 @@ class sr_audit(sr_instances):
            self.logger.warning("Logs going back to clusters may need to go through this cluster ")
            self.logger.warning("You would set to target a cluster like this (one per line):")
            self.logger.warning("    #cluster_name url                                exchange")
-           self.logger.warning("    ddi.edm       amqp://mgr_user@ddi.edm.ec.gc.ca   xlog")
+           self.logger.warning("    ddi.edm       amqp://mgr_user@ddi.edm.ec.gc.ca   xreport")
            warning += 1
 
         self.logger.info(" %d error(s) and %d warning(s)" % (error,warning))

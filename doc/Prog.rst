@@ -494,7 +494,7 @@ and/or *parent.msg.header.parts*  in their code.)::
   'inplace': True, 
   'urlcred': 'http://dd2.weather.gc.ca/', 
   'sumstr': 'd,ab1ba0020e91119fb024a2c115ccd908', 
-  'log_topic': 'v02.log.bulletins.alphanumeric.20160617.CA.CWAO.12', 
+  'log_topic': 'v02.report.bulletins.alphanumeric.20160617.CA.CWAO.12', 
   'publisher': None, 
   'code': 201, 
   'urlstr': 'http://dd2.weather.gc.ca/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
