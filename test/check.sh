@@ -2,9 +2,24 @@
 
 
 totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
+
+totwinnow="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow_0001.log | tail -1 | awk ' { print $5; }; '`"
+if [ ! "$totwinnow" ]; then
+   totwinnow=0
+fi
+
 totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
+if [ ! "$totwinnow00" ]; then
+   totwinnow00=0
+fi
+
 totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
-totwinnow=$(( $totwinnow00 + $totwinnow01 ))
+if [ ! "$totwinnow01" ]; then
+   totwinnow01=0
+fi
+   
+echo "totwinnow= ${totwinnow} + ${totwinnow00} + ${totwinnow01}"
+totwinnow=$((${totwinnow} + ${totwinnow00} + ${totwinnow01}))
 totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel2="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
@@ -34,32 +49,49 @@ done
 
 
 
+tno=1
 res=$(( ( ${totshovel1}*1000 ) / ${totshovel2} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test 1: FAIL, shovel1 ($totshovel1) should be reading the same number of items as shovel2 (${totshovel2})"
+   echo "test ${tno}: FAIL, shovel1 ($totshovel1) should be reading the same number of items as shovel2 (${totshovel2})"
 else
-   echo "test 1: SUCCESS, shovel1 (${totshovel1}) reading the same as shovel2 (${totshovel2}) does"
+   echo "test ${tno}: SUCCESS, shovel1 (${totshovel1}) reading the same as shovel2 (${totshovel2}) does"
 fi
 
-
+tno=$((${tno}+1))
 res=$(( ( ${totwinnow}*1000 ) / ${totsarra} ))
 if [ $res -lt 1900  -o $res -gt 2100 ]; then
-   echo "test 2: FAIL, sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})"
+   echo "test ${tno}: FAIL, sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})"
 else
-   echo "test 2: SUCCESS, winnow (${totwinnow}) reading double what sarra (${totsarra}) does"
+   echo "test ${tno}: SUCCESS, winnow (${totwinnow}) reading double what sarra (${totsarra}) does"
 fi
 
 
+tno=$((${tno}+1))
 res=$(( ( ${totsarra}*1000 ) / ${totsub} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test 3: FAIL, sarra (${totsarra}) and sub (${totsub}) should have about the same number of items"
+   echo "test ${tno}: FAIL, sarra (${totsarra}) and sub (${totsub}) should have about the same number of items"
 else
-   echo "test 3: SUCCESS, subscribe (${totsub}) has the same number of items as sarra (${totsarra})"
+   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as sarra (${totsarra})"
 fi
 
+tno=$((${tno}+1))
 res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test 4: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
+   echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
 else
-   echo "test 4: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
+   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
+fi
+
+
+tno=$((${tno}+1))
+
+res00=$(( ${totwinnow00}*1000 / ${totwinnow} ))
+res01=$(( ${totwinnow01}*1000 / ${totwinnow} ))
+
+res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
+
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
+else
+   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
 fi
