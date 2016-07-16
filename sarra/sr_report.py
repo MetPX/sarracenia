@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_log.py : python3 program allowing users to receive all log messages
+# sr_report.py : python3 program allowing users to receive all report messages
 #             generated from his products
 #
 #
@@ -40,7 +40,7 @@ import signal
 #============================================================
 # usage example
 #
-# sr_log -b broker
+# sr_report -b broker
 
 #============================================================
 
@@ -52,7 +52,7 @@ except :
          from sarra.sr_instances import *
 
 
-class sr_log(sr_instances):
+class sr_report(sr_instances):
 
     def __init__(self,config=None,args=None):
         #start debug before it is set by args or config option
@@ -98,7 +98,7 @@ class sr_log(sr_instances):
 
     def overwrite_defaults(self):
         self.broker               = None
-        self.topic_prefix         = 'v02.log'
+        self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
 
     def help(self):
@@ -112,7 +112,7 @@ class sr_log(sr_instances):
     # =============
 
     def __on_message__(self):
-        self.logger.debug("sr_log __on_message__")
+        self.logger.debug("sr_report __on_message__")
 
         self.logger.debug("Received topic   %s" % self.msg.topic)
         self.logger.debug("Received notice  %s" % self.msg.notice)
@@ -129,7 +129,7 @@ class sr_log(sr_instances):
 
     def run(self):
 
-        self.logger.info("sr_log run")
+        self.logger.info("sr_report run")
 
         parent        = self
         self.consumer = sr_consumer(parent)
@@ -185,18 +185,18 @@ def main():
        cfg       = sr_config()
        cfg.defaults()
        cfg.general()
-       ok,config = cfg.config_path('log',config,mandatory=False)
+       ok,config = cfg.config_path('report',config,mandatory=False)
        if ok     : args = sys.argv[1:-2]
        if not ok : config = None
 
-    srlog = sr_log(config,args)
+    srreport = sr_report(config,args)
 
-    if   action == 'foreground': srlog.foreground_parent()
-    elif action == 'reload'    : srlog.reload_parent()
-    elif action == 'restart'   : srlog.restart_parent()
-    elif action == 'start'     : srlog.start_parent()
-    elif action == 'stop'      : srlog.stop_parent()
-    elif action == 'status'    : srlog.status_parent()
+    if   action == 'foreground': srreport.foreground_parent()
+    elif action == 'reload'    : srreport.reload_parent()
+    elif action == 'restart'   : srreport.restart_parent()
+    elif action == 'start'     : srreport.start_parent()
+    elif action == 'stop'      : srreport.stop_parent()
+    elif action == 'status'    : srreport.status_parent()
     else :
            srlog.logger.error("action unknown %s" % action)
            sys.exit(1)

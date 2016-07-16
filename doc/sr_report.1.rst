@@ -1,10 +1,10 @@
-========
- SR_Log 
-========
+==========
+ SR_Report 
+==========
 
---------------------------------------------
-Select and Process Subscription Log Messages
---------------------------------------------
+-----------------------------------------------
+Select and Process Subscription Report Messages
+-----------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -16,17 +16,17 @@ Select and Process Subscription Log Messages
 SYNOPSIS
 ========
 
- **sr_log** configfile foreground|start|stop|restart|reload|status
+ **sr_report** configfile foreground|start|stop|restart|reload|status
 
 DESCRIPTION
 ===========
 
 
-sr_log is a program to efficiently sr_log messages and process them.
-The message format is here: `sr_log(7) <sr_log.7.html>`_ .  The messages acquired
+sr_report is a program to efficiently sr_report messages and process them.
+The message format is here: `sr_report(7) <sr_report.7.html>`_ .  The messages acquired
 are produced by consumers of messages from a sarracenia data pump.  
 
-The **sr_log** command takes two arguments: a configuration file described below,
+The **sr_report** command takes two arguments: a configuration file described below,
 followed by an action that is one of: foreground, start, stop, restart, reload, or status. 
 
 While these actions are self-explanatory, the **foreground** action is different. It 
@@ -139,20 +139,20 @@ Here is a short complete example configuration file (blog.conf) ::
 Using that file, assuming feeder is a 'feeder' (Administrative) account on boule, one
 could start it up as follows::
 
-  blacklab% sr_log blog.conf foreground
-  2016-05-05 23:33:38,198 [INFO] sr_log start
-  2016-05-05 23:33:38,198 [INFO] sr_log run
+  blacklab% sr_report blog.conf foreground
+  2016-05-05 23:33:38,198 [INFO] sr_report start
+  2016-05-05 23:33:38,198 [INFO] sr_report run
   2016-05-05 23:33:38,198 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-05-05 23:33:39,048 [INFO] Binding queue q_feeder.sr_log.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:33:39,048 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
   2016-05-05 23:33:39,414 [INFO] msg_log received: 20160506033326.795 http://boule.example.com/ 20160506/metpx/bulletins/alphanumeric/20160506/UA/CWAO/03/UANT01_CWAO_060333___82718 201 blacklab anonymous 0.964417
   2016-05-05 23:33:39,507 [INFO] msg_log received: 20160506033329.346 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CL2D/2016-05-06-0333-CL2D-AUTO-minute-swob.xml 201 boule.example.com feeder -0.722485
   2016-05-05 23:33:39,600 [INFO] msg_log received: 20160506033329.713 http://boule.example.com/ 20160506/metpx/observations/swob-ml/20160506/CXEG/2016-05-06-0300-CXEG-AUTO-swob.xml 201 boule.example.com feeder -0.833262
 
 
 This above file will connect to the boule.example.com broker, connecting as
-feeder with a password stored in the credentials.conf file to obtain log messages
-created by consumers of data on that pump.  By connecting to the log exchange,
-one is obtaining all of the log messages from all consumers of data on the pump.
+feeder with a password stored in the credentials.conf file to obtain report messages
+created by consumers of data on that pump.  By connecting to the report exchange,
+one is obtaining all of the report messages from all consumers of data on the pump.
 
 
 .. note::
@@ -169,19 +169,19 @@ for more details, see: `sr_config(7) <sr_config.7.html>`_
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-When executed,  **sr_log**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to sr_log**
+When executed,  **sr_report**  chooses a queue name, which it writes
+to a file named after the configuration file given as an argument to sr_report**
 with a .queue suffix ( ."configfile".queue). 
-If sr_log is stopped, the posted messages continue to accumulate on the 
+If sr_report is stopped, the posted messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, it uses the queuename 
 stored in that file to connect to the same queue, and not lose any messages.
 
-File downloads can be parallelized by running multiple sr_log using
+File downloads can be parallelized by running multiple sr_report using
 the same queue.  The processes will share the queue and each download 
 part of what has been selected.  Simply launch multiple instances
-of sr_log in the same user/directory using the same configuration file, 
+of sr_report in the same user/directory using the same configuration file, 
 
-You can also run several sr_log with different configuration files to
+You can also run several sr_report with different configuration files to
 have multiple download streams delivering into the the same directory,
 and that download stream can be multi-streamed as well.
 
@@ -204,19 +204,19 @@ Should you want to implement tasks in various part of the execution of the progr
 - **on_message  <script>        (default: None)** 
 
 By default (if not on_message pluging is specified), the plugin msg_log.py is used,
-which simply prints the body of each message accepted.  sr_log can be used
+which simply prints the body of each message accepted.  sr_report can be used
 to generate statistics, are rudimentary version being to invoke it like so::
 
-  sr_log --on_message msg_speedo blog.conf foreground
+  sr_report --on_message msg_speedo blog.conf foreground
 
 Using the same file as above, one can  add a command-line option to change the message 
-handling plugin used to process log messages::
+handling plugin used to process report messages::
 
-  blacklab% sr_log --on_message msg_speedo blog.conf foreground
-  2016-05-05 23:40:15,179 [INFO] sr_log start
-  2016-05-05 23:40:15,179 [INFO] sr_log run
+  blacklab% sr_report --on_message msg_speedo blog.conf foreground
+  2016-05-05 23:40:15,179 [INFO] sr_report start
+  2016-05-05 23:40:15,179 [INFO] sr_report run
   2016-05-05 23:40:15,179 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-05-05 23:40:16,208 [INFO] Binding queue q_feeder.sr_log.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-05-05 23:40:16,208 [INFO] Binding queue q_feeder.sr_report.blog.55881473.49130029 with key v02.log.# from exchange xlog on broker amqps://feeder@boule.example.com/
   2016-05-05 23:40:20,260 [INFO] speedo:  41 messages received:   8.1 msg/s, 15.5K bytes/s, lag: 4e+02 s
   2016-05-05 23:40:20,260 [WARNING] speedo: Excessive lag: 395.412 seconds 
   2016-05-05 23:40:25,313 [INFO] speedo:  55 messages received:    11 msg/s, 8.9K bytes/s, lag: 4e+02 s
@@ -224,10 +224,10 @@ handling plugin used to process log messages::
   2016-05-05 23:40:30,394 [INFO] speedo:  53 messages received:    10 msg/s, 12.6K bytes/s, lag: 3.8e+02 s
   2016-05-05 23:40:30,394 [WARNING] speedo: Excessive lag: 380.164 seconds 
   2016-05-05 23:40:30,508 [INFO] signal stop
-  2016-05-05 23:40:30,508 [INFO] sr_log stop
+  2016-05-05 23:40:30,508 [INFO] sr_report stop
   blacklab% 
 
-One can monitor arbitrary data by creating log configurations with a variety of selection criteria and processing options.
+One can monitor arbitrary data by creating report configurations with a variety of selection criteria and processing options.
 
 A do_nothing.py script for **on_message**::
 
@@ -246,7 +246,7 @@ A do_nothing.py script for **on_message**::
  self.on_message = transformer.perform
 
 The only arguments the script receives it **parent**, which is an instance of
-the **sr_log** class. 
+the **sr_report** class. 
 
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
@@ -256,7 +256,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
@@ -268,4 +268,4 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
-`http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_log is a component of MetPX-Sarracenia, the AMQP based data pump.
+`http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_report is a component of MetPX-Sarracenia, the AMQP based data pump.

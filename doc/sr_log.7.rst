@@ -1,11 +1,11 @@
 
-========
- sr_log
-========
+=========
+sr_report
+=========
 
-------------------------------------------
-Sarracenia v02 Log Message Format/Protocol
-------------------------------------------
+--------------------------------------------
+Sarracenia v02 Report Message Format/Protocol
+--------------------------------------------
 
 :Date: @Date@
 :Version: @Version@
@@ -18,7 +18,7 @@ Sarracenia v02 Log Message Format/Protocol
 SYNOPSIS
 ========
 
-**AMQP Topic: <version>.log.{<dir>.}*<filename>**
+**AMQP Topic: <version>.report.{<dir>.}*<filename>**
 
 **AMQP Headers:** *<series of key-value pairs>*
 
@@ -34,19 +34,19 @@ DESCRIPTION
 
 Sources create messages in the *sr_post* format to announce file changes. Subscribers 
 read the post to decide whether a download of the content being announced is warranted.  
-Subscribers may provide information to sources by sending a log message indicating the result 
-of processing a post.  The log message format, described by this specification, is the posting echoed 
+Subscribers may provide information to sources by sending a report message indicating the result 
+of processing a post.  The report message format, described by this specification, is the posting echoed 
 back to the source with a few small changes. Please consult the sr_post(7) man page for
 a full explanation of the fields which are shared with the posting format.
 
-A sr_log message consists of four parts::
+A sr_report message consists of four parts::
 
 	AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.
 
 AMQP TOPIC
 ==========
 
-The topic of a log message is similar to sr_post except that the second sub-topic is 'log' rather than 'post'.
+The topic of a report message is similar to sr_post except that the second sub-topic is 'report' rather than 'post'.
 
 
 THE FIRST LINE 
@@ -73,7 +73,7 @@ If the URL ends with a path separator ('/'), then the src URL is considered a pr
 
 *<relativepath>* :  the variable part of the URL, usually appended to *<srcpath>*
 
-The above are the fields taken from the sr_post(7) format.  There are additional fields in the sr_log:
+The above are the fields taken from the sr_post(7) format.  There are additional fields in the sr_report:
 
 
 *<statuscode>*  a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616) 
@@ -143,7 +143,7 @@ AMQP HEADERS
 In addition to the first line of the message containing all mandatory fields, optional 
 elements are stored in AMQP headers (key-value pairs), included in messages when 
 appropriate.   In addition to the headers specified in the sr_post(7) manual page, the 
-following log-specific headers are defined:
+following report-specific headers are defined:
 
 message=<msgstring>
 
@@ -156,15 +156,15 @@ EXAMPLE
 
 ::
 
- topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
+ topic: v02.report.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 201 castor anonymous 0.0006767 
  headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded source=ec_cmc from_cluster=ddi.cmc.ec.gc.ca to_clusters=ddi.science.gc.ca,bunny.nrcan.gc.ca
 
 
    v02 - version of protocol
-   post - indicates the type of message
+   report - indicates the type of message
 
-        version and type together indicate the format of the message.
+        version and type together specify the format of the message.
 
    ec_cmc - the account used to issue the post (unique in a network).
 

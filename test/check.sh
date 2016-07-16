@@ -1,24 +1,23 @@
 #!/bin/bash
 
 
-totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
+totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
 
-totwinnow="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow_0001.log | tail -1 | awk ' { print $5; }; '`"
+totwinnow="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow_0001.log | tail -1 | awk ' { print $5; }; '`"
 if [ ! "$totwinnow" ]; then
    totwinnow=0
 fi
 
-totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
+totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
 if [ ! "$totwinnow00" ]; then
    totwinnow00=0
 fi
 
-totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
+totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
 if [ ! "$totwinnow01" ]; then
    totwinnow01=0
 fi
    
-echo "totwinnow= ${totwinnow} + ${totwinnow00} + ${totwinnow01}"
 totwinnow=$((${totwinnow} + ${totwinnow00} + ${totwinnow01}))
 totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
@@ -30,15 +29,15 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ ! "${totsarra}" ]; do
    sleep 10
-   totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
    printf "waiting to start...\n"
 done
 
 while [ $totsarra -lt $smin ]; do
    sleep 10
-   totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_log_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
-   totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
-   totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_log_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totsarra="`grep msg_total ~/.cache/sarra/var/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totwinnow00="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
    totwinnow=$(( $totwinnow00 + $totwinnow01 ))
    totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"

@@ -109,7 +109,7 @@ def main():
            subprocess.check_call(['sr_'+d,sys.argv[-1]])
 
     # sarracenia program requiring configs
-    SR_PROGRAMS =['watch','winnow','sarra','shovel','subscribe','sender','poll','log']
+    SR_PROGRAMS =['watch','winnow','sarra','shovel','subscribe','sender','poll','report']
     for d in SR_PROGRAMS:
         scandir(cfg.user_config_dir+os.sep+d)
 

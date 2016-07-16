@@ -36,7 +36,7 @@ setup(
               "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
               "sr_2xlog=sarra.sr_2xlog:main",
-              "sr_log=sarra.sr_log:main",
+              "sr_report=sarra.sr_report:main",
               "sr_log2clusters=sarra.sr_log2clusters:main",
               "sr_log2source=sarra.sr_log2source:main",
               "sr_poll=sarra.sr_poll:main",
