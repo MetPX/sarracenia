@@ -23,7 +23,7 @@ Vagrant.configure(2) do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-  config.vm.network "forwarded_port", guest: 80, host: 8888
+  #config.vm.network "forwarded_port", guest: 80, host: 8888
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -66,21 +66,31 @@ Vagrant.configure(2) do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-    config.vm.provision "file", source: "../../test/test_sr_sarra.sh", 
-                                destination: "tests/test_sr_sarra.sh"
-    config.vm.provision "file", source: "../../test/test_sr_subscribe.sh", 
-                                destination: "tests/test_sr_subscribe.sh"                           
-    config.vm.provision "file", source: "../provision/config/apache2/default-apache2.4.conf", 
-                                destination: "apache2/sites-available/default.conf"
-    config.vm.provision "file", source: "../provision/config/vsftpd/vsftpd.conf", 
-                                destination: "vsftpd/vsftpd.conf"
-    config.vm.provision "file", source: "../provision/config/rabbitmq/rabbitmq.config", 
-                                destination: "rabbitmq/rabbitmq.config"
-    config.vm.provision "file", source: "../provision/config/rabbitmq/enabled_plugins", 
-                                destination: "rabbitmq/enabled_plugins"
-   
-   config.vm.provision "Install Dependencies", type: "shell", path: "../provision/scripts/install-deps.sh", args: "trusty"
-   config.vm.provision "Configure Apache", type: "shell", path: "../provision/scripts/config-apache.sh"
-   config.vm.provision "Configure vsftpd", type: "shell", path: "../provision/scripts/config-vsftpd.sh"
-   config.vm.provision "Configure rabbitmq-server", type: "shell", path: "../provision/scripts/config-rabbitmq.sh"
+#    config.vm.provision "file", source: "../../test/test_sr_sarra.sh", 
+#                                destination: "tests/test_sr_sarra.sh"
+#    config.vm.provision "file", source: "../../test/test_sr_subscribe.sh", 
+#                                destination: "tests/test_sr_subscribe.sh"                           
+#    config.vm.provision "file", source: "../provision/config/apache2/default-apache2.4.conf", 
+#                                destination: "apache2/sites-available/default.conf"
+#    config.vm.provision "file", source: "../provision/config/vsftpd/vsftpd.conf", 
+#                                destination: "vsftpd/vsftpd.conf"
+#    config.vm.provision "file", source: "../provision/config/rabbitmq/rabbitmq.config", 
+#                                destination: "rabbitmq/rabbitmq.config"
+#    config.vm.provision "file", source: "../provision/config/rabbitmq/enabled_plugins", 
+#                                destination: "rabbitmq/enabled_plugins"
+#   
+#   config.vm.provision "Install Dependencies", type: "shell", path: "../provision/scripts/install-deps.sh", args: "trusty"
+#   config.vm.provision "Configure Apache", type: "shell", path: "../provision/scripts/config-apache.sh"
+#   config.vm.provision "Configure vsftpd", type: "shell", path: "../provision/scripts/config-vsftpd.sh"
+#   config.vm.provision "Configure rabbitmq-server", type: "shell", path: "../provision/scripts/config-rabbitmq.sh"
+   config.vm.provision "shell", inline: <<-SHELL
+     sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+     sudo apt-get update
+     sudo apt-get install -y unzip
+     sudo apt-get install -y devscripts
+     sudo apt-get install -y dpkg-dev
+     sudo apt-get install -y debhelper
+     sudo apt-get install -y python3-setuptools
+     sudo apt-get install -y python-docutils
+   SHELL
 end

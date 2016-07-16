@@ -158,6 +158,7 @@ class sr_sender(sr_instances):
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.details.url.username
         self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
+        self.msg.post_exchange_split = self.post_exchange_split
 
         # =============
         # poster
