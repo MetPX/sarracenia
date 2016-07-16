@@ -200,15 +200,15 @@ A description of the conventional flow of messages through exchanges on a pump:
 
 - sr_winnow may pull from xs_alice instead, but follows the same pattern as sr_sarra.
 
-- usually, sr_2xlog will read xs_alice and copy the log messages onto the private xlog exchange.
+- usually, sr_2xreport will read xs_alice and copy the log messages onto the private xreport exchange.
 
-- Admins can point sr_report at the xlog exchange to get system-wide monitoring.
+- Admins can point sr_report at the xreport exchange to get system-wide monitoring.
   Alice will not have permission to do that, she can only look at xl_Alice, which should have
   the log messages pertinent to her.
 
-- sr_report2source looks at messages for the local Alice user in xlog, and sends them to xl_Alice.
+- sr_report2source looks at messages for the local Alice user in xreport, and sends them to xl_Alice.
 
-- sr_report2cluster looks at messages in xlog, and send messages for remote users to the appropriate
+- sr_report2cluster looks at messages in xreport, and send messages for remote users to the appropriate
   remote cluster.
 
 The purpose of these conventions is to encourage a reasonably secure means of operating.
@@ -287,7 +287,7 @@ source
 feeder
 
   a user permitted to subscribe or originate data, but understood to represent a pump.
-  this local pump user would be used to, run processes like sarra, report2source, 2xlog,
+  this local pump user would be used to, run processes like sarra, report2source, 2xreport,
   report2cluster... etc
 
 
@@ -329,7 +329,7 @@ Operations
 To operate a pump, there needs to be a user designated as the pump administrator.
 The administrator is different from the others mostly in the permission granted
 to create exchanges, and the ability to run processes that address the common
-exchanges (xpublic, xlog, etc...) All other users are limited to being able to 
+exchanges (xpublic, xreport, etc...) All other users are limited to being able to 
 access only their own resources (exchange and queues).
 
 The administrative user name is an installation choice, and exactly as for any other 
@@ -348,9 +348,9 @@ The processes that are typically run on a broker:
 - sr_sender  - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
 - sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
 - sr_shovel  - copy advertisements from pump to another, usually to feed sr_winnow.
-- sr_report2cluster - copy log messages from the xlog exchange for data that came from another cluster, to where they should go.
-- sr_2xlog   - copy log message is posted users on this cluster to the xlog exchange. 
-- sr_report2source - copy log messages from the xlog exchange to the source that should get it.
+- sr_report2cluster - copy log messages from the xreport exchange for data that came from another cluster, to where they should go.
+- sr_2xreport   - copy log message is posted users on this cluster to the xreport exchange. 
+- sr_report2source - copy log messages from the xreport exchange to the source that should get it.
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once.  To do so easily, one can invoke:
@@ -708,7 +708,7 @@ Sample run::
   2016-03-28 00:41:26,018 [INFO] permission user 'peter' role source  configure='^q_peter.*' write='^q_peter.*|^xs_peter$' read='^q_peter.*|^xl_peter$|^xpublic$' 
   2016-03-28 00:41:26,136 [INFO] adding user anonymous
   2016-03-28 00:41:26,247 [INFO] permission user 'anonymous' role source  configure='^q_anonymous.*' write='^q_anonymous.*|^xs_anonymous$' read='^q_anonymous.*|^xpublic$' 
-  2016-03-28 00:41:26,497 [INFO] adding exchange 'xlog'
+  2016-03-28 00:41:26,497 [INFO] adding exchange 'xreport'
   2016-03-28 00:41:26,610 [INFO] adding exchange 'xpublic'
   2016-03-28 00:41:26,730 [INFO] adding exchange 'xs_peter'
   2016-03-28 00:41:26,854 [INFO] adding exchange 'xl_peter'
@@ -719,7 +719,7 @@ Sample run::
 The *sr_audit* program:
 
 - uses the *admin* account from .config/sarra/default.conf to authenticate to broker.
-- creates exchanges *xpublic* and *xlog* if they don't exist.
+- creates exchanges *xpublic* and *xreport* if they don't exist.
 - reads roles from .config/sarra/default.conf
 - obtains a list of users and exchanges on the pump
 - for each user in a *role* option:: 
@@ -758,7 +758,7 @@ or the command line tool::
   amq.rabbitmq.trace	topic
   amq.topic	topic
   xl_peter	topic
-  xlog	topic
+  xreport	topic
   xpublic	topic
   xs_anonymous	topic
   xs_peter	topic
@@ -980,22 +980,22 @@ As the configuration is working properly, rename it to so that it will be used o
   sarra@boule:~/.config/sarra/sarra$ 
 
 
-Logs
-~~~~
+Reports
+~~~~~~~
 
 Now that data is flowing, we need to take a look at the flow of log messages, which essentially are used by each pump to tell
 upstream that data has been downloaded. add the following line to ~sarra/.config/sarrra/default.conf::
 
-  log_daemons
+  report_daemons
 
-This will cause the log routing daemons to be started. that will mean that messages that are logged by feeder or other
-subscriber processes will all end up in the xlog exchange.  To monitor overall system activity, start up an sr_report that
-is bound to the xlog exchange::
+This will cause the report routing daemons to be started. that will mean that messages that are logged by feeder or other
+subscriber processes will all end up in the xreport exchange.  To monitor overall system activity, start up an sr_report that
+is bound to the xreport exchange::
 
   blacklab% more boulelog.conf
 
   broker amqps://feeder@boule.example.com/
-  exchange xlog
+  exchange xreport
   accept .*
 
   blacklab%
@@ -1004,7 +1004,7 @@ is bound to the xlog exchange::
   2016-03-28 16:29:53,721 [INFO] sr_report start
   2016-03-28 16:29:53,721 [INFO] sr_report run
   2016-03-28 16:29:53,722 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-03-28 16:29:54,484 [INFO] Binding queue q_feeder.sr_report.boulelog.06413933.71328785 with key v02.report.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-03-28 16:29:54,484 [INFO] Binding queue q_feeder.sr_report.boulelog.06413933.71328785 with key v02.report.# from exchange xreport on broker amqps://feeder@boule.example.com/
   2016-03-28 16:29:55,732 [INFO] Received notice  20160328202955.139 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.040751
   2016-03-28 16:29:56,393 [INFO] Received notice  20160328202956.212 http://boule.example.com/ radar/CAPPI/GIF/XMB/201603282030_XMB_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.159043
   2016-03-28 16:29:56,479 [INFO] Received notice  20160328202956.179 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.0_SNOW.gif 201 blacklab anonymous 0.143819
