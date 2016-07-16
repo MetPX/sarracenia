@@ -99,7 +99,6 @@ class sr_post(sr_config):
         self.post_broker   = self.broker
         self.poster        = sr_poster(self, self.loop)
         self.msg.publisher = self.poster.publisher
-
         self.msg.post_exchange_split = self.post_exchange_split
 
                                    

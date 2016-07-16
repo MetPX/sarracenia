@@ -60,7 +60,7 @@ VERIFY PUMP SETTINGS
 
 Use **sr_audit** invoke with **--pump**  to set up it's configuration.  It makes sure the **feeder** 
 user credentials are given and the **admin** user is defined and valid.  It warns and explains 
-if options **cluster,gateway_for,roles**, as well as the **log2clusters.conf** are missing.
+if options **cluster,gateway_for,roles**, as well as the **report2clusters.conf** are missing.
 
 
 MANAGING USERS
@@ -113,7 +113,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

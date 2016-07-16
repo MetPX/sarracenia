@@ -474,13 +474,13 @@ Below are some coding practices that are meant to guide developers when contribu
 They are not hard and fast rules, just guidance.
 
 
-When to Log
------------
+When to Report
+--------------
 
-sr_log(7) messages should be emitted to indicate final disposition of the data itself, not 
-any notifications or log messages (don't log log messages, it becomes an infinite loop!)
+sr_report(7) messages should be emitted to indicate final disposition of the data itself, not 
+any notifications or log messages (don't report log messages, it becomes an infinite loop!)
 For debugging and other information, the local log file is used.  For example, sr_shovel does 
-not emit any sr_log(7) messages, because no data is transferred, only messages.
+not emit any sr_report(7) messages, because no data is transferred, only messages.
 
 
 

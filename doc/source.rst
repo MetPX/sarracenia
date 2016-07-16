@@ -322,8 +322,8 @@ to use it.
 
 
 
-Log Messages
-------------
+Report Messages
+---------------
 
 If the sr_post worked, that means the pump accepted to take a look at your file.
 To find out where your data goes to afterward , one needs to examine source
@@ -331,11 +331,11 @@ log messages. It is also important to note that the initial pump, or any other p
 downstream, may refuse to forward your data for various reasons, that will only
 be reported to the source in these log messages.  
 
-To view source log messages, the sr_log command is just a version of sr_subscribe, with the
+To view source log messages, the sr_report command is just a version of sr_subscribe, with the
 same options where they make sense. If the configuration file (~/.config/sarra/default.conf) 
 is set up, then all that is needed is::
 
-  sr_log
+  sr_report
 
 to view log messages indicating what has happenned to the items inserted into the 
 network from the same pump using that account (rnd, in the example.) One can trigger 

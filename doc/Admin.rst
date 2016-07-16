@@ -193,7 +193,7 @@ A description of the conventional flow of messages through exchanges on a pump:
 - A user named Alice will have two exchanges:
 
   - xs_Alice the exhange where Alice posts her files and log messages.(via many tools)
-  - xl_Alice the exchange where Alice reads her log messages from (via sr_log)
+  - xl_Alice the exchange where Alice reads her log messages from (via sr_report)
 
 - usually sr_sarra will read from xs_alice, retrieve the data corresponding to Alice´s *post* 
   message, and make it available on the pump, by re-announcing it on the xpublic exchange.
@@ -202,13 +202,13 @@ A description of the conventional flow of messages through exchanges on a pump:
 
 - usually, sr_2xlog will read xs_alice and copy the log messages onto the private xlog exchange.
 
-- Admins can point sr_log at the xlog exchange to get system-wide monitoring.
+- Admins can point sr_report at the xlog exchange to get system-wide monitoring.
   Alice will not have permission to do that, she can only look at xl_Alice, which should have
   the log messages pertinent to her.
 
-- sr_log2source looks at messages for the local Alice user in xlog, and sends them to xl_Alice.
+- sr_report2source looks at messages for the local Alice user in xlog, and sends them to xl_Alice.
 
-- sr_log2cluster looks at messages in xlog, and send messages for remote users to the appropriate
+- sr_report2cluster looks at messages in xlog, and send messages for remote users to the appropriate
   remote cluster.
 
 The purpose of these conventions is to encourage a reasonably secure means of operating.
@@ -287,8 +287,8 @@ source
 feeder
 
   a user permitted to subscribe or originate data, but understood to represent a pump.
-  this local pump user would be used to, run processes like sarra, log2source, 2xlog,
-  log2cluster... etc
+  this local pump user would be used to, run processes like sarra, report2source, 2xlog,
+  report2cluster... etc
 
 
 admin
@@ -348,9 +348,9 @@ The processes that are typically run on a broker:
 - sr_sender  - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
 - sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
 - sr_shovel  - copy advertisements from pump to another, usually to feed sr_winnow.
-- sr_log2cluster - copy log messages from the xlog exchange for data that came from another cluster, to where they should go.
+- sr_report2cluster - copy log messages from the xlog exchange for data that came from another cluster, to where they should go.
 - sr_2xlog   - copy log message is posted users on this cluster to the xlog exchange. 
-- sr_log2source - copy log messages from the xlog exchange to the source that should get it.
+- sr_report2source - copy log messages from the xlog exchange to the source that should get it.
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once.  To do so easily, one can invoke:
@@ -401,43 +401,43 @@ sr_sarra configurations from one pump to the next.  Each sr_sarra link is config
   FIXME: sample sender to push to another pump.
   describe the to_cluster, gateway_for , and cluster options.
 
-Logs
-~~~~
+Report
+~~~~~~
 
-Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end,
-as well as *feeders* as the messages traverse pumps.  log messages are posted to
-the xl_<user> exchange, and after log validation sent to the xlog exchange by the 2xlog component.
+Report messages are defined in the sr_report(7) man page.  They are emitted by *consumers* at the end,
+as well as *feeders* as the messages traverse pumps.  Report messages are posted to
+the xs_<user> exchange, and after validation sent to the xreport exchange by the 2xreport component.
 
-Messages in xlog destined for other clusters are routed to destinations by
-log2cluster component using log2cluster.conf configuration file.  log2cluster.conf
+Messages in xreports destined for other clusters are routed to destinations by
+report2cluster component using report2cluster.conf configuration file.  report2cluster.conf
 uses space separated fields: First field is the cluster name (set as per **cluster** in
-post messages, the second is the destination to send the log messages for posting
-originating from that cluster to) Sample, log2cluster.conf::
+post messages, the second is the destination to send the report messages for posting
+originating from that cluster to) Sample, report2cluster.conf::
 
-      clustername amqp://user@broker/vhost exchange=xlog
+      clustername amqp://user@broker/vhost exchange=xreport
 
-Where message destination is the local cluster, log2source will copy
-the messages where source=<user> to xl_<user>, ready for consumption by sr_log.
+Where message destination is the local cluster, report2source will copy
+the messages where source=<user> to xr_<user>, ready for consumption by sr_report.
 
 
 What is Going On?
 -----------------
 
-The sr_log command can be invoked to bind to 'xlog' instead of the default user exchange
-to get log information for an entire broker.
+The sr_report command can be invoked to bind to 'xreport' instead of the default user exchange
+to get report information for an entire broker.
 
 
-Canned sr_log configuration with an *on_message* action can be configured to 
+Canned sr_report configuration with an *on_message* action can be configured to 
 gather statisical information. 
 
 .. NOTE::
    FIXME:
-   first canned sr_log configuration would be speedo...
+   first canned sr_report configuration would be speedo...
    speedo: total rate of posts/second, total rate of logs/second.
    question: should posts go to the log as well?
    before operations, we need to figure out how Nagios will monitor it.
 
-   sr_log is weird... works on one server, but not another... dunno bug?
+   sr_report is weird... works on one server, but not another... dunno bug?
    more testing needed.
 
    Is any of this needed, or is the rabbit GUI enough on it's own?
@@ -989,7 +989,7 @@ upstream that data has been downloaded. add the following line to ~sarra/.config
   log_daemons
 
 This will cause the log routing daemons to be started. that will mean that messages that are logged by feeder or other
-subscriber processes will all end up in the xlog exchange.  To monitor overall system activity, start up an sr_log that
+subscriber processes will all end up in the xlog exchange.  To monitor overall system activity, start up an sr_report that
 is bound to the xlog exchange::
 
   blacklab% more boulelog.conf
@@ -1000,11 +1000,11 @@ is bound to the xlog exchange::
 
   blacklab%
 
-  blacklab% sr_log boulelog.conf foreground
-  2016-03-28 16:29:53,721 [INFO] sr_log start
-  2016-03-28 16:29:53,721 [INFO] sr_log run
+  blacklab% sr_report boulelog.conf foreground
+  2016-03-28 16:29:53,721 [INFO] sr_report start
+  2016-03-28 16:29:53,721 [INFO] sr_report run
   2016-03-28 16:29:53,722 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)
-  2016-03-28 16:29:54,484 [INFO] Binding queue q_feeder.sr_log.boulelog.06413933.71328785 with key v02.report.# from exchange xlog on broker amqps://feeder@boule.example.com/
+  2016-03-28 16:29:54,484 [INFO] Binding queue q_feeder.sr_report.boulelog.06413933.71328785 with key v02.report.# from exchange xlog on broker amqps://feeder@boule.example.com/
   2016-03-28 16:29:55,732 [INFO] Received notice  20160328202955.139 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.040751
   2016-03-28 16:29:56,393 [INFO] Received notice  20160328202956.212 http://boule.example.com/ radar/CAPPI/GIF/XMB/201603282030_XMB_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.159043
   2016-03-28 16:29:56,479 [INFO] Received notice  20160328202956.179 http://boule.example.com/ radar/CAPPI/GIF/XLA/201603282030_XLA_CAPPI_1.0_SNOW.gif 201 blacklab anonymous 0.143819
@@ -1014,7 +1014,7 @@ is bound to the xlog exchange::
   2016-03-28 16:29:57,729 [INFO] Received notice  20160328202957.408 http://boule.example.com/ bulletins/alphanumeric/20160328/SN/CWVR/20/SNVD17_CWVR_282000___01912 201 blacklab anonymous -0.043441
   2016-03-28 16:29:58,723 [INFO] Received notice  20160328202958.471 http://boule.example.com/ radar/CAPPI/GIF/WKR/201603282030_WKR_CAPPI_1.5_RAIN.gif 201 blacklab anonymous -0.131236
   2016-03-28 16:29:59,400 [INFO] signal stop
-  2016-03-28 16:29:59,400 [INFO] sr_log stop
+  2016-03-28 16:29:59,400 [INFO] sr_report stop
   blacklab% 
 
 From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.

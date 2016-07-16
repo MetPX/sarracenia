@@ -316,7 +316,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
 `sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
 
@@ -433,9 +433,9 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
-`sr_log2source(1) <sr_log2source.7.html>`_ - copy log messages from the pump log bus to upstream destination.
+`sr_report2source(1) <sr_report2source.7.html>`_ - copy log messages from the pump log bus to upstream destination.
 
 `sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
 

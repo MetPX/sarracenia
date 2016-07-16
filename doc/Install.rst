@@ -115,8 +115,8 @@ Post, Notice, Notification, Advertisement, Announcement
   manual page.  All of these words are used interchangeably.  Advertisements at each step preserve the 
   original source of the posting, so that log messages can be routed back to the source.
 
-log messages
-  These are AMQP messages (in `sr_log(7) <sr_log.7.html>`_ format) built by consumers of messages, to indicate 
+Report messages
+  These are AMQP messages (in `sr_report(7) <sr_report.7.html>`_ format) built by consumers of messages, to indicate 
   what a given pump or subscriber decided to do with a message.   They conceptually flow in the opposite
   direction of notifications in a network, to get back to the source.
 

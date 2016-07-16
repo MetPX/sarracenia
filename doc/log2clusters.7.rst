@@ -1,6 +1,6 @@
 
 ===================
- log2clusters.conf
+ report2clusters.conf
 ===================
 
 -------------------------------------
@@ -16,12 +16,12 @@ Return Log of the Products to Brokers
 PLACEMENT
 =========
 
-**~/.config/sarra/log2clusters.conf**
+**~/.config/sarra/report2clusters.conf**
 
 DESCRIPTION
 ===========
 
-The file ~/.config/sarra/log2clusters.conf defines where the logs, 
+The file ~/.config/sarra/report2clusters.conf defines where the logs, 
 for a given cluster, must be sent to. The file has the following syntax :
 
 cluster_Name broker_Url exchange_Log
@@ -64,5 +64,5 @@ all logs messages related to **cluster_Name** will be delivered.
 SEE ALSO
 ========
 
-`sr_log2clusters(8) <sr_log2clusters.8.html>`_ - routing logs back to some clusters.
+`sr_report2clusters(8) <sr_report2clusters.8.html>`_ - routing logs back to some clusters.
 

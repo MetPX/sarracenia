@@ -65,7 +65,7 @@ With this method, AMQP messages provide a 'control plane' for data transfers.  W
 is essentially point to point, data pumps can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
-data.  If consumers permit it, log messages (see sr_log(7)) also flow through the control path, 
+data.  If consumers permit it, log messages (see sr_report(7)) also flow through the control path, 
 but in the opposite direction, allowing sources to know the entire disposition of their 
 files through a network.  
 
@@ -473,7 +473,7 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`sr_log(7) <sr_log.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
