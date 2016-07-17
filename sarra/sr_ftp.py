@@ -391,7 +391,7 @@ class ftp_transport():
         # seek not supported
         if msg.partflg == 'i' :
            self.logger.error("ftp, inplace part file not supported")
-           msg.log_publish(499,'ftp does not support partitioned file transfers')
+           msg.report_publish(499,'ftp does not support partitioned file transfers')
            return False
     
         url         = msg.url
@@ -443,7 +443,7 @@ class ftp_transport():
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
     
-                msg.log_publish(201,'Downloaded')
+                msg.report_publish(201,'Downloaded')
 
                 msg.onfly_checksum = ftp.checksum
     
@@ -465,11 +465,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp download failed')
+                msg.report_publish(499,'ftp download failed')
     
                 return False
     
-        msg.log_publish(499,'ftp download failed')
+        msg.report_publish(499,'ftp download failed')
     
         return False
 
@@ -488,7 +488,7 @@ class ftp_transport():
         # a separate partfile and message set to 'p'
         if  msg.partflg == 'i':
             self.logger.error("ftp cannot send partitioned files")
-            msg.log_publish(499,'ftp delivery failed')
+            msg.report_publish(499,'ftp delivery failed')
             return False
     
         local_file = parent.local_path
@@ -514,7 +514,7 @@ class ftp_transport():
                 if msg.sumflg == 'R' :
                    msg.logger.debug("message is to remove %s" % parent.remote_file)
                    ftp.delete(parent.remote_file)
-                   msg.log_publish(205,'Reset Content : deleted')
+                   msg.report_publish(205,'Reset Content : deleted')
                    return True
 
                 #=================================
@@ -546,7 +546,7 @@ class ftp_transport():
                 try   : ftp.chmod(parent.chmod,parent.remote_file)
                 except: pass
     
-                msg.log_publish(201,'Delivered')
+                msg.report_publish(201,'Delivered')
     
                 #closing after batch or when destination is changing
                 #ftp.close()
@@ -560,11 +560,11 @@ class ftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'ftp delivery failed')
+                msg.report_publish(499,'ftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'ftp delivery failed')
+        msg.report_publish(499,'ftp delivery failed')
     
         return False
 

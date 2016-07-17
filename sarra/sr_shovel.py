@@ -131,7 +131,7 @@ class sr_shovel(sr_instances):
         self.consumer          = sr_consumer(self)
 
         if self.reportback :
-            self.msg.log_publisher = self.consumer.publish_back()
+            self.msg.report_publisher = self.consumer.publish_back()
             self.msg.log_exchange  = self.log_exchange
 
             self.logger.info("reportback to %s@%s, exchange: %s" %
@@ -197,19 +197,19 @@ class sr_shovel(sr_instances):
 
         # the message has not specified a source.
         if not 'source' in self.msg.headers :
-           self.msg.log_publish(403,"Forbidden : message without a source amqp header['source']")
+           self.msg.report_publish(403,"Forbidden : message without a source amqp header['source']")
            self.logger.error("message without a source amqp header['source']")
            return False
 
         # the message has not specified a from_cluster.
         if not 'from_cluster' in self.msg.headers :
-           self.msg.log_publish(403,"Forbidden : message without a cluster amqp header['from_cluster']")
+           self.msg.report_publish(403,"Forbidden : message without a cluster amqp header['from_cluster']")
            self.logger.error("message without a cluster amqp header['from_cluster']")
            return False
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
-           self.msg.log_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+           self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
            self.logger.error("message without destination amqp header['to_clusters']")
            return False
 
@@ -314,7 +314,7 @@ class sr_shovel(sr_instances):
         #=================================
 
         self.__on_post__()
-        self.msg.log_publish(201,'Published')
+        self.msg.report_publish(201,'Published')
 
 
         return True

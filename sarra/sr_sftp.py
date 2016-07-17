@@ -485,7 +485,7 @@ class sftp_transport():
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
     
-                msg.log_publish(201,'Downloaded')
+                msg.report_publish(201,'Downloaded')
 
                 msg.onfly_checksum = sftp.checksum
     
@@ -507,11 +507,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp download failed')
+                msg.report_publish(499,'sftp download failed')
     
                 return False
     
-        msg.log_publish(499,'sftp download failed')
+        msg.report_publish(499,'sftp download failed')
     
         return False
 
@@ -546,7 +546,7 @@ class sftp_transport():
                 if msg.sumflg == 'R' :
                    msg.logger.debug("message is to remove %s" % parent.remote_file)
                    sftp.delete(parent.remote_file)
-                   msg.log_publish(205,'Reset Content : deleted')
+                   msg.report_publish(205,'Reset Content : deleted')
                    return True
 
                 #=================================
@@ -579,7 +579,7 @@ class sftp_transport():
                 try   : sftp.chmod(parent.chmod,parent.remote_file)
                 except: pass
     
-                msg.log_publish(201,'Delivered')
+                msg.report_publish(201,'Delivered')
     
                 #closing after batch or when destination is changing
                 #sftp.close()
@@ -593,11 +593,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.log_publish(499,'sftp delivery failed')
+                msg.report_publish(499,'sftp delivery failed')
     
                 return False
     
-        msg.log_publish(499,'sftp delivery failed')
+        msg.report_publish(499,'sftp delivery failed')
     
         return False
 

@@ -122,7 +122,7 @@ class http_transport():
 
                 msg.onfly_checksum = self.checksum
 
-                msg.log_publish(201,'Downloaded')
+                msg.report_publish(201,'Downloaded')
 
                 return ok
 
@@ -137,7 +137,7 @@ class http_transport():
                msg.logger.error('Download failed %s ' % urlstr)
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
 
-        msg.log_publish(499,'http download failed')
+        msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
 
         return False

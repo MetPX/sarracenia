@@ -141,7 +141,7 @@ def file_insert_part(parent,msg,part_file):
 
     # success: log insertion
 
-    msg.log_publish(201,'Inserted')
+    msg.report_publish(201,'Inserted')
 
     # publish now, if needed, that it is inserted
 
@@ -154,7 +154,7 @@ def file_insert_part(parent,msg,part_file):
           else: msg.set_sum(msg.sumflg,  msg.onfly_checksum)
 
        parent.__on_post__()
-       msg.log_publish(201,'Publish')
+       msg.report_publish(201,'Publish')
 
     # if lastchunk, check if file needs to be truncated
     file_truncate(parent,msg)
@@ -182,7 +182,7 @@ def file_link( msg ) :
     msg.compute_local_checksum()
     msg.onfly_checksum = msg.local_checksum
 
-    msg.log_publish( 201, 'Linked')
+    msg.report_publish( 201, 'Linked')
 
     return True
 
@@ -210,7 +210,7 @@ def file_process( parent ) :
              (stype, svalue, tb) = sys.exc_info()
              msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-    msg.log_publish(499,'Not Copied')
+    msg.report_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.url.path,msg.local_file))
 
     return False
@@ -317,7 +317,7 @@ def file_write_length(req,msg,bufsize):
   
     if chk : msg.onfly_checksum = chk.get_value()
 
-    msg.log_publish(201,'Copied')
+    msg.report_publish(201,'Copied')
 
     return True
 
@@ -342,7 +342,7 @@ def file_truncate(parent,msg):
 
                 msg.set_topic_url('v02.post',msg.target_url)
                 msg.set_notice(msg.target_url,msg.time)
-                msg.log_publish(205, 'Reset Content :truncated')
+                msg.report_publish(205, 'Reset Content :truncated')
 
     except : pass
 

@@ -160,7 +160,7 @@ class sr_sarra(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
-        self.msg.log_publisher = self.consumer.publish_back()
+        self.msg.report_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
         self.logger.info("reportback to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
@@ -218,10 +218,10 @@ class sr_sarra(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.log_publish(503,"Unable to process")
+                self.msg.report_publish(503,"Unable to process")
                 self.logger.error("sr_sarra: could not download")
 
-        self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+        self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
@@ -274,7 +274,7 @@ class sr_sarra(sr_instances):
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
-           self.msg.log_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+           self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
            self.logger.error("message without destination amqp header['to_clusters']")
            return False
 
@@ -404,7 +404,7 @@ class sr_sarra(sr_instances):
            self.msg.set_topic_url('v02.post',self.msg.local_url)
            self.msg.set_notice(self.msg.local_url,self.msg.time)
            self.__on_post__()
-           self.msg.log_publish(205,'Reset Content : deleted')
+           self.msg.report_publish(205,'Reset Content : deleted')
            return True
 
         #=================================
@@ -424,7 +424,7 @@ class sr_sarra(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
-           self.msg.log_publish(304, 'not modified')
+           self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.msg.local_file)
 
            # if we are processing an entire file... we are done
@@ -449,7 +449,7 @@ class sr_sarra(sr_instances):
 
            if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
               self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
-              self.msg.log_publish(205,'Reset Content : checksum')
+              self.msg.report_publish(205,'Reset Content : checksum')
 
            # onfly checksum is different from the message ???
            if not self.msg.onfly_checksum == self.msg.checksum :
@@ -461,12 +461,12 @@ class sr_sarra(sr_instances):
               if self.recompute_chksum :
                  #self.msg.compute_local_checksum()
                  self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
-                 self.msg.log_publish(205,'Reset Content : checksum')
+                 self.msg.report_publish(205,'Reset Content : checksum')
 
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              self.msg.log_publish(307,'Temporary Redirect')
+              self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
@@ -515,7 +515,7 @@ class sr_sarra(sr_instances):
         self.msg.set_topic_url('v02.post',self.msg.local_url)
         self.msg.set_notice(self.msg.local_url,self.msg.time)
         self.__on_post__()
-        self.msg.log_publish(201,'Published')
+        self.msg.report_publish(201,'Published')
 
         if self.msg.partflg == '1' : return True
       
@@ -596,7 +596,7 @@ class sr_sarra(sr_instances):
 
     def set_cluster(self):
         if self.cluster == None :
-           self.msg.log_publish(403,"Forbidden : message without cluster")
+           self.msg.report_publish(403,"Forbidden : message without cluster")
            self.logger.error("Forbidden : message without cluster")
            return False
 
@@ -606,7 +606,7 @@ class sr_sarra(sr_instances):
     def set_source(self):
         if self.msg.exchange[:3] != 'xs_' :
            self.logger.error("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
-           self.msg.log_publish(403,"Forbidden : message without source")
+           self.msg.report_publish(403,"Forbidden : message without source")
            self.logger.error("Forbidden : message without source")
            return False
 

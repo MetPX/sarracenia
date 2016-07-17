@@ -50,7 +50,7 @@ class sr_message():
 
         self.exchange      = None
         self.log_exchange  = 'xreport'
-        self.log_publisher = None
+        self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
         self.topic         = None
@@ -165,15 +165,15 @@ class sr_message():
     def get_elapse(self):
         return time.time()-self.tbegin
 
-    def log_publish(self,code,message):
+    def report_publish(self,code,message):
         self.code               = code
         self.headers['message'] = message
         self.log_topic          = self.topic.replace('.post.','.log.')
         self.log_notice         = "%s %d %s %s %f" % \
                                   (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.set_hdrstr()
-        if self.log_publisher != None :
-           self.log_publisher.publish(self.log_exchange,self.log_topic,self.log_notice,self.headers)
+        if self.report_publisher != None :
+           self.report_publisher.publish(self.log_exchange,self.log_topic,self.log_notice,self.headers)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.log_topic,self.log_notice,self.hdrstr))
 

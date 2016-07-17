@@ -120,7 +120,7 @@ class sr_subscribe(sr_instances):
 
         if self.reportback :
            self.publisher         = self.consumer.publish_back()
-           self.msg.log_publisher = self.publisher
+           self.msg.report_publisher = self.publisher
            self.msg.log_exchange  = 'xs_' + self.broker.username
            self.logger.info("reportback to %s@%s, exchange: %s" % 
                ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
@@ -161,10 +161,10 @@ class sr_subscribe(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.log_publish(503,"Unable to process")
+                self.msg.report_publish(503,"Unable to process")
                 self.logger.error("sr_subscribe: Could not download")
 
-        self.msg.log_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+        self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
 
     def help(self):
@@ -293,7 +293,7 @@ class sr_subscribe(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
-           self.msg.log_publish(304, 'not modified')
+           self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.msg.local_file)
 
            # if we are processing an entire file... we are done
@@ -317,7 +317,7 @@ class sr_subscribe(sr_instances):
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              self.msg.log_publish(307,'Temporary Redirect')
+              self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)

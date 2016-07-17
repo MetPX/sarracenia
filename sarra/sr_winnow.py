@@ -145,7 +145,7 @@ class sr_winnow(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
-        self.msg.log_publisher = self.consumer.publish_back()
+        self.msg.report_publisher = self.consumer.publish_back()
         self.msg.log_exchange  = self.log_exchange
         self.msg.user          = self.broker.username
 
@@ -253,7 +253,7 @@ class sr_winnow(sr_instances):
         key=str(self.msg.headers['filename']) + "|" + str(self.msg.block_count) + "|" +str(self.msg.checksum)
 
         if self.cache_find(key) :
-            self.msg.log_publish(304,'Not modified')
+            self.msg.report_publish(304,'Not modified')
             self.logger.debug("Ignored %s" % (self.msg.notice))
             return True
 
@@ -263,7 +263,7 @@ class sr_winnow(sr_instances):
         # announcing the first and unique message
 
         self.__on_post__()
-        self.msg.log_publish(201,'Published')
+        self.msg.report_publish(201,'Published')
 
         return True
 
