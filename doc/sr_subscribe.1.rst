@@ -258,7 +258,7 @@ and that download stream can be multi-streamed as well.
 RABBITMQ LOGGING
 ----------------
 
-For each download, by default, an amqp log message is sent back to the broker.
+For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
 - **no_logback <boolean>        (default: False)** 
@@ -323,7 +323,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

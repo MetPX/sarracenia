@@ -18,7 +18,7 @@ SYNOPSIS
 
  - **sr_component** <config> [foreground|start|stop|restart|status]
  - **<config_dir>**/ [ default.conf ]
- - **<config_dir>**/ [ sarra | subscribe | log | sender ] / <config.conf>
+ - **<config_dir>**/ [ sarra | subscribe | report | sender ] / <config.conf>
  - **<config_dir>**/ scripts / <script.py>
 
 
@@ -702,10 +702,10 @@ Role:
 
 subscriber
 
-  A subscriber is user that can only subscribe to data and return log messages. Subscribers are
+  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump, 
   where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange 
-  is where an sr_subscribe process will send it's log messages.
+  is where an sr_subscribe process will send it's report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -719,8 +719,8 @@ source
   those collection activities might use a single 'source' account.
 
   Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send log messages about processing and receipt of data. source may also have an xl_<user>
-  exchange where, as per log routing configurations, log messages of consumers will be sent.
+  to send report messages about processing and receipt of data. source may also have an xl_<user>
+  exchange where, as per report routing configurations, report messages of consumers will be sent.
 
 
 
@@ -820,7 +820,7 @@ A variety of example configuration files are available here:
 SEE ALSO
 ========
 
-`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

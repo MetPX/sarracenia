@@ -31,7 +31,7 @@ Introduction
 ------------
 
 Sarracenia pumps form a network.  The network use rabbitmq brokers as a transfer manager
-which sends advertisements in one direction and log messages in the opposite direction.
+which sends advertisements in one direction and report messages in the opposite direction.
 Administrators configure the paths that data flows through at each pump, as each broker acts 
 independently, managing transfers from transfer engines it can reach, with no knowledge of 
 the overall network.  The locations of pump and the directions of traffic flow are 
@@ -192,19 +192,19 @@ A description of the conventional flow of messages through exchanges on a pump:
 
 - A user named Alice will have two exchanges:
 
-  - xs_Alice the exhange where Alice posts her files and log messages.(via many tools)
-  - xl_Alice the exchange where Alice reads her log messages from (via sr_report)
+  - xs_Alice the exhange where Alice posts her file notifications and report messages.(via many tools)
+  - xr_Alice the exchange where Alice reads her report messages from (via sr_report)
 
 - usually sr_sarra will read from xs_alice, retrieve the data corresponding to Alice´s *post* 
   message, and make it available on the pump, by re-announcing it on the xpublic exchange.
 
 - sr_winnow may pull from xs_alice instead, but follows the same pattern as sr_sarra.
 
-- usually, sr_2xreport will read xs_alice and copy the log messages onto the private xreport exchange.
+- usually, sr_2xreport will read xs_alice and copy the report messages onto the private xreport exchange.
 
 - Admins can point sr_report at the xreport exchange to get system-wide monitoring.
   Alice will not have permission to do that, she can only look at xl_Alice, which should have
-  the log messages pertinent to her.
+  the report messages pertinent to her.
 
 - sr_report2source looks at messages for the local Alice user in xreport, and sends them to xl_Alice.
 
@@ -239,10 +239,10 @@ role can be one of:
 
 subscriber
 
-  A subscriber is user that can only subscribe to data and return log messages. Not permitted to inject data.
+  A subscriber is user that can only subscribe to data and report messages. Not permitted to inject data.
   Each subscriber gets an xs_<user> named exchange on the pump, where if a user is named *Acme*, 
   the corresponding exchange will be *xs_Acme*.  This exchange is where an sr_subscribe
-  process will send it's log messages.
+  process will send it's report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account. 
@@ -255,11 +255,11 @@ source
   email or phone number for questions about the data and it's availability, then all of 
   those collection activities might use a single 'source' account.
   
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send log messages about processing and receipt of data.
+  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber,
+  to send report messages about processing and receipt of data.
 
   Each source is able to view all of the messages for data it has injected, but the location where
-  all of these messages are available varies according to administrator configuration of log routing.
+  all of these messages are available varies according to administrator configuration of report routing.
   So a source may inject data on pumpA, but may subscribe to logs on a different pump. The logs
   corresponding to the data the source injected are written in exchange xl_<user>. 
 
@@ -348,9 +348,9 @@ The processes that are typically run on a broker:
 - sr_sender  - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
 - sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
 - sr_shovel  - copy advertisements from pump to another, usually to feed sr_winnow.
-- sr_report2cluster - copy log messages from the xreport exchange for data that came from another cluster, to where they should go.
-- sr_2xreport   - copy log message is posted users on this cluster to the xreport exchange. 
-- sr_report2source - copy log messages from the xreport exchange to the source that should get it.
+- sr_report2cluster - copy report messages from the xreport exchange for data that came from another cluster, to where they should go.
+- sr_2xreport   - copy report message is posted users on this cluster to the xreport exchange. 
+- sr_report2source - copy report messages from the xreport exchange to the source that should get it.
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once.  To do so easily, one can invoke:
@@ -364,7 +364,7 @@ They are set in ~/.config/sarra/default.conf like so:
   feeder amqp://pumpUser@localhost/
   admin  amqps://adminUser@boule.example.com/
 
-Then the log and audit components are started as well.  It is standard practice to use a different
+Then the report and audit components are started as well.  It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, which are performed by the admin
 user,  from data flow tasks, such as pulling and posting data, performed by the feeder user.
 Normally one would place credentials in ~/.config/sarra/credentials.conf
@@ -803,13 +803,13 @@ In short, here are the permissions and exchanges *sr_audit* manages::
   admin user        : the only one creating users...
   admin/feeder users: have all permission over queues and exchanges
 
-  subscribe user    : can write log messages to exchange   xs_<brokerUser> created for him
+  subscribe user    : can write report messages to exchange   xs_<brokerUser> created for him
                       can read post messages from exchange xpublic
                       have all permissions on queue named  q_<brokerUser>*
 
   source user       : can write post messages   to exchange xs_<brokerUser> created for him
                       can read post messages from exchange  xpublic
-                      can read  log messages from exchange  xl_<brokerUser> created for him
+                      can read  report messages from exchange  xl_<brokerUser> created for him
                       have all permissions on queue named   q_<brokerUser>*
 
 
@@ -983,7 +983,7 @@ As the configuration is working properly, rename it to so that it will be used o
 Reports
 ~~~~~~~
 
-Now that data is flowing, we need to take a look at the flow of log messages, which essentially are used by each pump to tell
+Now that data is flowing, we need to take a look at the flow of report messages, which essentially are used by each pump to tell
 upstream that data has been downloaded. add the following line to ~sarra/.config/sarrra/default.conf::
 
   report_daemons
@@ -1403,7 +1403,7 @@ Sarracenia users are actually users defined on rabbitmq brokers.
 Each user Alice, on a broker to which she has access:
 
  - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
- - has an exchange xl_Alice, where she reads her log messages.
+ - has an exchange xr_Alice, where she reads her report messages.
  - can configure (read from and acknowledge) queues named qs_Alice\_.* to bind to exchanges
  - Alice can create and destroy her own queues, but no-one else's.
  - Alice can only write to her exchange (xs_Alice),
@@ -1434,7 +1434,7 @@ there is a malformed header of some kind, it should be rejected immediately.  On
 should be forwarded for further processing.
 
 In the case of sr_sarra, the checksum is re-calculated when downloading the data, it
-ensures it matches the message.  If they do not match, an error log message is published.
+ensures it matches the message.  If they do not match, an error report message is published.
 If the *recompute_checksum* option is True, the newly calculated checksum is put into the message.
 Depending on the level of confidence between a pair of pumps, the level of validation may be
 relaxed to improve performance.  
@@ -1450,7 +1450,7 @@ If the message fails the non-local cluster test, it should be rejected, and logg
 
 .. NOTE::
  FIXME:
-   - if the source is not good, and the cluster is not good... cannot log back. so just log locally?
+   - if the source is not good, and the cluster is not good... cannot report back. so just log locally?
 
 
 Privileged System Access

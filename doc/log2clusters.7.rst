@@ -42,7 +42,7 @@ BROKER_URL
 ----------
 
 The broker_url sets the rabbitmq configurations of the broker that should receives
-the log messages for each message that contains the **headers['from_cluster'] = cluster_Name**.
+the report messages for each message that contains the **headers['from_cluster'] = cluster_Name**.
 The broker_url field sets all the credential information to connect to the **AMQP** server 
 
 **--broker|-b amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**

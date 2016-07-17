@@ -29,11 +29,11 @@ DESCRIPTION
 
 **sr_report2clusters** is a program that reads the file `report2clusters(7) <report2clusters.7.html>`_.
 An instance of **sr_report2clusters** is started for each line of the config file
-that defines a cluster name log target : 'cluster_Name broker_Url exchange_Log'.
+that defines a cluster name report target : 'cluster_Name broker_Url report_exchange'.
 
 Each **sr_report2clusters** instance connects to the <broker> from the command line
 and the **broker_Url** from the **report_routing.conf** entry.
-From the <broker> it subscribes to all log messages. 
+From the <broker> it subscribes to all reports. 
 When the notification **headers['from_cluster']** matches the **cluster_Name**,
 **sr_report2clusters** publish it back to the **broker_Url** under exchange **exchange_Log**.
 all other notifications are ignored.

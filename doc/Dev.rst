@@ -186,7 +186,7 @@ self-test operations, and store the credentials in the normal credentials.conf f
 No passwords or key files should be stored in the source tree, as part of a self-test
 suite.
 
-Perhaps in a separate window if you want to see output separately, a log message is 
+Perhaps in a separate window if you want to see output separately, a report message is 
 printed for each GET the server answers. the setup script starts a trivial web server,
 and defines some fixed test clients that will be used during self-tests::
 
@@ -478,7 +478,7 @@ When to Report
 --------------
 
 sr_report(7) messages should be emitted to indicate final disposition of the data itself, not 
-any notifications or log messages (don't report log messages, it becomes an infinite loop!)
+any notifications or report messages (don't report report messages, it becomes an infinite loop!)
 For debugging and other information, the local log file is used.  For example, sr_shovel does 
 not emit any sr_report(7) messages, because no data is transferred, only messages.
 

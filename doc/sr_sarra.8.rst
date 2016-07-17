@@ -307,7 +307,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

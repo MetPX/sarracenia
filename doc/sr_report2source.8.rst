@@ -21,19 +21,19 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-The administrator daemon to copy log messages to the relevant source.
-**sr_report2source** subscribes to all log messages 
+The administrator daemon to copy report messages to the relevant source.
+**sr_report2source** subscribes to all report messages 
 (posted on the xlog exchange), ignoring the ones not from the current cluster, 
 and copying those that concern "source" to the xs\_"source"' exchange, where
 the user concerned can read them.
 
-The log notification protocol is defined here `sr_report(7) <sr_report.7.html>`_
+The report notification protocol is defined here `sr_report(7) <sr_report.7.html>`_
 
-**sr_report2source** connects to a *broker* and subscribes to all log messages. 
+**sr_report2source** connects to a *broker* and subscribes to all report messages. 
 It uses the **from_cluster** 
 field in the notification header to make sure it will process its logs. It uses
-the **source** field in the notification header to post to exchange 'xl\_'source
-the log messages. Any other log messages are skipped.
+the **source** field in the notification header to post to exchange 'xr\_'source
+the report messages. Any other messages are skipped.
 
 The **sr_report2source** command can takes 3 arguments: a broker, a number of instances,
 followed by an action start|stop|restart|reload|status... (self described).
@@ -55,7 +55,7 @@ the **AMQP** server:
 
       (default: amqp://guest:guest@localhost/ ) 
 
-Once connected to an AMQP broker, **sr_report2source** it will process all log messages. 
+Once connected to an AMQP broker, **sr_report2source** it will process all report messages. 
 
 
 
@@ -65,7 +65,7 @@ SEE ALSO
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of log messages.
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
@@ -75,5 +75,5 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
-`sr_report2clusters(8) <sr_report2clusters.8.html>`_ - the inter-cluster log copy daemon.
+`sr_report2clusters(8) <sr_report2clusters.8.html>`_ - the inter-cluster report copy daemon.
 

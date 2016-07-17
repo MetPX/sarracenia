@@ -59,13 +59,13 @@ sending far more efficient.
 
 Sources of data announce their products, pumping systems pull the data using HTTP 
 or SFTP onto their WAF trees, and then announce their trees for downstream clients.  
-When clients download data, they may write a log message back to the server.  Servers 
-are configured to forward those client log messages back through the intervening 
+When clients download data, they may write a report message back to the server.  Servers 
+are configured to forward those client report messages back through the intervening 
 servers back to the source.  The Source can see the entire path that the data took 
 to get to each client.  With traditional switching applications, sources only see 
 that they delivered to the first hop in a chain. Beyond that first hop, routing is 
 opaque, and tracing the path of data required assistance from administrators of each 
-intervening system.  With Sarracenia's log forwarding, the switching network is 
+intervening system.  With Sarracenia's report forwarding, the switching network is 
 relatively transparent to the sources.  Diagnostics are vastly simplified.
 
 For large files / high performance, files are segmented on ingest if they are sufficiently
@@ -103,18 +103,18 @@ Traditional Unix style manual pages for commands:
   - `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
   - `sr_post(1) <sr_post.1.html>`_ - the tool to post individual files.
   - `sr_watch(1) <sr_watch.1.html>`_ - the tool to post all changes to a given directory.
-  - `sr_report(1) <sr_report.1.html>`_ - (Does not exist yet!) the tool to read log messages.
+  - `sr_report(1) <sr_report.1.html>`_ - (Does not exist yet!) the tool to read report messages.
 
 administrative daemons:
   - `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
-  - `sr_report2clusters(8) <sr_report2clusters.8.html>`_ - daemon to copy log messages to other clusters.
-  - `sr_report2source(8) <sr_report2source.8.html>`_ - daemon to copy log messages to the originating source.
+  - `sr_report2clusters(8) <sr_report2clusters.8.html>`_ - daemon to copy report messages to other clusters.
+  - `sr_report2source(8) <sr_report2source.8.html>`_ - daemon to copy report messages to the originating source.
 
 and formats/protocols:
 
   - `sr_post(7) <sr_post.7.html>`_ - the format of postings.   Posted by watch and post, consumed by subscribe.
-  - `sr_report(7) <sr_report.7.html>`_ - the format of log messages.  Sent by consumers, for sources to measure reach.
-  - `report2clusters(7) <report2clusters.7.html>`_ - configuration of log routing between clusters.
+  - `sr_report(7) <sr_report.7.html>`_ - the format of report messages.  Sent by consumers, for sources to measure reach.
+  - `report2clusters(7) <report2clusters.7.html>`_ - configuration of report routing between clusters.
 
 
 Why not just use Rsync?

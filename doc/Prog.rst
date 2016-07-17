@@ -159,7 +159,7 @@ Another good location to browse is::
 
 The git repository with many plugins available to reference.
 
-For example, the default settings of on_msg and on_file print log messages
+For example, the default settings of on_msg and on_file print report messages
 for each message and file processed.  
 
 
@@ -305,7 +305,7 @@ if one sets **on_message msg_dump** in a configuration, the entire
 list of available variables can be displayed in a log file::
 
 Make the above file an on_file (or other trigger) script in a configuration, start up a receiver 
-(and if it is a busy one, then stop it immediately, as it creates very large log messages for 
+(and if it is a busy one, then stop it immediately, as it creates very large report messages for 
 every message received.)  Essentially the entire program state is available to plugins. 
 
 A sample output is shown (reformatted for legibility) is given below.  For every field *xx* listed,

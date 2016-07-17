@@ -31,13 +31,13 @@ sending far more efficient.
 
 Sources of data announce their products, pumping systems pull the data using HTTP
 or SFTP onto their WAF trees, and then announce their trees for downstream clients.
-When clients download data, they may write a log message back to the server.  Servers
-are configured to forward those client log messages back through the intervening
+When clients download data, they may write a report message back to the server.  Servers
+are configured to forward those client report messages back through the intervening
 servers back to the source.  The Source can see the entire path that the data took
 to get to each client.  With traditional switching applications, sources only see
 that they delivered to the first hop in a chain. Beyond that first hop, routing is
 opaque, and tracing the path of data required assistance from administrators of each
-intervening system.  With Sarracenia's log forwarding, the switching network is
+intervening system.  With Sarracenia's report forwarding, the switching network is
 relatively transparent to the sources.  Diagnostics are vastly simplified.
 
 For large files / high performance, files are segmented on ingest if they are sufficiently

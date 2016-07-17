@@ -329,17 +329,17 @@ If the sr_post worked, that means the pump accepted to take a look at your file.
 To find out where your data goes to afterward , one needs to examine source
 log messages. It is also important to note that the initial pump, or any other pump 
 downstream, may refuse to forward your data for various reasons, that will only
-be reported to the source in these log messages.  
+be reported to the source in these report messages.  
 
-To view source log messages, the sr_report command is just a version of sr_subscribe, with the
+To view source report messages, the sr_report command is just a version of sr_subscribe, with the
 same options where they make sense. If the configuration file (~/.config/sarra/default.conf) 
 is set up, then all that is needed is::
 
   sr_report
 
-to view log messages indicating what has happenned to the items inserted into the 
+to view report messages indicating what has happenned to the items inserted into the 
 network from the same pump using that account (rnd, in the example.) One can trigger 
-arbitrary post processing of log messages by using on_message plugin.
+arbitrary post processing of report messages by using on_message plugin.
 
 .. note::
    FIXME: need some examples.
@@ -360,7 +360,7 @@ traverse a given path, the part must be no larger than the threshold setting
 of all the intervening pumps.  A pump will send the source an error log
 message if it refuses to forward a file.
 
-As each part is announced, so there is a corresponding log message for
+As each part is announced, so there is a corresponding report message for
 each part.  This allows senders to monitor progress of delivery of large
 files.
 
@@ -481,7 +481,7 @@ be able to compensate for with multiple instances (the penalty is simply too lar
 Consider, for example, Common Alerting Protocol (CAP) messages for weather alerts.  These alerts routinely 
 exceed 100 KBytes in size, wheras a sarracenia message is on the order of 200 bytes.  The sarracenia messages
 go to many more recipients than the alert: anyone considering downloading an alert, as oppposed to just the ones
-the subscriber is actually interested in, and this metadata will also be included in the log messages,
+the subscriber is actually interested in, and this metadata will also be included in the report messages,
 and so replicated in many additional locations where the data itself will not be present.
 
 Including all the information that is in the CAP would mean just in terms of pure transport 500 times 
