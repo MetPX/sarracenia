@@ -33,5 +33,5 @@ if [ -f .httpdocroot ]; then
    echo " you may want to rm -rf `cat .httpdocroot` "
 fi
 
-echo " you may want to rm ~/.cache/sarra/var/log/*.log  "
+echo " you may want to rm -rf ~/.cache/sarra/var  "
 

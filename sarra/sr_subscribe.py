@@ -99,7 +99,6 @@ class sr_subscribe(sr_instances):
         self.inplace        = True
         self.lock           = '.tmp'
         self.mirror         = False
-        self.reportback     = True
 
     def connect(self):
 

@@ -86,8 +86,8 @@ class sr_audit(sr_instances):
 
         #if u == 'anonymous' :
         #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-        #   w="write='^q_%s.*|^xs_%s$|xreport|^cmc.*$'"%(u,u)
-        #   r="read='^q_%s.*|^xr_%s$|xpublic|^cmc.*$'"%(u,u)
+        #   w="write='^q_%s.*|^xs_%s$|xlog|xreport|^cmc.*$'"%(u,u)
+        #   r="read='^q_%s.*|^xr_%s$|xlog|xpublic|^cmc.*$'"%(u,u)
         #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
         #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
         #   return
@@ -223,7 +223,7 @@ class sr_audit(sr_instances):
 
         # mandatory xreport,xpublic
 
-        for e in ['xreport','xpublic','xwinnow'] :
+        for e in ['xlog', 'xreport','xpublic','xwinnow'] : # xlog left there for compatibility.
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue

@@ -1223,7 +1223,7 @@ class sr_config:
                      self.rename = words1
                      n = 2
 
-                elif words0 in ['reportback','rb']:  # See: sr_subscribe.1
+                elif words0 in ['report_back','rb']:  # See: sr_subscribe.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.reportback = True
                         n = 1
