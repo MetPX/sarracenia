@@ -49,7 +49,7 @@ class sr_message():
         self.bufsize       = parent.bufsize
 
         self.exchange      = None
-        self.log_exchange  = 'xreport'
+        self.report_exchange  = 'xreport'
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -168,14 +168,14 @@ class sr_message():
     def report_publish(self,code,message):
         self.code               = code
         self.headers['message'] = message
-        self.log_topic          = self.topic.replace('.post.','.log.')
-        self.log_notice         = "%s %d %s %s %f" % \
+        self.log_topic          = self.topic.replace('.post.','.report.')
+        self.report_notice         = "%s %d %s %s %f" % \
                                   (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.set_hdrstr()
         if self.report_publisher != None :
-           self.report_publisher.publish(self.log_exchange,self.log_topic,self.log_notice,self.headers)
+           self.report_publisher.publish(self.report_exchange,self.log_topic,self.report_notice,self.headers)
 
-        self.logger.debug("%d %s : %s %s %s" % (code,message,self.log_topic,self.log_notice,self.hdrstr))
+        self.logger.debug("%d %s : %s %s %s" % (code,message,self.log_topic,self.report_notice,self.hdrstr))
 
         # make sure not published again
         del self.headers['message']
@@ -235,9 +235,9 @@ class sr_message():
         self.path    = token[2]
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
-           self.log_code   = int(token[3])
-           self.log_host   = token[4]
-           self.log_user   = token[5]
+           self.report_code   = int(token[3])
+           self.report_host   = token[4]
+           self.report_user   = token[5]
            self.log_elapse = float(token[6])
 
         self.partstr = None

@@ -290,7 +290,7 @@ class sr_config:
 
         self.loglevel             = logging.INFO
         self.logrotate            = 5
-        self.log_daemons          = False
+        self.report_daemons          = False
 
         self.bufsize              = 8192
         self.kbytes_ps            = 0
@@ -326,7 +326,7 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.log_exchange         = 'xreport'
+        self.report_exchange         = 'xreport'
         # 
 
         # publish
@@ -468,12 +468,12 @@ class sr_config:
 
 
         # read in provided log cluster infos
-        log_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
-        self.log_clusters = {}
+        report_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
+        self.report_clusters = {}
         i = 0
         try :
-              if os.path.exists(log_cluster):
-                 f = open(log_cluster,'r')
+              if os.path.exists(report_cluster):
+                 f = open(report_cluster,'r')
                  lines = f.readlines()
                  f.close
                  for line in lines :
@@ -487,14 +487,14 @@ class sr_config:
                         self.logger.error("invalid URL %s" % parts[1])
                      # fixme parts[2] exchange should be optional
                      exch  = parts[2]
-                     self.log_clusters[i] = (name,url,exch)
+                     self.report_clusters[i] = (name,url,exch)
                      i = i + 1
 
         # cluster file is not mandatory
         except : 
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("log_clusters = %s\n" % self.log_clusters)
+        self.logger.debug("report_clusters = %s\n" % self.report_clusters)
 
         # defaults.conf ... defaults for the server
         # at this level (for includes) user_config = self.user_config_dir
@@ -986,17 +986,17 @@ class sr_config:
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
-                elif words0 == 'report_daemons' or words0 == 'log_daemons': # See: sr_config.7 
-                     #-- log_daemons left for transition, should be removed in 2017
+                elif words0 == 'report_daemons' or words0 == 'report_daemons': # See: sr_config.7 
+                     #-- report_daemons left for transition, should be removed in 2017
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        self.log_daemons = True
+                        self.report_daemons = True
                         n = 1
                      else :
-                        self.log_daemons = self.isTrue(words[1])
+                        self.report_daemons = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['log_exchange', 'lx', 'le'] : # See: sr_config.7 ++ everywhere fixme?
-                     self.log_exchange = words1
+                elif words0 in ['report_exchange', 'lx', 'le'] : # See: sr_config.7 ++ everywhere fixme?
+                     self.report_exchange = words1
                      n = 2
 
                 elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?

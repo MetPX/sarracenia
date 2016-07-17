@@ -51,7 +51,7 @@
 # post_broker             = where sarra is running (manager)
 # post_exchange           = default to the value of exchange
 #
-# log_exchange            = xreport (sent back to broker)
+# report_exchange            = xreport (sent back to broker)
 #
 #============================================================
 #
@@ -132,10 +132,10 @@ class sr_shovel(sr_instances):
 
         if self.reportback :
             self.msg.report_publisher = self.consumer.publish_back()
-            self.msg.log_exchange  = self.log_exchange
+            self.msg.report_exchange  = self.report_exchange
 
             self.logger.info("reportback to %s@%s, exchange: %s" %
-                  ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
+                  ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
         else:
             self.logger.info( "reportback suppressed" )
 
@@ -172,7 +172,7 @@ class sr_shovel(sr_instances):
         print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
         print("\t\t\t* single directory wildcard (matches one directory)")
         print("\t\t\t# wildcard (matches rest)")
-        print("\tlog_exchange         <name>          (default: xreport)")
+        print("\treport_exchange         <name>          (default: xreport)")
         print("\nAMQP Queue settings:")
         print("\tdurable              <boolean>       (default: False)")
         print("\texpire               <minutes>       (default: None)")
@@ -276,10 +276,10 @@ class sr_shovel(sr_instances):
         self.exchange     = None
         self.topic_prefix = None
 
-        # FIX ME  log_exchange set to NONE
+        # FIX ME  report_exchange set to NONE
         # instead of xreport and make it mandatory perhaps ?
         # since it can be xreport or xs_remotepumpUsername ?
-        self.log_exchange = 'xreport'
+        self.report_exchange = 'xreport'
 
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are

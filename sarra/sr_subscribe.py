@@ -121,9 +121,9 @@ class sr_subscribe(sr_instances):
         if self.reportback :
            self.publisher         = self.consumer.publish_back()
            self.msg.report_publisher = self.publisher
-           self.msg.log_exchange  = 'xs_' + self.broker.username
+           self.msg.report_exchange  = 'xs_' + self.broker.username
            self.logger.info("reportback to %s@%s, exchange: %s" % 
-               ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
+               ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
         else:
            self.logger.warning("reportback suppressed")
 

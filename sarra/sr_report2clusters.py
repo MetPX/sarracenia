@@ -45,7 +45,7 @@
 #
 # conditions :
 #
-# Each line in report2clusters.conf (self.log_clusters) contains :
+# Each line in report2clusters.conf (self.report_clusters) contains :
 # cluster_name  cluster_broker  cluster_exchange
 # One instance of sr_report2clusters is fork for each of them
 #
@@ -92,9 +92,9 @@ class sr_report2clusters(sr_instances):
 
         # as many instances than cluster to route log to
 
-        self.logger.debug("log_clusters = %s" % self.log_clusters)
+        self.logger.debug("report_clusters = %s" % self.report_clusters)
 
-        self.nbr_instances = len(self.log_clusters)
+        self.nbr_instances = len(self.report_clusters)
 
     def close(self):
         self.consumer.close()
@@ -261,7 +261,7 @@ class sr_report2clusters(sr_instances):
 
         i = self.instance - 1
 
-        self.cluster_name, self.cluster_broker, self.cluster_exchange = self.log_clusters[i]
+        self.cluster_name, self.cluster_broker, self.cluster_exchange = self.report_clusters[i]
 
         self.queue_name  = 'q_' + self.broker.username + '.'
         self.queue_name += self.program_name + '.' + self.cluster_name + '.' + self.cluster_exchange
@@ -447,8 +447,8 @@ def main():
 
     report2clusters = sr_report2clusters(config,args)
 
-    if action != 'TEST' and  not report2clusters.log_daemons :
-       report2clusters.logger.info("sr_report2clusters will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not report2clusters.report_daemons :
+       report2clusters.logger.info("sr_report2clusters will not run (report_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
     if   action == 'reload' : report2clusters.reload_parent()

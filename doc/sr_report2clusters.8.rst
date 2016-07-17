@@ -1,7 +1,7 @@
 
-================
- SR_Log2clusters
-================
+===================
+ SR_Report2clusters
+===================
 
 --------------------------------------
 Return Log of the Products to Clusters
@@ -23,7 +23,7 @@ DESCRIPTION
 
 .. note:: 
    FIXME: think the config file scheme has changed is this right? PS.
-   FIXME: log_routing.conf entry? what's that? no documentation.
+   FIXME: report_routing.conf entry? what's that? no documentation.
    accepts broker as argument... hmm..
    P.S. not sure I understand any of this...
 
@@ -32,7 +32,7 @@ An instance of **sr_report2clusters** is started for each line of the config fil
 that defines a cluster name log target : 'cluster_Name broker_Url exchange_Log'.
 
 Each **sr_report2clusters** instance connects to the <broker> from the command line
-and the **broker_Url** from the **log_routing.conf** entry.
+and the **broker_Url** from the **report_routing.conf** entry.
 From the <broker> it subscribes to all log messages. 
 When the notification **headers['from_cluster']** matches the **cluster_Name**,
 **sr_report2clusters** publish it back to the **broker_Url** under exchange **exchange_Log**.

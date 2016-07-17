@@ -146,13 +146,13 @@ class sr_winnow(sr_instances):
 
         self.consumer          = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
-        self.msg.log_exchange  = self.log_exchange
+        self.msg.report_exchange  = self.report_exchange
         self.msg.user          = self.broker.username
 
         self.logger.info("reading from to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.exchange ) )
         self.logger.info("report back to %s@%s, exchange: %s" %
-               ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
+               ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
 
 
 

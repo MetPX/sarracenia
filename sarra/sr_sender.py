@@ -155,7 +155,7 @@ class sr_sender(sr_instances):
 
         self.consumer          = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
-        self.msg.log_exchange  = self.log_exchange
+        self.msg.report_exchange  = self.report_exchange
         self.msg.user          = self.details.url.username
         self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
         self.msg.post_exchange_split = self.post_exchange_split

@@ -322,7 +322,7 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'flatten': '/', 
   'exchange': 'xpublic',
   'discard': False,
-  'log_back': True,
+  'report_back': True,
   'source': None,
   'pidfile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd_0001.pid',
   'event': 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF',
@@ -402,7 +402,7 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'instance': 1,
   'sleep': 0,
   'user_cache_dir': '/local/home/peter/.cache/sarra',
-  'log_clusters': {},
+  'report_clusters': {},
   'strip': 0,
   'msg': <sarra.sr_message.sr_message object at 0x7f4fcdc54518>,
   'site_config_dir': '/etc/xdg/xdg-ubuntu/sarra',
@@ -420,7 +420,7 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'bufsize': 8192,
   'do_download': None,
   'post_exchange': None,
-  'log_exchange': 'xlog',
+  'report_exchange': 'xlog',
   'local_path': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
   'instance_name': 'sr_subscribe_dd_0001',
   'statefile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd.state',
@@ -458,7 +458,7 @@ and/or *parent.msg.header.parts*  in their code.)::
  'chunksize': 78, 
  'time': '20160617120454.820', 
  'path': 'bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
- 'log_exchange': 'xs_anonymous', 
+ 'report_exchange': 'xs_anonymous', 
  'part_ext': 'Part', 
  'topic_prefix': 'v02.post', 
  'current_block': 0, 
@@ -485,7 +485,7 @@ and/or *parent.msg.header.parts*  in their code.)::
       'rename': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
       'from_cluster': 'DD'}, 
  'hdrstr': 'parts=1,78,1,0,0 sum=d,ab1ba0020e91119fb024a2c115ccd908 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 message=Downloaded ', 
-  'log_notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 201 blacklab anonymous 3.591402', 
+  'report_notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 201 blacklab anonymous 3.591402', 
   'version': 'v02', 
   'parent': <sarra.sr_subscribe.sr_subscribe object at 0x7f775682b4a8>, 
   'logger': <logging.RootLogger object at 0x7f77563359e8>, 
@@ -494,7 +494,7 @@ and/or *parent.msg.header.parts*  in their code.)::
   'inplace': True, 
   'urlcred': 'http://dd2.weather.gc.ca/', 
   'sumstr': 'd,ab1ba0020e91119fb024a2c115ccd908', 
-  'log_topic': 'v02.report.bulletins.alphanumeric.20160617.CA.CWAO.12', 
+  'report_topic': 'v02.report.bulletins.alphanumeric.20160617.CA.CWAO.12', 
   'publisher': None, 
   'code': 201, 
   'urlstr': 'http://dd2.weather.gc.ca/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
@@ -502,7 +502,7 @@ and/or *parent.msg.header.parts*  in their code.)::
   'sumflg': 'd', 
   'offset': 0, 
   'partflg': '1', 
-  'log_publisher': <sarra.sr_amqp.Publisher object at 0x7f77551c7518>}
+  'report_publisher': <sarra.sr_amqp.Publisher object at 0x7f77551c7518>}
 
 
 ----------------------

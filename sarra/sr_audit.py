@@ -482,11 +482,11 @@ class sr_audit(sr_instances):
            self.logger.warning("   gateway_for ddi.edm,ddi1.edm,ddi2.edm")
            warning += 1
 
-        if self.log_clusters != {} :
+        if self.report_clusters != {} :
            self.logger.info("**** log2clusters.conf file present *****")
            self.logger.info("log2clusters.conf")
-           for  i in self.log_clusters :
-                cluster,broker,exchange = self.log_clusters[i]
+           for  i in self.report_clusters :
+                cluster,broker,exchange = self.report_clusters[i]
                 self.logger.info("name %s  url %s exchange %s" % (cluster,broker.geturl(),exchange))
         else :
            self.logger.warning("**** log2clusters.conf file not present but not mandatory *****")

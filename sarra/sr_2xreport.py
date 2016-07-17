@@ -161,8 +161,8 @@ class sr_2xreport(sr_instances):
 
         # is the log message from a source on this cluster
 
-        if not hasattr(self.msg,'log_user')  or self.msg.log_user != self.subscriber:
-           self.logger.debug("skipped : log_user is not subscriber %s " % self.subscriber)
+        if not hasattr(self.msg,'report_user')  or self.msg.report_user != self.subscriber:
+           self.logger.debug("skipped : report_user is not subscriber %s " % self.subscriber)
            return False
 
         # yup this is one valid message from that suscriber
@@ -468,8 +468,8 @@ def main():
 
     toxreport = sr_2xreport(config,args)
 
-    if action != 'TEST' and  not toxreport.log_daemons :
-       toxreport.logger.info("sr_2xreport will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not toxreport.report_daemons :
+       toxreport.logger.info("sr_2xreport will not run (report_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
     if   action == 'reload' : toxreport.reload_parent()

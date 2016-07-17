@@ -57,7 +57,7 @@
 #                           message.headers['source']  is set from source_user
 #                           message.headers['cluster'] is set from option cluster from default.conf
 #                           message is built from url option give
-# log_exchange            = xreport
+# report_exchange            = xreport
 #
 #
 # condition 2: from another broker/pump
@@ -73,7 +73,7 @@
 #                           message.headers['source']  left as is
 #                           message.headers['cluster'] left as is 
 #                           option url : gives new url announcement for this product
-# log_exchange            = xs_"remoteBrokerUser"
+# report_exchange            = xs_"remoteBrokerUser"
 #
 #
 #============================================================
@@ -161,9 +161,9 @@ class sr_sarra(sr_instances):
 
         self.consumer          = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
-        self.msg.log_exchange  = self.log_exchange
+        self.msg.report_exchange  = self.report_exchange
         self.logger.info("reportback to %s@%s, exchange: %s" %
-               ( self.broker.username, self.broker.hostname, self.msg.log_exchange ) )
+               ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
  
 
         # =============
@@ -237,7 +237,7 @@ class sr_sarra(sr_instances):
         print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
         print("\t\t\t* single directory wildcard (matches one directory)")
         print("\t\t\t# wildcard (matches rest)")
-        print("\tlog_exchange         <name>          (default: xreport)")
+        print("\treport_exchange         <name>          (default: xreport)")
         print("\nAMQP Queue settings:")
         print("\tdurable              <boolean>       (default: False)")
         print("\texpire               <minutes>       (default: None)")
@@ -335,7 +335,7 @@ class sr_sarra(sr_instances):
 
         self.broker   = None
         self.exchange = None
-        # FIX ME  log_exchange set to NONE
+        # FIX ME  report_exchange set to NONE
         # instead of xreport and make it mandatory perhaps ?
         # since it can be xreport or xs_remotepumpUsername ?
 

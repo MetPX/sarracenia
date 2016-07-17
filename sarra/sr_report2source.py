@@ -389,8 +389,8 @@ def main():
 
     report2source = sr_report2source(config,args)
 
-    if action != 'TEST' and  not report2source.log_daemons :
-       report2source.logger.info("sr_report2source will not run (log_daemons), action '%s' ignored " % action)
+    if action != 'TEST' and  not report2source.report_daemons :
+       report2source.logger.info("sr_report2source will not run (report_daemons), action '%s' ignored " % action)
        sys.exit(0)
 
     if   action == 'reload' : report2source.reload_parent()
