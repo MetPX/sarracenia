@@ -467,6 +467,7 @@ These options set what files will be downloaded, where they will be placed,
 and under which name.
 
 - **directory <path>           (default: .)** 
+- **filename  <spec>           (default: WHATFN, which means no modification)**
 - **flatten   <boolean>        (default: false)** 
 - **inflight  <.string>        (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
@@ -541,12 +542,149 @@ results in the creating ::
 The  **overwrite**  option, when set, forces overwriting of an existing file even if it 
 has the same checksum as the newly advertised version.
 
+
+The **filename** option can be used to completely overwrite the delivery file name.
+The **regexp pattern** in an accept clause can be used to set numbered fields for use
+in subsequently building a destination path by placing a portion of the regex in parentheses. 
+One can use these numbered fields to build the directory name.  Example,
+in the configuration file:
+
+      directory /this/${0}/pattern/${1}/directory
+
+      accept .*(2016....).*(RAW.*GRIB).*
+
+if the message receiving a notice like::
+
+      20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC
+
+would result in the file being placed as follows::
+
+      /this/20160123/pattern/RAW_MERGER_GRIB/directory/20160123_product_RAW_MERGER_GRIB_from_CMC   
+
+
 .. note::
   FIXME: Is it correct for this to be different for sr_subscribe? why is default not False everywhere?
 
 
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery 
 speed in kilobytes per second... ftp,ftps,or sftp)
+
+
+
+SUNDEW COMPATIBILITY OPTIONS
+----------------------------
+
+**destfn_script <script> (default:None)**
+
+This destination file name script option defines a plugin to be run when 
+ready to deliver a product.  The script receives the component class instance 
+(same as an on_* plugin), with access to all its variables.  Any modification 
+to  **parent.remote_file**, for example, will set a new destination filename
+
+**filename <keyword> (default:WHATFN)**
+
+The support of this option give all sorts of possibilities for setting the remote 
+filename. Some **keywords** are based on the fact that **metpx-sundew** filenames 
+are five (to six) fields strings separated by for colons.  The possible keywords are:
+
+**WHATFN**
+ - the first part of the sundew filename (string before first :)
+
+**HEADFN**
+ - HEADER part of the sundew filename
+
+**SENDER**
+ - the sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+
+**NONE**
+ - deliver with the complete sundew filename (without :SENDER=...)
+
+**NONESENDER**
+ - deliver with the complete sundew filename (with :SENDER=...)
+
+**TIME**
+ - time stamp appended to filename. Example of use: WHATFN:TIME
+
+**DESTFN=str**
+ - direct filename declaration str
+
+**SATNET=1,2,3,A**
+ - cmc internal satnet application parameters
+
+**DESTFNSCRIPT=script.py**
+ - invoke a script (same as destfn_script) to generate the name of the file to write
+
+**accept <regexp pattern> [<keyword>]**
+
+keywords can also be added as a second argument to the **accept** option. The keyword is any one 
+of the **filename** option.  A message that matched against the accept regexp pattern, will have its remote_file
+modified as per this keyword option.  This keyword has priority over the preceeding **filename**.
+
+Examples::
+
+
+      filename NONE
+
+      directory /this/first/target/directory
+
+      accept .*file.*type1.*
+
+      directory /this/target/directory
+
+      accept .*file.*type2.*
+
+      accept .*file.*type3.*  DESTFN=file_of_type3
+
+      directory /this/${0}/pattern/${1}/directory
+
+      accept .*(2016....).*(RAW.*GRIB).*
+
+
+A selected message by the first accept would be delivered unchanged to the first directory.
+A selected message by the second accept would be delivered unchanged to the second directory.
+A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+A selected message by the forth accept would be delivered unchanged to a directory
+
+named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would have a notice like :
+
+**20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
+
+
+Field Replacements
+~~~~~~~~~~~~~~~~~~
+
+In MetPX Sundew, there is a much more strict file naming standard, specialised for use with World Meteorological
+Organization (WMO) data.   Note that the file naming convention predates, and bears no relation to the WMO file
+naming convention currently approved, but is strictly an internal format.   The files are separated into six fields
+by colon characters.  The first field, DESTFN, gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores
+replacing blanks:   TTAAii CCCC YYGGGg BBB ...  (see WMO manuals for details) followed by numbers to render the product
+unique (as in practice, though not in theory, there are a large number of products which have the same identifiers.)
+The meanings of the fifth field is a priority, and the last field is a date/time stamp.  A sample file name:
+
+SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
+
+
+If a file is sent to sarracenia and it is named according to the sundew conventions, then the following substition 
+fields are available::
+
+  ${T1}    replace by bulletin's T1
+  ${T2}    replace by bulletin's T2
+  ${A1}    replace by bulletin's A1
+  ${A2}    replace by bulletin's A2
+  ${ii}    replace by bulletin's ii
+  ${CCCC}  replace by bulletin's CCCC
+  ${YY}    replace by bulletin's YY   (obs. day)
+  ${GG}    replace by bulletin's GG   (obs. hour)
+  ${Gg}    replace by bulletin's Gg   (obs. minute)
+  ${BBB}   replace by bulletin's bbb
+  ${RYYYY} replace by reception year
+  ${RMM}   replace by reception month
+  ${RDD}   replace by reception day
+  ${RHH}   replace by reception hour
+  ${RMN}   replace by reception minutes
+  ${RSS}   replace by reception second
+
+The 'R' fields from from the sixth field, and the others come from the first one.
 
 
 LOGS
@@ -629,7 +767,7 @@ exchange onto the current cluster, with the feeder account.
 The user can overwrite the defaults with options :
 
 - **post_broker    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
-- **post_exchange_split   <number>        (default: 0)**
+- **post_exchange_split   <number>        (default: 0) EXPERIMENTAL!** 
 - **post_exchange   <name>        (default: None)**
 - **on_post         <script_name> (optional)**
 
@@ -645,9 +783,9 @@ True, the message is published... and False it wont.
 
 The **post_exchange_split** option is EXPERIMENTAL.  It appends a two digit suffix
 resulting from hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is used exclusively
-for multiple instances of sr_winnow, which cannot be instanced in the normal way.
-example::
+in order to divide the output amongst a number of exchanges.  This is currently used 
+in high traffic pumps to allow multiple instances of sr_winnow, which cannot be 
+instanced in the normal way.  example::
 
     post_exchange_split 5
     post_exchange xwinnow
