@@ -50,9 +50,6 @@ On Ubuntu 14.04/16.04::
   sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install python3-paramiko   # adds SFTP support.
 
-.. note::
-   FIXME: confirm that python3-paramiko is in our repo for 14.04?
-
 
 
 PIP
