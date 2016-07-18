@@ -9,7 +9,7 @@
 
 Status: Pre-Draft
 
-.. note::
+.. warning::
   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
@@ -676,7 +676,7 @@ you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding.
 Ensure the on_message plugin returns 'False' to prevent downloading.
 
 
-.. note:: 
+.. warning:: 
    **FIXME**: perhaps show a way of checking the parts header to 
    with an if statement in order to act on only the first part message
    for long files.
@@ -688,26 +688,28 @@ Ensure the on_message plugin returns 'False' to prevent downloading.
 do_scripts
 ----------
 
-FIXME
+.. warning::
+    **FIXME**
 
 -------
 Polling
 -------
 
-Sample polling.
+.. warning::
+    **FIXME** Sample polling.
 
 
 ----------------
 Checksum Plugins
 ----------------
 
-FIXME
-
-
+.. warning::
+    **FIXME**
 
 
 -------------------------------------
 Accessing Messages without Sarracenia
 -------------------------------------
 
-FIXME, link to amqplib, or java bindings, and a pointer to the sr_post and sr_report section 7 man pages.
+.. warning::
+    **FIXME**, link to amqplib, or java bindings, and a pointer to the sr_post and sr_report section 7 man pages.
