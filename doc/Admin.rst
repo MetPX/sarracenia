@@ -237,8 +237,7 @@ Pump users are defined with the *role* option. Each option starts with the *role
 keyword, followed by the specified role, and lastly the user name which has that role.
 role can be one of:
 
-subscriber
-
+subscriber 
   A subscriber is user that can only subscribe to data and report messages. Not permitted to inject data.
   Each subscriber gets an xs_<user> named exchange on the pump, where if a user is named *Acme*, 
   the corresponding exchange will be *xs_Acme*.  This exchange is where an sr_subscribe
@@ -247,8 +246,7 @@ subscriber
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account. 
 
-source
-
+source 
   A user permitted to subscribe or originate data.  A source does not necessarily represent 
   one person or type of data, but rather an organization responsible for the data produced.  
   So if an organization gathers and makes available ten kinds of data with a single contact 
@@ -284,8 +282,7 @@ source
    FIXME: monitor role is missing.  someone who can read all logs, but not change anything.
    Ideal for service desks, and security monitoring.
 
-feeder
-
+feeder 
   a user permitted to subscribe or originate data, but understood to represent a pump.
   this local pump user would be used to, run processes like sarra, report2source, 2xreport,
   report2cluster... etc
@@ -353,13 +350,13 @@ The processes that are typically run on a broker:
 - sr_report2source - copy report messages from the xreport exchange to the source that should get it.
 
 As for any other user, there may be any number of configurations
-to set up, and all of them may need to run at once.  To do so easily, one can invoke:
+to set up, and all of them may need to run at once.  To do so easily, one can invoke::
 
   sr start
 
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
 There are two users/roles that need to be set to use a pump. They are the admin and feeder options.
-They are set in ~/.config/sarra/default.conf like so:
+They are set in ~/.config/sarra/default.conf like so::
 
   feeder amqp://pumpUser@localhost/
   admin  amqps://adminUser@boule.example.com/
@@ -381,8 +378,7 @@ can choose to have the client self-destruct when disconnected (*auto-delete*), o
 it *durable* which means it should remain, waiting for the client to connect again, even across
 reboots.  Clients often want to pick up where they left off, so the queues need to stay around.
 
-sr_audit
-
+sr_audit 
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
 they will build up over time.  We have a script that looks for unused queues, and cleans them out.
 Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
@@ -397,8 +393,8 @@ Data
 The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
 sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
 
-.. note::
-  FIXME: sample sender to push to another pump.
+.. warning::
+  **FIXME**: sample sender to push to another pump.
   describe the to_cluster, gateway_for , and cluster options.
 
 Report
@@ -431,8 +427,7 @@ Canned sr_report configuration with an *on_message* action can be configured to
 gather statisical information. 
 
 .. NOTE::
-   FIXME:
-   first canned sr_report configuration would be speedo...
+   **FIXME:** first canned sr_report configuration would be speedo...
    speedo: total rate of posts/second, total rate of logs/second.
    question: should posts go to the log as well?
    before operations, we need to figure out how Nagios will monitor it.
@@ -566,9 +561,9 @@ has a single encrypted listener configured.
 
 .. NOTE::
 
-  currently, sr_audit expects the Management interface to be on port 15671 if encrypted,
+  Currently, sr_audit expects the Management interface to be on port 15671 if encrypted,
   15672 otherwise.  Sarra has no configuration setting to tell it otherwise.  Choosing another 
-  port will break sr_audit.  FIXME.
+  port will break sr_audit. **FIXME**.
 
 
 Change Defaults 
@@ -657,7 +652,7 @@ From this point root will not usually be needed, as all configuration can be don
 un-privileged *sarra* account.
 
 .. NOTE::
-   out of scope of this discussion, but aside from file system permissions, 
+   Out of scope of this discussion, but aside from file system permissions, 
    it is convenient to provide the sarra user sudo access to rabbitmqctl. 
    With that, the entire system can be administered without system administrative access.
 
@@ -741,7 +736,7 @@ The *sr_audit* program:
    (most common linux default intterupt character)
    or find some other way to kill the running process.
    
-   FIXME: when invoked with --users, sr_audit, should set a 'once' flag,
+   **FIXME:** when invoked with --users, sr_audit, should set a 'once' flag,
    and exist immediately, rather than looping.  
 
 One can inspect whether the sr_audit command did all it should using either the Management GUI
@@ -821,7 +816,7 @@ then run::
 
   sr_audit --users foreground
 
-which would create the user, then:
+which would create the user, then::
  
   rabbitmqctl change_password Alice <password>
 
@@ -930,26 +925,21 @@ Then we create a configuration::
 
 Compared to the subscription example provided in the previous example, We have added:
 
-exchange xpublic
-
+exchange xpublic 
   sarra is often used for specialized transfers, so the xpublic exchange is not assumed, as it is with subscribe.
 
-gateway_for DD
-
+gateway_for DD 
    sarra implements routing by cluster, so if data is not destined for this cluster, it will skip (not download) a product.
    Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so lets pretend to route
    for that, so that downloading happens.   
 
-url and document_root
-
+url and document_root 
    these are needed to build the local posts that will be posted to the ...
 
-post_broker
-  
+post_broker 
    where we will re-announce the files we have downloaded.
 
-mirror False
-
+mirror False 
   This is usually unnecessary, when copying between pumps, it is normal to just make direct copies.  
   However, the dd.weather.gc.ca pump predates the day/source prefix standard, so it is necessary for
   ease of cleanup.

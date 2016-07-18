@@ -7,7 +7,8 @@
 Receiving Data from a MetPX-Sarracenia Data Pump
 ------------------------------------------------
 
-Status: Pre-Draft
+.. warning::
+    **Pre-Draft**
 
 .. warning::
   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
