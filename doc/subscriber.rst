@@ -9,8 +9,9 @@ Receiving Data from a MetPX-Sarracenia Data Pump
 
 Status: Pre-Draft
 
-.. note::
+.. warning::
   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
+
   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. contents::
@@ -272,9 +273,10 @@ sr stop will also do what you would expect.  As will sr status.  Back to file re
 Refining Selection
 ------------------
 
-.. note:: 
-  **FIXME**: Make a picture, with a 
-  - broker at one end, and the subtopic apply there.
+.. warning:: 
+  **FIXME**: Make a picture, with a: 
+
+  - broker at one end, and the subtopic apply there.  
   - client at the other end, and the accept/reject apply there.
 
 The *accept* option applies on the sr_subscriber processes themselves,
@@ -554,7 +556,7 @@ names of files which have arrived, processing could be done far more quickly and
 
 The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by writing the names 
 of files downloaded to a named pipe.  setting this up required two lines in an sr_subscribe
-configuration file:
+configuration file::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
@@ -585,8 +587,9 @@ have been successfully downloaded, and typically much faster than polling method
    In the case where a large number of sr_subscribe instances are working
    On the same configuration, there is slight probability that notifications
    may corrupt one another in the named pipe.  
-   We should probably verify whether this probability is negligeable or not.
-   **FIXME**
+
+   **FIXME** We should probably verify whether this probability is negligeable or not.
+   
 
 
 
