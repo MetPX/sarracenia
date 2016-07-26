@@ -139,122 +139,7 @@ tested.  Please add self-tests as appropriate to this process to reflect the new
 Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
 can start a browser.
 
-0 - Install servers on localhost
-
-Install a minimal localhost broker, configure test users.
-with credentials stored for localhost::
-   
-   sudo apt-get install rabbitmq-server
-   sudo rabbitmq-plugins enable rabbitmq_management
-   echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
-   echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
-   echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
-   echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
-
-   cat >~/.config/sarra/default.conf <<EOT
-
-   broker amqp://tfeed@localhost/
-   cluster localhost
-   admin amqp://bunnymaster@localhost/
-   feeder amqp://tfeed@localhost/
-   role source tsource
-   role subscribe tsub
-   EOT
-
-   sudo rabbitmqctl delete_user guest
-   sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
-   sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
-   sudo rabbitmqctl set_user_tags bunnymaster administrator
-   cd /usr/local/bin
-   sudo wget http://localhost:15672/cli/rabbitmqadmin 
-   chmod 755 rabbbitmqadmin
-   sr_audit --users foreground
-
-   sudo rabbitmqctl change_password tsource TestSOUrCs
-   sudo rabbitmqctl change_password tsub TestSUBSCibe
-   sudo rabbitmqctl change_password tfeed TestFeeding
-   
-.. Note::
-
-   Please use other passwords in credentials for your configuration, just in case.
-   Passwords are not to be hard coded in self test suite.
-   The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
-
-
-The idea here is to use tsource, tsub, and tfeed as broker accounts for all
-self-test operations, and store the credentials in the normal credentials.conf file.
-No passwords or key files should be stored in the source tree, as part of a self-test
-suite.
-
-Perhaps in a separate window if you want to see output separately, a report message is 
-printed for each GET the server answers. the setup script starts a trivial web server,
-and defines some fixed test clients that will be used during self-tests::
-
-   cd sarracenia/test
-   . ./setup.sh
-
-setup.sh will install configuration files for:
-
-- two sr_shovel configurations to copy messages from from dd.weather.gc.ca
-- an sr_winnow to remove duplicates from the shovelled sources.
-- an sr_sarra to read the winnow output, and post fills mirrored on the trivial web server.
-- an sr_subscribe to down load the files from the local server.
-
-and starts this network of configurations running.
-
-1- rerun basic self test::
-
-   ./some_self_tests.sh
-
-.. notes::
-
-   FIXME: so far got first sr_credentials, sr_config, sr_consumer, sr_subscribe, sr_instances PASS.
-   FIXME: working on sr_poster.
-   FIXME: many tests refer to sites only accessible within EC zone.
-
-
-2- Run integration tests.
-   
-   The check.sh script reads the log files of all the components started, and compares the number
-   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the 
-   configuration to run before there is enough data to do the proper measurements.
-
-   ./check.sh
-
-   sample output::
-
-   blacklab% ./check.sh
-   initial sample building sample size 3421 need at least 1000 
-   test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
-   test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
-   test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
-   test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
-   blacklab% 
-
-
-
-3- Run and check results for
-
-   The following tests are self descriptive, but there is no obvious check of success. 
-   On must examine the output of the command and determine if the result is as intended.
-
-   test_sr_post.sh
-   test_sr_watch.sh
-   test_sr_subscribe.sh
-   test_sr_sarra.sh
-
-   Note :  some tests error ...
-           in test_sr_sarra.sh ... there are lots of ftp/sftp connections
-           so some config settings like sshd_config (MaxStartups 500) might
-           might be requiered to have successfull tests.
-
-   When done testing, run::
- 
-    . ./cleanup.sh
-   
-   which will kill the running web server.
-
-4- making a local wheel and installing on your workstation
+0- make a local wheel and installing on your workstation
 
    in the git clone tree ...    metpx-git/sarracenia
    create a wheel by running
@@ -276,22 +161,127 @@ and starts this network of configurations running.
    which accomplishes the same thing using debian packaging.
 
 
-5- Have a sarracenia environment in your home...
-   with copies of some of our operational settings ...
-   correctly modified not to impact the operations.
-   (like no "delete True"  etc...)
-   And other sarra configurations ... try running sarra.
+1- Install servers on localhost
 
-   sr start
-
-   Watch for errors... check in logs... etc.
-
-   Should you see things that are suspicious 
+   Install a minimal localhost broker, configure test users.
+   with credentials stored for localhost::
    
-       a) stop the process
-       b) run the process in debug and foreground
-          <sr_program> --debug <configname> foreground
-       c) check interactive output for hints
+     sudo apt-get install rabbitmq-server
+     sudo rabbitmq-plugins enable rabbitmq_management
+     echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
+     echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
+     echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
+     echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
+
+     cat >~/.config/sarra/default.conf <<EOT
+
+     broker amqp://tfeed@localhost/
+     cluster localhost
+     admin amqp://bunnymaster@localhost/
+     feeder amqp://tfeed@localhost/
+     role source tsource
+     role subscribe tsub
+     EOT
+
+     sudo rabbitmqctl delete_user guest
+     sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
+     sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+     sudo rabbitmqctl set_user_tags bunnymaster administrator
+     cd /usr/local/bin
+     sudo wget http://localhost:15672/cli/rabbitmqadmin 
+     chmod 755 rabbbitmqadmin
+     sr_audit --users foreground
+
+     sudo rabbitmqctl change_password tsource TestSOUrCs
+     sudo rabbitmqctl change_password tsub TestSUBSCibe
+     sudo rabbitmqctl change_password tfeed TestFeeding
+   
+.. Note::
+
+      Please use other passwords in credentials for your configuration, just in case.
+      Passwords are not to be hard coded in self test suite.
+      The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
+
+   The idea here is to use tsource, tsub, and tfeed as broker accounts for all
+   self-test operations, and store the credentials in the normal credentials.conf file.
+   No passwords or key files should be stored in the source tree, as part of a self-test
+   suite.
+
+   Perhaps in a separate window if you want to see output separately, a report message is 
+   printed for each GET the server answers. the setup script starts a trivial web server,
+   and defines some fixed test clients that will be used during self-tests::
+
+      cd sarracenia/test
+      . ./wtf_setup.sh
+
+   The working test flow setup script (wtf_setup.sh) will install configuration files for::
+
+     - two sr_shovel configurations to copy messages from from dd.weather.gc.ca
+     - an sr_winnow to remove duplicates from the shovelled sources.
+     - an sr_sarra to read the winnow output, and post fills mirrored on the trivial web server.
+     - an sr_subscribe to down load the files from the local server.
+
+   and starts this network of configurations running.  if the wtf_check.sh passes, then
+   one has a reasonable confidence in the overall functionality of the application,
+   but the test coverage is not exhaustive.  It is more qualitative sampling of the most
+   common use cases rather than a thorough examination of all functionality.  While not
+   thorough, it is good to know wtf is working.
+
+
+2- rerun basic self test::
+  
+   The following script runs some unit self tests of individual .py files in the source code::
+ 
+       ./some_self_tests.sh
+
+.. Note::
+
+  FIXME: so far got first sr_credentials, sr_config, sr_consumer, sr_subscribe, sr_instances PASS.
+  FIXME: working on sr_poster.
+  FIXME: many tests refer to sites only accessible within EC zone.
+
+
+3- Run Working Test Flow Check
+   
+   The wtf_check.sh script reads the log files of all the components started, and compares the number
+   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the 
+   configuration to run before there is enough data to do the proper measurements.
+
+   ./wtf_check.sh
+
+   sample output::
+
+     blacklab% ./wtf_check.sh
+     initial sample building sample size 3421 need at least 1000 
+     test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
+     test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
+     test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
+     test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
+     blacklab% 
+
+
+
+4- Run and check results for
+
+   The following tests are self descriptive, but there is no obvious check of success. 
+   One must examine the output of the command and determine if the result is as intended::
+
+     test_sr_post.sh
+     test_sr_watch.sh
+     test_sr_subscribe.sh
+     test_sr_sarra.sh
+
+   Note :  some tests error ...
+           in test_sr_sarra.sh ... there are lots of ftp/sftp connections
+           so some config settings like sshd_config (MaxStartups 500) might
+           might be requiered to have successfull tests.
+
+   When done testing, run::
+ 
+    . ./wtf_cleanup.sh
+   
+   which will kill the running web server, and delete all local queues.
+
 
 
 
@@ -301,10 +291,10 @@ Building a Release
 MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
 Packaged releases are always preferable to one off builds, because they are reproducible.
 
-When development requires testing across a wide range of servers, it is preferred to make an alpha
-release, rather than installing one off packages.  So the preferred mechanisms is to build
-the ubuntu and pip packages at least, and install on the test machines using the relevant public
-repositories.
+When development requires testing across a wide range of servers, it is preferred to make 
+an alpha release, rather than installing one off packages.  So the preferred mechanisms is 
+to build the ubuntu and pip packages at least, and install on the test machines using 
+the relevant public repositories.
  
 To publish a release one needs to:
 
@@ -354,7 +344,7 @@ Example::
 A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
 
 
-.. note::
+.. Note::
    FIXME:  the adding of the + to master makes the current tree not the release,
    so need to expclicitly checkout the tag... no?  how does one 
    Can someone correct this:
@@ -373,7 +363,7 @@ Note that the same version can never be uploaded twice.
 
 A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
 
-.. note:: 
+.. Note:: 
    when uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
    For seamless upgrade, early testers need to do supply the --pre switch to pip:
 

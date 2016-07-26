@@ -204,6 +204,10 @@ def file_process( parent ) :
     # or copy file if preceeding link did not work
     try :
              ok = file_insert(parent,msg)
+             if parent.delete :
+                  try: os.unlink(msg.url.path)
+                  except: msg.logger.error("delete of %s failed"%(msg.url.path))
+
              if ok : return ok
 
     except : 
