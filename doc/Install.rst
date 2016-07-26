@@ -7,7 +7,8 @@
 Revision Record
 ---------------
 
-Pre-Draft.  This document is still being built and should not be reviewed or relied upon.
+.. warning::
+    **Pre-Draft.**  This document is still being built and should not be reviewed or relied upon.
 
 :version: @Version@ 
 :date: @Date@
@@ -49,9 +50,6 @@ On Ubuntu 14.04/16.04::
   sudo apt-get update
   sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install python3-paramiko   # adds SFTP support.
-
-.. note::
-   FIXME: confirm that python3-paramiko is in our repo for 14.04?
 
 
 
@@ -106,14 +104,13 @@ Subscribers
   are those who examine advertisements about files that are available, and download the files 
   they are interested in.  
 
-  Subscribers use `<sr_subscribe(1) <sr_subscribe.1.html>`_
+  Subscribers use `sr_subscribe(1) <sr_subscribe.1.html>`_
   
-Post, Notice, Notification, Advertisement, Announcement
-   
+Post, Notice, Notification, Advertisement, Announcement 
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users know that a particular 
   file is ready.   The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.html>`_ 
   manual page.  All of these words are used interchangeably.  Advertisements at each step preserve the 
-  original source of the posting, so that report messages can be routed back to the source.
+  original source of the posting, so that report messages can be routed back to the source.  
 
 Report messages
   These are AMQP messages (in `sr_report(7) <sr_report.7.html>`_ format) built by consumers of messages, to indicate 

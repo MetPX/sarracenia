@@ -7,14 +7,14 @@
 Injecting Data into a MetPX-Sarracenia Pump Network
 ---------------------------------------------------
 
-.. note::
+.. warning::
   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-  FIXME: Missing sections are highlighted by FIXME.  What is here should be accurate!
+  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. contents::
 
 .. note::
-  FIXME: known missing elements: good discussion of checksum choice.
+  **FIXME**: known missing elements: good discussion of checksum choice.
   Caveat about file update strategies.  use case of a file file that is constantly updated,
   rather than issuing new files.)
    
@@ -76,25 +76,25 @@ On the server you are using (*grumpy*), one needs to do something like this::
 
   wget http://ddsr.cmc.ec.gca/config/pump.pub >>~peter/.ssh/authorized_keys
 
-.. note::
-  FIXME: this config directory is not implemented yet.  need to get public key 
+.. warning::
+  **FIXME**: this config directory is not implemented yet.  need to get public key 
   by talking to an admin for now.
 
 This will enable the pump to access peter's account on grumpy using his private key. 
 So assuming one is logged in to Peter's account on grumpy, one can store the broker
-credentials safely:
+credentials safely::
 
   echo 'amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca' >> ~/.config/sarra/credentials.conf:
 
 
 .. Note::
-  Passwords are always stored in the credentials.conf file, 
+  Passwords are always stored in the credentials.conf file.
 
 Now we just need to figure out where to send the file to.  
 Aim a browser at:
 
-.. note::
-   FIXME: doc tree not implemented yet either... you have to talk to an admin
+.. warning::
+   **FIXME**: doc tree not implemented yet either... you have to talk to an admin
    to get advice on this stuff.
 
 http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
@@ -141,7 +141,7 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 .. _GEDS: http://sage-geds.tpsgc-pwgsc.gc.ca/en/GEDS?pgid=015&dn=CN%3Dpeter.silva%40canada.ca%2COU%3DDI-ED%2COU%3DESIOS-SESES%2COU%3DSC-SI%2COU%3DSMDC-GSCD%2COU%3DSSC-SPC%2CO%3DGC%2CC%3DCA
 
 
-.. notes:
+.. note::
    These names correspond to business functions, not the machines that implement
    them.  The names will be implemented as aliases on pumps.
    ALLCAPS is just a convention to avoid confusion with hostnames, which are 
@@ -149,8 +149,7 @@ http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
 
 
 Lets assume the places you want to send to are:  DDIEDM,DDIDOR,ARCHPC. 
-so the sr_post command will look like this:
-
+so the sr_post command will look like this::
 
   sr_post -to DDIEDM,DDIDOR,ARCHPC \
           -broker amqps://rnd@ddsr.cmc.ec.gc.ca/  \
@@ -168,7 +167,7 @@ it might be convenient to store them in a central configuration::
   EOT
 
 So now the command line for sr_post is just the url to for ddsr to retrieve the
-file on grumpy:
+file on grumpy::
 
   sr_post -url treefrog/frog.dna
 
@@ -185,21 +184,21 @@ a more real example::
   2016-01-20 14:53:49,019 [INFO] notice   20160120145349.19 http://localhost:81/ frog.dna
   2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
   
-  There is a sr_subscribe to subscribe to all “*.dna” posts. The subscribe log said. Here is the config file:
+There is a sr_subscribe to subscribe to all “*.dna” posts. The subscribe log said. Here is the config file::
   
   broker amqp://guest:guest@localhost
   directory /var/www/subscribed
   subtopic #
   accept .*dna*
   
-  and here is the related output from the subscribe log file.
+and here is the related output from the subscribe log file::
   
   2016-01-20 14:53:49,418 [INFO] Received notice  20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
   2016-01-20 14:53:49,419 [INFO] downloading/copying into /var/www/subscribed/frog.dna 
   2016-01-20 14:53:49,420 [INFO] Downloads: http://localhost:80/20160120/guest/frog.dna  into /var/www/subscribed/frog.dna 0-16
   2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.report.20160120.guest.frog.dna 20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
   
-  Also here is the log from from the sr_sarra instance: 
+Also here is the log from from the sr_sarra instance::
   
   2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://localhost:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
   2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
@@ -225,16 +224,18 @@ directory::
 
   EOT
 
-and then:
+and then::
 
   sr_post -c dissem -url treefrog/frog.dna
 
 If there are different varieties of posting used, configurations can be saved for each
 one. 
 
-.. note::
-   FIXME: Need to do a real example. this made up stuff isn´t sufficiently helpful.
-   FIXME: sr_post does not accept config files right now, says the man page.  True/False?
+.. warning::
+   **FIXME**: Need to do a real example. this made up stuff isn´t sufficiently helpful.
+
+   **FIXME**: sr_post does not accept config files right now, says the man page.  True/False?
+
    sr_post command lines can be a lot simpler if it did.
 
 sr_post typically returns immediately as its only job is to advice the pump of the availability
@@ -278,28 +279,29 @@ which results in a configuration like so::
 
   EOT
 
-then a watch is started:
+then a watch is started::
 
   sr_watch project start
 
-.. note::
-  FIXME: real example.
-  FIXME: sr_watch was supposed to take configuration files, but might not have
+.. warning::
+  **FIXME**: real example.
+
+  **FIXME**: sr_watch was supposed to take configuration files, but might not have
    been modified to that effect yet.
 
 While sr_watch is running, any time a file is created in the *document_root* directory, 
-it will be announced to the pump (on localhost, ie. the server blacklab itself.)
+it will be announced to the pump (on localhost, ie. the server blacklab itself.)::
 
  cp frog.dna  /var/www/project/outgoing
   
-.. note::
-  FIXME: real example.
+.. warning::
+  **FIXME**: real example.
 
 This triggers a post to the pump.  Any subscribers will then be able to download
 the file.
 
-.. note:: 
-   FIXME. too much broken for now to really run this easily...
+.. warning:: 
+   **FIXME**. too much broken for now to really run this easily...
    so creating real demo is deferred.   
 
 
@@ -316,9 +318,10 @@ product listings, so custom processing of the list is often needed.  That is why
 has the do_poll setting, meaning that use of a plugin script is virtually required
 to use it.  
 
-.. note::
-  FIXME: sr_poll example neeeded.
-  FIXME: example do_poll scripts should be in distribution.
+.. warning::
+  **FIXME**: sr_poll example neeeded.
+
+  **FIXME**: example do_poll scripts should be in distribution.
 
 
 
@@ -341,8 +344,8 @@ to view report messages indicating what has happenned to the items inserted into
 network from the same pump using that account (rnd, in the example.) One can trigger 
 arbitrary post processing of report messages by using on_message plugin.
 
-.. note::
-   FIXME: need some examples.
+.. warning::
+   **FIXME**: need some examples.
 
 
 
@@ -406,16 +409,16 @@ the network::
 So downstream clients can obtain and apply the same algorithm to compare announcements
 from multiple sources.
 
-.. note::
-   FIXME:
-   science fiction again:  no such config directories exist yet. no means to update them.
+.. warning::
+   **FIXME**: science fiction again:  no such config directories exist yet. no means to update them.
    search path for checksum algos?  built-in,system-wide,per-source?
 
-   also, if each source defines their own algorithm, then they need to pick the same one
+   Also, if each source defines their own algorithm, then they need to pick the same one
    (with the same name) in order to have a match. 
-   FIXME: verify that fingerprint verification includes matching the algorithm as well as value.
 
-   FIXME:  not needed at the beginning, but likely at some point.
+   **FIXME**: verify that fingerprint verification includes matching the algorithm as well as value.
+
+   **FIXME**:  not needed at the beginning, but likely at some point.
    in the mean time, we just talk to people and include their algorithms in the package.
 
 .. NOTE::
@@ -446,7 +449,7 @@ end, which would examine the non-standard header, and perhaps decide to avoid re
 returning false from the hook script.
 
 .. note::
-  with great flexibility comes great potential for harm.  the path names should include as much information
+  With great flexibility comes great potential for harm. The path names should include as much information
   as possible as sarracenia is built to optimize routing using them.  Additional meta-data should be used
   to supplement, rather than replace, the built-in routing. 
 
