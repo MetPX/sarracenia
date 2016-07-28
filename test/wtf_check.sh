@@ -90,7 +90,7 @@ res01=$(( ${totwinnow01}*1000 / ${totwinnow} ))
 res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
 
 if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
+   echo "test ${tno}: FAIL, shovel2 (${totshovel2}) and sub (${totsub}) should have about the same number of items"
 else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
+   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel2 (${totshovel2})"
 fi
