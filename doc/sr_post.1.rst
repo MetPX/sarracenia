@@ -46,7 +46,7 @@ All sr_ tools store all sensitive authentication info is stored in the credentia
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_
+For more details, see: `sr_config(7) credentials <sr_config.7.html#credentials>`_
 
 
 Mandatory Settings
@@ -56,8 +56,6 @@ The [*-u|--url url*] option specifies the location
 subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *url* option::
 
-       [ftp|http|sftp]://[user[:password]@]host[:port]/
-       or
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
        file:
@@ -129,7 +127,7 @@ The value of the *blocksize*  is an integer that may be followed by  letter desi
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
 Files bigger than this value will get announced with *blocksize* sized parts.
 
-By default, **sr_post** computes a reasonable blocksize that depends on the file'size.
+By default, **sr_post** computes a reasonable blocksize that depends on the file size.
 The user can set a fixed *blocksize* if it is better for its products or if he wants to
 take advantage of the **caching** mechanism.
 
@@ -172,24 +170,24 @@ take advantage of the **caching** mechanism.
 **sr_post** evaluates the filesystem paths from the **path** option 
 and possibly the **document_root** if the option is used.
 
-If a path defines a file this file is announced.
+If a path defines a file, this file is announced.
 
-If a path defines a directory then all files in that directory are
+If a path defines a directory, then all files in that directory are
 announced... 
 
-If this path defines a directory and the option **recursive** is true
-then all files in that directory are posted and should **sr_post** finds
-one (or more) directory(ies), it scans it(them) are posts announcements
-until all the tree is scanned.
+If this path defines a directory and the option **recursive** is true,
+then all files in that directory are posted. Should **sr_post** find
+one (or more) directory(ies), it scans it(them) and posts announcements
+until the entire tree is scanned.
 
 The AMQP announcements are made of the three fields, the announcement time,
-the **url** option value and the resolved paths to which were withdrawn
-the *document_root* present and needed.
+the **url** option value and the resolved paths to which were withdrawn from
+the *document_root*, present and needed.
 
 **[-rec|--recursive <boolean>]**
 
-The recursive default is False. When the **path** given (possibly combined with **document_root**)
-describes one or several directories,  if **recursive** is True, the directory tree is scanned down and all subtree
+The recursive default is False when the **path** given (possibly combined with **document_root**)
+describes one or several directories.  If **recursive** is True, the directory tree is scanned down and all subtree
 files are posted.
 
 **[--reset]**
@@ -231,11 +229,11 @@ The subtopic default can be overwritten with the *subtopic* option.
 The **url** option sets the protocol, credentials, host and port under
 which the product can be fetched.
 
-The AMQP announcememet is made of the tree fields, the announcement time,
-this **url** value and the given **path** to which was withdrawn the *document_root*
+The AMQP announcememet is made of the three fields, the announcement time,
+this **url** value and the given **path** to which was withdrawn from the *document_root*
 if necessary.
 
-If the concatenation of the two last fields of the announcement that defines
+The concatenation of the two last fields of the announcement defines
 what the subscribers will use to download the product. 
 
 
@@ -252,10 +250,10 @@ in a separate filepart. If the *blocksize* is bigger than the filesize, the prog
 There will be one post per suggested part.
 
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
 
 When suggesting parts, the value put in the amqp message header varies.
-For example if headers[parts] as value 'p,256,12,11,4' it stands for :
+For example, if headers[parts] is the value 'p,256,12,11,4', then it stands for :
 *p* suggesting part, a blocksize in bytes *256*,
 the number of block of that size *12*, the remaining bytes *11*, 
 and the current block *4*,
@@ -293,7 +291,7 @@ by block because the *blocksize* option was set, the block
 posts are randomized meaning that the will not be posted
 ordered by block number.
 
-**[-rr|--reconnect]**
+**[-rc|--reconnect]**
 
 Active if *-rc|--reconnect* appears in the command line... or
 *reconnect* is set to True in the configuration file used.
@@ -316,8 +314,8 @@ properties. The administrator should pay attention on slight
 differences between the logs properties and the *sr_post* arguments.
 The logs would mention *from_cluster*  *to_clusters* and associated
 values...  **sr_post** arguments would be *-cluster* and  *-to*
-respectively. The administrator would execute **sr_post** providing
-all the options setting everything found in the log plus the 
+respectively. The administrator would execute **sr_post**, providing
+all the options and setting everything found in the log plus the 
 targetted queue_name  *-queue_name q_....*
 
 
