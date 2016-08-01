@@ -2,7 +2,10 @@
 
 #This self test script is a work in progress and will be improved
 
-mkdir /tmp/sr_sarra
+if [ ! -d /tmp/sr_sarra ]; then
+	mkdir /tmp/sr_sarra
+fi
+
 cd /tmp/sr_sarra
 
 sender=pfd
@@ -50,7 +53,11 @@ chmod 777 /tmp/sr_sarra/placeholder.txt
 function check_destination {
 
 	#TODO check contents of file using diff
-        if [ -f /home/$recipient/.cache/tmp/sr_sarra/sender_file.txt ]; then
+        initial_dest=/tmp/sr_sarra/sender_file.txt
+        final_dest=/home/$recipient/.cache/tmp/sr_sarra/sender_file.txt
+
+        diff $initial_dest $final_dest >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
                 echo "TEST $1 PASSED"
                 rm /home/$recipient/.cache/tmp/sr_sarra/sender_file.txt
         else
@@ -58,7 +65,6 @@ function check_destination {
                 sr_sender /tmp/sr_sarra/sender_test${1}.conf stop > /dev/null 2>&1
                 exit 1
         fi
-
 }
 
 #Protocol Tests (sftp and http)
