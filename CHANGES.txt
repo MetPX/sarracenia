@@ -1,3 +1,9 @@
+**2.16.08a1**
+
+* Major Change: Changed "log" to "report" in all components.
+* Added test case for sr_sender
+* Documentation Update
+
 **2.16.07a3**
 
 * Ian's fix for sr_sender borked with post_exchange_split.
