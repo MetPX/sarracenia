@@ -69,7 +69,6 @@ setup(
     "appdirs",
     "watchdog", 
     "netifaces", 
-    "paramiko",
     "humanize",
     "psutil" ],
 )
