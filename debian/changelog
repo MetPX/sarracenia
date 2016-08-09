@@ -1,3 +1,12 @@
+metpx-sarracenia (2.16.08a1) unstable; urgency=medium
+
+  * Changed package dependency. Paramiko is now recommended.
+  * Major Change: Changed "log" to "report" in all components.
+  * Added test case for sr_sender.
+  * Documentation Updates. 
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 09 Aug 2016 15:10:48 -0400
+
 metpx-sarracenia (2.16.07a3) unstable; urgency=medium
 
   * Ian's fix for sr_sender borked with post_exchange_split.
