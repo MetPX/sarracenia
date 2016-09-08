@@ -32,14 +32,16 @@ On Ubuntu 12.04::
 
   apt-get install python3-dev
   apt-get install python3-setuptools
-  easy_install3 pip==2.7.2
+  easy_install3 pip==1.5.6 
   pip3 install paramiko==1.16.0
-  pip3 install metpx_sarracenia
+  pip3 install metpx_sarracenia==<latest version>
 
 .. note::
-   why the specific versions?
-   pip > 2.7 does not support python < 3.2 which is the python in ubuntu 12.04.
-   later versions of paramiko require the cryptography module, which 
+   **Why the specific versions?**
+
+   pip > 2.7 does not support python < 3.2 which is the python in Ubuntu 12.04.
+
+   Later versions of paramiko require the cryptography module, which 
    doesn't build on python-3.2, so need to use an older version of paramiko
    which uses pyCrypto, and that does build on 3.2.
 
