@@ -419,6 +419,7 @@ class sr_poster:
                  self.logger.info("Reconnect")
                  self.hc.reconnect()
 
+              self.logger.debug("sr_poster posted part %i of %i" % (i, block_count-1) )
               i = i + 1
 
         return ok
