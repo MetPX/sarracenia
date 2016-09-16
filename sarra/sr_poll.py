@@ -164,6 +164,7 @@ class sr_poll(sr_instances):
 
         self.msg.publisher    = self.poster.publisher
         self.msg.pub_exchange = self.post_exchange
+        self.msg.post_exchange_split = self.post_exchange_split
 
         self.connected        = True 
            
