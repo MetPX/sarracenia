@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 #This self test script is a work in progress and will be improved
 
