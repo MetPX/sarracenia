@@ -148,6 +148,12 @@ take advantage of the **caching** mechanism.
   The *document_root* option supplies the directory path that,
   when combined (or found) in the given *path*, 
   gives the local absolute path to the data file to be posted.
+  The document root part of the local path will be removed from the posted announcement.
+  for sftp: url's it can be appropriate to specify a path relative to a user account.
+  Example of that usage would be:  -dr ~user  -url sftp:user@host  
+  for file: url's, document_root is usually not appropriate.  To post an absolute path, 
+  omit the -dr setting, and just specify the complete path as an argument.
+  
 
 **[-ex|--exchange <exchange>]**
 
