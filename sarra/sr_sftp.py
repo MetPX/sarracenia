@@ -329,7 +329,7 @@ class sr_sftp():
            fp = open(local_file,'w')
            fp.close()
 
-        fp = open(local_file,'r+b')
+        fp = open(local_file,'rb')
         if local_offset != 0 : fp.seek(local_offset,0)
 
         rfp = self.sftp.file(remote_file,'wb',self.bufsize)
