@@ -302,36 +302,8 @@ class sr_message():
     def set_hdrstr(self):
         self.hdrstr  = ''
 
-        if 'mtime' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('mtime', self.headers['mtime'])
-
-        if 'parts' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('parts',self.headers['parts'])
-
-        if 'sum' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('sum', self.headers['sum'])
-
-        if 'from_cluster' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('from_cluster',self.headers['from_cluster'])
-
-        if 'source' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('source',self.headers['source'])
-
-        if 'to_clusters' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('to_clusters',self.headers['to_clusters'])
-
-        if 'flow' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('flow',self.headers['flow'])
-
-        if 'rename' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('rename',self.headers['rename'])
-
-        if 'message' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('message',self.headers['message'])
-
-        # retransmit case...
-        if 'exchange' in self.headers :
-           self.hdrstr  += '%s=%s ' % ('exchange',self.headers['exchange'])
+        for h in self.headers:
+           self.hdrstr += '%s=%s ' % (h, self.headers[h])
 
         # added for v00 compatibility (old version of sr_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
