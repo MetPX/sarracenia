@@ -208,16 +208,16 @@ printed for each GET the server answers. the setup script starts a trivial web s
 and defines some fixed test clients that will be used during self-tests::
 
     cd sarracenia/test
-    . ./wtf_setup.sh
+    . ./flow_setup.sh
 
-The working test flow setup script (``wtf_setup.sh``) will install configuration files for:
+The working test flow setup script (``flow_setup.sh``) will install configuration files for:
 
 - two sr_shovel configurations to copy messages from from dd.weather.gc.ca
 - an sr_winnow to remove duplicates from the shovelled sources.
 - an sr_sarra to read the winnow output, and post fills mirrored on the trivial web server.
 - an sr_subscribe to down load the files from the local server.
 
-and starts this network of configurations running.  if the wtf_check.sh passes, then
+and starts this network of configurations running.  if the flow_check.sh passes, then
 one has a reasonable confidence in the overall functionality of the application,
 but the test coverage is not exhaustive.  It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality.  While not
@@ -239,15 +239,15 @@ thorough, it is good to know wtf is working.
 
 
 3 - Run Working Test Flow Check
-   The wtf_check.sh script reads the log files of all the components started, and compares the number
+   The flow_check.sh script reads the log files of all the components started, and compares the number
    of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
    configuration to run before there is enough data to do the proper measurements::
 
-   ./wtf_check.sh
+   ./flow_check.sh
 
    sample output::
 
-     blacklab% ./wtf_check.sh
+     blacklab% ./flow_check.sh
      initial sample building sample size 3421 need at least 1000
      test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
      test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
@@ -276,7 +276,7 @@ thorough, it is good to know wtf is working.
 
 When done testing, run::
 
-  . ./wtf_cleanup.sh
+  . ./flow_cleanup.sh
 
 Which will kill the running web server, and delete all local queues.
 
