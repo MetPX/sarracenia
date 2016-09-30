@@ -137,6 +137,10 @@ tested.  Please add self-tests as appropriate to this process to reflect the new
 
   Work is in progress to have a self-contained localhost self-test environment.
 
+The configuration one is trying to replicate:
+
+.. image:: Flow_Test.svg
+
 Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
 can start a browser.
 
