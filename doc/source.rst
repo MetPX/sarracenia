@@ -49,7 +49,7 @@ set up all the watches.  After that it will be instant, but if there are too man
 files (and 60 million is very likely too many) it will just crash and refuse to work. 
 These are just inherent limitations of watching directories, no matter how it is done.
 
-With sr_post, the program that puts the file anywhere in the arbitrarily deep tree tells 
+With sr_post, the program that puts the file anywhere in the arbitrarily deep tree[1]_ tells 
 the pump (which will tell subscribers) exactly where to look. There are no system limits 
 to worry about. That’s how dd.weather.gc.ca works, and notifications are sub-second, with
 60 million files on the disk.  It is much more efficient, in general, to do direct 
@@ -58,6 +58,16 @@ and simple cases, it make little practical difference.
 
 In the simplest case, the pump takes data from your account, wherever you have it, 
 providing you give it permission.  we describe that case first.
+
+.. [1] While the file tree itself has no limits in depth or number, the ability to 
+   filter based on *topics* is limited by AMQP to 255 characters. So the *subtopic*
+   configuration item is limited to somewhat less than that. There isn't a fixed
+   limit because topics are utf8 encoded which is variable length. Note that the
+   *subtopic* directive is meant to provide coarse classification,  and 
+   use of *accept/reject* is meant for more detailed work.   *accept/reject* clauses 
+   do not rely on AMQP headers, using path names stored in the body of the 
+   message, and so are not affected by this limit.
+
 
 SFTP Injection
 --------------

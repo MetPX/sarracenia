@@ -125,11 +125,11 @@ In topic based AMQP exchanges, every message has a topic header.  AMQP defines t
 as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
 pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
 the topic string. To allow for changes in the message body in the future, topic trees begin with 
-the version number of the protocol.  
+the version number of the protocol.   
 
 AMQP allows server side topic filtering using wildcards.  Subscribers specify topics of 
 interest (which correspond to directories on the server), allowing them to pare down the 
-number of notifications sent from server to client.
+number of notifications sent from server to client.  
 
 The root of the topic tree is the version specifier: "v02".  Next comes the message type specifier.  
 These two fields define the protocol that is in use for the rest of the message.
@@ -137,6 +137,10 @@ The message type for post messages is "post".  After the fixed topic prefix,
 the remaining sub-topics are the path elements of the file on the web server.  
 For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
 then the complete topic of the message will be:  *"v02.post.a.b.c.d.foo.txt"*
+AMQP fields are limited to 255 characters, and the characters in the field are utf8 
+encoded, so actual length limit may be less than that. Sarracenia truncates header fields
+to ensure the messages can be sent.
+
 
 
 THE FIRST LINE 
@@ -180,8 +184,8 @@ AMQP HEADERS
 ------------
 
 In addition to the first line of the message containing all mandatory fields, optional 
-elements are stored in AMQP headers (key-value pairs), included in messages when 
-appropriate.   Headers are a mandatory element included in later versions of the AMQP protocol.
+elements are stored in AMQP headers (utf8 encoded key-value pairs limited to 255 bytes in length), included 
+in messages when appropriate.   Headers are a mandatory element included in later versions of the AMQP protocol.
 
 
 **flow=<flow>**
@@ -395,7 +399,7 @@ AMQP Feature Selection
 
 AMQP is a universal message passing protocol with many different 
 options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a 
-small subset of AMQP patterns.  Indeed an important element of sarracenia development was to 
+small subset of AMQP patterns.  An important element of sarracenia development was to 
 select from the many possibilities a small subset of methods are general and easily understood, 
 in order to maximize potential for interoperability.
 
@@ -459,7 +463,7 @@ CHARACTER SET & ENCODING
 
 All messages are expected to use the UNICODE character set (ISO 10646), 
 represented by UTF-8 encoding (IETF RFC 3629.)
-URL encoding, as per IETF RFC 1738, is used to escape unsafe characters, where appropriate.
+URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
 
 
 FURTHER READING

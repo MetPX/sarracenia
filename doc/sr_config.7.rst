@@ -325,11 +325,12 @@ option as follow:
        *                replaces a directory name 
        #                stands for the remaining possibilities
 
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding, or the 
-more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
-difference being that the AMQP filtering is applied by the broker itself, saving the 
-notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
-messages sent by the broker to the subscriber.  In other words,  **accept/reject**  are 
+One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
+header length limited to 255 encoded bytes, or the more powerful regular expression based  **accept/reject**  
+mechanisms described below, which are not length limited.  The difference being that 
+the AMQP filtering is applied by the broker itself, saving the notices from being delivered 
+to the client at all. The  **accept/reject**  patterns apply to messages sent by the 
+broker to the subscriber.  In other words,  **accept/reject**  are 
 client side filters, whereas  **subtopic**  is server side filtering.  
 
 It is best practice to use server side filtering to reduce the number of announcements sent
@@ -445,7 +446,7 @@ The network will not process a message that ::
 
   If messages are posted directly from a source,
   the exchange used is 'xs_<brokerSourceUsername>'.
-  Such message does not contain a source nor an origin cluster.
+  Such message may not contain a source nor an origin cluster.
   Initial validation of these messages the **source_from_exchange**
 
   Upon reception, a component will set these values
