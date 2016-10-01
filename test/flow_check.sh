@@ -94,3 +94,17 @@ if [ $res -lt 900  -o $res -gt 1100 ]; then
 else
    echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel2 (${totshovel2})"
 fi
+
+tno=$((${tno}+1))
+totshortened="`grep truncating ~/.cache/sarra/var/log/sr_sarra_download_000*.log | wc -l`"
+
+res=$(( ( ${totshortened}*1000 ) / ${totsub} ))
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test ${tno}: FAIL, count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
+else
+   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as headers that were truncated (${totshortened})"
+fi
+
+
+
+
