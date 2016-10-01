@@ -271,8 +271,8 @@ class sr_message():
 
         # AMQP limits headers to 255 characters, so truncate and warn.
         for h in self.headers:
-           if len(h) > 255:
-                self.logger.warning( "truncating %s header at 255 characters (AMQP limit) value: %s " % ( h, self.header[h]) )
+           if len(self.headers[h]) > 255:
+                self.logger.warning( "truncating %s header at 255 characters (AMQP limit) value: %s " % ( h, self.headers[h]) )
                 self.headers[h] = self.headers[h][0:255]
 
         # in order to split winnowing into multiple instances, directs items with same checksum

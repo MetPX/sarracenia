@@ -69,7 +69,7 @@ for d in sarra subscribe winnow report shovel ; do
    fi
 done
 
-templates="`cd templates; ls */*.conf */*.inc`"
+templates="`cd templates; ls */*.py */*.conf */*.inc`"
 
 for cf in ${templates}; do
     echo "installing $cf"
