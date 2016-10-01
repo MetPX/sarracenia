@@ -271,9 +271,19 @@ class sr_message():
 
         # AMQP limits headers to 255 characters, so truncate and warn.
         for h in self.headers:
-           if len(self.headers[h]) > 255:
-                self.logger.warning( "truncating %s header at 255 characters (AMQP limit) value: %s " % ( h, self.headers[h]) )
-                self.headers[h] = self.headers[h][0:255]
+           if len(self.headers[h].encode("utf8")) > 255:
+                # strings in utf, and if names have special characters, the length
+                # of the encoded string wll be longer than what is returned by len(. so actually need to look
+                # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
+                # but then how to truncate properly. need to avoid invalid encodings.
+                mxlen=255
+                while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+                      mxlen -= 1
+
+                self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
+                self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
+                        ( h, len(self.headers[h]) , self.headers[h]) )
+                
 
         # in order to split winnowing into multiple instances, directs items with same checksum
         # to same shard. do that by keying on the last character of the checksum.

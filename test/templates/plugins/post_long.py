@@ -7,6 +7,7 @@
   Each header in a message that is too long should generate a warning message in the sarra log.
   flow_test checks for the 'truncated' error message.
 
+  put some utf characters in there to make it interesting... (truncation complex.)
 """
 
 import os,stat,time
@@ -22,7 +23,7 @@ class Override(object):
         msg    = parent.msg
 
         parent.logger.info('setting toolong header')
-        parent.msg.headers[ 'toolong' ] = '1234567890'*26
+        parent.msg.headers[ 'toolong' ] = '1234567890ßñç'*26
 
         return True
 
