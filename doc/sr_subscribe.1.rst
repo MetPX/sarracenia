@@ -326,6 +326,8 @@ SEE ALSO
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
+`sr_report(1) <sr_report.1.html>`_ - process report messages.
+
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
 `sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
