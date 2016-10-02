@@ -136,6 +136,8 @@ class checksum_n(object):
    - beginning of epoch is platform dependent, and conversion to actual date is fraught (leap seconds, etc...)
    - Entire SR_* formats are text, no floats are sent over the protocol (avoids byte order issues, null byte / encoding issues, 
      and enhances readability.) 
+   - str format: YYYYMMDDHHMMSS.msec goal of this representation is that a naive conversion to floats yields comparable numbers.
+   - but the number that results is not useful for anything else, so need these special routines to get a proper epochal time.
    - also OK for year 2032 or whatever (rollover of time_t on 32 bits.)
    - string representation is forced to UTC timezone to avoid having to communicate timezone.
 
