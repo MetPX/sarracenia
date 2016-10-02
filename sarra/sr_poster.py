@@ -274,13 +274,9 @@ class sr_poster:
 
         lstat   = os.stat(path)
         fsiz    = lstat[stat.ST_SIZE]
-        mtimeflt   = lstat.st_mtime
-        msec = '.%d' % ((mtimeflt%1)*1000)
-        mtime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(mtimeflt)) + msec
 
-        atimeflt   = lstat.st_atime
-        msec = '.%d' % ((atimeflt%1)*1000)
-        atime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(atimeflt)) + msec
+        mtime = timeflt2str(lstat.st_mtime)
+        atime = timeflt2str(lstat.st_atime)
 
         partstr = '1,%d,1,0,0' % fsiz
 
@@ -327,14 +323,9 @@ class sr_poster:
         ok       = False
         lstat    = os.stat(path)
         fsiz     = lstat[stat.ST_SIZE]
-        mtimeflt = lstat.st_mtime
-        msec     = '.%d' % ((mtimeflt%1)*1000)
-        mtime    = time.strftime("%Y%m%d%H%M%S",time.gmtime(mtimeflt)) + msec
 
-
-        atimeflt = lstat.st_atime
-        msec = '.%d' % ((atimeflt%1)*1000)
-        atime  = time.strftime("%Y%m%d%H%M%S",time.gmtime(atimeflt)) + msec
+        mtime = timeflt2str(lstat.st_mtime)
+        atime = timeflt2str(lstat.st_atime)
 
         # file too small for chunksize
 
@@ -451,8 +442,9 @@ class sr_poster:
 
         filename = os.path.basename(path)
         lstat   = os.stat(path)
-        mtime   = lstat[stat.ST_MTIME]
-        atime   = lstat[stat.ST_ATIME]
+
+        mtime = timeflt2str(lstat.st_mtime)
+        atime = timeflt2str(lstat.st_atime)
 
         ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
 
