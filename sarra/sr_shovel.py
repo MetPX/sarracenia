@@ -78,14 +78,17 @@ class sr_shovel(sr_instances):
 
         if self.broker == None :
            self.logger.error("no broker given")
+           self.help()
            sys.exit(1)
 
         if self.exchange == None :
            self.logger.error("no exchange given")
+           self.help()
            sys.exit(1)
 
         if self.topic_prefix == None :
            self.logger.error("no topic_prefix given")
+           self.help()
            sys.exit(1)
 
         # bindings should be defined 
@@ -385,6 +388,7 @@ def main():
     elif action == 'status'     : shovel.status_parent()
     else :
            shovel.logger.error("action unknown %s" % action)
+           shovel.help()
            sys.exit(1)
 
     sys.exit(0)

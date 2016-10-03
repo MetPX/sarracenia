@@ -606,6 +606,7 @@ def main():
     args   = None
     config = None
 
+
     if len(sys.argv) >= 2 : 
        action = sys.argv[-1]
 
@@ -614,6 +615,11 @@ def main():
        args   = sys.argv[1:-2]
 
     subscribe = sr_subscribe(config,args)
+
+    if len(sys.argv) < 2:
+       subscribe.help()
+       sys.exit(1)
+
 
     if   action == 'foreground' : subscribe.foreground_parent()
     elif action == 'reload'     : subscribe.reload_parent()
@@ -624,6 +630,7 @@ def main():
     elif action == 'TEST'       : test_sr_subscribe()
     else :
            subscribe.logger.error("action unknown %s" % action)
+           subscribe.help()
            sys.exit(1)
 
     sys.exit(0)
