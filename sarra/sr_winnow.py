@@ -54,6 +54,10 @@ except :
 class sr_winnow(sr_instances):
 
     def __init__(self,config=None,args=None):
+        if config == None:
+           self.help()
+           return
+
         sr_instances.__init__(self,config,args)
 
         self.cache          = {}
@@ -191,15 +195,15 @@ class sr_winnow(sr_instances):
            self.broker   = self.manager
 
     def help(self):
-        self.logger.info("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
-        self.logger.info("OPTIONS:")
-        self.logger.info("-b   <broker>                default manager (if configured)")
-        self.logger.info("-e   <exchange>              MANDATORY")
-        self.logger.info("-tp  <topic_prefix>          default v02.post")
-        self.logger.info("-st  <subtopic>              default #")
-        self.logger.info("-pe  <post_exchange>         MANDATORY")
-        self.logger.info("DEBUG:")
-        self.logger.info("-debug")
+        print("Usage: sr_winnow [OPTIONS] configfile [start|stop|restart|reload|status]\n" )
+        print("OPTIONS:")
+        print("-b   <broker>                default manager (if configured)")
+        print("-e   <exchange>              MANDATORY")
+        print("-tp  <topic_prefix>          default v02.post")
+        print("-st  <subtopic>              default #")
+        print("-pe  <post_exchange>         MANDATORY")
+        print("DEBUG:")
+        print("-debug")
 
     # =============
     # __on_message__

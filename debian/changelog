@@ -1,3 +1,17 @@
+metpx-sarracenia (2.16.10a1) unstable; urgency=medium
+
+  * Fixes to self test suite
+  * Added calls to the usage strings on a bunch of components
+  * Added centralized time format conversion in sr_util
+  * Added sr_report(1) manual page.
+  * Bugfix for headers too long.
+  * Patch to sr_poll to prevent crashing with post_exchange_split.
+  * Tentative fix for bug #50 improper requirement of write permissions
+  * Process headers dynamically
+  * Documentation Updates. 
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 04 Oct 2016 15:05:34 -0400
+
 metpx-sarracenia (2.16.08a1) unstable; urgency=medium
 
   * Changed package dependency. Paramiko is now recommended.

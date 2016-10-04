@@ -258,7 +258,8 @@ class sr_config:
         if mandatory :
           if subdir == 'plugins' : self.logger.error("script not found %s" % config)
           else                   : self.logger.error("file not found %s" % config)
-          os._exit(1)
+          if config == None : return False,None
+          #os._exit(1)
 
         return False,config
 

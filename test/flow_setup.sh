@@ -46,6 +46,14 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot/sub
 fi
 
+lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
+while [ ${lo} -gt 0 ]; do
+   echo "waiting for $lo leftover sockets to clean themselves up from last run."
+   sleep 10 
+   lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
+   sleep 5 
+done
+
 echo "Starting trivial server on: $testdocroot, saving pid in .httpserverpid"
 testrundir="`pwd`"
 cd $testdocroot

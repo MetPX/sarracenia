@@ -60,6 +60,7 @@ class sr_post(sr_config):
         if self.url == None :
            self.logger.error("url required")
            self.in_error = True
+           self.help()
            return
 
         # sarra exchange default value is xs_username
@@ -128,7 +129,7 @@ class sr_post(sr_config):
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
-        print("DEVELOPPER:")
+        print("DEVELOPER:")
         print("-parts <parts>         default:1")
 
     def lock_set(self):
@@ -406,6 +407,7 @@ def main():
 
              if len(post.postpath) == 0 :
                 post.logger.error("no path to post")
+                post.help()
                 os._exit(1)
 
              for watchpath in post.postpath :

@@ -108,10 +108,12 @@ class sr_sarra(sr_instances):
 
         if self.broker == None :
            self.logger.error("no broker given")
+           self.help()
            sys.exit(1)
 
         if self.exchange == None :
            self.logger.error("no exchange given")
+           self.help()
            sys.exit(1)
 
         # bindings should be defined 
@@ -656,6 +658,7 @@ def main():
     elif action == 'status'     : sarra.status_parent()
     else :
            sarra.logger.error("action unknown %s" % action)
+           self.help()
            sys.exit(1)
 
     sys.exit(0)
