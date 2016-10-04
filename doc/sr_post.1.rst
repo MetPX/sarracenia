@@ -42,7 +42,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-All sr_ tools store all sensitive authentication info is stored in the credentials file.
+All sr\_ tools store all sensitive authentication info in the credentials.conf file.
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
