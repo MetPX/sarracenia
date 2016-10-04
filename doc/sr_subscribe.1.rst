@@ -86,7 +86,8 @@ Several topic options may be declared. To give a correct value to the subtopic,
 
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding, or the 
+One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
+length limited to 255 encoded bytes, or the 
 more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
 difference being that the AMQP filtering is applied by the broker itself, saving the 
 notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
@@ -324,6 +325,8 @@ SEE ALSO
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+
+`sr_report(1) <sr_report.1.html>`_ - process report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

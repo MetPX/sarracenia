@@ -209,6 +209,8 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
 
+`sr_report(1) <sr_report.1.html>`_ - process report messages.
+
 `sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.

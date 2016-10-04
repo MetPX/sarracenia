@@ -435,6 +435,8 @@ SEE ALSO
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
+`sr_report(1) <sr_report.1.html>`_ - process report messages.
+
 `sr_report2source(1) <sr_report2source.7.html>`_ - copy report messages from the pump report bus to upstream destination.
 
 `sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.

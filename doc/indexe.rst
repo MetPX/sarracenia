@@ -103,9 +103,10 @@ Traditional Unix style manual pages for commands:
   - `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
   - `sr_post(1) <sr_post.1.html>`_ - the tool to post individual files.
   - `sr_watch(1) <sr_watch.1.html>`_ - the tool to post all changes to a given directory.
-  - `sr_report(1) <sr_report.1.html>`_ - (Does not exist yet!) the tool to read report messages.
+  - `sr_report(1) <sr_report.1.html>`_ - the tool to read report messages.
 
 administrative daemons:
+  - `sr_audit(8) <sr_audit.8.html>`_ - daemon that periodically checks and corrects pump configurations.
   - `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
   - `sr_report2clusters(8) <sr_report2clusters.8.html>`_ - daemon to copy report messages to other clusters.
   - `sr_report2source(8) <sr_report2source.8.html>`_ - daemon to copy report messages to the originating source.
