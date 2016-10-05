@@ -274,6 +274,7 @@ class sr_message():
 
         for h in self.headers:
            if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+
                 # strings in utf, and if names have special characters, the length
                 # of the encoded string wll be longer than what is returned by len(. so actually need to look
                 # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
@@ -289,6 +290,7 @@ class sr_message():
         # AMQP limits topic to 255 characters, so truncate and warn.
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
+           # see truncation explanation from above.
            while( self.topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
                mxlen -= 1
 
@@ -335,7 +337,7 @@ class sr_message():
 
         # added for v00 compatibility (old version of sr_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
-        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0]
+        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0][0:200]
 
 
     # Once we know the local file we want to use
