@@ -379,6 +379,9 @@ class sr_subscribe(sr_instances):
    
         file_reassemble(self)
 
+        #FIXME: 2016/10 - PAS: suspect a bug: pretty sure on_file plugin should run after reassembly complete.
+        #FIXME: 2016/10 - PAS: suspect a bug: pretty sure discard should run after reassembly complete.
+
         return True
 
 

@@ -196,6 +196,7 @@ class sr_winnow(sr_instances):
 
     def help(self):
         print("Usage: sr_winnow [OPTIONS] configfile [start|stop|restart|reload|status]\n" )
+        print("read file announcements from exchange and reannounce them to post_exchange, suppressing duplicates\n")
         print("OPTIONS:")
         print("-b   <broker>                default manager (if configured)")
         print("-e   <exchange>              MANDATORY")

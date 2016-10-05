@@ -227,6 +227,7 @@ class sr_sarra(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Subscribe to download, and then Recursively Re-Announce (implements a sarracenia pump)\n")
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
         print("\nAMQP consumer broker settings:")

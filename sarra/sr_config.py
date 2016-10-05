@@ -862,7 +862,7 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 == 'directory': # See: sr_config.7 ++ everywhere? FIXME too much?
+                elif words0 == 'directory': # See: sr_config.7 
                      self.currentDir = words1
                      n = 2
 
@@ -938,11 +938,11 @@ class sr_config:
                      self.currentFileOption = words[1]
                      n = 2
 
-                elif words0 in ['flow','f']: # See: sr_post.1, sr_log.7, shovel, subscribe, watch ? FIXME: should be in sr_config?
+                elif words0 in ['flow','f']: # See: sr_post.1, sr_log.7, shovel, subscribe, watch 
                      self.flow = words1 
                      n = 2
 
-                elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8 (FIXME: needed for sender?)
+                elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
                      self.gateway_for = words1.split(',')
                      n = 2
 
@@ -962,7 +962,7 @@ class sr_config:
                         self.inplace = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['instances','i']: # See: sr_config++ FIXME: too many others?
+                elif words0 in ['instances','i']: # See: sr_config.7
                      self.nbr_instances = int(words[1])
                      n = 2
 
@@ -970,7 +970,7 @@ class sr_config:
                      self.interface = words[1]
                      n = 2
 
-                elif words0 == 'kbytes_ps': # See: sr_sender FIXME (only here? what about consumers? sr_config?)
+                elif words0 == 'kbytes_ps': # See: sr_sender 
                      self.kbytes_ps = int(words[1])
                      n = 2
 
@@ -979,7 +979,7 @@ class sr_config:
                      if self.lock[0] != '.' : self.lock = None
                      n = 2
 
-                elif words0 in ['log','l']: # See: sr_config.7 ++ too many others?  FIXME?
+                elif words0 in ['log','l']: # See: sr_config.7 
                      self.logpath         = words1
                      if os.path.isdir(words1) :
                         self.user_log_dir = words1
@@ -1000,7 +1000,7 @@ class sr_config:
                      self.report_exchange = words1
                      n = 2
 
-                elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 FIXME++ too many others?
+                elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 
                      self.logrotate = int(words[1])
                      n = 2
 
@@ -1032,7 +1032,7 @@ class sr_config:
                      self.message_ttl = int(words[1]) * 60 * 1000
                      n = 2
 
-                elif words0 == 'mirror': # See: sr_config.7 FIXME++ too many others?
+                elif words0 == 'mirror': # See: sr_config.7 
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.mirror = True
                         n = 1
@@ -1053,7 +1053,7 @@ class sr_config:
                      self.no = int(words[1])
                      n = 2
 
-                elif words0 in ['notify_only','n','no-download']: # See: sr_subscribe.1  FIXME... doesn't work for sarra? sender?
+                elif words0 in ['notify_only','n','no-download']: # See: sr_subscribe.1  
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
@@ -1086,14 +1086,14 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 == 'on_post': # See: sr_config, ++ FIXME many others?
+                elif words0 == 'on_post': # See: sr_config
                      self.execfile("on_post",words1)
                      if ( self.on_post == None ) and not self.isNone(words1):
                         ok = False
                         needexit = True
                      n = 2
 
-                elif words0 in ['overwrite','o'] : # See: sr_config.7, FIXME: others.
+                elif words0 in ['overwrite','o'] : # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.overwrite = True
                         n = 1
@@ -1132,7 +1132,7 @@ class sr_config:
                         self.logger.error("problem with path option")
                         needexit = True
 
-                elif words0 in ['post_broker','pb'] : # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
+                elif words0 in ['post_broker','pb'] : # See: sr_sarra,sender,shovel,winnow
                      urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
                      self.post_broker = url
@@ -1141,18 +1141,18 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 in ['post_document_root','pdr']: # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
+                elif words0 in ['post_document_root','pdr']: # See: sr_sarra,sender,shovel,winnow
                      if sys.platform == 'win32':
                          self.post_document_root = words1.replace('\\','/')
                      else:
                          self.post_document_root = words1
                      n = 2
 
-                elif words0 in ['post_exchange','pe']: # See: sr_sarra,sender,shovel,winnow FIXME: add to sr_config
+                elif words0 in ['post_exchange','pe']: # See: sr_sarra,sender,shovel,winnow 
                      self.post_exchange = words1
                      n = 2
 
-                elif words0 in ['post_exchange_split','pes']: # FIXME: missing
+                elif words0 in ['post_exchange_split','pes']: # sr_config.7, sr_shovel.1
                      self.post_exchange_split = int(words1)
                      n = 2
 
@@ -1220,7 +1220,7 @@ class sr_config:
                      self.remote_config_url.append(words[1])
                      n = 2
 
-                elif words0 in ['rename','rn']: # See: FIXME... sr_poll, sarra, sender, sub, watch? why not sr_config?
+                elif words0 in ['rename','rn']: # See: sr_poll, sarra, sender, sub, watch? 
                      self.rename = words1
                      n = 2
 
@@ -1262,11 +1262,11 @@ class sr_config:
                         self.source_from_exchange = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'strip': # See: sr_config.7 ++FIXME too many!?
+                elif words0 == 'strip': # See: sr_config.7 
                      self.strip = int(words[1])
                      n = 2
 
-                elif words0 in ['subtopic','sub'] : # See: sr_config.7 ++FIXME too many!?
+                elif words0 in ['subtopic','sub'] : # See: sr_config.7 
                      self.subtopic = words1
                      key = self.topic_prefix + '.' + self.subtopic
                      self.bindings.append( (self.exchange,key) )
@@ -1274,7 +1274,7 @@ class sr_config:
                      self.logger.debug("BINDINGS %s"% self.bindings)
                      n = 2
 
-                elif words0 == 'sum': # See: sr_config.7 ++FIXME too many!?
+                elif words0 == 'sum': # See: sr_config.7 
                      self.sumflg = words[1]
                      ok = self.validate_sum()
                      if not ok : needexit = True
@@ -1288,10 +1288,10 @@ class sr_config:
                      self.to_clusters = words1
                      n = 2
 
-                elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 ++FIXME too many!?
+                elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
 
-                elif words0 in ['url','u']: # See: sr_config.7 ++FIXME too many!?
+                elif words0 in ['url','u']: # See: sr_config.7 
                      self.url = urllib.parse.urlparse(words1)
                      n = 2
 

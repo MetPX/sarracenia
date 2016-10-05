@@ -804,3 +804,60 @@ does for sources, just at a different scale.
 
 
 
+Edge Case: Multiple Versions Queued
+-----------------------------------
+
+We have added mtime to files since it is clear that that information
+does not make it cleanly through web caches.  So we need to decide
+when to apply mtime from a message to a file.
+
+In the case of a subscriber download... well always apply it.
+
+<post download working on the file>
+Are there cases when one wouldn't?
+
+if the checksum doesn't match?  
+
+if the file exists, and the message mtime is older than the file's (indicating messages received
+out of order) then we shouldn't apply the mtime, as that will make it an older than it should be.
+
+we should print a warning that includes the mtime.  so later, if a message arrives 
+with the correct checksum, 
+
+<pre-download ... on_message timeframe>
+
+on receipt of a new announcement of an existing file:
+we compare the checksum in the message against that of the existing file.
+if it matches, then we should apply the mtime from the message to the file.
+(we have caught up to the queue.)
+
+and...
+
+if in sarra, it should get re-posted without download.
+
+
+if the checksums do not match, should not re-announce.
+
+
+
+
+
+
+so what is the algorithm for applying mtime and re-announcing?
+
+in sarra:
+
+<file is downloaded>
+If   sum(message) == sum(file) then   
+    apply mtime,atime from message to file.
+    post announcement.
+    log success( ... )
+elif  mtime(message) > mtime(file) then
+   apply mtime,atime from message to file
+   log warning ( "file announcement with mtime=xx does not match download" )
+
+Otherwise no? Idea is that when many versions of same file have announcements, the first one
+you get will be for an older version, but the file you download will not match as it is the latest available.   It is better not to re-advertise the file with the wrong checksum.
+
+So if the checksum doesn't match... 
+O
