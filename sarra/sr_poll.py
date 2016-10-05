@@ -107,6 +107,7 @@ class sr_poll(sr_instances):
 
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
+           self.help()
            sys.exit(1)
 
         # check destination
@@ -117,6 +118,7 @@ class sr_poll(sr_instances):
 
         if self.destination == None or self.details == None :
            self.logger.error("destination option incorrect or missing\n")
+           self.help()
            sys.exit(1)
 
         # check destination
@@ -129,6 +131,7 @@ class sr_poll(sr_instances):
 
         if len(self.sumflg) < 2 or self.sumflg[:2] != 'z,' :
            self.logger.error("sum should start with z,  ex.: z,d\n")
+           self.help()
            sys.exit(1)
 
         # rebuild mask as pulls instructions
@@ -281,6 +284,30 @@ class sr_poll(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
+          "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
+          "\nAMQP broker settings:\n" +
+          "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
+          "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
+          "\nAMQP Queue bindings:\n" +
+          "\texchange      <name>         (default: xreport for feeders, xs_<user>)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.report)\n" +
+          "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
+          "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
+          "\t\t\t* single directory wildcard (matches one directory)\n" +
+          "\t\t\t# wildcard (matches rest)\n" +
+          "\nAMQP Queue settings:\n" +
+          "\tdurable       <boolean>      (default: False)\n" +
+          "\texpire        <minutes>      (default: None)\n" +
+          "\tmessage-ttl   <minutes>      (default: None)\n" +
+          "\tqueue_name    <name>         (default: program set it for you)\n" +
+          "\nProcessing:\n" +
+          "\tdo_line           <script>        (default None)\n" +
+          "\tdo_poll           <script>        (default None)\n" +
+          "\ton_post           <script>        (default None)\n" +
+          "" )
+
+  
         print("OPTIONS:")
         print("DEBUG:")
         print("-debug")
@@ -651,6 +678,7 @@ def main():
     elif action == 'status'     : poll.status_parent()
     else :
            poll.logger.error("action unknown %s" % action)
+           poll.help()
            sys.exit(1)
 
     sys.exit(0)

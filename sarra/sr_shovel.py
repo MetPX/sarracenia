@@ -163,6 +163,7 @@ class sr_shovel(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("read messages from exchange, apply on_message if provided, reannounce/post them to post_broker & post_exchange\n")
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
         print("\nAMQP consumer broker settings:")
