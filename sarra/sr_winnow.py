@@ -255,7 +255,7 @@ class sr_winnow(sr_instances):
         # cache testing/adding
         # ========================================
 
-        key=str(self.msg.headers['filename']) + "|" + str(self.msg.block_count) + "|" +str(self.msg.checksum)
+        key= self.msg.url.path + "|" + str(self.msg.block_count) + "|" +str(self.msg.checksum)
 
         if self.cache_find(key) :
             self.msg.report_publish(304,'Not modified')

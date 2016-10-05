@@ -335,8 +335,8 @@ class sr_message():
         for h in self.headers:
            self.hdrstr += '%s=%s ' % (h, self.headers[h])
 
-        # added for v00 compatibility (old version of sr_subscribe)
-        # can be taken off when v02 will be fully deployed and end user uses new sr_subscribe
+        # added for v00 compatibility (old version of dd_subscribe)
+        # can be taken off when v02 will be fully deployed and end user uses sr_subscribe
         self.headers['filename'] = os.path.basename(self.url.path).split(':')[0][0:200]
 
 
