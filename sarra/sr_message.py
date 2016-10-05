@@ -269,14 +269,16 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        # AMQP limits headers to 255 characters, so truncate and warn.
+        # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
+        amqp_ss_maxlen = 253
+
         for h in self.headers:
-           if len(self.headers[h].encode("utf8")) > 255:
+           if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
                 # strings in utf, and if names have special characters, the length
                 # of the encoded string wll be longer than what is returned by len(. so actually need to look
                 # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
                 # but then how to truncate properly. need to avoid invalid encodings.
-                mxlen=255
+                mxlen=amqp_ss_maxlen
                 while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
                       mxlen -= 1
 
@@ -284,9 +286,9 @@ class sr_message():
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
                 
-        # AMQP limits headers to 255 characters, so truncate and warn.
-        if len(self.topic.encode("utf8")) > 255:
-           mxlen=255
+        # AMQP limits topic to 255 characters, so truncate and warn.
+        if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
+           mxlen=amqp_ss_maxlen 
            while( self.topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
                mxlen -= 1
 
