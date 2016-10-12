@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.10a2) unstable; urgency=medium
+
+  * Fix issue #42 (header length in AMQP)
+  * Numerous doc changes
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Wed, 12 Oct 2016 11:19:01 -0400
+
 metpx-sarracenia (2.16.10a1) unstable; urgency=medium
 
   * Fixes to self test suite
