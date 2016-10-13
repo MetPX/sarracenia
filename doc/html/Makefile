@@ -34,7 +34,11 @@ img:
 	sed -i 's/<p class="first admonition-title">Warning<\/p>//' $@
 	sed -i 's/<div class="note">/<div class="alert alert-info" role="alert">/' $@
 	sed -i 's/<p class="first admonition-title">Note<\/p>//' $@
-	python ../../../site/template.py $@
+ifeq ($(wildcard ../../../template.py),) 
+	@echo "WARNING: template.py missing, html files may be incomplete"
+else
+	python ../../../template.py $@
+endif
 	sed -i 's/<img \(.*\)\/>/<div class="panel"><div class="panel-body"><img \1 class="img-responsive"\/><\/div><\/div>/' $@
 
 clean: 
