@@ -4,7 +4,7 @@
 =============================
 
 ---------------------
- Working with Plugins 
+ Working with Plugins
 ---------------------
 
 .. warning::
@@ -20,11 +20,11 @@ Audience
 --------
 
 Readers of this manual should be comfortable with light scripting in python version 3.
-Sarracenia includes a number of points where processing can be customized by 
-small snippets of user provided code, known as plugins.  The plugins themselves 
-are expected to be rather concise, and an elementary knowledge of python should suffice to 
-build new plugins in an essentially copy/paste manner, with many samples being 
-available to read.  For some examples of how plugin processing might be of 
+Sarracenia includes a number of points where processing can be customized by
+small snippets of user provided code, known as plugins.  The plugins themselves
+are expected to be rather concise, and an elementary knowledge of python should suffice to
+build new plugins in an essentially copy/paste manner, with many samples being
+available to read.  For some examples of how plugin processing might be of
 interest to users see the Ideas below:
 
 
@@ -36,7 +36,7 @@ Examples of things that would be fun to do with plugins.
 - Common Alerting Protocol or CAP, is an XML format that provides a warnings for many types of events, indicating
   the area of coverage.  There is a 'polygon' field in the warning, that the source could add to messages using
   an on_post plugin.  Subscribers would have access to the 'polygon' header through use of an on_message plugin,
-  enabling them  determine whether the alert affected an area of interest without downloading the entire warning.  
+  enabling them  determine whether the alert affected an area of interest without downloading the entire warning.
 
 - A source that applies compression to products before posting, could add a header such as 'uncompressed_size'
   and 'uncompressed_sum' to allow subscribers, with an on_message plugin to compare a file that has been locally
@@ -47,21 +47,21 @@ Examples of things that would be fun to do with plugins.
 Introduction
 ------------
 
-A Sarracenia data pump is a web server with notifications for subscribers to 
-know, quickly, when new data has arrived.  To find out what data is already 
-available on a pump, view the tree with a web browser.  For simple immediate 
-needs, one can download data using the browser itself, or a standard tool 
-such as wget.  The usual intent is for sr_subscribe to automatically download 
-the data wanted to a directory on a subscriber machine where other software 
-can process it.  
+A Sarracenia data pump is a web server with notifications for subscribers to
+know, quickly, when new data has arrived.  To find out what data is already
+available on a pump, view the tree with a web browser.  For simple immediate
+needs, one can download data using the browser itself, or a standard tool
+such as wget.  The usual intent is for sr_subscribe to automatically download
+the data wanted to a directory on a subscriber machine where other software
+can process it.
 
-Often, the purpose of automated downloading is to have other code ingest 
-the files and perform further processing.  Rather than having a separate 
-process have to look at a file in a directory, Sarracenia provides a means 
+Often, the purpose of automated downloading is to have other code ingest
+the files and perform further processing.  Rather than having a separate
+process have to look at a file in a directory, Sarracenia provides a means
 of customizing processing via plugins written in python 3. A first example:
 
 There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the 
+Should you want to implement tasks in various part of the execution of the
 program:
 
 - **on_message  <script>        (default: msg_log)**
@@ -70,7 +70,7 @@ program:
 - **on_post     <script>        (default: post_log)**
 - **on_line     <script>        (default: None)**
 
-While the first four are self-evident, the on_line plugin is a bit obscure.  It 
+While the first four are self-evident, the on_line plugin is a bit obscure.  It
 is used to parse remote directories listings using sr_poll,
 as the listing format varies by implementation of the remote server.
 
@@ -87,7 +87,7 @@ Plugin Scripts Basics
 
 An example, A file_noop.py script for **on_file**, could be ::
 
- class File_Noop(object): 
+ class File_Noop(object):
       def __init__(self,parent):
           if not hasattr(parent,'file_string'):
              parent.file_string='hello world'
@@ -109,7 +109,7 @@ the plugin requires the magic last two lines in the sample plugin, where the las
 line needs to reflect the type of plugin (on_file for an on_file plugin, on_message,
 for an on_message one, etc...)
 
-The only argument the script receives is **parent**, which has all of option 
+The only argument the script receives is **parent**, which has all of option
 settings from configuration files and command line as attributes.  For example,
 if a setting like::
 
@@ -122,8 +122,8 @@ plugin is used as a prefix (In this example, msg_speedo)
 
 
 In addition to the command line options, there is also a logger available
-as shown in the sample above.  The *logger* is a python3 logger object, as documented 
-here: https://docs.python.org/3/library/logging.html.   To allow users to tune the 
+as shown in the sample above.  The *logger* is a python3 logger object, as documented
+here: https://docs.python.org/3/library/logging.html.   To allow users to tune the
 verbosity of logs, use priority specific method to classify messages::
 
   logger.debug - something deeply wrong, spelunking in progress.
@@ -132,13 +132,13 @@ verbosity of logs, use priority specific method to classify messages::
   logger.error - The component failed to do something.
 
 In the above message, logger.info is used, indicating an informative message.
-Another useful attribute available in parent, is 'msg', which has all the attributes 
+Another useful attribute available in parent, is 'msg', which has all the attributes
 of the message being processed.  All of the headers from the message, as defined
 in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the plugin,
-such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_ 
+such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
 section for an exhaustive list.
 
-A popular variable in on_file and on_part plugins, is: *parent.msg.local_file*, 
+A popular variable in on_file and on_part plugins, is: *parent.msg.local_file*,
 giving the file name the downloaded product has been written to.
 
 Should one of these scripts return False, the processing of the message/file
@@ -161,7 +161,7 @@ Another good location to browse is::
 The git repository with many plugins available to reference.
 
 For example, the default settings of on_msg and on_file print report messages
-for each message and file processed.  
+for each message and file processed.
 
 
 
@@ -171,7 +171,7 @@ Better File Reception
 ---------------------
 
 For example, rather than using the file system, sr_subscribe could indicates when each file is ready
-by writing to a named pipe:: 
+by writing to a named pipe::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
@@ -188,20 +188,20 @@ by writing to a named pipe::
   # a pipe named '.rxpipe' in the current working directory.
   EOT
 
-With the *on_file* option, one can specify a processing option such as rxpipe.  With rxpipe, 
-every time a file transfer has completed and is ready for post-processing, its name is written 
-to the linux pipe (named .rxpipe) in the current working directory.  So the code for post-processing 
+With the *on_file* option, one can specify a processing option such as rxpipe.  With rxpipe,
+every time a file transfer has completed and is ready for post-processing, its name is written
+to the linux pipe (named .rxpipe) in the current working directory.  So the code for post-processing
 becomes::
 
   do_something <.rxpipe
 
 No filtering out of working files by the user is required, and ingestion of partial files is
-completely avoided.   
+completely avoided.
 
 .. NOTE::
    In the case where a large number of sr_subscribe instances are working
    On the same configuration, there is slight probability that notifications
-   may corrupt one another in the named pipe.  
+   may corrupt one another in the named pipe.
    We should probably verify whether this probability is negligeable or not.
 
 
@@ -210,7 +210,7 @@ Advanced File Reception
 
 While the *on_file* directive specifies the name of an action to perform on receipt
 of a file, those actions are not fixed, but simply small scripts provided with the
-package, and customizable by end users.  The rxpipe module is just an example 
+package, and customizable by end users.  The rxpipe module is just an example
 provided with sarracenia::
 
   class File_RxPipe(object):
@@ -218,7 +218,7 @@ provided with sarracenia::
       def __init__(self,parent):
           if not hasattr(parent,'file_rxpipe_name'):
               parent.logger.error("Missing file_rxpipe_name parameter")
-              return 
+              return
 
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
@@ -234,31 +234,31 @@ provided with sarracenia::
 With this fragment of python, when sr_subscribe is first called, it ensures that
 a pipe named npipe is opened in the specified directory by executing
 the __init__ function within the declared RxPipe python class.  Then, whenever
-a file reception is completed, the assignment of *self.on_file* ensures that 
-the rx.perform function is called.  
+a file reception is completed, the assignment of *self.on_file* ensures that
+the rx.perform function is called.
 
 The rxpipe.perform function just writes the name of the file dowloaded to
 the named pipe.  The use of the named pipe renders data reception asynchronous
-from data processing.   as shown in the previous example, one can then 
+from data processing.   as shown in the previous example, one can then
 start a single task *do_something* which processes the list of files fed
-as standard input to it, from a named pipe.  
+as standard input to it, from a named pipe.
 
 In the examples above, file reception and processing are kept entirely separate.  If there
 is a problem with processing, the file reception directories will fill up, potentially
-growing to an unwieldy size and causing many practical difficulties.  When a plugin such 
-as on_file is used, the processing of each file downloaded is run before proceeding 
-to the next file.  
+growing to an unwieldy size and causing many practical difficulties.  When a plugin such
+as on_file is used, the processing of each file downloaded is run before proceeding
+to the next file.
 
 If the code in the on_file script is changed to do actual processing work, then
-rather than being independent, the processing could provide back pressure to the 
-data delivery mechanism.  If the processing gets stuck, then the sr_subscriber 
-will stop downloading, and the queue will be on the server, rather than creating 
+rather than being independent, the processing could provide back pressure to the
+data delivery mechanism.  If the processing gets stuck, then the sr_subscriber
+will stop downloading, and the queue will be on the server, rather than creating
 a huge local directory on the client.  Different models apply in different
 situations.
 
 An additional point is that if the processing of files is invoked
-in each instance, providing very easy parallel processing built 
-into sr_subscribe.  
+in each instance, providing very easy parallel processing built
+into sr_subscribe.
 
 
 Using Credentials in Plugins
@@ -292,35 +292,35 @@ Sending vs. Subscribing
 -----------------------
 
 FIXME: local_file vs. remote_file
-if you are using 
+if you are using
 
 
-Variables Available 
+Variables Available
 -------------------
 
 Without peering into the python source code of sarracenia, it is hard to know
 what values are available to plugin scripts.  As a cheat to save developers
 from having to understand the source code, a diagnostic plugin might be helpful.
 
-if one sets **on_message msg_dump** in a configuration, the entire
-list of available variables can be displayed in a log file::
+If one sets **on_message msg_dump** in a configuration, the entire
+list of available variables can be displayed in a log file.
 
-Make the above file an on_file (or other trigger) script in a configuration, start up a receiver 
-(and if it is a busy one, then stop it immediately, as it creates very large report messages for 
-every message received.)  Essentially the entire program state is available to plugins. 
+Make the above file an on_file (or other trigger) script in a configuration, start up a receiver
+(and if it is a busy one, then stop it immediately, as it creates very large report messages for
+every message received.)  Essentially the entire program state is available to plugins.
 
 A sample output is shown (reformatted for legibility) is given below.  For every field *xx* listed,
 a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
 
   peter@idefix:~/test$ sr_subscribe dd.conf foreground
   ^C to stop it immediately after the first message.
-  peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log 
-  
+  peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log
+
   # the following is reformatted to look reasonable on a page.
   2016-01-14 17:13:01,649 [INFO] {
-  'kbytes_ps': 0, 
-  'queue_name': None, 
-  'flatten': '/', 
+  'kbytes_ps': 0,
+  'queue_name': None,
+  'flatten': '/',
   'exchange': 'xpublic',
   'discard': False,
   'report_back': True,
@@ -440,69 +440,69 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'flow': None}
 
 
-No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of 
+No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of
 this state will vary over time.  Similar to program configuration settings, all of the fields
 involved in processing individual messages are available in the parent.msg object.  A similar
-dump to the above is here (e.g of a python scripts can use *parent.msg.partsr* , 
-and/or *parent.msg.header.parts*  in their code.):: 
+dump to the above is here (e.g of a python scripts can use *parent.msg.partsr* ,
+and/or *parent.msg.header.parts*  in their code.)::
 
 
- 2016-01-14 17:13:01,649 [INFO] message = 
- {'partstr': '1,78,1,0,0', 
- 'suffix': '.78.1.0.0.d.Part', 
- 'subtopic': 'alphanumeric.20160617.CA.CWAO.12', 
- 'in_partfile': False, 
- 'notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
- 'checksum': 'ab1ba0020e91119fb024a2c115ccd908', 
- 'pub_exchange': None, 
- 'local_checksum': None, 
- 'chunksize': 78, 
- 'time': '20160617120454.820', 
- 'path': 'bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
- 'report_exchange': 'xs_anonymous', 
- 'part_ext': 'Part', 
- 'topic_prefix': 'v02.post', 
- 'current_block': 0, 
- 'tbegin': 1466165094.82, 
- 'local_file': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
- 'remainder': 0, 
- 'to_clusters': ['DD', 'DDI.CMC', 'DDI.EDM'], 
- 'local_offset': 0, 
- 'mtype': 'post', 
-  'user': 'anonymous', 
-  'bufsize': 8192, 'local_url': 
-  ParseResult(scheme='file', netloc='', path='/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 'exchange': 'xpublic', 'url': ParseResult(scheme='http', netloc='dd2.weather.gc.ca', path='/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 
- 'onfly_checksum': 'ab1ba0020e91119fb024a2c115ccd908', 
-  'host': 'blacklab', 
-  'filesize': 78, 
-  'block_count': 1, 
- 'sumalgo': <sarra.sr_util.checksum_d object at 0x7f77554234e0>, 
- 'headers': { 
-      'sum': 'd,ab1ba0020e91119fb024a2c115ccd908', 
-      'parts': '1,78,1,0,0', 
-      'filename': 'CACN00_CWAO_171133__WAR_00919', 
-      'to_clusters': 'DD,DDI.CMC,DDI.EDM', 
-      'source': 'metpx', 
-      'rename': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
-      'from_cluster': 'DD'}, 
- 'hdrstr': 'parts=1,78,1,0,0 sum=d,ab1ba0020e91119fb024a2c115ccd908 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 message=Downloaded ', 
-  'report_notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 201 blacklab anonymous 3.591402', 
-  'version': 'v02', 
-  'parent': <sarra.sr_subscribe.sr_subscribe object at 0x7f775682b4a8>, 
-  'logger': <logging.RootLogger object at 0x7f77563359e8>, 
-  'length': 78, 
-  'topic': 'v02.post.bulletins.alphanumeric.20160617.CA.CWAO.12', 
-  'inplace': True, 
-  'urlcred': 'http://dd2.weather.gc.ca/', 
-  'sumstr': 'd,ab1ba0020e91119fb024a2c115ccd908', 
-  'report_topic': 'v02.report.bulletins.alphanumeric.20160617.CA.CWAO.12', 
-  'publisher': None, 
-  'code': 201, 
-  'urlstr': 'http://dd2.weather.gc.ca/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', 
-  'lastchunk': True, 
-  'sumflg': 'd', 
-  'offset': 0, 
-  'partflg': '1', 
+ 2016-01-14 17:13:01,649 [INFO] message =
+ {'partstr': '1,78,1,0,0',
+ 'suffix': '.78.1.0.0.d.Part',
+ 'subtopic': 'alphanumeric.20160617.CA.CWAO.12',
+ 'in_partfile': False,
+ 'notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
+ 'checksum': 'ab1ba0020e91119fb024a2c115ccd908',
+ 'pub_exchange': None,
+ 'local_checksum': None,
+ 'chunksize': 78,
+ 'time': '20160617120454.820',
+ 'path': 'bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
+ 'report_exchange': 'xs_anonymous',
+ 'part_ext': 'Part',
+ 'topic_prefix': 'v02.post',
+ 'current_block': 0,
+ 'tbegin': 1466165094.82,
+ 'local_file': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
+ 'remainder': 0,
+ 'to_clusters': ['DD', 'DDI.CMC', 'DDI.EDM'],
+ 'local_offset': 0,
+ 'mtype': 'post',
+  'user': 'anonymous',
+  'bufsize': 8192, 'local_url':
+  ParseResult(scheme='file', netloc='', path='/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 'exchange': 'xpublic', 'url': ParseResult(scheme='http', netloc='dd2.weather.gc.ca', path='/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''),
+ 'onfly_checksum': 'ab1ba0020e91119fb024a2c115ccd908',
+  'host': 'blacklab',
+  'filesize': 78,
+  'block_count': 1,
+ 'sumalgo': <sarra.sr_util.checksum_d object at 0x7f77554234e0>,
+ 'headers': {
+      'sum': 'd,ab1ba0020e91119fb024a2c115ccd908',
+      'parts': '1,78,1,0,0',
+      'filename': 'CACN00_CWAO_171133__WAR_00919',
+      'to_clusters': 'DD,DDI.CMC,DDI.EDM',
+      'source': 'metpx',
+      'rename': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
+      'from_cluster': 'DD'},
+ 'hdrstr': 'parts=1,78,1,0,0 sum=d,ab1ba0020e91119fb024a2c115ccd908 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 message=Downloaded ',
+  'report_notice': '20160617120454.820 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919 201 blacklab anonymous 3.591402',
+  'version': 'v02',
+  'parent': <sarra.sr_subscribe.sr_subscribe object at 0x7f775682b4a8>,
+  'logger': <logging.RootLogger object at 0x7f77563359e8>,
+  'length': 78,
+  'topic': 'v02.post.bulletins.alphanumeric.20160617.CA.CWAO.12',
+  'inplace': True,
+  'urlcred': 'http://dd2.weather.gc.ca/',
+  'sumstr': 'd,ab1ba0020e91119fb024a2c115ccd908',
+  'report_topic': 'v02.report.bulletins.alphanumeric.20160617.CA.CWAO.12',
+  'publisher': None,
+  'code': 201,
+  'urlstr': 'http://dd2.weather.gc.ca/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
+  'lastchunk': True,
+  'sumflg': 'd',
+  'offset': 0,
+  'partflg': '1',
   'report_publisher': <sarra.sr_amqp.Publisher object at 0x7f77551c7518>}
 
 
@@ -518,23 +518,23 @@ Attempting to run even the above trivial plugin::
      File "noop.py", line 25, in <module>
        filenoop  = File_Noop(self)
    NameError: name 'self' is not defined
-   blacklab%  
+   blacklab%
 
 To do basic syntax work, one can add some debugging scaffolding.  Taking the above code just add::
-    
+
     class File_Noop(object):
           def __init__(self,parent):
               if not hasattr(parent,'file_string'):
                  parent.file_string='hello world'
-    
-    
+
+
           def perform(self,parent):
               logger = parent.logger
-    
+
               logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
-    
+
               return True
-    
+
     #file_noop=File_Noop(self)
     #self.on_file=file_noop.perform
 
@@ -564,18 +564,18 @@ To do basic syntax work, one can add some debugging scaffolding.  Taking the abo
 So now it can be invoked with::
 
     blacklab% python noop.py
-    blacklab% 
+    blacklab%
 
 Which confirms that there are at least no syntax errors. One will need to add more scaffolding
 depending on the complexity of the plugin.  One can append an invocation of the plugin to the test
 script, like so::
-  
+
    self.on_file(self)
 
 
-and then the routine will run. the more complex the plugin, the more needs to be added to the 
+and then the routine will run. the more complex the plugin, the more needs to be added to the
 debugging scaffolding.  Once that sort of basic testing is completed, just remove the scaffolding.
-    
+
 For more complicated tests, just add more testing code::
 
   cat >fifo_test.py <<EOT
@@ -608,7 +608,7 @@ For more complicated tests, just add more testing code::
   transformer=Transformer()
   #self.on_file = transformer.perform
 
-  """ 
+  """
   for testing outside of a sr_ component plugin environment,
   we comment out the normal activiation line of the script above
   and insert a little wrapper, so that it can be invoked
@@ -641,8 +641,8 @@ For more complicated tests, just add more testing code::
 
   transformer.perform(testparent)
 
-The part after the #self.on_file line is only a test harness.  
-One creates a calling object with the fields needed to test the 
+The part after the #self.on_file line is only a test harness.
+One creates a calling object with the fields needed to test the
 fields the plugin will use in the TestParent and TestMessage classes.
 
 
@@ -653,7 +653,7 @@ File Notification Without Downloading
 If the data pump exists in a large shared environment, such as
 a Supercomputing Centre with a site file system.  In that case,
 the file might be available without downloading.  So just
-obtaining the file notification and transforming it into a 
+obtaining the file notification and transforming it into a
 local file is sufficient::
 
   blacklab% cat >../dd_swob.conf <<EOT
@@ -664,21 +664,21 @@ local file is sufficient::
   on_message do_something
 
   accept .*
-  # do_something will catenate document_root with the path in 
+  # do_something will catenate document_root with the path in
   # the notification to obtain the full local path.
 
 
 on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
-message per part. One can use the parent.msg.partstr to find out which part 
-you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding. 
+message per part. One can use the parent.msg.partstr to find out which part
+you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding.
 
 Ensure the on_message plugin returns 'False' to prevent downloading.
 
 
-.. warning:: 
-   **FIXME**: perhaps show a way of checking the parts header to 
+.. warning::
+   **FIXME**: perhaps show a way of checking the parts header to
    with an if statement in order to act on only the first part message
    for long files.
 

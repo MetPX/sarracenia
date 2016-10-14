@@ -194,7 +194,7 @@ a more real example::
   2016-01-20 14:53:49,019 [INFO] notice   20160120145349.19 http://localhost:81/ frog.dna
   2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
 
-There is a sr_subscribe to subscribe to all "*.dna" posts. The subscribe log said. Here is the config file::
+There is a sr_subscribe to subscribe to all ``*.dna`` posts. The subscribe log said. Here is the config file::
 
   broker amqp://guest:guest@localhost
   directory /var/www/subscribed

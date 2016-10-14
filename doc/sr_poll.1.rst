@@ -21,32 +21,32 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_poll** is a component that connects to a remote server to 
+**sr_poll** is a component that connects to a remote server to
 check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product.
 
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
-**sr_poll** connects to a *broker*.  Every *sleep* seconds, it connects to 
+**sr_poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents. When a file matches a pattern given by *accept*, **sr_poll** builds
-a notification for that product and sends it to the *broker*. The matching content 
+a notification for that product and sends it to the *broker*. The matching content
 of the *directory* is kept in a file for reference. Should a matching file be changed,
 or created at a later iteration, a new notification is sent.
 
-**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.html>`_  
+**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.html>`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
 The **sr_poll** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... 
+followed by an action start|stop|restart|reload|status...
 
 CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first. 
-It fully explains the option configuration language, and how to find 
+`sr_config(7) <sr_config.7.html>`__  page which should be read first.
+It fully explains the option configuration language, and how to find
 the option settings.
 
 CREDENTIAL OPTIONS
@@ -57,24 +57,24 @@ The broker option sets all the credential information to connect to the  **Rabbi
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )
 
 All sr\_ tools store all sensitive authentication info in the credentials.conf file.
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`_
+For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`__
 
 
 VIP, INTERFACE, INSTANCE
 ------------------------
 
 As only one instance of sr_poll that should be used for each configuration,
-the *instances* option is forced to 1. It also behaves as a singleton: **sr_poll** perform 
-sr_poll is often configured on multiple servers, and have the posting occur only from 
-whichever one owns the virtual IP address, at a given time.  Its task if invoked on a 
+the *instances* option is forced to 1. It also behaves as a singleton: **sr_poll** perform
+sr_poll is often configured on multiple servers, and have the posting occur only from
+whichever one owns the virtual IP address, at a given time.  Its task if invoked on a
 server where the ip *vip* from an *interface* is present...
-If not, **sr_poll** will sleep.  When asleep, it will wakeup 
+If not, **sr_poll** will sleep.  When asleep, it will wakeup
 on the server every *sleep* seconds, to update its reference file and be perhaps
 take over the work.
 
@@ -89,12 +89,12 @@ When these options are omitted, sr_poll is always active.
 DESTINATION OPTIONS
 -------------------
 
-The destination option specify what is needed to connect to the remote server 
+The destination option specify what is needed to connect to the remote server
 
 **destination protocol://<user>@<server>[:port]**
 
 ::
-      (default: None and it is mandatory to set it ) 
+      (default: None and it is mandatory to set it )
 
 The *destination* should be set with the minimum required information...
 **sr_poll**  uses *destination* setting not only when polling, but also
@@ -115,10 +115,10 @@ POLLING SPECIFICATIONS
 These options set what files the user wants to be notified for and where
  it will be placed, and under which name.
 
-- **filename  <option>         (optional)** 
-- **directory <path>           (default: .)** 
-- **accept    <regexp pattern> [rename=] (must be set)** 
-- **reject    <regexp pattern> (optional)** 
+- **filename  <option>         (optional)**
+- **directory <path>           (default: .)**
+- **accept    <regexp pattern> [rename=] (must be set)**
+- **reject    <regexp pattern> (optional)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -134,7 +134,7 @@ files of interest and their directories of residence. **get** is a synonym
 for **accept** and is defined for backward compatibility.
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-These options are processed sequentially. 
+These options are processed sequentially.
 The URL of a file that matches a  **reject**  pattern is never notified.
 One that match an  **accept**  pattern is notified from its residing directory.
 Again a *rename*  can be added to the *accept* option... matching products
@@ -142,7 +142,7 @@ for that *accept* option would get renamed as described... unless the *accept* m
 one file, the *rename* option should describe a directory.
 
 The directory can have some patterns. These supported patterns concern date/time .
-They are fixed... 
+They are fixed...
 
 **${YYYY}         current year**
 **${MM}           current month**
@@ -173,10 +173,10 @@ POSTING SPECIFICATIONS
 
 These options set what files the user wants to be notified for and where
 **sr_poll** polls the availability of file on a remote server by creating
-an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
+an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.html>`_
 to consume the announcement and download the file (or **sr_sarra**).
 To make files available to subscribers, **sr_poll** sends the announcements to
-an AMQP server, also called a broker.  Format of argument to the *broker* option:: 
+an AMQP server, also called a broker.  Format of argument to the *broker* option::
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
@@ -185,19 +185,19 @@ the product's path (*directory*/"matched file").  There is one post per file.
 The file's size is taken from the directory "ls"... but it's checksum cannot
 be determined, so the "sum" header in the posting is set to "0,0."
 
-By default, sr_poll sends its post message to the broker with default exchange 
+By default, sr_poll sends its post message to the broker with default exchange
 is the prefix *xs_* followed by the broker username. The *broker* is mandatory.
 It can be given incomplete if, it is well defined in the credentials.conf file.
 
 Refer to `sr_post(1) <sr_post.1.html>`_ - to understand the complete notification process.
 Refer to `sr_post(7) <sr_post.7.html>`_ - to understand the complete notification format.
 
-Here it is important to say that : 
+Here it is important to say that :
 
-The *sum=0,0* is used because no checksum computation was performed... 
+The *sum=0,0* is used because no checksum computation was performed...
 
 The *parts=1,fsiz,1,0,0* is used and the file's size is taken from the ls of the file.
-Under **sr_sarra** these fields could be reset. 
+Under **sr_sarra** these fields could be reset.
 
 .. note::
   **FIXME  recompute_checksum in sr_sarra is available ... but reset filesize does not exist**
@@ -251,12 +251,12 @@ ADVANCED FEATURES
 There are ways to insert scripts into the flow of messages and file downloads:
 Should you want to implement tasks in various part of the execution of the program:
 
-- **do_poll     <script>        (default: None)** 
-- **on_post     <script>        (default: None)** 
+- **do_poll     <script>        (default: None)**
+- **on_post     <script>        (default: None)**
 
 A do_nothing.py script for **on_post** could be:
 
-class Transformer(object): 
+class Transformer(object):
       def __init__(self):
           pass
 
@@ -274,7 +274,7 @@ The only arguments the script receives it **parent**, which is an instance of
 the **sr_poll** class
 
 The **do_poll** script could be written to support other protocol than
-ftp,ftps,sftp.  Again this script would be responsible to determine 
+ftp,ftps,sftp.  Again this script would be responsible to determine
 what to do under its protocol with the various options **destination**,
 **directory**, **accept(get)/reject** and should it determine to post a
 file, it would need to build its url, partstr, sumstr and  use
@@ -312,4 +312,3 @@ SEE ALSO
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
- 

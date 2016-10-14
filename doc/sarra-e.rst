@@ -131,7 +131,7 @@ that time, the application will rely on pre-1.0 standard message brokers, such a
 Downloading Sarracenia
 ----------------------
 
-Steps for downloading the latest version of Sarracenia are available `here <download-e.html>`_ .
+Steps for downloading the latest version of Sarracenia are available on our `downloads page <download-e.html>`_ .
 
 Getting The Source Code
 -----------------------
@@ -141,4 +141,4 @@ The source code is available from our `git repository <https://sourceforge.net/p
 Documentation
 -------------
 
-The documentation for Sarracenia can be found `here <sarra-doc-e.html>`_ .
+The documentation for Sarracenia can be found on our `documentation page <sarra-doc-e.html>`_ .
