@@ -27,8 +27,8 @@ To hack on the sarracenia source, you need:
 
 after you have cloned the source code::
 
-    git clone git://git.code.sf.net/p/metpx/git metpx-git
-    cd metpx-git/sarracenia.
+    git clone git://git.code.sf.net/p/metpx/sarracenia metpx-sarracenia
+    cd metpx-sarracenia
 
 The rest of the Guide assumes you are there.
 
@@ -145,7 +145,7 @@ Assumption: test environment is a linux PC, either a laptop/desktop, or a server
 can start a browser.
 
 0 - Make a local wheel and installing on your workstation
-   In the git clone tree ...    metpx-git/sarracenia
+   In the git clone tree ...    metpx-sarracenia
    create a wheel by running either::
 
        python3 setup.py bdist_wheel
