@@ -3,7 +3,7 @@ Sarracenia
 ==========
 
 .. contents::
-            
+
 **MetPX-Sarracenia** is a data duplication or distribution engine that leverages existing
 standard technologies (web servers and the AMQP_ brokers) to achieve real-time message
 delivery and end to end transparency in file transfers.  Whereas in Sundew, each switch
@@ -13,7 +13,7 @@ until they arrive at a client.  The client can provide explicit acknowledgement 
 propagates back through the network to the source.  Whereas traditional file switching
 is a point-to-point affair where knowledge is only between each segment, in Sarracenia,
 information flows from end to end in both directions.
-                    
+
 Overview
 --------
 
@@ -97,13 +97,13 @@ scanning within the flow transparently.
 Why No FTP?
 -----------
 
-The transport protocols fully supported by sarracenia are http(s) and SFTP (SSH File Transfer Protocol.)  
+The transport protocols fully supported by sarracenia are http(s) and SFTP (SSH File Transfer Protocol.)
 In many cases, when public data is being exchanged, FTP is a lingua franca that is used.  The main advantage
 being relatively simple programmatic access, but that advantage is obviated by the use of sarracenia itself.
-Further, these days, with increased security concerns, and with cpu power becoming extremely available, it 
-no longer makes much sense not to encrypt traffic.   Additionally, to support multi-streaming, sarracenia 
-makes use of byte-ranges, which are provided by SFTP and HTTP servers, but not FTP.  So we cannot support 
-file partitioning on FTP.  So while FTP sort-of-works, it is not now and never will be fully supported, 
+Further, these days, with increased security concerns, and with cpu power becoming extremely available, it
+no longer makes much sense not to encrypt traffic.   Additionally, to support multi-streaming, sarracenia
+makes use of byte-ranges, which are provided by SFTP and HTTP servers, but not FTP.  So we cannot support
+file partitioning on FTP.  So while FTP sort-of-works, it is not now and never will be fully supported,
 and the partial support that is there is not recommended.
 
 AMQP
@@ -125,5 +125,20 @@ function over AMQP.  JMS providers are very Java oriented.
 * `Apache ActiveMQ <http://activemq.apache.org/>`_ - This is really a JMS provider with a bridge for AMQP. They prefer their own openwire protocol.
 
 Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
-to version 1.0, at which point they were removed.  It is hoped that these concepts will be re-introduced at some point.  Until 
+to version 1.0, at which point they were removed.  It is hoped that these concepts will be re-introduced at some point.  Until
 that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
+
+Downloading Sarracenia
+----------------------
+
+Steps for downloading the latest version of Sarracenia are available `here <download-e.html>`_ .
+
+Getting The Source Code
+-----------------------
+
+The source code is available from our `git repository <https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/>`_ .
+
+Documentation
+-------------
+
+The documentation for Sarracenia can be found `here <sarra-doc-e.html>`_ .
