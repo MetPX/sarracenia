@@ -3,9 +3,9 @@
 sr_report
 =========
 
---------------------------------------------
+---------------------------------------------
 Sarracenia v02 Report Message Format/Protocol
---------------------------------------------
+---------------------------------------------
 
 :Date: @Date@
 :Version: @Version@
@@ -32,10 +32,10 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Sources create messages in the *sr_post* format to announce file changes. Subscribers 
-read the post to decide whether a download of the content being announced is warranted.  
-Subscribers may provide information to sources by sending a report message indicating the result 
-of processing a post.  The report message format, described by this specification, is the posting echoed 
+Sources create messages in the *sr_post* format to announce file changes. Subscribers
+read the post to decide whether a download of the content being announced is warranted.
+Subscribers may provide information to sources by sending a report message indicating the result
+of processing a post.  The report message format, described by this specification, is the posting echoed
 back to the source with a few small changes. Please consult the sr_post(7) man page for
 a full explanation of the fields which are shared with the posting format.
 
@@ -49,13 +49,13 @@ AMQP TOPIC
 The topic of a report message is similar to sr_post except that the second sub-topic is 'report' rather than 'post'.
 
 
-THE FIRST LINE 
+THE FIRST LINE
 ==============
 
 the first line of a message contains all mandatory elements of an sr_post(7) announcement.
 There is a series of white space separated fields::
 
-  *<date stamp>* : the date the posting was emitted.  
+  *<date stamp>* : the date the posting was emitted.
   Format: *YYYYMMDDHHMMSS.*<decimalseconds>*
   Note: The datestamp is always in UTC timezone.
 
@@ -76,11 +76,11 @@ If the URL ends with a path separator ('/'), then the src URL is considered a pr
 The above are the fields taken from the sr_post(7) format.  There are additional fields in the sr_report:
 
 
-*<statuscode>*  a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616) 
+*<statuscode>*  a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616)
 
 As per the RFC, any code returned should be interpreted as follows:
 
-	* 2xx indicates successful completion, 
+	* 2xx indicates successful completion,
 	* 3xx indicates further action is required to complete the operation.
 	* 4xx indicates a permanent error on the client prevented a successful operation.
 	* 5xx indicates a problem on the server prevented successful operation.
@@ -134,15 +134,15 @@ For the sarracenia implementation, the following codes are defined:
 THE REST OF MESSAGE
 ===================
 
-Use of only the first line of the AMQP payload is currently defined.  
+Use of only the first line of the AMQP payload is currently defined.
 The rest of the payload body is reserved for future use.
 
-AMQP HEADERS 
+AMQP HEADERS
 ============
 
-In addition to the first line of the message containing all mandatory fields, optional 
-elements are stored in AMQP headers (key-value pairs), included in messages when 
-appropriate.   In addition to the headers specified in the sr_post(7) manual page, the 
+In addition to the first line of the message containing all mandatory fields, optional
+elements are stored in AMQP headers (key-value pairs), included in messages when
+appropriate.   In addition to the headers specified in the sr_post(7) manual page, the
 following report-specific headers are defined:
 
 message=<msgstring>
@@ -157,7 +157,7 @@ EXAMPLE
 ::
 
  topic: v02.report.NRDPS.GIF.NRDPS_HiRes_000.gif
- first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 201 castor anonymous 0.0006767 
+ first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 201 castor anonymous 0.0006767
  headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 message=Downloaded source=ec_cmc from_cluster=ddi.cmc.ec.gc.ca to_clusters=ddi.science.gc.ca,bunny.nrcan.gc.ca
 
 
@@ -216,4 +216,3 @@ SEE ALSO
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
-
