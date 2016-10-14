@@ -141,4 +141,4 @@ The source code is available from our `git repository <https://sourceforge.net/p
 Documentation
 -------------
 
-The documentation for Sarracenia can be found on our `documentation page <sarra-doc-e.html>`_ .
+The documentation for Sarracenia can be found on our `documentation page <sarra-docs-e.html>`_ .
