@@ -468,7 +468,7 @@ They are not hard and fast rules, just guidance.
 
 
 When to Report
---------------
+~~~~~~~~~~~~~~
 
 sr_report(7) messages should be emitted to indicate final disposition of the data itself, not
 any notifications or report messages (don't report report messages, it becomes an infinite loop!)
@@ -478,7 +478,7 @@ not emit any sr_report(7) messages, because no data is transferred, only message
 
 
 Where to Put Option Documentation
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most options are documented in sr_config(7), because they are common to many components.  Any options used
 by multiple components should be documented there.  Options which are unique to a single component, should
