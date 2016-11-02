@@ -164,9 +164,8 @@ class sr_sarra(sr_instances):
         self.consumer          = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
         self.msg.report_exchange  = self.report_exchange
-        self.logger.info("reportback to %s@%s, exchange: %s" %
-               ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
- 
+        self.logger.info("report_back is %s to %s@%s, exchange: %s" %
+               ( self.reportback, self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
 
         # =============
         # publisher

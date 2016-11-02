@@ -155,8 +155,8 @@ class sr_winnow(sr_instances):
 
         self.logger.info("reading from to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.exchange ) )
-        self.logger.info("report back to %s@%s, exchange: %s" %
-               ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
+        self.logger.info("report_back is %s to %s@%s, exchange: %s" %
+               ( self.reportback, self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
 
 
 

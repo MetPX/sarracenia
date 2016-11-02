@@ -122,10 +122,10 @@ class sr_subscribe(sr_instances):
            self.publisher         = self.consumer.publish_back()
            self.msg.report_publisher = self.publisher
            self.msg.report_exchange  = 'xs_' + self.broker.username
-           self.logger.info("reportback to %s@%s, exchange: %s" % 
+           self.logger.info("report_back to %s@%s, exchange: %s" % 
                ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
         else:
-           self.logger.warning("reportback suppressed")
+           self.logger.warning("report_back suppressed")
 
     def __do_download__(self):
 

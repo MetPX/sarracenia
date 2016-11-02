@@ -137,10 +137,10 @@ class sr_shovel(sr_instances):
             self.msg.report_publisher = self.consumer.publish_back()
             self.msg.report_exchange  = self.report_exchange
 
-            self.logger.info("reportback to %s@%s, exchange: %s" %
+            self.logger.info("report_back to %s@%s, exchange: %s" %
                   ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
         else:
-            self.logger.info( "reportback suppressed" )
+            self.logger.info( "report_back suppressed" )
 
         # =============
         # publisher
