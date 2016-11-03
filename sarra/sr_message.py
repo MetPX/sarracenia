@@ -35,6 +35,10 @@
 
 import calendar,os,socket,sys,time,urllib,urllib.parse
 
+# AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
+amqp_ss_maxlen = 253
+
+
 try :
          from sr_util         import *
 except :
@@ -172,6 +176,18 @@ class sr_message():
         self.report_notice         = "%s %d %s %s %f" % \
                                   (self.notice,self.code,self.host,self.user,self.get_elapse())
         self.set_hdrstr()
+
+        # AMQP limits topic to 255 characters, so truncate and warn.
+        if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
+           mxlen=amqp_ss_maxlen 
+           # see truncation explanation from above.
+           while( self.report_topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+               mxlen -= 1
+
+           self.report_topic = self.report_topic.encode("utf8")[0:mxlen].decode("utf8")
+           self.logger.warning( "truncating reporting topic at %d characters (to fit 255 byte AMQP limit) to: %s " % \
+                        ( len(self.report_topic) , self.report_topic ) )
+
         if self.report_publisher != None :
            self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
 
@@ -268,9 +284,6 @@ class sr_message():
         ok = False
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
-
-        # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
-        amqp_ss_maxlen = 253
 
         for h in self.headers:
            if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
