@@ -1,3 +1,10 @@
+metpx-sarracenia (2.16.11a1) unstable; urgency=medium
+
+  * Another String too long fix.
+  * Potential fix for bug #55 (chdir)
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 08 Nov 2016 18:26:03 +0000
+
 metpx-sarracenia (2.16.10a2) unstable; urgency=medium
 
   * Fix issue #42 (header length in AMQP)
