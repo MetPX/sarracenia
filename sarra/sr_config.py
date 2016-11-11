@@ -566,7 +566,7 @@ class sr_config:
         return False
 
     # modified from metpx SenderFTP
-    def metpx_basename_parts(self,basename):
+    def sundew_basename_parts(self,basename):
 
         if self.currentPattern == None : return []
         parts = re.findall( self.currentPattern, basename )
@@ -582,7 +582,7 @@ class sr_config:
         return lst
 
     # from metpx SenderFTP
-    def metpx_dirPattern(self,urlstr,basename,destDir,destName) :
+    def sundew_dirPattern(self,urlstr,basename,destDir,destName) :
         """
         does substitutions for patterns in directories.
 
@@ -591,7 +591,7 @@ class sr_config:
         BN = basename.split(":")
         EN = BN[0].split("_")
 
-        BP = self.metpx_basename_parts(urlstr)
+        BP = self.sundew_basename_parts(urlstr)
 
         ndestDir = ""
         DD = destDir.split("/")
@@ -601,13 +601,13 @@ class sr_config:
              nddword = ""
              DW = ddword.split("$")
              for dwword in DW :
-                 nddword += self.metpx_matchPattern(BN,EN,BP,dwword,dwword)
+                 nddword += self.sundew_matchPattern(BN,EN,BP,dwword,dwword)
 
              ndestDir += "/" + nddword 
 
         return ndestDir
 
-    def metpx_getDestInfos(self, filename):
+    def sundew_getDestInfos(self, filename):
         """
         modified from sundew client
 
@@ -697,7 +697,7 @@ class sr_config:
         return destFileName + satnet + timeSuffix
 
     # modified from metpx SenderFTP
-    def metpx_matchPattern(self,BN,EN,BP,keywd,defval) :
+    def sundew_matchPattern(self,BN,EN,BP,keywd,defval) :
         if   keywd[:4] == "{T1}"    : return (EN[0])[0:1]   + keywd[4:]
         elif keywd[:4] == "{T2}"    : return (EN[0])[1:2]   + keywd[4:]
         elif keywd[:4] == "{A1}"    : return (EN[0])[2:3]   + keywd[4:]
@@ -1617,8 +1617,8 @@ def self_test():
 
     # config... 
     #def isMatchingPattern(self, str, accept_unmatch = False): 
-    #def metpx_dirPattern(self,basename,destDir,destName) :
-    #def metpx_getDestInfos(self, filename):
+    #def sundew_dirPattern(self,basename,destDir,destName) :
+    #def sundew_getDestInfos(self, filename):
     #def validate_urlstr(self,urlstr):
     #def validate_parts(self):
     #def validate_sum(self):

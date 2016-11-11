@@ -457,7 +457,7 @@ class sr_sender(sr_instances):
         # PDS like destination pattern/keywords
 
         if self.currentFileOption != None :
-           self.remote_file = self.metpx_getDestInfos(self.local_file)
+           self.remote_file = self.sundew_getDestInfos(self.local_file)
 
         if self.destfn_script :
             last_remote_file = self.remote_file
@@ -466,7 +466,7 @@ class sr_sender(sr_instances):
                self.logger.debug("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
 
         destDir = self.remote_rpath
-        destDir = self.metpx_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)
+        destDir = self.sundew_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)
 
         self.remote_rpath = destDir
 

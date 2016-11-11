@@ -460,14 +460,14 @@ class sr_subscribe(sr_instances):
            filename = self.flatten.join(token)
 
         if self.currentFileOption != None :
-           filename = self.metpx_getDestInfos(filename)
+           filename = self.sundew_getDestInfos(filename)
 
         self.local_dir  = local_dir
 
         if 'sundew_extension' in self.msg.headers.keys() :
          
             tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
-            self.local_dir  = self.metpx_dirPattern(self.msg.urlstr,tfname,local_dir,filename)
+            self.local_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,local_dir,filename)
 
         self.local_file = filename
         self.local_path = self.local_dir + '/' + filename
