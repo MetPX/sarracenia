@@ -583,9 +583,14 @@ class sr_config:
 
     # from metpx SenderFTP
     def metpx_dirPattern(self,urlstr,basename,destDir,destName) :
+        """
+        does substitutions for patterns in directories.
 
+        FIXME: destName not used?
+        """
         BN = basename.split(":")
         EN = BN[0].split("_")
+
         BP = self.metpx_basename_parts(urlstr)
 
         ndestDir = ""
@@ -602,9 +607,10 @@ class sr_config:
 
         return ndestDir
 
-    # modified from metpx client
     def metpx_getDestInfos(self, filename):
         """
+        modified from sundew client
+
         WHATFN         -- First part (':') of filename 
         HEADFN         -- Use first 2 fields of filename
         NONE           -- Use the entire filename
@@ -618,7 +624,13 @@ class sr_config:
         satnet       = ''
         parts        = filename.split(':')
         firstPart    = parts[0]
-        destFileName = filename
+
+        if 'sundew_extension' in self.msg.headers.keys() :
+           parts = [ parts[0] ] + self.msg.headers[ 'sundew_extension' ].split(':')
+           filename = ':'.join(parts)
+        else:
+           destFileName = filename
+
         for spec in self.currentFileOption.split(':'):
             if spec == 'WHATFN':
                 destFileName =  firstPart

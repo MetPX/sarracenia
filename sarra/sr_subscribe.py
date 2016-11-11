@@ -250,6 +250,7 @@ class sr_subscribe(sr_instances):
 
         self.set_local()
         self.msg.set_local(self.inplace,self.local_path,self.local_url)
+
         self.msg.headers['rename'] = self.local_path
 
         #=================================
@@ -277,10 +278,15 @@ class sr_subscribe(sr_instances):
         # the document_root should exists : it the starting point of the downloads
         # make sure local directory where the file will be downloaded exists
         #=================================
+        # Caveat, where the local directory has sundew substitutions, it is normal for 
+        # that directory not to exist ( e.g. /home/peter/test/dd/{RYYYY} )
+        # FIXME: should we remove the substitutions and check the root of the root?
+        #=================================
 
-        if not os.path.isdir(self.document_root) :
-           self.logger.error("directory %s does not exist" % self.document_root)
-           return False
+        if not '{' in self.document_root :
+           if not os.path.isdir(self.document_root) :
+              self.logger.error("directory %s does not exist" % self.document_root)
+              return False
 
         # pass no warning it may already exists
         try    : os.makedirs(self.local_dir,0o775,True)
@@ -426,10 +432,12 @@ class sr_subscribe(sr_instances):
 
         # case S=0  sr_post -> sr_suscribe... rename in headers
 
+        # FIXME: 255 char limit on headers, rename will break!
         if 'rename' in self.msg.headers :
            rel_path = self.msg.headers['rename']
            token    = rel_path.split('/')
            filename = token[-1]
+
 
         # if strip is used... strip N heading directories
 
@@ -451,9 +459,18 @@ class sr_subscribe(sr_instances):
         if self.flatten != '/' :
            filename = self.flatten.join(token)
 
+        if self.currentFileOption != None :
+           filename = self.metpx_getDestInfos(filename)
+
         self.local_dir  = local_dir
+
+        if 'sundew_extension' in self.msg.headers.keys() :
+         
+            tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
+            self.local_dir  = self.metpx_dirPattern(self.msg.urlstr,tfname,local_dir,filename)
+
         self.local_file = filename
-        self.local_path = local_dir + '/' + filename
+        self.local_path = self.local_dir + '/' + filename
         self.local_url  = 'file:' + self.local_path
         self.local_url  = urllib.parse.urlparse(self.local_url)
 

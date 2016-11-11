@@ -158,9 +158,18 @@ class sr_consumer:
                  self.logger.error("malformed message %s"% vars(self.raw_msg))
                  return None
 
-        # make use of accept/reject
 
+        # make use of accept/reject
         if self.use_pattern :
+
+           # Adjust url to account for sundew extension if present, and files do not already include the names.
+           if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
+              urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
+           else:
+              urlstr=self.msg.urlstr
+
+           self.logger.debug("sr_consumer, path being matched: %s " % ( urlstr )  ) 
+
            if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
               self.logger.debug("Rejected by accept/reject options")
               return False,self.msg
