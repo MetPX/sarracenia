@@ -236,7 +236,7 @@ class sr_subscribe(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received notice  %s" % self.msg.notice)
+        self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()) )
 
         # selected directory from accept/reject resolved in consumer
 

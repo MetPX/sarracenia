@@ -18,10 +18,8 @@ class Post_Log(object):
     def perform(self,parent):
 
         msg = parent.msg
-        parent.logger.info("post_log notice=%s headers=%s" % ( msg.notice, msg.headers))
-        #msg = parent.msg
-        #parent.logger.info("msg_log received: %s topic=%s lag=%g %s" % \
-        #   ( msg.notice, msg.topic, msg.get_elapse(), msg.hdrstr ) )
+        parent.logger.info("post_log notice=%s %s%s headers=%s" % \
+            tuple( msg.notice.split() + [ msg.headers ] ) )
 
         return True
 
