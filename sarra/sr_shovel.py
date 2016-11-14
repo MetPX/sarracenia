@@ -228,15 +228,17 @@ class sr_shovel(sr_instances):
         # if this cluster is a valid destination than one of the "to_clusters" pump
         # will be present in self.accept_msg_for_clusters
 
-        ok = False
-        for target in self.msg.to_clusters :
-           if  not target in self.accept_msg_for_clusters :  continue
-           ok = True
-           break
+        # PSilva: I don't think the gatway logic is ever useful for shovel.
+        # so commented out.
+        #ok = False
+        #for target in self.msg.to_clusters :
+        #   if  not target in self.accept_msg_for_clusters :  continue
+        #   ok = True
+        #   break
 
-        if not ok :
-           self.logger.warning("skipped : not for this cluster...")
-           return False
+        #if not ok :
+        #   self.logger.warning("skipped : not for this cluster...")
+        #   return False
 
         # invoke user defined on_message when provided
 

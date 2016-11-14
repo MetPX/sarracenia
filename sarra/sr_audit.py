@@ -32,7 +32,7 @@
 #
 #
 
-import os,socket,sys,time
+import os,socket,sys,time,os.path
 
 try :    
          from sr_rabbit          import *
@@ -102,6 +102,8 @@ class sr_audit(sr_instances):
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
 
+
+
     def check(self):
         self.logger.debug("sr_audit check")
 
@@ -157,7 +159,6 @@ class sr_audit(sr_instances):
             roles = self.users[user]
             if not user in picked :
                 self.logger.error("unknown role '%s' for user '%s' " % (roles,user) )
-
 
 
 
@@ -275,6 +276,65 @@ class sr_audit(sr_instances):
             # leave but notify ...
             else:
                self.logger.info("noticed exchange %s leaving alone." % e)
+
+    def verify_report_routing(self):
+        """
+           Each subscriber writes reports to xs_<user>.  These reports need to get back to sources.
+           So for each subscriber, a shovel configuration is needed: that shovels from xs_<user> to xreport.
+           For each source, a shovel configuration is needed that shovels from xreport to xr_<user>
+           these configurations all need to be placed in the ~/.config/sarra/shovel directory.
+           need to check if these files exist, and create only if they do not.
+           also allow for the convention of .conf.off.  If such a file exists, do not create either.
+        """
+        self.logger.error("sr_audit report routing configuration")
+
+        feeder = self.manager.geturl()
+
+        # remove the password from the URL...
+        colon = feeder.index(':',6)
+        ampersand = feeder.index('@',8)
+        feeder = feeder[0:colon] + feeder[ampersand:]
+
+        self.logger.error("sr_audit pumps using account: %s for report routing" % feeder )
+           
+        for u in self.sources :
+             cfn = self.user_config_dir + "/shovel/" + "xreport2" + u + ".conf"
+             self.logger.error("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
+             if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
+                self.logger.error("need to create %s" % cfn ) 
+                cf=open(cfn,'w')
+                cf.write( '# Initial report routing configuration created by sr_audit, tune to taste. \n')
+                cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
+                cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
+                cf.write( 'broker %s\n' % feeder )
+                cf.write( 'exchange xs_%s\n' % u )
+                cf.write( 'topic_prefix v02.report\n' )
+                cf.write( 'subtopic #\n' )
+                cf.write( 'accept_unmatch True\n' )
+                cf.write( 'report_back False\n' )
+                cf.write( 'post_broker %s\n' % feeder )
+                cf.write( 'post_exchange xreport\n' )
+                cf.close()
+
+        for u in self.subscribes:
+             cfn = self.user_config_dir + "/shovel/" + u + "2xreport.conf"
+             self.logger.error("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
+             if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
+                self.logger.error("need to create %s" % cfn ) 
+                cf=open(cfn,'w')
+                cf.write( '# Initial report routing configuration created by sr_audit, tune to taste.\n ')
+                cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
+                cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
+                cf.write( 'broker %s\n' % feeder )
+                cf.write( 'exchange xreport\n' )
+                cf.write( 'topic_prefix v02.report\n' )
+                cf.write( 'subtopic #\n' )
+                cf.write( 'accept_unmatch True\n' )
+                cf.write( 'report_back False\n' )
+                cf.write( 'post_broker %s\n' % feeder )
+                cf.write( 'post_exchange xr_%s\n' % u )
+                cf.close()
+
 
     def verify_users(self):
         self.logger.debug("sr_audit verify_users")
@@ -509,8 +569,11 @@ class sr_audit(sr_instances):
                       self.logger.info("sr_audit waking up")
                       self.configure()
                       self.verify_queues()
-                      if self.users_flag : self.verify_users()
-                      if self.users_flag : self.verify_exchanges()
+                      if self.users_flag : 
+                          self.verify_users()
+                          self.verify_exchanges()
+                          self.verify_report_routing()
+
                       if self.pump_flag  : self.verify_pump()
               except:
                       (stype, svalue, tb) = sys.exc_info()
