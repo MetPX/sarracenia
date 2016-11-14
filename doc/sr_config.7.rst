@@ -803,7 +803,7 @@ RABBITMQ REPORTING
 For each download, an amqp report message is sent back to the broker.
 Should you want to turned them off the option is :
 
-- **reportback <boolean>        (default: True)** 
+- **report_back <boolean>        (default: True)** 
 - **report_daemons <boolean>     (default: False)**
 - **report_exchange <report_exchangename> (default: xreport)**
 
