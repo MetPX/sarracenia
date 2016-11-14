@@ -262,9 +262,10 @@ RABBITMQ LOGGING
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
-- **no_logback <boolean>        (default: False)** 
+- **report_back <boolean>        (default: True)** 
 
-Should you want to turned them off you would set this option to **True**.
+These reports are used for delivery tuning and for data sources to generate statistical information.
+Set this option to **False**, to prevent generation of reports for this usage.
 
 
 ADVANCED FEATURES
