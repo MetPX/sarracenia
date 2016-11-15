@@ -158,6 +158,13 @@ class sr_watch(sr_instances):
         self.close()
         os._exit(0)
 
+
+# ===================================
+# GLOBAL
+# ===================================
+
+unready = {}
+
 # ===================================
 # MAIN
 # ===================================
@@ -174,6 +181,7 @@ def main():
     if len(sys.argv) >= 3 : 
        config = sys.argv[-2]
        args   = sys.argv[1:-2]
+   
 
     # =========================================
     # instantiate sr_watch
@@ -189,12 +197,33 @@ def main():
         ignore_patterns = ["*.tmp"]
 
         def event_post(self, path, tag):
+            global unready
+
+            unready_tmp = dict(unready)
+            for f in unready:
+                if os.access(f, os.R_OK):
+                    watch.logger.debug("File=%s is posted and removed from unready" % str(f))
+                    self.do_post(f, unready[f])
+                    del unready_tmp[f]
+            unready = dict(unready_tmp)
+
+            if os.access(path, os.R_OK):
+                watch.logger.debug("File=%s is posted" % str(path))
+                self.do_post(path, tag)
+            else:
+                if os.path.exists(path):
+                    watch.logger.debug("File=%s is added to unready" % str(path))
+                    unready[path] = tag
+        
+        def do_post(self, path, tag):
+            global unready
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
                     watch.post.lock_set()
                     watch.post.watching(path, tag)
                     watch.post.lock_unset()
             except PermissionError as err:
+                unready[path] = tag
                 watch.logger.error(str(err))
 
         def on_created(self, event):
