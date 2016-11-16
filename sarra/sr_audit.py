@@ -298,7 +298,7 @@ class sr_audit(sr_instances):
         self.logger.error("sr_audit pumps using account: %s for report routing" % feeder )
            
         for u in self.sources :
-             cfn = self.user_config_dir + "/shovel/" + "xreport2" + u + ".conf"
+             cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
              self.logger.error("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
                 self.logger.error("need to create %s" % cfn ) 
@@ -320,7 +320,7 @@ class sr_audit(sr_instances):
                 cf.close()
 
         for u in self.subscribes:
-             cfn = self.user_config_dir + "/shovel/" + u + "2xreport.conf"
+             cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
              self.logger.error("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
                 self.logger.error("need to create %s" % cfn ) 

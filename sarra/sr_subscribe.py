@@ -161,10 +161,12 @@ class sr_subscribe(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.report_publish(503,"Unable to process")
+                if self.reportback: 
+                   self.msg.report_publish(503,"Unable to process")
                 self.logger.error("sr_subscribe: Could not download")
 
-        self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+        if self.reportback: 
+            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
 
     def help(self):
@@ -299,7 +301,8 @@ class sr_subscribe(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
-           self.msg.report_publish(304, 'not modified')
+           if self.reportback:
+              self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.msg.local_file)
 
            # if we are processing an entire file... we are done
@@ -323,7 +326,8 @@ class sr_subscribe(sr_instances):
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              self.msg.report_publish(307,'Temporary Redirect')
+              if self.reportback:
+                 self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
