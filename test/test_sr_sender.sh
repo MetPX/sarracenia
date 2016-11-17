@@ -71,8 +71,8 @@ function check_destination {
                 rm $file_destination/sender_file.txt
         else
                 echo "TEST $1 FAILED"
-                sr_sender $file_origin/sender_test${1}.conf stop > /dev/null 2>&1
-                exit 1
+                #sr_sender $file_origin/sender_test${1}.conf stop > /dev/null 2>&1
+                #exit 1
         fi
 }
 
@@ -138,7 +138,7 @@ function test3 {
 		-u sftp://$sender@localhost/ 			\
 		-p $file_origin/sender_file.txt 		\
 		-to test_cluster > /dev/null 2>&1		\
-		--parts i,32B
+		--parts i,32B					\
 		/
         sleep 3
 	check_destination "3"	
@@ -146,10 +146,13 @@ function test3 {
 	echo "Self Test 3 Completed"
 }
 
-#Testing config files with plugin scripts do_send, on_message and on_post
+#This test checks to see if the plugin scripts work properly when using
+#sr_sender. The plugin scripts will move or manipulate files and the
+#self test will check if the sent file will match the file in the original
+#location.
 function test4 {
 
-	echo "Running Self Test 4 for sr_sender:"
+	echo "Running test by using the on_message plugin (Test #4a)"
 	#Using on_message script
 	sr_sender --reset $file_origin/sender_test4a.conf start > /dev/null 2>&1
 	sleep 3
@@ -163,6 +166,7 @@ function test4 {
 	check_destination "4a"
 	sr_sender $file_origin/sender_test4a.conf stop > /dev/null 2>&1
 
+	echo "Running test by using the do_send plugin (Test #4b)"
 	#Using do_send script
 	sr_sender --reset $file_origin/sender_test4b.conf start > /dev/null 2>&1
 	sleep 3
@@ -170,12 +174,14 @@ function test4 {
 		-u sftp://$sender@localhost/ 			\
 		-p $file_origin/sender_file.txt 		\
 		-to test_cluster > /dev/null 2>&1		\
-		--flow "$file_destination"	\
+		--flow "$file_destination"			\
 		/
 	sleep 3
 	check_destination "4b"
 	sr_sender $file_origin/sender_test4b.conf stop > /dev/null 2>&1
 
+#currently work in progress
+	echo "Running test by using the on_post plugin (Test #4c)"
 	#Using on_post script
 	sr_sender --reset $file_origin/sender_test4c.conf start > /dev/null 2>&1
 	sleep 3
@@ -183,7 +189,7 @@ function test4 {
 		-u sftp://$sender@localhost/ 			\
 		-p $file_origin/placeholder.txt 		\
 		-to test_cluster > /dev/null 2>&1		\
-		--flow "$file_destination"      \
+		--flow "$file_destination"     			\
 		/
 	sleep 3
 	check_destination "4c"
@@ -191,29 +197,11 @@ function test4 {
 	echo "Self Test 4 Completed"
 }
 
-#Testing config by specifying the directory (for recipient) followed by, accept .*
-function test5 {
-
-	echo "Running Self Test 5 for sr_sender:"
-	sr_sender --reset $file_origin/sender_test5.conf start > /dev/null 2>&1
-	sleep 3
-	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 		\
-		-to test_cluster > /dev/null 2>&1		\
-		/
-	sleep 3
-	check_destination "5"
-	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
-	echo "Self Test 5 Completed"
-}
-
 # Run tests
 #test1
 test2
 test3
-#test4
-#test5
+test4
 
 rm $file_origin/placeholder.txt
 rm $file_origin/sender_file.txt
