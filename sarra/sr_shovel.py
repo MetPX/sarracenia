@@ -201,19 +201,22 @@ class sr_shovel(sr_instances):
 
         # the message has not specified a source.
         if not 'source' in self.msg.headers :
-           self.msg.report_publish(403,"Forbidden : message without a source amqp header['source']")
+           if self.reportback:
+               self.msg.report_publish(403,"Forbidden : message without a source amqp header['source']")
            self.logger.error("message without a source amqp header['source']")
            return False
 
         # the message has not specified a from_cluster.
         if not 'from_cluster' in self.msg.headers :
-           self.msg.report_publish(403,"Forbidden : message without a cluster amqp header['from_cluster']")
+           if self.reportback:
+               self.msg.report_publish(403,"Forbidden : message without a cluster amqp header['from_cluster']")
            self.logger.error("message without a cluster amqp header['from_cluster']")
            return False
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
-           self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+           if self.reportback:
+               self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
            self.logger.error("message without destination amqp header['to_clusters']")
            return False
 
@@ -228,15 +231,17 @@ class sr_shovel(sr_instances):
         # if this cluster is a valid destination than one of the "to_clusters" pump
         # will be present in self.accept_msg_for_clusters
 
-        ok = False
-        for target in self.msg.to_clusters :
-           if  not target in self.accept_msg_for_clusters :  continue
-           ok = True
-           break
+        # PSilva: I don't think the gatway logic is ever useful for shovel.
+        # so commented out.
+        #ok = False
+        #for target in self.msg.to_clusters :
+        #   if  not target in self.accept_msg_for_clusters :  continue
+        #   ok = True
+        #   break
 
-        if not ok :
-           self.logger.warning("skipped : not for this cluster...")
-           return False
+        #if not ok :
+        #   self.logger.warning("skipped : not for this cluster...")
+        #   return False
 
         # invoke user defined on_message when provided
 
@@ -318,7 +323,9 @@ class sr_shovel(sr_instances):
         #=================================
 
         self.__on_post__()
-        self.msg.report_publish(201,'Published')
+
+        if self.reportback:
+            self.msg.report_publish(201,'Published')
 
 
         return True
