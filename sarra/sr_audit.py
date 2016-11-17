@@ -319,7 +319,7 @@ class sr_audit(sr_instances):
                 cf.write( 'post_exchange xr_%s\n' % u )
                 cf.close()
 
-        for u in self.subscribes:
+        for u in self.sources+self.subscribes:
              cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
              self.logger.error("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
@@ -333,7 +333,8 @@ class sr_audit(sr_instances):
                 cf.write( 'topic_prefix v02.report\n' )
                 cf.write( 'subtopic #\n' )
                 cf.write( 'accept_unmatch True\n' )
-                cf.write( 'on_message None\n' )
+                cf.write( 'msg_by_user %s\n' % u  )
+                cf.write( 'on_message msg_by_user\n' )
                 cf.write( 'on_post None\n' )
                 cf.write( 'report_back False\n' )
                 cf.write( 'post_broker %s\n' % feeder )

@@ -12,15 +12,15 @@ class Transformer(object):
 
     def __init__(self,parent):
 
-        if not hasattr(parent,'msg_by_source'):
-           parent.logger.info("msg_by_source setting mandatory")
+        if not hasattr(parent,'msg_from_cluster'):
+           parent.logger.info("msg_from_cluster setting mandatory")
            return
 
-        parent.logger.info("msg_by_source is %s " % parent.msg_by_source )
+        parent.logger.info("msg_from_cluster is %s " % parent.msg_from_cluster )
 
           
     def perform(self,parent):
-        return ( parent.msg.headers[ 'source' ] in  parent.msg_by_source ) 
+        return ( parent.msg.headers[ 'from_cluster' ] in parent.msg_from_cluster ) 
 
 
 transformer = Transformer(self)

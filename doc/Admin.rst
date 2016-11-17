@@ -387,33 +387,20 @@ One can change this limit by having  option *max_queue_size 50000* in default.co
 Routing
 -------
 
-Data
-~~~~
-
 The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
-sr_sarra configurations from one pump to the next.  Each sr_sarra link is configured by:
+sr_sarra and/or sr_sender configurations from one pump to the next.  
 
 .. warning::
   **FIXME**: sample sender to push to another pump.
   describe the to_cluster, gateway_for , and cluster options.
 
-Report
-~~~~~~
-
 Report messages are defined in the sr_report(7) man page.  They are emitted by *consumers* at the end,
 as well as *feeders* as the messages traverse pumps.  Report messages are posted to
-the xs_<user> exchange, and after validation sent to the xreport exchange by the 2xreport component.
+the xs\_<user> exchange, and after validation sent to the xreport exchange by the shovel component 
+configurations created by sr_audit.
 
 Messages in xreports destined for other clusters are routed to destinations by
-report2cluster component using report2cluster.conf configuration file.  report2cluster.conf
-uses space separated fields: First field is the cluster name (set as per **cluster** in
-post messages, the second is the destination to send the report messages for posting
-originating from that cluster to) Sample, report2cluster.conf::
-
-      clustername amqp://user@broker/vhost exchange=xreport
-
-Where message destination is the local cluster, report2source will copy
-the messages where source=<user> to xr_<user>, ready for consumption by sr_report.
+manually configured shovels.  See the Reports_ section for more details.
 
 
 What is Going On?
@@ -724,7 +711,7 @@ The *sr_audit* program:
       create user exchanges   corresponding to its role
 
 - users which have no declared role are deleted.
-- user exchanges which do not correspond to users' roles are deleted ('xl_*,xs_*')
+- user exchanges which do not correspond to users' roles are deleted ('xl\_*,xs\_*')
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
 .. Note::
@@ -974,13 +961,67 @@ Reports
 ~~~~~~~
 
 Now that data is flowing, we need to take a look at the flow of report messages, which essentially are used by each pump to tell
-upstream that data has been downloaded. add the following line to ~sarra/.config/sarrra/default.conf::
+upstream that data has been downloaded.  Sr_audit helps with routing by creating the following configurations:
 
-  report_daemons
+ - for each subscriber, a shovel configuration named rr_<user>2xreport.conf is created
+ - for each source, a shovel configureation named rr_xreport2<user>user.conf is created
 
-This will cause the report routing daemons to be started. that will mean that messages that are logged by feeder or other
-subscriber processes will all end up in the xreport exchange.  To monitor overall system activity, start up an sr_report that
-is bound to the xreport exchange::
+The *2xreport* shovels subscribes to messages posted in each user's xs_ exchange and posts them to the common xreport exchange.
+Sample configuration file::
+
+  # Initial report routing configuration created by sr_audit, tune to taste.
+  #     To get original back, just remove this file, and run sr_audit (or wait a few minutes)
+  #     To suppress report routing, rename this file to rr_anonymous2xreport.conf.off  
+
+  broker amqp://tfeed@localhost/
+  exchange xs_anonymous
+  topic_prefix v02.report
+  subtopic #
+  accept_unmatch True
+  on_message None
+  on_post None
+  report_back False
+  post_broker amqp://tfeed@localhost/
+  post_exchange xreport
+
+Explanations:
+  - report routing shovels are administrative functions, and therefore the feeder user is used.
+  - this configuration is to route the reports submitted by the 'anonymous' user.
+  - on_message None, on_post None,  reduce unwanted logging on the local system.
+  - report_back False  reduce unwanted reports (do sources want to understand shovel traffic?)
+  - post to the xreport exchange.
+
+The *2<user>* shovels look at all the messages in the xreport exchange, and copy them to the users xr\_ exchange.
+Sample::
+
+  # Initial report routing to sources configuration, by sr_audit, tune to taste. 
+  #     To get original back, just remove this file, and run sr_audit (or wait a few minutes)
+  #     To suppress report routing, rename this file to rr_xreport2tsource2.conf.off  
+  
+  broker amqp://tfeed@localhost/
+  exchange xreport
+  topic_prefix v02.report
+  subtopic #
+  accept_unmatch True
+  msg_by_source tsource2
+  on_message msg_by_source
+  on_post None
+  report_back False
+  post_broker amqp://tfeed@localhost/
+  post_exchange xr_tsource2
+
+Explanations:
+  - msg_by_source tsource2 selects that only the reports for data injected by the tsource2 user should be 
+    selected.
+  - the selected reports should be copied to the user's xr\_ exchange, where that user invoking sr_report will find them.  
+
+
+When a source invokes the sr_report component, the default exchange will be xr\_ (eXchange for Reporting). All reports received
+from subscribers to data from this source will be routed to this exchange.  
+
+If an administrator invokes sr_report, it will default to the xreport exchange, and show reports from all subscribers on the cluster.
+
+Example::
 
   blacklab% more boulelog.conf
 
@@ -1008,6 +1049,12 @@ is bound to the xreport exchange::
   blacklab%
 
 From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.
+Basically, The two sorts of shovels built automatically by sr_audit will do all the routing needed within a cluster. 
+When there are volume issues, these configurations can be tweaked to increase the number of instances or use
+post_exchange_split where appropriate.
+
+Manual shovel configuration is also required to route messages between clusters.  It is just a variation
+of intra-cluster report routing.
 
 
 Sarra From a Source

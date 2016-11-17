@@ -35,10 +35,7 @@ setup(
         "console_scripts":[
               "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
-              "sr_2xreport=sarra.sr_2xreport:main",
               "sr_report=sarra.sr_report:main",
-              "sr_report2clusters=sarra.sr_report2clusters:main",
-              "sr_report2source=sarra.sr_report2source:main",
               "sr_poll=sarra.sr_poll:main",
               "sr_post=sarra.sr_post:main",
               "sr_watch=sarra.sr_watch:main",
@@ -46,7 +43,7 @@ setup(
               "sr_sarra=sarra.sr_sarra:main",
               "sr_shovel=sarra.sr_shovel:main",
               "sr_sender=sarra.sr_sender:main",
-              "sr_subscribe=sarra.sr_subscribe:main",
+              "sr_subscribe=sarra.sr_subscribe:main"
               ]
     },
     classifiers=[
