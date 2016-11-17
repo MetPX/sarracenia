@@ -1,3 +1,18 @@
+metpx-sarracenia (2.16.11a3) unstable; urgency=medium
+
+  * Fixing a cosmetic but ugly bug. Caused by the URL fix
+  * Add unready list to prevent posting unreadable files 
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 15 Nov 2016 17:51:48 +0000
+
+metpx-sarracenia (2.16.11a2) unstable; urgency=medium
+
+  * fix bug #61: change outputs to better present URL's in logs.
+  * just naming of some routines that were imported from sundew, add prefix metpx_...
+  * fix bug #54:  Adds interpretation of sundew-specific delivery options to sr_subscribe.
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Mon, 14 Nov 2016 20:11:46 +0000
+
 metpx-sarracenia (2.16.11a1) unstable; urgency=medium
 
   * Another String too long fix.

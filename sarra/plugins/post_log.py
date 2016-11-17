@@ -19,7 +19,7 @@ class Post_Log(object):
 
         msg = parent.msg
         parent.logger.info("post_log notice=%s %s%s headers=%s" % \
-            tuple( msg.notice.split() + [ msg.headers ] ) )
+            tuple( msg.notice.split()[0:3] + [ msg.headers ] ) )
 
         return True
 

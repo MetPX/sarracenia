@@ -14,7 +14,7 @@ class Msg_Log(object):
     def perform(self,parent):
         msg = parent.msg
         parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split() + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
         return True
 
 msg_log = Msg_Log(self)
