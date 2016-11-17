@@ -23,8 +23,8 @@ sender=pfd
 #recipient=pfd
 
 #Exchanges and credentials
-exchange=tsource
-credentials=TestSOUrCs
+exchange=tsender_src
+credentials=TestSENDer
 
 cat << EOF > $file_origin/sender_file.txt
 0 123456789abcde
@@ -106,10 +106,11 @@ function check_destination {
 #	echo "Self Test 1 Completed"
 #}
 
-#Testing config without using document_root
+#This test checks to see if sr_sender will send a file to a location 
+#with post_document_root specified rather than directory.
 function test2 {
 
-	echo "Running Self Test 2 for sr_sender:"
+	echo "Running test by specifying post document root (Test #2)"
         sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
 	sleep 3
         sr_post -b amqp://$exchange:$credentials@localhost/ 	\
@@ -123,16 +124,21 @@ function test2 {
 	echo "Self Test 2 Completed"
 }
 
-#Testing config without using post_document_root
+#This test checks to see if sr_sender will properly disassemble a file
+#into parts, send these parts to the specified destination, and
+#reassemble them. The test is a pass if the contents of the sent file
+#matches the content of the file in the original location. Part size
+#in this case is 32 Bytes
 function test3 {
 
-	echo "Running Self Test 3 for sr_sender:"
+	echo "Running test by sending a file in parts (Test #3)"
 	sr_sender --reset $file_origin/sender_test3.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
 		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 			\
+		-p $file_origin/sender_file.txt 		\
 		-to test_cluster > /dev/null 2>&1		\
+		--parts i,32B
 		/
         sleep 3
 	check_destination "3"	
@@ -205,7 +211,7 @@ function test5 {
 # Run tests
 #test1
 test2
-#test3
+test3
 #test4
 #test5
 
