@@ -9,10 +9,10 @@ class ParseAndRetrieve(object):
 
 		import subprocess
 
-		old_name = "/home/pfd/.cache/tmp/sr_sarra/placeholder.txt"
-		new_name = "/home/pfd/.cache/tmp/sr_sarra/sender_file.txt"
+		final_dest = parent.msg.headers['flow']
 
-		parent.logger.info("This on_post script is functional")
+		old_name = "%s/placeholder.txt" % final_dest
+		new_name = "%s/sender_file.txt" % final_dest
 
 		subprocess.call(["mv", old_name, new_name])
 
