@@ -591,7 +591,7 @@ class sr_sarra(sr_instances):
         self.local_dir  = self.local_dir.replace('//','/')
         self.local_file = self.filename
         self.local_path = self.local_dir   + '/' + self.filename
-        self.local_url  = urllib.parse.urlparse(self.msg.url.geturl() + '/' + self.rel_path)
+        self.local_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
 
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']

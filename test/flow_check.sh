@@ -20,6 +20,7 @@ fi
    
 totwinnow=$((${totwinnow} + ${totwinnow00} + ${totwinnow01}))
 totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+totsubr="`grep file_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel2="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
 
@@ -40,6 +41,7 @@ while [ $totsarra -lt $smin ]; do
    totwinnow01="`grep msg_total ~/.cache/sarra/var/log/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
    totwinnow=$(( $totwinnow00 + $totwinnow01 ))
    totsub="`grep msg_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totsubr="`grep file_total ~/.cache/sarra/var/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel1="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel2="`grep msg_total ~/.cache/sarra/var/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
    printf  "sample now %6d \r"  $totsarra
@@ -105,6 +107,13 @@ else
    echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as headers that were truncated (${totshortened})"
 fi
 
+tno=$((${tno}+1))
 
+res=$(( ( ${totsubr}*1000 ) / ${totsub} ))
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test ${tno}: FAIL, count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same"
+else
+   echo "test ${tno}: SUCCESS, subscribe messages accepted (${totsub}) is the same as files downloaded (${totsubr})"
+fi
 
 
