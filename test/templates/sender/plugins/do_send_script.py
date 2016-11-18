@@ -8,8 +8,9 @@ class ParseAndRetrieve(object):
 	def perform(self, parent):
 		import subprocess
 
-		parent.logger.info("Copying " + parent.local_file + " to destination")
-		subprocess.call(["cp", parent.local_path, "/home/pfd/.cache/tmp/sr_sarra/sender_file.txt"] )
+		final_dest = parent.msg.headers['flow']
+
+		subprocess.call(["cp", parent.local_path, "%s/sender_file.txt" % final_dest] )
 
 		return True
 

@@ -17,16 +17,19 @@ if [ ! -d $file_destination ]; then
 	mkdir $file_destination
 fi
 
-#cd $file_origin
 
 sender=pfd
-#recipient=pfd
+host=localhost
 
 #Exchanges and credentials
 exchange=tsender_src
 credentials=TestSENDer
 
-cat << EOF > $file_origin/sender_file.txt
+#Files to use
+sender_file=sender_file.txt
+placeholder=placeholder.txt
+
+cat << EOF > $file_origin/$sender_file
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -36,7 +39,7 @@ cat << EOF > $file_origin/sender_file.txt
 6 123456789abcde
 EOF
 
-cat << EOF > $file_origin/placeholder.txt
+cat << EOF > $file_origin/$placeholder
 0 123456789abcde
 1 123456789abcde
 2 123456789abcde
@@ -50,78 +53,47 @@ EOF
 cp ./templates/sender/test1.conf $file_origin/sender_test1.conf
 cp ./templates/sender/test2.conf $file_origin/sender_test2.conf
 cp ./templates/sender/test3.conf $file_origin/sender_test3.conf
-cp ./templates/sender/test4a.conf $file_origin/sender_test4a.conf
-cp ./templates/sender/test4b.conf $file_origin/sender_test4b.conf
-cp ./templates/sender/test4c.conf $file_origin/sender_test4c.conf
+cp ./templates/sender/test4.conf $file_origin/sender_test4.conf
 cp ./templates/sender/test5.conf $file_origin/sender_test5.conf
 
-chmod 777 $file_origin/sender_file.txt
-chmod 777 $file_origin/placeholder.txt
+chmod 777 $file_origin/$sender_file
+chmod 777 $file_origin/$placeholder
 
 #Checks if the file exists in final destination using sender, PASSED if exists, FAILED if not 
 function check_destination {
 
 	#TODO check contents of file using diff
-        initial_dest=$file_origin/sender_file.txt
-        final_dest=$file_destination/sender_file.txt
+        initial_dest=$file_origin/$sender_file
+        final_dest=$file_destination/$sender_file
 
         diff $initial_dest $final_dest >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-                echo "TEST $1 PASSED"
-                rm $file_destination/sender_file.txt
+                echo "PASSED"
+                rm $file_destination/$sender_file
+		return 0
         else
-                echo "TEST $1 FAILED"
-                #sr_sender $file_origin/sender_test${1}.conf stop > /dev/null 2>&1
-                #exit 1
+                echo "FAILED"
+		return 1
         fi
 }
 
-#Protocol Tests (sftp and http)
-#function test1 {
-#	
-#	echo "Running Self Test 1 for sr_sender:"
-#	#Starting sftp test
-#	sr_sender --reset $file_origin/sender_test1.conf start > /dev/null 2>&1 
-#	sleep 3
-#	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-#		-u sftp://$sender@localhost/ 		    	\
-#		-dr $doc_root 					\
-#		-p $initial_path/sender_file.txt 		\
-#		-to test_cluster > /dev/null 2>&1 		\
-#		/
-#	sleep 3
-#	check_destination "1a"
-#	sleep 3
-#
-#	#Starting http test
-#	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-#		-u http://localhost/ 				\
-#		-dr $doc_root 					\
-#		-p $initial_path/sender_file.txt 		\
-#		-to test_cluster > /dev/null 2>&1		\
-#		/
-#	sleep 3
-#	check_destination "1b"
-#	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
-#	echo "Self Test 1 Completed"
-#}
+#This test checks to see if sr_sender will send a file to a location
+#when instead of specifying directory, the post_document_root, 
+#post_exchange and post_broker are specified.
+function test_post_doc {
 
-#This test checks to see if sr_sender will send a file to a location 
-#with post_document_root specified rather than directory.
-function test2 {
-
-	echo "Running test by specifying post document root (Test #2)"
-        sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
+        sr_sender --reset $file_origin/sender_test1.conf start > /dev/null 2>&1
 	sleep 3
-        sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 			\
+        sr_post -b amqp://$exchange:$credentials@$host/ 	\
+		-u sftp://$sender@$host/ 			\
+		-p $file_origin/$sender_file 			\
 		-to test_cluster > /dev/null 2>&1		\
 		/
 	sleep 3
-	check_destination "2"
-	sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
-	echo "Self Test 2 Completed"
+	check_destination "1"
+	RET=$?
+	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
+	return $RET
 }
 
 #This test checks to see if sr_sender will properly disassemble a file
@@ -129,80 +101,113 @@ function test2 {
 #reassemble them. The test is a pass if the contents of the sent file
 #matches the content of the file in the original location. Part size
 #in this case is 32 Bytes
-function test3 {
+function test_parts {
 
-	echo "Running test by sending a file in parts (Test #3)"
-	sr_sender --reset $file_origin/sender_test3.conf start > /dev/null 2>&1
+	sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 		\
+	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+		-u sftp://$sender@$host/ 			\
+		-p $file_origin/$sender_file 		\
 		-to test_cluster > /dev/null 2>&1		\
 		--parts i,32B					\
 		/
         sleep 3
-	check_destination "3"	
-        sr_sender $file_origin/sender_test3.conf stop > /dev/null 2>&1
-	echo "Self Test 3 Completed"
+	check_destination "2"
+	RET=$?	
+        sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
+	return $RET
 }
 
 #This test checks to see if the plugin scripts work properly when using
 #sr_sender. The plugin scripts will move or manipulate files and the
 #self test will check if the sent file will match the file in the original
 #location.
-function test4 {
+function test_plugins {
 
-	echo "Running test by using the on_message plugin (Test #4a)"
 	#Using on_message script
-	sr_sender --reset $file_origin/sender_test4a.conf start > /dev/null 2>&1
+	sr_sender --reset $file_origin/sender_test${1}.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 		\
+	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+		-u sftp://$sender@$host/ 			\
+		-p $file_origin/$sender_file 		\
 		-to test_cluster  				\
 		--flow "$file_destination" > /dev/null 2>&1		\
 		/
 	sleep 3
-	check_destination "4a"
-	sr_sender $file_origin/sender_test4a.conf stop > /dev/null 2>&1
-
-	echo "Running test by using the do_send plugin (Test #4b)"
-	#Using do_send script
-	sr_sender --reset $file_origin/sender_test4b.conf start > /dev/null 2>&1
-	sleep 3
-	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/sender_file.txt 		\
-		-to test_cluster > /dev/null 2>&1		\
-		--flow "$file_destination"			\
-		/
-	sleep 3
-	check_destination "4b"
-	sr_sender $file_origin/sender_test4b.conf stop > /dev/null 2>&1
-
-#currently work in progress
-	echo "Running test by using the on_post plugin (Test #4c)"
-	#Using on_post script
-	sr_sender --reset $file_origin/sender_test4c.conf start > /dev/null 2>&1
-	sleep 3
-	sr_post -b amqp://$exchange:$credentials@localhost/ 	\
-		-u sftp://$sender@localhost/ 			\
-		-p $file_origin/placeholder.txt 		\
-		-to test_cluster > /dev/null 2>&1		\
-		--flow "$file_destination"     			\
-		/
-	sleep 3
-	check_destination "4c"
-	sr_sender $file_origin/sender_test4c.conf stop > /dev/null 2>&1
-	echo "Self Test 4 Completed"
+	check_destination "${1}"
+	RET=$?
+	sr_sender $file_origin/sender_test${1}.conf stop > /dev/null 2>&1
+	return $RET
 }
 
-# Run tests
-#test1
-test2
-test3
-test4
+#function test4 {
+#
+#	echo "Testing do_send plugin"
+#	#Using do_send script
+#	sr_sender --reset $file_origin/sender_test4.conf start > /dev/null 2>&1
+#	sleep 3
+#	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+#		-u sftp://$sender@$host/ 			\
+#		-p $file_origin/$sender_file 		\
+#		-to test_cluster > /dev/null 			\
+#		--flow "$file_destination" > /dev/null 2>&1			\
+#		/
+#	sleep 3
+#	check_destination "4"
+#	RET=$?
+#	sr_sender $file_origin/sender_test4.conf stop > /dev/null 2>&1
+#	return $RET
+#}
+#
+#function test5 {
+#
+#	echo "Testing on_post plugin"
+#	#Using on_post script
+#	sr_sender --reset $file_origin/sender_test5.conf start > /dev/null 2>&1
+#	sleep 3
+#	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+#		-u sftp://$sender@$host/ 			\
+#		-p $file_origin/$placeholder 			\
+#		-to test_cluster > /dev/null 2>&1		\
+#		--flow "$file_destination"     			\
+#		/
+#	sleep 3
+#	check_destination "5"
+#	RET=$?
+#	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
+#	return $RET
+#}
 
-rm $file_origin/placeholder.txt
-rm $file_origin/sender_file.txt
-rm -r $file_origin 
+RESULT=0
+# Run tests
+echo "Sending file by using post_document_root instead of directory..."
+test_post_doc
+if [ $? -eq 1 ]; then
+	RESULT=1
+fi
+echo "Sending file by parts to destination and reassembling file..."
+test_parts
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
+echo "Testing on_message plugin script..."
+test_plugins "3"
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
+echo "Testing do_send plugin script..."
+test_plugins "4"
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
+echo "Testing on_post plugin script..."
+test_plugins "5"
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
+
+rm $file_origin/$placeholder
+rm $file_origin/$sender_file
+rm -r $file_origin
+
+exit $RESULT 
