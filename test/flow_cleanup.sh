@@ -32,6 +32,9 @@ for cf in ${templates}; do
     rm $HOME/.config/sarra/${cf}
 done
 
+for cf in $HOME/.config/sarra/shovel/rr*.conf  ; do
+    rm ${cf}
+done
 
 
 
