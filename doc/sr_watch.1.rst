@@ -252,7 +252,7 @@ FIXME :  Daluma :  **caching** **blocksize** **reset**   how will Daluma
 ADVANCED OPTIONS
 ================
 
-**[-p|--parts <value>]**
+**[--parts <value>]**
 
 The user can suggest how to download a file.  By default it suggests to download the entire file.
 In this case, the amqp message header will have an entry parts with value '1,filesize_in_bytes'.
@@ -311,79 +311,6 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
-SEE ALSO
-========
-
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
-
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
-
-`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
-
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
-
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
-
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
-
-
-
-ZZZ
-
-ADVANCED OPTIONS
-================
-
-**[-p|--parts <value>]**
-
-Select how to announce changes to a file.
-The default is to create a single announcment for
-the entire file.  In this case, the amqp message header will have an
-entry parts with value '1,filesize_in_bytes'.
-
-For large files, when an update occurs, a large amount of the file 
-may be unchanged, so announcing blocks gives the subscriber to option
-to download only the parts of the file that have changed.
-Also, by announcing parts of the file separately, they can be downloaded
-in parallel.
-
-To post announcements of a file with a blocksize of 10Mb,
-the user can specify  *-p i,10M* .  *i*  stands for
-"inplace" and means write the parts directly into the file.
-* -p p,10M*  suggests the same blocksize but to put the part
-in a separate filepart. If the  *blocksize*  is bigger than
-the filesize, the program will fall back to the default.
-There will be one post per suggested part.
-
-The value of the  *blocksize*   is an integer that may be
-followed by  [ *B|K|M|G|T* ] which stands for  *B* ytes
-, *K* ilobytes,  *M* egabytes,  *G* igabytes,  *T* erabytes.
-All theses references are powers of 2 (except for Bytes).
-
-When suggesting parts, the value put in the amqp message header varies.
-For example if headers[parts] as value 'p,256,12,11,4' it stands 
-for : *p*  suggesting part, a blocksize in bytes  *256* ,
-the number of block of that size  *12* , the remaining bytes  *11* ,
-and the current block  *4* ,
-
-.. NOTE::
-   FIXME:  likely the sr_post/sr_watch default values for parts should change.
-   There should be a threshold, so that above a certain file size, parts is used by default.
-   I think picking a threshold like 50M is likely a good size. It should avoid the
-   *Capybara effect*  and making it the default intelligent means that users 
-   do not have to be aware of this setting for it to work at reasonable performance.
-   Do not know whether i or p is an issue.
-
-**[-sum|--sum <string>]**
-
-All file posts include a checksum.  It is placed in the amqp message header will have as an
-entry  *sum*  with default value 'd,md5_checksum_on_data'.  The  *sum*  option tells the 
-subscriber how to calculate the checksum.  It is a comma separated string.
-Valid checksum flags are ::
-
-    [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is 0
-          n : do checksum on filename
-          d : do md5sum on file content
 
 CAVEATS
 =======
@@ -402,51 +329,23 @@ within a directory tree, sarracenia will simply announce it under the new name, 
 that already transferred data has simply changed name.  Subscribers who have transferred the data under the 
 old name will transfer it again under the new name, with no relation being made with the old file.
 
-
-
-DEVELOPER SPECIFIC OPTIONS
-==========================
-
-**[-debug|--debug]**
-
-Active if  *-debug|--debug*  appears in the command line... or *debug*  is 
-set to True in the configuration file used.
-
-**[-r|--randomize]**
-
-Active if  *-r|--randomize*  appears in the command line... or *randomize*  
-is set to True in the configuration file used.
-If there are several posts because the file is posted
-by block because the  *blocksize*  option was set, the block 
-posts are randomized meaning that the will not be posted
-ordered by block number.
-
-**[-rr|--reconnect]**
-
-Active if  *-rc|--reconnect*  appears in the command line... or *reconnect*  is 
-set to True in the configuration file used.  If there are several posts because 
-the file is posted by block because the  *blocksize*  option was set, there is a
-reconnection to the broker every time a post is to be sent.
-
 SEE ALSO
 ========
 
 `sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
+`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+
+`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
+
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
 `sr_report(1) <sr_report.1.html>`_ - process report messages.
 
-`sr_report2source(1) <sr_report2source.7.html>`_ - copy report messages from the pump report bus to upstream destination.
-
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe and Re-advertise: A combined downstream an daisy-chain posting client.
-
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
-
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
-
 `sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
+
+`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
 

@@ -246,7 +246,7 @@ what the subscribers will use to download the product.
 ADVANCED OPTIONS
 ================
 
-**[-p|--parts <value>]**
+**[--parts <value>]**
 
 The user can suggest how to download a file.  By default it suggests to download the entire file.
 In this case, the amqp message header will have an entry parts with value '1,filesize_in_bytes'.
