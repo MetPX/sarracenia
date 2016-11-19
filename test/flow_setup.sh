@@ -71,7 +71,7 @@ for d in .config .config/sarra ; do
 done
 
 
-for d in sarra subscribe winnow report shovel ; do
+for d in report report sarra shovel subscribe watch winnow ; do
    if [ ! -d $HOME/.config/sarra/$d ]; then
       mkdir $HOME/.config/sarra/$d
    fi

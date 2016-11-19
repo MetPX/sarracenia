@@ -26,6 +26,15 @@ for q in $queues_to_delete; do
     rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q
 done
  
+templates="`cd templates; ls */*.py */*.conf */*.inc`"
+for cf in ${templates}; do
+    echo "removing $cf"
+    rm $HOME/.config/sarra/${cf}
+done
+
+
+
+
 if [ -f .httpdocroot ]; then
    echo " you may want to rm -rf `cat .httpdocroot` "
 fi

@@ -3,11 +3,6 @@
 
 totsarra="`grep msg_total ~/.cache/sarra/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`"
 
-totwinnow="`grep msg_total ~/.cache/sarra/log/sr_report_twinnow_0001.log | tail -1 | awk ' { print $5; }; '`"
-if [ ! "$totwinnow" ]; then
-   totwinnow=0
-fi
-
 totwinnow00="`grep msg_total ~/.cache/sarra/log/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
 if [ ! "$totwinnow00" ]; then
    totwinnow00=0
@@ -18,11 +13,12 @@ if [ ! "$totwinnow01" ]; then
    totwinnow01=0
 fi
    
-totwinnow=$((${totwinnow} + ${totwinnow00} + ${totwinnow01}))
+totwinnow=$((${totwinnow00} + ${totwinnow01}))
 totsub="`grep msg_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
 totsubr="`grep file_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel1="`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
 totshovel2="`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
+totwatch="`grep post_total ~/.cache/sarra/log/sr_watch_sub_0001.log | tail -1 | awk ' { print $5; }; '`"
 
 snum=1
 smin=1000
@@ -44,6 +40,7 @@ while [ $totsarra -lt $smin ]; do
    totsubr="`grep file_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel1="`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
    totshovel2="`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
+   totwatch="`grep post_total ~/.cache/sarra/log/sr_watch_sub_0001.log | tail -1 | awk ' { print $5; }; '`"
    printf  "sample now %6d \r"  $totsarra
 
 done
@@ -116,4 +113,12 @@ else
    echo "test ${tno}: SUCCESS, subscribe messages accepted (${totsub}) is the same as files downloaded (${totsubr})"
 fi
 
+
+tno=$((${tno}+1))
+res=$(( ( ${totsub}*1000 ) / ${totwatch} ))
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test ${tno}: FAIL, messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
+else
+   echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files posted (${totwatch}) by watch"
+fi
 
