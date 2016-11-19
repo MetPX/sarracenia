@@ -75,7 +75,7 @@ class sr_config:
         self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
         self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
-        self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
+        #self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
         self.user_plugins_dir = self.user_config_dir + '/plugins'
         self.http_dir         = self.user_config_dir + '/Downloads'
 
