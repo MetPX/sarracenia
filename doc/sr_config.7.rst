@@ -804,12 +804,7 @@ For each download, an amqp report message is sent back to the broker.
 Should you want to turned them off the option is :
 
 - **report_back <boolean>        (default: True)** 
-- **report_daemons <boolean>     (default: False)**
 - **report_exchange <report_exchangename> (default: xreport)**
-
-The *report_daemons* option indicates to sr whether the sr_report2source, sr_2xreport, 
-and sr_report2cluster component configurations should be included in 
-processing for start, stop, etc...
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrive 
 components post directly to xreport, whereas user components post to their own exchanges.  The 
@@ -819,13 +814,12 @@ Administration-Specific Options
 ===============================
 
 The *feeder* option specifies the account used by default system transfers for components such as 
-sr_2xreport, sr_report2source, sr_report2cluster, sr_sarra and sr_sender (when posting).
+sr_shovel, sr_sarra and sr_sender (when posting).
 
 - **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 
 - **admin   <name>        (default: None)**
 
-When set, the feeder option will trigger start up of the sr_2xreport, sr_report2source, and sr_report2cluster daemons.
 When set, the admin option will cause sr start to start up the sr_audit daemon.
 
 .. note::

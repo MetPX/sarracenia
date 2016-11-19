@@ -60,7 +60,7 @@ VERIFY PUMP SETTINGS
 
 Use **sr_audit** invoke with **--pump**  to set up it's configuration.  It makes sure the **feeder** 
 user credentials are given and the **admin** user is defined and valid.  It warns and explains 
-if options **cluster,gateway_for,roles**, as well as the **report2clusters.conf** are missing.
+if options **cluster,gateway_for, or roles** are missing.
 
 
 MANAGING USERS

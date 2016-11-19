@@ -50,8 +50,6 @@ Administrative Daemons
 
 * `sr_audit(8) <sr_audit.8.html>`_ - Audit the running configuration, looking for issues.
 * `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
-* `sr_report2clusters(8) <sr_report2clusters.8.html>`_ - daemon to copy report messages to other clusters.
-* `sr_report2source(8) <sr_report2source.8.html>`_ - daemon to copy report messages to the originating source.
 * `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
 * `sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
 
@@ -61,7 +59,6 @@ Formats/Protocols
 
 * `sr_post(7) <sr_post.7.html>`_ - the format of postings. Posted by watch and post, consumed by subscribe.
 * `sr_report(7) <sr_report.7.html>`_ - the format of report messages. Sent by consumers, for sources to measure reach.
-* `report2clusters(7) <report2clusters.7.html>`_ - configuration of report routing between clusters.
 * `sr_config(7) <sr_config.7.html>`_ - reference for options used by many components.
 
 
