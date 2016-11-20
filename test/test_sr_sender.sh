@@ -47,13 +47,13 @@ cat << EOF > $file_origin/placeholder.txt
 EOF
 
 
-cp ./templates/sender/test1.conf $file_origin/sender_test1.conf
-cp ./templates/sender/test2.conf $file_origin/sender_test2.conf
-cp ./templates/sender/test3.conf $file_origin/sender_test3.conf
-cp ./templates/sender/test4a.conf $file_origin/sender_test4a.conf
-cp ./templates/sender/test4b.conf $file_origin/sender_test4b.conf
-cp ./templates/sender/test4c.conf $file_origin/sender_test4c.conf
-cp ./templates/sender/test5.conf $file_origin/sender_test5.conf
+cp ./test_sr_sender_configs/test1.conf $file_origin/sender_test1.conf
+cp ./test_sr_sender_configs/test2.conf $file_origin/sender_test2.conf
+cp ./test_sr_sender_configs/test3.conf $file_origin/sender_test3.conf
+cp ./test_sr_sender_configs/test4a.conf $file_origin/sender_test4a.conf
+cp ./test_sr_sender_configs/test4b.conf $file_origin/sender_test4b.conf
+cp ./test_sr_sender_configs/test4c.conf $file_origin/sender_test4c.conf
+cp ./test_sr_sender_configs/test5.conf $file_origin/sender_test5.conf
 
 chmod 777 $file_origin/sender_file.txt
 chmod 777 $file_origin/placeholder.txt

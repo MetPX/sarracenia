@@ -3,6 +3,7 @@
 export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
+sftpuser=`whoami`
 
 if [ ! -f $HOME/.config/sarra/default.conf -o ! -f $HOME/.config/sarra/credentials.conf ]; then
  cat <<EOT
@@ -71,7 +72,7 @@ for d in .config .config/sarra ; do
 done
 
 
-for d in report report sarra shovel subscribe watch winnow ; do
+for d in report report sarra sender shovel subscribe watch winnow ; do
    if [ ! -d $HOME/.config/sarra/$d ]; then
       mkdir $HOME/.config/sarra/$d
    fi
@@ -81,7 +82,7 @@ templates="`cd templates; ls */*.py */*.conf */*.inc`"
 
 for cf in ${templates}; do
     echo "installing $cf"
-    sed 's+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/${cf} >$HOME/.config/sarra/${cf}
+    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/${cf} >$HOME/.config/sarra/${cf}
 done
 
 # ensure users have exchanges:
@@ -89,7 +90,7 @@ sr_audit --users foreground
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
 
-for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy ; do 
+for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output ; do 
    echo "declaring $exchange"
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
 done
