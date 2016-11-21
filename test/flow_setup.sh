@@ -45,6 +45,7 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot
   cp -r testree/* $testdocroot
   mkdir $testdocroot/sub
+  mkdir $testdocroot/send
 fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"

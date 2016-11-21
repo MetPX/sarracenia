@@ -38,6 +38,7 @@ import netifaces
 import os,re,socket,sys,random
 import urllib,urllib.parse
 from   appdirs import *
+import shutil
 import sarra
 
 try :
@@ -75,7 +76,7 @@ class sr_config:
         self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
         self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
         self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
-        #self.user_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
+        self.user_old_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
         self.user_plugins_dir = self.user_config_dir + '/plugins'
         self.http_dir         = self.user_config_dir + '/Downloads'
 
@@ -84,7 +85,31 @@ class sr_config:
         try    : os.umask(0)
         except : pass
 
-        # make sure the users directories exist
+        # FIXME:
+        # before 2.16.08x sr_log was a comment (that became sr_report). so the log directory was needed
+        # to store configuration states.  The actual log file directory was moved under 'var/' to put
+        # it out of the way.  in newer versions, the state directory for sr_report became 'reports',
+        # so it is possible to have log used for the normal purpose.
+        #
+        # For existing configurations, if ~/.cache/sarra/var/log exists, move it to ~/.cache/sarra/log
+        # so everything still works, move the old var out of the way (to var.old.)
+        # and create var as a symbolic link to '.' so that var/log still works.
+        # this code should be removed once all users are past the transition.
+        #
+        var = user_cache_dir(self.appname,self.appauthor) + "/var"
+        if os.path.isdir( var ) and not os.path.islink( var ):
+              print("sr_config __init__ migrating logs to new location (without 'var')")
+              if os.path.isdir( self.user_log_dir ): 
+                 print("sr_config __init__ moving old sr_log state directory out of the way to .old")
+                 os.rename( self.user_log_dir, self.user_log_dir.replace("/log", "/log.old" ))            
+              print("sr_config __init__ moving old log file directory the new location %s " % self.user_log_dir )
+              shutil.move( self.user_old_log_dir, self.user_log_dir)
+              print("sr_config __init__ moving old var directory out of the way to %s.old" % ( var ) )
+              os.rename( var, var + ".old" )
+              if sys.platform != 'win32' :
+                 print("sr_config __init__ create var symlink so no scripts need to be change for now. ")
+                 os.symlink( "." , var )
+
 
         try    : os.makedirs(self.user_config_dir, 0o775,True)
         except : pass
@@ -318,6 +343,7 @@ class sr_config:
         self.message_ttl          = None
         self.prefetch             = 1
         self.max_queue_size       = 25000
+        self.set_passwords        = True
 
         self.use_pattern          = False    # accept if No pattern matching
         self.accept_unmatch       = False    # accept if No pattern matching
@@ -1257,6 +1283,14 @@ class sr_config:
                      user   = words[2]
                      self.users[user] = roles
                      n = 3
+
+                elif words0 in ['set_passwords']:  # See: sr_consumer.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.set_passwords = True
+                        n = 1
+                     else :
+                        self.set_passwords = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'sleep': # See: sr_audit.8 sr_poll.1
                      self.sleep = int(words[1])

@@ -51,12 +51,26 @@ class sr_audit(sr_instances):
         dummy = self.rabbitmqadmin("declare exchange name='%s' type=topic auto_delete=false durable=true"%e)
 
     def add_user(self,u,role):
-        self.logger.info("adding user %s" % u)
+        self.logger.info("adding user %s, reset: %s, set_passwords: %s" % (u, self.reset, self.set_passwords) )
+
+        user_cred_qurl = self.admin.scheme + '://' + u + '@' + self.admin.hostname + '/'
+
+        ok, details = self.credentials.get(user_cred_qurl)
+        if not ok :
+           self.logger.info("Entry missing for %s in %s" % ( user_cred_qurl, \
+                   self.user_config_dir + os.sep + 'credentials.conf' ))
+           return
+
+        upw = details.url.password
+         
+        declare = "declare user name='%s' password=" % u
+        if self.set_passwords:
+            declare += "'%s' "  % upw
 
         if role == 'admin' :
-           dummy = self.rabbitmqadmin("declare user name='%s' password= tags=administrator"%u)
-        else:
-           dummy = self.rabbitmqadmin("declare user name='%s' password= tags="%u)
+           declare += " tags=administrator"
+
+        dummy = self.rabbitmqadmin( declare )
 
         # admin and feeder gets the same permissions
 
@@ -72,8 +86,8 @@ class sr_audit(sr_instances):
 
         if role == 'source':
            c="configure='^q_%s.*'"%u
-           w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^xs_%s$|^x[lr]_%s$|^xpublic$'"%(u,u,u)
+           w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
+           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -97,7 +111,7 @@ class sr_audit(sr_instances):
         if role == 'subscribe':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^xpublic$'"%u
+           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -363,11 +377,12 @@ class sr_audit(sr_instances):
 
 
     def verify_users(self):
-        self.logger.debug("sr_audit verify_users")
+        self.logger.info("sr_audit verify_users")
 
         # get users name (a list of dictionnaries)
 
         lst_dict = self.rabbitmqadmin("list users name")
+        self.logger.info("sr_audit verify_users, defined: %s" % lst_dict )
 
         user_lst = []
         for edict in lst_dict :
@@ -375,44 +390,53 @@ class sr_audit(sr_instances):
             if user == '' : continue
             user_lst.append(user)
 
-        self.logger.debug("user_lst = %s" % user_lst)
+        self.logger.info("sr_audit verify_users user_lst = %s" % user_lst)
 
         # admins
 
+        self.logger.info("sr_audit verify_users admins = %s" % self.admins)
         for u in self.admins :
             if u in user_lst :
                user_lst.remove(u)
-               continue
+               if not self.reset:
+                  continue
             self.add_user(u,'admin')
 
         # feeders
 
+        self.logger.info("sr_audit verify_users feeders = %s" % self.feeders)
         for u in self.feeders:
             if u in user_lst :
                user_lst.remove(u)
-               continue
+               if not self.reset:
+                  continue
             self.add_user(u,'feeder')
 
         # sources
 
+        self.logger.info("sr_audit verify_users sources = %s" % self.sources)
         for u in self.sources :
             if u in user_lst :
                user_lst.remove(u)
-               continue
+               if not self.reset:
+                  continue
             self.add_user(u,'source')
 
         # subscribes
 
+        self.logger.info("sr_audit verify_users subscribes = %s" % self.subscribes)
         for u in self.subscribes:
             if u in user_lst :
                user_lst.remove(u)
-               continue
+               if not self.reset:
+                  continue
             self.add_user(u,'subscribe')
 
         # delete leftovers
         for u in user_lst :
             self.logger.warning("unnecessary user %s" % u)
             self.delete_user(u)
+
 
     def verify_queues(self):
         self.logger.debug("sr_audit verify_queues")

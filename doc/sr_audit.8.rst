@@ -80,14 +80,7 @@ missing. Extra exchanges are deleted if their names do not start with 'x'.
 When adding or deleting a user, the broker administrator adds or delete the role declaration for a
 username and in the **default.conf** file.  Then he runs **sr_audit --users configfile foreground**. 
 The log on standard output would tell the administrator what broker resources were 
-added/deleted (user,exchanges, queue, etc).  If the broker does not use ldap, the administrator 
-adding a user, has to set this user's password (after it has been created by sr_audit) with 
-the following command run as root on the broker'server :
-
-**rabbitmqctl change_password "user" "password"**
-
-where "user"  is the username added and "password" its password
-on the broker.
+added/deleted (user,exchanges, queue, etc).   
 
 
 CONFIGURATION
@@ -97,7 +90,11 @@ There are very few options that **sr_audit** uses:
 
 **admin          <user>    (Mandatory: broker admin user, detailed in credentials.conf)**
 
-**debug          <boolean> (default: false)**
+**debug          <boolean> (default: False)**
+
+**reset          <boolean> (default: False)**
+
+**set_passwords  <boolean> (default: True)** 
 
 **sleep          <int>     (default: 60 in seconds)** 
 
@@ -105,7 +102,11 @@ There are very few options that **sr_audit** uses:
 
 The **admin** option must be defined it normally be set in the file **default.conf**
 and the credential details would be found in the file **credentials.conf**
+Normally when users are created, the passwords for communications with the broker are set based
+on the values found in the credentials file.
 
+When the *reset* option is given, user passwords and permissions will be reset to their expected
+values.  Normally, an existing user's permissions are left untouched by an audit run.
 
  
 SEE ALSO
