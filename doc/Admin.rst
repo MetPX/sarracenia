@@ -1598,3 +1598,5 @@ file has been placed on dd (with the / replaced by .)  For example, here is a lo
 - So the key is: v02.post.radar.24_HR_ACCUM.GIF.XSS
 - the file is placed under: http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS
 - the complete URL for the product is: http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS/201306061440_XSS_24_HR_ACCUM_MM.gif
+
+

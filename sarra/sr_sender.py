@@ -179,7 +179,7 @@ class sr_sender(sr_instances):
 
     def __do_send__(self):
 
-        self.logger.debug("sending/copying %s " % self.local_path)
+        self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.remote_dir ) )
 
         try :
                 if   self.do_send :
@@ -200,10 +200,12 @@ class sr_sender(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.msg.report_publish(503,"Unable to process")
+                if self.reportback:
+                    self.msg.report_publish(503,"Unable to process")
                 self.logger.error("Could not send")
 
-        self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+        if self.reportback:
+           self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
@@ -254,7 +256,8 @@ class sr_sender(sr_instances):
         if self.post_broker != None :
            # the message has not specified a destination.
            if not 'to_clusters' in self.msg.headers :
-              self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
+              if self.reportback:
+                  self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
               self.logger.error("message without destination amqp header['to_clusters']")
               return False
 
@@ -270,6 +273,7 @@ class sr_sender(sr_instances):
               break
 
            if not ok :
+              self.logger.warning("self.to_clusters=%s, self.msg.to_clusters=%s" % ( self.to_clusters, self.msg.to_clusters ) )
               self.logger.warning("skipped : not for remote cluster...")
               return False
 
@@ -282,7 +286,8 @@ class sr_sender(sr_instances):
             # a separate partfile and message set to 'p'
             if  self.msg.partflg == 'i':
                 logger.error("ftp, inplace part file not supported")
-                msg.report_publish(499,'ftp cannot deliver partitioned files')
+                if self.reportback:
+                   msg.report_publish(499,'ftp cannot deliver partitioned files')
                 return False
 
         # invoke user defined on_message when provided
@@ -382,7 +387,8 @@ class sr_sender(sr_instances):
            self.msg.set_topic_url('v02.post',self.remote_url)
            self.msg.set_notice(self.remote_url,self.msg.time)
            self.__on_post__()
-           self.msg.report_publish(201,'Published')
+           if self.reportback:
+               self.msg.report_publish(201,'Published')
 
         return True
 

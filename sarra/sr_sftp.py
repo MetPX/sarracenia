@@ -579,7 +579,8 @@ class sftp_transport():
                 try   : sftp.chmod(parent.chmod,parent.remote_file)
                 except: pass
     
-                msg.report_publish(201,'Delivered')
+                if parent.reportback :
+                   msg.report_publish(201,'Delivered')
     
                 #closing after batch or when destination is changing
                 #sftp.close()

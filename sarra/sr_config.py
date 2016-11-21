@@ -469,33 +469,33 @@ class sr_config:
 
 
         # read in provided log cluster infos
-        report_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
-        self.report_clusters = {}
-        i = 0
-        try :
-              if os.path.exists(report_cluster):
-                 f = open(report_cluster,'r')
-                 lines = f.readlines()
-                 f.close
-                 for line in lines :
-                     line = line.strip()
-                     if len(line) == 0 or line[0] == '#' : continue
-                     parts = line.split()
-                     name    = parts[0]
-                     urlstr  = parts[1]
-                     ok, url = self.validate_urlstr(urlstr)
-                     if not ok or not url.scheme in ['amqp','amqps']:
-                        self.logger.error("invalid URL %s" % parts[1])
-                     # fixme parts[2] exchange should be optional
-                     exch  = parts[2]
-                     self.report_clusters[i] = (name,url,exch)
-                     i = i + 1
+        #report_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
+        #self.report_clusters = {}
+        #i = 0
+        #try :
+        #      if os.path.exists(report_cluster):
+        #         f = open(report_cluster,'r')
+        #         lines = f.readlines()
+        #         f.close
+        #         for line in lines :
+        #             line = line.strip()
+        #             if len(line) == 0 or line[0] == '#' : continue
+        #             parts = line.split()
+        #             name    = parts[0]
+        #             urlstr  = parts[1]
+        #             ok, url = self.validate_urlstr(urlstr)
+        #             if not ok or not url.scheme in ['amqp','amqps']:
+        #                self.logger.error("invalid URL %s" % parts[1])
+        #             # fixme parts[2] exchange should be optional
+        #             exch  = parts[2]
+        #             self.report_clusters[i] = (name,url,exch)
+        #             i = i + 1
 
         # cluster file is not mandatory
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-        self.logger.debug("report_clusters = %s\n" % self.report_clusters)
+        #except : 
+        #         (stype, svalue, tb) = sys.exc_info()
+        #         self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+        #self.logger.debug("report_clusters = %s\n" % self.report_clusters)
 
         # defaults.conf ... defaults for the server
         # at this level (for includes) user_config = self.user_config_dir

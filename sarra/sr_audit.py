@@ -73,7 +73,7 @@ class sr_audit(sr_instances):
         if role == 'source':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^xs_%s$|^xr_%s$|^xpublic$'"%(u,u,u)
+           r="read='^q_%s.*|^xs_%s$|^x[lr]_%s$|^xpublic$'"%(u,u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -233,26 +233,35 @@ class sr_audit(sr_instances):
         # all sources should have: xs_ and xr_"user"
 
         for u in self.sources :
-            e = 'xs_' + u
-            if e in exchange_lst :
-               exchange_lst.remove(e)
-            else:
-               self.add_exchange(e)
+            se = 'xs_' + u
+            self.add_exchange(se)
+            
+            for e in exchange_lst:
+               if e.startswith(se) :  
+                 self.logger.warning("ok user source exchange %s" % e)
+                 exchange_lst.remove(e)
 
-            e = 'xr_' + u
-            if e in exchange_lst :
-               exchange_lst.remove(e)
+            se = 'xr_' + u
+            self.add_exchange(se)
+
+            for e in exchange_lst:
+               if e.startswith(se) :  
+                  self.logger.warning("ok user report exchange %s" % e)
+                  exchange_lst.remove(e)
                continue
-            self.add_exchange(e)
+
 
         # all sources and subscribes should have: xs_"user"
 
         for u in self.subscribes :
-            e = 'xs_' + u
-            if e in exchange_lst :
-               exchange_lst.remove(e)
-               continue
+            se = 'xs_' + u
             self.add_exchange(e)
+
+            for e in exchange_lst:
+               if e.startswith(se) :  
+                  self.logger.warning("ok subscription exchange %s" % e)
+                  exchange_lst.remove(e)
+                 
 
         # delete leftovers
         # MG : Peter specified that we may need other exchanges to work with 
@@ -264,12 +273,12 @@ class sr_audit(sr_instances):
 
             # deprecated exchanges  (from deleted users?)
             if 'xs_' in e or 'xr_' in e :
-               self.logger.warning("deprecated exchange %s" % e)
+               self.logger.warning("exchange from no known user %s" % e)
                self.delete_exchange(e)
 
             # weird exchange... not starting with 'x'
             elif e[0] != 'x' :
-               self.logger.warning("unnecessary exchange %s" % e)
+               self.logger.warning("unknown exchange %s" % e)
                self.delete_exchange(e)
 
             # leading 'x' exchanges that might be there for a reason
@@ -548,20 +557,20 @@ class sr_audit(sr_instances):
            self.logger.warning("   gateway_for ddi.edm,ddi1.edm,ddi2.edm")
            warning += 1
 
-        if self.report_clusters != {} :
-           self.logger.info("**** log2clusters.conf file present *****")
-           self.logger.info("log2clusters.conf")
-           for  i in self.report_clusters :
-                cluster,broker,exchange = self.report_clusters[i]
-                self.logger.info("name %s  url %s exchange %s" % (cluster,broker.geturl(),exchange))
-        else :
-           self.logger.warning("**** log2clusters.conf file not present but not mandatory *****")
-           self.logger.warning("Use this file if this cluster is a hop to other pumps'log.")
-           self.logger.warning("Logs going back to clusters may need to go through this cluster ")
-           self.logger.warning("You would set to target a cluster like this (one per line):")
-           self.logger.warning("    #cluster_name url                                exchange")
-           self.logger.warning("    ddi.edm       amqp://mgr_user@ddi.edm.ec.gc.ca   xreport")
-           warning += 1
+        #if self.report_clusters != {} :
+        #   self.logger.info("**** log2clusters.conf file present *****")
+        #   self.logger.info("log2clusters.conf")
+        #   for  i in self.report_clusters :
+        #        cluster,broker,exchange = self.report_clusters[i]
+        #        self.logger.info("name %s  url %s exchange %s" % (cluster,broker.geturl(),exchange))
+        #else :
+        #   self.logger.warning("**** log2clusters.conf file not present but not mandatory *****")
+        #   self.logger.warning("Use this file if this cluster is a hop to other pumps'log.")
+        #   self.logger.warning("Logs going back to clusters may need to go through this cluster ")
+        #   self.logger.warning("You would set to target a cluster like this (one per line):")
+        #   self.logger.warning("    #cluster_name url                                exchange")
+        #   self.logger.warning("    ddi.edm       amqp://mgr_user@ddi.edm.ec.gc.ca   xreport")
+        #   warning += 1
 
         self.logger.info(" %d error(s) and %d warning(s)" % (error,warning))
 
