@@ -232,7 +232,7 @@ class sr_audit(sr_instances):
 
         # all sources should have: xs_ and xr_"user"
 
-        for u in self.sources :
+        for u in self.sources+self.subscribes :
             se = 'xs_' + u
             self.add_exchange(se)
             
@@ -250,17 +250,27 @@ class sr_audit(sr_instances):
                   exchange_lst.remove(e)
                continue
 
-
-        # all sources and subscribes should have: xs_"user"
-
-        for u in self.subscribes :
-            se = 'xs_' + u
-            self.add_exchange(e)
+            # remove once all users using version > 2.16.08a
+            se = 'xl_' + u
+            self.add_exchange(se)
 
             for e in exchange_lst:
                if e.startswith(se) :  
-                  self.logger.warning("ok subscription exchange %s" % e)
+                  self.logger.warning("ok legacy user log exchange %s" % e)
                   exchange_lst.remove(e)
+               continue
+
+
+        # all sources and subscribes should have: xs_"user"
+
+        #for u in self.subscribes :
+        #    se = 'xs_' + u
+        #    self.add_exchange(e)
+
+        #   for e in exchange_lst:
+        #      if e.startswith(se) :  
+        #         self.logger.warning("ok subscription exchange %s" % e)
+        #         exchange_lst.remove(e)
                  
 
         # delete leftovers
@@ -269,10 +279,11 @@ class sr_audit(sr_instances):
         #
         #      So  get rid of all exceeding 'xr_' 'xs_' exchanges as deprecated
         #      and get rid of all exchanges that do not start with 'x'
+
         for e in exchange_lst :
 
             # deprecated exchanges  (from deleted users?)
-            if 'xs_' in e or 'xr_' in e :
+            if 'xs_' in e or 'xr_' in e or 'xl_' in e :
                self.logger.warning("exchange from no known user %s" % e)
                self.delete_exchange(e)
 

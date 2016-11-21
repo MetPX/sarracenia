@@ -144,10 +144,10 @@ else
 fi
 
 tno=$((${tno}+1))
-res=$(( ( ${totsub}*1000 ) / ${totsent} ))
+res=$(( ( ${totwatch}*1000 ) / ${totsent} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, received by subscribe (${totsub}) and sent by sr_sender (${totsent}) should be about the same"
+   echo "test ${tno}: FAIL, posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 else
-   echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files sent (${totsent}) by sender"
+   echo "test ${tno}: SUCCESS, posted by watch (${totwatch}) is the same as files sent (${totsent}) by sender"
 fi
 
