@@ -38,6 +38,9 @@ function countall {
 
   countthem "`grep truncating ~/.cache/sarra/log/sr_sarra_download_000*.log | wc -l`"
   totshortened="${tot}"
+
+  countthem "`grep Sends: ~/.cache/sarra/log/sr_sender_tsource2send_000*.log | wc -l`"
+  totsent="${tot}"
 }
 
 
@@ -138,5 +141,13 @@ if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
 else
    echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files posted (${totwatch}) by watch"
+fi
+
+tno=$((${tno}+1))
+res=$(( ( ${totsub}*1000 ) / ${totsent} ))
+if [ $res -lt 900  -o $res -gt 1100 ]; then
+   echo "test ${tno}: FAIL, received by subscribe (${totsub}) and sent by sr_sender (${totsent}) should be about the same"
+else
+   echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files sent (${totsent}) by sender"
 fi
 
