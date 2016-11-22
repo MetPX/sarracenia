@@ -1,3 +1,24 @@
+metpx-sarracenia (2.16.11a4) unstable; urgency=medium
+
+  * Added moving of log directory from var/log -> log, and replacement of var directory with a symlink.
+  * Added setting of passwords by default for broker users by sr_audit.
+  * Added --reset flag interpretation by sr_audit so that permissions can be updated easily for all users.
+  * Added 'set_passwords' flag to sr_audit, defaulting to True.
+  * un-commented the over-ride default exchange for reporting in tsource2send.conf...
+  * Corrected the regexp permission masks to allow sources to write to any exchange that starts with xs_<user>
+  * Corrected the regexp permissions to allow reading by subs from same.  
+  * Reverted patch in sarra that broke download URL's.
+  * Add old log exchanges to sr_audit for compatibility with pre-transition clients.
+  * Changed test of sender to compare against the ones watch, rather than subscriber.
+  * Added measurable test to flow test for sender.
+  * Adding sr_watch to flow_test.
+  * Added sr_sender to flow test.
+  * Removing '/var' so log files are in the normal place now.
+  * Optimizing the flow_test script (so it's shorter, more straightforward and regular.) 
+  * Documentation cleanup 
+
+ -- Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>  Tue, 22 Nov 2016 13:40:41 -0500
+
 metpx-sarracenia (2.16.11a3) unstable; urgency=medium
 
   * Fixing a cosmetic but ugly bug. Caused by the URL fix
