@@ -15,8 +15,6 @@ class ParseAndRetrieve(object):
 		temp_name = "%s/temp.txt" % doc_root
 		new_name = "%s/sender_file.txt" % doc_root
 
-		parent.logger.info("This on_message script is functional")
-
 		subprocess.call(["cp", old_name, temp_name])
 		subprocess.call(["mv", temp_name, new_name])
 

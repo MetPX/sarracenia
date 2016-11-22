@@ -14,8 +14,6 @@ class ParseAndRetrieve(object):
 		old_name = "%s/placeholder.txt" % final_dest
 		new_name = "%s/sender_file.txt" % final_dest
 
-		parent.logger.info("This on_post script is functional")
-
 		subprocess.call(["mv", old_name, new_name])
 
 		return True

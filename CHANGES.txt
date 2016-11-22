@@ -1,3 +1,15 @@
+**2.16.11a4**
+
+* Reverted patch in sarra that broke download URL's.
+* Add old log exchanges to sr_audit for compatibility with pre-transition clients.
+* Changed test of sender to compare against the ones watch, rather than subscriber.
+* Added measurable test to flow test for sender.
+* Adding sr_watch to flow_test.
+* Added sr_sender to flow test.
+* Removing '/var' so log files are in the normal place now.
+* Optimizing the flow_test script (so it's shorter, more straightforward and regular.) 
+* Documentation cleanup
+
 **2.16.11a3**
 
 * Fixing a cosmetic but ugly bug. Caused by the URL fix
