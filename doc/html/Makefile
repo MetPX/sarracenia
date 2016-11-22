@@ -7,11 +7,12 @@ DATE = $(shell date "+%B %Y")
 
 HTML_SRCS = $(wildcard ../*.rst)
 HTML_TRGT = $(patsubst ../%.rst,%.html,$(HTML_SRCS))
+HTML_TRGT = $(HTML_TRG) CHANGES.html
 
 SVG_SRCS = $(wildcard ../*.dia)
 SVG_TRGT = $(patsubst ../%.dia,%.svg,$(SVG_SRCS))
 
-TARGETS = $(HTML_TRGT) $(SVG_TRGT)
+TARGETS = changes $(HTML_TRGT) $(SVG_TRGT)
 
 default: $(TARGETS) 
  
@@ -21,8 +22,12 @@ default: $(TARGETS)
 img:
 	cp ../*.gif .
 
+changes:
+	cp ../../CHANGES.txt ../CHANGES.rst
+
 # In the html build, the TEMPLATE is provided on the command line
 # see site/Makefile
+#CHANGES.html: ../CHANGES.rst
 %.html: ../%.rst	
 	rst2html --link-stylesheet --stylesheet=css/bootstrap.min.css,css/metpx-sidebar.css $(TEMPLATE) $< $@
 	sed -i 's/&\#64;Date&\#64;/$(DATE)/' $@
@@ -43,3 +48,4 @@ endif
 
 clean: 
 	rm -f $(TARGETS)
+	rm -f ../CHANGES.rst

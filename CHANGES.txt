@@ -1,3 +1,7 @@
+===============
+ Release Notes
+===============
+
 **2.16.11a4**
 
 * Added moving of log directory from var/log -> log, and replacement of var directory with a symlink.
@@ -36,7 +40,7 @@
 **2.16.11a2**
 
 * fix bug #61: change outputs to better present URL's in logs.
-* just naming of some routines that were imported from sundew, add prefix metpx_...
+* just naming of some routines that were imported from sundew, add prefix ``metpx_``...
 * fix bug #54:  Adds interpretation of sundew-specific delivery options to sr_subscribe.
 
 **2.1611a1**
