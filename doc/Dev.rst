@@ -193,10 +193,6 @@ can start a browser.
      chmod 755 rabbbitmqadmin
      sr_audit --users foreground
 
-     sudo rabbitmqctl change_password tsource TestSOUrCs
-     sudo rabbitmqctl change_password tsub TestSUBSCibe
-     sudo rabbitmqctl change_password tfeed TestFeeding
-
 .. Note::
     Please use other passwords in credentials for your configuration, just in case.
     Passwords are not to be hard coded in self test suite.

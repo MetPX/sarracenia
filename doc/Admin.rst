@@ -757,53 +757,30 @@ or the command line tool::
   ...done.
   sarra@boule:~$
 
-The above looks like *sr_audit* did it's job, but the *sr_audit* program does not set user passwords.
-To do it manually, one must use the root account on the pump (via sudo)::
-
-  sudo rabbitmqctl change_password <user> <password>
-
-example::
-
-  sarra@boule:~% sudo rabbitmqctl change_password anonymous anonymous
-  Changing password for user "anonymous" ...
-  ...done.
-  sarra@boule:~% sudo rabbitmqctl change_password feeder 'NoHayPanDuro'
-  Changing password for user "feeder" ...
-  ...done.
-  sarra@boule:~% sudo rabbitmqctl change_password peter 'piper'
-  Changing password for user "peter" ...
-  ...done.
-  sarra@boule:~%
-
+The above looks like *sr_audit* did it's job.
 In short, here are the permissions and exchanges *sr_audit* manages::
 
   admin user        : the only one creating users...
   admin/feeder users: have all permission over queues and exchanges
 
-  subscribe user    : can write report messages to exchange   xs_<brokerUser> created for him
+  subscribe user    : can write report messages to exchanged beginning with  xs_<brokerUser> 
                       can read post messages from exchange xpublic
                       have all permissions on queue named  q_<brokerUser>*
 
-  source user       : can write post messages   to exchange xs_<brokerUser> created for him
+  source user       : can write post messages to exchanges beginning with xs_<brokerUser> 
                       can read post messages from exchange  xpublic
                       can read  report messages from exchange  xl_<brokerUser> created for him
                       have all permissions on queue named   q_<brokerUser>*
 
 
-To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf::
+To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf ::
 
   role source Alice
 
+then add an appropriate amqp entry in ~/.config/sarra/credentials.conf to set the password,
 then run::
 
   sr_audit --users foreground
-
-which would create the user, then::
-
-  rabbitmqctl change_password Alice <password>
-
-
-To set Alice's password.
 
 To remove users, just remove *role source Alice* from the default.conf file, and run::
 
