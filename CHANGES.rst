@@ -1,5 +1,23 @@
 **2.16.11a4**
 
+* Added moving of log directory from var/log -> log, and replacement of var directory with a symlink.
+* Added setting of passwords by default for broker users by sr_audit.
+* Added --reset flag interpretation by sr_audit so that permissions can be updated easily for all users.
+  So now when upgrading after 'log' -> 'report' transition, just do:
+    
+  ``sr_audit --reset True --users foreground``
+    
+  and it will overwrite all the permission regexp's of the broker users.
+  If someone has funny permissions, that could be a problem.  
+* Added 'set_passwords' flag to sr_audit, defaulting to True.
+  if set to false, users are given blank passwords.... not sure if this is useful.
+  trying to understand what to do with this in the case of LDAP based users.  
+* Added creation of send directory to flow_setup.sh 
+* un-commented the over-ride default exchange for reporting in tsource2send.conf...
+  it still needs overriding.  
+* Corrected the regexp permission masks to allow sources to write to any
+  exchange that starts with xs_<user>... rather than just specifically that source.  
+* Corrected the regexp permissions to allow reading by subs from same.  
 * Reverted patch in sarra that broke download URL's.
 * Add old log exchanges to sr_audit for compatibility with pre-transition clients.
 * Changed test of sender to compare against the ones watch, rather than subscriber.
