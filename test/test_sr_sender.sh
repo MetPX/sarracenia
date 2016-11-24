@@ -29,9 +29,8 @@ credentials=TestSENDer
 sender_file=sender_file.txt
 
 #Files created by plugin scripts
-on_msg_file="on_msg_file.txt"
-do_send_file="do_send_file.txt"
-on_post_file="on_post_file.txt"
+on_msg_file="on_msg_file.tx"
+on_post_file="on_post_file.tx"
 
 cat << EOF > $file_origin/$sender_file
 0 123456789abcde
@@ -58,14 +57,20 @@ function check_sender {
         initial_dest=$file_origin/$sender_file
         final_dest=$file_destination/$sender_file
 
-        diff $initial_dest $final_dest >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-                echo "PASSED"
-                rm $file_destination/$sender_file
-		return 0
-        else
-                echo "FAILED"
+	if [ -f $final_dest ]; then
+		diff $initial_dest $final_dest > /dev/null 2>&1
+	else
+		echo "FAILED... file not sent"
 		return 1
+	fi		
+
+        if [ $? -eq 0 ]; then
+                rm $final_dest
+                return 0
+        else
+                echo "FAILED... difference in content"
+                rm $file_destination/$sender_file
+                return 1
         fi
 }
 
@@ -82,8 +87,12 @@ function test_post_doc {
 		-to test_cluster > /dev/null 2>&1		\
 		/
 	sleep 3
-	check_sender "1"
+
+	check_sender
 	RET=$?
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
 	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
 	return $RET
 }
@@ -104,8 +113,12 @@ function test_parts {
 		--parts i,32B					\
 		/
         sleep 3
-	check_sender "2"
-	RET=$?	
+
+	check_sender
+	RET=$?
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi	
         sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
 	return $RET
 }
@@ -128,35 +141,28 @@ function test_plugin_msg {
 		/
 	sleep 3
 
-        initial_dest=$file_origin/$sender_file
-        final_dest=$file_destination/$sender_file
 	script_file=$file_destination/$on_msg_file
-	result_msg="PASSED"
-	RET=0
 
-	if [ -f $final_dest ]; then
-        	diff $initial_dest $final_dest >/dev/null 2>&1
-	else
-		result_msg="FAILED... file not sent"
-		RET=1
-	fi
-		
-	if [ $? -eq 1 ]; then
-                result_msg="FAILED... difference in content"
-                rm $final_dest
-                RET=1
-        elif [ ! -f $script_file ]; then
-                result_msg="FAILED... on_msg plugin"
+	check_sender
+	RET=$?
+
+        if [ ! -f $script_file ]; then
+                echo "FAILED... on_message plugin"
                 RET=1
 	else
-		rm $final_dest
+		rm $script_file
         fi
 
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
 	sr_sender $file_origin/sender_test3.conf stop > /dev/null 2>&1
-	echo $result_msg
 	return $RET
 }
 
+#When using do_send, instead of sr_sender using its own sending mechanism, 
+#you create your own in the plugin script. This test will check if the do_send
+#plugin sent a copy of the original file to the destination.
 function test_plugin_send {
 
 	#Using do_send script
@@ -170,26 +176,13 @@ function test_plugin_send {
 		/
 	sleep 3
 
-	initial_dest=$file_origin/$sender_file
-        final_dest=$file_destination/$sender_file
-        result_msg="PASSED"
-        RET=0
+	check_sender
+	RET=$?
 
-        if [ ! -f $final_dest ]; then
-		result_msg="FAILED... file not sent"
-                RET=1
-        else
-		diff $initial_dest $final_dest >/dev/null 2>&1
-        fi
-
-        if [ $? -eq 1 ]; then
-                result_msg="FAILED... difference in content"
-                rm $final_dest
-                RET=1
-        fi
-
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
 	sr_sender $file_origin/sender_test4.conf stop > /dev/null 2>&1
-	echo $result_msg
 	return $RET
 }
 
@@ -206,32 +199,22 @@ function test_plugin_post {
 		/
 	sleep 3
 
-	initial_dest=$file_origin/$sender_file
-        final_dest=$file_destination/$sender_file
         script_file=$file_destination/$on_post_file
-        result_msg="PASSED"
-        RET=0
 
-        if [ -f $final_dest ]; then
-                diff $initial_dest $final_dest >/dev/null 2>&1
-        else
-                result_msg="FAILED... file not sent"
-                RET=1
-        fi
+	check_sender
+	RET=$?
 
-        if [ $? -eq 1 ]; then
-                result_msg="FAILED... difference in content"
-                rm $final_dest
-                RET=1
-        elif [ ! -f $script_file ]; then
-                result_msg="FAILED... on_post plugin"
+        if [ ! -f $script_file ]; then
+                echo "FAILED... on_post plugin"
                 RET=1
         else
-                rm $final_dest
+                rm $script_file
         fi
 
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
 	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
-	echo $result_msg
 	return $RET
 }
 
