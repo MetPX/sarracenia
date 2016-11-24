@@ -9,12 +9,11 @@ class ParseAndRetrieve(object):
 
 		import subprocess
 
-		final_dest = parent.msg.headers['flow']
+		path = parent.msg.headers["flow"]
 
-		old_name = "%s/placeholder.txt" % final_dest
-		new_name = "%s/sender_file.txt" % final_dest
+		on_post_file = "%s/on_post_file.txt" %(path)
 
-		subprocess.call(["mv", old_name, new_name])
+		subprocess.call(["touch", on_post_file])
 
 		return True
 

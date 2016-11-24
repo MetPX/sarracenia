@@ -8,12 +8,14 @@ class ParseAndRetrieve(object):
 	def perform(self, parent):
 		import subprocess
 
-		final_dest = parent.msg.headers['flow']
+		orig_file = parent.local_path
 
-		subprocess.call(["cp", parent.local_path, "%s/sender_file.txt" % final_dest] )
+		new_path = parent.msg.headers["flow"]
+		destination = new_path + "/" + parent.local_file
+
+		subprocess.call(["cp", orig_file, destination])
 
 		return True
-
 
 configFile = ParseAndRetrieve(self)
 self.do_send=configFile.perform
