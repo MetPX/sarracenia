@@ -320,7 +320,7 @@ class sr_audit(sr_instances):
            need to check if these files exist, and create only if they do not.
            also allow for the convention of .conf.off.  If such a file exists, do not create either.
         """
-        self.logger.error("sr_audit report routing configuration")
+        self.logger.info("sr_audit report routing configuration")
 
         feeder = self.manager.geturl()
 
@@ -333,9 +333,9 @@ class sr_audit(sr_instances):
            
         for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
-             self.logger.error("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.info("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.error("need to create %s" % cfn ) 
+                self.logger.info("creating %s" % cfn ) 
                 cf=open(cfn,'w')
                 cf.write( '# Initial report routing to sources configuration, by sr_audit, tune to taste. \n')
                 cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
@@ -355,9 +355,9 @@ class sr_audit(sr_instances):
 
         for u in self.sources+self.subscribes:
              cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
-             self.logger.error("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.info("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.error("need to create %s" % cfn ) 
+                self.logger.info("creating %s" % cfn ) 
                 cf=open(cfn,'w')
                 cf.write( '# Initial report routing configuration created by sr_audit, tune to taste.\n ')
                 cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
