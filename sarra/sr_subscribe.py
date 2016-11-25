@@ -130,7 +130,7 @@ class sr_subscribe(sr_instances):
     def __do_download__(self):
 
 
-        self.logger.debug("downloading/copying into %s " % self.msg.local_file)
+        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.msg.local_file))
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -350,14 +350,14 @@ class sr_subscribe(sr_instances):
                  if not self.inplace :
                     ok = self.on_file(self)
 
-                 # ***FIX ME***: When reassembled, lastchunk is inserted last and therefore
+                 # *** FIXME ***: When reassembled, lastchunk is inserted last and therefore
                  # calling on_file on lastchunk is accurate... Here, the lastchunk was inserted
                  # directly into the target file... The decision of directly inserting the part
                  # into the file is based on the file'size being bigger or equal to part's offset.
                  # It may be the case that we were at the point of inserting the last chunk...
                  # BUT IT IS POSSIBLE THAT,WHEN OVERWRITING A FILE WITH PARTS BEING SENT IN PARALLEL,
                  # THE PROGRAM INSERTS THE LASTCHUNK BEFORE THE END OF COLLECTING THE FILE'PARTS...
-                 # HENCE AN APPROPRIATE CALL TO on_file ... 
+                 # HENCE AN INAPPROPRIATE CALL TO on_file ... 
 
                  # inplace : last part(chunk) is inserted
                  elif (self.msg.lastchunk and not self.msg.in_partfile) :
