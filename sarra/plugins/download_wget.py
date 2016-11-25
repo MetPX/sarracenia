@@ -40,7 +40,17 @@ class WGET_DOWNLOAD(object):
 
       result =  subprocess.run( [ "/usr/bin/wget" , msg.urlstr ] )
       
-      return (result.returncode == 0)
+      if (result.returncode == 0):  # Success!
+         if parent.reportback:
+            msg.report_publish(201,'Downloaded')
+         return True
+         
+      #Failure!
+
+      if parent.reportback:
+         msg.report_publish(499,'wget download failed')
+
+      return False 
 
 
 wget_download = WGET_DOWNLOAD()
