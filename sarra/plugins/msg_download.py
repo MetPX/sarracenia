@@ -45,7 +45,9 @@
       where the data does not traverse any pump, this is not a consideration.
      
     - For most long-haul use cases, the bounding constraint is the bandwidth on the link so again
-      the built-in downloader is likely close to optimal.
+      the built-in downloader is likely close to optimal. Partitioning of the file enables portions of it
+      to be delivered and for post-processing tasks, such as anti-virus to overlap with the file transfer.
+      when using alternate schemes wihout partitioning, one must await until the complet file has arrived.
       
 
 """

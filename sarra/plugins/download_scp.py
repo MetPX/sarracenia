@@ -1,14 +1,26 @@
 #!/usr/bin/python3
 
 """
-  Example use of do_download option.
+ download_scp: an example do_download option usage.
 
-  Custom downloading method to work with the message_scp on_message plugin.
+  This launches the 'scp' command with appropriate arguments to perform a file transfer.
+
+  This demonstrates a custom downloading method to work with the message_download on_message 
+  plugin.  See that plugin source for more detailed documentation.
   
-  This downloader will be invoked when an unknown protocol scheme is specified as a URL (we use 'download')
+  This downloader expects to be invoked for the 'download' URL scheme is specified as a URL.
 
-  note that because this involves a for exec to launch a binary, it would be best to only launch this sort
-  of download for larger files. the message_scp implements this threshold behaviour.
+  while the scp command is used by default, it can be overridden with the download_scp_command option.
+
+  Samnple usage:
+
+  download_scp_command /usr/bin/ssh cetus bbcp
+
+  do_download download_scp
+
+  will instead of instead of invoking scp, it will invoke the ssh command to initiate a connection to a host named 'cetus'
+  and run a bbcp command from there.   To the command will be appended the appropriate source and destination file specifications
+  as per ssh/scp expectations.
 
 """
 
@@ -18,8 +30,9 @@ import calendar
 class SCP_DOWNLOAD(object): 
 
 
-   def __init__(self):
-
+   def __init__(self,parent):
+      if not hasattr(parent,'download_scp_command'):
+         parent.download_scp_command= [ '/usr/bin/scp' ]
       pass
           
    def perform(self,parent):
@@ -33,10 +46,11 @@ class SCP_DOWNLOAD(object):
       if msg.url.username:
            sourcefile = msg.usr.username +'@' + sourcefile
 
-      cmd = [ "/usr/bin/scp" , sourcefile, msg.local_file ] 
+      cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.local_file ] 
 
       logger.info("download invoking: %s " % cmd )
       
+      return True
       result =  subprocess.run( cmd )
       
       if (result.returncode == 0):  # Success!
@@ -52,6 +66,6 @@ class SCP_DOWNLOAD(object):
       return False 
 
 
-scp_download = SCP_DOWNLOAD()
+scp_download = SCP_DOWNLOAD(self)
 self.do_download = scp_download.perform
 
