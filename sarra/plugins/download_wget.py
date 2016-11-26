@@ -34,9 +34,10 @@ class WGET_DOWNLOAD(object):
 
       import subprocess
 
-      logger.info("wwget! downloading: from: %s to %s " % (msg.url, msg.local_file))
+      msg.urlstr = msg.urlstr.replace("download:","http:")
+
+      logger.info("wwget! downloading: from: %s to %s using: %s" % (msg.url, msg.local_file, msg.urlstr))
       
-      msg.urlstr = msg.urlstr.replace("wget:","http:")
 
       result =  subprocess.run( [ "/usr/bin/wget" , msg.urlstr ] )
       
