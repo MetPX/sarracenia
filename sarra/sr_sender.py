@@ -479,7 +479,7 @@ class sr_sender(sr_instances):
         # build dir/path and url from options
 
         self.remote_dir  = self.remote_root + '/' + self.remote_rpath
-        self.remote_path = self.remote_dir  + '/' + self.remote_file
+        #self.remote_path = self.remote_dir  + '/' + self.remote_file
 
     def set_remote_url(self):
 

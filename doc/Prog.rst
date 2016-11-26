@@ -138,13 +138,42 @@ in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the pl
 such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
 section for an exhaustive list.
 
-A popular variable in on_file and on_part plugins, is: *parent.msg.local_file*,
-giving the file name the downloaded product has been written to.
-
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
 
+Popular Variables in Plugins
+-----------------------------
+
+A popular variable in on_file and on_part plugins is: *parent.msg.local_file*,
+giving the file name the downloaded product has been written to.  When the
+same variable is modified in an on_message plugin, it changes the name of
+the file to be downloaded.  Similarly Another oft used variable is 
+*parent.msg.local_dir*, which operates on the directory to which the file
+will be downloaded.
+
+There is one difference between on_* scripts used in a sender when compared to
+a subscriber or other consumer process. In Senders, one must use *parent.msg.remote_file*
+and similarly *parent.msg.remote_dir*
+
+There is no length limit on dir or file names.
+
+There is also parent.msg.urlstr which is the completed download URL of the file,
+ and parent.msg.url, which is the equivalent url after it has been parsed with urlparse.
+(see python3 documentation of urlparse for detailed usage.)  this gives access
+to, for example *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
+or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
+remote host.
+
+Other popular fields are the (AMQP) headers set for a file, accessible as
+*parent.msg.headers[ 'headername' ]*  
+
+Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
+application code creates values longer than that.
+
+These are the variable which are most often of interest, but much other 
+program state is available.  See the  `Variables Available`_ section for a more thorough
+discussion.
 
 Sample Plugins
 --------------
