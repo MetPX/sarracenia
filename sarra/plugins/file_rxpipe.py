@@ -10,11 +10,11 @@ class File_RxPipe(object):
 
     ...
 
-    This is a means of easily integrating with external scripts without understanding of sarracenia plugins.
+    This is a means of easily integrating with external scripts without understanding sarracenia plugins.
     In a typical subscription configuration there may be five or ten processes writing to the named pipe.
     the user writes their own program to read from the pipe.
 
-    a task will just read from the pipe, most simply as standard input:
+    A task will just read from the pipe, most simply as standard input:
 
     tail -f /home/peter/test/dd_rxpipe
 

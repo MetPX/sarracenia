@@ -1,6 +1,15 @@
-# used in sr_sender,  destfn_script can be used
-# to run a script to modify the filename on the remote server
-# 
+
+"""
+   replace_remote_dir, this is used in development as part of the flow_test suite,
+   where files from a 'sub' directory, are sent by an sr_sender to a 'send' directory.
+   see test/templates/sender for example.
+   sample usage:
+
+   msg_replace_remote_dir sub,send
+
+   on_message msg_replace_remote_dir
+ 
+"""
 
 class Transformer():
       def __init__(self,parent):

@@ -1,6 +1,14 @@
-# used in sr_sender,  destfn_script can be used
-# to run a script to modify the filename on the remote server
 
+"""
+
+  a destfn plugin script is used by senders or subscribers to do complex file naming.
+  this is an API demonstrator that prefixes the name delivered with 'renamed_'
+
+  filename DESFTN=desftn_sample
+
+  and whenever writing a file (remote_file, when used in a sender)
+
+"""
 class Transformer():
       def __init__(self,parent):
           pass

@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 
 """
-<<<<<<< HEAD
-  default on_file handler logs that the file has been received.
-=======
-  the default on_msg handler for sr_log.
->>>>>>> f5988286f06dadc4846955490f0e41bd050cbf10
+  default on_file handler logs that the file has been posted.
   prints a simple notice.
 
 """

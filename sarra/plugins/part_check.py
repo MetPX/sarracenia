@@ -4,25 +4,25 @@ import os,stat,time
 from hashlib import md5
 
 """
- Confirm that files downloaded are the ones announced, by comparing the 
- checksums of computed as parts are downloaded with the corresponding 
- announcement.
+   Confirm that files downloaded are the ones announced, by comparing the 
+   checksums of computed as parts are downloaded with the corresponding 
+   announcement.
 
- In the case of excessive lag (messages are old) only issue a warning about 
- checksum mismatches.  (return True)
- In the case of mismatches with current data, create and error message and
- return False (refusing to process data.)
+   In the case of excessive lag (messages are old) only issue a warning about 
+   checksum mismatches.  (return True)
+   In the case of mismatches with current data, create and error message and
+   return False (refusing to process data.)
 
- part_check_lag_threshold 300
- 
- The maximum time (in seconds) a message is considered current is set by 
- the part_check_lag_threshold setting, and defaults to five minutes (300 
- seconds)
+   part_check_lag_threshold 300
+   
+   The maximum time (in seconds) a message is considered current is set by 
+   the part_check_lag_threshold setting, and defaults to five minutes (300 
+   seconds)
 
- The threshold is necessary because in the event of a communications failure, 
- many messages can queue up.  Multiple versions of the same file can be 
- announced while the communications are ruptured, but when the download 
- occurs, the latest version will always be retrieved.
+   The threshold is necessary because in the event of a communications failure, 
+   many messages can queue up.  Multiple versions of the same file can be 
+   announced while the communications are ruptured, but when the download 
+   occurs, the latest version will always be retrieved.
 
 
 """
