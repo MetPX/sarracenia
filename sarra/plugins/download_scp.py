@@ -50,7 +50,6 @@ class SCP_DOWNLOAD(object):
 
       logger.info("download invoking: %s " % cmd )
       
-      return True
       result =  subprocess.run( cmd )
       
       if (result.returncode == 0):  # Success!
