@@ -123,7 +123,7 @@ class sr_post(sr_config):
         print("-blocksize <integer>   default:0")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
-        print("-path <path1... pathN> default:requiered")
+        print("-path <path1... pathN> default:required")
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")

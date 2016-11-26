@@ -103,7 +103,7 @@ class sr_poll(sr_instances):
         self.sleeping      = False
         self.connected     = False 
 
-        # to clusters requiered
+        # to clusters required
 
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")

@@ -126,7 +126,7 @@ class sr_sender(sr_instances):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = self.masks == []
 
-        # to clusters requiered
+        # to clusters required
 
         if self.post_broker != None and self.to_clusters == None :
            self.logger.error("Need to know post_broker cluster name")
