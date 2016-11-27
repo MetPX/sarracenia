@@ -69,6 +69,7 @@ done
 
 
 tno=1
+res=0
 res=$(( ( ${totshovel1}*1000 ) / ${totshovel2} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, shovel1 ($totshovel1) should be reading the same number of items as shovel2 (${totshovel2})"
@@ -77,6 +78,7 @@ else
 fi
 
 tno=$((${tno}+1))
+res=0
 res=$(( ( ${totwinnow}*1000 ) / ${totsarra} ))
 if [ $res -lt 1900  -o $res -gt 2100 ]; then
    echo "test ${tno}: FAIL, sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})"
@@ -86,6 +88,7 @@ fi
 
 
 tno=$((${tno}+1))
+res=0
 res=$(( ( ${totsarra}*1000 ) / ${totsub} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, sarra (${totsarra}) and sub (${totsub}) should have about the same number of items"
@@ -94,6 +97,7 @@ else
 fi
 
 tno=$((${tno}+1))
+res=0
 res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
@@ -103,6 +107,7 @@ fi
 
 
 tno=$((${tno}+1))
+res=0
 
 res00=$(( ${totwinnow00}*1000 / ${totwinnow} ))
 res01=$(( ${totwinnow01}*1000 / ${totwinnow} ))
@@ -116,6 +121,7 @@ else
 fi
 
 tno=$((${tno}+1))
+res=0
 
 res=$(( ( ${totshortened}*1000 ) / ${totsub} ))
 
@@ -126,6 +132,7 @@ else
 fi
 
 tno=$((${tno}+1))
+res=0
 
 res=$(( ( ${totsubr}*1000 ) / ${totsub} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
@@ -136,6 +143,7 @@ fi
 
 
 tno=$((${tno}+1))
+res=0
 res=$(( ( ${totsub}*1000 ) / ${totwatch} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
@@ -144,6 +152,8 @@ else
 fi
 
 tno=$((${tno}+1))
+res=0
+
 res=$(( ( ${totwatch}*1000 ) / ${totsent} ))
 if [ $res -lt 900  -o $res -gt 1100 ]; then
    echo "test ${tno}: FAIL, posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
