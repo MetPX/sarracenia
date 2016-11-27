@@ -8,6 +8,40 @@ function countthem {
    fi
 }
 
+function calcres {
+   #
+   # calcres - Calculate test result.
+   # 
+   # logic:
+   # increment test number (tno)
+   # compare first and second totals, and report agreement if within 10% of one another.
+   # emit description based on agreement.  Arguments:
+   # 1 - first total
+   # 2 - second total 
+   # 3 - test description string.
+   #
+
+   tno=$((${tno}+1))
+
+   if [ "${1}" -eq 0 ]; then
+      printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
+      return
+   fi
+
+   res=0
+   if [ "${2}" -gt 0 ]; then
+         res=$(( ( ${1}*1000 ) / ${2} ))
+   fi
+
+   if [ $res -lt 900  -o $res -gt 1100 ]; then
+      printf "test %2d FAILURE: ${3}\n" ${tno}
+   else
+      printf "test %2d success: ${3}\n" ${tno}
+   fi
+
+}
+
+
 function countall {
 
   countthem "`grep msg_total ~/.cache/sarra/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
@@ -66,98 +100,28 @@ while [ $totsarra -lt $smin ]; do
 
 done
 
+tno=0
 
+calcres "${totshovel1}" "${totshovel2}" "shovel1 ( ${totshovel1} ) should be reading the same number of items as shovel2 ( ${totshovel2} )" 
 
-tno=1
-res=0
-res=$(( ( ${totshovel1}*1000 ) / ${totshovel2} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel1 ($totshovel1) should be reading the same number of items as shovel2 (${totshovel2})"
-else
-   echo "test ${tno}: SUCCESS, shovel1 (${totshovel1}) reading the same as shovel2 (${totshovel2}) does"
-fi
+t2=$(( ${totsarra}*2 ))
+calcres ${totwinnow} ${t2} "sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})" 
 
-tno=$((${tno}+1))
-res=0
-res=$(( ( ${totwinnow}*1000 ) / ${totsarra} ))
-if [ $res -lt 1900  -o $res -gt 2100 ]; then
-   echo "test ${tno}: FAIL, sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})"
-else
-   echo "test ${tno}: SUCCESS, winnow (${totwinnow}) reading double what sarra (${totsarra}) does"
-fi
+calcres  ${totsarra} ${totsub} "sarra (${totsarra}) and sub (${totsub}) should have about the same number of items" 
 
+calcres ${totshovel1} ${totsub} "shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items" 
 
-tno=$((${tno}+1))
-res=0
-res=$(( ( ${totsarra}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, sarra (${totsarra}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as sarra (${totsarra})"
-fi
+calcres ${totwinnow00} ${totwinnow01} \
+   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
 
-tno=$((${tno}+1))
-res=0
-res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
-fi
+calcres ${totshovel1} ${totsub} "shovel2 (${totshovel2}) and sub (${totsub}) should have about the same number of items" 
 
+calcres ${totshortened} ${totsub} \
+   "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
 
-tno=$((${tno}+1))
-res=0
+calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
 
-res00=$(( ${totwinnow00}*1000 / ${totwinnow} ))
-res01=$(( ${totwinnow01}*1000 / ${totwinnow} ))
+calcres ${totsub} ${totwatch}  "messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
 
-res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
-
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel2 (${totshovel2}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel2 (${totshovel2})"
-fi
-
-tno=$((${tno}+1))
-res=0
-
-res=$(( ( ${totshortened}*1000 ) / ${totsub} ))
-
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as headers that were truncated (${totshortened})"
-fi
-
-tno=$((${tno}+1))
-res=0
-
-res=$(( ( ${totsubr}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, subscribe messages accepted (${totsub}) is the same as files downloaded (${totsubr})"
-fi
-
-
-tno=$((${tno}+1))
-res=0
-res=$(( ( ${totsub}*1000 ) / ${totwatch} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files posted (${totwatch}) by watch"
-fi
-
-tno=$((${tno}+1))
-res=0
-
-res=$(( ( ${totwatch}*1000 ) / ${totsent} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, posted by watch (${totwatch}) is the same as files sent (${totsent}) by sender"
-fi
+calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same" 
 
