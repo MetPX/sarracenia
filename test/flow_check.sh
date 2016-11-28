@@ -121,7 +121,7 @@ calcres ${totshortened} ${totsub} \
 
 calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
 
-calcres ${totsub} ${totwatch}  "messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
+calcres ${totsubr} ${totwatch}  "messages received by subscribe (${totsubr}) and posted by sr_watch (${totwatch}) should be about the same"
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same" 
 
