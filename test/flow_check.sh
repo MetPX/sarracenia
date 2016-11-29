@@ -102,28 +102,28 @@ done
 
 tno=0
 
-calcres "${totshovel1}" "${totshovel2}" "shovel1 ( ${totshovel1} ) should be reading the same number of items as shovel2 ( ${totshovel2} )" 
+calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1 ( ${totshovel1} ) and t_dd2 ( ${totshovel2} ) should have about the same number of items read"  
 
 t2=$(( ${totsarra}*2 ))
-calcres ${totwinnow} ${t2} "sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})" 
+calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
 
-calcres  ${totsarra} ${totsub} "sarra (${totsarra}) and sub (${totsub}) should have about the same number of items" 
+calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) should have about the same number of items" 
 
-calcres ${totshovel1} ${totsub} "shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items" 
+calcres ${totshovel1} ${totsub} "shovel t_dd1 (${totshovel1}) and sub t (${totsub}) should have about the same number of items" 
 
 # this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
 # there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
 #calcres ${totwinnow00} ${totwinnow01} \
 #   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
 
-calcres ${totshovel1} ${totsub} "shovel2 (${totshovel2}) and sub (${totsub}) should have about the same number of items" 
+calcres ${totshovel1} ${totsub} "shovel2 t_dd2 (${totshovel2}) and subscriber t (${totsub}) should have about the same number of items" 
 
 calcres ${totshortened} ${totsub} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
 
 calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
 
-calcres ${totsubr} ${totwatch}  "messages received by subscribe (${totsubr}) and posted by sr_watch (${totwatch}) should be about the same"
+calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same"
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same" 
 
