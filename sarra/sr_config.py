@@ -209,10 +209,14 @@ class sr_config:
         return chunksize
 
     def config(self,path):
-        self.logger.debug("sr_config config")
+        self.logger.debug("sr_config config component is: %s" % self.program_name )
         self.logger.debug("sr_config %s" % path)
 
         if path == None : return
+
+        if not self.program_name in [ 'sr_watch', 'sr_post', 'sr_poll' ]:
+           if path in self.cfg_already_read: return
+           self.cfg_already_read.append(path)
 
         try:
             f = open(path, 'r')
@@ -306,6 +310,10 @@ class sr_config:
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
+
+
+        if not hasattr(self, 'cfg_already_read' ):
+            self.cfg_already_read = []
 
         # IN BIG DEBUG
         #self.debug = True
