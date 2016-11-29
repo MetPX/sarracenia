@@ -47,7 +47,7 @@ class SCP_DOWNLOAD(object):
       sourcefile = msg.url.hostname + ':' + msg.url.path
 
       if msg.url.username:
-           sourcefile = msg.usr.username +'@' + sourcefile
+           sourcefile = msg.url.username +'@' + sourcefile
 
       cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.local_file ] 
 
