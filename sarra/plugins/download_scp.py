@@ -22,6 +22,9 @@
   and run a bbcp command from there.   To the command will be appended the appropriate source and destination file specifications
   as per ssh/scp expectations.
 
+  note:
+     use of subprocess.run() means this will only run on python >= 3.5 ... usr subprocess.call(...).return on python3.x where x < 5
+
 """
 
 import os,stat,time

@@ -13,9 +13,12 @@
   note that because this involves a for exec to launch a binary, it would be best to only launch this sort
   of download for larger files. the message_download implements this threshold behaviour.
 
-  Caveat:
-       This downloader just uses the name that wget will set for a file on download,
-       no options about local file naming are implemented.
+  Caveats:
+     This downloader just uses the name that wget will set for a file on download,
+     no options about local file naming are implemented.
+
+     use of subprocess.run() means this will only run on python >= 3.5 ... usr subprocess.call(...).return on python3.x where x < 5
+
 
 """
 
