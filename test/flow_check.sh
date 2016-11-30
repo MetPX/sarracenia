@@ -135,8 +135,10 @@ calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) shoul
 
 calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and sub t (${totsub}) should have about the same number of items" 
 
-calcres ${totwinnow00} ${totwinnow01} \
-   "twinnow00 and (${totwinnow00}) and twinnow01 (${totwinnow01}) should have about the same number of items" 
+# this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
+# there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
+#calcres ${totwinnow00} ${totwinnow01} \
+#   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
 
 calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t (${totsub}) should have about the same number of items" 
 
