@@ -81,7 +81,13 @@ function countall {
 countall
 
 snum=1
-smin=1000
+
+if [ "$1" ]; then
+   smin=$1
+else
+   smin=1000
+fi
+
 printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
@@ -90,6 +96,8 @@ while [ "${totsarra}" == 0 ]; do
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
+
+
 
 while [ $totsarra -lt $smin ]; do
    sleep 10
@@ -100,21 +108,37 @@ while [ $totsarra -lt $smin ]; do
 
 done
 
+#echo "stopping shovels and waiting..."
+#sr_shovel t_dd1 stop
+#sr_shovel t_dd2 stop
+#sleep 60
+
 tno=0
+
+if [ "${totshovel2}" -gt "${totshovel1}" ]; then
+   maxshovel=${totshovel2}
+else 
+   maxshovel=${totshovel1}
+fi
+printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
+
 
 calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1 ( ${totshovel1} ) and t_dd2 ( ${totshovel2} ) should have about the same number of items read"  
 
+
+
 t2=$(( ${totsarra}*2 ))
+
 calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
 
 calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) should have about the same number of items" 
 
-calcres ${totshovel1} ${totsub} "shovel t_dd1 (${totshovel1}) and sub t (${totsub}) should have about the same number of items" 
+calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and sub t (${totsub}) should have about the same number of items" 
 
 calcres ${totwinnow00} ${totwinnow01} \
    "twinnow00 and (${totwinnow00}) and twinnow01 (${totwinnow01}) should have about the same number of items" 
 
-calcres ${totshovel1} ${totsub} "shovel2 t_dd2 (${totshovel2}) and subscriber t (${totsub}) should have about the same number of items" 
+calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t (${totsub}) should have about the same number of items" 
 
 calcres ${totshortened} ${totsub} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
