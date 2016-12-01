@@ -22,9 +22,6 @@
   and run a bbcp command from there.   To the command will be appended the appropriate source and destination file specifications
   as per ssh/scp expectations.
 
-  note:
-     use of subprocess.run() means this will only run on python >= 3.5 ... usr subprocess.call(...).return on python3.x where x < 5
-
 """
 
 import os,stat,time
@@ -53,9 +50,9 @@ class SCP_DOWNLOAD(object):
 
       logger.info("download invoking: %s " % cmd )
       
-      result =  subprocess.run( cmd )
+      result =  subprocess.call( cmd )
       
-      if (result.returncode == 0):  # Success!
+      if (result == 0):  # Success!
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          return True

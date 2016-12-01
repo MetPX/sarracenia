@@ -17,8 +17,10 @@
      This downloader just uses the name that wget will set for a file on download,
      no options about local file naming are implemented.
 
-     use of subprocess.run() means this will only run on python >= 3.5 ... usr subprocess.call(...).return on python3.x where x < 5
+  If you have python >= 3.5, replace 'subprocess.call' by subprocess.run, and the stout and stderr will do the right thing.
+  for 'call' also need to change result == 0 to result.returncode == 0 .
 
+  I didn't find a simple way to do the 'right thing' in < 3.5 API.
 
 """
 
@@ -28,7 +30,8 @@ import calendar
 class WGET_DOWNLOAD(object): 
 
    def __init__(self):
-      pass
+      if not hasattr(parent,'download_wget_command'):
+         parent.download_wget_command= [ '/usr/bin/wget' ]
           
    def perform(self,parent):
       logger = parent.logger
@@ -37,10 +40,11 @@ class WGET_DOWNLOAD(object):
       import subprocess
 
       msg.urlstr = msg.urlstr.replace("download:","http:")
-      logger.info("wwget! downloading: from: %s to %s using: %s" % (msg.url, msg.local_file, msg.urlstr))
-      result =  subprocess.run( [ "/usr/bin/wget" , msg.urlstr ] )
+      cmd = parent.download_wget_command[0].split() + msg.urlstr
+      logger.info("download_wget invoking: %s " % cmd )
+      result =  subprocess.call( cmd )
       
-      if (result.returncode == 0):  # Success!
+      if result == 0:  # Success!
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          return True
