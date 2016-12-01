@@ -44,15 +44,15 @@ class SCP_DOWNLOAD(object):
       sourcefile = msg.url.hostname + ':' + msg.url.path
 
       if msg.url.username:
-           sourcefile = msg.usr.username +'@' + sourcefile
+           sourcefile = msg.url.username +'@' + sourcefile
 
       cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.local_file ] 
 
       logger.info("download invoking: %s " % cmd )
       
-      result =  subprocess.run( cmd )
+      result =  subprocess.call( cmd )
       
-      if (result.returncode == 0):  # Success!
+      if (result == 0):  # Success!
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          return True
