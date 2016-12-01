@@ -214,10 +214,6 @@ class sr_config:
 
         if path == None : return
 
-        if not self.program_name in [ 'sr_watch', 'sr_post', 'sr_poll' ]:
-           if path in self.cfg_already_read: return
-           self.cfg_already_read.append(path)
-
         try:
             f = open(path, 'r')
             for line in f.readlines():
@@ -294,6 +290,10 @@ class sr_config:
 
     def configure(self):
         
+        if hasattr(self, 'cfg_already_read' ): 
+              if self.user_config in self.cfg_already_read: 
+                 return
+
         self.defaults()
         self.general()
 
@@ -303,6 +303,9 @@ class sr_config:
 
         self.args   (self.user_args)
         self.config (self.user_config)
+
+        if hasattr(self, 'cfg_already_read' ): 
+              self.cfg_already_read.append(self.user_config)
 
         # verify / complete settings
 
