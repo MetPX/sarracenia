@@ -147,14 +147,12 @@ gives the local absolute path to the data file to be posted.
 
 **[-e|--events <exchange>]**
 
-FIXME  :  Daluma is making changes HERE.
-By default, the events for sr_watch are IN_CLOSE_WRITE|IN_DELETE.
-If you want to consider only one of these simply use the  *events*  option
-and set it to IN_CLOSE_WRITE for creation/modification or  IN_DELETE for deletion.
+A list of event types to monitor separated by a 'pipe symbol'.
+Available events:  created, deleted, modified.
+Default: 'created|deleted|modified'.
 
-.. NOTE:: 
-    FIXME: events listing default is wrong... now have links and renames also by default.
-    Do we want to just remove the **events** option and let sr_watch worry which events needed?
+.. note::
+   move or rename events are treated as modify events
 
 **[-ex|--exchange <exchange>]**
 
