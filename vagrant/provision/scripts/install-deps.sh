@@ -14,7 +14,8 @@ sudo apt-get install -y rabbitmq-server
 sudo apt-get install -y git
 sudo apt-get install -y erlang-nox
 sudo apt-get install -y python3-pkg-resources
-sudo apt-get install -y vsftpd
+#sudo apt-get install -y apache2
+#sudo apt-get install -y vsftpd
 sudo apt-get install -y ksh
 
 if [ $1 = "trusty" ]; then
