@@ -39,14 +39,33 @@ cd /usr/local/bin
 sudo wget http://localhost:15672/cli/rabbitmqadmin
 sudo chmod 755 rabbitmqadmin
 
-cd ~/.config/sarra/
-sr_audit --users foreground
+sudo rabbitmqctl add_user tsource TestSOUrCs
+sudo rabbitmqctl set_permissions -p / tsource "^q_tsource.*$" "^q_tsource.*$|^xs_tsource$" "^q_tsource.*$|^xs_tsource$|^xr_tsource$|^xpublic$"
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xs_tsource type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xr_tsource type=topic auto_delete=false durable=true
 
-sudo rabbitmqctl change_password tfeed TestFeeding
-sudo rabbitmqctl change_password tsource TestSOUrCs
-sudo rabbitmqctl change_password tsub TestSUBSCribe
-sudo rabbitmqctl change_password tsender_src TestSENDer
-sudo rabbitmqctl change_password tsender_dest TestSENDer
+sudo rabbitmqctl add_user tfeed TestFeeding
+sudo rabbitmqctl set_permissions -p / tfeed ".*" ".*" ".*"
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xs_tfeed type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xr_tfeed type=topic auto_delete=false durable=true
+
+sudo rabbitmqctl add_user tsub TestSUBSCribe
+sudo rabbitmqctl set_permissions -p / tsub "^q_tsub.*$" "^q_tsub.*$|^xs_tsub$" "^q_tsub.*$|^xr_tsub$|^xs_tsub$|^xpublic$"
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xs_tsub type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xr_tsub type=topic auto_delete=false durable=true
+
+sudo rabbitmqctl add_user tsender_src TestSENDer
+sudo rabbitmqctl set_permissions -p / tsender_src "^q_tsender_src.*$" "^q_tsender_src.*$|^xs_tsender_src$" "^q_tsender_src.*$|^xs_tsender_src$|^xr_tsender_src$|^xpublic$"
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xs_tsender_src type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xr_tsender_src type=topic auto_delete=false durable=true
+
+sudo rabbitmqctl add_user tsender_dest TestSENDer
+sudo rabbitmqctl set_permissions -p / tsender_dest "^q_tsender_dest.*$" "^q_tsender_dest.*$|^xs_tsender_dest$" "^q_tsender_dest.*$|^xs_tsender_dest$|^xr_tsender_dest$|^xpublic$"
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xs_tsender_dest type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xr_tsender_dest type=topic auto_delete=false durable=true
+
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xreport type=topic auto_delete=false durable=true
+sudo rabbitmqadmin -u bunnymaster -p MaestroDelConejito declare exchange name=xpublic type=topic auto_delete=false durable=true
 
 #sudo cp ~vagrant/rabbitmq/* /etc/rabbitmq
 #sudo chmod 644 /etc/rabbitmq/*

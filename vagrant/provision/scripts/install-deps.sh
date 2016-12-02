@@ -2,9 +2,18 @@
 sudo apt-get update
 
 # get all the dependencies for rabbitmq-server and metpx-sarracenia
+sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+sudo apt-get update
+sudo apt-get install -y unzip
+sudo apt-get install -y devscripts
+sudo apt-get install -y dpkg-dev
+sudo apt-get install -y debhelper
+sudo apt-get install -y python3-setuptools
+sudo apt-get install -y python-docutils
+sudo apt-get install -y rabbitmq-server
+sudo apt-get install -y git
 sudo apt-get install -y erlang-nox
 sudo apt-get install -y python3-pkg-resources
-sudo apt-get install -y apache2
 sudo apt-get install -y vsftpd
 sudo apt-get install -y ksh
 
