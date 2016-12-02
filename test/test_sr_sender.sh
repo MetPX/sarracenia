@@ -29,8 +29,8 @@ credentials=TestSENDer
 sender_file=sender_file.txt
 
 #Files created by plugin scripts
-on_msg_file="on_msg_file.tx"
-on_post_file="on_post_file.tx"
+on_msg_file="on_msg_file.txt"
+on_post_file="on_post_file.txt"
 
 cat << EOF > $file_origin/$sender_file
 0 123456789abcde
@@ -117,11 +117,10 @@ function test_parts {
 	return $RET
 }
 
-#The on_message, do_send and on_post plugin tests check to see if the plugin scripts work properly when using
-#sr_sender. sr_sender will be primarily used to do the same task as the previous tests. In addition, the
-#plugins themselves will be independent of the sr_sender test, as they create their own files. Therefore, 
-#there are two checks performed here, one to see if sr_sender correctly sent the announced file, and the 
-#other check to see if the plugin created a different file.
+#Two methods are used here. The first method is to check and see if
+#sr_sender sent the target file to the new destination. The second method is
+#to check if the on_message plugin creates a file on its own (should run 
+#once sr_sender receives the announcement)
 function test_plugin_msg {
 
 	#Using on_message script
@@ -180,6 +179,10 @@ function test_plugin_send {
 	return $RET
 }
 
+#The on_post plugin posts the sent file to the exchange. For this to work, the 
+#post_document_root, post_exchange and post_broker must be specified. The 
+#purpose of this test is to check if the plugin runs after the file has been
+#sent to its destination and announced to the post exchange.
 function test_plugin_post {
 
 	#Using on_post script
