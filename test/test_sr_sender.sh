@@ -29,8 +29,8 @@ credentials=TestSENDer
 sender_file=sender_file.txt
 
 #Files created by plugin scripts
-on_msg_file="on_msg_file.tx"
-on_post_file="on_post_file.tx"
+on_msg_file="on_msg_file.txt"
+on_post_file="on_post_file.txt"
 
 cat << EOF > $file_origin/$sender_file
 0 123456789abcde
@@ -41,12 +41,6 @@ cat << EOF > $file_origin/$sender_file
 5 123456789abcde
 6 123456789abcde
 EOF
-
-cp ./sender/test1.conf $file_origin/sender_test1.conf
-cp ./sender/test2.conf $file_origin/sender_test2.conf
-cp ./sender/test3.conf $file_origin/sender_test3.conf
-cp ./sender/test4.conf $file_origin/sender_test4.conf
-cp ./sender/test5.conf $file_origin/sender_test5.conf
 
 chmod 777 $file_origin/$sender_file
 
@@ -79,7 +73,7 @@ function check_sender {
 #post_exchange and post_broker are specified.
 function test_post_doc {
 
-        sr_sender --reset $file_origin/sender_test1.conf start > /dev/null 2>&1
+        sr_sender --reset ./sender/test1.conf start > /dev/null 2>&1
 	sleep 3
         sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -93,7 +87,7 @@ function test_post_doc {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test1.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -104,7 +98,7 @@ function test_post_doc {
 #in this case is 32 Bytes
 function test_parts {
 
-	sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test2.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -119,19 +113,18 @@ function test_parts {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi	
-        sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
+        sr_sender ./sender/test2.conf stop > /dev/null 2>&1
 	return $RET
 }
 
-#The on_message, do_send and on_post plugin tests check to see if the plugin scripts work properly when using
-#sr_sender. sr_sender will be primarily used to do the same task as the previous tests. In addition, the
-#plugins themselves will be independent of the sr_sender test, as they create their own files. Therefore, 
-#there are two checks performed here, one to see if sr_sender correctly sent the announced file, and the 
-#other check to see if the plugin created a different file.
+#Two methods are used here. The first method is to check and see if
+#sr_sender sent the target file to the new destination. The second method is
+#to check if the on_message plugin creates a file on its own (should run 
+#once sr_sender receives the announcement)
 function test_plugin_msg {
 
 	#Using on_message script
-	sr_sender --reset $file_origin/sender_test3.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test3.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -156,7 +149,7 @@ function test_plugin_msg {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test3.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test3.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -166,7 +159,7 @@ function test_plugin_msg {
 function test_plugin_send {
 
 	#Using do_send script
-	sr_sender --reset $file_origin/sender_test4.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test4.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -182,14 +175,18 @@ function test_plugin_send {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test4.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test4.conf stop > /dev/null 2>&1
 	return $RET
 }
 
+#The on_post plugin posts the sent file to the exchange. For this to work, the 
+#post_document_root, post_exchange and post_broker must be specified. The 
+#purpose of this test is to check if the plugin runs after the file has been
+#sent to its destination and announced to the post exchange.
 function test_plugin_post {
 
 	#Using on_post script
-	sr_sender --reset $file_origin/sender_test5.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test5.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -214,7 +211,7 @@ function test_plugin_post {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test5.conf stop > /dev/null 2>&1
 	return $RET
 }
 
