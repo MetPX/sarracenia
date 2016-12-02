@@ -14,7 +14,7 @@ watch a directory and post messages when files in it change
 SYNOPSIS
 ========
 
-**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path ] path] [reload|restart|start|status|stop]
+**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path* ] path] [reload|restart|start|status|stop]
 
 DESCRIPTION
 ===========
