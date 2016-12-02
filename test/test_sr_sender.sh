@@ -42,12 +42,6 @@ cat << EOF > $file_origin/$sender_file
 6 123456789abcde
 EOF
 
-cp ./sender/test1.conf $file_origin/sender_test1.conf
-cp ./sender/test2.conf $file_origin/sender_test2.conf
-cp ./sender/test3.conf $file_origin/sender_test3.conf
-cp ./sender/test4.conf $file_origin/sender_test4.conf
-cp ./sender/test5.conf $file_origin/sender_test5.conf
-
 chmod 777 $file_origin/$sender_file
 
 #Checks if the file exists in final destination using sr_sender, PASSED if exists, FAILED if not 
@@ -79,7 +73,7 @@ function check_sender {
 #post_exchange and post_broker are specified.
 function test_post_doc {
 
-        sr_sender --reset $file_origin/sender_test1.conf start > /dev/null 2>&1
+        sr_sender --reset ./sender/test1.conf start > /dev/null 2>&1
 	sleep 3
         sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -93,7 +87,7 @@ function test_post_doc {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test1.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -104,7 +98,7 @@ function test_post_doc {
 #in this case is 32 Bytes
 function test_parts {
 
-	sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test2.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -119,7 +113,7 @@ function test_parts {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi	
-        sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
+        sr_sender ./sender/test2.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -131,7 +125,7 @@ function test_parts {
 function test_plugin_msg {
 
 	#Using on_message script
-	sr_sender --reset $file_origin/sender_test3.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test3.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -156,7 +150,7 @@ function test_plugin_msg {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test3.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test3.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -166,7 +160,7 @@ function test_plugin_msg {
 function test_plugin_send {
 
 	#Using do_send script
-	sr_sender --reset $file_origin/sender_test4.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test4.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -182,14 +176,14 @@ function test_plugin_send {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test4.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test4.conf stop > /dev/null 2>&1
 	return $RET
 }
 
 function test_plugin_post {
 
 	#Using on_post script
-	sr_sender --reset $file_origin/sender_test5.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test5.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -214,7 +208,7 @@ function test_plugin_post {
 	if [ $RET -eq 0 ]; then
 		echo "PASSED"
 	fi
-	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
+	sr_sender ./sender/test5.conf stop > /dev/null 2>&1
 	return $RET
 }
 
