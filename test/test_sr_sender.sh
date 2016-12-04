@@ -30,7 +30,7 @@ sender_file=sender_file.txt
 
 #Files created by plugin scripts
 on_msg_file="on_msg_file.txt"
-do_send_file="do_send_file.txt"
+on_post_file="on_post_file.txt"
 
 cat << EOF > $file_origin/$sender_file
 0 123456789abcde
@@ -42,29 +42,29 @@ cat << EOF > $file_origin/$sender_file
 6 123456789abcde
 EOF
 
-cp ./sender/test1.conf $file_origin/sender_test1.conf
-cp ./sender/test2.conf $file_origin/sender_test2.conf
-cp ./sender/test3.conf $file_origin/sender_test3.conf
-cp ./sender/test4.conf $file_origin/sender_test4.conf
-cp ./sender/test5.conf $file_origin/sender_test5.conf
-
 chmod 777 $file_origin/$sender_file
 
-#Checks if the file exists in final destination using sender, PASSED if exists, FAILED if not 
-function check_destination {
+#Checks if the file exists in final destination using sr_sender, PASSED if exists, FAILED if not 
+function check_sender {
 
 	#TODO check contents of file using diff
         initial_dest=$file_origin/$sender_file
         final_dest=$file_destination/$sender_file
 
-        diff $initial_dest $final_dest >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-                echo "PASSED"
-                rm $file_destination/$sender_file
-		return 0
-        else
-                echo "FAILED"
+	if [ -f $final_dest ]; then
+		diff $initial_dest $final_dest > /dev/null 2>&1
+	else
+		echo "FAILED... file not sent"
 		return 1
+	fi		
+
+        if [ $? -eq 0 ]; then
+                rm $final_dest
+                return 0
+        else
+                echo "FAILED... difference in content"
+                rm $file_destination/$sender_file
+                return 1
         fi
 }
 
@@ -73,7 +73,7 @@ function check_destination {
 #post_exchange and post_broker are specified.
 function test_post_doc {
 
-        sr_sender --reset $file_origin/sender_test1.conf start > /dev/null 2>&1
+        sr_sender --reset ./sender/test1.conf start > /dev/null 2>&1
 	sleep 3
         sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -81,9 +81,13 @@ function test_post_doc {
 		-to test_cluster > /dev/null 2>&1		\
 		/
 	sleep 3
-	check_destination "1"
+
+	check_sender
 	RET=$?
-	sr_sender $file_origin/sender_test1.conf stop > /dev/null 2>&1
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
+	sr_sender ./sender/test1.conf stop > /dev/null 2>&1
 	return $RET
 }
 
@@ -94,7 +98,7 @@ function test_post_doc {
 #in this case is 32 Bytes
 function test_parts {
 
-	sr_sender --reset $file_origin/sender_test2.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test2.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -103,79 +107,86 @@ function test_parts {
 		--parts i,32B					\
 		/
         sleep 3
-	check_destination "2"
-	RET=$?	
-        sr_sender $file_origin/sender_test2.conf stop > /dev/null 2>&1
+
+	check_sender
+	RET=$?
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi	
+        sr_sender ./sender/test2.conf stop > /dev/null 2>&1
 	return $RET
 }
 
-#The on_message, do_send and on_post plugin tests check to see if the plugin scripts work properly when using
-#sr_sender. sr_sender will be primarily used to do the same task as the previous tests. In addition, the
-#plugins themselves will be independent of the sr_sender test, as they create their own files. Therefore, 
-#there are two checks performed here, one to see if sr_sender correctly sent the announced file, and the 
-#other check to see if the plugin created a different file.
+#Two methods are used here. The first method is to check and see if
+#sr_sender sent the target file to the new destination. The second method is
+#to check if the on_message plugin creates a file on its own (should run 
+#once sr_sender receives the announcement)
 function test_plugin_msg {
 
 	#Using on_message script
-	sr_sender --reset $file_origin/sender_test3.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test3.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file	 		\
-		-to test_cluster  > /dev/null 2>&1		\
+		-to test_cluster  				\
+		--flow "$file_destination" > /dev/null 2>&1	\
 		/
 	sleep 3
 
-        initial_dest=$file_origin/$sender_file
-        final_dest=$file_destination/$sender_file
 	script_file=$file_destination/$on_msg_file
-	result_msg="PASSED"
-	RET=0
 
-        diff $initial_dest $final_dest >/dev/null 2>&1
-        if [ $? -eq 1 ] || [ ! -f $final_dest ]; then
-                result_msg="FAILED... sr_sender"
-                rm $final_dest
-                RET=1
-        elif [ ! -f $script_file ]; then
-                result_msg="FAILED... on_msg plugin"
+	check_sender
+	RET=$?
+
+        if [ ! -f $script_file ]; then
+                echo "FAILED... on_message plugin"
                 RET=1
 	else
-		rm $final_dest
+		rm $script_file
         fi
 
-#	check_destination "${1}"
-#	RET=$?
-
-	sr_sender $file_origin/sender_test3.conf stop > /dev/null 2>&1
-	echo $result_msg
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
+	sr_sender ./sender/test3.conf stop > /dev/null 2>&1
 	return $RET
 }
 
+#When using do_send, instead of sr_sender using its own sending mechanism, 
+#you create your own in the plugin script. This test will check if the do_send
+#plugin sent a copy of the original file to the destination.
 function test_plugin_send {
 
-	echo "Testing do_send plugin"
 	#Using do_send script
-	sr_sender --reset $file_origin/sender_test4.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test4.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
-		-p $file_origin/$sender_file 		\
+		-p $file_origin/$sender_file 			\
 		-to test_cluster > /dev/null 			\
-		--flow "$file_destination" > /dev/null 2>&1			\
+		--flow "$file_destination" > /dev/null 2>&1	\
 		/
 	sleep 3
-	check_destination "4"
+
+	check_sender
 	RET=$?
-	sr_sender $file_origin/sender_test4.conf stop > /dev/null 2>&1
+
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
+	sr_sender ./sender/test4.conf stop > /dev/null 2>&1
 	return $RET
 }
 
+#The on_post plugin posts the sent file to the exchange. For this to work, the 
+#post_document_root, post_exchange and post_broker must be specified. The 
+#purpose of this test is to check if the plugin runs after the file has been
+#sent to its destination and announced to the post exchange.
 function test_plugin_post {
 
-	echo "Testing on_post plugin"
 	#Using on_post script
-	sr_sender --reset $file_origin/sender_test5.conf start > /dev/null 2>&1
+	sr_sender --reset ./sender/test5.conf start > /dev/null 2>&1
 	sleep 3
 	sr_post -b amqp://$exchange:$credentials@$host/ 	\
 		-u sftp://$sender@$host/ 			\
@@ -184,14 +195,28 @@ function test_plugin_post {
 		--flow "$file_destination"     			\
 		/
 	sleep 3
-	check_destination "5"
+
+        script_file=$file_destination/$on_post_file
+
+	check_sender
 	RET=$?
-	sr_sender $file_origin/sender_test5.conf stop > /dev/null 2>&1
+
+        if [ ! -f $script_file ]; then
+                echo "FAILED... on_post plugin"
+                RET=1
+        else
+                rm $script_file
+        fi
+
+	if [ $RET -eq 0 ]; then
+		echo "PASSED"
+	fi
+	sr_sender ./sender/test5.conf stop > /dev/null 2>&1
 	return $RET
 }
 
 RESULT=0
-# Run tests
+#Run tests
 echo "Sending file by using post_document_root instead of directory..."
 test_post_doc
 if [ $? -eq 1 ]; then
@@ -207,16 +232,16 @@ test_plugin_msg
 if [ $? -eq 1 ]; then
         RESULT=1
 fi
-#echo "Testing do_send plugin script..."
-#test_plugins_send
-#if [ $? -eq 1 ]; then
-#        RESULT=1
-#fi
-#echo "Testing on_post plugin script..."
-#test_plugins_post
-#if [ $? -eq 1 ]; then
-#        RESULT=1
-#fi
+echo "Testing do_send plugin script..."
+test_plugin_send
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
+echo "Testing on_post plugin script..."
+test_plugin_post
+if [ $? -eq 1 ]; then
+        RESULT=1
+fi
 
 rm $file_origin/$sender_file
 rm -r $file_origin
