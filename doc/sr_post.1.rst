@@ -272,7 +272,7 @@ The *sum* option tell the program how to calculate the checksum.
 It is a comma separated string.  Valid checksum flags are ::
 
     [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is 0
+    where 0 : no checksum... value in post is random integer (for load balancing purposes.)
           n : do checksum on filename
           d : do md5sum on file content
 

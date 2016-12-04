@@ -234,7 +234,9 @@ class sr_post(sr_config):
         # ==============
 
         if self.event == 'deleted' :
-           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
+                    'R,%d' % random.randint(0,100), rename, filename)
+
            if not ok : sys.exit(1)
            return
 
@@ -279,7 +281,7 @@ class sr_post(sr_config):
         # blocksize != 0
         # ==============
 
-        if self.blocksize != 0 :
+        if self.blocksize > 0 :
            ok = self.poster.post_local_inplace(filepath,self.exchange,self.url, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)
