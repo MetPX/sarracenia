@@ -392,7 +392,7 @@ class sr_config:
         self.randomize            = False
         self.reconnect            = False
 
-        self.partflg              = '1'
+        self.partflg              = '0'
         #
 
         self.batch                = 100

@@ -130,7 +130,7 @@ class sr_post(sr_config):
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
         print("DEVELOPER:")
-        print("-parts <parts>         default:1")
+        print("-parts <parts>         default:0")
 
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
@@ -253,7 +253,8 @@ class sr_post(sr_config):
         # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
         # ==============
 
-        if self.blocksize == 0 :
+        #if self.blocksize == '0' :
+        if self.partflg == '0' :
            lstat   = os.stat(filepath)
            fsiz    = lstat[stat.ST_SIZE]
 
