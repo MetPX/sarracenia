@@ -1,0 +1,15 @@
+[Unit]
+Description=Sarracenia File Copy Service
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/sr start
+User=sarra
+Group=sarra
+
+ExecReload=/usr/bin/sr reload
+ExecStop=/usr/bin/sr stop
+
+[Install]
+WantedBy=multi-user.target
