@@ -137,11 +137,11 @@ and processing for all.
 **sr_winnow** does not check, in the received message, the destination clusters. 
 So no message is discarted if without destination, source or other missing attributs.
 
-The user can provide an **on_message** script. When a message is accepted up 
-to this level of verification, the **on_message** script is called... with 
-the **sr_winnow** class instance as argument.  The script can perform whatever 
-you want... if it returns False, the processing of the message will stop 
-there. If True, the program will continue processing from there.  
+The user can provide **on_message** scripts. When a message is accepted up 
+to this level of verification, the **on_message** scripts are called... with 
+the **sr_winnow** class instance as argument.  The scripts can perform whatever 
+is desired... if one returns False, the processing of the message will stop 
+there. If they all return True, the program will continue processing from there.  
 
 
 See `sr_config(7) <sr_config.7.html>`_  for more details.

@@ -434,9 +434,11 @@ class sr_config:
         self.do_send              = None
         self.on_file              = None
         self.on_line              = None
+        self.on_line_list         = []
    
 
         self.on_part              = None
+        self.on_part_list         = []
         self.on_post              = None
 
         self.inplace              = False
@@ -465,8 +467,11 @@ class sr_config:
         self.vip                  = None
 
         self.execfile("on_message",'msg_log')
+        self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
+        self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
+        self.on_post_list = [ self.on_post ]
 
     def execfile(self, opname, path):
 
@@ -1076,37 +1081,65 @@ class sr_config:
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.execfile("on_file",words1)
-                     if ( self.on_file == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_file == None ):
+                        if self.isNone(words1):
+                           self.on_file_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_file_list.append(self.on_file)
+
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
                      self.execfile("on_line",words1)
-                     if ( self.on_line == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_line == None ):
+                        if self.isNone(words1):
+                           self.on_line_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_line_list.appent(self.on_line)
+
                      n = 2
 
                 elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
                      self.execfile("on_message",words1)
-                     if ( self.on_message == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_message == None ):
+                        if self.isNone(words1):
+                           self.on_message_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_message_list.append(self.on_message)
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
                      self.execfile("on_part",words1)
-                     if ( self.on_part == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_part == None ):
+                        if self.isNone(words1):
+                           self.on_part_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_part_list.append(self.on_part)
+
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config
                      self.execfile("on_post",words1)
-                     if ( self.on_post == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_post == None ):
+                        if self.isNone(words1):
+                            self.on_post_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_post_list.append(self.on_post)
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7

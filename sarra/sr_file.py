@@ -162,9 +162,11 @@ def file_insert_part(parent,msg,part_file):
     # ok we reassembled the file and it is the last chunk... call on_file
     if msg.lastchunk : 
        msg.logger.warning("file assumed complete with last part %s" % msg.target_file)
-       if parent.on_file:
-          ok = parent.on_file(parent)
-          return ok
+       #if parent.on_file:
+       #   ok = parent.on_file(parent)
+       for plugin in parent.on_file_list:
+          ok = plugin(parent)
+          if not ok: return False
 
     return True
 

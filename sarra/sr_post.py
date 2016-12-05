@@ -169,10 +169,12 @@ class sr_post(sr_config):
         # should always be ok
         ok = True
         if self.event in self.events:
-           if self.on_post :
-               self.logger.debug("sr_post user on_post")
-               ok = self.on_post(self)
-           if not ok: return ok
+           #if self.on_post :
+           #    self.logger.debug("sr_post user on_post")
+           #    ok = self.on_post(self)
+           #if not ok: return ok
+           for plugin in self.on_post_list:
+               if not plugin(self): return False
 
            ok = self.msg.publish( )
 

@@ -245,7 +245,8 @@ class sr_shovel(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : return self.on_message(self)
+        for plugin in self.on_message_list:
+           if not plugin(self): return False
 
         return True
 
@@ -261,11 +262,8 @@ class sr_shovel(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post :
-           ok = self.on_post(self)
-           if not ok: return ok
-
-        # should always be ok
+        for plugin in self.on_post_list:
+           if not plugin(self): return False
 
         ok = self.msg.publish( )
 
