@@ -73,6 +73,7 @@ program:
 While the first four are self-evident, the on_line plugin is a bit obscure.  It
 is used to parse remote directories listings using sr_poll,
 as the listing format varies by implementation of the remote server.
+Multiple on_scripts can be specified to act cumulatively.
 
 There are also do\_ scripts, which provide or replace functionality in programs:
 
@@ -80,6 +81,7 @@ There are also do\_ scripts, which provide or replace functionality in programs:
 - **do_poll         <script>        (default: None)**
 - **do_send         <script>        (default: None)**
 
+In contrast to on\_ scripts, only a single do_script can be specified at a time.
 
 ---------------------
 Plugin Scripts Basics

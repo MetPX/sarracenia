@@ -316,6 +316,8 @@ Transport engines are the data servers queried by subscribers, by the end users,
 The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
 The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of
 configuring the servers for use, please consult the documentation of the servers themselves.
+Also note that additional protocols can be enabled through the use of do\_ plugins, as
+described in the Programming Guide.
 
 
 Operations
@@ -419,6 +421,45 @@ gather statisical information.
 
    Is any of this needed, or is the rabbit GUI enough on it's own?
 
+
+
+Init Integration
+~~~~~~~~~~~~~~~~
+
+System integration is highly non-portable and general instructions are not provided.
+No attempt is made at this sort of integration on non-linux systems yet.  The information here
+pertains only to Linux servers.
+
+By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
+the tools/ sub-directory directory allows for integration with tools for different usage scenarios.
+
+.. NOTE::
+   tools/sr.init -- a sample init script suitable for sysv-init or upstart based systems.
+   tools/sarra_system.service -- for systemd base systems for a 'daemon' style deployment.
+   tools/sarra_user.service -- for systemd as a per user service.
+
+.. NOTE:: 
+   The following is not well tested
+
+Systemd installation process, by administrator:
+   groupadd sarra
+   useradd sarra
+   cp tools/sarra_system.service /etc/systemd/system/sarra.service  (if a package installs it, it should go in /usr/lib/systemd/system )
+   cp tools/sarra_user.service /etc/systemd/user/sarra.service (or /usr/lib/systemd/user, if installed by a package )
+   systemctl daemon-reload
+   
+It is then assumed that one uses the 'sarra' account to store the daemon oriented (or system-wide) sarra configuration.
+Users can also run their personal configuration in sessions via:
+
+  systemctl --user enable sarra
+  systemctl --user start sarra
+
+
+On an upstart or sysv-init based system:
+
+   cp tools/sr.init /etc/init.d/sr
+   <insert magic here to get that activated.>
+  
 
 
 Rabbitmq Setup

@@ -222,9 +222,8 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : 
-           ok = self.on_message(self)
-           if not ok : return ok
+        for plugin in self.on_message_list :
+           if not plugin(self): return False
 
         # notify only : we are done with this message
 
@@ -332,38 +331,56 @@ class sr_subscribe(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
-           if self.on_part :
-              ok = self.on_part(self)
-              if not ok : return False
+           for plugin in self.on_part_list :
+              if not plugin(self): return False
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace" (discard True)
            # or we are running in place and it is the last part.
 
-           if self.on_file :
+           if self.on_file_list :
+              """
+                 *** FIXME ***: When reassembled, lastchunk is inserted last and therefore
+                 calling on_file on lastchunk is accurate... Here, the lastchunk was inserted
+                 directly into the target file... The decision of directly inserting the part
+                 into the file is based on the file'size being bigger or equal to part's offset.
+                 It may be the case that we were at the point of inserting the last chunk...
+                 BUT IT IS POSSIBLE THAT,WHEN OVERWRITING A FILE WITH PARTS BEING SENT IN PARALLEL,
+                 THE PROGRAM INSERTS THE LASTCHUNK BEFORE THE END OF COLLECTING THE FILE'PARTS...
+                 HENCE AN INAPPROPRIATE CALL TO on_file ... 
+
+                 2016/12 FIXME:  I do not understand the (not self.inplace) clause... if it is a part file
+                  if it handled by on_part above, if it is the last part, it is called by reassembly below
+                  do not understand why calling on this condition.
+
+                  If think this will be called for every partition file, which I think is wrong.
+
+              """
+
+              if (self.msg.partflg == '1') or  \
+                       (self.msg.partflg != '1' and ( \
+                             (not self.inplace) or \
+                             (self.inplace and (self.msg.lastchunk and not self.msg.in_partfile)))):
+
+                 for plugin in self.on_file_list:
+                     if not plugin(self): return False
+
+              """
+              above complicated if statement should provide identical logic to below.
+              avoids the multiple calls to the plugin at different points with only one
+              on a compound condition.
+
               # entire file pumped in
               if self.msg.partflg == '1' :
                  ok = self.on_file(self)
-
-              # parts : not inplace... all considered files
               else:
                  if not self.inplace :
                     ok = self.on_file(self)
-
-                 # *** FIXME ***: When reassembled, lastchunk is inserted last and therefore
-                 # calling on_file on lastchunk is accurate... Here, the lastchunk was inserted
-                 # directly into the target file... The decision of directly inserting the part
-                 # into the file is based on the file'size being bigger or equal to part's offset.
-                 # It may be the case that we were at the point of inserting the last chunk...
-                 # BUT IT IS POSSIBLE THAT,WHEN OVERWRITING A FILE WITH PARTS BEING SENT IN PARALLEL,
-                 # THE PROGRAM INSERTS THE LASTCHUNK BEFORE THE END OF COLLECTING THE FILE'PARTS...
-                 # HENCE AN INAPPROPRIATE CALL TO on_file ... 
-
-                 # inplace : last part(chunk) is inserted
                  elif (self.msg.lastchunk and not self.msg.in_partfile) :
                     ok = self.on_file(self)
 
               if not ok : return False
+              """
 
            # discard option
 
@@ -389,9 +406,14 @@ class sr_subscribe(sr_instances):
    
         file_reassemble(self)
 
-        #FIXME: 2016/10 - PAS: suspect a bug: pretty sure on_file plugin should run after reassembly complete.
-        #FIXME: 2016/10 - PAS: suspect a bug: pretty sure discard should run after reassembly complete.
-
+        """
+        FIXME: 2016/10 - PAS: suspect a bug: pretty sure on_file plugin should run after reassembly complete.
+                         2016/12 - ok I get it: on_file is called in the inplace case above.
+                                   for the parts case, it is called from reassemble correctly.
+                                  
+        FIXME: 2016/10 - PAS: suspect a bug: pretty sure discard should run after reassembly complete.
+                    2016/12 - well maybe not, if it is discarding parts, it is probably better... hmm..
+        """
         return True
 
 

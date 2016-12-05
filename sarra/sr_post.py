@@ -130,7 +130,7 @@ class sr_post(sr_config):
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
         print("DEVELOPER:")
-        print("-parts <parts>         default:1")
+        print("-parts <parts>         default:0")
 
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
@@ -169,10 +169,12 @@ class sr_post(sr_config):
         # should always be ok
         ok = True
         if self.event in self.events:
-           if self.on_post :
-               self.logger.debug("sr_post user on_post")
-               ok = self.on_post(self)
-           if not ok: return ok
+           #if self.on_post :
+           #    self.logger.debug("sr_post user on_post")
+           #    ok = self.on_post(self)
+           #if not ok: return ok
+           for plugin in self.on_post_list:
+               if not plugin(self): return False
 
            ok = self.msg.publish( )
 
@@ -234,7 +236,9 @@ class sr_post(sr_config):
         # ==============
 
         if self.event == 'deleted' :
-           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
+                    'R,%d' % random.randint(0,100), rename, filename)
+
            if not ok : sys.exit(1)
            return
 
@@ -251,7 +255,8 @@ class sr_post(sr_config):
         # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
         # ==============
 
-        if self.blocksize == 0 :
+        #if self.blocksize == '0' :
+        if self.partflg == '0' :
            lstat   = os.stat(filepath)
            fsiz    = lstat[stat.ST_SIZE]
 
@@ -279,7 +284,7 @@ class sr_post(sr_config):
         # blocksize != 0
         # ==============
 
-        if self.blocksize != 0 :
+        if self.blocksize > 0 :
            ok = self.poster.post_local_inplace(filepath,self.exchange,self.url, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)

@@ -205,12 +205,12 @@ class sr_sftp():
         chk           = self.sumalgo
         self.checksum = None
 
-        # trottle 
+        # throttle 
 
         cb        = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -319,7 +319,7 @@ class sr_sftp():
         cb        = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -372,9 +372,9 @@ class sr_sftp():
         self.logger.debug("sr_sftp set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
 
-    # trottle
-    def trottle(self,buf) :
-        self.logger.debug("sr_sftp trottle")
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("sr_sftp throttle")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.bytes_ps
         d1,d2,d3,d4,now = os.times()

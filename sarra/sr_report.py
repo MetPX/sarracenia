@@ -120,11 +120,10 @@ class sr_report(sr_instances):
 
         # user provided an on_message script
 
-        ok = True
+        for plugin in self.on_message_list :
+            if not plugin(self): return False
 
-        if self.on_message : ok = self.on_message(self)
-
-        return ok
+        return True
 
 
     def run(self):

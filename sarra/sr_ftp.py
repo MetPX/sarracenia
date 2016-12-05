@@ -219,7 +219,7 @@ class sr_ftp():
         self.cb = None
 
         if self.kbytes_ps > 0.0 :
-           self.cb = self.trottle
+           self.cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -229,7 +229,7 @@ class sr_ftp():
            fp = open(local_file,'w')
            fp.close()
 
-        # fixme : get trottled.... instead of fp.write... call get_trottle(buf) which calls fp.write
+        # fixme : get throttled.... instead of fp.write... call get_throttle(buf) which calls fp.write
         if self.binary :
            self.fp = open(local_file,'r+b')
            if local_offset != 0 : self.fp.seek(local_offset,0)
@@ -284,7 +284,7 @@ class sr_ftp():
         cb        = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -316,9 +316,9 @@ class sr_ftp():
         self.logger.debug("sr_ftp set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
 
-    # trottle
-    def trottle(self,buf) :
-        self.logger.debug("sr_ftp trottle")
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("sr_ftp throttle")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.bytes_ps
         d1,d2,d3,d4,now = os.times()

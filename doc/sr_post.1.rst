@@ -242,39 +242,45 @@ if necessary.
 The concatenation of the two last fields of the announcement defines
 what the subscribers will use to download the product. 
 
-
-ADVANCED OPTIONS
-================
-
 **[--parts <value>]**
 
-The user can suggest how to download a file.  By default it suggests to download the entire file.
-In this case, the amqp message header will have an entry parts with value '1,filesize_in_bytes'.
-To suggest to download a file in blocksize of 10Mb, the user can specify *-p i,10M*. *i* stands for
-"inplace" and means to put the part directly into the file.  *-p p,10M* suggests the same blocksize but to put the part
-in a separate filepart. If the *blocksize* is bigger than the filesize, the program will fall back to the default.
-There will be one post per suggested part.
+the value should be one of::
+
+   0 - autocompute an appropriate partitioning strategy (default)
+   1 - always send files in a single part.
+   p,<sz> - used a fixed partition size (example size: 1M )
+
+
+Files can be announced as multiple parts.  Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in paralllel.  When files change, transfers are
+optimized by only sending parts which have changed.  
+
+The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
+for files of various sizes.  As the file size varies, the automatic computation will give different
+results.  this will result in resending information which has not changed as partitions of a different 
+size will have different sums, and therefore be tagged as different.  In cases where large files are 
+being appended to, it make sense to specify a fixed partition size so that the blocks in the cache
+will be the same blocks as those generated when the file is larger, and so avoid re-transmission.
+So use of 'p,10M' would make sense in that case.
+
+In cases where a custom downloader is used which does not understand partitioning, it is necessary
+to avoid having the file split into parts, so one would specify '1' to force all files to be send
+as a single part.
 
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
 
-When suggesting parts, the value put in the amqp message header varies.
-For example, if headers[parts] is the value 'p,256,12,11,4', then it stands for :
-*p* suggesting part, a blocksize in bytes *256*,
-the number of block of that size *12*, the remaining bytes *11*, 
-and the current block *4*,
 
 **[-sum|--sum <string>]**
 
-All file posts include a checksum.  It is placed in the amqp message header will have as an
-entry *sum* with default value 'd,md5_checksum_on_data'.
-The *sum* option tell the program how to calculate the checksum.
+All file posts include a checksum.  The *sum* option specifies how to calculate the it.
 It is a comma separated string.  Valid checksum flags are ::
 
     [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is 0
+    where 0 : no checksum... value in post is random integer (for load balancing purposes.)
           n : do checksum on filename
-          d : do md5sum on file content
+          d : do md5sum on file content (default)
 
 Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.

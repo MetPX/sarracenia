@@ -111,7 +111,7 @@ class sr_poster:
            return
 
         if self.parent.blocksize == 0: 
-           self.logger.error("could not cache posting... no fix blocksize")
+           self.logger.error("could not cache posting... no fixed blocksize")
            self.caching = False
            return
 
@@ -221,7 +221,7 @@ class sr_poster:
                 self.cache[key] = kdict
                  
            # delete
-           elif sumstr == 'R,0':
+           elif sumstr.startswith('R,'):
                 del self.cache[key]
 
            # modified, or repost
@@ -285,8 +285,11 @@ class sr_poster:
         self.parent.set_sumalgo(sumflg)
         sumalgo = self.parent.sumalgo
 
-        if   sumflg == 'R' :
-             sumstr = 'R,0'
+        if   sumflg == '0' :
+             sumstr = '0,%d' % random.randint(0,100)
+
+        elif sumflg == 'R' :
+             sumstr = 'R,%d' % random.randint(0,100)
 
         elif len(sumflg) > 2 and sumflg[:2] == 'z,' :
              sumstr = sumflg

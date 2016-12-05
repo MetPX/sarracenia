@@ -400,19 +400,16 @@ client side mechanisms, saving bandwidth and processing for all.
 On_message Plugins
 ------------------
 
-Once a message has gone through the filtering above, the user can run a plugin 
+Once a message has gone through the filtering above, the user can run plugins 
 on the message and perform arbitrary processing (in Python 3.)  For example: to do statistics,
-rename a product, changing its destination... 
-
-Plugin scripts are more fully explained in the `Plugin Scripts <#plugin-scripts-1>`_ of 
-this manual page.
+rename a product, changing its destination... example usage:
 
 - **on_message    <script_name> (default: msg_log)**
 
-The **on_message** plugin scripts is the very last step in consuming messages.
+The **on_message** plugin scripts are called as the last step in consuming messages.
 All plugin scripts return a boolean. If False is returned, the component
 acknowledges the message to the broker and does not process it.  If no on_message plugin 
-is set, or if the plugin provided returns True, the message is processed by the component.
+is set, or if all plugins provided returned True, the message is processed by the component.
 
 
 ROUTING
@@ -881,7 +878,7 @@ additional transfer protocols.
 - do_send - to implement additional sending protocols and processes.
 
 
-On\_* scripts are used more often. They allow actions to be inserted to augment the default 
+On\_* plugins are used more often. They allow actions to be inserted to augment the default 
 processing for various specialized use cases. The scripts are invoked by having a given 
 configuration file specify an on_<event> option. The event can be one of:
 
@@ -900,7 +897,7 @@ configuration file specify an on_<event> option. The event can be one of:
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
   adjustments of the post.
 
-The simplest example of a script: A do_nothing.py script for **on_file**::
+The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
   class Transformer(object): 
       def __init__(self):
@@ -921,8 +918,13 @@ the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 For other events, the last line of the script must be modified to correspond.
+Multiple scripts can be attached to the same event, in which case they are
+called in the order they appear in the configuration.
 
-More examples are available in the Guide documentation.
+One can specify *on_message None* to reset the list to no plugins (removes
+msg_log, so it suppresses logging of message receipt.)
+
+More examples are available in the Programming Guide.
 
 
 

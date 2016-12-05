@@ -150,12 +150,12 @@ class http_transport():
         chk           = self.sumalgo
         self.checksum = None
 
-        # trottle 
+        # throttle 
 
         cb = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -188,9 +188,9 @@ class http_transport():
 
         return True
 
-    # trottle
-    def trottle(self,buf) :
-        self.logger.debug("http_transport trottle")
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("http_transport throttle")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.bytes_ps
         d1,d2,d3,d4,now = os.times()

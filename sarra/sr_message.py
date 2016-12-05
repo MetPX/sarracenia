@@ -524,6 +524,7 @@ class sr_message():
         self.filesize      = self.chunksize
 
         if self.partflg == '1' : return
+        if self.partflg == '0' : return
 
         self.block_count   = int(token[2])
         self.remainder     = int(token[3])
