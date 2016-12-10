@@ -35,8 +35,10 @@ function calcres {
 
    if [ $res -lt 900  -o $res -gt 1100 ]; then
       printf "test %2d FAILURE: ${3}\n" ${tno}
+      return 1
    else
       printf "test %2d success: ${3}\n" ${tno}
+      return 0
    fi
 
 }
@@ -108,10 +110,16 @@ while [ $totsarra -lt $smin ]; do
 
 done
 
-#echo "stopping shovels and waiting..."
-#sr_shovel t_dd1 stop
-#sr_shovel t_dd2 stop
-#sleep 60
+if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
+   echo "stopping shovels and waiting..."
+   sr_shovel t_dd1 stop
+   sr_shovel t_dd2 stop
+   sleep 60
+fi
+
+
+
+
 
 tno=0
 
@@ -147,7 +155,15 @@ calcres ${totshortened} ${totsub} \
 
 calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
 
-calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same"
+while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same" ; do
+    printf "info: waiting for totwatch to catchup\n"
+    sleep 30
+    oldtotwatch=${totwatch}
+    countall
+    if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
+       printf "error: giving up on this test\n"
+       break
+    fi
+done
 
-calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same" 
-
+calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
