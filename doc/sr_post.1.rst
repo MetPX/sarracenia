@@ -129,13 +129,13 @@ Files bigger than this value will get announced with *blocksize* sized parts.
 
 By default, **sr_post** computes a reasonable blocksize that depends on the file size.
 The user can set a fixed *blocksize* if it is better for its products or if he wants to
-take advantage of the **caching** mechanism.
+take advantage of the **cache** mechanism.
 
 **[-c|--config <configfile>]**
 
   A list of settings in a configuration file 
 
-**[--caching]**
+**[--cache]**
 
   When one is planning reposting directories, this option caches
   what was posted and will post only files (parts) that were new
@@ -198,7 +198,7 @@ files are posted.
 
 **[--reset]**
 
-  When one has used **--caching** this option will get rid of the
+  When one has used **--cache** this option will get rid of the
   cached informations.
 
 

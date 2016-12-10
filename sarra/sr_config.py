@@ -818,7 +818,7 @@ class sr_config:
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif words0 == 'caching': # See: sr_post.1 sr_watch.1
+                elif ( words0 == 'caching' ) or ( words0 == 'cache' ): # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.caching = True
                         n = 1
