@@ -219,13 +219,12 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
  +    p      + File is partitioned, individual part files are created.             +
  +-----------+---------------------------------------------------------------------+
- +    i      + file is partitioned, but blocks are written to a single file,       |
- +           + rather than parts. File is re-assembled on receipt.                 +
+ +    i      + file is partitioned, but blocks are read from a single file,        |
+ +           + rather than parts.                                                  +
  +-----------+---------------------------------------------------------------------+
  +    1      + file is in a single part (no partitioning)                          +
  +-----------+---------------------------------------------------------------------+
 
- - file segment strategy can be overridden by client. just a suggestion.
  - analogous to rsync options: --inplace, --partial,
 
  *<blocksize in bytes>: bsz*

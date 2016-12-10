@@ -248,7 +248,7 @@ the value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send files in a single part.
-   p,<sz> - used a fixed partition size (example size: 1M )
+   i,<sz> - used a fixed partition size (example size: 1M )
 
 
 Files can be announced as multiple parts.  Each part has a separate checksum.
@@ -259,10 +259,14 @@ optimized by only sending parts which have changed.
 The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
 for files of various sizes.  As the file size varies, the automatic computation will give different
 results.  this will result in resending information which has not changed as partitions of a different 
-size will have different sums, and therefore be tagged as different.  In cases where large files are 
-being appended to, it make sense to specify a fixed partition size so that the blocks in the cache
-will be the same blocks as those generated when the file is larger, and so avoid re-transmission.
-So use of 'p,10M' would make sense in that case.
+size will have different sums, and therefore be tagged as different.  
+
+In cases where large files are being appended to, it make sense to specify a fixed partition size so 
+that the blocks in the cache will be the same blocks as those generated when the file is larger, and 
+so avoid re-transmission.  So use of 'i,10M' would make sense in that case.  (The 'i' refers to 'in place'
+partitioning, where parts of the same file are advertised as separate posts, see sr_post.7 for details .) 
+
+
 
 In cases where a custom downloader is used which does not understand partitioning, it is necessary
 to avoid having the file split into parts, so one would specify '1' to force all files to be send
