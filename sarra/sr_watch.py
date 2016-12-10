@@ -92,6 +92,8 @@ class sr_watch(sr_instances):
         self.post.logger       = self.logger
         self.post.program_name = 'sr_watch'
         self.post.blocksize    = self.blocksize
+        self.post.partflg      = self.partflg
+        self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
         self.time_interval     = self.sleep
@@ -129,7 +131,7 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.post.logger = self.logger
-        self.logger.info("sr_watch run")
+        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s" % ( self.partflg, self.sumflg, self.caching ) )
         self.validate_cache()
         self.post.connect()
 
