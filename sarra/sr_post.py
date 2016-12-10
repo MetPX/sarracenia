@@ -252,10 +252,9 @@ class sr_post(sr_config):
            return
 
         # ==============
-        # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
+        # 0 partflg : compute blocksize if necessary (huge file) for the file Peter's algo
         # ==============
 
-        #if self.blocksize == '0' :
         if self.partflg == '0' :
            lstat   = os.stat(filepath)
            fsiz    = lstat[stat.ST_SIZE]
