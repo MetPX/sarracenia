@@ -25,7 +25,7 @@ function calcres {
 
    if [ "${1}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
-      return
+      return 2
    fi
 
    res=0
@@ -42,6 +42,7 @@ function calcres {
       return 1
    else
       printf "test %2d success: ${3}\n" ${tno}
+      passedno=$((${passedno}+1))
       return 0
    fi
 
@@ -128,7 +129,7 @@ fi
 
 
 
-
+passedno=0
 tno=0
 
 if [ "${totshovel2}" -gt "${totshovel1}" ]; then
@@ -175,3 +176,8 @@ while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and
 done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
+
+
+calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
+exit $?
+
