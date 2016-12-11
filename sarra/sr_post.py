@@ -114,13 +114,13 @@ class sr_post(sr_config):
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
         print("-l   <logpath>         default:stdout")
+        print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, mandatory")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
         print("-recursive             default:enable recursive post")
-        print("-blocksize <integer>   default:0")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
         print("-path <path1... pathN> default:required")
@@ -129,8 +129,6 @@ class sr_post(sr_config):
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
-        print("DEVELOPER:")
-        print("-parts <parts>         default:0")
 
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
