@@ -818,7 +818,7 @@ class sr_config:
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif words0 == 'caching': # See: sr_post.1 sr_watch.1
+                elif ( words0 == 'caching' ) or ( words0 == 'cache' ): # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.caching = True
                         n = 1
@@ -1487,23 +1487,31 @@ class sr_config:
 
     def validate_parts(self):
         self.logger.debug("sr_config validate_parts %s" % self.parts)
-        if not self.parts[0] in ['1','p','i']:
-           self.logger.error("parts invalid (%s)" % self.parts)
+        if not self.parts[0] in ['0','1','p','i']:
+           self.logger.error("parts invalid strategy (only 0,1,p, or i)(%s)" % self.parts)
            return False
 
         self.partflg = self.parts[0]
         token = self.parts.split(',')
-        if self.partflg in ['1','p'] and len(token) != 1 :
-           self.logger.error("parts invalid (%s)" % self.parts)
-           return False
-        if self.partflg == 'i':
-           if len(token) != 2 :
-              self.logger.error("parts invalid (%s)" % self.parts)
-              return False
-           try    : self.blocksize = self.chunksize_from_str(token[1])
-           except :
-                    self.logger.error("parts invalid (%s)" % self.parts)
+
+        if len(token) > 1:
+           if self.partflg == '1' :
+               self.logger.error("parts invalid strategy 1 (whole files) accepts no other options: (%s)" % self.parts)
+               return False
+           if self.partflg == 'p' : 
+               self.logger.error("parts invalid strategy p arguments partial file posting not supported (%s)" % self.parts)
+               return False
+
+           if ( self.partflg == 'i' or self.partflg== '0'):
+              if len(token) > 2 :
+                 self.logger.error("parts invalid too much  (%s)" % self.parts)
+                 return False
+
+              try    : self.blocksize = self.chunksize_from_str(token[1])
+              except :
+                    self.logger.error("parts invalid blocksize given (%s)" % self.parts)
                     return False
+
         return True
 
     def validate_sum(self):

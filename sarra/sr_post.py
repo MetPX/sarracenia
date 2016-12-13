@@ -114,13 +114,13 @@ class sr_post(sr_config):
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
         print("-l   <logpath>         default:stdout")
+        print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, mandatory")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
         print("-recursive             default:enable recursive post")
-        print("-blocksize <integer>   default:0")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
         print("-path <path1... pathN> default:required")
@@ -129,8 +129,6 @@ class sr_post(sr_config):
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
-        print("DEVELOPER:")
-        print("-parts <parts>         default:0")
 
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
@@ -252,18 +250,20 @@ class sr_post(sr_config):
            return
 
         # ==============
-        # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
+        # 0 partflg : compute blocksize if necessary (huge file) for the file Peter's algo
         # ==============
 
-        #if self.blocksize == '0' :
-        if self.partflg == '0' :
+        elif self.partflg.startswith('0') and (( len(self.partflg) == 1 ) or ( self.partflg[1] == ',' )):
            lstat   = os.stat(filepath)
            fsiz    = lstat[stat.ST_SIZE]
 
            # compute blocksize from Peter's algo
 
            # tfactor of 50Mb
-           tfactor = 50 * 1024 * 1024
+           if len(self.partflg) > 1:
+               tfactor = self.blocksize
+           else:
+               tfactor = 50 * 1024 * 1024
 
            # file > 5Gb  block of 500Mb
            if   fsiz > 100 * tfactor :
@@ -276,13 +276,23 @@ class sr_post(sr_config):
            elif fsiz > tfactor :
                 self.blocksize = int((fsiz+2)/ 3)
 
-           # none of the above
-           # self.blocksize=0 means entire file
+        # ==============
+        # 1 force whole files to be sent.
+        # ==============
 
+        elif self.partflg == '1':
+           self.blocksize = 0
 
         # ==============
-        # blocksize != 0
+        # fixed blocksize specified.
         # ==============
+
+        else:
+           self.blocksize = self.chunksize_from_str(self.partflg)
+
+        # ===================
+        # post file in blocks (inplace)
+        # ===================
 
         if self.blocksize > 0 :
            ok = self.poster.post_local_inplace(filepath,self.exchange,self.url, \
@@ -291,12 +301,13 @@ class sr_post(sr_config):
            return
 
         # ==============
-        # regular file
+        # whole file
         # ==============
 
         ok = self.poster.post_local_file(filepath,self.exchange,self.url,self.to_clusters,self.sumflg,rename)
         if not ok: sys.exit(1)
         return
+
 
     def scandir_and_post(self,path,recursive):
         self.logger.debug("sr_post scandir_and_post %s " % path)

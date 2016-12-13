@@ -19,24 +19,31 @@ function calcres {
    # 1 - first total
    # 2 - second total 
    # 3 - test description string.
+   # 4 - will retry flag.
    #
 
-   tno=$((${tno}+1))
 
    if [ "${1}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
-      return
+      return 2
    fi
 
    res=0
    if [ "${2}" -gt 0 ]; then
          res=$(( ( ${1}*1000 ) / ${2} ))
    fi
+   tno=$((${tno}+1))
 
    if [ $res -lt 900  -o $res -gt 1100 ]; then
       printf "test %2d FAILURE: ${3}\n" ${tno}
+      if [ "$4" ]; then
+         tno=$((${tno}-1))
+      fi    
+      return 1
    else
       printf "test %2d success: ${3}\n" ${tno}
+      passedno=$((${passedno}+1))
+      return 0
    fi
 
 }
@@ -100,6 +107,11 @@ done
 
 
 while [ $totsarra -lt $smin ]; do
+   if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+      echo "starting shovels and waiting..."
+      sr_shovel t_dd1 start
+      sr_shovel t_dd2 start
+   fi
    sleep 10
 
    countall
@@ -108,11 +120,16 @@ while [ $totsarra -lt $smin ]; do
 
 done
 
-#echo "stopping shovels and waiting..."
-#sr_shovel t_dd1 stop
-#sr_shovel t_dd2 stop
-#sleep 60
+if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
+   echo "stopping shovels and waiting..."
+   sr_shovel t_dd1 stop
+   sr_shovel t_dd2 stop
+fi
 
+
+
+
+passedno=0
 tno=0
 
 if [ "${totshovel2}" -gt "${totshovel1}" ]; then
@@ -147,7 +164,20 @@ calcres ${totshortened} ${totsub} \
 
 calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
 
-calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same"
+while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same" retry ; do
+    printf "info: retrying... waiting for totwatch to catchup\n"
+    sleep 30
+    oldtotwatch=${totwatch}
+    countall
+    if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
+       printf "error: giving up on this test\n"
+       break
+    fi
+done
 
-calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same" 
+calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
+
+
+calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
+exit $?
 
