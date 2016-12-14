@@ -68,7 +68,9 @@ class sr_audit(sr_instances):
             declare += "'%s' "  % upw
 
         if role == 'admin' :
-           declare += " tags=administrator"
+           declare += " tags=administrator "
+        else:
+           declare += ' tags="" '
 
         dummy = self.rabbitmqadmin( declare )
 
