@@ -138,7 +138,9 @@ class sr_watch(sr_instances):
         try:
             self.observer = PollingObserverVFS(os.stat, os.listdir, self.time_interval)
             self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
+            self.logger.info("sr_watch is not yet active.")
             self.observer.start()
+            self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
         except OSError as err:
             self.logger.error("Unable to start Observer: %s" % str(err))
             os._exit(0)
