@@ -124,6 +124,7 @@ if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]
    echo "stopping shovels and waiting..."
    sr_shovel t_dd1 stop
    sr_shovel t_dd2 stop
+   sleep 30
 fi
 
 
