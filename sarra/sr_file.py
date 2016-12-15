@@ -205,7 +205,7 @@ def file_process( parent ) :
               try: 
                   os.unlink(msg.url.path)
               except: 
-                  msg.logger.error("delete of %s failed"%(msg.url.path))
+                  msg.logger.error("delete of link to %s failed"%(msg.url.path))
           return ok
 
     # This part is for 2 reasons : insert part
@@ -213,7 +213,13 @@ def file_process( parent ) :
     try :
              ok = file_insert(parent,msg)
              if parent.delete :
-                  msg.logger.info("delete unimplemented for multipart files %s" %(msg.url.path))
+                if msg.partflg.startswith('i'):
+                   msg.logger.info("delete unimplemented for in-place part files %s" %(msg.url.path))
+                else:
+                   try: 
+                       os.unlink(msg.url.path)
+                   except: 
+                       msg.logger.error("delete of %s after copy failed"%(msg.url.path))
 
              if ok : return ok
 
