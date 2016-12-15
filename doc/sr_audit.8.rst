@@ -60,14 +60,14 @@ VERIFY PUMP SETTINGS
 
 Use **sr_audit** invoke with **--pump**  to set up it's configuration.  It makes sure the **feeder** 
 user credentials are given and the **admin** user is defined and valid.  It warns and explains 
-if options **cluster,gateway_for, or roles** are missing.
+if options **cluster,gateway_for, or declare** are missing.
 
 
 MANAGING USERS
 ==============
 
 When **sr_audit** is invoked with **--users**, the broker's users and exchanges are verified.
-The program builds a list of users by *roles*. 
+The program builds a list of users by their **declare** roles. 
 It checks that users :   **root**, **feeder**, **anonymous** and have appropriate roles: **admin**, **feeder**, **subscribe**.  
 Next, it makes sure that users configured in sarracenia configurations are present on the broker.  
 Missing users are added... with the permissions required for their role. Extra users,

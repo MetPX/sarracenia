@@ -19,9 +19,9 @@ gateway_for alta,cluster1,cluster2
 broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
-role source tsource
-role subscriber tsub
-role subscriber anonymous
+declare source tsource
+declare subscriber tsub
+declare subscriber anonymous
 
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
