@@ -387,8 +387,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'created|deleted|modified'
-        self.event                = 'created|deleted|modified'
+        self.events               = 'created|deleted|follow|linked|modified'
+        self.event                = 'created|deleted|follow|linked|modified'
 
         self.randomize            = False
         self.reconnect            = False
@@ -898,7 +898,7 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     path = os.path.realpath(path)
+                     #path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
                      else:
@@ -933,9 +933,11 @@ class sr_config:
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
-                     if 'modified' in words[1] : i = i + 1
-                     if 'deleted'  in words[1] : i = i + 1
                      if 'created'  in words[1] : i = i + 1
+                     if 'deleted'  in words[1] : i = i + 1
+                     if 'linked' in words[1] : i = i + 1
+                     if 'follow' in words[1] : i = i + 1
+                     if 'modified' in words[1] : i = i + 1
                      if 'moved'  in words[1] : i = i + 1
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
@@ -1173,7 +1175,7 @@ class sr_config:
                                  if dr and not dr in w: path = dr + os.sep + w
 
                                  path = os.path.abspath(path)
-                                 path = os.path.realpath(path)
+                                 #path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -1423,7 +1425,7 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
-        if flgs == '0' or flgs == 'R' :
+        if flgs in [ '0', 'L', 'R' ]:
            self.sumalgo = checksum_0()
            return
 

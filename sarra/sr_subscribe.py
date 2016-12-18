@@ -261,17 +261,43 @@ class sr_subscribe(sr_instances):
         ok = self.__on_message__()
         if not ok : return ok
 
+        """
+        FIXME: 201612-PAS There is perhaps several bug here:
+            -- no_download is not consulted. In no_download, mkdir, deletes and links should not happen.
+            -- on_file/on_part processing is not invoked for links or deletions, should it?
+               do we need on_link? on_delete? ugh...
+            
+        """
         #=================================
         # delete event, try to delete the local product given by message
         #=================================
 
-        if self.msg.sumflg == 'R' :
+        if self.msg.sumflg.startswith('R') :
            self.logger.debug("message is to remove %s" % self.msg.local_file)
            try : 
-                  if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
-                  if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
-                  self.logger.debug("%s deleted" % self.msg.local_file)
-           except:pass
+               if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
+               if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
+               self.logger.debug("%s removed" % self.msg.local_file)
+               if self.reportback: self.msg.report_publish(201, 'removed')
+           except:
+               self.logger.error("remove %s failed." % self.msg.local_file )
+               if self.reportback: self.msg.report_publish(500, 'remove failed')
+           return True
+
+        #=================================
+        # link event, try to link the local product given by message
+        #=================================
+
+        if self.msg.sumflg.startswith('L') :
+           self.logger.debug("message is to link %s to %s" % ( self.msg.local_file, self.msg.headers[ 'link' ] ) )
+           try : 
+               os.symlink( self.msg.headers[ 'link' ], self.msg.local_file )
+               self.logger.debug("%s linked to %s " % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+               if self.reportback: self.msg.report_publish(201, 'linked')
+           except:
+               self.logger.error("symlink of %s %s failed." % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+               if self.reportback: self.msg.report_publish(500, 'symlink failed')
+		
            return True
 
         #=================================
