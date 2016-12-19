@@ -68,7 +68,9 @@ class sr_audit(sr_instances):
             declare += "'%s' "  % upw
 
         if role == 'admin' :
-           declare += " tags=administrator"
+           declare += " tags=administrator "
+        else:
+           declare += ' tags="" '
 
         dummy = self.rabbitmqadmin( declare )
 
@@ -87,7 +89,7 @@ class sr_audit(sr_instances):
         if role == 'source':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
-           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % ( u, u )
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -111,7 +113,7 @@ class sr_audit(sr_instances):
         if role == 'subscribe':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % (u,u)
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -236,9 +238,8 @@ class sr_audit(sr_instances):
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
-        # mandatory xreport,xpublic
-
-        for e in ['xlog', 'xreport','xpublic','xwinnow'] : # xlog left there for compatibility.
+        self.logger.info("exchanges to verify: %s" % self.exchanges)
+        for e in self.exchanges : 
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue

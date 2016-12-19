@@ -824,9 +824,9 @@ When set, the admin option will cause sr start to start up the sr_audit daemon.
   for this, when run as the admin user.  then the trigger to run all admin daemons would be the presence
   of the admin user in the configuration.
 
-Most users are defined using the *role* option.  
+Most users are defined using the *declare* option.  
 
-- **role <role> <name>   (no defaults)**
+- **declare <role> <name>   (no defaults)**
 
 Role:
 

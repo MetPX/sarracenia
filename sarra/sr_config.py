@@ -343,6 +343,7 @@ class sr_config:
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.bindings             = []
         self.exchange             = None
+        self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
 
@@ -1289,10 +1290,18 @@ class sr_config:
                         self.reset = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['role']:  # See: sr_audit.1
-                     roles  = words[1].lower()
-                     user   = words[2]
-                     self.users[user] = roles
+                elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
+                     item = words[1].lower()
+                     if words0 in [ 'role' ]:
+                        self.logger.warning("role option deprecated, please replace with 'declare'" )
+
+                     if item in [ 'source' , 'subscriber' ]:
+                        roles  = item
+                        user   = words[2]
+                        self.users[user] = roles
+                     elif item in [ 'exchange' ]:
+                        self.logger.warning("declaring exchange %s" % (words[2]))
+                        self.exchanges.append( words[2] )                                                
                      n = 3
 
                 elif words0 in ['set_passwords']:  # See: sr_consumer.1
