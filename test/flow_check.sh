@@ -119,6 +119,7 @@ while [ $totsarra -lt $smin ]; do
    printf  "sample now %6d \r"  $totsarra
 
 done
+printf  "\nSufficient!\n" 
 
 if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
