@@ -451,7 +451,7 @@ class sr_sender(sr_instances):
        
 
         if self.strip > 0 :
-           token = self.remote_path.split('/')
+           token = self.remote_rpath.split('/')
 
            if self.strip >= len(token)-1 : 
                token = [token[-1]]
