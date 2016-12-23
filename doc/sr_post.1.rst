@@ -128,10 +128,11 @@ common settings, and methods of specifying them.
 **[--cache]**
 
   When one is planning reposting directories, this option caches
-  what was posted and will post only files (parts) that were new
-  (or changed) when invoked again.  For caching purpose, 
-  it needs to have a fixed blocksize. So **blocksize** needs to
-  be declared.
+  what was posted and will post only files (or parts of files) that were new
+  when invoked again.   This is incompatible with the default *parts 0* strategy, one
+  must specify an alternate strategy.
+
+  So **parts** needs to be set (to either 1 or a fixed blocksize.)
 
 **[-dr|--document_root <path>]**
 

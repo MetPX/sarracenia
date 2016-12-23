@@ -197,7 +197,7 @@ class sr_sftp():
         self.sftp.remove(path)
 
     # get 
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
 
         # on fly checksum 
@@ -265,6 +265,9 @@ class sr_sftp():
                  if chk : chk.update(chunk)
                  if cb  : cb(chunk)
 
+        
+        if ( local_offset + length >= filesize ):
+           fp.truncate() 
         rfp.close()
         fp.close()
 
@@ -468,20 +471,20 @@ class sftp_transport():
                 sftp.set_sumalgo(msg.sumalgo)
 
                 if parent.lock == None or msg.partflg == 'i' :
-                   sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length)
+                   sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
                 elif parent.lock == '.' :
                    local_lock = ''
                    local_dir  = os.path.dirname (msg.local_file)
                    if local_dir != '' : local_lock = local_dir + os.sep
                    local_lock += '.' + os.path.basename(msg.local_file)
-                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length)
+                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
             
                 elif parent.lock[0] == '.' :
                    local_lock  = msg.local_file + parent.lock
-                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length)
+                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
     

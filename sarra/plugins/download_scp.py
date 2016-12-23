@@ -41,6 +41,7 @@ class SCP_DOWNLOAD(object):
 
       import subprocess
 
+      # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
       sourcefile = msg.url.hostname + ':' + msg.url.path
 
       if msg.url.username:
@@ -48,7 +49,7 @@ class SCP_DOWNLOAD(object):
 
       cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.local_file ] 
 
-      logger.info("download invoking: %s " % cmd )
+      logger.debug("download_scp invoking: %s " % cmd )
       
       result =  subprocess.call( cmd )
       
@@ -60,7 +61,7 @@ class SCP_DOWNLOAD(object):
       #Failure!
 
       if parent.reportback:
-         msg.report_publish(499,'scp download failed')
+         msg.report_publish(499,'download_scp failed invocation of: %s ' % cmd )
 
       return False 
 

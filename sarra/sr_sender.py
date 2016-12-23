@@ -448,6 +448,17 @@ class sr_sender(sr_instances):
 
         self.remote_rpath = self.local_rpath
         self.remote_file  = self.local_file
+       
+
+        if self.strip > 0 :
+           token = self.remote_rpath.split('/')
+
+           if self.strip >= len(token)-1 : 
+               token = [token[-1]]
+           else:                          
+               token = token[self.strip:]
+
+           self.remote_rpath = '/'.join(token)
 
         # no mirror and no directory ...
         if not self.mirror and self.currentDir == None :
