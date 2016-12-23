@@ -182,6 +182,10 @@ class http_transport():
               if chk : chk.update(chunk)
               if cb  : cb(chunk)
 
+        # if new version of file replaces longer previous version.
+        if fp.tell() >= msg.filesize:
+           fp.truncate()
+
         fp.close()
 
         if chk : self.checksum = chk.get_value()
