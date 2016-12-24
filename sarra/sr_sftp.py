@@ -312,7 +312,7 @@ class sr_sftp():
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
 
     # put
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0):
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
         if length == 0 :
@@ -356,6 +356,10 @@ class sr_sftp():
            if cb : cb(chunk)
 
         fp.close()
+
+        if rfp.tell() >= filesize:
+           rfp.truncate()
+
         rfp.close()
 
     # rename
@@ -569,14 +573,14 @@ class sftp_transport():
                     (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
     
                 if parent.lock == None or msg.partflg == 'i' :
-                   sftp.put(local_file, parent.remote_file, offset, offset, msg.length)
+                   sftp.put(local_file, parent.remote_file, offset, offset, msg.length, msg.filesize)
                 elif parent.lock == '.' :
                    remote_lock = '.'  + parent.remote_file
-                   sftp.put(local_file, remote_lock)
+                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
                 elif parent.lock[0] == '.' :
                    remote_lock = parent.remote_file + parent.lock
-                   sftp.put(local_file, remote_lock)
+                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
     
                 try   : sftp.chmod(parent.chmod,parent.remote_file)

@@ -49,7 +49,7 @@ def file_insert( parent,msg ) :
     fp = open(msg.url.path,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
-    ok = file_write_length(fp, msg, parent.bufsize )
+    ok = file_write_length(fp, msg, parent.bufsize, msg.filesize )
 
     fp.close()
 
@@ -104,7 +104,10 @@ def file_insert_part(parent,msg,part_file):
                    if chk : chk.update(buf)
                    i  += len(buf)
 
-             ft.close()
+             if ft.tell() >= msg.filesize:
+                 ft.truncate()
+
+             ft.close() 
              fp.close()
 
              if i != msg.length :
@@ -295,7 +298,7 @@ def file_reassemble(parent):
 # file_write_length
 # called by file_process->file_insert (general file:// processing)
 
-def file_write_length(req,msg,bufsize):
+def file_write_length(req,msg,bufsize,filesize):
     msg.logger.debug("file_write_length")
 
     msg.onfly_checksum = None
@@ -329,6 +332,9 @@ def file_write_length(req,msg,bufsize):
        chunk = req.read(r)
        fp.write(chunk)
        if chk : chk.update(chunk)
+
+    if fp.tell() >= msg.filesize:
+       fp.truncate()
 
     fp.close()
   
