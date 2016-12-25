@@ -196,6 +196,11 @@ class sr_sftp():
         self.logger.debug("sr_sftp rm %s" % path)
         self.sftp.remove(path)
 
+    # symlink
+    def symlink(self, link, path):
+        self.logger.debug("sr_sftp symlink %s %s" % (link, path) )
+        self.sftp.symlink(link, path)
+
     # get 
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
@@ -266,7 +271,7 @@ class sr_sftp():
                  if cb  : cb(chunk)
 
         
-        if ( local_offset + length >= filesize ):
+        if fp.tell() >= filesize :
            fp.truncate() 
         rfp.close()
         fp.close()
@@ -554,6 +559,16 @@ class sftp_transport():
                    msg.logger.debug("message is to remove %s" % parent.remote_file)
                    sftp.delete(parent.remote_file)
                    msg.report_publish(205,'Reset Content : deleted')
+                   return True
+
+                #=================================
+                # link event
+                #=================================
+
+                if msg.sumflg == 'L' :
+                   msg.logger.debug("message is to link %s to: %s" % ( parent.remote_file, msg.headers['link'] ))
+                   sftp.symlink(msg.headers['link'],parent.remote_file)
+                   msg.report_publish(205,'Reset Content : linked')
                    return True
 
                 #=================================
