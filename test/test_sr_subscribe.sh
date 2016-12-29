@@ -67,7 +67,7 @@ cp toto.p1 toto.128.2.0.1.d.Part
 cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
 cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
 
-chmod 666 toto* /var/www/html/toto* /apps/px/test/toto*
+chmod 666 toto* /var/www/test/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
