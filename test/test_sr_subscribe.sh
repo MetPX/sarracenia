@@ -67,7 +67,7 @@ cp toto.p1 toto.128.2.0.1.d.Part
 cp toto.p1 /var/www/test/toto.128.2.0.1.d.Part
 cp toto.p1 /apps/px/test/toto.128.2.0.1.d.Part
 
-chmod 666 toto* /var/www/test/toto* /apps/px/test/toto*
+chmod 666 toto* /var/www/html/toto* /apps/px/test/toto*
 
 cat << EOF > subscribe_test.conf
 
@@ -91,13 +91,13 @@ rm ./.*.queue
 # Define test functions
 function test2 {
 
-      echo -n "sr_post -dr /var/www -u http://localhost/test/toto -to alta ... "
+      echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/ -to alta ... "
       $SR_SUBSCRIBE $* start > ./sr_subscribe_test2.log 2>&1 &
 
       sleep 5
 
       #======== 1
-      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www/ -p test/toto -u http://localhost/ -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_4
 
@@ -119,8 +119,8 @@ function test2 {
       #parts I
 
       #======== 2
-      echo -n "sr_post -dr /var/www -u http://localhost/test/toto  -p i,128 -to alta ... "
-      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,128 -to alta > /dev/null 2>&1
+      echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/test/toto --parts i,128 -to alta ... "
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost -dr /var/www -p test/toto -u http://localhost/ --parts i,128 -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_5
 
@@ -141,9 +141,9 @@ function test2 {
       #parts P
 
       #======== 2
-      echo -n "sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.*.d.Part -to alta ... "
-      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.1.d.Part -p p -to alta > /dev/null 2>&1
-      ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto.128.2.0.0.d.Part -p p -to alta > /dev/null 2>&1
+      echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.*.d.Part -u http://localhost/ -to alta ... "
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.1.d.Part -u http://localhost/ --parts p -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.0.d.Part -u http://localhost/ --parts p -to alta > /dev/null 2>&1
       sleep 5
       touch ./test/test_no_6
 
@@ -172,7 +172,7 @@ function test4 {
          $SR_SUBSCRIBE $* start > ./sr_subscribe_test4.log 2>&1 &
          sleep 10
 
-         ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,1 -r -to alta > /dev/null 2>&1
+         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost -dr /var/www -p test/toto -u http://localhost/ --parts i,1 -r -to alta > /dev/null 2>&1
 
          sleep 30
          touch ./test/test_no_8
@@ -205,7 +205,7 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto
          echo abc >> ./test/toto
 
-         ${SARRA_PATH}/sr_post -dr /var/www -u http://localhost/test/toto -p i,11 -r -to alta > /dev/null 2>&1
+         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/ --parts i,11 -r -to alta > /dev/null 2>&1
 
          sleep 30
          touch ./test/test_no_9
