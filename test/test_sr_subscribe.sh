@@ -87,6 +87,22 @@ EOF
 mkdir ./test
 rm ./.*.queue
 
+function test1 {
+
+			echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/ -to alta ... "
+			$SR_SUBSCRIBE $* start > ./sr_subscribe_test1.log 2>&1 &
+
+			sleep 5
+
+			${SARRA_PATH}/sr_post -b amqp://tsource@localhost/   \
+														-p /var/www/test/toto          \
+														-u sftp://vagrant@localhost    \
+														-to alta > /dev/null 2>&1      \
+														/
+
+
+}
+
 
 # Define test functions
 function test2 {
@@ -97,7 +113,12 @@ function test2 {
       sleep 5
 
       #======== 1
-      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www/ -p test/toto -u http://localhost/ -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/   \
+                            -dr /var/www/                  \
+                            -p test/toto                   \
+                            -u http://localhost/           \
+                            -to alta > /dev/null 2>&1      \
+                            /
       sleep 5
       touch ./test/test_no_4
 
@@ -111,7 +132,7 @@ function test2 {
       if ((N==0)) ; then
          echo OK
       else
-         echo FAILED 
+         echo FAILED
          exit 1
       fi
       rm   ./test/*
@@ -120,7 +141,13 @@ function test2 {
 
       #======== 2
       echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/test/toto --parts i,128 -to alta ... "
-      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost -dr /var/www -p test/toto -u http://localhost/ --parts i,128 -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost    \
+			    -dr /var/www                   \
+			    -p test/toto                   \
+			    -u http://localhost/           \
+		            --parts i,128                  \
+			    -to alta > /dev/null 2>&1      \
+			    /
       sleep 5
       touch ./test/test_no_5
 
@@ -131,7 +158,7 @@ function test2 {
          N=`diff toto ./test/toto|wc -l`
       fi
       if ((N==0)) ; then
-         echo OK 
+         echo OK
       else
          echo FAILED
          exit 1
@@ -142,8 +169,21 @@ function test2 {
 
       #======== 2
       echo -n "sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.*.d.Part -u http://localhost/ -to alta ... "
-      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.1.d.Part -u http://localhost/ --parts p -to alta > /dev/null 2>&1
-      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto.128.2.0.0.d.Part -u http://localhost/ --parts p -to alta > /dev/null 2>&1
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/   \
+			    -dr /var/www                   \
+		            -p test/toto.128.2.0.1.d.Part  \
+			    -u http://localhost/           \
+			    --parts p                      \
+		            -to alta > /dev/null 2>&1      \
+			    /
+
+      ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/   \
+			    -dr /var/www                   \
+			    -p test/toto.128.2.0.0.d.Part  \
+			    -u http://localhost/           \
+			    --parts p                      \
+	                    -to alta > /dev/null 2>&1      \
+		            /
       sleep 5
       touch ./test/test_no_6
 
@@ -153,7 +193,7 @@ function test2 {
       else
          N=`diff toto ./test/toto|wc -l`
       fi
-      
+
       if ((N==0)) ; then
          echo OK
       else
@@ -172,7 +212,13 @@ function test4 {
          $SR_SUBSCRIBE $* start > ./sr_subscribe_test4.log 2>&1 &
          sleep 10
 
-         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost -dr /var/www -p test/toto -u http://localhost/ --parts i,1 -r -to alta > /dev/null 2>&1
+         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost    \
+			       -dr /var/www                   \
+	                       -p test/toto                   \
+			       -u http://localhost/           \
+			       --parts i,1 -r                 \
+			       -to alta > /dev/null 2>&1      \
+			       /
 
          sleep 30
          touch ./test/test_no_8
@@ -205,8 +251,13 @@ function test5 {
          cat toto | sed 's/12345/abcde/' > ./test/toto
          echo abc >> ./test/toto
 
-         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/ -dr /var/www -p test/toto -u http://localhost/ --parts i,11 -r -to alta > /dev/null 2>&1
-
+         ${SARRA_PATH}/sr_post -b amqp://tsource@localhost/   \
+                               -dr /var/www                   \
+                               -p test/toto                   \
+                               -u http://localhost/           \
+                               --parts i,11 -r                \
+                               -to alta > /dev/null 2>&1      \
+                               /
          sleep 30
          touch ./test/test_no_9
 
@@ -216,7 +267,7 @@ function test5 {
          else
             N=`diff toto ./test/toto|wc -l`
          fi
-         
+
          if ((N==0)) ; then
             echo OK
          else
@@ -233,7 +284,7 @@ function test5 {
 
 
 # Run tests
-echo 
+echo
 echo "* Running INPLACE test suite:"
 test2 ./subscribe_test.conf
 
@@ -249,4 +300,3 @@ rm ./sr_subscribe_*.log ./.*ubscribe_* ./toto* ./test/t* ./subscribe_tes*.conf >
 rmdir ./test > /dev/null 2>&1
 rm -rf /tmp/sr_sarra
 exit 0
-
