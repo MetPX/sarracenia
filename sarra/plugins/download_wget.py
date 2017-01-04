@@ -40,7 +40,7 @@ class WGET_DOWNLOAD(object):
       import subprocess
 
       msg.urlstr = msg.urlstr.replace("download:","http:")
-      cmd = parent.download_wget_command[0].split() + msg.urlstr
+      cmd = parent.download_wget_command[0].split() + [ msg.urlstr ]
       logger.info("download_wget invoking: %s " % cmd )
       result =  subprocess.call( cmd )
       
