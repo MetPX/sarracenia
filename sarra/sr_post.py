@@ -109,7 +109,7 @@ class sr_post(sr_config):
         print("-b   <broker>          default:amqp://guest:guest@localhost/")
         print("-c   <config_file>")
         print("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : print("-e   <events>          default:created|deleted|modified\n")
+        if self.program_name == 'sr_watch' : print("-e   <events>          default:created|deleted|follow|linked|modified\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
@@ -167,14 +167,10 @@ class sr_post(sr_config):
         # should always be ok
         ok = True
         if self.event in self.events:
-           #if self.on_post :
-           #    self.logger.debug("sr_post user on_post")
-           #    ok = self.on_post(self)
-           #if not ok: return ok
            for plugin in self.on_post_list:
                if not plugin(self): return False
 
-           ok = self.msg.publish( )
+           ok = self.msg.publish()
 
         return ok
 
@@ -183,7 +179,7 @@ class sr_post(sr_config):
         pass
 
     def posting(self):
-        self.logger.debug("sr_post posting")
+        self.logger.debug("sr_post posting %s" % ( self.url.path ) )
 
         filepath = '/' + self.url.path.strip('/')
 
@@ -239,6 +235,38 @@ class sr_post(sr_config):
 
            if not ok : sys.exit(1)
            return
+
+        
+        # ==============
+        # link event...
+        # ==============
+
+        """
+        table:          behaviour
+        Link  Follow 
+        False False     ignore the symlink
+        False True      file is posted using the link name, rathter than the value of the link.
+        True  False     Link is posted.
+        True  True      Link is posted, and the link followed and that is posted also.
+        """
+
+        if os.path.islink(filepath):
+           if 'link' in self.events: 
+               self.logger.error("posting is a link")
+               #self.msg.headers[ 'link' ] = os.readlink(filepath)
+
+               ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
+                    'L,%d' % random.randint(0,100), rename, filename, link=os.readlink(filepath))
+
+               if not ok : sys.exit(1)
+
+               filepath = os.path.realpath(filepath)
+               urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
+               self.url = urllib.parse.urlparse(urlstr)
+
+           if not 'follow' in self.events: return True
+
+          # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 
         # ==============
         # p partflg special case
@@ -337,7 +365,7 @@ class sr_post(sr_config):
         return True
 
     def watching(self, fpath, event ):
-        self.logger.debug("sr_post watching")
+        self.logger.debug("sr_post watching %s, ev=%s" % ( fpath, event ) )
 
         self.event = event
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
@@ -382,7 +410,7 @@ class sr_post(sr_config):
            sys.exit(1)
 
         watch_path = os.path.abspath (watch_path)
-        watch_path = os.path.realpath(watch_path)
+        #watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):
            self.logger.info("file %s " % watch_path )
@@ -425,6 +453,8 @@ def main():
                 post.logger.error("no path to post")
                 post.help()
                 os._exit(1)
+               
+             post.poster.logger = post.logger
 
              for watchpath in post.postpath :
 
@@ -432,7 +462,9 @@ def main():
 
                  post.lock_set()
 
-                 if os.path.isfile(watchpath) : 
+                 if os.path.islink(watchpath) : 
+                    post.watching(watchpath,'linked')
+                 elif os.path.isfile(watchpath) : 
                     post.watching(watchpath,'modified')
                  else :
                     post.scandir_and_post(watchpath,post.recursive)

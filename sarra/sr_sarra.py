@@ -408,6 +408,26 @@ class sr_sarra(sr_instances):
            return True
 
         #=================================
+        # link event, try to link and propagate message
+        #=================================
+        if self.msg.sumflg == 'L' :
+           self.logger.debug("message is to link %s to %s" % self.msg.local_file, self.msg.headers['link'] )
+           ok=False
+           try :
+               ok = os.symlink( self.msg.headers[ 'link' ], self.msg.local_file )
+               if ok:
+                  self.logger.debug("%s linked to %s " % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+           except:
+               self.logger.error("symlink of %s %s failed." % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+
+           if ok:
+              self.msg.set_topic_url('v02.post',self.msg.local_url)
+              self.msg.set_notice(self.msg.local_url,self.msg.time)
+              self.__on_post__()
+              self.msg.report_publish(205,'Reset Content : linked')
+
+           return True
+        #=================================
         # prepare download 
         # make sure local directory where the file will be downloaded exists
         #=================================

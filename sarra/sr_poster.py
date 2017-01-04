@@ -207,8 +207,8 @@ class sr_poster:
         self.msg.user      = self.broker.username
         self.msg.publisher = self.publisher
 
-    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None):
-        self.logger.debug("sr_poster post")
+    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,link=None):
+        self.logger.error("sr_poster post %s caching: %s " % ( url.path, self.caching ) )
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
@@ -222,6 +222,10 @@ class sr_poster:
                  
            # delete
            elif sumstr.startswith('R,'):
+                del self.cache[key]
+
+           # link - never store them, message contains whole payload.
+           elif sumstr.startswith('L,'):
                 del self.cache[key]
 
            # modified, or repost
@@ -257,6 +261,7 @@ class sr_poster:
         if rename   != None : self.msg.headers['rename']       = rename
         if mtime    != None : self.msg.headers['mtime']        = mtime
         if atime    != None : self.msg.headers['atime']        = atime
+        if link     != None : self.msg.headers['link']         = link
 
         if self.parent.cluster != None : self.msg.headers['from_cluster'] = self.parent.cluster
         if self.parent.source  != None : self.msg.headers['source']       = self.parent.source
@@ -265,6 +270,7 @@ class sr_poster:
         if self.parent.flow    != None : self.msg.headers['flow']         = self.parent.flow
 
         ok = self.parent.__on_post__()
+
         return ok
 
     def post_local_file(self,path,exchange,url,to_clusters,sumflg='d',rename=None):
@@ -417,6 +423,7 @@ class sr_poster:
               i = i + 1
 
         return ok
+
 
     def post_local_part(self,path,exchange,url,to_clusters,rename=None):
         self.logger.debug("sr_poster post_local_part")

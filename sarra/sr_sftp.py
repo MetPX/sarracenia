@@ -196,6 +196,11 @@ class sr_sftp():
         self.logger.debug("sr_sftp rm %s" % path)
         self.sftp.remove(path)
 
+    # symlink
+    def symlink(self, link, path):
+        self.logger.debug("sr_sftp symlink %s %s" % (link, path) )
+        self.sftp.symlink(link, path)
+
     # get 
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
@@ -266,7 +271,7 @@ class sr_sftp():
                  if cb  : cb(chunk)
 
         
-        if ( local_offset + length >= filesize ):
+        if fp.tell() >= filesize :
            fp.truncate() 
         rfp.close()
         fp.close()
@@ -312,7 +317,7 @@ class sr_sftp():
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
 
     # put
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0):
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
         if length == 0 :
@@ -356,6 +361,10 @@ class sr_sftp():
            if cb : cb(chunk)
 
         fp.close()
+
+        if rfp.tell() >= filesize:
+           rfp.truncate()
+
         rfp.close()
 
     # rename
@@ -553,6 +562,16 @@ class sftp_transport():
                    return True
 
                 #=================================
+                # link event
+                #=================================
+
+                if msg.sumflg == 'L' :
+                   msg.logger.debug("message is to link %s to: %s" % ( parent.remote_file, msg.headers['link'] ))
+                   sftp.symlink(msg.headers['link'],parent.remote_file)
+                   msg.report_publish(205,'Reset Content : linked')
+                   return True
+
+                #=================================
                 # send event
                 #=================================
 
@@ -569,14 +588,14 @@ class sftp_transport():
                     (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
     
                 if parent.lock == None or msg.partflg == 'i' :
-                   sftp.put(local_file, parent.remote_file, offset, offset, msg.length)
+                   sftp.put(local_file, parent.remote_file, offset, offset, msg.length, msg.filesize)
                 elif parent.lock == '.' :
                    remote_lock = '.'  + parent.remote_file
-                   sftp.put(local_file, remote_lock)
+                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
                 elif parent.lock[0] == '.' :
                    remote_lock = parent.remote_file + parent.lock
-                   sftp.put(local_file, remote_lock)
+                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
     
                 try   : sftp.chmod(parent.chmod,parent.remote_file)
