@@ -29,7 +29,7 @@ import calendar
 
 class WGET_DOWNLOAD(object): 
 
-   def __init__(self):
+   def __init__(self,parent):
       if not hasattr(parent,'download_wget_command'):
          parent.download_wget_command= [ '/usr/bin/wget' ]
           
@@ -53,6 +53,6 @@ class WGET_DOWNLOAD(object):
          msg.report_publish(499,'wget download failed')
       return False 
 
-wget_download = WGET_DOWNLOAD()
+wget_download = WGET_DOWNLOAD(self)
 self.do_download = wget_download.perform
 
