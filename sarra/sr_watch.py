@@ -179,6 +179,7 @@ class sr_watch(sr_instances):
 # ===================================
 
 unready = {}
+unready_tmp = {}
 
 # ===================================
 # MAIN
@@ -213,21 +214,35 @@ def main():
 
         def event_sleep(self):
             global unready
+            global unready_tmp
 
-            unready_tmp = dict(unready)
-            for f in unready:
+            nu = unready.copy()
+            unready={}
+
+            unready_tmp.update(nu)
+            done=[]
+            for f in unready_tmp:
+                e=unready_tmp[f]
                 if os.access(f, os.R_OK):
-                    watch.logger.debug("File=%s is posted and removed from unready" % str(f))
-                    self.do_post(f, unready[f])
-                    del unready_tmp[f]
-            unready = dict(unready_tmp)
+                    watch.logger.debug("event_sleep posting %s of %s " % ( e, f) )
+                    self.do_post(f, e)
+                    done += [ f ]
+                else:
+                    watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
+            
+            watch.logger.debug("event_sleep done: %s " % done )
+            for f in done:
+                del unready_tmp[f]
+
+            watch.logger.debug("event_sleep left over: %s " % unready_tmp )
+
 
         def event_post(self, path, tag):
             global unready
 
             if os.access(path, os.R_OK):
                 watch.logger.debug("File=%s is posted" % str(path))
-                self.do_post(path, tag)
+                unready[path]=tag
             else:
                 if os.path.exists(path):
                     watch.logger.debug("File=%s is added to unready" % str(path))
