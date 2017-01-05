@@ -173,6 +173,7 @@ while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and
     countall
     if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
        printf "error: giving up on this test\n"
+       tno=$((${tno}+1))
        break
     fi
 done
