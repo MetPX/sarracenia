@@ -141,9 +141,20 @@ class sr_watch(sr_instances):
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
             self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
+
+            # do periodic events (at most, once every 'time_interval' seconds)
+            while True:
+               start_sleep_event = time.time()
+               self.myeventhandler.event_sleep()
+               end_sleep_event = time.time()
+               how_long = self.time_interval - ( end_sleep_event - start_sleep_event )
+               if how_long > 0:
+                  time.sleep(how_long)
+
         except OSError as err:
             self.logger.error("Unable to start Observer: %s" % str(err))
             os._exit(0)
+
 
         self.observer.join()
 
@@ -200,7 +211,7 @@ def main():
     class MyEventHandler(PatternMatchingEventHandler):
         ignore_patterns = ["*.tmp"]
 
-        def event_post(self, path, tag):
+        def event_sleep(self):
             global unready
 
             unready_tmp = dict(unready)
@@ -210,6 +221,9 @@ def main():
                     self.do_post(f, unready[f])
                     del unready_tmp[f]
             unready = dict(unready_tmp)
+
+        def event_post(self, path, tag):
+            global unready
 
             if os.access(path, os.R_OK):
                 watch.logger.debug("File=%s is posted" % str(path))
