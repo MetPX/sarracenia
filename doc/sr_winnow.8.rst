@@ -56,10 +56,10 @@ the option settings.
 ACTIVE/PASSIVE OPTIONS
 ----------------------
 
-**sr_winnow** can be used on a single server.
-Idealy, to make it more robust, you would run it on clustered brokers.
-An high availability software presents a **vip** (virtual ip) on the active
-server. Should the server go down, the **vip** is moved on another server.
+**sr_winnow** can be used on a single server node, or multiple nodes
+could share responsibility. Some other, separately configured, high availability 
+software presents a **vip** (virtual ip) on the active server. Should 
+the server go down, the **vip** is moved on another server.
 Both servers would run **sr_winnow**. It is for that reason that the 
 following options were implemented:
 
