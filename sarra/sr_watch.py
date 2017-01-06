@@ -142,12 +142,12 @@ class sr_watch(sr_instances):
             self.observer.start()
             self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
 
-            # do periodic events (at most, once every 'time_interval' seconds)
+            # do periodic events (at most, once every 'sleep' seconds)
             while True:
                start_sleep_event = time.time()
                self.myeventhandler.event_sleep()
                end_sleep_event = time.time()
-               how_long = self.time_interval - ( end_sleep_event - start_sleep_event )
+               how_long = self.sleep - ( end_sleep_event - start_sleep_event )
                if how_long > 0:
                   time.sleep(how_long)
 
@@ -178,8 +178,8 @@ class sr_watch(sr_instances):
 # GLOBAL
 # ===================================
 
-unready = {}
-unready_tmp = {}
+new_events = {}
+events_outstanding = {}
 
 # ===================================
 # MAIN
@@ -213,18 +213,18 @@ def main():
         ignore_patterns = ["*.tmp"]
 
         def event_sleep(self):
-            global unready
-            global unready_tmp
+            global new_events
+            global events_outstanding
 
-            nu = unready.copy()
-            unready={}
+            nu = new_events.copy()
+            new_events={}
 
-            unready_tmp.update(nu)
-            if len(unready_tmp) > 0:
+            events_outstanding.update(nu)
+            if len(events_outstanding) > 0:
                watch.post.lock_set()
                done=[]
-               for f in unready_tmp:
-                   e=unready_tmp[f]
+               for f in events_outstanding:
+                   e=events_outstanding[f]
                    watch.logger.debug("event_sleep working on %s of %s " % ( e, f) )
                    if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_sleep calling do_post ! " )
@@ -235,31 +235,31 @@ def main():
                watch.post.lock_unset()
                watch.logger.debug("event_sleep done: %s " % done )
                for f in done:
-                   del unready_tmp[f]
+                   del events_outstanding[f]
 
-            watch.logger.debug("event_sleep left over: %s " % unready_tmp )
+            watch.logger.debug("event_sleep left over: %s " % events_outstanding )
 
 
         def event_post(self, path, tag):
-            global unready
-            unready[path]=tag
+            global new_events
+            new_events[path]=tag
         
         def do_post(self, path, tag):
-            global unready
+            global new_events
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
                     watch.post.watching(path, tag)
             except PermissionError as err:
-                unready[path] = tag
+                new_events[path] = tag
                 watch.logger.error(str(err))
 
         def on_created(self, event):
-            watch.logger.debug("on_created... File=%s is added to unready" % str(event.src_path))
+            watch.logger.debug("on_created... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'created')
  
         def on_deleted(self, event):
-            watch.logger.debug("on_deleted... File=%s is added to unready" % str(event.src_path))
+            watch.logger.debug("on_deleted... File=%s is added to new_events" % str(event.src_path))
             if event.src_path == watch.watch_path:
                 watch.stop_touch()
                 watch.logger.error('Exiting!')
@@ -268,12 +268,12 @@ def main():
                 self.event_post(event.src_path, 'deleted')
     
         def on_modified(self, event):
-            watch.logger.debug("on_modified... File=%s is added to unready" % str(event.src_path))
+            watch.logger.debug("on_modified... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'modified')
 
         def on_moved(self, event):
-            watch.logger.debug("on_moved... File=%s is added to unready" % str(event.src_path))
+            watch.logger.debug("on_moved... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                # not so sure about testing accept/reject on src and dst
                # but we dont care for now... it is not supported
