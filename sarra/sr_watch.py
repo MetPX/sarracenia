@@ -220,19 +220,18 @@ def main():
             unready={}
 
             unready_tmp.update(nu)
-            done=[]
             if len(unready_tmp) > 0:
                watch.post.lock_set()
-
+               done=[]
                for f in unready_tmp:
                    e=unready_tmp[f]
-                   if os.access(f, os.R_OK):
-                       watch.logger.debug("event_sleep posting %s of %s " % ( e, f) )
+                   watch.logger.debug("event_sleep working on %s of %s " % ( e, f) )
+                   if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
+                       watch.logger.debug("event_sleep calling do_post ! " )
                        self.do_post(f, e)
                        done += [ f ]
                    else:
                        watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
-            
                watch.post.lock_unset()
                watch.logger.debug("event_sleep done: %s " % done )
                for f in done:
@@ -243,14 +242,7 @@ def main():
 
         def event_post(self, path, tag):
             global unready
-
-            if os.access(path, os.R_OK):
-                watch.logger.debug("File=%s is posted" % str(path))
-                unready[path]=tag
-            else:
-                if os.path.exists(path):
-                    watch.logger.debug("File=%s is added to unready" % str(path))
-                    unready[path] = tag
+            unready[path]=tag
         
         def do_post(self, path, tag):
             global unready
@@ -262,10 +254,12 @@ def main():
                 watch.logger.error(str(err))
 
         def on_created(self, event):
+            watch.logger.debug("on_created... File=%s is added to unready" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'created')
  
         def on_deleted(self, event):
+            watch.logger.debug("on_deleted... File=%s is added to unready" % str(event.src_path))
             if event.src_path == watch.watch_path:
                 watch.stop_touch()
                 watch.logger.error('Exiting!')
@@ -274,10 +268,12 @@ def main():
                 self.event_post(event.src_path, 'deleted')
     
         def on_modified(self, event):
+            watch.logger.debug("on_modified... File=%s is added to unready" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'modified')
 
         def on_moved(self, event):
+            watch.logger.debug("on_moved... File=%s is added to unready" % str(event.src_path))
             if (not event.is_directory):
                # not so sure about testing accept/reject on src and dst
                # but we dont care for now... it is not supported
