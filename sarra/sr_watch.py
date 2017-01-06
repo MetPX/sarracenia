@@ -178,8 +178,6 @@ class sr_watch(sr_instances):
 # GLOBAL
 # ===================================
 
-new_events = {}
-events_outstanding = {}
 
 # ===================================
 # MAIN
@@ -212,19 +210,22 @@ def main():
     class MyEventHandler(PatternMatchingEventHandler):
         ignore_patterns = ["*.tmp"]
 
+        def __init__(self):
+            super().__init__()
+            self.new_events = {}
+            self.events_outstanding = {}
+
         def event_sleep(self):
-            global new_events
-            global events_outstanding
 
-            nu = new_events.copy()
-            new_events={}
+            nu = self.new_events.copy()
+            self.new_events={}
 
-            events_outstanding.update(nu)
-            if len(events_outstanding) > 0:
+            self.events_outstanding.update(nu)
+            if len(self.events_outstanding) > 0:
                watch.post.lock_set()
                done=[]
-               for f in events_outstanding:
-                   e=events_outstanding[f]
+               for f in self.events_outstanding:
+                   e=self.events_outstanding[f]
                    watch.logger.debug("event_sleep working on %s of %s " % ( e, f) )
                    if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_sleep calling do_post ! " )
@@ -235,22 +236,20 @@ def main():
                watch.post.lock_unset()
                watch.logger.debug("event_sleep done: %s " % done )
                for f in done:
-                   del events_outstanding[f]
+                   del self.events_outstanding[f]
 
-            watch.logger.debug("event_sleep left over: %s " % events_outstanding )
+            watch.logger.debug("event_sleep left over: %s " % self.events_outstanding )
 
 
         def event_post(self, path, tag):
-            global new_events
-            new_events[path]=tag
+            self.new_events[path]=tag
         
         def do_post(self, path, tag):
-            global new_events
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
                     watch.post.watching(path, tag)
             except PermissionError as err:
-                new_events[path] = tag
+                self.outstanding_events[path] = tag
                 watch.logger.error(str(err))
 
         def on_created(self, event):
