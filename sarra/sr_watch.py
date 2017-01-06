@@ -15,7 +15,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Daluma Sen     - Shared Services Canada
-#  Last Changed   : Feb 29 11:25:05 EST 2016
+#  Peter  Silva   - Shared Services Canada
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -216,6 +216,9 @@ def main():
 
         def event_sleep(self):
 
+            # FIXME: Tiny potential for events to be dropped during copy.
+            #     these lists might need to be replaced with watchdog event queues.
+            #     left for later work. PS-20170105
             nu = self.new_events.copy()
             self.new_events={}
 
@@ -241,6 +244,8 @@ def main():
 
 
         def event_post(self, path, tag):
+            # FIXME: as per tiny potential, this routine shoule likely 'event_queue'
+            # that is why have not replaced this function by direct assignment in callers.
             self.new_events[path]=tag
         
         def do_post(self, path, tag):
@@ -252,12 +257,10 @@ def main():
                 watch.logger.error(str(err))
 
         def on_created(self, event):
-            watch.logger.debug("on_created... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'created')
  
         def on_deleted(self, event):
-            watch.logger.debug("on_deleted... File=%s is added to new_events" % str(event.src_path))
             if event.src_path == watch.watch_path:
                 watch.stop_touch()
                 watch.logger.error('Exiting!')
@@ -266,12 +269,10 @@ def main():
                 self.event_post(event.src_path, 'deleted')
     
         def on_modified(self, event):
-            watch.logger.debug("on_modified... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                 self.event_post(event.src_path, 'modified')
 
         def on_moved(self, event):
-            watch.logger.debug("on_moved... File=%s is added to new_events" % str(event.src_path))
             if (not event.is_directory):
                # not so sure about testing accept/reject on src and dst
                # but we dont care for now... it is not supported
