@@ -444,7 +444,7 @@ class sr_config:
 
         self.inplace              = False
 
-        self.lock                 = None
+        self.inflight             = None
         self.chmod                = 0o775
         self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
 
@@ -999,8 +999,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
-                     self.lock = words[1] 
-                     if self.lock[0] != '.' : self.lock = None
+                     self.inflight = words[1] 
                      n = 2
 
                 elif words0 in ['log','l']: # See: sr_config.7 

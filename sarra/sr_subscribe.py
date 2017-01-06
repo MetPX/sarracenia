@@ -97,7 +97,7 @@ class sr_subscribe(sr_instances):
         self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
         self.exchange       = 'xpublic'
         self.inplace        = True
-        self.lock           = '.tmp'
+        self.inflight       = '.tmp'
         self.mirror         = False
 
     def connect(self):
@@ -201,7 +201,7 @@ class sr_subscribe(sr_instances):
           "\taccept    <regexp pattern> (MANDATORY)\n" +
           "\tdirectory <path>           (default: .)\n" +
           "\tflatten   <boolean>        (default: false)\n" +
-          "\tlock      <.string>        (default: .tmp)\n" +
+          "\tinflight  <.string>        (default: .tmp)\n" +
           "\tmirror    <boolean>        (default: false)\n" +
           "\treject    <regexp pattern> (optional)\n" +
           "\tstrip    <count> (number of directories to remove from beginning.)\n" +

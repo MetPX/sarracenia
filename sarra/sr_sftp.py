@@ -479,10 +479,10 @@ class sftp_transport():
 
                 sftp.set_sumalgo(msg.sumalgo)
 
-                if parent.lock == None or msg.partflg == 'i' :
+                if parent.inflight == None or msg.partflg == 'i' :
                    sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                    local_lock = ''
                    local_dir  = os.path.dirname (msg.local_file)
                    if local_dir != '' : local_lock = local_dir + os.sep
@@ -491,8 +491,8 @@ class sftp_transport():
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
             
-                elif parent.lock[0] == '.' :
-                   local_lock  = msg.local_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                   local_lock  = msg.local_file + parent.inflight
                    sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
@@ -587,14 +587,14 @@ class sftp_transport():
                 msg.logger.info('Sends: %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
     
-                if parent.lock == None or msg.partflg == 'i' :
+                if parent.inflight == None or msg.partflg == 'i' :
                    sftp.put(local_file, parent.remote_file, offset, offset, msg.length, msg.filesize)
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                    remote_lock = '.'  + parent.remote_file
                    sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
-                elif parent.lock[0] == '.' :
-                   remote_lock = parent.remote_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                   remote_lock = parent.remote_file + parent.inflight
                    sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
     
@@ -718,7 +718,7 @@ def self_test():
 
            cfg.msg     = msg
            cfg.batch   = 5
-           cfg.lock    = None
+           cfg.inflight    = None
        
            dldr = sftp_transport()
            dldr.download(cfg)
@@ -726,14 +726,14 @@ def self_test():
            dldr.download(cfg)
            dldr.download(cfg)
            cfg.logger.info("lock .")
-           cfg.lock    = '.'
+           cfg.inflight    = '.'
            dldr.download(cfg)
            dldr.download(cfg)
            msg.sumalgo = cfg.sumalgo
            dldr.download(cfg)
            logger.debug("checksum = %s" % msg.onfly_checksum)
            cfg.logger.info("lock .tmp")
-           cfg.lock    = '.tmp'
+           cfg.inflight    = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
            dldr.close()
@@ -748,13 +748,13 @@ def self_test():
            cfg.remote_urlstr = "sftp://localhost/tztz/ddd"
            cfg.remote_dir    = "tztz"
            cfg.chmod       = 775
-           cfg.lock        = None
+           cfg.inflight        = None
            dldr.send(cfg)
            dldr.sftp.delete("ddd")
-           cfg.lock        = '.'
+           cfg.inflight        = '.'
            dldr.send(cfg)
            dldr.sftp.delete("ddd")
-           cfg.lock        = '.tmp'
+           cfg.inflight        = '.tmp'
            dldr.send(cfg)
            dldr.send(cfg)
            dldr.send(cfg)

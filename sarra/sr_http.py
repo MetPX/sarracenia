@@ -102,10 +102,10 @@ class http_transport():
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
-                if   parent.lock == None or msg.partflg == 'i' :
+                if   parent.inflight == None or msg.partflg == 'i' :
                      ok = self.http_write(response,msg.local_file,msg)
 
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                      local_lock = ''
                      local_dir  = os.path.dirname (msg.local_file)
                      if local_dir != '' : local_lock = local_dir + os.sep
@@ -114,8 +114,8 @@ class http_transport():
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
                 
-                elif parent.lock[0] == '.' :
-                     local_lock  = msg.local_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                     local_lock  = msg.local_file + parent.inflight
                      ok = self.http_write(response,local_lock,msg)
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
@@ -265,13 +265,13 @@ def self_test():
              
           tr = http_transport()
 
-          cfg.lock = None
+          cfg.inflight = None
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
-          cfg.lock = '.'
+          cfg.inflight = '.'
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
-          cfg.lock = '.tmp'
+          cfg.inflight = '.tmp'
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
           cfg.msg.sumalgo = cfg.sumalgo

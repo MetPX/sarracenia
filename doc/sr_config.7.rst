@@ -474,11 +474,18 @@ and under which name.
 - **kbytes_ps** <count>       (default: 0)**
 
 
-The  **inflight**  option sets a temporary file name used
-during the download so that other programs reading the directory ignore 
-them.  The file is renamed to a permanent name when the transfer is complete.
-It is usually a suffix applied to file names, but if **inflight**  is set to  **.**,
+The  **inflight**  option sets how to ignore files when they are being transferred
+or (in mid-flight betweeen two systems.)
+This assures that consuming  programs reading the directory ignore 
+them until they are ready.  The value can be a file name suffix, which is appended
+to create a temporary name during the transfer.  If **inflight**  is set to **.**,
 then it is prefix, to conform with the standard for "hidden" files on unix/linux.
+In either case, when the transfer is complete, the file is renamed to it's permanent name
+to allow further processing.
+
+If inflight is set to an integer value, then it specifies the minimum number of seconds 
+a file must have remained unchanged before it is accepted for processing
+(used by sr_watch)
 
 **Directory** sets where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the

@@ -84,6 +84,7 @@ class sr_watch(sr_instances):
         self.caching   = True
         self.sleep     = 0.1
         
+        
     def check(self):
         self.nbr_instances  = 1
         self.accept_unmatch = True
@@ -213,6 +214,10 @@ def main():
             super().__init__()
             self.new_events = {}
             self.events_outstanding = {}
+            try: 
+                watch.inflight = int(watch.inflight)
+            except:
+                pass
 
         def event_sleep(self):
 
@@ -228,13 +233,19 @@ def main():
                done=[]
                for f in self.events_outstanding:
                    e=self.events_outstanding[f]
-                   watch.logger.debug("event_sleep working on %s of %s " % ( e, f) )
+
+                   if isinstance(watch.inflight,int):  # waiting for file to be unmodified for 'inflight' seconds...
+                      age = time.time() - os.stat(f)[stat.ST_MTIME] 
+                      if age < watch.inflight :
+                          continue
+
                    if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_sleep calling do_post ! " )
                        self.do_post(f, e)
                        done += [ f ]
                    else:
                        watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
+
                watch.post.lock_unset()
                watch.logger.debug("event_sleep done: %s " % done )
                for f in done:
