@@ -58,7 +58,7 @@
 
 import os, sys, time, shelve, psutil
 
-from watchdog.observers.polling import PollingObserverVFS
+from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
 try :    
@@ -82,7 +82,7 @@ class sr_watch(sr_instances):
     def overwrite_defaults(self):
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
-        self.sleep     = 5
+        self.sleep     = 0.1
         
     def check(self):
         self.nbr_instances  = 1
@@ -96,7 +96,6 @@ class sr_watch(sr_instances):
         self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
-        self.time_interval     = self.sleep
 
         if self.reset :
            self.post.connect()
@@ -136,7 +135,7 @@ class sr_watch(sr_instances):
         self.post.connect()
 
         try:
-            self.observer = PollingObserverVFS(os.stat, os.listdir, self.time_interval)
+            self.observer = Observer()
             self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
