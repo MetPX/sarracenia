@@ -15,7 +15,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Daluma Sen     - Shared Services Canada
-#  Last Changed   : Feb 29 11:25:05 EST 2016
+#  Peter  Silva   - Shared Services Canada
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@
 
 import os, sys, time, shelve, psutil
 
-from watchdog.observers.polling import PollingObserverVFS
+from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
 try :    
@@ -82,7 +82,7 @@ class sr_watch(sr_instances):
     def overwrite_defaults(self):
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
-        self.sleep     = 5
+        self.sleep     = 0.1
         
     def check(self):
         self.nbr_instances  = 1
@@ -96,7 +96,6 @@ class sr_watch(sr_instances):
         self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
-        self.time_interval     = self.sleep
 
         if self.reset :
            self.post.connect()
@@ -136,14 +135,25 @@ class sr_watch(sr_instances):
         self.post.connect()
 
         try:
-            self.observer = PollingObserverVFS(os.stat, os.listdir, self.time_interval)
+            self.observer = Observer()
             self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
             self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
+
+            # do periodic events (at most, once every 'sleep' seconds)
+            while True:
+               start_sleep_event = time.time()
+               self.myeventhandler.event_sleep()
+               end_sleep_event = time.time()
+               how_long = self.sleep - ( end_sleep_event - start_sleep_event )
+               if how_long > 0:
+                  time.sleep(how_long)
+
         except OSError as err:
             self.logger.error("Unable to start Observer: %s" % str(err))
             os._exit(0)
+
 
         self.observer.join()
 
@@ -167,7 +177,6 @@ class sr_watch(sr_instances):
 # GLOBAL
 # ===================================
 
-unready = {}
 
 # ===================================
 # MAIN
@@ -200,34 +209,51 @@ def main():
     class MyEventHandler(PatternMatchingEventHandler):
         ignore_patterns = ["*.tmp"]
 
+        def __init__(self):
+            super().__init__()
+            self.new_events = {}
+            self.events_outstanding = {}
+
+        def event_sleep(self):
+
+            # FIXME: Tiny potential for events to be dropped during copy.
+            #     these lists might need to be replaced with watchdog event queues.
+            #     left for later work. PS-20170105
+            nu = self.new_events.copy()
+            self.new_events={}
+
+            self.events_outstanding.update(nu)
+            if len(self.events_outstanding) > 0:
+               watch.post.lock_set()
+               done=[]
+               for f in self.events_outstanding:
+                   e=self.events_outstanding[f]
+                   watch.logger.debug("event_sleep working on %s of %s " % ( e, f) )
+                   if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
+                       watch.logger.debug("event_sleep calling do_post ! " )
+                       self.do_post(f, e)
+                       done += [ f ]
+                   else:
+                       watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
+               watch.post.lock_unset()
+               watch.logger.debug("event_sleep done: %s " % done )
+               for f in done:
+                   del self.events_outstanding[f]
+
+            watch.logger.debug("event_sleep left over: %s " % self.events_outstanding )
+
+
         def event_post(self, path, tag):
-            global unready
-
-            unready_tmp = dict(unready)
-            for f in unready:
-                if os.access(f, os.R_OK):
-                    watch.logger.debug("File=%s is posted and removed from unready" % str(f))
-                    self.do_post(f, unready[f])
-                    del unready_tmp[f]
-            unready = dict(unready_tmp)
-
-            if os.access(path, os.R_OK):
-                watch.logger.debug("File=%s is posted" % str(path))
-                self.do_post(path, tag)
-            else:
-                if os.path.exists(path):
-                    watch.logger.debug("File=%s is added to unready" % str(path))
-                    unready[path] = tag
+            # FIXME: as per tiny potential, this routine shoule likely 'event_queue'
+            # that is why have not replaced this function by direct assignment in callers.
+            self.new_events[path]=tag
         
         def do_post(self, path, tag):
-            global unready
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
-                    watch.post.lock_set()
                     watch.post.watching(path, tag)
-                    watch.post.lock_unset()
             except PermissionError as err:
-                unready[path] = tag
+                self.outstanding_events[path] = tag
                 watch.logger.error(str(err))
 
         def on_created(self, event):
@@ -252,11 +278,9 @@ def main():
                # but we dont care for now... it is not supported
                if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-                  watch.post.lock_set()
                   #Every file rename inside the watch path will trigger new copy
                   #watch.post.move(event.src_path,event.dest_path)
                   self.event_post(event.dest_path, 'modified')
-                  watch.post.lock_unset()
 
     watch.event_handler(MyEventHandler())
 
