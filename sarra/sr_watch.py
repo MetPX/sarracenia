@@ -221,18 +221,22 @@ def main():
 
             unready_tmp.update(nu)
             done=[]
-            for f in unready_tmp:
-                e=unready_tmp[f]
-                if os.access(f, os.R_OK):
-                    watch.logger.debug("event_sleep posting %s of %s " % ( e, f) )
-                    self.do_post(f, e)
-                    done += [ f ]
-                else:
-                    watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
+            if len(unready_tmp) > 0:
+               watch.post.lock_set()
+
+               for f in unready_tmp:
+                   e=unready_tmp[f]
+                   if os.access(f, os.R_OK):
+                       watch.logger.debug("event_sleep posting %s of %s " % ( e, f) )
+                       self.do_post(f, e)
+                       done += [ f ]
+                   else:
+                       watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
             
-            watch.logger.debug("event_sleep done: %s " % done )
-            for f in done:
-                del unready_tmp[f]
+               watch.post.lock_unset()
+               watch.logger.debug("event_sleep done: %s " % done )
+               for f in done:
+                   del unready_tmp[f]
 
             watch.logger.debug("event_sleep left over: %s " % unready_tmp )
 
@@ -252,9 +256,7 @@ def main():
             global unready
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
-                    watch.post.lock_set()
                     watch.post.watching(path, tag)
-                    watch.post.lock_unset()
             except PermissionError as err:
                 unready[path] = tag
                 watch.logger.error(str(err))
@@ -281,11 +283,9 @@ def main():
                # but we dont care for now... it is not supported
                if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-                  watch.post.lock_set()
                   #Every file rename inside the watch path will trigger new copy
                   #watch.post.move(event.src_path,event.dest_path)
                   self.event_post(event.dest_path, 'modified')
-                  watch.post.lock_unset()
 
     watch.event_handler(MyEventHandler())
 
