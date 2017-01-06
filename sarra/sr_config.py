@@ -999,7 +999,10 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
-                     self.inflight = words[1] 
+                     if words[1].lower() in [ 'none' ]: 
+                         self.inflight=None
+                     else:
+                         self.inflight = words[1] 
                      n = 2
 
                 elif words0 in ['log','l']: # See: sr_config.7 
