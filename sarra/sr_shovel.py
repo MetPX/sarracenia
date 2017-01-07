@@ -341,6 +341,14 @@ class sr_shovel(sr_instances):
 
         while True :
               try  :
+                      #  is it sleeping ?
+                      if not self.has_vip() :
+                          self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
+                          time.sleep(5)
+                          continue
+                      else:
+                          self.logger.debug("sr_shovel is active on vip=%s", self.vip)
+
                       #  consume message
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
