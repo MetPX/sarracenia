@@ -224,6 +224,7 @@ def main():
             # FIXME: Tiny potential for events to be dropped during copy.
             #     these lists might need to be replaced with watchdog event queues.
             #     left for later work. PS-20170105
+            #     more details: https://github.com/gorakhargosh/watchdog/issues/392
             nu = self.new_events.copy()
             self.new_events={}
 
@@ -255,7 +256,7 @@ def main():
 
 
         def event_post(self, path, tag):
-            # FIXME: as per tiny potential, this routine shoule likely 'event_queue'
+            # FIXME: as per tiny potential, this routine should likely queue events.
             # that is why have not replaced this function by direct assignment in callers.
             self.new_events[path]=tag
         
