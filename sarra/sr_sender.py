@@ -155,7 +155,18 @@ class sr_sender(sr_instances):
 
         self.consumer          = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
+        # modified by Murray Dec 5 2016
         self.msg.report_exchange  = self.report_exchange
+        self.logger.debug("before if self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
+        if self.broker.username in self.users.keys():
+                  self.logger.debug("self.msg.report_exchange usernameifthereisone: %s\n" % (self.broker.username))
+                  if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
+                       self.msg.report_exchange = 'xreport'
+                  else:
+                       self.msg.report_exchange = 'xr_' + self.broker.username
+        else:
+           self.msg.report_exchange = 'xr_' + self.broker.username
+        self.logger.debug("self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
         self.msg.user          = self.details.url.username
         self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
         self.msg.post_exchange_split = self.post_exchange_split
