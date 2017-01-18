@@ -199,6 +199,11 @@ By default, the topic is made of the default topic_prefix : version  *V02* , an 
 followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
 You can overwrite the topic_prefix by setting this option.
 
+**[-real|--realpath]**
+
+The realpath option resolves paths given to their canonical ones, eliminating any indirection via symlinks.
+The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.
+
 **[-rec|--recursive <boolean>]**
 
 The recursive default is False. When the **url** given (possibly combined with **document_root**)

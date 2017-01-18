@@ -410,7 +410,8 @@ class sr_post(sr_config):
            sys.exit(1)
 
         watch_path = os.path.abspath (watch_path)
-        #watch_path = os.path.realpath(watch_path)
+        if self.realpath:
+            watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):
            self.logger.info("file %s " % watch_path )

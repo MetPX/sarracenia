@@ -97,6 +97,7 @@ class sr_watch(sr_instances):
         self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
+        self.post.realpath     = self.realpath
 
         if self.reset :
            self.post.connect()

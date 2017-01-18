@@ -406,6 +406,7 @@ class sr_config:
         self.flatten              = '/'
         self.reportback           = True
 
+        self.realpath             = False
         self.recursive            = False
 
         self.pump_flag            = False
@@ -898,7 +899,8 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     #path = os.path.realpath(path)
+                     if self.realpath:
+                         path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
                      else:
@@ -1177,7 +1179,8 @@ class sr_config:
                                  if dr and not dr in w: path = dr + os.sep + w
 
                                  path = os.path.abspath(path)
-                                 #path = os.path.realpath(path)
+                                 if self.realpath:
+                                     path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -1236,6 +1239,14 @@ class sr_config:
                         n = 1
                      else :
                         self.randomize = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['realpath','real']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.realpath = True
+                        n = 1
+                     else :
+                        self.realpath = self.isTrue(words[1])
                         n = 2
 
                 elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
