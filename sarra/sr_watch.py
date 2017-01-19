@@ -68,6 +68,10 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_post      import *
 
+inl = []
+
+
+
 class sr_watch(sr_instances):
 
     def __init__(self,config=None,args=None):
@@ -76,7 +80,8 @@ class sr_watch(sr_instances):
 
     def close(self):
         self.post.close()
-        self.observer.unschedule(self.obs_watched)
+        for ow in self.obs_watched:
+            self.observer.unschedule(ow)
         self.observer.stop()
 
     def overwrite_defaults(self):
@@ -124,6 +129,31 @@ class sr_watch(sr_instances):
             self.cache["pid"] = current_pid
         self.cache.close()
 
+    def find_linked_dirs(self,p):
+        """
+         Find all the subdirectories of the given path that are pointed to by symbolic links.
+         This is needed because watchdog will not traverse symbolic links to add watches. 
+         use the inl variable to detect cycles (same directory showing up multiple times)    
+        """
+        global inl
+
+        l=[ p ]
+        for i in os.listdir(p):
+           f = p + os.sep + i
+
+           if os.path.isdir(f):
+               fs = os.stat(f)
+               dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+               if dir_dev_id in inl:
+                   continue
+
+               if os.path.islink(f):
+                   l.append(f)
+                   inl.append(dir_dev_id)
+
+               l = l + self.find_linked_dirs(f)
+        return list(set(l))
+      
     def event_handler(self,meh):
         self.myeventhandler = meh
 
@@ -137,8 +167,21 @@ class sr_watch(sr_instances):
         self.post.connect()
 
         try:
+            if ( 'follow' in self.post.events ) and ( self.post.recursive ) :
+                self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
+                sld = self.find_linked_dirs(self.watch_path)
+                self.logger.info("sr_watch need to priming walk done.")
+            else:
+                sld = [ self.watch_path ]
+
             self.observer = Observer()
-            self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
+            self.obs_watched = []
+            for d in sld:
+                self.logger.info("sr_watch scheduling watch of: %s " % d)
+                ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
+                self.obs_watched.append(ow)
+
+
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
             self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
