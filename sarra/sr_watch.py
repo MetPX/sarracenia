@@ -241,7 +241,7 @@ def main():
                       if age < watch.inflight :
                           continue
 
-                   if (e not in [ 'created', 'modified'] ) or os.access(f, os.R_OK):
+                   if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_sleep calling do_post ! " )
                        self.do_post(f, e)
                        done += [ f ]
@@ -271,7 +271,7 @@ def main():
 
         def on_created(self, event):
             if (not event.is_directory):
-                self.event_post(event.src_path, 'created')
+                self.event_post(event.src_path, 'create')
  
         def on_deleted(self, event):
             if event.src_path == watch.watch_path:
@@ -279,11 +279,11 @@ def main():
                 watch.logger.error('Exiting!')
                 os._exit(0)
             if (not event.is_directory):
-                self.event_post(event.src_path, 'deleted')
+                self.event_post(event.src_path, 'delete')
     
         def on_modified(self, event):
             if (not event.is_directory):
-                self.event_post(event.src_path, 'modified')
+                self.event_post(event.src_path, 'modify')
 
         def on_moved(self, event):
             if (not event.is_directory):
@@ -293,7 +293,7 @@ def main():
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
                   #Every file rename inside the watch path will trigger new copy
                   #watch.post.move(event.src_path,event.dest_path)
-                  self.event_post(event.dest_path, 'modified')
+                  self.event_post(event.dest_path, 'modify')
 
     watch.event_handler(MyEventHandler())
 

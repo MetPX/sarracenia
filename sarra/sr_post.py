@@ -109,7 +109,7 @@ class sr_post(sr_config):
         print("-b   <broker>          default:amqp://guest:guest@localhost/")
         print("-c   <config_file>")
         print("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : print("-e   <events>          default:created|deleted|follow|linked|modified\n")
+        if self.program_name == 'sr_watch' : print("-e   <events>          default:create|delete|follow|link|modify\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
@@ -200,7 +200,7 @@ class sr_post(sr_config):
 
         # verify that file exists
 
-        if not os.path.isfile(filepath) and self.event != 'deleted' :
+        if not os.path.isfile(filepath) and self.event != 'delete' :
            self.logger.error("File not found %s " % filepath )
            return False
 
@@ -229,7 +229,7 @@ class sr_post(sr_config):
         # delete event...
         # ==============
 
-        if self.event == 'deleted' :
+        if self.event == 'delete' :
            ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
                     'R,%d' % random.randint(0,100), rename, filename)
 
@@ -350,7 +350,7 @@ class sr_post(sr_config):
                    newpath = path + os.sep + e
 
                    if os.path.isfile(newpath) and os.access(newpath,os.R_OK):
-                      self.watching(newpath,'modified')
+                      self.watching(newpath,'modify')
                       continue
 
                    if os.path.isdir(newpath) and recursive :
@@ -418,7 +418,7 @@ class sr_post(sr_config):
  
         if os.path.isdir(watch_path):
            self.logger.info("directory %s " % watch_path )
-           if self.rename != None and self.rename[-1] != '/' and 'modified' in self.events:
+           if self.rename != None and self.rename[-1] != '/' and 'modify' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
 
         self.watch_path = watch_path
@@ -464,9 +464,9 @@ def main():
                  post.lock_set()
 
                  if os.path.islink(watchpath) : 
-                    post.watching(watchpath,'linked')
+                    post.watching(watchpath,'link')
                  elif os.path.isfile(watchpath) : 
-                    post.watching(watchpath,'modified')
+                    post.watching(watchpath,'modify')
                  else :
                     post.scandir_and_post(watchpath,post.recursive)
 

@@ -148,8 +148,8 @@ gives the local absolute path to the data file to be posted.
 **[-e|--events <exchange>]**
 
 A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  created, deleted, modified.
-Default: 'created|deleted|modified'.
+Available events:  create, delete, modify.
+Default: 'create|delete|modify'.
 
 .. note::
    move or rename events are treated as modify events
