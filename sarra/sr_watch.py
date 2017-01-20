@@ -189,7 +189,7 @@ class sr_watch(sr_instances):
             # do periodic events (at most, once every 'sleep' seconds)
             while True:
                start_sleep_event = time.time()
-               self.myeventhandler.event_sleep()
+               self.myeventhandler.event_wakeup()
                end_sleep_event = time.time()
                how_long = self.sleep - ( end_sleep_event - start_sleep_event )
                if how_long > 0:
@@ -263,7 +263,7 @@ def main():
             except:
                 pass
 
-        def event_sleep(self):
+        def event_wakeup(self):
 
             # FIXME: Tiny potential for events to be dropped during copy.
             #     these lists might need to be replaced with watchdog event queues.
@@ -285,18 +285,18 @@ def main():
                           continue
 
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
-                       watch.logger.debug("event_sleep calling do_post ! " )
+                       watch.logger.debug("event_wakeup calling do_post ! " )
                        self.do_post(f, e)
                        done += [ f ]
                    else:
-                       watch.logger.debug("event_sleep SKIPPING %s of %s " % (e, f) )
+                       watch.logger.debug("event_wakeup SKIPPING %s of %s " % (e, f) )
 
                watch.post.lock_unset()
-               watch.logger.debug("event_sleep done: %s " % done )
+               watch.logger.debug("event_wakeup done: %s " % done )
                for f in done:
                    del self.events_outstanding[f]
 
-            watch.logger.debug("event_sleep left over: %s " % self.events_outstanding )
+            watch.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
 
 
         def event_post(self, path, tag):
@@ -313,8 +313,13 @@ def main():
                 watch.logger.error(str(err))
 
         def on_created(self, event):
-            if (not event.is_directory):
+            # need to us test, rather than event to so symlinked directories get added.
+            if not os.path.isdir(event.src_path):
                 self.event_post(event.src_path, 'create')
+            elif watch.recursive:
+                watch.logger.info("Scheduling watch of new directory %s" % event.src_path )
+                ow = watch.observer.schedule(self, event.src_path, recursive=watch.recursive)
+                watch.obs_watched.append(ow)
  
         def on_deleted(self, event):
             if event.src_path == watch.watch_path:
