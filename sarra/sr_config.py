@@ -935,15 +935,33 @@ class sr_config:
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
+                     if 'deleted' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'deleted' --> 'delete'")
+                         words[1] = words[1].replace("deleted","delete")
+
+                     if 'created' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'created' --> 'create'")
+                         words[1] = words[1].replace("created","create")
+
+                     if 'linked' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'linked' --> 'link'")
+                         words[1] = words[1].replace("linked","link")
+
+                     if 'modified' in words[1]:
+                         self.logger.warning("deprecated event spec: please change 'modified' --> 'modify'")
+                         words[1] = words[1].replace("modified","modify")
+
                      if 'create'  in words[1] : i = i + 1
                      if 'delete'  in words[1] : i = i + 1
                      if 'link' in words[1] : i = i + 1
                      if 'follow' in words[1] : i = i + 1
                      if 'modify' in words[1] : i = i + 1
                      if 'move'  in words[1] : i = i + 1
+                     
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
+
                      self.events = words[1]
                      n = 2
 
