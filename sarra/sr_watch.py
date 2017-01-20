@@ -173,11 +173,20 @@ class sr_watch(sr_instances):
         self.post.connect()
 
         try:
-            sld = [ self.watch_path ]
-            if ( 'follow' in self.post.events ) and ( self.post.recursive ) :
-                self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
-                sld += self.find_linked_dirs(self.watch_path)
-                self.logger.info("sr_watch need to priming walk done.")
+            if self.post.realpath: 
+               sld = [ os.path.realpath( self.watch_path ) ]
+            else:
+               sld = [ self.watch_path ]
+
+            if ( 'follow' in self.post.events ):
+                if os.path.islink(self.watch_path): 
+                    if not self.post.realpath: 
+                        sld = [ self.watch_path + os.sep + '.' ]
+
+                if  ( self.post.recursive ) :
+                    self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
+                    sld += self.find_linked_dirs(self.watch_path)
+                    self.logger.info("sr_watch need to priming walk done.")
 
             self.observer = Observer()
             self.obs_watched = []
@@ -325,7 +334,7 @@ def main():
                 self.event_post(event.src_path, 'create')
             elif watch.recursive:
                 if os.path.islink(event.src_path): 
-                    if self.post.realpath: p=os.path.realpath(event.src_path)
+                    if watch.post.realpath: p=os.path.realpath(event.src_path)
                     else: p=event.src_path+os.sep+'.'
                 else: p=event.src_path
                 watch.logger.info("Scheduling watch of new directory %s" % p )
