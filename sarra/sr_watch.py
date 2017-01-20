@@ -150,7 +150,7 @@ class sr_watch(sr_instances):
 
                if os.path.islink(f):
                    self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
-                   l.append(realf)
+                   l.append(f + os.sep + '.' )
                    inl.append(dir_dev_id)
 
                l = l + self.find_linked_dirs(f)
@@ -321,7 +321,8 @@ def main():
                 self.event_post(event.src_path, 'create')
             elif watch.recursive:
                 watch.logger.info("Scheduling watch of new directory %s" % event.src_path )
-                if os.path.islink(event.src_path): p=os.path.realpath(event.src_path)
+                #if os.path.islink(event.src_path): p=os.path.realpath(event.src_path)
+                if os.path.islink(event.src_path): p=event.src_path+os.sep+'.'
                 else: p=event.src_path
 
                 ow = watch.observer.schedule(self, p, recursive=watch.recursive)
