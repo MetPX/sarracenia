@@ -137,18 +137,20 @@ class sr_watch(sr_instances):
         """
         global inl
 
-        l=[ p ]
+        l=[]
         for i in os.listdir(p):
            f = p + os.sep + i
 
            if os.path.isdir(f):
                fs = os.stat(f)
+               realf = os.path.realpath(f)
                dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
                if dir_dev_id in inl:
                    continue
 
                if os.path.islink(f):
-                   l.append(f)
+                   self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
+                   l.append(realf)
                    inl.append(dir_dev_id)
 
                l = l + self.find_linked_dirs(f)
@@ -167,12 +169,11 @@ class sr_watch(sr_instances):
         self.post.connect()
 
         try:
+            sld = [ self.watch_path ]
             if ( 'follow' in self.post.events ) and ( self.post.recursive ) :
                 self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
-                sld = self.find_linked_dirs(self.watch_path)
+                sld += self.find_linked_dirs(self.watch_path)
                 self.logger.info("sr_watch need to priming walk done.")
-            else:
-                sld = [ self.watch_path ]
 
             self.observer = Observer()
             self.obs_watched = []
@@ -320,7 +321,10 @@ def main():
                 self.event_post(event.src_path, 'create')
             elif watch.recursive:
                 watch.logger.info("Scheduling watch of new directory %s" % event.src_path )
-                ow = watch.observer.schedule(self, event.src_path, recursive=watch.recursive)
+                if os.path.islink(event.src_path): p=os.path.realpath(event.src_path)
+                else: p=event.src_path
+
+                ow = watch.observer.schedule(self, p, recursive=watch.recursive)
                 watch.obs_watched.append(ow)
  
         def on_deleted(self, event):
