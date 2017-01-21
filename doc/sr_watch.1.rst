@@ -145,11 +145,22 @@ when combined with the relative one from  *source url* ,
 gives the local absolute path to the data file to be posted.
 .fi
 
-**[-e|--events <exchange>]**
+**[-e|--events <event|event|...>]**
 
 A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  create, delete, modify.
-Default: 'create|delete|modify'.
+Available events:  create, delete, follow, link, modify,
+Default: default is all of them.
+
+The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
+The *follow* and *link* attributes are less obvious, and affect how symbolic links are processed.
+If *link* is set, symbolic links will be posted as links so that consumers can choose 
+how to process them. if it is not set, then no link events will ever be posted.
+The *follow* keyword causes symbolic links to be traversed.  if *follow* is set
+and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
+If the destination of the symbolic link is a directory, then the directory should be added to those being
+monitored by sr_watch.   If *follow* is false, then no action related to the destination of the symbolic link is taken.
+
+ 
 
 .. note::
    move or rename events are treated as modify events
@@ -198,11 +209,6 @@ If it doesn't, the option specifies a file renaming.
 By default, the topic is made of the default topic_prefix : version  *V02* , an action  *post* ,
 followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
 You can overwrite the topic_prefix by setting this option.
-
-**[-real|--realpath]**
-
-The realpath option resolves paths given to their canonical ones, eliminating any indirection via symlinks.
-The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.
 
 **[-rec|--recursive <boolean>]**
 
@@ -313,6 +319,11 @@ If there are several posts because the file is posted
 by block because the *blocksize* option was set, the block 
 posts are randomized meaning that the will not be posted
 ordered by block number.
+
+**[-real|--realpath <boolean>]**  EXPERIMENTAL
+
+The realpath option resolves paths given to their canonical ones, eliminating any indirection via symlinks.
+The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.   This is implemented to preserve the behaviour of an earlier iteration of sr_watch, but it is not clear if it required or useful.  Feedback welcome.
 
 **[-rr|--reconnect]**
 
