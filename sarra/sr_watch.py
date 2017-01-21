@@ -302,7 +302,7 @@ def main():
 
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_wakeup calling do_post ! " )
-                       self.do_post(f, e)
+                       self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e)
                        done += [ f ]
                    else:
                        watch.logger.debug("event_wakeup SKIPPING %s of %s " % (e, f) )
