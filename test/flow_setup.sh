@@ -79,11 +79,11 @@ for d in report report sarra sender shovel subscribe watch winnow ; do
    fi
 done
 
-templates="`cd templates; ls */*.py */*.conf */*.inc`"
+templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
 
 for cf in ${templates}; do
     echo "installing $cf"
-    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <templates/${cf} >$HOME/.config/sarra/${cf}
+    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <flow_templates/${cf} >$HOME/.config/sarra/${cf}
 done
 
 # ensure users have exchanges:
