@@ -35,7 +35,7 @@
 * bug #73 ( sr_sender overwriting files with shorter new versions leaves old content) fixed.
 * bug #71 ( sr_audit user creation ) fixed.
 * bug #70 ( sr_watch symbolic link handling ) mitigated.  Unclear if really fixed.
-* bug #45 ( sr_sarra will not delete local files ) mitigated.  Unclear if really fixed.
+* bug #45 ( sr_sarra will not delete local files ) fixed.
 
 **2.16.11a4**
 
