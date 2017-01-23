@@ -6,7 +6,6 @@
 
 * Added symbolic link processing (sr_watch, sr_post, sr_sarra, sr_subscribe, sr_sender)
   Caveat: links are mirrored as-is.  Likely the wrong thing to do for absolute ones. Suggestions bug#70 welcome.
-* General bug fix for over-writing of files when new shorter than old (sftp mostly)
 * sr_post: simplified partitioning options:  blocksize eliminated, replaced by 'parts'
 * sr_post: parts 0 - autocompute part size, 1- always send files in a single part, <sz> used a fixed size.
 * sr_watch: events keywords changed: modified->modify, created->create, deleted->delete.
@@ -14,28 +13,34 @@
 * sr_watch: added inflight xx  to ignore files until they have not been modified for > xx seconds.
 * sr_watch: symbolic link processing significantly changes paths produced, as realpath no longer used.
   This should be perceived as an improvement (paths look more familiar).
-* sr_watch: enabled inotify observer (can be hundreds of times faster to notice a file has been modified.)
+* sr_watch: enabled inotify observer (can be hundreds of times faster to notice a change in a large tree.)
 * sr_watch: process groups of events with a single cache lock/unlock.  Provides 4-10x speedup.
 * sr_watch: added 'realpath' option.  Earlier versions use 'realpath' all the time, which changes
   paths read significantly when directories are symbolically linked.  So default was changed to not do that.
   Can obtain old behaviour by spcifying this option (listed as a developer option.)
-* plugins: added alternate downloading examples:  (download_scp, download_wget,  msg_download )
-  This is used to invoke high speed xfer mechanism, such as bbcp.
 * plugins: are now stackable, when on_message encountered it is added to the list of plugins, 
   rather than replacing a single one.
-* sum 0: the sum 0 algorithm is changed to produce random checksum.  Improved load balancing.
-* sr_audit: changed 'role' directive to 'declare'
+* plugins: added alternate downloading examples:  (download_scp, download_wget,  msg_download )
+  This is used to invoke high speed xfer mechanism, such as bbcp.
+* sum 0: the sum 0 algorithm is changed to produce random checksum, rather than constant 0 to improves load balancing.
+* sr_audit: changed 'role' directive to 'declare' to allow declaration of things beside users. See following line:
 * sr_audit: added 'declare exchange' to permit creation of exchanges.
-* systemd support file begun, more testing required.
 * developer: flow test improvement: essentially re-written to improve reliability, and shorten.
 * developer: flow test improvement: now checks every item, rather than sampling. 
 * developer: flow test improvement: cumulative status (of all tests.)
 * developer: flow test improvement: compare actual downloads vs. watch.
 * developer: flow test improvement: programmable number of items to collect before verifying.
-* bug #73 ( sr_sender overwriting files with shorter new versions leaves old content) fixed.
-* bug #71 ( sr_audit user creation ) fixed.
-* bug #70 ( sr_watch symbolic link handling ) mitigated.  Unclear if really fixed.
-* bug #45 ( sr_sarra will not delete local files ) fixed.
+* feature #56: started. systemd support file begun, more testing required.
+* feature #54: done. added Active/passive options to all components (vip & interface support.)
+* feature #53: done. sr_watch 'inflight' implements mtime work.
+* feature #52: done. plugin-stacking.
+* bug #73: sr_sender overwriting files with shorter new versions leaves old content) fixed.
+  General bug fix for over-writing of files when new shorter than old (sftp mostly)
+* bug #71: fixed ( sr_audit user creation ) 
+* bug #70: started ( sr_watch symbolic link handling ) mitigated.  Unclear if really fixed.
+* bug #68: fixed ( sr_sarra part of flow test improvements above.)
+* bug #67: fixed ( config files always parsed twice. )
+* bug #45: fixed ( sr_sarra will not delete local files ) 
 
 **2.16.11a4**
 
