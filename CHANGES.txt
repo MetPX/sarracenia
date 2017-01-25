@@ -147,7 +147,58 @@
 * Test suite: adding explicit mention of exchange wherever possible.
 * Fixed self-test to authenticate to broker as tfeed, but look for messages from tsource.
 
-**0.0.1**
+**v2.16.05a2**
+  
+* plugins improved.
+* sr_winnow fixed.
+* stop printing passwords in log files.
+* beginnings of flow_test implemented. ( self-testing configuration with multiple components fed.)
 
+**v2.16.05a1**
+
+* something about log message settings and permissions.
+* reviewing log message generation (older versions too voluble.)
+* setting a plugin to None removes it.
+* moved logging mostly into plugins to make it more modular.
+* added permission of user to read own exchange.
+* added plugin examples to subscriber guide.
+* working through Michel's self-tests, trying to get them to work.
+* Added Programmer Guide.
+* sr_sender modified to use truncated exponential backoff (to avoid hammering sites when they are down.)
+* some credits.
+
+**v2.16.03a10**
+
+* documentation fixes.
+* fixed sr_audit which had been broken.
+* added 'foreground' to start/stop/status in usage statements.
+* Daluma input on sr_watch.
+* stop sr_audit from downloading rabbitmqadmin into cwd.
+* Michel retired :-)
+
+**v2.16.01a8**
+
+* for earlier releases, please consult git log.
+
+**v2.16.01a3**
+
+**v2.16.01a2**
+
+**v2.16.01a1**
+
+**v2.15.12a4**
+
+**v2.15.12a3**
+
+**v2.15.12a2**
+
+**v2.15.12a1**
+
+* first version with all components extant.
+* Build/tag process introduced.
+* until now, had just been using master branch in git. 
+
+**0.0.1**
+* development began in 2013.
 
 * Initial release
