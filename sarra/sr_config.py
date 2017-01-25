@@ -387,8 +387,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'create|delete|follow|link|modify'
-        self.event                = 'create|delete|follow|link|modify'
+        self.events               = 'create|delete|follow|link|modify|poll'
+        self.event                = 'create|delete|follow|modify'
 
         self.randomize            = False
         self.reconnect            = False
@@ -957,6 +957,7 @@ class sr_config:
                      if 'follow' in words[1] : i = i + 1
                      if 'modify' in words[1] : i = i + 1
                      if 'move'  in words[1] : i = i + 1
+                     if 'poll'  in words[1] : i = i + 1
                      
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])

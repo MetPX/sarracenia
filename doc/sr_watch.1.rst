@@ -148,19 +148,22 @@ gives the local absolute path to the data file to be posted.
 **[-e|--events <event|event|...>]**
 
 A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  create, delete, follow, link, modify,
-Default: default is all of them.
+Available events:  create, delete, follow, link, modify, poll
+Default: default is all of them, except poll
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 The *follow* and *link* attributes are less obvious, and affect how symbolic links are processed.
 If *link* is set, symbolic links will be posted as links so that consumers can choose 
 how to process them. if it is not set, then no link events will ever be posted.
+
 The *follow* keyword causes symbolic links to be traversed.  if *follow* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
 If the destination of the symbolic link is a directory, then the directory should be added to those being
 monitored by sr_watch.   If *follow* is false, then no action related to the destination of the symbolic link is taken.
 
- 
+By Default, sr_watch selects a (OS dependent) optimal method to watch a directory.   For large trees,
+the optimal method can be manyfold (10x or even 100x) faster to recognize when a file has been modified.
+In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed file systems), so one must use a slower but more reliable and portable polling method.  The *poll* keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
 
 .. note::
    move or rename events are treated as modify events

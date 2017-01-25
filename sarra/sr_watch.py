@@ -59,6 +59,7 @@
 import os, sys, time, shelve, psutil
 
 from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
 
 try :    
@@ -188,7 +189,13 @@ class sr_watch(sr_instances):
                     sld += self.find_linked_dirs(self.watch_path)
                     self.logger.info("sr_watch need to priming walk done.")
 
-            self.observer = Observer()
+            if ( 'poll' in self.post.events ):
+                self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
+                self.observer = PollingObserver()
+            else:
+                self.logger.info("sr_watch optimal observer for platform selected by default (best when it works).")
+                self.observer = Observer()
+
             self.obs_watched = []
             for d in sld:
                 self.logger.info("sr_watch scheduling watch of: %s " % d)
