@@ -198,6 +198,9 @@ in messages when appropriate.   Headers are a mandatory element included in late
    The cluster name should be unique within all exchanging rabbitmq clusters.
    It is used to return the logs back to the cluster whenever its products are used.
 
+**link=<value of symbolic link>**
+   when the sum is the 'link' header is created to contain the body of the symbolic link.
+
 .. _parts:
 
 **parts=<method>,<bsz>,<blktot>,<brem>,bno**
@@ -219,13 +222,12 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
  +    p      + File is partitioned, individual part files are created.             +
  +-----------+---------------------------------------------------------------------+
- +    i      + file is partitioned, but blocks are written to a single file,       |
- +           + rather than parts. File is re-assembled on receipt.                 +
+ +    i      + file is partitioned, but blocks are read from a single file,        |
+ +           + rather than parts.                                                  +
  +-----------+---------------------------------------------------------------------+
  +    1      + file is in a single part (no partitioning)                          +
  +-----------+---------------------------------------------------------------------+
 
- - file segment strategy can be overridden by client. just a suggestion.
  - analogous to rsync options: --inplace, --partial,
 
  *<blocksize in bytes>: bsz*
@@ -292,9 +294,11 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
  +   Method  + Description                                                         +
  +-----------+---------------------------------------------------------------------+
- |     0     + no checksums (unconditional copy.)                                  |
+ |     0     + no checksums (unconditional copy.) Skips reading file (faster)      |
  +-----------+---------------------------------------------------------------------+
  |     d     | checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ +-----------+---------------------------------------------------------------------+
+ |     L     | Linked: file is symbolic link, no checksum applies.                 |
  +-----------+---------------------------------------------------------------------+
  |     R     | Removed: file was removed, rather than updated, no checksum applies.|
  +-----------+---------------------------------------------------------------------+
@@ -307,6 +311,8 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
 
  *<value>* The value is computed by applying the given method to the partition being transferred.
+for algorithms for which no value makes sense, a random integer is generated to support
+checksum based load balancing.
 
 
 **to_clusters=<cluster_name1,cluster_name2,...>**

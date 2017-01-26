@@ -112,11 +112,11 @@ announcements sent to the client to a small superset of what is relevant, and
 perform only a fine-tuning with the client side mechanisms, saving bandwidth 
 and processing for all.
 
-The user can provide an **on_message** script. When a message is accepted up 
-to this level of verification, the **on_message** script is called... with 
-the **sr_sender** class instance as argument.  The script can perform whatever 
-you want... if it returns False, the processing of the message will stop 
-there. If True, the program will continue processing from there.  
+The user can provide **on_message** scripts. When a message is accepted up 
+to this level of verification, the **on_message** scripts are called... with 
+the **sr_sender** class instance as argument.  The scripts can perform whatever 
+is desired... if one returns False, the processing of the message will stop 
+there. If all return True, the program will continue processing from there.  
 
 If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.

@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
 """
-  For Production deployments, see: part_check
+  For Production deployments, see: part_check instead of this file (file_check)  
 
-  instead of this file (file_check)  As file_check re-reads the entire file, re-calculates
-  from scratch, very inefficient compared to part_check which takes care
-  of checksum calc done as the files are downloaded.
+  As file_check re-reads the entire file, re-calculates from scratch, which is very inefficient 
+  compared to part_check which takes care of checksum calc done as the files are downloaded.
 
   This is more for debugging, internal testing, and reference.
 """

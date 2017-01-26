@@ -11,7 +11,7 @@ import os,stat,time
 class File_Log(object): 
 
     def __init__(self,parent):
-          pass
+        parent.logger.info("file_log initialized")
           
     def perform(self,parent):
 

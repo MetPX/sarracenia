@@ -3,6 +3,13 @@
 """
   Select messages whose source is the same as the 'msg_by_source' setting.
 
+  msg_by_source Alice
+  msg_by_source Bob
+
+  on_message msg_by_source
+
+  will result in all messages from from Alice & Bob being selected.
+
 """
 
 import os,stat,time

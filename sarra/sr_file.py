@@ -49,7 +49,7 @@ def file_insert( parent,msg ) :
     fp = open(msg.url.path,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
-    ok = file_write_length(fp, msg, parent.bufsize )
+    ok = file_write_length(fp, msg, parent.bufsize, msg.filesize )
 
     fp.close()
 
@@ -104,7 +104,10 @@ def file_insert_part(parent,msg,part_file):
                    if chk : chk.update(buf)
                    i  += len(buf)
 
-             ft.close()
+             if ft.tell() >= msg.filesize:
+                 ft.truncate()
+
+             ft.close() 
              fp.close()
 
              if i != msg.length :
@@ -162,9 +165,11 @@ def file_insert_part(parent,msg,part_file):
     # ok we reassembled the file and it is the last chunk... call on_file
     if msg.lastchunk : 
        msg.logger.warning("file assumed complete with last part %s" % msg.target_file)
-       if parent.on_file:
-          ok = parent.on_file(parent)
-          return ok
+       #if parent.on_file:
+       #   ok = parent.on_file(parent)
+       for plugin in parent.on_file_list:
+          ok = plugin(parent)
+          if not ok: return False
 
     return True
 
@@ -198,15 +203,26 @@ def file_process( parent ) :
     if msg.partflg == '1' or \
        (msg.partflg == 'p' and  msg.in_partfile) :
        ok = file_link(msg)
-       if ok : return ok
+       if ok :
+          if parent.delete :
+              try: 
+                  os.unlink(msg.url.path)
+              except: 
+                  msg.logger.error("delete of link to %s failed"%(msg.url.path))
+          return ok
 
     # This part is for 2 reasons : insert part
     # or copy file if preceeding link did not work
     try :
              ok = file_insert(parent,msg)
              if parent.delete :
-                  try: os.unlink(msg.url.path)
-                  except: msg.logger.error("delete of %s failed"%(msg.url.path))
+                if msg.partflg.startswith('i'):
+                   msg.logger.info("delete unimplemented for in-place part files %s" %(msg.url.path))
+                else:
+                   try: 
+                       os.unlink(msg.url.path)
+                   except: 
+                       msg.logger.error("delete of %s after copy failed"%(msg.url.path))
 
              if ok : return ok
 
@@ -282,7 +298,7 @@ def file_reassemble(parent):
 # file_write_length
 # called by file_process->file_insert (general file:// processing)
 
-def file_write_length(req,msg,bufsize):
+def file_write_length(req,msg,bufsize,filesize):
     msg.logger.debug("file_write_length")
 
     msg.onfly_checksum = None
@@ -316,6 +332,9 @@ def file_write_length(req,msg,bufsize):
        chunk = req.read(r)
        fp.write(chunk)
        if chk : chk.update(chunk)
+
+    if fp.tell() >= msg.filesize:
+       fp.truncate()
 
     fp.close()
   

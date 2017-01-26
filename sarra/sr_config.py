@@ -209,7 +209,7 @@ class sr_config:
         return chunksize
 
     def config(self,path):
-        self.logger.debug("sr_config config")
+        self.logger.debug("sr_config config component is: %s" % self.program_name )
         self.logger.debug("sr_config %s" % path)
 
         if path == None : return
@@ -290,6 +290,10 @@ class sr_config:
 
     def configure(self):
         
+        if hasattr(self, 'cfg_already_read' ): 
+              if self.user_config in self.cfg_already_read: 
+                 return
+
         self.defaults()
         self.general()
 
@@ -300,12 +304,19 @@ class sr_config:
         self.args   (self.user_args)
         self.config (self.user_config)
 
+        if hasattr(self, 'cfg_already_read' ): 
+              self.cfg_already_read.append(self.user_config)
+
         # verify / complete settings
 
         self.check()
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
+
+
+        if not hasattr(self, 'cfg_already_read' ):
+            self.cfg_already_read = []
 
         # IN BIG DEBUG
         #self.debug = True
@@ -332,6 +343,7 @@ class sr_config:
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.bindings             = []
         self.exchange             = None
+        self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
 
@@ -375,13 +387,13 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'created|deleted|modified'
-        self.event                = 'created|deleted|modified'
+        self.events               = 'create|delete|follow|link|modify|poll'
+        self.event                = 'create|delete|follow|modify'
 
         self.randomize            = False
         self.reconnect            = False
 
-        self.partflg              = '1'
+        self.partflg              = '0'
         #
 
         self.batch                = 100
@@ -394,6 +406,7 @@ class sr_config:
         self.flatten              = '/'
         self.reportback           = True
 
+        self.realpath             = False
         self.recursive            = False
 
         self.pump_flag            = False
@@ -423,14 +436,16 @@ class sr_config:
         self.do_send              = None
         self.on_file              = None
         self.on_line              = None
+        self.on_line_list         = []
    
 
         self.on_part              = None
+        self.on_part_list         = []
         self.on_post              = None
 
         self.inplace              = False
 
-        self.lock                 = None
+        self.inflight             = None
         self.chmod                = 0o775
         self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
 
@@ -454,8 +469,11 @@ class sr_config:
         self.vip                  = None
 
         self.execfile("on_message",'msg_log')
+        self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
+        self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
+        self.on_post_list = [ self.on_post ]
 
     def execfile(self, opname, path):
 
@@ -492,39 +510,6 @@ class sr_config:
         self.cache_url   = {}
         self.credentials = sr_credentials(self.logger)
         self.credentials.read(credent)
-
-
-        # read in provided log cluster infos
-        #report_cluster = self.user_config_dir + os.sep + 'log2clusters.conf'
-        #self.report_clusters = {}
-        #i = 0
-        #try :
-        #      if os.path.exists(report_cluster):
-        #         f = open(report_cluster,'r')
-        #         lines = f.readlines()
-        #         f.close
-        #         for line in lines :
-        #             line = line.strip()
-        #             if len(line) == 0 or line[0] == '#' : continue
-        #             parts = line.split()
-        #             name    = parts[0]
-        #             urlstr  = parts[1]
-        #             ok, url = self.validate_urlstr(urlstr)
-        #             if not ok or not url.scheme in ['amqp','amqps']:
-        #                self.logger.error("invalid URL %s" % parts[1])
-        #             # fixme parts[2] exchange should be optional
-        #             exch  = parts[2]
-        #             self.report_clusters[i] = (name,url,exch)
-        #             i = i + 1
-
-        # cluster file is not mandatory
-        #except : 
-        #         (stype, svalue, tb) = sys.exc_info()
-        #         self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-        #self.logger.debug("report_clusters = %s\n" % self.report_clusters)
-
-        # defaults.conf ... defaults for the server
-        # at this level (for includes) user_config = self.user_config_dir
 
         defconf     = self.user_config_dir + os.sep + 'default.conf'
         self.logger.debug("defconf = %s\n" % defconf)
@@ -835,7 +820,7 @@ class sr_config:
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif words0 == 'caching': # See: sr_post.1 sr_watch.1
+                elif ( words0 == 'caching' ) or ( words0 == 'cache' ): # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.caching = True
                         n = 1
@@ -914,7 +899,8 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     path = os.path.realpath(path)
+                     if self.realpath:
+                         path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
                      else:
@@ -949,13 +935,34 @@ class sr_config:
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
-                     if 'modified' in words[1] : i = i + 1
-                     if 'deleted'  in words[1] : i = i + 1
-                     if 'created'  in words[1] : i = i + 1
-                     if 'moved'  in words[1] : i = i + 1
+                     if 'deleted' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'deleted' --> 'delete'")
+                         words[1] = words[1].replace("deleted","delete")
+
+                     if 'created' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'created' --> 'create'")
+                         words[1] = words[1].replace("created","create")
+
+                     if 'linked' in words[1]:
+                         self.logger.warning("deprecated Event spec: please change 'linked' --> 'link'")
+                         words[1] = words[1].replace("linked","link")
+
+                     if 'modified' in words[1]:
+                         self.logger.warning("deprecated event spec: please change 'modified' --> 'modify'")
+                         words[1] = words[1].replace("modified","modify")
+
+                     if 'create'  in words[1] : i = i + 1
+                     if 'delete'  in words[1] : i = i + 1
+                     if 'link' in words[1] : i = i + 1
+                     if 'follow' in words[1] : i = i + 1
+                     if 'modify' in words[1] : i = i + 1
+                     if 'move'  in words[1] : i = i + 1
+                     if 'poll'  in words[1] : i = i + 1
+                     
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
+
                      self.events = words[1]
                      n = 2
 
@@ -1013,8 +1020,10 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
-                     self.lock = words[1] 
-                     if self.lock[0] != '.' : self.lock = None
+                     if words[1].lower() in [ 'none' ]: 
+                         self.inflight=None
+                     else:
+                         self.inflight = words[1] 
                      n = 2
 
                 elif words0 in ['log','l']: # See: sr_config.7 
@@ -1098,37 +1107,65 @@ class sr_config:
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.execfile("on_file",words1)
-                     if ( self.on_file == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_file == None ):
+                        if self.isNone(words1):
+                           self.on_file_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_file_list.append(self.on_file)
+
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
                      self.execfile("on_line",words1)
-                     if ( self.on_line == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_line == None ):
+                        if self.isNone(words1):
+                           self.on_line_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_line_list.appent(self.on_line)
+
                      n = 2
 
                 elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
                      self.execfile("on_message",words1)
-                     if ( self.on_message == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_message == None ):
+                        if self.isNone(words1):
+                           self.on_message_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_message_list.append(self.on_message)
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
                      self.execfile("on_part",words1)
-                     if ( self.on_part == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_part == None ):
+                        if self.isNone(words1):
+                           self.on_part_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_part_list.append(self.on_part)
+
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config
                      self.execfile("on_post",words1)
-                     if ( self.on_post == None ) and not self.isNone(words1):
-                        ok = False
-                        needexit = True
+                     if ( self.on_post == None ):
+                        if self.isNone(words1):
+                            self.on_post_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_post_list.append(self.on_post)
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7
@@ -1161,7 +1198,8 @@ class sr_config:
                                  if dr and not dr in w: path = dr + os.sep + w
 
                                  path = os.path.abspath(path)
-                                 path = os.path.realpath(path)
+                                 if self.realpath:
+                                     path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -1222,6 +1260,14 @@ class sr_config:
                         self.randomize = self.isTrue(words[1])
                         n = 2
 
+                elif words0 in ['realpath','real']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.realpath = True
+                        n = 1
+                     else :
+                        self.realpath = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.recompute_chksum = True
@@ -1278,10 +1324,18 @@ class sr_config:
                         self.reset = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['role']:  # See: sr_audit.1
-                     roles  = words[1].lower()
-                     user   = words[2]
-                     self.users[user] = roles
+                elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
+                     item = words[1].lower()
+                     if words0 in [ 'role' ]:
+                        self.logger.warning("role option deprecated, please replace with 'declare'" )
+
+                     if item in [ 'source' , 'subscriber' ]:
+                        roles  = item
+                        user   = words[2]
+                        self.users[user] = roles
+                     elif item in [ 'exchange' ]:
+                        self.logger.warning("declaring exchange %s" % (words[2]))
+                        self.exchanges.append( words[2] )                                                
                      n = 3
 
                 elif words0 in ['set_passwords']:  # See: sr_consumer.1
@@ -1403,7 +1457,7 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
-        if flgs == '0' or flgs == 'R' :
+        if flgs in [ '0', 'L', 'R' ]:
            self.sumalgo = checksum_0()
            return
 
@@ -1476,23 +1530,31 @@ class sr_config:
 
     def validate_parts(self):
         self.logger.debug("sr_config validate_parts %s" % self.parts)
-        if not self.parts[0] in ['1','p','i']:
-           self.logger.error("parts invalid (%s)" % self.parts)
+        if not self.parts[0] in ['0','1','p','i']:
+           self.logger.error("parts invalid strategy (only 0,1,p, or i)(%s)" % self.parts)
            return False
 
         self.partflg = self.parts[0]
         token = self.parts.split(',')
-        if self.partflg in ['1','p'] and len(token) != 1 :
-           self.logger.error("parts invalid (%s)" % self.parts)
-           return False
-        if self.partflg == 'i':
-           if len(token) != 2 :
-              self.logger.error("parts invalid (%s)" % self.parts)
-              return False
-           try    : self.blocksize = self.chunksize_from_str(token[1])
-           except :
-                    self.logger.error("parts invalid (%s)" % self.parts)
+
+        if len(token) > 1:
+           if self.partflg == '1' :
+               self.logger.error("parts invalid strategy 1 (whole files) accepts no other options: (%s)" % self.parts)
+               return False
+           if self.partflg == 'p' : 
+               self.logger.error("parts invalid strategy p arguments partial file posting not supported (%s)" % self.parts)
+               return False
+
+           if ( self.partflg == 'i' or self.partflg== '0'):
+              if len(token) > 2 :
+                 self.logger.error("parts invalid too much  (%s)" % self.parts)
+                 return False
+
+              try    : self.blocksize = self.chunksize_from_str(token[1])
+              except :
+                    self.logger.error("parts invalid blocksize given (%s)" % self.parts)
                     return False
+
         return True
 
     def validate_sum(self):

@@ -10,7 +10,12 @@
   and so subscribes to the ADMZ server, but the to_cluster=ADMZ, when ACME downloads, they
   need to override the destination to specify the distribution within ACME.
 
+  sample use:
+
   post_override to_clusters ACME
+
+  on_post post_override
+
 
 """
 

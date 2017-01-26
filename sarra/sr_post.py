@@ -109,28 +109,26 @@ class sr_post(sr_config):
         print("-b   <broker>          default:amqp://guest:guest@localhost/")
         print("-c   <config_file>")
         print("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : print("-e   <events>          default:created|deleted|modified\n")
+        if self.program_name == 'sr_watch' : print("-e   <events>          default:create|delete|follow|link|modify\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
         print("-l   <logpath>         default:stdout")
+        print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, mandatory")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
         print("-recursive             default:enable recursive post")
-        print("-blocksize <integer>   default:0")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
-        print("-path <path1... pathN> default:requiered")
+        print("-path <path1... pathN> default:required")
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
-        print("DEVELOPER:")
-        print("-parts <parts>         default:1")
 
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
@@ -169,12 +167,10 @@ class sr_post(sr_config):
         # should always be ok
         ok = True
         if self.event in self.events:
-           if self.on_post :
-               self.logger.debug("sr_post user on_post")
-               ok = self.on_post(self)
-           if not ok: return ok
+           for plugin in self.on_post_list:
+               if not plugin(self): return False
 
-           ok = self.msg.publish( )
+           ok = self.msg.publish()
 
         return ok
 
@@ -183,7 +179,7 @@ class sr_post(sr_config):
         pass
 
     def posting(self):
-        self.logger.debug("sr_post posting")
+        self.logger.debug("sr_post posting %s" % ( self.url.path ) )
 
         filepath = '/' + self.url.path.strip('/')
 
@@ -204,7 +200,7 @@ class sr_post(sr_config):
 
         # verify that file exists
 
-        if not os.path.isfile(filepath) and self.event != 'deleted' :
+        if not os.path.isfile(filepath) and self.event != 'delete' :
            self.logger.error("File not found %s " % filepath )
            return False
 
@@ -233,10 +229,44 @@ class sr_post(sr_config):
         # delete event...
         # ==============
 
-        if self.event == 'deleted' :
-           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None,'R,0',rename,filename)
+        if self.event == 'delete' :
+           ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
+                    'R,%d' % random.randint(0,100), rename, filename)
+
            if not ok : sys.exit(1)
            return
+
+        
+        # ==============
+        # link event...
+        # ==============
+
+        """
+        table:          behaviour
+        Link  Follow 
+        False False     ignore the symlink
+        False True      file is posted using the link name, rathter than the value of the link.
+        True  False     Link is posted.
+        True  True      Link is posted, and the link followed and that is posted also.
+        """
+
+        if os.path.islink(filepath):
+           if 'link' in self.events: 
+               self.logger.error("posting is a link")
+               #self.msg.headers[ 'link' ] = os.readlink(filepath)
+
+               ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
+                    'L,%d' % random.randint(0,100), rename, filename, link=os.readlink(filepath))
+
+               if not ok : sys.exit(1)
+
+               filepath = os.path.realpath(filepath)
+               urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
+               self.url = urllib.parse.urlparse(urlstr)
+
+           if not 'follow' in self.events: return True
+
+          # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 
         # ==============
         # p partflg special case
@@ -248,17 +278,20 @@ class sr_post(sr_config):
            return
 
         # ==============
-        # blocksize == 0 : compute blocksize if necessary (huge file) for the file Peter's algo
+        # 0 partflg : compute blocksize if necessary (huge file) for the file Peter's algo
         # ==============
 
-        if self.blocksize == 0 :
+        elif self.partflg.startswith('0') and (( len(self.partflg) == 1 ) or ( self.partflg[1] == ',' )):
            lstat   = os.stat(filepath)
            fsiz    = lstat[stat.ST_SIZE]
 
            # compute blocksize from Peter's algo
 
            # tfactor of 50Mb
-           tfactor = 50 * 1024 * 1024
+           if len(self.partflg) > 1:
+               tfactor = self.blocksize
+           else:
+               tfactor = 50 * 1024 * 1024
 
            # file > 5Gb  block of 500Mb
            if   fsiz > 100 * tfactor :
@@ -271,27 +304,38 @@ class sr_post(sr_config):
            elif fsiz > tfactor :
                 self.blocksize = int((fsiz+2)/ 3)
 
-           # none of the above
-           # self.blocksize=0 means entire file
-
-
         # ==============
-        # blocksize != 0
+        # 1 force whole files to be sent.
         # ==============
 
-        if self.blocksize != 0 :
+        elif self.partflg == '1':
+           self.blocksize = 0
+
+        # ==============
+        # fixed blocksize specified.
+        # ==============
+
+        else:
+           self.blocksize = self.chunksize_from_str(self.partflg)
+
+        # ===================
+        # post file in blocks (inplace)
+        # ===================
+
+        if self.blocksize > 0 :
            ok = self.poster.post_local_inplace(filepath,self.exchange,self.url, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)
            return
 
         # ==============
-        # regular file
+        # whole file
         # ==============
 
         ok = self.poster.post_local_file(filepath,self.exchange,self.url,self.to_clusters,self.sumflg,rename)
         if not ok: sys.exit(1)
         return
+
 
     def scandir_and_post(self,path,recursive):
         self.logger.debug("sr_post scandir_and_post %s " % path)
@@ -306,7 +350,7 @@ class sr_post(sr_config):
                    newpath = path + os.sep + e
 
                    if os.path.isfile(newpath) and os.access(newpath,os.R_OK):
-                      self.watching(newpath,'modified')
+                      self.watching(newpath,'modify')
                       continue
 
                    if os.path.isdir(newpath) and recursive :
@@ -321,7 +365,7 @@ class sr_post(sr_config):
         return True
 
     def watching(self, fpath, event ):
-        self.logger.debug("sr_post watching")
+        self.logger.debug("sr_post watching %s, ev=%s" % ( fpath, event ) )
 
         self.event = event
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
@@ -366,14 +410,15 @@ class sr_post(sr_config):
            sys.exit(1)
 
         watch_path = os.path.abspath (watch_path)
-        watch_path = os.path.realpath(watch_path)
+        if self.realpath:
+            watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):
            self.logger.info("file %s " % watch_path )
  
         if os.path.isdir(watch_path):
            self.logger.info("directory %s " % watch_path )
-           if self.rename != None and self.rename[-1] != '/' and 'modified' in self.events:
+           if self.rename != None and self.rename[-1] != '/' and 'modify' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
 
         self.watch_path = watch_path
@@ -409,6 +454,8 @@ def main():
                 post.logger.error("no path to post")
                 post.help()
                 os._exit(1)
+               
+             post.poster.logger = post.logger
 
              for watchpath in post.postpath :
 
@@ -416,8 +463,10 @@ def main():
 
                  post.lock_set()
 
-                 if os.path.isfile(watchpath) : 
-                    post.watching(watchpath,'modified')
+                 if os.path.islink(watchpath) : 
+                    post.watching(watchpath,'link')
+                 elif os.path.isfile(watchpath) : 
+                    post.watching(watchpath,'modify')
                  else :
                     post.scandir_and_post(watchpath,post.recursive)
 

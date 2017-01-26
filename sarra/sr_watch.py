@@ -15,7 +15,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Daluma Sen     - Shared Services Canada
-#  Last Changed   : Feb 29 11:25:05 EST 2016
+#  Peter  Silva   - Shared Services Canada
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,8 @@
 
 import os, sys, time, shelve, psutil
 
-from watchdog.observers.polling import PollingObserverVFS
+from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
 
 try :    
@@ -68,6 +69,10 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_post      import *
 
+inl = []
+
+
+
 class sr_watch(sr_instances):
 
     def __init__(self,config=None,args=None):
@@ -76,13 +81,15 @@ class sr_watch(sr_instances):
 
     def close(self):
         self.post.close()
-        self.observer.unschedule(self.obs_watched)
+        for ow in self.obs_watched:
+            self.observer.unschedule(ow)
         self.observer.stop()
 
     def overwrite_defaults(self):
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
-        self.sleep     = 5
+        self.sleep     = 0.1
+        
         
     def check(self):
         self.nbr_instances  = 1
@@ -92,9 +99,11 @@ class sr_watch(sr_instances):
         self.post.logger       = self.logger
         self.post.program_name = 'sr_watch'
         self.post.blocksize    = self.blocksize
+        self.post.partflg      = self.partflg
+        self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
-        self.time_interval     = self.sleep
+        self.post.realpath     = self.realpath
 
         if self.reset :
            self.post.connect()
@@ -121,6 +130,37 @@ class sr_watch(sr_instances):
             self.cache["pid"] = current_pid
         self.cache.close()
 
+    def find_linked_dirs(self,p):
+        """
+         Find all the subdirectories of the given path that are pointed to by symbolic links.
+         This is needed because watchdog will not traverse symbolic links to add watches. 
+         use the inl variable to detect cycles (same directory showing up multiple times)    
+        """
+        global inl
+
+        l=[]
+        for i in os.listdir(p):
+           f = p + os.sep + i
+
+           if os.path.isdir(f):
+               realf = os.path.realpath(f)
+               fs = os.stat(realf)
+               dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+               if dir_dev_id in inl:
+                   continue
+
+               if os.path.islink(f):
+                   self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
+                   if self.realpath:
+                       l.append(realf)
+                   else:
+                       l.append(f + os.sep + '.' )
+
+                   inl.append(dir_dev_id)
+
+               l = l + self.find_linked_dirs(f)
+        return list(set(l))
+      
     def event_handler(self,meh):
         self.myeventhandler = meh
 
@@ -129,17 +169,57 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.post.logger = self.logger
-        self.logger.info("sr_watch run")
+        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s" % ( self.partflg, self.sumflg, self.caching ) )
         self.validate_cache()
         self.post.connect()
 
         try:
-            self.observer = PollingObserverVFS(os.stat, os.listdir, self.time_interval)
-            self.obs_watched = self.observer.schedule(self.myeventhandler, self.watch_path, recursive=self.post.recursive)
+            if self.post.realpath: 
+               sld = [ os.path.realpath( self.watch_path ) ]
+            else:
+               sld = [ self.watch_path ]
+
+            if ( 'follow' in self.post.events ):
+                if os.path.islink(self.watch_path): 
+                    if not self.post.realpath: 
+                        sld = [ self.watch_path + os.sep + '.' ]
+
+                if  ( self.post.recursive ) :
+                    self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
+                    sld += self.find_linked_dirs(self.watch_path)
+                    self.logger.info("sr_watch need to priming walk done.")
+
+            if ( 'poll' in self.post.events ):
+                self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
+                self.observer = PollingObserver()
+            else:
+                self.logger.info("sr_watch optimal observer for platform selected by default (best when it works).")
+                self.observer = Observer()
+
+            self.obs_watched = []
+            for d in sld:
+                self.logger.info("sr_watch scheduling watch of: %s " % d)
+                ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
+                self.obs_watched.append(ow)
+
+
+            self.logger.info("sr_watch is not yet active.")
             self.observer.start()
+            self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
+
+            # do periodic events (at most, once every 'sleep' seconds)
+            while True:
+               start_sleep_event = time.time()
+               self.myeventhandler.event_wakeup()
+               end_sleep_event = time.time()
+               how_long = self.sleep - ( end_sleep_event - start_sleep_event )
+               if how_long > 0:
+                  time.sleep(how_long)
+
         except OSError as err:
             self.logger.error("Unable to start Observer: %s" % str(err))
             os._exit(0)
+
 
         self.observer.join()
 
@@ -163,7 +243,6 @@ class sr_watch(sr_instances):
 # GLOBAL
 # ===================================
 
-unready = {}
 
 # ===================================
 # MAIN
@@ -196,39 +275,79 @@ def main():
     class MyEventHandler(PatternMatchingEventHandler):
         ignore_patterns = ["*.tmp"]
 
+        def __init__(self):
+            super().__init__()
+            self.new_events = {}
+            self.events_outstanding = {}
+            try: 
+                watch.inflight = int(watch.inflight)
+            except:
+                pass
+
+        def event_wakeup(self):
+
+            # FIXME: Tiny potential for events to be dropped during copy.
+            #     these lists might need to be replaced with watchdog event queues.
+            #     left for later work. PS-20170105
+            #     more details: https://github.com/gorakhargosh/watchdog/issues/392
+            nu = self.new_events.copy()
+            self.new_events={}
+
+            self.events_outstanding.update(nu)
+            if len(self.events_outstanding) > 0:
+               watch.post.lock_set()
+               done=[]
+               for f in self.events_outstanding:
+                   e=self.events_outstanding[f]
+
+                   watch.logger.debug("event_wakeup looking at %s of %s " % (e, f) )
+                   if isinstance(watch.inflight,int):  # waiting for file to be unmodified for 'inflight' seconds...
+                      age = time.time() - os.stat(f)[stat.ST_MTIME] 
+                      if age < watch.inflight :
+                          watch.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
+                          continue
+
+                   if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
+                       watch.logger.debug("event_wakeup calling do_post ! " )
+                       self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e)
+                       done += [ f ]
+                   else:
+                       watch.logger.debug("event_wakeup SKIPPING %s of %s " % (e, f) )
+
+               watch.post.lock_unset()
+               watch.logger.debug("event_wakeup done: %s " % done )
+               for f in done:
+                   del self.events_outstanding[f]
+
+            watch.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
+
+
         def event_post(self, path, tag):
-            global unready
-
-            unready_tmp = dict(unready)
-            for f in unready:
-                if os.access(f, os.R_OK):
-                    watch.logger.debug("File=%s is posted and removed from unready" % str(f))
-                    self.do_post(f, unready[f])
-                    del unready_tmp[f]
-            unready = dict(unready_tmp)
-
-            if os.access(path, os.R_OK):
-                watch.logger.debug("File=%s is posted" % str(path))
-                self.do_post(path, tag)
-            else:
-                if os.path.exists(path):
-                    watch.logger.debug("File=%s is added to unready" % str(path))
-                    unready[path] = tag
+            # FIXME: as per tiny potential, this routine should likely queue events.
+            # that is why have not replaced this function by direct assignment in callers.
+            self.new_events[path]=tag
         
         def do_post(self, path, tag):
-            global unready
             try:
                 if watch.isMatchingPattern(path, accept_unmatch=True) :
-                    watch.post.lock_set()
                     watch.post.watching(path, tag)
-                    watch.post.lock_unset()
             except PermissionError as err:
-                unready[path] = tag
+                self.outstanding_events[path] = tag
                 watch.logger.error(str(err))
 
         def on_created(self, event):
-            if (not event.is_directory):
-                self.event_post(event.src_path, 'created')
+            # need to us test, rather than event to so symlinked directories get added.
+            if not os.path.isdir(event.src_path):
+                self.event_post(event.src_path, 'create')
+            elif watch.recursive:
+                if os.path.islink(event.src_path): 
+                    if watch.post.realpath: p=os.path.realpath(event.src_path)
+                    else: p=event.src_path+os.sep+'.'
+                else: p=event.src_path
+                watch.logger.info("Scheduling watch of new directory %s" % p )
+
+                ow = watch.observer.schedule(self, p, recursive=watch.recursive)
+                watch.obs_watched.append(ow)
  
         def on_deleted(self, event):
             if event.src_path == watch.watch_path:
@@ -236,11 +355,11 @@ def main():
                 watch.logger.error('Exiting!')
                 os._exit(0)
             if (not event.is_directory):
-                self.event_post(event.src_path, 'deleted')
+                self.event_post(event.src_path, 'delete')
     
         def on_modified(self, event):
             if (not event.is_directory):
-                self.event_post(event.src_path, 'modified')
+                self.event_post(event.src_path, 'modify')
 
         def on_moved(self, event):
             if (not event.is_directory):
@@ -248,11 +367,9 @@ def main():
                # but we dont care for now... it is not supported
                if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
                   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-                  watch.post.lock_set()
                   #Every file rename inside the watch path will trigger new copy
                   #watch.post.move(event.src_path,event.dest_path)
-                  self.event_post(event.dest_path, 'modified')
-                  watch.post.lock_unset()
+                  self.event_post(event.dest_path, 'modify')
 
     watch.event_handler(MyEventHandler())
 

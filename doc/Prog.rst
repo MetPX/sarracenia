@@ -73,6 +73,7 @@ program:
 While the first four are self-evident, the on_line plugin is a bit obscure.  It
 is used to parse remote directories listings using sr_poll,
 as the listing format varies by implementation of the remote server.
+Multiple on_scripts can be specified to act cumulatively.
 
 There are also do\_ scripts, which provide or replace functionality in programs:
 
@@ -80,6 +81,7 @@ There are also do\_ scripts, which provide or replace functionality in programs:
 - **do_poll         <script>        (default: None)**
 - **do_send         <script>        (default: None)**
 
+In contrast to on\_ scripts, only a single do_script can be specified at a time.
 
 ---------------------
 Plugin Scripts Basics
@@ -138,13 +140,42 @@ in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the pl
 such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
 section for an exhaustive list.
 
-A popular variable in on_file and on_part plugins, is: *parent.msg.local_file*,
-giving the file name the downloaded product has been written to.
-
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
 
+Popular Variables in Plugins
+-----------------------------
+
+A popular variable in on_file and on_part plugins is: *parent.msg.local_file*,
+giving the file name the downloaded product has been written to.  When the
+same variable is modified in an on_message plugin, it changes the name of
+the file to be downloaded.  Similarly Another oft used variable is 
+*parent.msg.local_dir*, which operates on the directory to which the file
+will be downloaded.
+
+There is one difference between on_* scripts used in a sender when compared to
+a subscriber or other consumer process. In Senders, one must use *parent.msg.remote_file*
+and similarly *parent.msg.remote_dir*
+
+There is no length limit on dir or file names.
+
+There is also parent.msg.urlstr which is the completed download URL of the file,
+ and parent.msg.url, which is the equivalent url after it has been parsed with urlparse.
+(see python3 documentation of urlparse for detailed usage.)  this gives access
+to, for example *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
+or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
+remote host.
+
+Other popular fields are the (AMQP) headers set for a file, accessible as
+*parent.msg.headers[ 'headername' ]*  
+
+Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
+application code creates values longer than that.
+
+These are the variable which are most often of interest, but much other 
+program state is available.  See the  `Variables Available`_ section for a more thorough
+discussion.
 
 Sample Plugins
 --------------
@@ -697,138 +728,23 @@ C is more effective.  These examples are included with every installation of sar
 can be modified to be used with other tools.
 
 Here is an example of implementing conditional use of a more efficient download method.  Start with
-an on_message script that evaluates the condition to determine whether to invoke the custom downloader.
-The full example msg_wget.py is in the plugin directory of ::
+an on_message script that evaluates the condition to determine whether to invoke the custom downloader:
 
 
-  """
-  Use wget to download bigger files.
-
-  This is a means of invoking a more efficienty binary downloader when it makes sense to do so in place
-  of the python scripting downloader, typically for larger files.   Set the msg_wget_threshold to the
-  maximum size of the file to download using built in methods.  Default: 10M (ten megabytes)
-
-  if a file larger than 10M is advertised, then the URL scheme is replaced 'http' -> 'wget'
-
-  This means the do_download plugin (download_wget) will be invoked for that file.
-
-  usage:
-
-
-
-  msg_wget_threshold 10M
-
-  on_message msg_wget
-
-  do_download download_wget
-
-
-  """
-
-  import os,stat,time
-  import calendar
-
-  class WGET_REWRITE(object): 
-
-      import urllib.parse
-
-      def __init__(self,parent):
-          if not hasattr( parent, "msg_wget_threshold" ):
-             parent.msg_wget_threshold = [ "10M" ]
-
-          
-      def perform(self,parent):
-          logger = parent.logger
-          msg    = parent.msg
-
-          if type(parent.msg_wget_threshold) is list:
-             parent.msg_wget_threshold = parent.chunksize_from_str( parent.msg_wget_threshold[0] )
-
-          parts = msg.partstr.split(',')
-          if parts[0] == '1':
-              sz=int(parts[1])
-          else:
-              sz=int(parts[1])*int(parts[2])
-
-          logger.info("wget_ sz: %d, threshold: %d download: %s to %s, " % ( \
-                sz, parent.msg_wget_threshold, parent.msg.urlstr, msg.local_file ) )
-          if sz > parent.msg_wget_threshold :
-              parent.msg.urlstr = msg.urlstr.replace("http:","wget:")
-              parent.msg.url = urllib.parse.urlparse(msg.urlstr)
-              logger.info("wget_large file: download: %s to %s, " % (parent.msg.urlstr, msg.local_file))
-
-          return True
-
-  wget_rewrite = WGET_REWRITE(self)
-  self.on_message = wget_rewrite.perform
-
+.. include:: ../sarra/plugins/msg_download.py 
+   :code:
 
 So one "invents" a new URL scheme that refers to the alternate downloader.   In this case, URLs which are
-to be downloaded using an alternate tool get the their 'http:' replaced by 'wget:'.    In the example above,
-URL's bigger than a threshold value (10 megabytes by default) will be marked for download with a special method
-by having their URL altered.
+to be downloaded using an alternate tool get the their 'http:' replaced by 'download:'.    In the example above,
+posts where the file is bigger than a threshold value (10 megabytes by default) will be marked for download 
+with an alternate method by having their URL altered.
 
-This script needs to be coupled with the use of a do_download script, which, when the alternate schema is encountered
-invokes do_download script. The script itself::
+This on_message msg_download plugin needs to be coupled with the use of a do_download plugin. 
+When the alternate schema is encountered, the component will invoke that plugin. Example of that plugin:
 
-  """
-  Example use of do_download option.
+.. include:: ../sarra/plugins/download_wget.py
+   :code:
 
-  Custom downloading method to work with the message_wget on_message plugin.
-  
-  This downloader will be invoked when an unknown protocol scheme is specified as a URL (we use 'wget')
-  the script replaces 'wget' by 'http' in the protocol, and then spawns a wget binary to perform
-  an efficient download. 
-
-  note that because this involves a fork/exec to launch a binary, it would be best to only launch this sort
-  of download for larger files. the message_wget implements this threshold behaviour.
-
-  Caveat:
-       This downloader just uses the name that wget will set for a file on download,
-       no options about local file naming are implemented.
-
-  """
-
-   import os,stat,time
-   import calendar
-
-   class WGET_DOWNLOAD(object): 
-
-
-     def __init__(self):
-  
-        pass
-            
-     def perform(self,parent):
-        logger = parent.logger
-        msg    = parent.msg
-  
-        import subprocess
-  
-        logger.info("wwget! downloading: from: %s to %s " % (msg.url, msg.local_file))
-        
-        msg.urlstr = msg.urlstr.replace("wget:","http:")
-  
-        result =  subprocess.run( [ "/usr/bin/wget" , msg.urlstr ] )
-        
-        if (result.returncode == 0):  # Success!
-           if parent.reportback:
-              msg.report_publish(201,'Downloaded')
-           return True
-           
-        #Failure!
-  
-        if parent.reportback:
-           msg.report_publish(499,'wget download failed')
-  
-        return False 
-
-
-  wget_download = WGET_DOWNLOAD()
-  self.do_download = wget_download.perform
-
-
- 
 
 
 

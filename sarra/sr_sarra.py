@@ -303,7 +303,8 @@ class sr_sarra(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : return self.on_message(self)
+        for plugin in self.on_message_list :
+            if not plugin(self): return False
 
         return True
 
@@ -315,11 +316,8 @@ class sr_sarra(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post :
-           ok = self.on_post(self)
-           if not ok: return ok
-
-        # should always be ok
+        for plugin in self.on_post_list:
+           if not plugin(self): return False
 
         ok = self.msg.publish( )
 
@@ -410,6 +408,26 @@ class sr_sarra(sr_instances):
            return True
 
         #=================================
+        # link event, try to link and propagate message
+        #=================================
+        if self.msg.sumflg == 'L' :
+           self.logger.debug("message is to link %s to %s" % self.msg.local_file, self.msg.headers['link'] )
+           ok=False
+           try :
+               ok = os.symlink( self.msg.headers[ 'link' ], self.msg.local_file )
+               if ok:
+                  self.logger.debug("%s linked to %s " % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+           except:
+               self.logger.error("symlink of %s %s failed." % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+
+           if ok:
+              self.msg.set_topic_url('v02.post',self.msg.local_url)
+              self.msg.set_notice(self.msg.local_url,self.msg.time)
+              self.__on_post__()
+              self.msg.report_publish(205,'Reset Content : linked')
+
+           return True
+        #=================================
         # prepare download 
         # make sure local directory where the file will be downloaded exists
         #=================================
@@ -473,15 +491,27 @@ class sr_sarra(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
-           if self.on_part :
-              ok = self.on_part(self)
-              if not ok : return False
+           #if self.on_part :
+           #   ok = self.on_part(self)
+           for plugin in self.on_part_list :
+              if not plugin(self): return False
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace"
            # or we are running in place and it is the last part.
 
-           if self.on_file :
+           if self.on_file_list :
+
+             if (self.msg.partflg == '1') or \
+                       (self.msg.partflg != '1' and ( \
+                             (not self.inplace) or \
+                             (self.inplace and (self.msg.lastchunk and not self.msg.in_partfile)))):
+
+                 for plugin in self.on_file_list:
+                     if not plugin(self): return False
+
+
+             """
               # entire file pumped in
               if self.msg.partflg == '1' :
                  ok = self.on_file(self)
@@ -503,8 +533,10 @@ class sr_sarra(sr_instances):
                  # inplace : last part(chunk) is inserted
                  elif (self.msg.lastchunk and not self.msg.in_partfile) :
                     ok = self.on_file(self)
-
+              
               if not ok : return False
+             """
+
 
         #=================================
         # publish our download
@@ -540,6 +572,14 @@ class sr_sarra(sr_instances):
 
         while True :
               try  :
+                      #  is it sleeping ?
+                      if not self.has_vip() :
+                         self.logger.debug("sr_sarra does not have vip=%s, is sleeping", self.vip)
+                         time.sleep(5)
+                         continue
+                      else:
+                         self.logger.debug("sr_sarra is active on vip=%s", self.vip)
+
                       #  consume message
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue

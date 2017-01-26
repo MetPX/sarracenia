@@ -9,7 +9,7 @@
 class Msg_Log(object): 
 
     def __init__(self,parent):
-          pass
+        parent.logger.info("msg_log initialized")
           
     def perform(self,parent):
         msg = parent.msg

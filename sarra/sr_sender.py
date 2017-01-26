@@ -126,7 +126,7 @@ class sr_sender(sr_instances):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = self.masks == []
 
-        # to clusters requiered
+        # to clusters required
 
         if self.post_broker != None and self.to_clusters == None :
            self.logger.error("Need to know post_broker cluster name")
@@ -303,7 +303,8 @@ class sr_sender(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : return self.on_message(self)
+        for plugin in self.on_message_list:
+            if not plugin(self): return False
 
         return True
 
@@ -315,11 +316,8 @@ class sr_sender(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post :
-           ok = self.on_post(self)
-           if not ok: return ok
-
-        # should always be ok
+        for plugin in self.on_post_list:
+            if not plugin(self): return False
 
         ok = self.msg.publish( )
 
@@ -415,6 +413,14 @@ class sr_sender(sr_instances):
 
         while True :
               try  :
+                      #  is it sleeping ?
+                      if not self.has_vip() :
+                         self.logger.debug("sr_sender does not have vip=%s, is sleeping", self.vip)
+                         time.sleep(5)
+                         continue
+                      else:
+                         self.logger.debug("sr_sender is active on vip=%s", self.vip)
+
                       #  consume message
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
@@ -461,6 +467,17 @@ class sr_sender(sr_instances):
 
         self.remote_rpath = self.local_rpath
         self.remote_file  = self.local_file
+       
+
+        if self.strip > 0 :
+           token = self.remote_rpath.split('/')
+
+           if self.strip >= len(token)-1 : 
+               token = [token[-1]]
+           else:                          
+               token = token[self.strip:]
+
+           self.remote_rpath = '/'.join(token)
 
         # no mirror and no directory ...
         if not self.mirror and self.currentDir == None :
@@ -490,7 +507,7 @@ class sr_sender(sr_instances):
         # build dir/path and url from options
 
         self.remote_dir  = self.remote_root + '/' + self.remote_rpath
-        self.remote_path = self.remote_dir  + '/' + self.remote_file
+        #self.remote_path = self.remote_dir  + '/' + self.remote_file
 
     def set_remote_url(self):
 

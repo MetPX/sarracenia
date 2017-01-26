@@ -66,21 +66,16 @@ to thins such as private keys, or FTP modes.
 For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`__
 
 
-VIP, INTERFACE, INSTANCE
-------------------------
+VIP, INTERFACE 
+--------------
 
-As only one instance of sr_poll that should be used for each configuration,
-the *instances* option is forced to 1. It also behaves as a singleton: **sr_poll** perform
-sr_poll is often configured on multiple servers, and have the posting occur only from
-whichever one owns the virtual IP address, at a given time.  Its task if invoked on a
-server where the ip *vip* from an *interface* is present...
-If not, **sr_poll** will sleep.  When asleep, it will wakeup
-on the server every *sleep* seconds, to update its reference file and be perhaps
-take over the work.
+sr_poll can be configured on multiple servers, where posting should occur only from
+whichever one owns the virtual IP address (VIP) at a given time.  
+As only one instance of sr_poll that should be used for each configuration, the *instances* option is forced to 1. 
+To check that the *vip* is present on a given *interface* periodically::
 
 **vip       <ip>         (None)**
 **interface <string>     (None)**
-
 
 When these options are omitted, sr_poll is always active.
 

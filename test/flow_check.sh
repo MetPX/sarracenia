@@ -8,6 +8,47 @@ function countthem {
    fi
 }
 
+function calcres {
+   #
+   # calcres - Calculate test result.
+   # 
+   # logic:
+   # increment test number (tno)
+   # compare first and second totals, and report agreement if within 10% of one another.
+   # emit description based on agreement.  Arguments:
+   # 1 - first total
+   # 2 - second total 
+   # 3 - test description string.
+   # 4 - will retry flag.
+   #
+
+
+   if [ "${1}" -eq 0 ]; then
+      printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
+      return 2
+   fi
+
+   res=0
+   if [ "${2}" -gt 0 ]; then
+         res=$(( ( ${1}*1000 ) / ${2} ))
+   fi
+   tno=$((${tno}+1))
+
+   if [ $res -lt 900  -o $res -gt 1100 ]; then
+      printf "test %2d FAILURE: ${3}\n" ${tno}
+      if [ "$4" ]; then
+         tno=$((${tno}-1))
+      fi    
+      return 1
+   else
+      printf "test %2d success: ${3}\n" ${tno}
+      passedno=$((${passedno}+1))
+      return 0
+   fi
+
+}
+
+
 function countall {
 
   countthem "`grep msg_total ~/.cache/sarra/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
@@ -47,7 +88,13 @@ function countall {
 countall
 
 snum=1
-smin=1000
+
+if [ "$1" ]; then
+   smin=$1
+else
+   smin=1000
+fi
+
 printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
@@ -57,7 +104,14 @@ while [ "${totsarra}" == 0 ]; do
    printf "waiting to start...\n"
 done
 
+
+
 while [ $totsarra -lt $smin ]; do
+   if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+      echo "starting shovels and waiting..."
+      sr_shovel t_dd1 start
+      sr_shovel t_dd2 start
+   fi
    sleep 10
 
    countall
@@ -65,89 +119,68 @@ while [ $totsarra -lt $smin ]; do
    printf  "sample now %6d \r"  $totsarra
 
 done
+printf  "\nSufficient!\n" 
 
-
-
-tno=1
-res=$(( ( ${totshovel1}*1000 ) / ${totshovel2} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel1 ($totshovel1) should be reading the same number of items as shovel2 (${totshovel2})"
-else
-   echo "test ${tno}: SUCCESS, shovel1 (${totshovel1}) reading the same as shovel2 (${totshovel2}) does"
-fi
-
-tno=$((${tno}+1))
-res=$(( ( ${totwinnow}*1000 ) / ${totsarra} ))
-if [ $res -lt 1900  -o $res -gt 2100 ]; then
-   echo "test ${tno}: FAIL, sarra ($totsarra) should be reading about half as many items as winnow (${totwinnow})"
-else
-   echo "test ${tno}: SUCCESS, winnow (${totwinnow}) reading double what sarra (${totsarra}) does"
+if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
+   echo "stopping shovels and waiting..."
+   sr_shovel t_dd1 stop
+   sr_shovel t_dd2 stop
+   sleep 30
 fi
 
 
-tno=$((${tno}+1))
-res=$(( ( ${totsarra}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, sarra (${totsarra}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as sarra (${totsarra})"
+
+
+passedno=0
+tno=0
+
+if [ "${totshovel2}" -gt "${totshovel1}" ]; then
+   maxshovel=${totshovel2}
+else 
+   maxshovel=${totshovel1}
 fi
-
-tno=$((${tno}+1))
-res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel1 (${totshovel1}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel1 (${totshovel1})"
-fi
+printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
 
 
-tno=$((${tno}+1))
-
-res00=$(( ${totwinnow00}*1000 / ${totwinnow} ))
-res01=$(( ${totwinnow01}*1000 / ${totwinnow} ))
-
-res=$(( ( ${totshovel1}*1000 ) / ${totsub} ))
-
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, shovel2 (${totshovel2}) and sub (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as shovel2 (${totshovel2})"
-fi
-
-tno=$((${tno}+1))
-
-res=$(( ( ${totshortened}*1000 ) / ${totsub} ))
-
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
-else
-   echo "test ${tno}: SUCCESS, subscribe (${totsub}) has the same number of items as headers that were truncated (${totshortened})"
-fi
-
-tno=$((${tno}+1))
-
-res=$(( ( ${totsubr}*1000 ) / ${totsub} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, subscribe messages accepted (${totsub}) is the same as files downloaded (${totsubr})"
-fi
+calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1 ( ${totshovel1} ) and t_dd2 ( ${totshovel2} ) should have about the same number of items read"  
 
 
-tno=$((${tno}+1))
-res=$(( ( ${totsub}*1000 ) / ${totwatch} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, messages received by subscribe (${totsub}) and posted by sr_watch (${totwatch}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, messages received by subscribe (${totsub}) is the same as files posted (${totwatch}) by watch"
-fi
 
-tno=$((${tno}+1))
-res=$(( ( ${totwatch}*1000 ) / ${totsent} ))
-if [ $res -lt 900  -o $res -gt 1100 ]; then
-   echo "test ${tno}: FAIL, posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
-else
-   echo "test ${tno}: SUCCESS, posted by watch (${totwatch}) is the same as files sent (${totsent}) by sender"
-fi
+t2=$(( ${totsarra}*2 ))
+
+calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
+
+calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) should have about the same number of items" 
+
+calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and sub t (${totsub}) should have about the same number of items" 
+
+# this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
+# there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
+#calcres ${totwinnow00} ${totwinnow01} \
+#   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
+
+calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t (${totsub}) should have about the same number of items" 
+
+calcres ${totshortened} ${totsub} \
+   "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
+
+calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
+
+while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same" retry ; do
+    printf "info: retrying... waiting for totwatch to catchup\n"
+    sleep 30
+    oldtotwatch=${totwatch}
+    countall
+    if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
+       printf "error: giving up on this test\n"
+       tno=$((${tno}+1))
+       break
+    fi
+done
+
+calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
+
+
+calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
+exit $?
 

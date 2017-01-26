@@ -120,11 +120,10 @@ class sr_report(sr_instances):
 
         # user provided an on_message script
 
-        ok = True
+        for plugin in self.on_message_list :
+            if not plugin(self): return False
 
-        if self.on_message : ok = self.on_message(self)
-
-        return ok
+        return True
 
 
     def run(self):
@@ -141,6 +140,14 @@ class sr_report(sr_instances):
         while True :
 
           try  :
+                 #  is it sleeping ?
+                 if not self.has_vip() :
+                     self.logger.debug("sr_report does not have vip=%s, is sleeping", self.vip)
+                     time.sleep(5)
+                     continue
+                 else:
+                     self.logger.debug("sr_report is active on vip=%s", self.vip)
+
                  ok, self.msg = self.consumer.consume()
                  if not ok : continue
 

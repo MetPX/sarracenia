@@ -35,7 +35,7 @@ class Msg_Total(object):
         else:
             parent.msg_total_maxlag=60
 
-        logger.debug("speedo init: 2 " )
+        logger.debug("msg_total init: 2 " )
 
         if hasattr(parent,'msg_total_interval'):
             if type(parent.msg_total_interval) is list:

@@ -180,8 +180,8 @@ can start a browser.
      cluster localhost
      admin amqp://bunnymaster@localhost/
      feeder amqp://tfeed@localhost/
-     role source tsource
-     role subscribe tsub
+     declare source tsource
+     declare subscribe tsub
      EOT
 
      sudo rabbitmqctl delete_user guest

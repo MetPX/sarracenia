@@ -102,10 +102,10 @@ class http_transport():
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
-                if   parent.lock == None or msg.partflg == 'i' :
+                if   parent.inflight == None or msg.partflg == 'i' :
                      ok = self.http_write(response,msg.local_file,msg)
 
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                      local_lock = ''
                      local_dir  = os.path.dirname (msg.local_file)
                      if local_dir != '' : local_lock = local_dir + os.sep
@@ -114,8 +114,8 @@ class http_transport():
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
                 
-                elif parent.lock[0] == '.' :
-                     local_lock  = msg.local_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                     local_lock  = msg.local_file + parent.inflight
                      ok = self.http_write(response,local_lock,msg)
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
@@ -150,12 +150,12 @@ class http_transport():
         chk           = self.sumalgo
         self.checksum = None
 
-        # trottle 
+        # throttle 
 
         cb = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -182,15 +182,19 @@ class http_transport():
               if chk : chk.update(chunk)
               if cb  : cb(chunk)
 
+        # if new version of file replaces longer previous version.
+        if fp.tell() >= msg.filesize:
+           fp.truncate()
+
         fp.close()
 
         if chk : self.checksum = chk.get_value()
 
         return True
 
-    # trottle
-    def trottle(self,buf) :
-        self.logger.debug("http_transport trottle")
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("http_transport throttle")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.bytes_ps
         d1,d2,d3,d4,now = os.times()
@@ -261,13 +265,13 @@ def self_test():
              
           tr = http_transport()
 
-          cfg.lock = None
+          cfg.inflight = None
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
-          cfg.lock = '.'
+          cfg.inflight = '.'
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
-          cfg.lock = '.tmp'
+          cfg.inflight = '.tmp'
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
           cfg.msg.sumalgo = cfg.sumalgo

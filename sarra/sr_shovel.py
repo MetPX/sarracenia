@@ -245,7 +245,8 @@ class sr_shovel(sr_instances):
 
         # invoke user defined on_message when provided
 
-        if self.on_message : return self.on_message(self)
+        for plugin in self.on_message_list:
+           if not plugin(self): return False
 
         return True
 
@@ -261,11 +262,8 @@ class sr_shovel(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post :
-           ok = self.on_post(self)
-           if not ok: return ok
-
-        # should always be ok
+        for plugin in self.on_post_list:
+           if not plugin(self): return False
 
         ok = self.msg.publish( )
 
@@ -343,6 +341,14 @@ class sr_shovel(sr_instances):
 
         while True :
               try  :
+                      #  is it sleeping ?
+                      if not self.has_vip() :
+                          self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
+                          time.sleep(5)
+                          continue
+                      else:
+                          self.logger.debug("sr_shovel is active on vip=%s", self.vip)
+
                       #  consume message
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue

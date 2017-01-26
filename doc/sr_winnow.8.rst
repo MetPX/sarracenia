@@ -56,10 +56,10 @@ the option settings.
 ACTIVE/PASSIVE OPTIONS
 ----------------------
 
-**sr_winnow** can be used on a single server.
-Idealy, to make it more robust, you would run it on clustered brokers.
-An high availability software presents a **vip** (virtual ip) on the active
-server. Should the server go down, the **vip** is moved on another server.
+**sr_winnow** can be used on a single server node, or multiple nodes
+could share responsibility. Some other, separately configured, high availability 
+software presents a **vip** (virtual ip) on the active server. Should 
+the server go down, the **vip** is moved on another server.
 Both servers would run **sr_winnow**. It is for that reason that the 
 following options were implemented:
 
@@ -137,11 +137,11 @@ and processing for all.
 **sr_winnow** does not check, in the received message, the destination clusters. 
 So no message is discarted if without destination, source or other missing attributs.
 
-The user can provide an **on_message** script. When a message is accepted up 
-to this level of verification, the **on_message** script is called... with 
-the **sr_winnow** class instance as argument.  The script can perform whatever 
-you want... if it returns False, the processing of the message will stop 
-there. If True, the program will continue processing from there.  
+The user can provide **on_message** scripts. When a message is accepted up 
+to this level of verification, the **on_message** scripts are called... with 
+the **sr_winnow** class instance as argument.  The scripts can perform whatever 
+is desired... if one returns False, the processing of the message will stop 
+there. If they all return True, the program will continue processing from there.  
 
 
 See `sr_config(7) <sr_config.7.html>`_  for more details.

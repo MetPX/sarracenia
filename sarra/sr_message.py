@@ -369,7 +369,8 @@ class sr_message():
         # file to file
 
         if self.partflg == '1' : return
-
+        if self.partflg == None : return
+     
         # part file never inserted
 
         if not self.inplace :
@@ -523,7 +524,7 @@ class sr_message():
 
         self.filesize      = self.chunksize
 
-        if self.partflg == '1' : return
+        if self.partflg in [ '0', '1' ]: return
 
         self.block_count   = int(token[2])
         self.remainder     = int(token[3])

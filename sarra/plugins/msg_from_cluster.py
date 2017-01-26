@@ -1,7 +1,15 @@
 #!/usr/bin/python3
 
 """
-  Select messages whose source is the same as the 'msg_by_source' setting.
+  This is used inter-pump report routing.
+  Select messages whose cluster is the same as the 'msg_by_cluster' setting.
+
+  msg_by_cluster DDI
+  msg_by_cluster DD
+
+  on_message msg_from_cluster
+
+  will select messages originating from the DD or DDI clusters.
 
 """
 

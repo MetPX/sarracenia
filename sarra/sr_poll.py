@@ -103,7 +103,7 @@ class sr_poll(sr_instances):
         self.sleeping      = False
         self.connected     = False 
 
-        # to clusters requiered
+        # to clusters required
 
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
@@ -345,9 +345,11 @@ class sr_poll(sr_instances):
                     for mask in self.pulllst :
                         pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
                         if mask_regexp.match(f) and accepting :
-                           if self.on_line : 
-                              ok = self.on_line(self)
-                              if not ok : continue
+                           #if self.on_line : 
+                           #   ok = self.on_line(self)
+                           #   if not ok : continue
+                           for plugin in self.on_line_list:
+                               if not plugin(self): continue
                            new_ls[f] = self.line
 
                 self.ls = new_ls
@@ -586,9 +588,11 @@ class sr_poll(sr_instances):
 
         # invoke on_post when provided
 
-        if self.on_post :
-           ok = self.on_post(self)
-           if not ok: return ok
+        #if self.on_post :
+        #   ok = self.on_post(self)
+        #   if not ok: return ok
+        for plugin in self.on_post_list :
+           if not plugin(self): return False
 
         # should always be ok
 

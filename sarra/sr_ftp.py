@@ -219,7 +219,7 @@ class sr_ftp():
         self.cb = None
 
         if self.kbytes_ps > 0.0 :
-           self.cb = self.trottle
+           self.cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -229,7 +229,7 @@ class sr_ftp():
            fp = open(local_file,'w')
            fp.close()
 
-        # fixme : get trottled.... instead of fp.write... call get_trottle(buf) which calls fp.write
+        # fixme : get throttled.... instead of fp.write... call get_throttle(buf) which calls fp.write
         if self.binary :
            self.fp = open(local_file,'r+b')
            if local_offset != 0 : self.fp.seek(local_offset,0)
@@ -284,7 +284,7 @@ class sr_ftp():
         cb        = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.trottle
+           cb = self.throttle
            d1,d2,d3,d4,now = os.times()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
@@ -316,9 +316,9 @@ class sr_ftp():
         self.logger.debug("sr_ftp set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
 
-    # trottle
-    def trottle(self,buf) :
-        self.logger.debug("sr_ftp trottle")
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("sr_ftp throttle")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.bytes_ps
         d1,d2,d3,d4,now = os.times()
@@ -425,10 +425,10 @@ class ftp_transport():
 
                 ftp.set_sumalgo(msg.sumalgo)
 
-                if parent.lock == None :
+                if parent.inflight == None :
                    ftp.get(remote_file,msg.local_file,msg.local_offset)
 
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                    local_lock = ''
                    local_dir  = os.path.dirname (msg.local_file)
                    if local_dir != '' : local_lock = local_dir + os.sep
@@ -437,8 +437,8 @@ class ftp_transport():
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
             
-                elif parent.lock[0] == '.' :
-                   local_lock  = msg.local_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                   local_lock  = msg.local_file + parent.inflight
                    ftp.get(remote_file,local_lock,msg.local_offset)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
@@ -529,17 +529,17 @@ class ftp_transport():
                 msg.logger.debug('Beginning put of %s %s into %s %d-%d' % 
                     (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
     
-                if parent.lock == None :
+                if parent.inflight == None :
                    ftp.put(local_file, parent.remote_file)
-                elif parent.lock == '.' :
+                elif parent.inflight == '.' :
                    remote_lock = '.'  + parent.remote_file
                    ftp.put(local_file, remote_lock)
                    ftp.rename(remote_lock, parent.remote_file)
-                elif parent.lock[0] == '.' :
-                   remote_lock = parent.remote_file + parent.lock
+                elif parent.inflight[0] == '.' :
+                   remote_lock = parent.remote_file + parent.inflight
                    ftp.put(local_file, remote_lock)
                    ftp.rename(remote_lock, parent.remote_file)
-                elif parent.lock == 'umask' :
+                elif parent.inflight == 'umask' :
                    ftp.umask()
                    ftp.put(local_file, parent.remote_file)
     
@@ -661,15 +661,15 @@ def self_test():
            cfg.kbytes_ps= 0.05
        
            dldr = ftp_transport()
-           cfg.lock        = None
+           cfg.inflight        = None
            dldr.download(cfg)
            dldr.download(cfg)
-           cfg.lock        = '.'
+           cfg.inflight        = '.'
            dldr.download(cfg)
            dldr.download(cfg)
            logger.debug("checksum = %s" % msg.onfly_checksum)
            dldr.download(cfg)
-           cfg.lock        = '.tmp'
+           cfg.inflight        = '.tmp'
            dldr.download(cfg)
            dldr.download(cfg)
            msg.sumalgo = cfg.sumalgo
@@ -694,13 +694,13 @@ def self_test():
            cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
            cfg.remote_dir    = "tztz"
            cfg.chmod       = 775
-           cfg.lock        = None
+           cfg.inflight      = None
            dldr.send(cfg)
            dldr.ftp.delete("ddd")
-           cfg.lock        = '.'
+           cfg.inflight      = '.'
            dldr.send(cfg)
            dldr.ftp.delete("ddd")
-           cfg.lock        = '.tmp'
+           cfg.inflight      = '.tmp'
            dldr.send(cfg)
            dldr.send(cfg)
            dldr.send(cfg)

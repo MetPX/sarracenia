@@ -68,7 +68,9 @@ class sr_audit(sr_instances):
             declare += "'%s' "  % upw
 
         if role == 'admin' :
-           declare += " tags=administrator"
+           declare += " tags=administrator "
+        else:
+           declare += ' tags="" '
 
         dummy = self.rabbitmqadmin( declare )
 
@@ -87,7 +89,7 @@ class sr_audit(sr_instances):
         if role == 'source':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
-           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % ( u, u )
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -111,7 +113,7 @@ class sr_audit(sr_instances):
         if role == 'subscribe':
            c="configure='^q_%s.*'"%u
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^x[lrs]_%s.*|^xpublic$'" % (u,u)
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -236,9 +238,8 @@ class sr_audit(sr_instances):
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
-        # mandatory xreport,xpublic
-
-        for e in ['xlog', 'xreport','xpublic','xwinnow'] : # xlog left there for compatibility.
+        self.logger.info("exchanges to verify: %s" % self.exchanges)
+        for e in self.exchanges : 
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue
@@ -320,7 +321,7 @@ class sr_audit(sr_instances):
            need to check if these files exist, and create only if they do not.
            also allow for the convention of .conf.off.  If such a file exists, do not create either.
         """
-        self.logger.error("sr_audit report routing configuration")
+        self.logger.info("sr_audit report routing configuration")
 
         feeder = self.manager.geturl()
 
@@ -333,9 +334,9 @@ class sr_audit(sr_instances):
            
         for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
-             self.logger.error("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.info("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.error("need to create %s" % cfn ) 
+                self.logger.info("creating %s" % cfn ) 
                 cf=open(cfn,'w')
                 cf.write( '# Initial report routing to sources configuration, by sr_audit, tune to taste. \n')
                 cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
@@ -355,9 +356,9 @@ class sr_audit(sr_instances):
 
         for u in self.sources+self.subscribes:
              cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
-             self.logger.error("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.info("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.error("need to create %s" % cfn ) 
+                self.logger.info("creating %s" % cfn ) 
                 cf=open(cfn,'w')
                 cf.write( '# Initial report routing configuration created by sr_audit, tune to taste.\n ')
                 cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
@@ -616,6 +617,14 @@ class sr_audit(sr_instances):
 
         while True  :
               try   :
+                     #  is it sleeping ?
+                      if not self.has_vip() :
+                         self.logger.debug("sr_audit does not have vip=%s, is sleeping", self.vip)
+                         time.sleep(5)
+                         continue
+                      else:
+                         self.logger.debug("sr_audit is active on vip=%s", self.vip)
+
                       self.logger.info("sr_audit waking up")
                       self.configure()
                       self.verify_queues()

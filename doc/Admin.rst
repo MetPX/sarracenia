@@ -232,7 +232,7 @@ data offerings combined on a single tree.  On the other hand, name clashes are n
 Use of a common source account name on different clusters may be used to implement folders that
 are shared between the two accounts with the same name.
 
-Pump users are defined with the *role* option. Each option starts with the *role*
+Pump users are defined with the *declare* option. Each option starts with the *declare*
 keyword, followed by the specified role, and lastly the user name which has that role.
 role can be one of:
 
@@ -297,8 +297,8 @@ Example of a complete valid default.conf, for a host named *blacklab* ::
   cluster blacklab
   admin amqps://hbic@blacklab/
   feeder  amqps://feeder@blacklab/
-  role source goldenlab
-  role subscriber anonymous
+  declare source goldenlab
+  declare subscriber anonymous
 
 A corresponding credentials.conf would look like::
 
@@ -316,6 +316,8 @@ Transport engines are the data servers queried by subscribers, by the end users,
 The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
 The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of
 configuring the servers for use, please consult the documentation of the servers themselves.
+Also note that additional protocols can be enabled through the use of do\_ plugins, as
+described in the Programming Guide.
 
 
 Operations
@@ -419,6 +421,45 @@ gather statisical information.
 
    Is any of this needed, or is the rabbit GUI enough on it's own?
 
+
+
+Init Integration
+~~~~~~~~~~~~~~~~
+
+System integration is highly non-portable and general instructions are not provided.
+No attempt is made at this sort of integration on non-linux systems yet.  The information here
+pertains only to Linux servers.
+
+By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
+the tools/ sub-directory directory allows for integration with tools for different usage scenarios.
+
+.. NOTE::
+   tools/sr.init -- a sample init script suitable for sysv-init or upstart based systems.
+   tools/sarra_system.service -- for systemd base systems for a 'daemon' style deployment.
+   tools/sarra_user.service -- for systemd as a per user service.
+
+.. NOTE:: 
+   The following is not well tested
+
+Systemd installation process, by administrator:
+   groupadd sarra
+   useradd sarra
+   cp tools/sarra_system.service /etc/systemd/system/sarra.service  (if a package installs it, it should go in /usr/lib/systemd/system )
+   cp tools/sarra_user.service /etc/systemd/user/sarra.service (or /usr/lib/systemd/user, if installed by a package )
+   systemctl daemon-reload
+   
+It is then assumed that one uses the 'sarra' account to store the daemon oriented (or system-wide) sarra configuration.
+Users can also run their personal configuration in sessions via:
+
+  systemctl --user enable sarra
+  systemctl --user start sarra
+
+
+On an upstart or sysv-init based system:
+
+   cp tools/sr.init /etc/init.d/sr
+   <insert magic here to get that activated.>
+  
 
 
 Rabbitmq Setup
@@ -664,10 +705,10 @@ engine nodes.)  Next step is to put roles in .config/sarra/default.conf ::
  feeder amqp://feeder@localhost/
 
 Specify all knows users that you want to implement with their roles
-in the file  .config/sarra/default.conf (user role)::
+in the file  .config/sarra/default.conf ::
 
- role subscriber anonymous
- role source peter
+ declare subscriber anonymous
+ declare source peter
 
 Now to configure the pump execute the following::
 
@@ -699,7 +740,7 @@ The *sr_audit* program:
 - creates exchanges *xpublic* and *xreport* if they don't exist.
 - reads roles from .config/sarra/default.conf
 - obtains a list of users and exchanges on the pump
-- for each user in a *role* option::
+- for each user in a *declare* option::
 
       declare the user on the broker if missing.
       set    user permissions corresponding to its role (on creation)
@@ -775,14 +816,14 @@ In short, here are the permissions and exchanges *sr_audit* manages::
 
 To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf ::
 
-  role source Alice
+  declare source Alice
 
 then add an appropriate amqp entry in ~/.config/sarra/credentials.conf to set the password,
 then run::
 
   sr_audit --users foreground
 
-To remove users, just remove *role source Alice* from the default.conf file, and run::
+To remove users, just remove *declare source Alice* from the default.conf file, and run::
 
   sr_audit --users foreground
 

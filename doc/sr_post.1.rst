@@ -121,27 +121,18 @@ common settings, and methods of specifying them.
 
   the broker to which the post is sent.
 
-**[--blocksize <value>]**
-
-The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
-Files bigger than this value will get announced with *blocksize* sized parts.
-
-By default, **sr_post** computes a reasonable blocksize that depends on the file size.
-The user can set a fixed *blocksize* if it is better for its products or if he wants to
-take advantage of the **caching** mechanism.
-
 **[-c|--config <configfile>]**
 
   A list of settings in a configuration file 
 
-**[--caching]**
+**[--cache]**
 
   When one is planning reposting directories, this option caches
-  what was posted and will post only files (parts) that were new
-  (or changed) when invoked again.  For caching purpose, 
-  it needs to have a fixed blocksize. So **blocksize** needs to
-  be declared.
+  what was posted and will post only files (or parts of files) that were new
+  when invoked again.   This is incompatible with the default *parts 0* strategy, one
+  must specify an alternate strategy.
+
+  So **parts** needs to be set (to either 1 or a fixed blocksize.)
 
 **[-dr|--document_root <path>]**
 
@@ -170,6 +161,40 @@ take advantage of the **caching** mechanism.
 
   Display program options.
 
+**[--parts <value>]**
+
+This option controls the partitioning strategy used to post files.
+the value should be one of::
+
+   0 - autocompute an appropriate partitioning strategy (default)
+   1 - always send entire files in a single part.
+   <blocksize> - used a fixed partition size (example size: 1M )
+
+
+Files can be announced as multiple parts.  Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in paralllel.  When files change, transfers are
+optimized by only sending parts which have changed.  
+
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+Files bigger than this value will get announced with *blocksize* sized parts.
+
+The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
+for files of various sizes.  As the file size varies, the automatic computation will give different
+results.  this will result in resending information which has not changed as partitions of a different 
+size will have different sums, and therefore be tagged as different.  
+
+By default, **sr_post** computes a reasonable blocksize that depends on the file size.
+The user can set a fixed *blocksize* if it is better for its products or if he wants to
+take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
+it make sense to specify a fixed partition size so that the blocks in the cache will be the 
+same blocks as those generated when the file is larger, and so avoid re-transmission.  So use 
+of '10M' would make sense in that case.  
+
+In cases where a custom downloader is used which does not understand partitioning, it is necessary
+to avoid having the file split into parts, so one would specify '1' to force all files to be send
+as a single part.
 
 **[-p|--path path1 path2 ... pathN]**
 
@@ -198,7 +223,7 @@ files are posted.
 
 **[--reset]**
 
-  When one has used **--caching** this option will get rid of the
+  When one has used **--cache** this option will get rid of the
   cached informations.
 
 
@@ -220,6 +245,19 @@ The subtopic default can be overwritten with the *subtopic* option.
 
 .. note:: 
   FIXME: a good list of destination should be discoverable.
+
+**[-sum|--sum <string>]**
+
+All file posts include a checksum.  The *sum* option specifies how to calculate the it.
+It is a comma separated string.  Valid checksum flags are ::
+
+    [0|n|d|c=<scriptname>]
+    where 0 : no checksum... value in post is random integer (for load balancing purposes.)
+          n : do checksum on filename
+          d : do md5sum on file content (default)
+
+Then using a checksum script, it must be registered with the pumping network, so that consumers
+of the postings have access to the algorithm.
 
 
 **[-tp|--topic_prefix <key>]**
@@ -243,41 +281,25 @@ The concatenation of the two last fields of the announcement defines
 what the subscribers will use to download the product. 
 
 
-ADVANCED OPTIONS
-================
+ADMINISTRATOR SPECIFIC
+======================
 
-**[--parts <value>]**
+**[-queue_name]**
 
-The user can suggest how to download a file.  By default it suggests to download the entire file.
-In this case, the amqp message header will have an entry parts with value '1,filesize_in_bytes'.
-To suggest to download a file in blocksize of 10Mb, the user can specify *-p i,10M*. *i* stands for
-"inplace" and means to put the part directly into the file.  *-p p,10M* suggests the same blocksize but to put the part
-in a separate filepart. If the *blocksize* is bigger than the filesize, the program will fall back to the default.
-There will be one post per suggested part.
+If a client wants a product to be reannounced,
+the broker administrator can use *sr_post*  and publish
+directly into the client's queue. The client could provide
+his queue_name... or the administrator would find it on
+the broker... From the log where the product was processed on
+the broker, the administrator would find all the messages
+properties. The administrator should pay attention on slight
+differences between the logs properties and the *sr_post* arguments.
+The logs would mention *from_cluster*  *to_clusters* and associated
+values...  **sr_post** arguments would be *-cluster* and  *-to*
+respectively. The administrator would execute **sr_post**, providing
+all the options and setting everything found in the log plus the 
+targetted queue_name  *-queue_name q_....*
 
-The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
-
-When suggesting parts, the value put in the amqp message header varies.
-For example, if headers[parts] is the value 'p,256,12,11,4', then it stands for :
-*p* suggesting part, a blocksize in bytes *256*,
-the number of block of that size *12*, the remaining bytes *11*, 
-and the current block *4*,
-
-**[-sum|--sum <string>]**
-
-All file posts include a checksum.  It is placed in the amqp message header will have as an
-entry *sum* with default value 'd,md5_checksum_on_data'.
-The *sum* option tell the program how to calculate the checksum.
-It is a comma separated string.  Valid checksum flags are ::
-
-    [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is 0
-          n : do checksum on filename
-          d : do md5sum on file content
-
-Then using a checksum script, it must be registered with the pumping network, so that consumers
-of the postings have access to the algorithm.
 
 
 DEVELOPER SPECIFIC OPTIONS
@@ -305,24 +327,17 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
-ADMINISTRATOR SPECIFIC
-======================
+**[--parts]**
 
-**[-queue_name]**
+While the usual usage of the parts option are described above, there are a number of ways of using 
+the parts flag that are not generally useful aside from within development.
+In addition to the user oriented partition specifications listed before, any valid 'parts' header, as given in the 
+parts header (e.g. 'i,1,150,0,0') .  One can also specify an alternate basic blocksize for the automatic 
+algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 50M) as the basic block size, so one
+can see how the algorithm works.
 
-If a client wants a product to be reannounced,
-the broker administrator can use *sr_post*  and publish
-directly into the client's queue. The client could provide
-his queue_name... or the administrator would find it on
-the broker... From the log where the product was processed on
-the broker, the administrator would find all the messages
-properties. The administrator should pay attention on slight
-differences between the logs properties and the *sr_post* arguments.
-The logs would mention *from_cluster*  *to_clusters* and associated
-values...  **sr_post** arguments would be *-cluster* and  *-to*
-respectively. The administrator would execute **sr_post**, providing
-all the options and setting everything found in the log plus the 
-targetted queue_name  *-queue_name q_....*
+
+
 
 
 SEE ALSO

@@ -400,19 +400,16 @@ client side mechanisms, saving bandwidth and processing for all.
 On_message Plugins
 ------------------
 
-Once a message has gone through the filtering above, the user can run a plugin 
+Once a message has gone through the filtering above, the user can run plugins 
 on the message and perform arbitrary processing (in Python 3.)  For example: to do statistics,
-rename a product, changing its destination... 
-
-Plugin scripts are more fully explained in the `Plugin Scripts <#plugin-scripts-1>`_ of 
-this manual page.
+rename a product, changing its destination... example usage:
 
 - **on_message    <script_name> (default: msg_log)**
 
-The **on_message** plugin scripts is the very last step in consuming messages.
+The **on_message** plugin scripts are called as the last step in consuming messages.
 All plugin scripts return a boolean. If False is returned, the component
 acknowledges the message to the broker and does not process it.  If no on_message plugin 
-is set, or if the plugin provided returns True, the message is processed by the component.
+is set, or if all plugins provided returned True, the message is processed by the component.
 
 
 ROUTING
@@ -477,11 +474,18 @@ and under which name.
 - **kbytes_ps** <count>       (default: 0)**
 
 
-The  **inflight**  option sets a temporary file name used
-during the download so that other programs reading the directory ignore 
-them.  The file is renamed to a permanent name when the transfer is complete.
-It is usually a suffix applied to file names, but if **inflight**  is set to  **.**,
+The  **inflight**  option sets how to ignore files when they are being transferred
+or (in mid-flight betweeen two systems.)
+This assures that consuming  programs reading the directory ignore 
+them until they are ready.  The value can be a file name suffix, which is appended
+to create a temporary name during the transfer.  If **inflight**  is set to **.**,
 then it is prefix, to conform with the standard for "hidden" files on unix/linux.
+In either case, when the transfer is complete, the file is renamed to it's permanent name
+to allow further processing.
+
+If inflight is set to an integer value, then it specifies the minimum number of seconds 
+a file must have remained unchanged before it is accepted for processing
+(used by sr_watch)
 
 **Directory** sets where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
@@ -827,9 +831,9 @@ When set, the admin option will cause sr start to start up the sr_audit daemon.
   for this, when run as the admin user.  then the trigger to run all admin daemons would be the presence
   of the admin user in the configuration.
 
-Most users are defined using the *role* option.  
+Most users are defined using the *declare* option.  
 
-- **role <role> <name>   (no defaults)**
+- **declare <role> <name>   (no defaults)**
 
 Role:
 
@@ -881,7 +885,7 @@ additional transfer protocols.
 - do_send - to implement additional sending protocols and processes.
 
 
-On\_* scripts are used more often. They allow actions to be inserted to augment the default 
+On\_* plugins are used more often. They allow actions to be inserted to augment the default 
 processing for various specialized use cases. The scripts are invoked by having a given 
 configuration file specify an on_<event> option. The event can be one of:
 
@@ -900,7 +904,7 @@ configuration file specify an on_<event> option. The event can be one of:
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
   adjustments of the post.
 
-The simplest example of a script: A do_nothing.py script for **on_file**::
+The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
   class Transformer(object): 
       def __init__(self):
@@ -921,8 +925,13 @@ the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 For other events, the last line of the script must be modified to correspond.
+Multiple scripts can be attached to the same event, in which case they are
+called in the order they appear in the configuration.
 
-More examples are available in the Guide documentation.
+One can specify *on_message None* to reset the list to no plugins (removes
+msg_log, so it suppresses logging of message receipt.)
+
+More examples are available in the Programming Guide.
 
 
 
