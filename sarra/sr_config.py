@@ -54,6 +54,7 @@ class sr_config:
         if '-V' in sys.argv :
            print("Version %s" % sarra.__version__ )
            os._exit(0)
+
         # IN BIG DEBUG
         #self.debug = True
         #self.logpath = None
@@ -178,6 +179,15 @@ class sr_config:
         self.user_args       = args
 
     def args(self,args):
+        """
+
+        given the command line arguments look for options, and parse them.  When they are over, 
+
+        for use by sr_post:
+        set first_arg  to be the index of the first command line argument that isn't an option.
+        for sr_post the files to post are sys.argv[self.first_arg:] 
+
+        """
 
         self.logger.debug("sr_config args")
 
@@ -185,11 +195,14 @@ class sr_config:
 
         # on command line opition starts with - or --
         i = 0
+        self.first_arg=0
         while i < len(args):
               n = 1
               if args[i][0] == '-' :
                  n = self.option(args[i:])
                  if n == 0 : n = 1
+              elif self.first_arg == 0:
+                 self.first_arg=i+1
               i = i + n
 
     def check(self):

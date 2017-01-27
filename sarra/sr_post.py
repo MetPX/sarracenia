@@ -438,17 +438,8 @@ def main():
     try :
              post.connect()
 
-             # if len(post.movepath) > 0 :
-             #    ?post move events
-             #    post.close()
-             #    sys.exit(0)
-
              if len(post.postpath) == 0 :
-                i = len(sys.argv)
-                while i>1:
-                      if not os.path.exists(sys.argv[i-1]) : break
-                      post.postpath.append(sys.argv[i-1])
-                      i = i - 1
+                post.postpath = sys.argv[post.first_arg:]
 
              if len(post.postpath) == 0 :
                 post.logger.error("no path to post")
@@ -457,11 +448,11 @@ def main():
                
              post.poster.logger = post.logger
 
+             post.lock_set()
              for watchpath in post.postpath :
 
                  post.watch_path = watchpath
 
-                 post.lock_set()
 
                  if os.path.islink(watchpath) : 
                     post.watching(watchpath,'link')
@@ -470,8 +461,8 @@ def main():
                  else :
                     post.scandir_and_post(watchpath,post.recursive)
 
-                 post.lock_unset()
 
+             post.lock_unset()
              post.close()
 
     except :
