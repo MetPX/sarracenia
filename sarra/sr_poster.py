@@ -74,7 +74,7 @@ class sr_poster:
         self.logger.debug("sr_poster build_broker")
 
         self.logger.info("Output AMQP  broker(%s) user(%s) vhost(%s)" % \
-                        (self.broker.hostname,self.broker.username,self.broker.path) )
+            (self.broker.hostname,self.broker.username, self.broker.path ) )
 
         self.hc      = HostConnect( logger = self.logger )
         self.hc.loop = self.loop
@@ -208,7 +208,8 @@ class sr_poster:
         self.msg.publisher = self.publisher
 
     def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,link=None):
-        self.logger.error("sr_poster post %s caching: %s " % ( url.path, self.caching ) )
+        self.logger.error("sr_poster post %s caching(%s) exchange(%s)" % \
+            ( url.path, self.caching, exchange ) )
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
@@ -274,7 +275,7 @@ class sr_poster:
         return ok
 
     def post_local_file(self,path,exchange,url,to_clusters,sumflg='d',rename=None):
-        self.logger.debug("sr_poster post_local_file")
+        self.logger.debug("sr_poster post_local_file exchange(%s) " % exchange )
     
         # set partstr
 
@@ -322,7 +323,7 @@ class sr_poster:
 
         ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
 
-        self.logger.debug("sr_poster post_local_file")
+        self.logger.debug("sr_poster post_local_file exchange(%s)" % exchange )
 
         return ok
 

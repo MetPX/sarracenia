@@ -451,15 +451,21 @@ class sr_subscribe(sr_instances):
 
         self.connect()
 
+        active=self.has_vip()
+
         while True :
               try  :
                       #  is it sleeping ?
                       if not self.has_vip() :
-                         self.logger.debug("sr_subscribe does not have vip=%s, is sleeping", self.vip)
                          time.sleep(5)
+                         if active:
+                             self.logger.debug("sr_subscribe does not have vip=%s, is sleeping", self.vip)
+                             active=False
                          continue
                       else:
-                         self.logger.debug("sr_subscribe is active on vip=%s", self.vip)
+                         if not active:
+                             self.logger.debug("sr_subscribe is active on vip=%s", self.vip)
+                             active=True
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
