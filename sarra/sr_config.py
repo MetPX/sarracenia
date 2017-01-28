@@ -509,8 +509,8 @@ class sr_config:
             self.logger.error("Type: %s, Value: %s" % (stype, svalue))
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
 
-        if not hasattr(self,opname):
-            self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, words1, opname ))
+        if getattr(self,opname) is None:
+            self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
 
 
 
