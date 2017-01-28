@@ -451,6 +451,9 @@ class sr_subscribe(sr_instances):
 
         self.connect()
 
+        if not self.has_vip() : self.logger.debug("sr_subscribe does not have vip=%s, is sleeping", self.vip)
+        else: self.logger.debug("sr_subscribe is active on vip=%s", self.vip)
+
         active=self.has_vip()
 
         while True :
