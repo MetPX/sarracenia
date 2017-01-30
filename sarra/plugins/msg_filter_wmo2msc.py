@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
+
 """
-dod_filter_wmo2msc.py is a do_download plugin script to convert WMO bulletins on local disk
+msg_filter_wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
 to MSC internal format in an alternate tree.  It is analogous to sundew 'bulletin-file'.
+Meant to be called as an sr_shovel plugin.
 
-STATUS: work in progress.  Doesn't really work yet. local testing works.
+It prints an output line:
 
-      Only tested standalone so far (see SUPPLEMENTARY INFO on how to do that.)
-
-FIXME: The normal URL's announced would be HTTP, but how to get actual directory?
-      do we require a separate announcement as file URL's  just add a substition?
-      do we need a parameter to supply the document_root for the upstream?
-      
-FIXME: No uniquifier in the file names.
-      According to WMO rules, should not be necessary.  MSC practice does not reflect that.
+filter_wmo2msc: <input_file> -> <output_file> (<detected format>)
 
 usage:
+     Use the directory setting to know the root of tree where files are placed.
 
-In a sr_sarra configuration:
+In a sr_shovel configuration:
 
-msg_download_protocol 'http'
-on_message msg_download
-do_download do_filter_wmo2msc
+directory /.... 
+on_message msg_filter_wmo2msc
+
+
+Parameters:
+
+  msg_filter_wmo2msc_bad_tac SFUK45 EGRR,FPCN11 CWAO
+     - When receiving bulletins with the given Abbreviated Headers, force their type to 'unknown binary'
+     - list of AHL's comma separated.
+     - default: SFUK45 EGRR
+
+  msg_filter_wmo2msc_uniquify hash|time|anything else
+     - whether to add a string in addition to the AHL to make the filename unique.
+     - hash - means apply a hash, so that the additional string is content based.
+     - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.
+     - otherwise, no suffix will be added.
+     - default: hash
 
 
 NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
@@ -35,16 +45,47 @@ import re
 class Xwmo2msc(object):
 
     def __init__(self,parent):
+
+        parent.uniquify='hash'
+        if hasattr(parent,'msg_filter_wmo2msc_uniquify'):
+           parent.logger.info('msg_filter_wmo2msc, override' )
+           parent.uniquify = parent.msg_filter_wmo2msc_uniquify[0]
+
+        if hasattr(parent,'msg_filter_wmo2msc_bad_ahls'):
+            parent.bad_ahl= [ ]
+            for i in parent.msg_filter_wmo2msc_bad_ahls:
+               for j in i.split(','):
+                   parent.bad_ahl.append(j.replace('_',' '))
+        else:
+            parent.bad_ahl= [ 'SFUK45 EGRR' ]
+
+        parent.treeify=False
+        if hasattr(parent,'msg_filter_wmo2msc_tree'):
+           parent.treeify=parent.isTrue(parent.msg_filter_wmo2msc_tree[0])
+
+
         self.trimre=re.compile(b" +\n")
+        parent.logger.info('msg_filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
+           ( parent.uniquify, parent.bad_ahl ) )
+
 
     def replaceChar(self,oldchar,newchar):
+        """
+           replace all occurrences of oldchar by newchar in the the message byte stream.
+           started as a direct copy from sundew of routine with same name in bulletin.py
+           - the storage model is a bit different, we store the entire message as one bytearray.
+           - sundew stored it as a series of lines, so replaceChar implementation changed.
+
+        """
         self.bintxt = self.bintxt.replace(bytearray(oldchar,'latin_1'),bytearray(newchar,'latin_1'))      
 
     def doSpecificProcessing(self):
         """doSpecificProcessing()
 
            Modify bulletins received from Washington via the WMO socket protocol.
-
+           started as a direct copy from sundew of routine with same name in bulletinManagerWmo.py
+      
+           - encode/decode, and binary stuff came because of python3
         """
 
         ahl2=self.bulletin[0][:2].decode('ascii')
@@ -121,51 +162,115 @@ class Xwmo2msc(object):
     def perform(self,parent):
         logger = parent.logger
         msg    = parent.msg
-        
-        input_file = msg.urlstr.replace("download:/","")        
 
-        print( 'reading file: %s ' % (input_file) )
-        # read once to figure out headers and type.
+        if msg.urlstr[0:5] != 'file:' :
+            logger.error( 'filter_wmo2msc needs local files invalid url: %s ' % (msg.urlstr) )
+            return False
+
+        input_file = msg.urlstr.replace("file:","")        
+
+        # read once to get headers and type.
+
+        logger.debug( 'filter_wmo2msc reading file: %s' % (msg.urlstr) )
+
         with open( input_file, 'rb' ) as s:
             self.bulletin = [ s.readline(), s.read(4) ]
         
+        AHLfn = (self.bulletin[0].replace(b' ',b'_').strip()).decode('ascii')
+
+        if len(AHLfn) < 18:
+            logger.error( 'filter_wmo2msc: not a WMO bulletin, malformed header: (%s)' % (AHLfn) )
+            return False
+
         # read second time for the body in one string.
         with open( input_file, 'rb' ) as s:
             self.bintxt = s.read()
-        
-        
-        AHLfn = (self.bulletin[0].replace(b' ',b'_').strip()).decode('ascii')
-        msg.local_file = os.path.dirname(msg.local_file) + os.sep + AHLfn
-                     
-        
-        
-        if self.bulletin[1].lstrip()[:4] in [ 'BUFR', 'GRIB', '\211PNG' ]: 
-            logger.debug( 'file %s -> binary %s' % (input_file, msg.local_file) )
-            self.replaceChar('\r','')
 
+        logger.debug( 'filter_wmo2msc read twice: %s ' % (input_file) )
+        
+        # Determine file format (fmt) and apply transformation.
+        if self.bulletin[1].lstrip()[:4] in [ 'BUFR', 'GRIB', '\211PNG' ]: 
+            fmt='wmo-binary'
+            self.replaceChar('\r','')
         elif self.bulletin[0][:11] in [ 'SFUK45 EGRR' ]:
             # This file is encoded in an indecipherably non-standard format.
-            logger.debug( 'file %s -> SKUK45 EGRR strangencoding %s' % (input_file, msg.local_file) )
+            fmt='unknown-binary'
+
             #self.replaceChar('\r','',2) replace only the first 2 carriage returns.
             self.bintxt = \
                 self.bintxt.replace( bytearray('\r','latin_1'), bytearray('','latin_1'), 2)
-
         else:
-            logger.debug( 'file %s -> alphanumeric %s' % (msg.local_file, AHLfn) )
+            fmt='wmo-alphanumeric'
             self.doSpecificProcessing()        
         
-        d = open( msg.local_file, 'wb+') 
+        # apply 'd' checksum (md5)
+        import hashlib
+        s = hashlib.md5()
+        s.update(self.bintxt)
+        sumstr= ''.join( format(x, '02x') for x in s.digest() )
+
+        # Determine local file name.
+        if parent.uniquify in [ 'time' ]:
+            import time
+            AHLfn += '_' + time.strftime( "%Y%m%d%H%M%S", time.gmtime(time.time()) ) + \
+                     '_%05d' % random.randint(0,9999)
+        elif parent.uniquify in [ 'hash' ]:
+            #AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
+            AHLfn += '_' + sumstr
+
+        if parent.treeify :
+            d = parent.currentDir + os.sep + self.bulletin[0][0:2].decode('ascii') 
+            logger.info( 'filter_wmo2msc check %s' % (d) )
+            if not os.path.isdir( d ):
+                os.mkdir( d, parent.chmod_dir ) 
+
+            d = d + os.sep + self.bulletin[0][2:4].decode('ascii') 
+            logger.info( 'filter_wmo2msc check %s' % (d) )
+            if not os.path.isdir( d ):
+                os.mkdir( d, parent.chmod_dir ) 
+
+            d = d + os.sep + self.bulletin[0][14:16].decode('ascii') 
+            logger.info( 'filter_wmo2msc check %s' % (d) )
+            if not os.path.isdir( d ):
+                os.mkdir( d, parent.chmod_dir ) 
+
+            local_file = d + os.sep + AHLfn
+        else:
+            local_file = parent.currentDir + os.sep + AHLfn
+
+        # write the data.
+        d = open( local_file, 'wb+') 
         d.write(self.bintxt)
         d.close()
+
+        logger.info( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
+
+        """
+          FIXME: still missing some modifications.
+          2 set mtime, atime. apply new time, or preserve old?
+        """
+        fstat = os.stat(local_file)
+  
+        # Modify message for posting.
+        msg.urlstr = 'file:/' + local_file
+        msg.url = urllib.parse.urlparse(parent.msg.urlstr)
+        msg.topic = 'v02.post' + local_file.replace('/','.')
+        msg.headers[ 'sum' ] = 'd,%s' % sumstr
+        msg.headers[ 'parts' ] = '1,%d,0,0' % len(self.bintxt)
+        msg.headers[ 'filename' ] = os.path.basename(local_file)
+        msg.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
+
+        msg.set_notice(parent.msg.url)
+
         return True
-        
 
 
 if __name__ != '__main__':
 
     # real activation as a do_download filtering script.
     xwmo2msc  = Xwmo2msc(self)
-    self.on_file = xwmo2msc.perform
+    self.on_message = xwmo2msc.perform
+
 else:
     
     class TestLogger:
@@ -205,7 +310,6 @@ else:
             xwmo2msc  = Xwmo2msc(testparent)
             xwmo2msc.perform(testparent)
     
-
 """
 
 SUPPLEMENTARY INFORMATION
@@ -218,11 +322,21 @@ World Meteorological Organisation (WMO) standard (See WMO-386 and WMO-306) bulle
 into the similar but different internal format used by the Meteorological Service of 
 Canada (MSC.)
 
+transformation of bulletins is based on detecting the format by reading the first 
+line of the file, and the first four bytes of after the first line.  detected format 
+is one of:
+   wmo-binary: GRIB, BUFR, or PNG, which require carriage returns to be removed ?
+   wmo-alpha:  extensive filtering.
+   unknown-binary: unknown format, remove only carriage returns from AHL.
+
+The file is read entirely into memory as the WMO standard specifies a maximum message
+size of 500,000 bytes with no segmentation and re-assembly being ruled out.
+
 The output files are named based based on the Abbreviated Header Line (AHL)
 from first line of each input file. 
 
-It operates on local files, One subscribes to a source messages that are already downloaded, 
-and then this 'download' filter will produce a second tree of converted bulletins.
+It operates on local files.  One subscribes to a source messages that are already 
+downloaded, then this 'download' filter produces a second tree of converted bulletins.
 
 STANDALONE DEBUGGING:
 Instead of being used purely as a plugin, the script can also be invoked directly.
@@ -247,8 +361,11 @@ is standard in Unix/Linux land, and not two carriage returns followed by a line 
 by the ancient tomes of the WMO.
 
 This processing was determined by blackbox reverse engineering for MetPX sundew in the mid-2000's.
-when a study was done over a few days in the mid 2000's, it was determined that approximately 6% of traffic on the GTS is carriage returns, which seems sad, but the formats are too entrenched to be changed.
-(Hopefully) same logic ported to Sarracenia for use as a sarra plugin in 2017.
+when a study was done over a few days in the mid 2000's, it was determined that approximately 
+6% of traffic on the GTS is carriage returns, which seems sad, but the formats are too entrenched 
+to be changed.  
+
+Hopefully identical logic has been ported to Sarracenia for use as a sarra plugin in 2017.
 
 Adaptation of sundew code to sarracenia by Peter Silva - 2017/01 
 
