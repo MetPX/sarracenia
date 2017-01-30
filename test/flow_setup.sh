@@ -22,7 +22,8 @@ feeder  amqp://tfeed@localhost
 declare source tsource
 declare subscriber tsub
 declare subscriber anonymous
-
+declare exchange xhoho
+declare exchange xhoho_public
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
 
