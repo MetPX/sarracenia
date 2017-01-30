@@ -248,6 +248,9 @@ class sr_shovel(sr_instances):
         for plugin in self.on_message_list:
            if not plugin(self): return False
 
+        if hasattr(self,'hoho'):
+            self.logger.error("hoho!")
+             
         return True
 
     # =============
@@ -307,7 +310,7 @@ class sr_shovel(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug( "Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr) )
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -338,16 +341,26 @@ class sr_shovel(sr_instances):
         # loop/process messages
 
         self.connect()
+        active = self.has_vip()
+        if not active :
+            self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
+        else:
+            self.logger.debug("sr_shovel is active on vip=%s", self.vip)
 
         while True :
               try  :
                       #  is it sleeping ?
                       if not self.has_vip() :
-                          self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
+                          if active:
+                              self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
+                              active=False
+
                           time.sleep(5)
                           continue
                       else:
-                          self.logger.debug("sr_shovel is active on vip=%s", self.vip)
+                          if not active:
+                              self.logger.debug("sr_shovel is active on vip=%s", self.vip)
+                              active=True
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
