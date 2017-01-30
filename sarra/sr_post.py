@@ -386,6 +386,7 @@ class sr_post(sr_config):
 
         url = self.url
         self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
+        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, url.geturl() ) )
         self.posting()
         self.url = url
         return True
@@ -450,6 +451,9 @@ def main():
 
              post.lock_set()
              for watchpath in post.postpath :
+
+                 if watchpath[0] != os.path.sep :
+                      watchpath = os.getcwd() + os.path.sep + watchpath
 
                  post.watch_path = watchpath
 
