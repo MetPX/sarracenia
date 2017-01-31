@@ -102,8 +102,8 @@ class sr_watch(sr_instances):
         self.post.partflg      = self.partflg
         self.post.sumflg       = self.sumflg
         self.post.caching      = self.caching
+        self.post.watch_flags  = self.watch_flags
         self.post.watch_path   = self.watch_path
-        self.post.realpath     = self.realpath
 
         if self.reset :
            self.post.connect()
@@ -151,7 +151,7 @@ class sr_watch(sr_instances):
 
                if os.path.islink(f):
                    self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
-                   if self.realpath:
+                   if 'realpath' in self.watch_flags:
                        l.append(realf)
                    else:
                        l.append(f + os.sep + '.' )
@@ -169,27 +169,28 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.post.logger = self.logger
-        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s" % ( self.partflg, self.sumflg, self.caching ) )
+        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s flags=%s" % \
+             ( self.partflg, self.sumflg, self.caching, self.post.watch_flags ) )
         self.validate_cache()
         self.post.connect()
 
         try:
-            if self.post.realpath: 
+            if 'realpath' in self.post.watch_flags: 
                sld = [ os.path.realpath( self.watch_path ) ]
             else:
                sld = [ self.watch_path ]
 
-            if ( 'follow' in self.post.events ):
+            if ( 'follow' in self.post.watch_flags ):
                 if os.path.islink(self.watch_path): 
-                    if not self.post.realpath: 
+                    if not 'realpath' in self.post.watch_flags: 
                         sld = [ self.watch_path + os.sep + '.' ]
 
-                if  ( self.post.recursive ) :
+                if  'recursive' in self.watch_flags :
                     self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
                     sld += self.find_linked_dirs(self.watch_path)
                     self.logger.info("sr_watch need to priming walk done.")
 
-            if ( 'poll' in self.post.events ):
+            if ( 'poll' in self.post.watch_flags ):
                 self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
                 self.observer = PollingObserver()
             else:
@@ -199,7 +200,7 @@ class sr_watch(sr_instances):
             self.obs_watched = []
             for d in sld:
                 self.logger.info("sr_watch scheduling watch of: %s " % d)
-                ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
+                ow = self.observer.schedule(self.myeventhandler, d, recursive='recusive' in self.watch_flags)
                 self.obs_watched.append(ow)
 
 
@@ -339,14 +340,14 @@ def main():
             # need to us test, rather than event to so symlinked directories get added.
             if not os.path.isdir(event.src_path):
                 self.event_post(event.src_path, 'create')
-            elif watch.recursive:
+            elif 'recursive' in watch.watch_flags:
                 if os.path.islink(event.src_path): 
-                    if watch.post.realpath: p=os.path.realpath(event.src_path)
+                    if 'realpath' in self.post.watch_flags : p=os.path.realpath(event.src_path)
                     else: p=event.src_path+os.sep+'.'
                 else: p=event.src_path
                 watch.logger.info("Scheduling watch of new directory %s" % p )
 
-                ow = watch.observer.schedule(self, p, recursive=watch.recursive)
+                ow = watch.observer.schedule(self, p, recursive='recursive' in watch.watch_flags)
                 watch.obs_watched.append(ow)
  
         def on_deleted(self, event):
