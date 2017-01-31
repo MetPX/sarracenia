@@ -1112,7 +1112,7 @@ class sr_config:
                      self.no = int(words[1])
                      n = 2
 
-                elif words0 in ['notify_only','n','no-download']: # See: sr_subscribe.1  
+                elif words0 in ['notify_only','n','no_download']: # See: sr_subscribe.1  
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
