@@ -89,9 +89,7 @@ class sr_poster:
         self.publisher.build()
 
     def cache_close(self):
-        self.logger.debug("sr_poster cache_close")
-        self.logger.debug("sr_poster caching %s" % self.caching)
-        self.logger.debug("sr_poster cache %s" % self.cache)
+        self.logger.debug("sr_poster cache_close caching=%s cache=%s" % (self.caching, self.cache) )
         if not self.caching   : return
         if self.cache == None : return
         #self.logger.debug("save cache and release lock")
