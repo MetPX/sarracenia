@@ -117,6 +117,7 @@ This process builds a local .deb in the parent directory using standard debian m
 - The following steps will build sarracenia but not sign the changes or the source package::
 
     cd metpx/sarracenia
+    sudo apt-get install devscripts
     debuild -uc -us
     sudo dpkg -i ../<the package just built>
 
