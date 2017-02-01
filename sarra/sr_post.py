@@ -264,7 +264,7 @@ class sr_post(sr_config):
                urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
                self.url = urllib.parse.urlparse(urlstr)
 
-           if not 'follow' in self.watch_flags: return True
+           if not 'follow' in self.events: return True
 
           # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 
@@ -411,7 +411,7 @@ class sr_post(sr_config):
            sys.exit(1)
 
         watch_path = os.path.abspath (watch_path)
-        if 'realpath' in self.watch_flags:
+        if self.realpath:
             watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):

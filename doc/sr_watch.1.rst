@@ -152,14 +152,9 @@ Available events:  create, delete, follow, link, modify, poll
 Default: default is all of them, except poll
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
-and *link* attributes are less obvious, and affect how symbolic links are processed.
+The *follow* and *link* attributes are less obvious, and affect how symbolic links are processed.
 If *link* is set, symbolic links will be posted as links so that consumers can choose 
 how to process them. if it is not set, then no link events will ever be posted.
-
-**[--watch_flags <flag|flag|...>]**
-
-Watch_flags is an option that modifies how directory trees will be traversed.  The flags recognized are:
-follow,poll,realpath.
 
 The *follow* keyword causes symbolic links to be traversed.  if *follow* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
@@ -169,10 +164,6 @@ monitored by sr_watch.   If *follow* is false, then no action related to the des
 By Default, sr_watch selects a (OS dependent) optimal method to watch a directory.   For large trees,
 the optimal method can be manyfold (10x or even 100x) faster to recognize when a file has been modified.
 In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed file systems), so one must use a slower but more reliable and portable polling method.  The *poll* keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
-
-The *realpath* option is intended only for debugging/developer usage.  *Realpath* resolves paths given to their canonical ones, 
-eliminating any indirection via symlinks.  The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.   This is implemented to preserve the behaviour of an earlier iteration of sr_watch, but it is not clear if it required or useful.  Feedback welcome.
-
 
 .. note::
    move or rename events are treated as modify events
@@ -331,6 +322,11 @@ If there are several posts because the file is posted
 by block because the *blocksize* option was set, the block 
 posts are randomized meaning that the will not be posted
 ordered by block number.
+
+**[-real|--realpath <boolean>]**  EXPERIMENTAL
+
+The realpath option resolves paths given to their canonical ones, eliminating any indirection via symlinks.
+The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.   This is implemented to preserve the behaviour of an earlier iteration of sr_watch, but it is not clear if it required or useful.  Feedback welcome.
 
 **[-rr|--reconnect]**
 

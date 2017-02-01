@@ -400,8 +400,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'create|delete|link|modify'
-        self.event                = 'create|delete|modify'
+        self.events               = 'create|delete|follow|link|modify|poll'
+        self.event                = 'create|delete|follow|modify'
 
         self.randomize            = False
         self.reconnect            = False
@@ -419,9 +419,8 @@ class sr_config:
         self.flatten              = '/'
         self.reportback           = True
 
-        #self.realpath             = False
-        #self.recursive            = False
-        self.watch_flags          = ''
+        self.realpath             = False
+        self.recursive            = False
 
         self.pump_flag            = False
         self.users_flag           = False
@@ -913,7 +912,7 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     if 'realpath' in self.watch_flags:
+                     if self.realpath:
                          path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
@@ -968,11 +967,13 @@ class sr_config:
                      if 'create'  in words[1] : i = i + 1
                      if 'delete'  in words[1] : i = i + 1
                      if 'link' in words[1] : i = i + 1
+                     if 'follow' in words[1] : i = i + 1
                      if 'modify' in words[1] : i = i + 1
                      if 'move'  in words[1] : i = i + 1
+                     if 'poll'  in words[1] : i = i + 1
                      
-                     if i < len(words[1].split(',')) :
-                        self.logger.error("an invalid event found (%s)" % words[1])
+                     if i == 0 :
+                        self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
 
                      self.events = words[1]
@@ -1210,7 +1211,7 @@ class sr_config:
                                  if dr and not dr in w: path = dr + os.sep + w
 
                                  path = os.path.abspath(path)
-                                 if 'realpath' in self.watch_flags:
+                                 if self.realpath:
                                      path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
@@ -1272,14 +1273,13 @@ class sr_config:
                         self.randomize = self.isTrue(words[1])
                         n = 2
 
-                # to be deleted...just commented at first 2017/01
-                #elif words0 in ['realpath','real']: # See: sr_post.1, sr_watch.1
-                #     if (words1 is None) or words[0][0:1] == '-' : 
-                #        self.realpath = True
-                #        n = 1
-                #     else :
-                #        self.realpath = self.isTrue(words[1])
-                #        n = 2
+                elif words0 in ['realpath','real']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.realpath = True
+                        n = 1
+                     else :
+                        self.realpath = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1297,14 +1297,13 @@ class sr_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
-                # to be deleted...just commented at first 2017/01
-                #elif words0 in ['recursive','rec']: # See: sr_post.1, sr_watch.1
-                #     if (words1 is None) or words[0][0:1] == '-' : 
-                #        self.recursive = True
-                #        n = 1
-                #     else :
-                #        self.recursive = self.isTrue(words[1])
-                #        n = 2
+                elif words0 in ['recursive','rec']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.recursive = True
+                        n = 1
+                     else :
+                        self.recursive = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['remote_config']: # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1416,21 +1415,6 @@ class sr_config:
                      else :
                         self.users_flag = self.isTrue(words[1])
                         n = 2
-
-                elif words0 == 'watch_flags': # See: FIXME
-                     i = 0
-                     w = words[1].lower()
-                     if 'follow'  in w : i = i + 1
-                     if 'poll'  in w : i = i + 1
-                     if 'recursive'  in w : i = i + 1
-                     if 'realpath'  in w : i = i + 1
-
-                     if i < len(w.split(',')) :
-                        self.logger.error("invalid watch_flags (%s)" % words[1])
-                        needexit = True
-
-                     self.watch_flags = w
-                     n = 2
 
                 elif words0 == 'vip': # See: sr_poll.1, sr_winnow.1
                      self.vip = words[1]
