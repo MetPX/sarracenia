@@ -474,6 +474,13 @@ def main():
              post.logger.error("Type: %s, Value:%s\n" % (stype, value))
              sys.exit(1)
 
+    """
+    Workaround to force close of stderr to suppress spurious error messages, from sys.exit(0).
+    see bug #74 for details. 
+    FIXME: eventually this bug should be fixed.  comment out the os.close, then
+           sr_post to an ssl broker
+    """
+    os.close(2)
     sys.exit(0)
 
 # =========================================
