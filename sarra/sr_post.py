@@ -264,7 +264,7 @@ class sr_post(sr_config):
                urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
                self.url = urllib.parse.urlparse(urlstr)
 
-           if not 'follow' in self.events: return True
+           if not self.poster.follow_links : return True
 
           # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 

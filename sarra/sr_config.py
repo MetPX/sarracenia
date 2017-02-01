@@ -400,8 +400,8 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'create|delete|follow|link|modify|poll'
-        self.event                = 'create|delete|follow|modify'
+        self.events               = 'create|delete|link|modify'
+        self.event                = 'create|delete|modify'
 
         self.randomize            = False
         self.reconnect            = False
@@ -421,6 +421,8 @@ class sr_config:
 
         self.realpath             = False
         self.recursive            = False
+        self.follow_symlinks      = False
+        self.force_polling        = False
 
         self.pump_flag            = False
         self.users_flag           = False
@@ -967,10 +969,8 @@ class sr_config:
                      if 'create'  in words[1] : i = i + 1
                      if 'delete'  in words[1] : i = i + 1
                      if 'link' in words[1] : i = i + 1
-                     if 'follow' in words[1] : i = i + 1
                      if 'modify' in words[1] : i = i + 1
                      if 'move'  in words[1] : i = i + 1
-                     if 'poll'  in words[1] : i = i + 1
                      
                      if i == 0 :
                         self.logger.error("events invalid (%s)" % words[1])
@@ -999,6 +999,22 @@ class sr_config:
                 elif words0 in ['flow','f']: # See: sr_post.1, sr_log.7, shovel, subscribe, watch 
                      self.flow = words1 
                      n = 2
+
+                elif words0 in ['follow_symlinks','fs']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.follow_symlinks = True
+                        n = 1
+                     else :
+                        self.follow_symlinks = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['force_polling','fp']: # See: sr_post.1, sr_watch.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.force_polling = True
+                        n = 1
+                     else :
+                        self.force_polling = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
                      self.gateway_for = words1.split(',')

@@ -104,6 +104,8 @@ class sr_watch(sr_instances):
         self.post.caching      = self.caching
         self.post.watch_path   = self.watch_path
         self.post.realpath     = self.realpath
+        self.post.follow_symlinks = self.follow_symlinks
+        self.post.force_polling   = self.force_polling
 
         if self.reset :
            self.post.connect()
@@ -169,7 +171,10 @@ class sr_watch(sr_instances):
 
     def run(self):
         self.post.logger = self.logger
-        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s" % ( self.partflg, self.sumflg, self.caching ) )
+        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s recursive=%s " % \
+              ( self.partflg, self.sumflg, self.caching , self.recursive ))
+        self.logger.info("sr_watch realpath=%s follow_links=%s force_polling=%s"  % \
+              ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
         self.validate_cache()
         self.post.connect()
 
@@ -179,7 +184,7 @@ class sr_watch(sr_instances):
             else:
                sld = [ self.watch_path ]
 
-            if ( 'follow' in self.post.events ):
+            if self.follow_symlinks: 
                 if os.path.islink(self.watch_path): 
                     if not self.post.realpath: 
                         sld = [ self.watch_path + os.sep + '.' ]
@@ -189,7 +194,7 @@ class sr_watch(sr_instances):
                     sld += self.find_linked_dirs(self.watch_path)
                     self.logger.info("sr_watch need to priming walk done.")
 
-            if ( 'poll' in self.post.events ):
+            if self.post.force_polling :
                 self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
                 self.observer = PollingObserver()
             else:
