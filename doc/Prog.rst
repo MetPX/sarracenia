@@ -746,7 +746,11 @@ When the alternate schema is encountered, the component will invoke that plugin.
    :code:
 
 
+------------------------
+Why Doesn't Import Work?
+------------------------
 
+FIXME: describe case of bad import.
 
 
 -------
