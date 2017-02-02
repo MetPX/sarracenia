@@ -70,6 +70,7 @@ build() {
 	fi
 	cd $TMPDIR
 	debsign -k4EE55EB5 $CHNG
+        echo "uploading to ppa..."
 	dput ppa:ssc-hpc-chp-spc/metpx $CHNG
 	echo "-----"
 	echo "Log files available at $TMPDIR"

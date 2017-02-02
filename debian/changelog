@@ -1,4 +1,4 @@
-metpx-sarracenia (2.17.02a1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.17.02a1) unstable; urgency=medium
 
   * added some understanding of symbolic links. 
   * sr_watch faster in many cases, many improvements.
@@ -8,7 +8,7 @@ metpx-sarracenia (2.17.02a1) UNRELEASED; urgency=medium
   * programming: do_download plugin examples added for use of wget or scp.
   * other small improvements.
 
- -- Peter Silva <peter@idefix>  Thu, 02 Feb 2017 09:23:22 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 02 Feb 2017 09:23:22 -0500
 
 metpx-sarracenia (2.16.11a4) unstable; urgency=medium
 
