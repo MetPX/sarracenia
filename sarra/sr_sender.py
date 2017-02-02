@@ -163,9 +163,9 @@ class sr_sender(sr_instances):
                   if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
                        self.msg.report_exchange = 'xreport'
                   else:
-                       self.msg.report_exchange = 'xr_' + self.broker.username
+                       self.msg.report_exchange = 'xs_' + self.broker.username
         else:
-           self.msg.report_exchange = 'xr_' + self.broker.username
+           self.msg.report_exchange = 'xs_' + self.broker.username
         self.logger.debug("self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
         self.msg.user          = self.details.url.username
         self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
