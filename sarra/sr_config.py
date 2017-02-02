@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
@@ -972,7 +972,7 @@ class sr_config:
                      if 'modify' in words[1] : i = i + 1
                      if 'move'  in words[1] : i = i + 1
                      
-                     if i == 0 :
+                     if i < len(words[1].split(',')) :
                         self.logger.error("events invalid (%s)" % words[1])
                         needexit = True
 
