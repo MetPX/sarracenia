@@ -475,12 +475,16 @@ def main():
              sys.exit(1)
 
     """
-    Workaround to force close of stderr to suppress spurious error messages, from sys.exit(0).
-    see bug #74 for details. 
-    FIXME: eventually this bug should be fixed.  comment out the os.close, then
-           sr_post to an ssl broker
+    Workaround closes stderr to suppress error messages from sys.exit(0).
+    See bug #74 for details. 
     """
-    os.close(2)
+    if post.debug:
+        post.logger.debug("FIXME: if you connect to SSL broker, there is a tear down bug bug #74." )
+        post.logger.debug("FIXME: Message is harmless, but should take the time to fix eventually." )
+        post.logger.debug("FIXME: outside debug mode, the message is suppressed." )
+    else:
+        os.close(2)
+
     sys.exit(0)
 
 # =========================================
