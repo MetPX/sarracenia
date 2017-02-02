@@ -4,6 +4,15 @@
 
 **git repo(unreleased)**
 
+* Summary: added some understanding of symbolic links. 
+*          sr_watch will be faster in many cases, many improvements.
+*          sr_post now accepts normal file specifications (more than 1, and relative paths)
+*          Any component can now use vip/interface for active/passive.  Cluster configurations more flexible. 
+*          programming: can have more than one plugin for on_*, they now stack sequentially.
+*          programming: do_download plugin examples added for use of wget or scp.
+*          other small improvements.
+*
+* Details:
 * Added symbolic link processing (sr_watch, sr_post, sr_sarra, sr_subscribe, sr_sender)
   Caveat: links are mirrored as-is.  Likely the wrong thing to do for absolute ones. Suggestions bug#70 welcome.
 * sr_post: now works with relative paths, and * etc... can post multiple files and/or directories at once.
