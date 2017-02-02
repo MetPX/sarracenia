@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+**2.17.02a1**
+
 * Summary: added some understanding of symbolic links. 
 *          sr_watch will be faster in many cases, many improvements.
 *          sr_post now accepts normal file specifications (more than 1, and relative paths)
