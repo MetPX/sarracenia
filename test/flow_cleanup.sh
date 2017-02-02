@@ -17,7 +17,7 @@ rm -f ${remove_if_present}
 
 sr stop
 
-adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' ~/.config/sarra/credentials.conf`"
 
 queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' ( NR > 1 ) { print $1; }; '`"
 

@@ -23,7 +23,7 @@ declare source tsource
 declare subscriber tsub
 declare subscriber anonymous
 declare exchange xhoho
-declare exchange xhoho_public
+declare exchange xs_tsource_output
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
 
@@ -90,7 +90,7 @@ done
 # ensure users have exchanges:
 sr_audit --users foreground
 
-adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; }; ' ~/.config/sarra/credentials.conf`"
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' ~/.config/sarra/credentials.conf`"
 
 for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output ; do 
    echo "declaring $exchange"
