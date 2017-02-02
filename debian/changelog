@@ -1,3 +1,15 @@
+metpx-sarracenia (2.17.02a1) UNRELEASED; urgency=medium
+
+  * added some understanding of symbolic links. 
+  * sr_watch faster in many cases, many improvements.
+  * sr_post now accepts normal file specifications (more than 1, and rela tive paths)
+  * Any component can now use vip/interface for active/passive.  
+  * programming: on_*, now stackable (multiple plugins on same hook)
+  * programming: do_download plugin examples added for use of wget or scp.
+  * other small improvements.
+
+ -- Peter Silva <peter@idefix>  Thu, 02 Feb 2017 09:23:22 -0500
+
 metpx-sarracenia (2.16.11a4) unstable; urgency=medium
 
   * Added moving of log directory from var/log -> log, and replacement of var directory with a symlink.
