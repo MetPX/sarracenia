@@ -77,8 +77,17 @@ Just replicates any tree of files it is given.
 Sarracenia itself does not impose any structure on any tree.
 
 
+Use Case Replicating /data/gridpt
+---------------------------------
+
+
+talk about that...
+
+
+
 What is a Data Pump?
 --------------------
+
 
 A Data pump is one big tree of files, regardless of origin, made available
 by a web server.  Any time any file is written to the tree, an advertisement
@@ -90,8 +99,20 @@ in the tree.   No self-serve was possible to inject data into the network.
 
 There is no ownership, there is no common management.  it is just on big tree.
 
+Previous versions of pumps:
+ -- all addition of data is done by very expert data pump analysts.
+ -- two conversations:  Data sources to ingest data, various consumers about their reception.
+ -- additions include setting metadata (colon fields) just so.
+ -- data mart v1 is one consumer, it means manual programming of directory trees based on patterns.
 
 
+Weaknesses:
+  -- no self-serve. Every acquisition and delivery is Administrator controlled.
+  -- extremely manual, time for analyst, lots of communications.
+  -- they are just patterns, file names can be selected that slide through.
+  -- deletion: a heck of a lot of cpu, huge peaks, increasing with #days retained.
+  -- deletion: additional i/o load 
+  -- deletion: snapshots make no sense (missing short-lived data.)
 
 
 
