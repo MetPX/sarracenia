@@ -378,7 +378,25 @@ A convenience script has been created to build and publish the *wheel* file. Sim
 Launchpad
 ~~~~~~~~~
 
-The process for publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
+Automated Build
++++++++++++++++
+
+* Ensure the code mirror is updated by checking the **Import details** by checking `this page <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/master>`_
+* Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-release>`_ recipe
+* Click on the **Request build(s)** button to create a new release
+* The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
+
+Daily Builds
+++++++++++++
+
+Daily builds are configured using `this recipe <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-daily>`_ and 
+are run at most once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
+
+
+Manual Process
+++++++++++++++
+
+The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
 
     publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial
 
