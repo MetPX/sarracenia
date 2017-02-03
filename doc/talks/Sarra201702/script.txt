@@ -1,0 +1,102 @@
+
+===========================
+ Sarracenia Status 2017/02
+===========================
+
+.. contents::
+
+
+This is an Old Service
+----------------------
+
+In the 80's there was a huge modernization that replaced manual teletype systems with a 
+server that automated routing or WMO data, using highly reliable mainframe technology from Tandem.
+In the 90's there was a need for delivering file products, ill suited to WMO circuits to 
+clients over tcp/ip networks.  The Product Distribution Server was software originally 
+implemented at that time, to run on Hewlett-Packard UNIX servers.
+In 2004, the Tandem had long been perceived as too expensive and 
+was demonstrated that WMO bulletins were just a subset of files, so a merger of the two
+switching networks was possible.  Unfortunately PDS itself, burdened with design decisions
+that prevented it from achieving necessary performance, had to be replaced to accomplish this.
+Thus was born MetPX-Sundew.   Sundew, from 2004 to 2007 progressively replaced the Tandem
+software and the PDS.   All four programs operate on the same paradigm:
+
+
+
+Obtain - Store - Forward.
+------------------------
+
+In all these cases, users submit requests for data, and analysts find the data and arrange
+for it to be forwarded to clients then next time it is obtained.
+
+Obtain: receive data from a channel, or actively poll a site to obtain it.
+Store:  place it in a file tree.
+Forward:  Consult routing tables, creating hard links to per-client transmission queue directories.
+
+Sundew unified WMO bulletins with file transfer from PDS, but it had some implementation details that limited it's generality:
+
+- There is an internal tree of files, which must have names in a certain pattern.
+  Names have six fields separated by Colons, the colons build the fixed file tree.
+  There is no hierarchy in Tandem/PDS/MetPX file names. 
+
+- The 'routing' of data to client is done using hard links. A non-portable Unix specific paradigm.
+
+- no user could have any idea what data was available, to be able to ask for it.
+
+- no user obtain any data on their own.  They must ask. 
+
+- moving data around is a matter of programming a series of data pumps individually. Usually
+  one must talk to the administrator of each pump.
+
+
+
+
+What is Sarracenia?
+-------------------
+
+- There is an internal tree of files.  Sarracenia itself does not care about tree structure.
+- there are no colons, so if you want such metadata, put it in directories.
+- expose that tree to everyone with HTML ( or SFTP.)
+- replace the hard-links with notifications.
+- Each destination can select the files of interest from the stream of notifications. 
+
+Obtain:  a message is received which tell where to obtain a file from.
+Store:   The file is written to a file tree.
+Forward: A message saying where this file has been placed is sent out.
+
+
+What is Sarracenia?
+-------------------
+
+Sarracenia does the same thing as Sundew, PDS, and Tandem before it, it 
+just does it public.  
+
+The difference is that rather than a fixed field private data-base, sarracenia
+Just replicates any tree of files it is given.
+
+Sarracenia itself does not impose any structure on any tree.
+
+
+What is a Data Pump?
+--------------------
+
+A Data pump is one big tree of files, regardless of origin, made available
+by a web server.  Any time any file is written to the tree, an advertisement
+is made for subscribers to download it if they wish, based on the path of the file.
+
+In the previous, 'acquiring' data meant talking to an analyst and having
+the information accepted or picked up, and then classified for proper placement
+in the tree.   No self-serve was possible to inject data into the network.
+
+There is no ownership, there is no common management.  it is just on big tree.
+
+
+
+
+
+
+
+
+
+
+
