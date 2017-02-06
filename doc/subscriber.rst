@@ -94,7 +94,13 @@ Regardless of the tree, one can browse it to find the data of interest.
 On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
 to find the tree of all the weather observations in SWOB format
 recently issued by any Environment Canada forecast office.
-A configuration to obtain these files will look like so::
+First initialize the credentials storage file::
+
+  blacklab% cat >>~/.config/sarra/credentials.conf <<EOT
+  amqp://anonymous:anonymous@dd.weather.gc.ca
+  EOT
+
+Then a configuration to obtain these files will look like so::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
