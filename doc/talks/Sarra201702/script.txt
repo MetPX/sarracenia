@@ -1,0 +1,220 @@
+
+===========================
+ Sarracenia Status 2017/02
+===========================
+
+.. contents::
+
+
+NOTE: This is an ECCC focused talk.  Many services not recognizable to external clients.
+
+This is an Old Service
+----------------------
+
+In the 80's there was a huge modernization that replaced manual teletype systems with a 
+server that automated routing or WMO data, using highly reliable mainframe technology from Tandem.
+In the 90's there was a need for delivering file products, ill suited to WMO circuits to 
+clients over tcp/ip networks. The Product Distribution Server was software originally 
+implemented at that time, to run on Hewlett-Packard UNIX servers.
+In 2004, the Tandem had long been perceived as too expensive and 
+was demonstrated that WMO bulletins were just a subset of files, so a merger of the two
+switching networks was possible. Unfortunately PDS itself, burdened with design decisions
+that prevented it from achieving necessary performance, had to be replaced to accomplish this.
+Thus was born MetPX-Sundew. Sundew which, from 2004 to 2007, progressively replaced the Tandem
+software and the PDS. All four programs operate on the same paradigm.
+
+
+
+Obtain - Store - Forward.
+------------------------
+
+In all these cases, users submit requests for data, and analysts find the data and arrange
+for it to be forwarded to clients then next time it is obtained.
+
+Obtain: receive data from a channel, or actively poll a site to obtain it.
+Store:  place it in a file tree.
+Forward:  Consult routing tables, creating hard links to per-client transmission queue directories.
+
+Sundew unified WMO bulletins with file transfer from PDS, but it had some implementation details that limited it's generality:
+
+- file names based on WMO 386+PDS.  They are rigid.  No user hierarchy possible.
+
+- The 'routing' of data to client is done using hard links. A non-portable Unix specific paradigm.
+
+- no user could have any idea what data was available, to be able to ask for it.
+
+- no user obtain any data on their own.  They must ask. 
+
+- moving data around is a matter of programming a series of data pumps individually. 
+  Each pump administrator must analyze based on routing in place.
+
+
+
+
+What is Sarracenia?
+-------------------
+
+- There is an internal tree of files.  Sarracenia itself does not care about tree structure.
+- there are no colons, so if you want such metadata, put it in directories.
+- expose that tree to everyone with HTML ( or SFTP.)
+- replace the hard-links with notifications.
+- Each destination can select the files of interest from the stream of notifications. 
+
+Obtain:  a message is received which tell where to obtain a file from.
+Store:   The file is written to a file tree.
+Forward: A message saying where this file has been placed is sent out.
+
+
+What is Sarracenia?
+-------------------
+
+Sarracenia does the same thing as Sundew, PDS, and Tandem before it, it just does it public.  
+
+The difference is that rather than a fixed field private data-base, sarracenia
+Just replicates any tree of files it is given.
+
+Sarracenia itself does not impose any structure on any tree.
+
+The clients run fine on MacOS & Windows as well.
+
+
+
+
+Use Case HPCR CMOI mirroring /data/gridpt
+-----------------------------------------
+
+
+talk about that...
+
+
+
+Old Data Pumps
+--------------------
+
+
+'Acquiring' data meant talking to an analyst and having
+the information accepted or picked up, and then classified for proper placement
+in the tree.   
+
+
+Previous versions of pumps:
+ -- all addition of data is done by very expert data pump analysts.
+ -- two conversations:  Data sources to ingest data, various consumers about their reception.
+ -- additions include setting metadata (colon fields) just so.
+ -- data mart v1 is one consumer, it means manual programming of directory trees based on patterns.
+
+
+Weaknesses:
+  -- no self-serve. Every acquisition and delivery is Administrator controlled.
+  -- extremely manual, time for analyst, lots of communications.
+  -- they are just patterns, file names can be selected that slide through.
+  -- rot:  People ask for data, but when the data disappears the routing configurations remain.
+  -- We don't know what data is.  With it being invisible, users don't see it either.
+     clients don't know how to describe so that the analysts can find it.
+  -- deletion: a heck of a lot of cpu, huge peaks, increasing with #days retained.
+  -- deletion: additional i/o load 
+  -- deletion: snapshots make no sense (missing short-lived data.)
+  -- routing: Every pump is unique, routing through each pump on the network is manual. 
+     (on WMO-GTS, every country has at least one pump, perhaps more. so there are hundreds.)
+
+
+
+Next Generation Data Pump Goals
+-------------------------------
+
+  -- Transitivity: Once you get the data into the network, little to no work by
+     admins required for it to traverse the entire network (> 1 pumps.)
+
+  -- Transparency: Subscribers can see all the data that is available, and self-serve if motivated.
+
+  -- Transparency: Subscribers can identify where the data came from, and contact the source for support.
+
+  -- Transparency: Sources can see their data on the pumps, so they know it arrived. 
+
+  -- Transparency: Sources can see who consumes the data they inject. 
+
+  -- Domain neutral:  transmits weather, astronomy, or genetics with aplomb.
+                                                
+  -- just data: not about meta-data, not just transmission.
+                         
+  -- Flexibility: Adjust for performance and capacity.
+
+  -- Simpler:  Less admin configuration (for the same routing load.)
+
+
+
+Data Pump
+---------
+
+   -- Data pump is one big tree of files, regardless of origin, made available
+   -- internal tree now same as presented to users.
+   -- Time is the universal variable.  must be able to find & delete efficiently.
+   -- Source is the next universal.  All data comes from a source.
+   -- No other meta-data is fixed.  
+   -- That creates the first two layers of the directory tree for pumps.
+      YYYYMMDD/<source>
+   -- past that point, the trees are under source control.
+   -- Pumps delete data that is 'n' days old by deleting the trees.
+      2nd pump in a network may longer different retention than 1st.
+
+The central idea of the pumps is to be able to scale them in terms of response
+time, and time horizon.
+
+In order to avoid/minimize the configuration of individual pumps, one needs to ensure
+that once data is injected to a pump, it can be relayed with minimal configuration.
+
+
+
+
+
+Past Year: Application
+----------------------
+
+  -- Sarracenia was too simplistic, only supported new methods.
+  -- Sundew Compatibility added.
+  -- Data injection methods (sr_post, sr_watch) were prototypes, they are getting better.
+  -- No plugins existed a year ago, gathering experience.
+
+
+Past Year: Deployments
+----------------------
+
+  -- ddi was populated with much more data.  Many performance issues resolved.
+  -- OPSR --> WxApps (BULLPREP, Scribe, AVIPADS migrated.)
+  -- NinJo should migrate in March.
+  -- Several (dev) RADAR servers using subscription.
+  -- New XBand RADAR, and GOES-R data only available through new Pumps.
+  -- ADE is fed with new data stream (poorly...)
+
+Status
+------
+
+  -- Much data from Sundew is visible in ddi.cmc.ec.gc.ca
+  -- Much data still has 'PDS Names' from Sundew (with the colons)
+  -- Much data is only available from SSC-DATAINTERCHANGE (with is fake.)
+  -- Most acquisition still done via Sundew. 
+
+
+Next Year
+---------
+
+  -- HPCR support: CMOI mirrors:  (A<->B), and Science->EC.
+  -- [collab.]science.gc.ca Services: hpfx, flux, pfd.
+  -- migrate many senders  sundew --> sarracenia
+     maintenance upgrades (old sundew servers are on 10.04)
+  -- De-colonization: complete removal of colons from file names.
+  -- Production migrations: URP, DMS, Weatheroffice.
+  -- Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
+  -- gradual migration of acquisition.
+
+
+
+Science Services
+----------------
+
+  -- flux  ... next gen: dd, px-paz, part of access-depot
+  -- pfd.  ... take time pressure of of flux.
+  -- hpfx, ... User-run part of next-gen access-depot.
+
+
+
