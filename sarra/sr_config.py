@@ -374,7 +374,7 @@ class sr_config:
         self.accept_unmatch       = False    # accept if No pattern matching
         self.masks                = []       # All the masks (accept and reject)
         self.currentPattern       = None     # defaults to all
-        self.currentDir           = '.'      # mask directory (if needed)
+        self.currentDir           = os.getcwd()   # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
