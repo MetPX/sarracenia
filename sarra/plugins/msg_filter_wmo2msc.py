@@ -11,6 +11,13 @@ filter_wmo2msc: <input_file> -> <output_file> (<detected format>)
 
 usage:
      Use the directory setting to know the root of tree where files are placed.
+     FIXME: well, likely what you really what is something like:
+
+     <date>/<source>/dir1/dir2/dir3
+
+     <date>/<source>/dir1/dir2/newdir4/...
+
+          -- so Directory doesn't cut it.
 
 In a sr_shovel configuration:
 
@@ -19,6 +26,8 @@ on_message msg_filter_wmo2msc
 
 
 Parameters:
+
+  msg_filter_wmo2msc_replace_dir  old,new
 
   msg_filter_wmo2msc_bad_tac SFUK45 EGRR,FPCN11 CWAO
      - When receiving bulletins with the given Abbreviated Headers, force their type to 'unknown binary'
@@ -47,6 +56,15 @@ class Xwmo2msc(object):
     def __init__(self,parent):
 
         parent.uniquify='hash'
+        if not hasattr(parent,'msg_filter_wmo2msc_replace_dir'):
+           parent.logger.error("msg_filter_wmo2msc_replace_dir setting is mandatory")
+           return
+
+        ( parent.filter_olddir, parent.filter_newdir ) = \
+                parent.msg_filter_wmo2msc_replace_dir[0].split(',')
+
+        parent.logger.info( "msg_filter_wmo2msc old-dir=%s, newdir=%s" \
+               % ( parent.filter_olddir, parent.filter_newdir ) )
         if hasattr(parent,'msg_filter_wmo2msc_uniquify'):
            parent.logger.info('msg_filter_wmo2msc, override' )
            parent.uniquify = parent.msg_filter_wmo2msc_uniquify[0]
@@ -219,8 +237,11 @@ class Xwmo2msc(object):
             AHLfn += '_' + sumstr
 
         if parent.treeify :
-            d = parent.currentDir + os.sep + self.bulletin[0][0:2].decode('ascii') 
-            logger.info( 'filter_wmo2msc check %s' % (d) )
+            #d = parent.currentDir + os.sep + self.bulletin[0][0:2].decode('ascii') 
+            d = os.path.dirname(input_file)
+            logger.info( 'filter_wmo2msc check %s start match: %s' % (d, parent.filter_olddir) )
+            d = d.replace( parent.filter_olddir, parent.filter_newdir )
+            logger.info( 'filter_wmo2msc check %s after replace' % (d) )
             if not os.path.isdir( d ):
                 os.mkdir( d, parent.chmod_dir ) 
 
@@ -245,22 +266,8 @@ class Xwmo2msc(object):
 
         logger.info( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
 
-        """
-          FIXME: still missing some modifications.
-          2 set mtime, atime. apply new time, or preserve old?
-        """
-        fstat = os.stat(local_file)
-  
-        # Modify message for posting.
-        msg.urlstr = 'file:/' + local_file
-        msg.url = urllib.parse.urlparse(parent.msg.urlstr)
-        msg.topic = 'v02.post' + local_file.replace('/','.')
-        msg.headers[ 'sum' ] = 'd,%s' % sumstr
-        msg.headers[ 'parts' ] = '1,%d,0,0' % len(self.bintxt)
-        msg.headers[ 'filename' ] = os.path.basename(local_file)
-        msg.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
-
-        msg.set_notice(parent.msg.url)
+        # change the file being announced.
+        parent.msg.set_file( local_file, 'd,' + sumstr )
 
         return True
 

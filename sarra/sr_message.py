@@ -342,6 +342,27 @@ class sr_message():
     def set_exchange(self,name):
         self.exchange = name
 
+    def set_file(self, local_file, sumstr):
+        """ 
+            set_file: modify a message to reflect a new file.
+                      make a file URL of the local_file.
+            sumstr should be the properly formatted checksum field for a message
+              '<algorithm>,<value>', e.g.  'd,cbe9047d1b979561bed9a334111878c6'
+            to be used by filter plugins when changing the output url.
+        """
+        fstat = os.stat(local_file)
+
+        # Modify message for posting.
+        self.urlstr = 'file:/' + local_file
+        self.url = urllib.parse.urlparse(self.urlstr)
+        self.topic = 'v02.post' + local_file.replace('/','.')
+        self.headers[ 'sum' ] = sumstr
+        self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
+        self.headers[ 'filename' ] = os.path.basename(local_file)
+        self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
+
+        self.set_notice(self.url)
+
     def set_hdrstr(self):
         self.hdrstr  = ''
 

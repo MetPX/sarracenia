@@ -15,7 +15,7 @@ class Transformer():
       def __init__(self,parent):
 
         if not hasattr(parent,'msg_replace_remote_dir'):
-           parent.logger.info("msg_replace_remote_dir setting mandatory")
+           parent.logger.error("msg_replace_remote_dir setting mandatory")
            return
 
         parent.logger.info("msg_replace_remote_dir is %s " % parent.msg_replace_remote_dir )

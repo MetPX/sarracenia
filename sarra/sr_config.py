@@ -1363,7 +1363,7 @@ class sr_config:
                         user   = words[2]
                         self.users[user] = roles
                      elif item in [ 'exchange' ]:
-                        self.logger.warning("declaring exchange %s" % (words[2]))
+                        self.logger.info("declaring exchange %s" % (words[2]))
                         self.exchanges.append( words[2] )                                                
                      n = 3
 

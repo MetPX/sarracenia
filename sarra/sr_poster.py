@@ -207,7 +207,7 @@ class sr_poster:
         self.msg.publisher = self.publisher
 
     def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,link=None):
-        self.logger.error("sr_poster post %s caching(%s) exchange(%s)" % \
+        self.logger.debug("sr_poster post %s caching(%s) exchange(%s)" % \
             ( url.path, self.caching, exchange ) )
 
         # if caching is enabled make sure it was not already posted
