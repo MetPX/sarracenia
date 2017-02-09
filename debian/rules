@@ -16,9 +16,13 @@ override_dh_auto_clean:
 #	dh_testdir -O--buildsystem=pybuild
 #	dh_auto_configure -O--buildsystem=pybuild
 #	dh_auto_build -O--buildsystem=pybuild 
+#	dh_installinit --name=sr  --no-start
 override_dh_auto_build:
 	make -C doc man
 	dh_auto_build
+
+override_dh_installinit:
+	dh_installinit --name=sarra  --no-start
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
