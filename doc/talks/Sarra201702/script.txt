@@ -95,6 +95,9 @@ Old Data Pumps
 'Acquiring' data meant talking to an analyst and having
 the information accepted or picked up, and then classified for proper placement
 in the tree.   
+Show the tree.
+
+
 
 
 Previous versions of pumps:
@@ -164,17 +167,70 @@ In order to avoid/minimize the configuration of individual pumps, one needs to e
 that once data is injected to a pump, it can be relayed with minimal configuration.
 
 
+Pump is Directory Tree
+-----------------------
+
+  +------------+-----------------------------------------------------------------------------+
+  | <Date>     | Root of the tree being the date is only simple & cheap solution to cleanup. |
+  +------------+-----------------------------------------------------------------------------+
+  | <Source>   | Provide a "Home" directory for identify where the data comes from.          |
+  +------------+-----------------------------------------------------------------------------+
+  | <anything> | Meant to be under <Source> control, entirely arbitrary.                     |
+  +------------+-----------------------------------------------------------------------------+
+
+Time dominates 'real-time' data pumps, need to separate data by time horizon.   Tradeoffs:
+
+Flexibility & capacity vs. performance and assurance.
+
+
+Need a single tree whose management can be easily automated.
+
+
+Vision
+------
+
+ 
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |PUMP    | Time Hz  | Timely | Description                                                        |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |dsr.cmc | >1 days  | 2 sec? | Best forwarding and processing performance.                        |
+  |dsr.sci |          |        | Operational clients fed here (e.g. all other pumps.)               |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |ddi.cmc | >1 weeks | 1 min. | Internal pump (Data must be at least 1 day to feed pfd)            |
+  |dsr.sci |          |        | All internal data visible here.                                    |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |flux.wx | >1 days  | Good   | next gen: dd, px-paz, part of access-depot (ext dsr basically)     |
+  |flux.sci|          |        |                                                                    |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |pfd.wx  | Forever  | days   | 'Archive' take time pressure off of flux  & ddi                    |
+  |pfd.sci |          |        | Prototype hooked into CFS for PAN-AM arcvhive.                     |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |dd.wx   | ????     | min.   | Gen 1 data mart maintained for compatibility.                      |
+  +--------+----------+--------+--------------------------------------------------------------------+
+  |hpfx    | User     | User   | User-run part of next-gen access-depot.                            |
+  +--------+----------+--------+--------------------------------------------------------------------+
+
+
+  -- Domains unclear cmc=cmc.ec.gc.ca sci=science.gc.ca only, wx=weather.gc.ca
+
 
 
 
 Past Year: Application
 ----------------------
 
-  -- Sarracenia was too simplistic, only supported new methods.
-  -- Sundew Compatibility added.
+  -- In spring 2016, Sarracenia was too simplistic, only supported new methods.
+  -- over the year, Sundew compatibility was added.
   -- Data injection methods (sr_post, sr_watch) were prototypes, they are getting better.
-  -- No plugins existed a year ago, gathering experience.
+  -- No plugins existed a year ago, now > 30 exist, gathering experience.
 
+
+Why Is it Still Alpha?
+----------------------
+  
+  -- reports have not been fully implemented, so they might not work yet (defer?)
+  -- plugin API requires a little more work (nothing incompatible so far, but worried.)
+  -- sr_watch and sr_post change usage over last few months.
 
 Past Year: Deployments
 ----------------------
@@ -185,6 +241,8 @@ Past Year: Deployments
   -- Several (dev) RADAR servers using subscription.
   -- New XBand RADAR, and GOES-R data only available through new Pumps.
   -- ADE is fed with new data stream (poorly...)
+  -- Colonoscopy completed:  sundew feeds add extension, sarra support also.
+
 
 Status
 ------
@@ -193,28 +251,33 @@ Status
   -- Much data still has 'PDS Names' from Sundew (with the colons)
   -- Much data is only available from SSC-DATAINTERCHANGE (with is fake.)
   -- Most acquisition still done via Sundew. 
+  -- "Reports" routing not configured, just data (no users yet.)
+  -- static and documentation content not configured/supported.
+  -- refining plugin usage. (latest release permits stacking.)
 
 
-Next Year
----------
+
+Immediate Work
+--------------
 
   -- HPCR support: CMOI mirrors:  (A<->B), and Science->EC.
-  -- [collab.]science.gc.ca Services: hpfx, flux, pfd.
+  -- De-colonization: complete removal of colons from file names.
+  -- [collab.]science.gc.ca Services: hpfx, flux, pfd. (NRC and other partners, YOPP?)
+  -- geomet2 / flux.weather.gc.ca  (Same servers, same data.)
   -- migrate many senders  sundew --> sarracenia
      maintenance upgrades (old sundew servers are on 10.04)
-  -- De-colonization: complete removal of colons from file names.
+
+
+Further Work
+------------
+
+  -- Add reports.
+  -- Add static content support.
   -- Production migrations: URP, DMS, Weatheroffice.
-  -- Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
+  -- perhaps ADE & CMOI. (unclear.)
   -- gradual migration of acquisition.
+  -- Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
 
-
-
-Science Services
-----------------
-
-  -- flux  ... next gen: dd, px-paz, part of access-depot
-  -- pfd.  ... take time pressure of of flux.
-  -- hpfx, ... User-run part of next-gen access-depot.
 
 
 
