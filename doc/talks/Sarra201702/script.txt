@@ -16,6 +16,9 @@ server that automated routing or WMO data, using highly reliable mainframe techn
 In the 90's there was a need for delivering file products, ill suited to WMO circuits to 
 clients over tcp/ip networks. The Product Distribution Server was software originally 
 implemented at that time, to run on Hewlett-Packard UNIX servers.
+
+Layers Background,history,ahl1
+
 In 2004, the Tandem had long been perceived as too expensive and 
 was demonstrated that WMO bulletins were just a subset of files, so a merger of the two
 switching networks was possible. Unfortunately PDS itself, burdened with design decisions
@@ -23,13 +26,15 @@ that prevented it from achieving necessary performance, had to be replaced to ac
 Thus was born MetPX-Sundew. Sundew which, from 2004 to 2007, progressively replaced the Tandem
 software and the PDS. All four programs operate on the same paradigm.
 
+Layers Sundewtree
 
 
-Obtain - Store - Forward.
+Obtain - Store - Forward
 ------------------------
 
-In all these cases, users submit requests for data, and analysts find the data and arrange
-for it to be forwarded to clients then next time it is obtained.
+Users submit requests for data, analysts find the data on their switch and arrange
+for it to be forwarded to clients then next time it arrives.
+
 
 Obtain: receive data from a channel, or actively poll a site to obtain it.
 Store:  place it in a file tree.
@@ -37,16 +42,14 @@ Forward:  Consult routing tables, creating hard links to per-client transmission
 
 Sundew unified WMO bulletins with file transfer from PDS, but it had some implementation details that limited it's generality:
 
-- file names based on WMO 386+PDS.  They are rigid.  No user hierarchy possible.
+Layers Background,history,ahl1
 
-- The 'routing' of data to client is done using hard links. A non-portable Unix specific paradigm.
-
-- no user could have any idea what data was available, to be able to ask for it.
-
-- no user obtain any data on their own.  They must ask. 
-
-- moving data around is a matter of programming a series of data pumps individually. 
-  Each pump administrator must analyze based on routing in place.
+ * file names based on WMO 386+PDS.  They are rigid.  No user hierarchy possible.
+ * The 'routing' of data to client is done using hard links. A non-portable Unix specific paradigm.
+ * no user could have any idea what data was available, to be able to ask for it.
+ * no user obtain any data on their own.  They must ask. 
+ * moving data around is a matter of programming a series of data pumps individually. 
+   Each pump administrator must analyze based on routing in place.
 
 
 
@@ -54,11 +57,11 @@ Sundew unified WMO bulletins with file transfer from PDS, but it had some implem
 What is Sarracenia?
 -------------------
 
-- There is an internal tree of files.  Sarracenia itself does not care about tree structure.
-- there are no colons, so if you want such metadata, put it in directories.
-- expose that tree to everyone with HTML ( or SFTP.)
-- replace the hard-links with notifications.
-- Each destination can select the files of interest from the stream of notifications. 
+ * There is an internal tree of files.  Sarracenia itself does not care about tree structure.
+ * there are no colons, so if you want such metadata, put it in directories.
+ * expose that tree to everyone with HTML ( or SFTP.)
+ * replace the hard-links with notifications.
+ * Each destination can select the files of interest from the stream of notifications. 
 
 Obtain:  a message is received which tell where to obtain a file from.
 Store:   The file is written to a file tree.
@@ -83,14 +86,14 @@ The clients run fine on MacOS & Windows as well.
 Use Case HPCR CMOI mirroring /data/gridpt
 -----------------------------------------
 
+walk through 
 
-talk about that...
+show 
 
 
 
 Old Data Pumps
 --------------------
-
 
 'Acquiring' data meant talking to an analyst and having
 the information accepted or picked up, and then classified for proper placement
@@ -98,77 +101,116 @@ in the tree.
 Show the tree.
 
 
-
-
 Previous versions of pumps:
- -- all addition of data is done by very expert data pump analysts.
- -- two conversations:  Data sources to ingest data, various consumers about their reception.
- -- additions include setting metadata (colon fields) just so.
- -- data mart v1 is one consumer, it means manual programming of directory trees based on patterns.
+ * all addition of data is done by very expert data pump analysts.
+ * two conversations:  Data sources to ingest data, various consumers about their reception.
+ * Data sources don't understand what happens when it gets ingested into Pump tree.
+ * source tree discarded ignored, etc...
+ * Pump tree:  fixed format hierarchy with colons (PDS names)
+ * DM1 namespace: created by code extraction from (impoverished) Pump Tree
+ * additions include setting metadata (colon fields) just so.
+ * data mart v1 (DM1) is one consumer, it means manual programming of directory trees based on patterns.
 
 
-Weaknesses:
-  -- no self-serve. Every acquisition and delivery is Administrator controlled.
-  -- extremely manual, time for analyst, lots of communications.
-  -- they are just patterns, file names can be selected that slide through.
-  -- rot:  People ask for data, but when the data disappears the routing configurations remain.
-  -- We don't know what data is.  With it being invisible, users don't see it either.
-     clients don't know how to describe so that the analysts can find it.
-  -- deletion: a heck of a lot of cpu, huge peaks, increasing with #days retained.
-  -- deletion: additional i/o load 
-  -- deletion: snapshots make no sense (missing short-lived data.)
-  -- routing: Every pump is unique, routing through each pump on the network is manual. 
+
+DM1 Model Advantages
+--------------------
+
+ * self-serve.  WYSIWIG.  browseable (not friendly, but possible.)
+ * with AMQP notices (sarracenia) real-time feeds practical.
+ * If someone misses a real-time feed, they can wget it (if it is still there.)
+ * client and support can browse the tree and talk over the phone (tree visible.)
+ * Documented, understood ... by EPS (literally unknown to my analysts.)
+
+
+
+Weaknesses of Model
+-------------------
+
+  * no self-serve. Every acquisition and delivery is Administrator controlled.
+  * extremely manual, time for analyst, lots of communications.
+  * opaque: We don't know what data is.  Users don't see it.
+  * Two trees: 1 private (per pump), 1 visible. forever mapping between them.
+  * inflexible: no directories, only files with : fields (exactly 5 of them.)
+  * You want it where? Not just one pump, every pump...
+  * they are just patterns, file names can be selected that slide through.
+  * rot:  People ask for data, but when the data disappears the routing configurations remain.
+    clients don't know how to describe so that the analysts can find it easily.
+  * deletion: a heck of a lot of cpu, huge peaks, increasing with #days retained.
+  * deletion: additional i/o load 
+  * deletion: snapshots make no sense (missing short-lived data.)
+  * routing: Every pump is unique, routing through each pump on the network is manual. 
      (on WMO-GTS, every country has at least one pump, perhaps more. so there are hundreds.)
+
+
+
+
+Problems with DM1 Tree
+----------------------
+
+ * Files with constant names being updated constantly. (good for some users, bad for others.)
+ * Inability to archive and replay, because files disappear before archiving interval.
+ * Requires single management of entire tree (sources could write anywhere?)
+ * Large directories stay large (daily directories are smaller next day.)
+ * significant cpu & i/o load in deleting files.  
+ * hard to measure data flows (short life.)
+ * folks who want a complete data set:  very difficult to impossible.
+ * bad for others to leverage to build services with complete data.
+ * heavy load of human curation (by all.)
+ * cannot guess where new data will end up.
+ * requires single admin for entire tree.
+ * 2nd Custom tree created from minimal metadata manually by whoever gets the service request.
+ * 2nd tree is unknown to analysts, not understood.
+
+
+Please note: Sarra does not care about the tree, it supports DM1, DM2, or /data/gridpt.
 
 
 
 Next Generation Data Pump Goals
 -------------------------------
 
-  -- Transitivity: Once you get the data into the network, little to no work by
-     admins required for it to traverse the entire network (> 1 pumps.)
+  * Transitivity: Once you get the data into the network, little to no work by
+    admins required for it to traverse the entire network (> 1 pumps.)
+  * Transparency: Subscribers can see all the data that is available, and self-serve if motivated.
+  * Transparency: Subscribers can identify where the data came from, and contact the source for support.
+  * Transparency: Sources can see their data on the pumps, so they know it arrived. 
+  * Transparency: Sources can see who consumes the data they inject. 
+  * Transparency: Sources can inject their data and tell clients where it will show up.
+  * Domain neutral:  transmits weather, astronomy, or genetics with aplomb.
+  * Clarity, Consistency:  If a file shows up, it should be *available* forever (many caveats to general stmt.)
+  * Flexibility: Adjust provisioning for performance and capacity.
+  * Simpler:  Less configuration (for the same routing load.)
+  * Simpler:  client can do things if they wish (old stuff: no option.)
+  * Simpler:  clients use directories, not colon fields, and they pick their own, any number, not 5.
+  * Simpler: No Tree Translation, source names it, switch sees it, client downloads, same name*
 
-  -- Transparency: Subscribers can see all the data that is available, and self-serve if motivated.
 
-  -- Transparency: Subscribers can identify where the data came from, and contact the source for support.
-
-  -- Transparency: Sources can see their data on the pumps, so they know it arrived. 
-
-  -- Transparency: Sources can see who consumes the data they inject. 
-
-  -- Domain neutral:  transmits weather, astronomy, or genetics with aplomb.
-                                                
-  -- just data: not about meta-data, not just transmission.
-                         
-  -- Flexibility: Adjust for performance and capacity.
-
-  -- Simpler:  Less admin configuration (for the same routing load.)
-
+\* client can change name, their problem.
 
 
 Data Pump
 ---------
 
-   -- Data pump is one big tree of files, regardless of origin, made available
-   -- internal tree now same as presented to users.
-   -- Time is the universal variable.  must be able to find & delete efficiently.
-   -- Source is the next universal.  All data comes from a source.
-   -- No other meta-data is fixed.  
-   -- That creates the first two layers of the directory tree for pumps.
+   * Data pump is one big tree of files, regardless of origin, made available
+   * internal tree now same as presented to users.
+   * Time is the universal variable.  must be able to find & delete efficiently.
+   * Source is the next universal.  All data comes from a source.
+   * No other meta-data is fixed.  
+   * That creates the first two layers of the directory tree for pumps.
       YYYYMMDD/<source>
-   -- past that point, the trees are under source control.
-   -- Pumps delete data that is 'n' days old by deleting the trees.
-      2nd pump in a network may longer different retention than 1st.
+   * past that point, the trees are under source control.
+   * Pumps delete data that is 'n' days old by deleting the trees.
+     2nd pump in a network may longer different retention than 1st.
 
-The central idea of the pumps is to be able to scale them in terms of response
-time, and time horizon.
+pumps scale: performance, response time, variety, and time horizon.
 
 In order to avoid/minimize the configuration of individual pumps, one needs to ensure
 that once data is injected to a pump, it can be relayed with minimal configuration.
 
 
 Pump is Directory Tree
------------------------
+----------------------
 
   +------------+-----------------------------------------------------------------------------+
   | <Date>     | Root of the tree being the date is only simple & cheap solution to cleanup. |
@@ -182,102 +224,125 @@ Time dominates 'real-time' data pumps, need to separate data by time horizon.   
 
 Flexibility & capacity vs. performance and assurance.
 
+ * Need a single tree whose management can be easily automated.
+ * Having trees separated by date and source makes it easy to compose trees from multiple sources.
+ * Replicate data along a series of pumps, and program retention for each one.
+ * intermediate pump could have shorter retention that ones later in the chain?
+ * don't want sourceA writing into the directory tree of sourceB. analogous to home directories.
 
-Need a single tree whose management can be easily automated.
 
 
 Vision
 ------
 
+
+Layers 4Domains
+
+Layers 4Domains,Traffic
+
+Layers 4Domains,Exist
+
+Layers 4Domains,Exist,ComingSoon
+
+
  
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |PUMP    | Time Hz  | Timely | Description                                                        |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |dsr.cmc | >1 days  | 2 sec? | Best forwarding and processing performance.                        |
-  |dsr.sci |          |        | Operational clients fed here (e.g. all other pumps.)               |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |ddi.cmc | >1 weeks | 1 min. | Internal pump (Data must be at least 1 day to feed pfd)            |
-  |dsr.sci |          |        | All internal data visible here.                                    |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |flux.wx | >1 days  | Good   | next gen: dd, px-paz, part of access-depot (ext dsr basically)     |
-  |flux.sci|          |        |                                                                    |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |pfd.wx  | Forever  | days   | 'Archive' take time pressure off of flux  & ddi                    |
-  |pfd.sci |          |        | Prototype hooked into CFS for PAN-AM arcvhive.                     |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |dd.wx   | ????     | min.   | Gen 1 data mart maintained for compatibility.                      |
-  +--------+----------+--------+--------------------------------------------------------------------+
-  |hpfx    | User     | User   | User-run part of next-gen access-depot.                            |
-  +--------+----------+--------+--------------------------------------------------------------------+
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | PUMP    | Time Hz  | Timely | Description                                                        |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | dsr.cmc | >1 days  | 2 sec? | Best forwarding and processing performance.                        |
+  | dsr.sci |          |        | Operational clients fed here (e.g. all other pumps.)               |
+  | flux.sc?|          |        | Perhaps rename to internal 'flux'                                  |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | ddi.cmc | >1 weeks | 1 min. | Internal pump (Data must be at least 1 day to feed pfd)            |
+  | dsr.sci |          |        | All internal data visible here.                                    |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | flux.wx | >1 days  | Good   | next gen: dd, px-paz, part of access-depot (ext dsr basically)     |
+  | flux.sci|          |        |                                                                    |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | pfd.wx  | Forever  | days   | 'Archive' take time pressure off of flux  & ddi                    |
+  | pfd.sci |          |        | Prototype hooked into CFS for PAN-AM arcvhive.                     |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | dd.wx   | variable | min.   | Gen 1 data mart maintained for compatibility.                      |
+  +---------+----------+--------+--------------------------------------------------------------------+
+  | hpfx    | User     | User   | User-run part of next-gen access-depot.                            |
+  +---------+----------+--------+--------------------------------------------------------------------+
+
+  * Domains unclear cmc=cmc.ec.gc.ca sci=science.gc.ca only, wx=weather.gc.ca
 
 
-  -- Domains unclear cmc=cmc.ec.gc.ca sci=science.gc.ca only, wx=weather.gc.ca
 
 
-
-
-Past Year: Application
+Application: Past Year
 ----------------------
 
-  -- In spring 2016, Sarracenia was too simplistic, only supported new methods.
-  -- over the year, Sundew compatibility was added.
-  -- Data injection methods (sr_post, sr_watch) were prototypes, they are getting better.
-  -- No plugins existed a year ago, now > 30 exist, gathering experience.
+  * In spring 2016, Sarracenia was too simplistic, only supported new methods.
+  * over the year, Sundew compatibility was added.
+  * Data injection methods (sr_post, sr_watch) were prototypes, they are getting better.
+  * No plugins existed a year ago, now > 30 exist, gathering experience.
 
 
-Why Is it Still Alpha?
-----------------------
+Application Still Alpha?
+------------------------
   
-  -- reports have not been fully implemented, so they might not work yet (defer?)
-  -- plugin API requires a little more work (nothing incompatible so far, but worried.)
-  -- sr_watch and sr_post change usage over last few months.
+  * reports have not been fully implemented, so they might not work yet (defer?)
+  * plugin API requires a little more work (nothing incompatible so far, but worried.)
+  * sr_watch and sr_post change usage over last few months.
+  * Static trees 
+  * Proper interswitch routing.
+
 
 Past Year: Deployments
 ----------------------
 
-  -- ddi was populated with much more data.  Many performance issues resolved.
-  -- OPSR --> WxApps (BULLPREP, Scribe, AVIPADS migrated.)
-  -- NinJo should migrate in March.
-  -- Several (dev) RADAR servers using subscription.
-  -- New XBand RADAR, and GOES-R data only available through new Pumps.
-  -- ADE is fed with new data stream (poorly...)
-  -- Colonoscopy completed:  sundew feeds add extension, sarra support also.
+  * ddi was populated with much more data.  Many performance issues resolved.
+  * OPSR --> WxApps (BULLPREP, Scribe, AVIPADS migrated.)
+  * Several (dev) RADAR servers using subscription.
+  * New XBand RADAR, and GOES-R data only available through new Pumps.
+  * ADE is fed with new data stream (poorly...)
+  * Colonoscopy completed:  sundew feeds add extension, sarra support also.
+  * http(s) on datamart.
+  * AMQP(s) on all internal pumps.  
 
 
 Status
 ------
 
-  -- Much data from Sundew is visible in ddi.cmc.ec.gc.ca
-  -- Much data still has 'PDS Names' from Sundew (with the colons)
-  -- Much data is only available from SSC-DATAINTERCHANGE (with is fake.)
-  -- Most acquisition still done via Sundew. 
-  -- "Reports" routing not configured, just data (no users yet.)
-  -- static and documentation content not configured/supported.
-  -- refining plugin usage. (latest release permits stacking.)
+  * Much data from Sundew is visible in ddi.cmc.ec.gc.ca
+  * Much data still has 'PDS Names' from Sundew (with the colons)
+  * Much data is only available from SSC-DATAINTERCHANGE (with is fake.)
+  * most sources are 
+  * Almost all acquisition still done via Sundew. 
+  * "Reports" routing not configured, just data (no users yet.)
+  * static and documentation content not configured/supported.
+  * refining plugin usage. (latest release permits stacking.)
+  * px vs. ddsr (artificial temporary difference, should go away in time.)
+  * old sundew systems.
+  * AMQP(s)  on DM1 waiting for weather office backend upgrade (in progress.)
 
 
 
 Immediate Work
 --------------
 
-  -- HPCR support: CMOI mirrors:  (A<->B), and Science->EC.
-  -- De-colonization: complete removal of colons from file names.
-  -- [collab.]science.gc.ca Services: hpfx, flux, pfd. (NRC and other partners, YOPP?)
-  -- geomet2 / flux.weather.gc.ca  (Same servers, same data.)
-  -- migrate many senders  sundew --> sarracenia
+  * HPCR support: CMOI mirrors:  (A<->B), and Science->EC.
+  * De-colonization: complete removal of colons from file names.
+  * NinJo deployment (March)
+  * [collab.]science.gc.ca Services: hpfx, flux, pfd. (NRC and other partners, YOPP?)
+  * geomet2 / flux.weather.gc.ca  (Same servers, same data.)
+  * migrate many senders  sundew --> sarracenia
      maintenance upgrades (old sundew servers are on 10.04)
 
 
 Further Work
 ------------
 
-  -- Add reports.
-  -- Add static content support.
-  -- Production migrations: URP, DMS, Weatheroffice.
-  -- perhaps ADE & CMOI. (unclear.)
-  -- gradual migration of acquisition.
-  -- Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
-
-
+  * Configure reports... debug.
+  * Add static content support.
+  * Production migrations: URP, DMS, Weatheroffice.
+  * perhaps ADE & CMOI. (unclear.)
+  * gradual migration of acquisition.
+  * Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
+  * Add AMQP(s) support on DM1 
+  
 
 
