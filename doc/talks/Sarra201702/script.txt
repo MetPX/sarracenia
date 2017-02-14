@@ -272,14 +272,18 @@ Layers 4Domains,Exist,ComingSoon
 
 
 
-Application: Past Year
-----------------------
+Application: Since Nov 2015
+---------------------------
 
-  * In spring 2016, Sarracenia was too simplistic, only supported new methods.
-  * over the year, Sundew compatibility was added.
-  * Data injection methods (sr_post, sr_watch) were prototypes, they are getting better.
+  * Sarracenia only supported new methods.  over summer/fall: Sundew compatibility added.
+  * Data injection methods (sr_post, sr_watch) were prototypes, they are much better.
   * No plugins existed a year ago, now > 30 exist, gathering experience.
+  * Administration required extensive understanding of rabbitmq.  Easier now.
 
+    * rabbitmq 'shovels' replaced by sarracenia ones.
+    * sr_audit now handles exchange and user creation and permissions
+    * declare *user* and/or exchange.
+    
 
 Application Still Alpha?
 ------------------------
@@ -294,14 +298,15 @@ Application Still Alpha?
 Past Year: Deployments
 ----------------------
 
-  * ddi was populated with much more data.  Many performance issues resolved.
-  * OPSR --> WxApps (BULLPREP, Scribe, AVIPADS migrated.)
-  * Several (dev) RADAR servers using subscription.
-  * New XBand RADAR, and GOES-R data only available through new Pumps.
-  * ADE is fed with new data stream (poorly...)
+  * ddi was populated with much more data.  Performance issues explored and resolved.
+  * SPCs:  OPSR --> WxApps (BULLPREP, Scribe, AVIPADS migrated.)
+  * Dev: Several (dev) RADAR servers using subscription.
+  * Monitoring: New XBand RADAR, and GOES-R data only available through new Pumps.
+  * Pred:  ADE is fed with new data stream (poorly...)
   * Colonoscopy completed:  sundew feeds add extension, sarra support also.
-  * http(s) on datamart.
-  * AMQP(s) on all internal pumps.  
+  * SSL Support added on most pumps (to become default for AMQP.)
+     * http(s) on datamart.
+     * AMQP(s) on all internal pumps (not dd yet.)
 
 
 Status
@@ -309,15 +314,15 @@ Status
 
   * Much data from Sundew is visible in ddi.cmc.ec.gc.ca
   * Much data still has 'PDS Names' from Sundew (with the colons)
-  * Much data is only available from SSC-DATAINTERCHANGE (with is fake.)
-  * most sources are 
+  * Much data is only available from SSC-DATAINTERCHANGE (with is *fake*)
+  * sources are constructed as a best first guess by Data Interchange.
   * Almost all acquisition still done via Sundew. 
-  * "Reports" routing not configured, just data (no users yet.)
-  * static and documentation content not configured/supported.
+  * "Reports" routing not configured, just data (no users/time yet.)
+  * static and documentation content not configured/supported yet.
   * refining plugin usage. (latest release permits stacking.)
   * px vs. ddsr (artificial temporary difference, should go away in time.)
-  * old sundew systems.
-  * AMQP(s)  on DM1 waiting for weather office backend upgrade (in progress.)
+  * old sundew systems (need to be de-commissioned, so feeds need to be moved.)
+  * AMQP(s) on DM1 waiting for weather office backend upgrade (in progress.)
 
 
 
@@ -331,18 +336,21 @@ Immediate Work
   * geomet2 / flux.weather.gc.ca  (Same servers, same data.)
   * migrate many senders  sundew --> sarracenia
      maintenance upgrades (old sundew servers are on 10.04)
+  * Add AMQP(s) support on DM1 
 
 
 Further Work
 ------------
 
   * Configure reports... debug.
-  * Add static content support.
+  * Add static content support (basically sarra configurations.)
   * Production migrations: URP, DMS, Weatheroffice.
   * perhaps ADE & CMOI. (unclear.)
-  * gradual migration of acquisition.
-  * Dual-Centre Method (Dorval+Edm) deployment. (Fall?)
-  * Add AMQP(s) support on DM1 
+  * gradual migration of acquisition. (basically port filters to sarra)
+  * Dual-Centre Demonstration (Dorval+Edm) deployment. (Fall?)
+    * unidata, ukmet doable any time (requires filters to be useful.)
+    * RADAR dual-national configuration?
+    * Talk with DMS...
   
 
 
