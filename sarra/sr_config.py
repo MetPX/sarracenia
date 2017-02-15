@@ -654,8 +654,8 @@ class sr_config:
         if 'sundew_extension' in self.msg.headers.keys() :
            parts = [ parts[0] ] + self.msg.headers[ 'sundew_extension' ].split(':')
            filename = ':'.join(parts)
-        else:
-           destFileName = filename
+
+        destFileName = filename
 
         for spec in self.currentFileOption.split(':'):
             if spec == 'WHATFN':
