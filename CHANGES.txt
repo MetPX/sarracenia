@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* problem with truncation on sftp sender, missing argument.
+* developer: flow test improvement: added verification of content sent by sr_sender.
 * all DESTFNSCRIPT are broken in last release.  Fixed now.
 * sr_subscribe with no directory spec was broken. Fixed now.
 * changed build-dep from python-docutils -> python3-docutils.
