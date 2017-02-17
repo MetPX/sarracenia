@@ -48,6 +48,30 @@ function calcres {
 
 }
 
+function tallyres {
+   # tallyres - All the results must be good.  99/100 is bad!
+   # 
+   # logic:
+   # increment test number (tno)
+   # compare first and second totals, and report agreement if within 10% of one another.
+   # emit description based on agreement.  Arguments:
+   # 1 - value obtained 
+   # 2 - value expected
+   # 3 - test description string.
+
+   tno=$((${tno}+1))
+
+   if [ ${1} -lt ${2} ]; then
+      printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
+      if [ "$4" ]; then
+         tno=$((${tno}-1))
+      fi    
+      return 1
+   else
+      printf "test %2d success: ${1} of ${2}: ${3}\n" ${tno}
+   fi
+
+}
 
 function countall {
 
@@ -180,6 +204,20 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
+DR="`cat .httpdocroot`"
+good_files=0
+all_files=0
+cd $DR
+for i in `ls send` ; do
+    if cmp sub/$i send/$i >& /dev/null ; then
+       good_files=$((${good_files}+1))
+    else
+       bad_files=$((${bad_files}+1))
+    fi
+    all_files=$((${all_files}+1))
+done
+
+tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 exit $?

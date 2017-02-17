@@ -272,7 +272,7 @@ class sr_sftp():
 
         
         if fp.tell() >= filesize :
-           fp.truncate() 
+           fp.truncate(filesize) 
         rfp.close()
         fp.close()
 
@@ -363,7 +363,7 @@ class sr_sftp():
         fp.close()
 
         if rfp.tell() >= filesize:
-           rfp.truncate()
+           rfp.truncate(filesize)
 
         rfp.close()
 
