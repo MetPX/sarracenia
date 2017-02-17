@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* all DESTFNSCRIPT are broken in last release.  Fixed now.
 * sr_subscribe with no directory spec was broken. Fixed now.
 * changed build-dep from python-docutils -> python3-docutils.
 
