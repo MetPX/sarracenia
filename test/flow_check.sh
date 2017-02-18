@@ -69,6 +69,7 @@ function tallyres {
       return 1
    else
       printf "test %2d success: ${1} of ${2}: ${3}\n" ${tno}
+      passedno=$((${passedno}+1))
    fi
 
 }
