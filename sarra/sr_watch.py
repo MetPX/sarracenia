@@ -106,7 +106,6 @@ class sr_watch(sr_instances):
         self.post.realpath     = self.realpath
         self.post.follow_symlinks = self.follow_symlinks
         self.post.force_polling   = self.force_polling
-
         if self.reset :
            self.post.connect()
            self.post.poster.cache_reset()
@@ -212,7 +211,7 @@ class sr_watch(sr_instances):
 
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
-            self.logger.info("sr_watch is now active on %s" % (self.watch_path,))
+            self.logger.info("sr_watch now active on %s posting to exchange: %s " % (self.watch_path, self.post.exchange))
 
             # do periodic events (at most, once every 'sleep' seconds)
             while True:
