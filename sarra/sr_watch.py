@@ -203,10 +203,12 @@ class sr_watch(sr_instances):
 
             self.obs_watched = []
             for d in sld:
-                self.logger.info("sr_watch scheduling watch of: %s " % d)
-                ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
-                self.obs_watched.append(ow)
-
+                if os.access( d , os.R_OK|os.X_OK ): 
+                   self.logger.info("sr_watch scheduling watch of: %s " % d)
+                   ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
+                   self.obs_watched.append(ow)
+                else:
+                   self.logger.error("sr_watch could not schedule watch of: %s (permission denied)" % d)
 
             self.logger.info("sr_watch is not yet active.")
             self.observer.start()
@@ -385,8 +387,8 @@ def main():
     elif action == 'stop'       : watch.stop_parent()
     elif action == 'status'     : watch.status_parent()
     else :
-           watch.logger.error("action unknown %s" % action)
-           sys.exit(1)
+        watch.logger.error("action unknown %s" % action)
+        sys.exit(1)
 
     sys.exit(0)
 
