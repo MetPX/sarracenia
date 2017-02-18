@@ -9,7 +9,7 @@
 class Post_Log(object): 
 
     def __init__(self,parent):
-        parent.logger.info( "post_log initialized" )
+        parent.logger.debug( "post_log initialized" )
           
     def perform(self,parent):
 
