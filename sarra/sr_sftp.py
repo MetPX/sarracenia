@@ -67,7 +67,6 @@ class sr_sftp():
 
         self.sumalgo     = None
         self.checksum    = None
-        print("initialized by murray: %d" % self.parent.chmod_dir)
 
     # cd
     def cd(self, path):

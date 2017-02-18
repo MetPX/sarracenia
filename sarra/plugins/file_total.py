@@ -52,7 +52,7 @@ class Msg_Total(object):
         parent.file_total_msgcount=0
         parent.file_total_bytecount=0
         parent.file_total_lag=0
-        logger.info("file_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
+        logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
           
     def perform(self,parent):
@@ -80,7 +80,7 @@ class Msg_Total(object):
         if parent.file_total_interval > now-parent.file_total_last :
            return True
 
-        logger.info("file_total: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
+        logger.info("file_total: %3d files received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
             parent.file_total_msgcount,
 	    parent.file_total_msgcount/(now-parent.file_total_start),
 	    humanize.naturalsize(parent.file_total_bytecount/(now-parent.file_total_start),binary=True,gnu=True),
@@ -88,7 +88,7 @@ class Msg_Total(object):
         # Set the maximum age, in seconds, of a message to retrieve.
 
         if lag > parent.file_total_maxlag :
-           logger.warn("total: Excessive lag! Messages posted %s " % 
+           logger.warn("total: Excessive lag! downloading too slowly/late %s behind" % 
                humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.file_total_last = now

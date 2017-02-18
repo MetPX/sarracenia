@@ -52,7 +52,7 @@ class Post_Total(object):
         parent.post_total_msgcount=0
         parent.post_total_bytecount=0
         parent.post_total_lag=0
-        logger.info("post_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
+        logger.info("post_total: 0 messages posted: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
           
     def perform(self,parent):
@@ -79,7 +79,7 @@ class Post_Total(object):
         if parent.post_total_interval > now-parent.post_total_last :
            return True
 
-        logger.info("post_total: %3d messages received: %5.2g msg/s, lag: %4.2g s" % ( 
+        logger.info("post_total: %3d messages posted: %5.2g msg/s, lag: %4.2g s" % ( 
             parent.post_total_msgcount,
 	    parent.post_total_msgcount/(now-parent.post_total_start),
             parent.post_total_lag/parent.post_total_msgcount ))
