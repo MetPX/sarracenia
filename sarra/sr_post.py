@@ -99,6 +99,7 @@ class sr_post(sr_config):
 
         self.post_broker   = self.broker
         self.poster        = sr_poster(self, self.loop)
+
         self.msg.publisher = self.poster.publisher
         self.msg.post_exchange_split = self.post_exchange_split
 
@@ -200,7 +201,7 @@ class sr_post(sr_config):
 
         # verify that file exists
 
-        if not os.path.isfile(filepath) and self.event != 'delete' :
+        if not os.path.exists(filepath) and self.event != 'delete' :
            self.logger.error("File not found %s " % filepath )
            return False
 
@@ -252,9 +253,6 @@ class sr_post(sr_config):
 
         if os.path.islink(filepath):
            if 'link' in self.events: 
-               self.logger.error("posting is a link")
-               #self.msg.headers[ 'link' ] = os.readlink(filepath)
-
                ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
                     'L,%d' % random.randint(0,100), rename, filename, link=os.readlink(filepath))
 
@@ -264,7 +262,7 @@ class sr_post(sr_config):
                urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
                self.url = urllib.parse.urlparse(urlstr)
 
-           if not self.poster.follow_links : return True
+           if not self.follow_symlinks : return True
 
           # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 

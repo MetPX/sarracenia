@@ -4,10 +4,16 @@
 
 **git repo(unreleased)**
 
-* problem with truncation on sftp sender, missing argument.
+* bug #78: fixed. posting symlinks now works.
+* bug #76: fixed. sr_audit will now only start if the admin option is set in default.conf
+  only need one sr_audit for each pump.  having more isn't a problem, but dozens are stupid.
+  for deployment to a cluster, need to run on hundreds of nodes, stop running hundreds of useless instances.
+* sr_watch now indicates the exchange being published to on startup.
+* feature #56: system startup (init file and/or systemd service) now installed with package. might be a bit shaky...
+* bug (not submitted) problem with truncation on sftp sender, missing argument.
 * developer: flow test improvement: added verification of content sent by sr_sender.
-* all DESTFNSCRIPT are broken in last release.  Fixed now.
-* sr_subscribe with no directory spec was broken. Fixed now.
+* bug (not submitted) all DESTFNSCRIPT are broken in last release.  Fixed now.
+* sr_subscribe with no directory spec was broken. default to pwd as one would expect. Fixed now.
 * changed build-dep from python-docutils -> python3-docutils.
 
 **2.17.02a1**
