@@ -684,6 +684,12 @@ def main():
 
     audit = sr_audit(config,args)
 
+    if hasattr( audit.admin, 'username') :
+        audit.logger.info("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
+    else:
+        audit.logger.info("As no admin is set, shutting down sr_audit")
+        sys.exit(0)
+
     if   action == 'foreground' : audit.foreground_parent()
     elif action == 'reload'     : audit.reload_parent()
     elif action == 'restart'    : audit.restart_parent()
