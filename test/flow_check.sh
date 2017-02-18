@@ -208,11 +208,12 @@ DR="`cat .httpdocroot`"
 good_files=0
 all_files=0
 cd $DR
+echo "" >bad_file.list
 for i in `ls send` ; do
     if cmp sub/$i send/$i >& /dev/null ; then
        good_files=$((${good_files}+1))
     else
-       bad_files=$((${bad_files}+1))
+       echo $i >>bad_file.list
     fi
     all_files=$((${all_files}+1))
 done
