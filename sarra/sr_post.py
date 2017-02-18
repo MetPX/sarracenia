@@ -201,7 +201,7 @@ class sr_post(sr_config):
 
         # verify that file exists
 
-        if not os.path.exists(filepath) and self.event != 'delete' :
+        if not os.path.islink(filepath) and ( not os.path.exists(filepath) and self.event != 'delete' ):
            self.logger.error("File not found %s " % filepath )
            return False
 
