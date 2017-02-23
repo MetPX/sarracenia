@@ -12,7 +12,7 @@ Development is done on the *master* branch, and releases are done on a frequent 
 
 With those explanations, feel free to grab a snapshot can be obtained using subversion via::
 
-    git clone git://git.code.sf.net/p/metpx/git metpx
+    git clone git://git.code.sf.net/p/metpx/git/sarracenia metpx-sarracenia
 
 
 Available for anonymous read-only access. One can also obtain a stable release by checking out a release branch.
