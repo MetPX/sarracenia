@@ -68,6 +68,7 @@
 #
 
 import os,sys,time
+import jsonpickle
 
 try :    
          from sr_amqp           import *
@@ -411,8 +412,18 @@ class sr_sender(sr_instances):
 
         self.connect()
 
-        if self.restore :
-           self.logger.info("sr_sender restoring from save %s " % self.save_path )
+        #if self.restore :
+        #   self.logger.info("sr_sender restoring from save %s " % self.save_path )
+        #   with open(self.save_path,"r") as rf:
+        #       for ml in rf:
+        #          self.msg = jsonpickle.decode(ml)
+        #          self.logger.info("sr_sender restoring message for url %s" % self.msg.url )
+        #          ok = self.process_message()
+                      
+
+        #if self.save :
+        #    self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
+        #    sf = open(self.save_path,"a")
 
         while True :
               try  :
@@ -428,17 +439,20 @@ class sr_sender(sr_instances):
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
 
-                      if self.save :
-                          self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
-
-                      else:
-                          #  process message (ok or not... go to the next)
-                          ok = self.process_message()
+                      #if self.save :
+                      #    self.logger.info("sr_sender saving message for url %s" % self.msg.url )
+                      #    sf.write(jsonpickle.encode(self.msg) + '\n')   
+                      #    sf.flush()
+                      #else:
+                      #  process message (ok or not... go to the next)
+                      ok = self.process_message()
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
+        if self.save:
+            sf.close()
 
     def set_local(self):
 

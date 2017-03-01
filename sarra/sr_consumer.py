@@ -52,6 +52,7 @@ class sr_consumer:
 
         self.use_pattern    = parent.masks != []
         self.accept_unmatch = parent.accept_unmatch
+        self.save = False
 
         self.build_connection()
         self.build_consumer()
@@ -145,6 +146,8 @@ class sr_consumer:
         self.raw_msg = self.consumer.consume(self.queue_name)
         if self.raw_msg == None : return False, self.msg
 
+        if self.save:
+           self.logger.debug("save mode active")
 
         # make use it as a sr_message
 
@@ -156,7 +159,7 @@ class sr_consumer:
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
                  self.logger.error("malformed message %s"% vars(self.raw_msg))
-                 return None
+                 return None, None
 
 
         # make use of accept/reject

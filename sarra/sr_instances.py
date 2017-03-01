@@ -106,6 +106,7 @@ class sr_instances(sr_config):
         self.configure()
         self.logger.debug("sr_instances foreground_parent")
         self.nbr_instances = 0
+        self.save_path     = self.user_cache_dir + os.sep + self.basic_name + '_0000.save'
         self.start()
 
     def reload_instance(self):
