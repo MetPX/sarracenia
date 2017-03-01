@@ -421,6 +421,7 @@ class sr_config:
 
         self.realpath             = False
         self.recursive            = False
+        self.reload               = False
         self.follow_symlinks      = False
         self.force_polling        = False
 
@@ -431,6 +432,8 @@ class sr_config:
         self.post_exchange        = None
         self.post_exchange_split = 0
 
+        self.restore              = False
+        self.save                 = False
         self.source               = None
         self.source_from_exchange = False
 
@@ -528,6 +531,7 @@ class sr_config:
 
         defconf     = self.user_config_dir + os.sep + 'default.conf'
         self.logger.debug("defconf = %s\n" % defconf)
+
         if os.path.isfile(defconf) : 
            #user_config      = self.user_config
            #self.user_config = defconf
@@ -1063,6 +1067,15 @@ class sr_config:
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
 
+                elif words0 == 'restore' : # See: sr_config.7 
+                     #-- report_daemons left for transition, should be removed in 2017
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.restore = True
+                        n = 1
+                     else :
+                        self.restore = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 == 'report_daemons' or words0 == 'report_daemons': # See: sr_config.7 
                      #-- report_daemons left for transition, should be removed in 2017
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1365,6 +1378,15 @@ class sr_config:
                      elif item in [ 'exchange' ]:
                         self.exchanges.append( words[2] )                                                
                      n = 3
+
+                elif words0 == 'save' : # See: sr_config.7 
+                     #-- report_daemons left for transition, should be removed in 2017
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.save = True
+                        n = 1
+                     else :
+                        self.save = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['set_passwords']:  # See: sr_consumer.1
                      if (words1 is None) or words[0][0:1] == '-' : 

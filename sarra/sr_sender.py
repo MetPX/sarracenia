@@ -411,6 +411,9 @@ class sr_sender(sr_instances):
 
         self.connect()
 
+        if self.restore :
+           self.logger.info("sr_sender restoring from save %s " % self.save_path )
+
         while True :
               try  :
                       #  is it sleeping ?
@@ -425,8 +428,12 @@ class sr_sender(sr_instances):
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
 
-                      #  process message (ok or not... go to the next)
-                      ok = self.process_message()
+                      if self.save :
+                          self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
+
+                      else:
+                          #  process message (ok or not... go to the next)
+                          ok = self.process_message()
 
               except:
                       (stype, svalue, tb) = sys.exc_info()

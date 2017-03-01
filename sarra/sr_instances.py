@@ -74,6 +74,7 @@ class sr_instances(sr_config):
 
         self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
         self.logpath       = self.user_log_dir   + os.sep + self.instance_name + '.log'
+        self.save_path     = self.user_cache_dir + os.sep + self.instance_name + '.save'
 
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
