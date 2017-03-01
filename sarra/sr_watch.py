@@ -307,7 +307,7 @@ def main():
                    e=self.events_outstanding[f]
 
                    watch.logger.debug("event_wakeup looking at %s of %s " % (e, f) )
-                   if isinstance(watch.inflight,int):  # waiting for file to be unmodified for 'inflight' seconds...
+                   if e not in [ 'delete' ] and isinstance(watch.inflight,int):  # waiting for file to be unmodified for 'inflight' seconds...
                       age = time.time() - os.stat(f)[stat.ST_MTIME] 
                       if age < watch.inflight :
                           watch.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
