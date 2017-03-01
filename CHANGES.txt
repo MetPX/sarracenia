@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* bug #77: fixed. crash on file deletion when inflight is numeric. 
 * bug #78: fixed. posting symlinks now works.
 * bug #76: fixed. sr_audit will now only start if the admin option is set in default.conf
   only need one sr_audit for each pump.  having more isn't a problem, but dozens are stupid.
