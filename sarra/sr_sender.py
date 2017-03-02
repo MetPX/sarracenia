@@ -68,7 +68,7 @@
 #
 
 import os,sys,time
-import jsonpickle
+import json
 
 try :    
          from sr_amqp           import *
@@ -155,6 +155,10 @@ class sr_sender(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
+        if self.save:
+           self.consumer.save = True
+           self.consumer.save_path = self.save_path
+
         self.msg.report_publisher = self.consumer.publish_back()
         # modified by Murray Dec 5 2016
         self.msg.report_exchange  = self.report_exchange
@@ -412,44 +416,67 @@ class sr_sender(sr_instances):
 
         self.connect()
 
-        #if self.restore :
-        #   self.logger.info("sr_sender restoring from save %s " % self.save_path )
-        #   with open(self.save_path,"r") as rf:
-        #       for ml in rf:
-        #          self.msg = jsonpickle.decode(ml)
-        #          self.logger.info("sr_sender restoring message for url %s" % self.msg.url )
-        #          ok = self.process_message()
-                      
+        if self.restore and os.path.exists(self.save_path):
+           rtot=0
+           with open(self.save_path,"r") as rf:
+               for ml in rf:
+                   rtot += 1
 
-        #if self.save :
-        #    self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
-        #    sf = open(self.save_path,"a")
+           self.logger.info("sr_sender restoring %d messages from save %s " % ( rtot, self.save_path ) )
+           rnow=0
+           with open(self.save_path,"r") as rf:
+               for ml in rf:
+                  rnow += 1
+                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
+                  self.msg.from_amqplib()
+                  self.logger.info("sr_sender restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
+                  ok = self.process_message()
+
+           self.logger.info("sr_sender restore complete deleting save file: %s " % ( self.save_path ) )
+           os.unlink(self.save_path) 
+
+        if self.save :
+            self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
+            sf = open(self.save_path,"a")
+            stot=0
+
+        active = self.has_vip()
+        if not active :
+            self.logger.debug("sr_shovel does not have vip=%s, is sleeping" % self.vip)
+        else:
+            self.logger.debug("sr_shovel is active on vip=%s" % self.vip)
+
 
         while True :
-              try  :
-                      #  is it sleeping ?
-                      if not self.has_vip() :
-                         self.logger.debug("sr_sender does not have vip=%s, is sleeping", self.vip)
-                         time.sleep(5)
-                         continue
-                      else:
-                         self.logger.debug("sr_sender is active on vip=%s", self.vip)
+              #try  :
+              if not self.has_vip() : #  is it sleeping ?
+                  if active:
+                      self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
+                      active=False
+ 
+                  time.sleep(5)
+                  continue
+              else:
+                 if not active:
+                     self.logger.debug("sr_sender is active on vip=%s" % self.vip)
+                     active=True
 
-                      #  consume message
-                      ok, self.msg = self.consumer.consume()
-                      if not ok : continue
+              #  consume message
+              ok, self.msg = self.consumer.consume()
+              if not ok : continue
 
-                      #if self.save :
-                      #    self.logger.info("sr_sender saving message for url %s" % self.msg.url )
-                      #    sf.write(jsonpickle.encode(self.msg) + '\n')   
-                      #    sf.flush()
-                      #else:
-                      #  process message (ok or not... go to the next)
-                      ok = self.process_message()
+              if self.save :
+                  stot += 1
+                  self.logger.info("sr_sender saving %d message topic: %s" % ( stot, self.msg.topic ) )
+                  sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ] ) + '\n')   
+                  sf.flush()
+              else:
+                  #  process message (ok or not... go to the next)
+                  ok = self.process_message()
 
-              except:
-                      (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+              #except:
+              #        (stype, svalue, tb) = sys.exc_info()
+              #        self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
         if self.save:
             sf.close()
