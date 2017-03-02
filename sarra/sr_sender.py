@@ -432,8 +432,11 @@ class sr_sender(sr_instances):
                   self.logger.info("sr_sender restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
                   ok = self.process_message()
 
-           self.logger.info("sr_sender restore complete deleting save file: %s " % ( self.save_path ) )
-           os.unlink(self.save_path) 
+           if rnow >= rtot:
+               self.logger.info("sr_sender restore complete deleting save file: %s " % ( self.save_path ) )
+               os.unlink(self.save_path) 
+           else:
+               self.logger.error("sr_sender only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
 
         if self.save :
             self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
