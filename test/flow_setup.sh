@@ -24,6 +24,8 @@ declare subscriber tsub
 declare subscriber anonymous
 declare exchange xhoho
 declare exchange xs_tsource_output
+declare exchange xs_tsource_src
+declare exchange xs_tsource_dest
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
 
