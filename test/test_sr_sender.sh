@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 #This self test script is a work in progress and will be improved
 
@@ -17,12 +17,16 @@ if [ ! -d $file_destination ]; then
 	mkdir $file_destination
 fi
 
+if [ ! -d sender ]; then
+	mkdir sender
+fi
 
-sender=pfd
+
+sender=`whoami`
 host=localhost
 
 #Exchanges and credentials
-exchange=tsender_src
+amqpuser=tsource
 credentials=TestSENDer
 
 #File to post
@@ -43,6 +47,17 @@ cat << EOF > $file_origin/$sender_file
 EOF
 
 chmod 777 $file_origin/$sender_file
+
+cd sender_templates
+
+for i in *.conf ; do
+    # turn the i from sender/i.template -> sender/i.conf 
+
+    sed 's+SFTPUSER+'"${sender}"'+g; s+HOST+'"${host}"'+g; s+TESTDOCROOT+'"${file_origin}"'+g' <$i >../sender/$i
+
+done 
+cd ..
+
 
 #Checks if the file exists in final destination using sr_sender, PASSED if exists, FAILED if not 
 function check_sender {
@@ -70,16 +85,16 @@ function check_sender {
 
 #This test checks to see if sr_sender will send a file to a location
 #when instead of specifying directory, the post_document_root, 
-#post_exchange and post_broker are specified.
+#post_amqpuser and post_broker are specified.
 function test_post_doc {
 
-        sr_sender --reset ./sender/test1.conf start > /dev/null 2>&1
+        sr_sender --reset ./sender/test1.conf start #> /dev/null 2>&1
 	sleep 3
-        sr_post -b amqp://$exchange:$credentials@$host/ 	\
+        sr_post -ex xs_${amqpuser}_src \
+                -b amqp://$amqpuser@$host/ 	\
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file 			\
-		-to test_cluster > /dev/null 2>&1		\
-		/
+		-to test_cluster #> /dev/null 2>&1		
 	sleep 3
 
 	check_sender
@@ -100,12 +115,12 @@ function test_parts {
 
 	sr_sender --reset ./sender/test2.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+	sr_post -b amqp://$amqpuser@$host/ 	\
+                -ex xs_${amqpuser}_src \
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file 		\
 		-to test_cluster > /dev/null 2>&1		\
-		--parts i,32B					\
-		/
+		--parts i,32B					
         sleep 3
 
 	check_sender
@@ -126,7 +141,7 @@ function test_plugin_msg {
 	#Using on_message script
 	sr_sender --reset ./sender/test3.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+	sr_post -b amqp://$amqpuser@$host/ 	\
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file	 		\
 		-to test_cluster  				\
@@ -161,7 +176,7 @@ function test_plugin_send {
 	#Using do_send script
 	sr_sender --reset ./sender/test4.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+	sr_post -b amqp://$amqpuser@$host/ 	\
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file 			\
 		-to test_cluster > /dev/null 			\
@@ -179,21 +194,21 @@ function test_plugin_send {
 	return $RET
 }
 
-#The on_post plugin posts the sent file to the exchange. For this to work, the 
-#post_document_root, post_exchange and post_broker must be specified. The 
+#The on_post plugin posts the sent file to the amqpuser. For this to work, the 
+#post_document_root, post_amqpuser and post_broker must be specified. The 
 #purpose of this test is to check if the plugin runs after the file has been
-#sent to its destination and announced to the post exchange.
+#sent to its destination and announced to the post amqpuser.
 function test_plugin_post {
 
 	#Using on_post script
 	sr_sender --reset ./sender/test5.conf start > /dev/null 2>&1
 	sleep 3
-	sr_post -b amqp://$exchange:$credentials@$host/ 	\
+	sr_post -b amqp://$amqpuser@$host/ 	\
 		-u sftp://$sender@$host/ 			\
 		-p $file_origin/$sender_file 			\
 		-to test_cluster > /dev/null 2>&1		\
-		--flow "$file_destination"     			\
-		/
+		--flow "$file_destination"     			
+		
 	sleep 3
 
         script_file=$file_destination/$on_post_file
@@ -222,6 +237,9 @@ test_post_doc
 if [ $? -eq 1 ]; then
 	RESULT=1
 fi
+
+exit 1
+
 echo "Sending file by parts to destination and reassembling file..."
 test_parts
 if [ $? -eq 1 ]; then
