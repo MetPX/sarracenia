@@ -424,9 +424,11 @@ class sr_sender(sr_instances):
 
            self.logger.info("sr_sender restoring %d messages from save %s " % ( rtot, self.save_path ) )
            rnow=0
+
            with open(self.save_path,"r") as rf:
                for ml in rf:
                   rnow += 1
+                  self.msg.exchange = 'save'
                   self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
                   self.msg.from_amqplib()
                   self.logger.info("sr_sender restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )

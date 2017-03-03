@@ -122,6 +122,46 @@ If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.
 If not, the message is skipped.
 
+DESTINATION UNAVAILABLE
+-----------------------
+
+If the server to which the files are being sent is going to be unavailable for 
+a prolonged period, and there is a large number of messages to send to them, then
+the queue will build up on the broker. As the performance of the entire broker
+is affected by large queues, one needs to minimize such queues.
+
+The *-save* and *-restore* options are used get the messages away from the broker
+when too large a queue will certainly build up.
+The *-save* option copies the messages to a (per instance) disk file (in the same directory
+that stores state and pid files), as json encoded strings, one per line.
+When a queue is building up::
+
+   sr_sender <config> stop
+   sr_sender -save <config> start
+
+And run the sender in *save* mode (which continually writes incoming messages to disk)
+in the log, a line for each message written to disk::
+
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+
+Continue in this mode until the absent server is again available.  At that point::
+
+   sr_sender <config> stop
+   sr_sender -restore <config> start
+
+While restoring from the disk file, messages like the following will appear in the log::
+
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+
+
+After the last one::
+
+  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
+
+
+and the sr_sender will function normally thereafter.
+
+
 
 SETUP 1 : PUMP TO PUMP REPLICATION 
 ----------------------------------
@@ -250,7 +290,6 @@ Topic:
 
 Notice:
 **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
-
 
 
 SEE ALSO
