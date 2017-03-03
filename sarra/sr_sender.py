@@ -453,35 +453,36 @@ class sr_sender(sr_instances):
 
 
         while True :
-              #try  :
-              if not self.has_vip() : #  is it sleeping ?
-                  if active:
-                      self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
-                      active=False
- 
-                  time.sleep(5)
-                  continue
-              else:
-                 if not active:
-                     self.logger.debug("sr_sender is active on vip=%s" % self.vip)
-                     active=True
+            try:
 
-              #  consume message
-              ok, self.msg = self.consumer.consume()
-              if not ok : continue
+                  if not self.has_vip() : #  is it sleeping ?
+                      if active:
+                          self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
+                          active=False
+     
+                      time.sleep(5)
+                      continue
+                  else:
+                     if not active:
+                         self.logger.debug("sr_sender is active on vip=%s" % self.vip)
+                         active=True
 
-              if self.save :
-                  stot += 1
-                  self.logger.info("sr_sender saving %d message topic: %s" % ( stot, self.msg.topic ) )
-                  sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ] ) + '\n')   
-                  sf.flush()
-              else:
-                  #  process message (ok or not... go to the next)
-                  ok = self.process_message()
+                  #  consume message
+                  ok, self.msg = self.consumer.consume()
+                  if not ok : continue
 
-              #except:
-              #        (stype, svalue, tb) = sys.exc_info()
-              #        self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                  if self.save :
+                      stot += 1
+                      self.logger.info("sr_sender saving %d message topic: %s" % ( stot, self.msg.topic ) )
+                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ] ) + '\n')   
+                      sf.flush()
+                  else:
+                      #  process message (ok or not... go to the next)
+                      ok = self.process_message()
+
+            except:
+                  (stype, svalue, tb) = sys.exc_info()
+                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
         if self.save:
             sf.close()
