@@ -157,7 +157,7 @@ class sr_sftp():
                 port = self.port
                 if self.port == '' or self.port == None : port = 22
 
-                if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
+                #if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
 
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
