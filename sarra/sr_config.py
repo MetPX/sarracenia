@@ -1169,7 +1169,7 @@ class sr_config:
                            ok = False
                            needexit = True
                      else:
-                        self.on_line_list.appent(self.on_line)
+                        self.on_line_list.append(self.on_line)
 
                      n = 2
 
