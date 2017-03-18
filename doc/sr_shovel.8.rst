@@ -107,6 +107,8 @@ around::
   topic_prefix v02.post
   exchange xpublic
 
+  post_rate_limit 50
+  on_post post_rate_limit
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
@@ -147,6 +149,7 @@ json format, one message per line (lines are very long.) and so filtering with o
 Once the subscriber is back in service, one can return the messages saved to a file into the same queue::
 
   % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 save.conf foreground
+
   2017-03-18 13:15:33,610 [INFO] sr_shovel start
   2017-03-18 13:15:33,611 [INFO] sr_sarra run
   2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -166,9 +169,9 @@ Once the subscriber is back in service, one can return the messages saved to a f
   2017-03-18 13:19:26,991 [INFO] sr_shovel stop
   % 
 
-So now all the messages saved are returned to the *return_to_queue*.   
-One could use this functionality to implement 'replay' functionality, in conjunction
-with plugins to modify timing.
+All the messages saved are returned to the named *return_to_queue*. Note that the use of the *post_rate_limit* 
+plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
+to be tuned in practice. 
 
 
 
