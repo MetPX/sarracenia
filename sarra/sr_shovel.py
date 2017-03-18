@@ -56,7 +56,7 @@
 #============================================================
 #
 
-import os,sys,time
+import os,sys,time,json
 
 try :    
          from sr_amqp           import *
@@ -154,6 +154,16 @@ class sr_shovel(sr_instances):
         self.hc_pst = HostConnect( logger = self.logger )
         self.hc_pst.set_url( self.post_broker )
         self.hc_pst.connect()
+
+        if self.restore_queue is not None:
+            # create temporary exchange to publish only to restore_queue.
+            self.post_exchange = 'xs_' + self.broker.username + '.' + \
+                self.program_name + '.' + self.config_name + '.restore'
+            self.msg.pub_exchange = self.post_exchange
+            self.hc_pst.channel.exchange_declare( self.post_exchange, \
+                'topic', auto_delete=True, durable=False)
+            self.hc_pst.channel.queue_bind( self.restore_queue, \
+                self.post_exchange, '#' )
 
         # publisher
 
@@ -345,7 +355,10 @@ class sr_shovel(sr_instances):
 
         self.connect()
 
-        if self.restore and os.path.exists(self.save_path):
+        if ( self.restore_queue is not None ) and os.path.exists(self.save_path):
+           self.restore_exchange_name  = 'xs_' + self.broker.username + '.' + \
+                self.program_name + '.' + self.config_name + '.restore'
+
            rtot=0
            with open(self.save_path,"r") as rf:
                for ml in rf:
@@ -368,6 +381,9 @@ class sr_shovel(sr_instances):
                os.unlink(self.save_path)
            else:
                self.logger.error("sr_shovel only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
+ 
+           # should have effect of deleting restore exchange as auto_delete is True.
+           self.hc_pst.channel.queue_unbind( self.restore_queue, self.post_exchange, '#' )
 
         if self.save :
             self.logger.info("sr_shovel saving to %s for future restore" % self.save_path )

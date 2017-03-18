@@ -433,6 +433,7 @@ class sr_config:
         self.post_exchange_split = 0
 
         self.restore              = False
+        self.restore_queue        = None
         self.save                 = False
         self.source               = None
         self.source_from_exchange = False
@@ -1075,6 +1076,11 @@ class sr_config:
                      else :
                         self.restore = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in ['restore_to_queue', 'restore2queue', 'r2q', 'rq']: 
+                     # FIXME: should be in: sr_shovel.1
+                     self.restore_queue = words1
+                     n = 2
 
                 elif words0 == 'report_daemons' or words0 == 'report_daemons': # See: sr_config.7 
                      #-- report_daemons left for transition, should be removed in 2017
