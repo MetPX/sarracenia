@@ -4,6 +4,9 @@
 
 **git repo(unreleased)**
 
+**2.17.03a1**
+
+* feature #61: save/restore Deal with large queues on brokers by persisting to disk.
 * bug #77: fixed. crash on file deletion when inflight is numeric. 
 * feature #61, sr_sender -save/-restore to avoid broker queues implemented.
 * bug #78: fixed. posting symlinks now works.
