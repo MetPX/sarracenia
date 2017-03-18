@@ -447,9 +447,9 @@ class sr_sender(sr_instances):
 
         active = self.has_vip()
         if not active :
-            self.logger.debug("sr_shovel does not have vip=%s, is sleeping" % self.vip)
+            self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
         else:
-            self.logger.debug("sr_shovel is active on vip=%s" % self.vip)
+            self.logger.debug("sr_sender is active on vip=%s" % self.vip)
 
 
         while True :

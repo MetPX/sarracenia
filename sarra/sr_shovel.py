@@ -132,6 +132,9 @@ class sr_shovel(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
+        if self.save:
+            self.consumer.save = True
+            self.consumer.save_path = self.save_path
 
         if self.reportback :
             self.msg.report_publisher = self.consumer.publish_back()
@@ -341,6 +344,37 @@ class sr_shovel(sr_instances):
         # loop/process messages
 
         self.connect()
+
+        if self.restore and os.path.exists(self.save_path):
+           rtot=0
+           with open(self.save_path,"r") as rf:
+               for ml in rf:
+                   rtot += 1
+
+           self.logger.info("sr_shovel restoring %d messages from save %s " % ( rtot, self.save_path ) )
+           rnow=0
+
+           with open(self.save_path,"r") as rf:
+               for ml in rf:
+                  rnow += 1
+                  self.msg.exchange = 'save'
+                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
+                  self.msg.from_amqplib()
+                  self.logger.info("sr_shovel restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
+                  ok = self.process_message()
+
+           if rnow >= rtot:
+               self.logger.info("sr_shovel restore complete deleting save file: %s " % ( self.save_path ) )
+               os.unlink(self.save_path)
+           else:
+               self.logger.error("sr_shovel only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
+
+        if self.save :
+            self.logger.info("sr_shovel saving to %s for future restore" % self.save_path )
+            sf = open(self.save_path,"a")
+            stot=0
+
+
         active = self.has_vip()
         if not active :
             self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
@@ -348,30 +382,39 @@ class sr_shovel(sr_instances):
             self.logger.debug("sr_shovel is active on vip=%s", self.vip)
 
         while True :
-              try  :
-                      #  is it sleeping ?
-                      if not self.has_vip() :
+              try :
+                  #  is it sleeping ?
+                  if not self.has_vip() :
                           if active:
                               self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
                               active=False
 
                           time.sleep(5)
                           continue
-                      else:
+                  else:
                           if not active:
                               self.logger.debug("sr_shovel is active on vip=%s", self.vip)
                               active=True
 
-                      #  consume message
-                      ok, self.msg = self.consumer.consume()
-                      if not ok : continue
-
+                  #  consume message
+                  ok, self.msg = self.consumer.consume()
+                  if not ok : continue
+                  if self.save :
+                      stot += 1
+                      self.logger.info("sr_shovel saving %d message topic: %s" % ( stot, self.msg.topic ) )
+                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ] ) + '\n')
+                      sf.flush()
+                  else:
                       #  process message (ok or not... go to the next)
                       ok = self.process_message()
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+    
+        if self.save:
+            sf.close()
+
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

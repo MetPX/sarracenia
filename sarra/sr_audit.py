@@ -330,7 +330,7 @@ class sr_audit(sr_instances):
         ampersand = feeder.index('@',8)
         feeder = feeder[0:colon] + feeder[ampersand:]
 
-        self.logger.error("sr_audit pumps using account: %s for report routing" % feeder )
+        self.logger.info("sr_audit pumps using account: %s for report routing" % feeder )
            
         for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
