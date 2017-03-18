@@ -1286,7 +1286,7 @@ class sr_config:
                         self.pump_flag = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
+                elif words0 in ['queue', 'queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
                      self.queue_name = words1
                      n = 2
 
