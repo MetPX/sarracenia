@@ -381,6 +381,30 @@ they will build up over time.  We have a script that looks for unused queues, an
 Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
 One can change this limit by having  option *max_queue_size 50000* in default.conf.
 
+
+Excess Queueing
+~~~~~~~~~~~~~~~
+
+When rabbitmq has hundreds of thousands of messages queued, broker performance can suffer.  Such
+accumulations can occur when the destination of a sender is down for a prolonged period, or a 
+subscriber is unavailable for some reason. In many cases, one can simply shutdown the sender,
+and delete the queue on the broker.  While that solves the broker performance issue, the user
+will not receive the notifications.
+
+To avoid data loss, please consult the sr_sender(1) manual page *DESTINATION UNAVAILABLE* section
+for details of save and restore options.  Briefly, when a sender is placed in *save* mode, rather
+than attempting to send each file, the messages written to a disk file.  When the remote user
+is back, one invokes *restore* mode, and the disk file is read back, and the files are sent.
+
+In the case of components other than a sender, please consult the QUEUE Save/Restore section
+of the sr_shovel(8) manual page.  There is a similar mechanism used to write messages queued
+to disk, to avoid them overloading the broker.   When the consumer is back in service, the
+*restore_to_queue* option can be used to recover missing messages.
+
+
+
+
+
 Routing
 -------
 
