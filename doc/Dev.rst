@@ -330,26 +330,20 @@ The first alpha release in January 2016 would be versioned as ``metpx-sarracenia
 Setting the Version
 ~~~~~~~~~~~~~~~~~~~
 
-* Edit ``sarra/__init__.py`` manually and set the version number.
-* Run ```release.sh```
-* Edit ``sarra/__init__.py`` manually and add ``+`` to the end of the version number to differentiate continuing development on the master branch from the last release.
-
-Each new release triggers a *tag* in the git repository.
-
-Example::
-
-    git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+Each new release triggers a *tag* in the git repository ( executes *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"* )
 
 A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
 
 
-Checking Out Specific Tag
-~~~~~~~~~~~~~~~~~~~~~~~~~
+* Edit ``sarra/__init__.py`` manually and set the version number.
+* git commit -a
+* Run ```release.sh``` example::
 
-The adding of the + to master makes the current tree not the release,
-so we need to expclicitly checkout the tag. To do that run the following::
+    ./release.sh "release 2.16.01a01"
 
-   git checkout <tag name>
+* you will be prompted to enter information about the release.
+
+* git push
 
 
 PyPi
@@ -382,6 +376,8 @@ Automated Build
 +++++++++++++++
 
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/master>`_
+* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
+* once the repository is uptodate, proceed with the build request.
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
@@ -390,7 +386,8 @@ Daily Builds
 ++++++++++++
 
 Daily builds are configured using `this recipe <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-daily>`_ and 
-are run at most once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
+are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
+One can also **Request build(s)** on demand if desired.
 
 
 Manual Process
