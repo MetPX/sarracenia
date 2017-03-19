@@ -35,7 +35,7 @@ for m in log_file:
 
         notice="%s %s %s" % ( timestamp, newurl, path )
 
-        headers=' '.join(f[6:])[8:]
+        headers=' '.join(f[6:])[8:].replace("'","\"")
         topic='v02.post' + path.replace('/','.')
 
         print ( "[ \"%s\", %s, \"%s\" ] " % ( topic, headers, notice ))
