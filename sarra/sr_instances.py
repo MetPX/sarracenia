@@ -67,9 +67,9 @@ class sr_instances(sr_config):
         if self.last_nbr_instances == None : self.last_nbr_instances = 0
 
     def build_instance(self,i):
-        self.logger.debug("sr_instances build_instance %d" % i)
+        self.logger.debug( "sr_instances build_instance %d" % i)
         self.instance      = i
-        self.instance_name = self.basic_name + '_%.4d'%i
+        self.instance_name = self.basic_name + '_%.4d' % i
         self.instance_str  = 'sr_' + self.instance_name[3:].replace('_',' ')
 
         self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
