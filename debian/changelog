@@ -1,3 +1,9 @@
+metpx-sarracenia (2.17.03a3) UNRELEASED; urgency=medium
+
+  * added sr_log2save to be able to replay logs.
+
+ -- Peter Silva <peter@blacklab>  Sun, 19 Mar 2017 12:24:51 -0400
+
 metpx-sarracenia (2.17.03a2) unstable; urgency=medium
 
   *problem with releasing a1 had to use a second tag. 
