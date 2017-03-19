@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+*  added sr_log2save a little filter to extract reloadable messages from log files.
+
 **2.17.03a2**
 *  release of a1 broke in the middle, had to use a new tag.
 
