@@ -45,13 +45,14 @@ User-Facing Components
 * `sr_sender(1) <sr_sender.1.html>`_ - to send files from a pump.
 
 
-Administrative Daemons
------------------------
+Administrative Components
+-------------------------
 
 * `sr_audit(8) <sr_audit.8.html>`_ - Audit the running configuration, looking for issues.
+* `sr_log2save(8) <sr_log2save.8.html>`_ - Extract log messages to create a save format file.
 * `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
-* `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
 * `sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
+* `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
 
 
 Formats/Protocols
