@@ -209,8 +209,8 @@ good_files=0
 all_files=0
 cd $DR
 echo "" >bad_file.list
-for i in `ls send` ; do
-    if cmp sub/$i send/$i >& /dev/null ; then
+for i in `ls sent_by_tsource2send/` ; do
+    if cmp downloaded_by_sub_t/$i sent_by_tsource2send/$i >& /dev/null ; then
        good_files=$((${good_files}+1))
     else
        echo $i >>bad_file.list
