@@ -25,6 +25,7 @@ function calcres {
 
    if [ "${1}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
+      tno=$((${tno}+1))
       return 2
    fi
 
@@ -176,8 +177,6 @@ t2=$(( ${totsarra}*2 ))
 calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
 
 calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) should have about the same number of items" 
-
-calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and sub t (${totsub}) should have about the same number of items" 
 
 # this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
 # there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
