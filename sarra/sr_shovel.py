@@ -349,7 +349,11 @@ class sr_shovel(sr_instances):
 
         # present basic config
 
-        self.logger.info("sr_sarra run")
+        self.logger.info("sr_shovel run")
+
+        if not self.report_daemons and self.config_name[0:3] == 'rr_' :
+            self.logger.info("report_daemons is False, skipping %s config." % self.config_name )
+            self.stop_instance()
 
         # loop/process messages
 
