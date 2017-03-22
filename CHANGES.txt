@@ -4,11 +4,13 @@
 
 **git repo(unreleased)**
 
+* 
+* report_daemons False option setting now stops report routing shovels from starting.
 * added file_age.py to plugins examples.
 
 **2.17.03a3**
 
-*  added sr_log2save a little filter to extract reloadable messages from log files.
+* added sr_log2save a little filter to extract reloadable messages from log files.
 
 **2.17.03a2**
 *  release of a1 broke in the middle, had to use a new tag.
