@@ -435,6 +435,7 @@ class sr_config:
         self.restore              = False
         self.restore_queue        = None
         self.save                 = False
+        self.save_file            = None
         self.source               = None
         self.source_from_exchange = False
 
@@ -1393,6 +1394,10 @@ class sr_config:
                      else :
                         self.save = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in [ 'save_file', 'sf' ]: # FIXMEFIXME
+                     self.save_file = words[1]
+                     n = 2
 
                 elif words0 in ['set_passwords']:  # See: sr_consumer.1
                      if (words1 is None) or words[0][0:1] == '-' : 

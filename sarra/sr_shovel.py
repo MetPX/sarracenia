@@ -132,9 +132,14 @@ class sr_shovel(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
-        if self.save:
-            self.consumer.save = True
+
+        if self.save_file :
+            self.consumer.save_path = self.save_file + self.save_path[-10:] 
+            self.save_path = self.consumer.save_path
+        else:
             self.consumer.save_path = self.save_path
+            
+        if self.save: self.consumer.save = True
 
         if self.reportback :
             self.msg.report_publisher = self.consumer.publish_back()
@@ -380,7 +385,9 @@ class sr_shovel(sr_instances):
                   self.logger.info("sr_shovel restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
                   ok = self.process_message()
 
-           if rnow >= rtot:
+           if self.save_file :
+               self.logger.info("sr_shovel restore: %s complete." % ( self.save_path ) )
+           elif rnow >= rtot:
                self.logger.info("sr_shovel restore complete deleting save file: %s " % ( self.save_path ) )
                os.unlink(self.save_path)
            else:

@@ -155,9 +155,15 @@ class sr_sender(sr_instances):
         # =============
 
         self.consumer          = sr_consumer(self)
-        if self.save:
-           self.consumer.save = True
-           self.consumer.save_path = self.save_path
+
+        if self.save_file :
+            self.consumer.save_path = self.save_file + self.save_path[-10:]
+            self.save_path = self.consumer.save_path
+        else:
+            self.consumer.save_path = self.save_path
+
+        if self.save: self.consumer.save = True
+
 
         self.msg.report_publisher = self.consumer.publish_back()
         # modified by Murray Dec 5 2016
