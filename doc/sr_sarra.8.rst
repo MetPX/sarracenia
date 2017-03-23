@@ -158,11 +158,14 @@ LOCAL DESTINATION OPTIONS
 These options set where the program downloads the file
 (or the part) described by the message.
 
+- **attempts      <integer>        (default: 3)**
 - **document_root <path>           (default: .)**
 - **mirror        <boolean>        (default: true)**
 - **strip         <integer>        (default: 0)**
 - **inplace       <boolean>        (default: true)**
 
+The **attempts** setting sets the maximum number of times to 
+attempt downloading of each file.
 The program starts by setting the relative path
 of the product straight from the message url:
 

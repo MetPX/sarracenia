@@ -464,6 +464,7 @@ DELIVERY
 These options set what files will be downloaded, where they will be placed,
 and under which name.
 
+- **attempts  <count>          (default: 3)**
 - **directory <path>           (default: .)** 
 - **filename  <spec>           (default: WHATFN, which means no modification)**
 - **flatten   <boolean>        (default: false)** 
@@ -473,7 +474,7 @@ and under which name.
 - **strip     <count>         (default: 0)**
 - **kbytes_ps** <count>       (default: 0)**
 
-
+The **attempts** option sets how many times to try to download a product.
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.)
 This assures that consuming  programs reading the directory ignore 

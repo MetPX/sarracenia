@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* added 'attempt' setting to make the number of retries programmable.
 * attempted bugfix for on_line plugins being broken in sr_poll.
 * added -save_file option to shovel and sender to allow arbitrary locations for save files. 
 * report_daemons False option setting now stops report routing shovels from starting.

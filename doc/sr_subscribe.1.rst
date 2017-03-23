@@ -109,6 +109,7 @@ These options set what files the user wants and where it will be placed,
 and under which name.
 
 - **accept    <regexp pattern> (must be set)** 
+- **attempts     <count>          (default: 3)**
 - **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
 - **filename (for sundew compatibility..  see that section)**
@@ -120,6 +121,8 @@ and under which name.
 - **strip     <count>          (default: 0)**
 - **discard   <boolean>        (default: false)**
 
+The **attempts** option indicates how many times to attempt downloading the data 
+before giving up.  The default of 3 should be appropriate in most cases.
 The  **inflight**  option is a suffix given to the file during the download
 and taken away when it is completed... If  **inflight**  is set to  **.** 
 then it is prefixed with it and taken away when it is completed...

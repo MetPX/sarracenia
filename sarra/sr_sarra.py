@@ -453,12 +453,12 @@ class sr_sarra(sr_instances):
            need_download = False
 
         #=================================
-        # proceed to download  3 attempts
+        # Attempt downloads
         #=================================
 
         if need_download :
            i  = 0
-           while i < 3 : 
+           while i < self.attempts : 
                  ok = self.__do_download__()
                  if ok : break
                  i = i + 1

@@ -353,6 +353,7 @@ class sr_config:
         self.manager              = None
 
         # consumer
+        self.attempts             = 3   # number of times to attempt downloads.
         self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.bindings             = []
         self.exchange             = None
@@ -818,6 +819,10 @@ class sr_config:
                      if not ok or not url.scheme in ['amqp','amqps']:
                         self.logger.error("invalid admin URL (%s)" % urlstr)
                         needexit = True
+                     n = 2
+
+                elif words0 in [ 'a', 'at', 'attempts' ]: # FIXME
+                     self.attempts = int(words1)
                      n = 2
 
                 elif words0 == 'batch' : # See: sr_config.7
