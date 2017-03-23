@@ -135,7 +135,7 @@ done
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
       echo "starting shovels and waiting..."
-      sr_shovel t_dd1 start
+      sr_shovel t_dd1 start &
       sr_shovel t_dd2 start
    fi
    sleep 10
@@ -149,7 +149,7 @@ printf  "\nSufficient!\n"
 
 if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
-   sr_shovel t_dd1 stop
+   sr_shovel t_dd1 stop &
    sr_shovel t_dd2 stop
    sleep 30
 fi

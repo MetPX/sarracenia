@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sr stop
+
+
 echo "cleanup"
 if [ -f .httpserverpid ]; then
    httpserverpid="`cat .httpserverpid`"
@@ -15,7 +18,6 @@ remove_if_present=".httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test
 
 rm -f ${remove_if_present}
 
-sr stop
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' ~/.config/sarra/credentials.conf`"
 
