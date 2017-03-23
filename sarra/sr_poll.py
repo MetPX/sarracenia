@@ -345,12 +345,10 @@ class sr_poll(sr_instances):
                     for mask in self.pulllst :
                         pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
                         if mask_regexp.match(f) and accepting :
-                           #if self.on_line : 
-                           #   ok = self.on_line(self)
-                           #   if not ok : continue
-                           for plugin in self.on_line_list:
-                               if not plugin(self): continue
-                           new_ls[f] = self.line
+                           if self.on_line : 
+                              ok = self.on_line(self)
+                              if not ok : continue
+                              new_ls[f] = self.line
 
                 self.ls = new_ls
                 return True
