@@ -29,10 +29,20 @@ function calcres {
       return 2
    fi
 
-   res=0
-   if [ "${2}" -gt 0 ]; then
-         res=$(( ( ${1}*1000 ) / ${2} ))
+   if [ "${2}" -eq 0 ]; then
+      printf "test %2d FAILURE: no successful results, 2nd item! ${3}\n" ${tno}
+      tno=$((${tno}+1))
+      return 2
    fi
+
+   res=0
+
+   if [ "${2}" -gt "${1}" ]; then
+      res=$(( ( ${2}*1000 ) / ${1} ))
+   else
+      res=$(( ( ${1}*1000 ) / ${2} ))
+   fi
+
    tno=$((${tno}+1))
 
    if [ $res -lt 900  -o $res -gt 1100 ]; then
@@ -86,7 +96,11 @@ function countall {
   countthem "`grep msg_total ~/.cache/sarra/log/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow01="${tot}"
    
-  totwinnow=$((${totwinnow00} + ${totwinnow01}))
+  if [ ${totwinnow00} -gt ${totwinnow01} ]; then
+       totwinnow=$(( ${totwinnow00} *2 ))
+  else
+       totwinnow=$(( ${totwinnow01} *2 ))
+  fi
 
   countthem "`grep msg_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
   totsub="${tot}"
@@ -149,8 +163,8 @@ printf  "\nSufficient!\n"
 
 if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
-   sr_shovel t_dd1 stop &
-   sr_shovel t_dd2 stop
+   sr_shovel t_dd2 stop &
+   sr_shovel t_dd1 stop
    sleep 30
 fi
 
