@@ -344,11 +344,12 @@ class sr_poll(sr_instances):
                     self.line = self.ls[f]
                     for mask in self.pulllst :
                         pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+                        
                         if mask_regexp.match(f) and accepting :
                            if self.on_line : 
                               ok = self.on_line(self)
                               if not ok : continue
-                              new_ls[f] = self.line
+                           new_ls[f] = self.line
 
                 self.ls = new_ls
                 return True
