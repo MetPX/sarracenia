@@ -480,7 +480,7 @@ class sr_sender(sr_instances):
                   if self.save :
                       stot += 1
                       self.logger.info("sr_sender saving %d message topic: %s" % ( stot, self.msg.topic ) )
-                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ] ) + '\n')   
+                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' )   
                       sf.flush()
                   else:
                       #  process message (ok or not... go to the next)
