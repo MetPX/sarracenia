@@ -396,6 +396,10 @@ class sr_shovel(sr_instances):
            # should have effect of deleting restore exchange as auto_delete is True.
            self.hc_pst.channel.queue_unbind( self.restore_queue, self.post_exchange, '#' )
 
+           # clean exit
+           sys.exit(0)
+
+
         if self.save :
             self.logger.info("sr_shovel saving to %s for future restore" % self.save_path )
             sf = open(self.save_path,"a")
