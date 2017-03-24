@@ -1523,6 +1523,10 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
+        if flgs == 's' :
+           self.sumalgo = checksum_s()
+           return
+
         if flgs in [ '0', 'L', 'R' ]:
            self.sumalgo = checksum_0()
            return
@@ -1630,7 +1634,7 @@ class sr_config:
 
         if sumflg == 'z' : sumflg = self.sumflg[2:]
 
-        if sumflg in ['0','n','d','R']: return True
+        if sumflg in ['0','n','d','s','R']: return True
 
         try :
                  self.set_sumalgo(sumflg)

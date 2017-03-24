@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* added 's', SHA512 checksum support.
 * on repeated saves, the json save files came out different for the same messages.
   Fixed by adding sort_keys=True to dumps. now save of same files is bitwise identical.
 * added 'attempt' setting to make the number of retries programmable.
