@@ -36,6 +36,7 @@ import os,stat,time,sys,datetime,calendar
 import urllib
 import urllib.parse
 from hashlib import md5
+from hashlib import sha512
 
 """
 
@@ -102,6 +103,27 @@ class checksum_d(object):
 
       def set_path(self,path):
           self.filehash = md5()
+
+# ===================================
+# checksum_s class
+# ===================================
+
+class checksum_s(object):
+      """
+      The SHA512 algorithm to checksum the entire file, which is called 's'.
+      """
+      def __init__(self):
+          self.value = '0'
+
+      def get_value(self):
+          self.value = self.filehash.hexdigest()
+          return self.value
+
+      def update(self,chunk):
+          self.filehash.update(chunk)
+
+      def set_path(self,path):
+          self.filehash = sha512()
 
 # ===================================
 # checksum_n class

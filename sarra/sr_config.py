@@ -904,6 +904,7 @@ class sr_config:
 
                 elif words0 == 'destination' : # See: sr_sender.1
                      urlstr           = words1
+                     if words1[-1] != '/': urlstr += '/'   
                      ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words1
                      if not ok :
@@ -1523,6 +1524,10 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
+        if flgs == 's' :
+           self.sumalgo = checksum_s()
+           return
+
         if flgs in [ '0', 'L', 'R' ]:
            self.sumalgo = checksum_0()
            return
@@ -1630,7 +1635,7 @@ class sr_config:
 
         if sumflg == 'z' : sumflg = self.sumflg[2:]
 
-        if sumflg in ['0','n','d','R']: return True
+        if sumflg in ['0','n','d','s','R']: return True
 
         try :
                  self.set_sumalgo(sumflg)
