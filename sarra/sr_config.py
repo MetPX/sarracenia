@@ -904,6 +904,7 @@ class sr_config:
 
                 elif words0 == 'destination' : # See: sr_sender.1
                      urlstr           = words1
+                     if words1[-1] != '/': urlstr += '/'   
                      ok, url          = self.validate_urlstr(urlstr)
                      self.destination = words1
                      if not ok :
