@@ -329,34 +329,47 @@ class sr_poll(sr_instances):
                 return True
 
         except:
-                self.logger.error("Unable to parse files from %s" % path )
+                self.logger.error("sftp_load_ls_file: Unable to parse files from %s" % path )
 
         return False
 
     def lsdir(self):
         try :
-                self.ls = self.dest.ls()
-                new_ls  = {}
+            self.ls = self.dest.ls()
+            new_ls  = {}
+            # apply selection on the list
 
-                # apply selection on the list
+            for f in self.ls :
+                matched = False
+                self.line = self.ls[f]
 
-                for f in self.ls :
-                    self.line = self.ls[f]
+                ok = True
+                if self.on_line_list : 
+                    for plugin in self.on_line_list :
+                        ok = plugin(self)
+                        if not ok: break
+      
+                if ok:
                     for mask in self.pulllst :
-                        pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-                        
-                        if mask_regexp.match(f) and accepting :
-                           if self.on_line : 
-                              ok = self.on_line(self)
-                              if not ok : continue
-                           new_ls[f] = self.line
+                       pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+                       if mask_regexp.match(f):
+                           if accepting:
+                               matched=True
+                               new_ls[f] = self.line
+                           break
 
-                self.ls = new_ls
-                return True
+                if matched:
+                    self.logger.debug("sftp.lsdir: accept line: %s" % self.line)
+                else:
+                    self.logger.debug("sftp.lsdir: rejected line: %s" % self.line)
+
+            self.ls = new_ls
+            return True
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.warning("Could not ls directory %s" % self.destDir)
-                self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
+            (stype, svalue, tb) = sys.exc_info()
+            self.logger.warning("sftp.lsdir: Could not ls directory %s" % self.destDir)
+            self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
+
         return False
 
     def matchPattern(self,keywd,defval) :
@@ -485,6 +498,8 @@ class sr_poll(sr_instances):
             ok = self.lsdir()
             if not ok : continue
 
+            self.logger.debug("post_new_urls: back from lsdir ok sleeping=%s #files: %d" % ( self.sleeping, len(self.ls.keys())) )
+
             # if we are sleeping and we are here it is because
             # this pull is retrieving difference between directory content
             # so write the directory content without retrieving files
@@ -492,6 +507,8 @@ class sr_poll(sr_instances):
             if self.sleeping :
                ok = self.write_ls_file(self.lspath)
                continue
+
+            self.logger.debug("post_new_urls: not sleeping " )
 
             # get the file list from the ls
             
@@ -503,6 +520,7 @@ class sr_poll(sr_instances):
             # get file list from difference in ls
 
             filelst,desclst = self.differ()
+            self.logger.debug("post_new_urls: after differ, len=%d" % len(filelst) )
 
             if len(filelst) == 0 :
                ok = self.write_ls_file(self.lspath)

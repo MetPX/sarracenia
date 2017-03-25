@@ -286,12 +286,12 @@ class sr_sftp():
             attr = dir_attr[index]
             line = attr.__str__()
             self.line_callback(line)
-        self.logger.debug("sr_sftp ls = %s" % self.entries )
+        #self.logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
     def line_callback(self,iline):
-        self.logger.debug("sr_sftp line_callback %s" % iline)
+        #self.logger.debug("sr_sftp line_callback %s" % iline)
 
         oline  = iline
         oline  = oline.strip('\n')

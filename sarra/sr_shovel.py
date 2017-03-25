@@ -266,9 +266,6 @@ class sr_shovel(sr_instances):
         for plugin in self.on_message_list:
            if not plugin(self): return False
 
-        if hasattr(self,'hoho'):
-            self.logger.error("hoho!")
-             
         return True
 
     # =============

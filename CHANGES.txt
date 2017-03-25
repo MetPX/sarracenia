@@ -9,7 +9,8 @@
 * on repeated saves, the json save files came out different for the same messages.
   Fixed by adding sort_keys=True to dumps. now save of same files is bitwise identical.
 * added 'attempt' setting to make the number of retries programmable.
-* attempted bugfix for on_line plugins being broken in sr_poll.
+* fixed on_line plugins being broken in sr_poll.
+* fixed 'reject' not working in sr_poll.
 * added -save_file option to shovel and sender to allow arbitrary locations for save files. 
 * report_daemons False option setting now stops report routing shovels from starting.
 * added file_age.py to plugins examples.

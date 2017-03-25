@@ -455,14 +455,6 @@ class sr_config:
         self.do_download          = None
         self.do_poll              = None
         self.do_send              = None
-        self.on_file              = None
-        self.on_line              = None
-        self.on_line_list         = []
-   
-
-        self.on_part              = None
-        self.on_part_list         = []
-        self.on_post              = None
 
         self.inplace              = False
 
@@ -489,12 +481,21 @@ class sr_config:
         self.interface            = None
         self.vip                  = None
 
+        # Plugin defaults
+
         self.execfile("on_message",'msg_log')
         self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
+
+        self.on_part              = None
+        self.on_part_list         = []
+
         self.on_post_list = [ self.on_post ]
+        self.execfile("on_line",'line_mode')
+        self.on_line_list = [ self.on_line ]
+
 
     def execfile(self, opname, path):
 
@@ -579,12 +580,12 @@ class sr_config:
             self.logger.debug(mask)
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
             if mask_regexp.match(chaine) :
-               if not accepting : return accepting
+               if not accepting : return False
                self.currentPattern    = pattern
                self.currentDir        = maskDir
                self.currentFileOption = maskFileOption
                self.currentRegexp     = mask_regexp
-               return accepting
+               return True
 
         return accept_unmatch
 
@@ -789,8 +790,8 @@ class sr_config:
         needexit = False
         n        = 0
         try:
-                if   words0 in ['accept','get','reject']: # See: sr_config.7
-                     accepting   = words0 == 'accept' or words0 == 'get'
+                if words0 in ['accept','get','reject']: # See: sr_config.7
+                     accepting   = words0 in [ 'accept', 'get' ]
                      pattern     = words1
                      mask_regexp = re.compile(pattern)
                      n = 2
@@ -1493,7 +1494,7 @@ class sr_config:
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("unknown option %s" % words[0])
+                self.logger.error("problem evaluating option %s" % words[0])
 
         if needexit :
            os._exit(1)
