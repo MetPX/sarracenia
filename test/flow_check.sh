@@ -37,15 +37,15 @@ function calcres {
 
    res=0
 
-   if [ "${2}" -gt "${1}" ]; then
-      res=$(( ( ${2}*1000 ) / ${1} ))
-   else
-      res=$(( ( ${1}*1000 ) / ${2} ))
-   fi
+   mean=$(( (${1} + ${2}) / 2 ))
+   maxerr=$(( $mean / 10 ))
+
+   min=$(( $mean - $maxerr ))
+   max=$(( $mean + $maxerr ))
 
    tno=$((${tno}+1))
 
-   if [ $res -lt 900  -o $res -gt 1100 ]; then
+   if [ $1 -lt $min -o $2 -lt $min -o $1 -gt $max -o $1 -gt $max ]; then
       printf "test %2d FAILURE: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
