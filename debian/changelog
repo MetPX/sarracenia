@@ -1,8 +1,17 @@
-metpx-sarracenia (2.17.03a3) UNRELEASED; urgency=medium
+metpx-sarracenia (2.17.03a4) unstable; urgency=medium
 
-  * added sr_log2save to be able to replay logs.
+  * attempted fix for bug #79 (.tmp file stay when download fails.) not tested.
+  * added 's', SHA512 checksum support.
+  * after a shovel has restored a queue from a save file, it now exits.
+  * on repeated saves, json save files of same data will now be identical (key ordering issue.)
+  * added 'attempt' setting to make the number of retries programmable.
+  * fixed on_line plugins being broken in sr_poll.
+  * fixed 'reject' not working in sr_poll.
+  * added -save_file option to shovel and sender to allow arbitrary locations for save files. 
+  * report_daemons False option setting now stops report routing shovels from starting.
+  * added file_age.py to plugins examples.
 
- -- Peter Silva <peter@blacklab>  Sun, 19 Mar 2017 12:24:51 -0400
+ -- Peter Silva <peter@idefix>  Sat, 25 Mar 2017 23:08:40 -0400
 
 metpx-sarracenia (2.17.03a2) unstable; urgency=medium
 
