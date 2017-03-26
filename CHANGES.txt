@@ -4,6 +4,9 @@
 
 **git repo(unreleased)**
 
+* attempted fix for sr_walk permission denied issue.  Reformulated how recursion is done.
+  now it just queues up issues for later.
+
 **2.17.03a4**
 
 * attempted fix for bug #79 (.tmp file stay when download fails.) not tested.
