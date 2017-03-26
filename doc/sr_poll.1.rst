@@ -114,6 +114,7 @@ These options set what files the user wants to be notified for and where
 - **directory <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
+- **chmod     <integer>        (optional)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -160,6 +161,16 @@ They are fixed...
 
         directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
+
+The **chmod** option allows users to specify a linux-style numeric octal
+permission mask::
+
+  chmod 40
+
+means that a file will not be posted unless the group has read permission 
+(on an ls output that looks like: ---r-----, like a chmod 040 <file> command.)
+The **chmod** options specifies a mask, that is the permissions must be 
+at least what is specified.  
 
 
 
@@ -246,8 +257,15 @@ ADVANCED FEATURES
 There are ways to insert scripts into the flow of messages and file downloads:
 Should you want to implement tasks in various part of the execution of the program:
 
+- **on_line     <script>        (default: line_mode)**
 - **do_poll     <script>        (default: None)**
 - **on_post     <script>        (default: None)**
+
+The **on_line** plugin gives scripts that can read each line of an 'ls' on the polled
+site, to interpret it further.  return True, if the line should be further processed,
+or False to reject it.  by default, there is a line_mode plugin included with the package
+which implements the comparison of file permission on the remote server against
+the **chmod** mask.
 
 A do_nothing.py script for **on_post** could be:
 
