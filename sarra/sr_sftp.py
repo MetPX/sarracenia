@@ -477,12 +477,12 @@ class sftp_transport():
                 # and file_reassemble... take into account the locking
 
                 sftp.set_sumalgo(msg.sumalgo)
+                local_lock = ''
 
                 if parent.inflight == None or msg.partflg == 'i' :
                    sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
                 elif parent.inflight == '.' :
-                   local_lock = ''
                    local_dir  = os.path.dirname (msg.local_file)
                    if local_dir != '' : local_lock = local_dir + os.sep
                    local_lock += '.' + os.path.basename(msg.local_file)
@@ -519,10 +519,11 @@ class sftp_transport():
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
                 msg.report_publish(499,'sftp download failed')
-    
+                if os.path.isfile(local_lock) : os.remove(local_lock)
+ 
                 return False
     
-        msg.report_publish(499,'sftp download failed')
+        msg.report_publish(498,'sftp download failed')
     
         return False
 
@@ -615,11 +616,11 @@ class sftp_transport():
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
-                msg.report_publish(499,'sftp delivery failed')
+                msg.report_publish(497,'sftp delivery failed')
     
                 return False
     
-        msg.report_publish(499,'sftp delivery failed')
+        msg.report_publish(496,'sftp delivery failed')
     
         return False
 

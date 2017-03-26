@@ -424,12 +424,12 @@ class ftp_transport():
                 # and file_reassemble... take into account the locking
 
                 ftp.set_sumalgo(msg.sumalgo)
+                local_lock = ''
 
                 if parent.inflight == None :
                    ftp.get(remote_file,msg.local_file,msg.local_offset)
 
                 elif parent.inflight == '.' :
-                   local_lock = ''
                    local_dir  = os.path.dirname (msg.local_file)
                    if local_dir != '' : local_lock = local_dir + os.sep
                    local_lock += '.' + os.path.basename(msg.local_file)
@@ -466,6 +466,7 @@ class ftp_transport():
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
                 msg.report_publish(499,'ftp download failed')
+                if os.path.isfile(local_lock) : os.remove(local_lock)
     
                 return False
     
