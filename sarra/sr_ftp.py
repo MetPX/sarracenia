@@ -399,6 +399,7 @@ class ftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
+        local_lock = ''
     
         try :
                 parent.destination = msg.urlcred
@@ -424,7 +425,6 @@ class ftp_transport():
                 # and file_reassemble... take into account the locking
 
                 ftp.set_sumalgo(msg.sumalgo)
-                local_lock = ''
 
                 if parent.inflight == None :
                    ftp.get(remote_file,msg.local_file,msg.local_offset)

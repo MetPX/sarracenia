@@ -445,6 +445,7 @@ class sftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
+        local_lock = ''
     
         try :
                 parent.destination = msg.urlcred
@@ -477,7 +478,6 @@ class sftp_transport():
                 # and file_reassemble... take into account the locking
 
                 sftp.set_sumalgo(msg.sumalgo)
-                local_lock = ''
 
                 if parent.inflight == None or msg.partflg == 'i' :
                    sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
