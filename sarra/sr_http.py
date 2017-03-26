@@ -36,6 +36,107 @@
 
 import os, urllib.request, urllib.error, sys
 
+class sr_http():
+    """
+      mocked sr_http class to eventually be able to work with sr_poll.
+      copied stuff from sr_sftp.  Will see what is needed to get it to work.
+     
+      FIXME: does not do anything useful yet.
+    """
+    def __init__(self, parent) :
+        self.logger = parent.logger
+        self.logger.debug("sr_http __init__")
+
+        self.parent      = parent
+        self.connected   = False
+        self.http        = None
+
+        self.sumalgo     = None
+        self.checksum    = None
+
+    # cd
+    def cd(self, path):
+        self.logger.debug("sr_http cd %s NOT IMPLEMENTED" % path)
+        self.pwd = path
+
+    def cd_forced(self,perm,path) :
+        """ cd creating directories to get there if they don't exist 
+        """
+        self.logger.debug("sr_sftp cd_forced %d %s NOT IMPLEMENTED" % (perm,path))
+
+
+    # chmod
+    def chmod(self,perm,path):
+        pass 
+
+   # close
+    def close(self):
+        self.logger.debug("sr_http close")
+        self.connected = False
+        try   : self.http.close()
+        except: pass
+        self.http  = None
+
+    # chmod
+    def connect(self):
+        pass 
+
+    def delete(self, path):
+        pass
+
+    def symlink(self, link, path):
+        pass
+
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
+        self.logger.debug("sr_http get %s %s %d %d %d NOT IMPLEMENTED" % (remote_file,local_file,remote_offset,local_offset,length))
+
+    def ls(self):
+        self.logger.debug("sr_http ls NOT IMPLEMENTED")
+ 
+
+    def line_callback(self,iline):
+        self.logger.debug("sr_http line_callback %s" % iline)
+
+        oline  = iline
+        oline  = oline.strip('\n')
+        oline  = oline.strip()
+        oline  = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        fil  = opart2[-1]
+        line = ' '.join(opart2)
+
+        self.entries[fil] = line
+
+    def mkdir(self, remote_dir):
+        self.logger.debug("sr_http mkdir %s NOT IMPLEMENTED" % remote_dir)
+ 
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
+        self.logger.debug("sr_http put %s %s %d %d %d NOT IMPLEMENTED" % (local_file,remote_file,local_offset,remote_offset,length))
+
+    def rename(self,remote_old,remote_new) :
+        self.logger.debug("sr_http rename %s %s NOT IMPLEMENTED" % (remote_old,remote_new))
+ 
+    def rmdir(self,path) :
+        self.logger.debug("sr_http rmdir %s  NOT IMPLEMENTED" % path)
+ 
+    def set_sumalgo(self,sumalgo) :
+        self.logger.debug("sr_http set_sumalgo %s" % sumalgo)
+        self.sumalgo = sumalgo
+
+    def throttle(self,buf) :
+        self.logger.debug("sr_http throttle NOT IMPLEMENTED")
+ 
+    
+
+
+
+
 class http_transport():
     def __init__(self) :
         self.bufsize   = 8192
@@ -66,6 +167,7 @@ class http_transport():
 
         self.sumalgo     = msg.sumalgo
         self.remote_file = remote_file
+        local_lock = ''
 
         try :
                 # create a password manager                
@@ -139,6 +241,7 @@ class http_transport():
 
         msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
+        if os.path.isfile(local_lock) : os.remove(local_lock)
 
         return False
 
