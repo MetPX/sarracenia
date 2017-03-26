@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* attempted fix for bug #79 (.tmp file stay when download fails.) not tested.
 * added 's', SHA512 checksum support.
 * after a shovel has restored a queue from a save file, it now exits.
 * on repeated saves, the json save files came out different for the same messages.
