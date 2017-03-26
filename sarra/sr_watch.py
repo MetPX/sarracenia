@@ -131,13 +131,31 @@ class sr_watch(sr_instances):
             self.cache["pid"] = current_pid
         self.cache.close()
 
-    def find_linked_dirs(self,p):
+
+    def priming_walk(self,p):
         """
-         Find all the subdirectories of the given path that are pointed to by symbolic links.
-         This is needed because watchdog will not traverse symbolic links to add watches. 
-         use the inl variable to detect cycles (same directory showing up multiple times)    
+         Find all the subdirectories of the given path, start watches on them. 
+         deal with symbolically linked directories correctly
         """
         global inl
+
+        fs = os.stat(p)
+        dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+        if dir_dev_id in inl:
+              return True
+
+        if os.access( p , os.R_OK|os.X_OK ): 
+           ow = self.observer.schedule(self.myeventhandler, p, recursive=False)
+           self.obs_watched.append(ow)
+           inl.append(dir_dev_id)
+           self.logger.info("sr_watch priming watch scheduled for: %s " % p)
+        else:
+           self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % p)
+           self.myeventhandler.event_post(p,'create') # get it done later.
+           return True
+
+        if not self.recursive:
+           return True
 
         l=[]
         for i in os.listdir(p):
@@ -150,17 +168,18 @@ class sr_watch(sr_instances):
                if dir_dev_id in inl:
                    continue
 
+               d=f
                if os.path.islink(f):
                    self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
                    if self.realpath:
-                       l.append(realf)
+                       d=realf
                    else:
-                       l.append(f + os.sep + '.' )
+                       d=f + os.sep + '.'
 
-                   inl.append(dir_dev_id)
+               self.priming_walk(d)
 
-               l = l + self.find_linked_dirs(f)
-        return list(set(l))
+         
+        return True
       
     def event_handler(self,meh):
         self.myeventhandler = meh
@@ -169,47 +188,42 @@ class sr_watch(sr_instances):
         self.post.help()
 
     def run(self):
-        self.post.logger = self.logger
-        self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s recursive=%s " % \
-              ( self.partflg, self.sumflg, self.caching , self.recursive ))
-        self.logger.info("sr_watch realpath=%s follow_links=%s force_polling=%s"  % \
-              ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
-        self.validate_cache()
-        self.post.connect()
+            self.post.logger = self.logger
+            self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s recursive=%s " % \
+                  ( self.partflg, self.sumflg, self.caching , self.recursive ))
+            self.logger.info("sr_watch realpath=%s follow_links=%s force_polling=%s"  % \
+                  ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
+            self.validate_cache()
+            self.post.connect()
 
-        try:
+            #try:
             if self.post.realpath: 
-               sld = [ os.path.realpath( self.watch_path ) ]
+               sld = os.path.realpath( self.watch_path )
             else:
-               sld = [ self.watch_path ]
-
-            if self.follow_symlinks: 
-                if os.path.islink(self.watch_path): 
-                    if not self.post.realpath: 
-                        sld = [ self.watch_path + os.sep + '.' ]
-
-                if  ( self.post.recursive ) :
-                    self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
-                    sld += self.find_linked_dirs(self.watch_path)
-                    self.logger.info("sr_watch need to priming walk done.")
+               sld = self.watch_path 
 
             if self.post.force_polling :
                 self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
                 self.observer = PollingObserver()
             else:
-                self.logger.info("sr_watch optimal observer for platform selected by default (best when it works).")
+                self.logger.info("sr_watch optimal observer for platform selected (best when it works).")
                 self.observer = Observer()
 
-            self.obs_watched = []
-            for d in sld:
-                if os.access( d , os.R_OK|os.X_OK ): 
-                   self.logger.info("sr_watch scheduling watch of: %s " % d)
-                   ow = self.observer.schedule(self.myeventhandler, d, recursive=self.post.recursive)
-                   self.obs_watched.append(ow)
-                else:
-                   self.logger.error("sr_watch could not schedule watch of: %s (permission denied)" % d)
+            if self.follow_symlinks: 
+                if os.path.islink(self.watch_path): 
+                    if not self.post.realpath: 
+                        sld = self.watch_path + os.sep + '.'
 
-            self.logger.info("sr_watch is not yet active.")
+            #    if  ( self.post.recursive ) :
+            #        self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
+            #        sld += self.find_linked_dirs(self.watch_path)
+            #        self.logger.info("sr_watch priming walk done.")
+
+            self.obs_watched = []
+
+            self.priming_walk(sld)
+
+            self.logger.info("sr_watch priming walk done, but not yet active. Starting...")
             self.observer.start()
             self.logger.info("sr_watch now active on %s posting to exchange: %s " % (self.watch_path, self.post.exchange))
 
@@ -222,12 +236,12 @@ class sr_watch(sr_instances):
                if how_long > 0:
                   time.sleep(how_long)
 
-        except OSError as err:
-            self.logger.error("Unable to start Observer: %s" % str(err))
-            os._exit(0)
+        #except OSError as err:
+        #    self.logger.error("Unable to start Observer: %s" % str(err))
+        #    os._exit(0)
 
 
-        self.observer.join()
+            self.observer.join()
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
@@ -307,11 +321,24 @@ def main():
                    e=self.events_outstanding[f]
 
                    watch.logger.debug("event_wakeup looking at %s of %s " % (e, f) )
-                   if e not in [ 'delete' ] and isinstance(watch.inflight,int):  # waiting for file to be unmodified for 'inflight' seconds...
+                   # waiting for file to be unmodified for 'inflight' seconds...
+                   if e not in [ 'delete' ] and isinstance(watch.inflight,int):  
                       age = time.time() - os.stat(f)[stat.ST_MTIME] 
                       if age < watch.inflight :
                           watch.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
                           continue
+
+                   #directory creation. Make failures a soft error that is retried.
+                   if os.path.isdir(f):
+                        if watch.recursive: 
+                            if os.path.islink(f): 
+                                if watch.post.realpath: p=os.path.realpath(f)
+                                else: p=f+os.sep+'.'
+                            else: p=f
+                       
+                            watch.priming_walk(p)
+
+                        continue
 
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
                        watch.logger.debug("event_wakeup calling do_post ! " )
@@ -350,10 +377,8 @@ def main():
                     if watch.post.realpath: p=os.path.realpath(event.src_path)
                     else: p=event.src_path+os.sep+'.'
                 else: p=event.src_path
-                watch.logger.info("Scheduling watch of new directory %s" % p )
+                watch.priming_walk(p)
 
-                ow = watch.observer.schedule(self, p, recursive=watch.recursive)
-                watch.obs_watched.append(ow)
  
         def on_deleted(self, event):
             if event.src_path == watch.watch_path:
