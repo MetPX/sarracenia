@@ -148,7 +148,7 @@ class sr_watch(sr_instances):
            ow = self.observer.schedule(self.myeventhandler, p, recursive=False)
            self.obs_watched.append(ow)
            inl.append(dir_dev_id)
-           self.logger.info("sr_watch priming watch scheduled for: %s " % p)
+           self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), p))
         else:
            self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % p)
            self.myeventhandler.event_post(p,'create') # get it done later.

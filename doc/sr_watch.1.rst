@@ -344,6 +344,9 @@ reconnection to the broker everytime a post is to be sent.
 CAVEATS
 =======
 
+Temporary Files
+---------------
+
 In order to avoid alerting for partially written (usually temporary) files, *sr_watch* does not post
 events for changes to files with certain names:
 
@@ -357,6 +360,21 @@ Another file operation which is not currently optimally managed is file renaming
 within a directory tree, sarracenia will simply announce it under the new name, and does not communicate
 that already transferred data has simply changed name.  Subscribers who have transferred the data under the 
 old name will transfer it again under the new name, with no relation being made with the old file.
+
+
+Inotify Instance
+---------------
+
+Many linux systems have limits on how many directories can be watched that are set quite low, to minimize
+kernel memory usage.  If you see a message like so::
+
+    raise OSError("inotify instance limit reached")
+    OSError: inotify instance limit reached
+
+In that case, use adminsitrative privileges to set *sysctl fs.inotify.max_user_instance=<enough>* to a number 
+that is big enough.  More kernel memory will be allocated for this, no other effects if changeing this setting are known.
+
+
 
 SEE ALSO
 ========
