@@ -277,7 +277,7 @@ class sr_sarra(sr_instances):
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
            self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
-           self.logger.error("message without destination amqp header['to_clusters']")
+           self.logger.warning("message dropped, no destination given in amqp header['to_clusters']")
            return False
 
         # this instances of sr_sarra runs,
