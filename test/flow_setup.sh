@@ -26,6 +26,7 @@ declare exchange xhoho
 declare exchange xs_tsource_output
 declare exchange xs_tsource_src
 declare exchange xs_tsource_dest
+declare exchange xs_tsource_poll
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
 
@@ -49,6 +50,7 @@ if [ ! -d "$testdocroot" ]; then
   cp -r testree/* $testdocroot
   mkdir $testdocroot/downloaded_by_sub_t
   mkdir $testdocroot/sent_by_tsource2send
+  mkdir $testdocroot/recd_by_srpoll_test1
 fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
@@ -76,7 +78,7 @@ for d in .config .config/sarra ; do
 done
 
 
-for d in report report sarra sender shovel subscribe watch winnow ; do
+for d in poll report sarra sender shovel subscribe watch winnow ; do
    if [ ! -d $HOME/.config/sarra/$d ]; then
       mkdir $HOME/.config/sarra/$d
    fi

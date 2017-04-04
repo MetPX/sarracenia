@@ -7,7 +7,7 @@
 **2.17.03a5**
 
 * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.
-* attempted fix for sr_walk permission denied issue.  Reformulated how recursion is done.
+* attempted fix for sr_watch permission denied issue.  Reformulated how recursion is done.
   now it just queues up issues for later.
 
 **2.17.03a4**

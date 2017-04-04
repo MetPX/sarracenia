@@ -122,6 +122,11 @@ function countall {
 
   countthem "`grep Sends: ~/.cache/sarra/log/sr_sender_tsource2send_000*.log | wc -l`"
   totsent="${tot}"
+
+  countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_q_000*.log | wc -l`"
+  totsub2="${tot}"
+  countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
+  totpoll1="${tot}"
 }
 
 
@@ -234,6 +239,9 @@ done
 
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
+tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
+
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
+
 exit $?
 
