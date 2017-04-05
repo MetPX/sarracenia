@@ -139,18 +139,28 @@ class sr_watch(sr_instances):
         """
         global inl
 
-        fs = os.stat(p)
+        if os.path.islink(p):
+            realp = os.path.realpath(p)
+            self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
+            if self.realpath:
+                d=realp
+            else:
+                d=p + os.sep + '.'
+        else:
+            d=p
+
+        fs = os.stat(d)
         dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
         if dir_dev_id in inl:
               return True
 
-        if os.access( p , os.R_OK|os.X_OK ): 
-           ow = self.observer.schedule(self.myeventhandler, p, recursive=False)
+        if os.access( d , os.R_OK|os.X_OK ): 
+           ow = self.observer.schedule(self.myeventhandler, d, recursive=False)
            self.obs_watched.append(ow)
            inl.append(dir_dev_id)
-           self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), p))
+           self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
         else:
-           self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % p)
+           self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
            self.myeventhandler.event_post(p,'create') # get it done later.
            return True
 
@@ -158,25 +168,15 @@ class sr_watch(sr_instances):
            return True
 
         l=[]
-        for i in os.listdir(p):
-           f = p + os.sep + i
+        for i in os.listdir(d):
+
+           if self.realpath:
+               f = d + os.sep + i
+           else:
+               f = p + os.sep + i
 
            if os.path.isdir(f):
-               realf = os.path.realpath(f)
-               fs = os.stat(realf)
-               dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
-               if dir_dev_id in inl:
-                   continue
-
-               d=f
-               if os.path.islink(f):
-                   self.logger.info("sr_watch %s is a link to directory %s" % ( f, realf) )
-                   if self.realpath:
-                       d=realf
-                   else:
-                       d=f + os.sep + '.'
-
-               self.priming_walk(d)
+               self.priming_walk(f)
 
          
         return True
@@ -208,16 +208,6 @@ class sr_watch(sr_instances):
             else:
                 self.logger.info("sr_watch optimal observer for platform selected (best when it works).")
                 self.observer = Observer()
-
-            if self.follow_symlinks: 
-                if os.path.islink(self.watch_path): 
-                    if not self.post.realpath: 
-                        sld = self.watch_path + os.sep + '.'
-
-            #    if  ( self.post.recursive ) :
-            #        self.logger.info("sr_watch needs to follow symbolically linked directories, requires priming walk,  takes some time on startup.")
-            #        sld += self.find_linked_dirs(self.watch_path)
-            #        self.logger.info("sr_watch priming walk done.")
 
             self.obs_watched = []
 
