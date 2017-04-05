@@ -155,14 +155,20 @@ class sr_watch(sr_instances):
               return True
 
         if os.access( d , os.R_OK|os.X_OK ): 
-           ow = self.observer.schedule(self.myeventhandler, d, recursive=False)
-           self.obs_watched.append(ow)
-           inl.append(dir_dev_id)
-           self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
+           try:
+               ow = self.observer.schedule(self.myeventhandler, d, recursive=False)
+               self.obs_watched.append(ow)
+               inl.append(dir_dev_id)
+               self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
+           except:
+               self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
+               self.myeventhandler.event_post(p,'create') # get it done later.
+               return True
+
         else:
-           self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
-           self.myeventhandler.event_post(p,'create') # get it done later.
-           return True
+            self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
+            self.myeventhandler.event_post(p,'create') # get it done later.
+            return True
 
         if not self.recursive:
            return True
