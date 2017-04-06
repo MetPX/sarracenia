@@ -181,6 +181,7 @@ class sr_shovel(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
         print("read messages from exchange, apply on_message if provided, reannounce/post them to post_broker & post_exchange\n")
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
@@ -451,7 +452,7 @@ class sr_shovel(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

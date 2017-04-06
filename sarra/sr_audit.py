@@ -651,7 +651,7 @@ class sr_audit(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

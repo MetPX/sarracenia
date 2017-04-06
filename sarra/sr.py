@@ -96,7 +96,7 @@ def main():
     # first check action
 
     if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
-       print("USAGE: %s (start|stop|restart|reload|status) " % sys.argv[0])
+       print("USAGE: %s (start|stop|restart|reload|status) (version: %s) " % (sys.argv[0], sarra.__version__) )
        sys.exit(1)
 
     # sarracenia program that may start without config file

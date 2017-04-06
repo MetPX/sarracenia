@@ -284,6 +284,7 @@ class sr_poll(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker settings:\n" +
@@ -664,7 +665,7 @@ class sr_poll(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

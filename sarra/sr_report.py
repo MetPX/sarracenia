@@ -103,6 +103,7 @@ class sr_report(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
         print("Or   : %s [OPTIONS] -b <broker> [foreground|start|stop|restart|reload|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
@@ -165,7 +166,7 @@ class sr_report(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

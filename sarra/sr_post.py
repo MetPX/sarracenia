@@ -106,6 +106,7 @@ class sr_post(sr_config):
                                    
     def help(self):
         print("\nUsage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
         print("-b   <broker>          default:amqp://guest:guest@localhost/")
         print("-c   <config_file>")

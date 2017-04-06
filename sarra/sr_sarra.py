@@ -226,6 +226,7 @@ class sr_sarra(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
         print("Subscribe to download, and then Recursively Re-Announce (implements a sarracenia pump)\n")
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
@@ -663,7 +664,7 @@ class sr_sarra(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

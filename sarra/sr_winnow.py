@@ -196,6 +196,7 @@ class sr_winnow(sr_instances):
 
     def help(self):
         print("Usage: sr_winnow [OPTIONS] configfile [start|stop|restart|reload|status]\n" )
+        print("version: %s \n" % sarra.__version__ )
         print("read file announcements from exchange and reannounce them to post_exchange, suppressing duplicates\n")
         print("OPTIONS:")
         print("-b   <broker>                default manager (if configured)")
@@ -310,7 +311,7 @@ class sr_winnow(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):

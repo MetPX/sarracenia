@@ -171,7 +171,7 @@ class sr_subscribe(sr_instances):
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
-
+        print("version: %s \n" % sarra.__version__ )
         print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
         print("Examples:\n")    
 
@@ -391,23 +391,6 @@ class sr_subscribe(sr_instances):
                  for plugin in self.on_file_list:
                      if not plugin(self): return False
 
-              """
-              above complicated if statement should provide identical logic to below.
-              avoids the multiple calls to the plugin at different points with only one
-              on a compound condition.
-
-              # entire file pumped in
-              if self.msg.partflg == '1' :
-                 ok = self.on_file(self)
-              else:
-                 if not self.inplace :
-                    ok = self.on_file(self)
-                 elif (self.msg.lastchunk and not self.msg.in_partfile) :
-                    ok = self.on_file(self)
-
-              if not ok : return False
-              """
-
            # discard option
 
            if self.discard :
@@ -551,7 +534,7 @@ class sr_subscribe(sr_instances):
         self.run()
 
     def start(self):
-        self.logger.info("%s start" % self.program_name)
+        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
     def stop(self):
