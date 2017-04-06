@@ -4,6 +4,10 @@
 
 **git repo(unreleased)**
 
+* added version strings to components log and usage outputs.
+* added sr_poll to flow_test (from Daniel)
+* some re-organizing of code in sr_watch.
+
 **2.17.03a5**
 
 * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.
