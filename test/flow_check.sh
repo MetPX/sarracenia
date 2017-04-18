@@ -72,7 +72,7 @@ function tallyres {
 
    tno=$((${tno}+1))
 
-   if [ ${1} -lt ${2} ]; then
+   if [ ${1} -lt ${2} -o ${2} -eq 0 ]; then
       printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
