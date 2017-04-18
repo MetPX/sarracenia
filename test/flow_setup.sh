@@ -27,6 +27,7 @@ declare exchange xs_tsource_output
 declare exchange xs_tsource_src
 declare exchange xs_tsource_dest
 declare exchange xs_tsource_poll
+declare exchange xs_tsource_post
  
 and ~/.config/sarra/credentials.conf will need to contain something like:
 
@@ -51,6 +52,7 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot/downloaded_by_sub_t
   mkdir $testdocroot/sent_by_tsource2send
   mkdir $testdocroot/recd_by_srpoll_test1
+  mkdir $testdocroot/posted_by_srpost_test2
 fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
@@ -78,7 +80,7 @@ for d in .config .config/sarra ; do
 done
 
 
-for d in poll report sarra sender shovel subscribe watch winnow ; do
+for d in poll post report sarra sender shovel subscribe watch winnow ; do
    if [ ! -d $HOME/.config/sarra/$d ]; then
       mkdir $HOME/.config/sarra/$d
    fi
@@ -96,7 +98,7 @@ sr_audit --users foreground
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' ~/.config/sarra/credentials.conf`"
 
-for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output xs_tsource_poll ; do 
+for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output ; do 
    echo "declaring $exchange"
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
 done

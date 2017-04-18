@@ -127,8 +127,24 @@ function countall {
   totsub2="${tot}"
   countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
   totpoll1="${tot}"
+
+  countthem "`grep 'msg_log received' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
+  totsub3="${tot}"
+  countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
+  totpost1="${tot}"
+
 }
 
+# sr_post initial start
+httpdocroot=`cat .httpdocroot`
+srpostdir=`cat .httpdocroot`/sent_by_tsource2send
+srpostlstfile_new=$httpdocroot/srpostlstfile.new
+srpostlstfile_old=$httpdocroot/srpostlstfile.old
+srpostlogfile=$httpdocroot/srpostlogfile.log
+
+`touch ${srpostlogfile}`
+`touch ${srpostlstfile_old}`
+# sr_post initial end
 
 countall
 
@@ -150,7 +166,6 @@ while [ "${totsarra}" == 0 ]; do
 done
 
 
-
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
       echo "starting shovels and waiting..."
@@ -158,6 +173,23 @@ while [ $totsarra -lt $smin ]; do
       sr_shovel t_dd2 start
    fi
    sleep 10
+
+   # sr_post testing START
+   # TODO - consider if .httpdocroot ends with a '/' ?
+   ls $srpostdir > $srpostlstfile_new
+   # Obtain file listing delta
+   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
+
+   if ! [ "$srpostdelta" == "" ]; then
+     sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://sarra@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+   fi
+
+   # test, check current number of lines?
+   #echo "Number of lines in srpostlstfile_old: `cat $srpostlstfile_old |wc -l`"
+   #echo "Number of lines in srpostlstfile_new: `cat $srpostlstfile_new |wc -l`"
+
+   cp -p $srpostlstfile_new $srpostlstfile_old
+   # sr post testing END
 
    countall
 
@@ -173,7 +205,9 @@ if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]
    sleep 30
 fi
 
-
+# Do an extra sleep to ensure strong output accuracy especially of last test
+sleep 10
+countall
 
 
 passedno=0
@@ -240,6 +274,8 @@ done
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
 tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
+
+tallyres ${totpost1} ${totsub3} "post test2 and subscribe r run together. Should have equal results."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
