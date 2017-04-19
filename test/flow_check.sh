@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# The directory we run the flow test scripts in...
+tstdir="`pwd`"
+
 function countthem {
    if [ ! "${1}" ]; then
       tot=0
@@ -72,7 +75,7 @@ function tallyres {
 
    tno=$((${tno}+1))
 
-   if [ ${1} -lt ${2} ]; then
+   if [ ${1} -lt ${2} -o ${2} -eq 0 ]; then
       printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
@@ -127,8 +130,24 @@ function countall {
   totsub2="${tot}"
   countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
   totpoll1="${tot}"
+
+  countthem "`grep 'msg_log received' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
+  totsub3="${tot}"
+  countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
+  totpost1="${tot}"
+
 }
 
+# sr_post initial start
+httpdocroot=`cat $tstdir/.httpdocroot`
+srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
+srpostlstfile_new=$httpdocroot/srpostlstfile.new
+srpostlstfile_old=$httpdocroot/srpostlstfile.old
+srpostlogfile=$httpdocroot/srpostlogfile.log
+
+touch ${srpostlogfile}
+touch ${srpostlstfile_old}
+# sr_post initial end
 
 countall
 
@@ -149,7 +168,7 @@ while [ "${totsarra}" == 0 ]; do
    printf "waiting to start...\n"
 done
 
-
+cd $srpostdir
 
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
@@ -158,6 +177,20 @@ while [ $totsarra -lt $smin ]; do
       sr_shovel t_dd2 start
    fi
    sleep 10
+
+   # sr_post testing START
+   # TODO - consider if .httpdocroot ends with a '/' ?
+   ls $srpostdir > $srpostlstfile_new
+   # Obtain file listing delta
+   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
+
+   if ! [ "$srpostdelta" == "" ]; then
+     #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+     sr_post -c ~/.config/sarra/post/test2.conf  $srpostdelta >> $srpostlogfile 2>&1
+   fi
+
+   cp -p $srpostlstfile_new $srpostlstfile_old
+   # sr post testing END
 
    countall
 
@@ -173,7 +206,7 @@ if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]
    sleep 30
 fi
 
-
+countall
 
 
 passedno=0
@@ -223,7 +256,7 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
-DR="`cat .httpdocroot`"
+DR="`cat $tstdir/.httpdocroot`"
 good_files=0
 all_files=0
 cd $DR
@@ -240,6 +273,8 @@ done
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
 tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
+
+tallyres ${totpost1} ${totsub3} "post test2 and subscribe r run together. Should have equal results."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
