@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# The directory we run the flow test scripts in...
+tstdir="`pwd`"
+
 function countthem {
    if [ ! "${1}" ]; then
       tot=0
@@ -136,14 +139,14 @@ function countall {
 }
 
 # sr_post initial start
-httpdocroot=`cat .httpdocroot`
-srpostdir=`cat .httpdocroot`/sent_by_tsource2send
+httpdocroot=`cat $tstdir/.httpdocroot`
+srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
 srpostlstfile_new=$httpdocroot/srpostlstfile.new
 srpostlstfile_old=$httpdocroot/srpostlstfile.old
 srpostlogfile=$httpdocroot/srpostlogfile.log
 
-`touch ${srpostlogfile}`
-`touch ${srpostlstfile_old}`
+touch ${srpostlogfile}
+touch ${srpostlstfile_old}
 # sr_post initial end
 
 countall
@@ -165,6 +168,7 @@ while [ "${totsarra}" == 0 ]; do
    printf "waiting to start...\n"
 done
 
+cd $srpostdir
 
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
@@ -181,12 +185,9 @@ while [ $totsarra -lt $smin ]; do
    srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
 
    if ! [ "$srpostdelta" == "" ]; then
-     sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://sarra@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+     #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+     sr_post -c ~/.config/sarra/post/test2.conf  $srpostdelta >> $srpostlogfile 2>&1
    fi
-
-   # test, check current number of lines?
-   #echo "Number of lines in srpostlstfile_old: `cat $srpostlstfile_old |wc -l`"
-   #echo "Number of lines in srpostlstfile_new: `cat $srpostlstfile_new |wc -l`"
 
    cp -p $srpostlstfile_new $srpostlstfile_old
    # sr post testing END
@@ -205,8 +206,6 @@ if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]
    sleep 30
 fi
 
-# Do an extra sleep to ensure strong output accuracy especially of last test
-sleep 10
 countall
 
 
@@ -257,7 +256,7 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
-DR="`cat .httpdocroot`"
+DR="`cat $tstdir/.httpdocroot`"
 good_files=0
 all_files=0
 cd $DR
