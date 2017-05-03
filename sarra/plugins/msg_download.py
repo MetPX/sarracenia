@@ -81,7 +81,7 @@ class DOWNLOAD_REWRITE(object):
 
           logger.debug("msg_download sz: %d, threshold: %d download: %s to %s, " % ( \
                 sz, parent.msg_download_threshold, parent.msg.urlstr, msg.local_file ) )
-          if sz > parent.msg_download_threshold :
+          if sz >= parent.msg_download_threshold :
               for p in parent.msg_download_protocol :
                   parent.msg.urlstr = msg.urlstr.replace(p,"download")
 
