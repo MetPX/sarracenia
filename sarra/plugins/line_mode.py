@@ -39,8 +39,6 @@ class Line_Mode(object):
 
     def perform(self,parent):
 
-        from stat import filemode
-
         ( modstr , links, uid, gid, size, dom, mona, t, name ) = parent.line.split()
     
         mode=0
