@@ -114,7 +114,7 @@ These options set what files the user wants to be notified for and where
 - **directory <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
-- **chmod     <integer>        (optional)**
+- **chmod     <integer>        (default: 0o400)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -165,7 +165,7 @@ They are fixed...
 The **chmod** option allows users to specify a linux-style numeric octal
 permission mask::
 
-  chmod 40
+  chmod 040
 
 means that a file will not be posted unless the group has read permission 
 (on an ls output that looks like: ---r-----, like a chmod 040 <file> command.)

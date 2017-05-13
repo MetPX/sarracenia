@@ -432,6 +432,12 @@ class sr_poll(sr_instances):
         self.exchange       = None
         self.destination    = None
 
+        # Set minimum permissions to something that might work most of the time.
+        self.chmod = 0o400
+
+        #chmod sets a mask used by line_mode plugin to determine the permission 
+        # bits which must be set in order for a file to be posted.
+
         # Should there be accept/reject option used unmatch are accepted
 
         self.accept_unmatch = False
