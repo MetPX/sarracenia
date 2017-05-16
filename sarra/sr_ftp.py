@@ -101,13 +101,13 @@ class sr_ftp():
 
             # create and go to subdir
             self.ftp.mkd(d)
-            self.ftp.voidcmd('SITE CHMOD ' + str(perm) + ' ' + d)
+            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
             self.ftp.cwd(d)
 
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
-        self.ftp.voidcmd('SITE CHMOD ' + str(perm) + ' ' + path)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
 
     # close
     def close(self):
@@ -275,7 +275,7 @@ class sr_ftp():
     def mkdir(self, remote_dir):
         self.logger.debug("sr_ftp mkdir %s" % remote_dir)
         self.ftp.mkd(remote_dir)
-        self.ftp.voidcmd('SITE CHMOD ' + str(self.parent.chmod_dir) + ' ' + remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.parent.chmod_dir) + ' ' + remote_dir)
 #        self.ftp.chmod(self.parent.chmod_dir,remote_dir)
 
     # put

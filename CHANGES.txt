@@ -4,15 +4,13 @@
 
 **git repo(unreleased)**
 
-<<<<<<< HEAD
+* fix from Eric for wrong permissions in sr_sftp.
 * added version strings to components log and usage outputs.
 * added sr_poll to flow_test (from Daniel)
 * some re-organizing of code in sr_watch.
-=======
 * implement 0400 default permission mask in sr_poll.
 * note on how to encode special characters in passwords in credentials.conf
 * some plugin improvements from Dominic Racette.
->>>>>>> d2978843fe11beb664223276dbd1933c5d104a8e
 
 **2.17.03a5**
 
