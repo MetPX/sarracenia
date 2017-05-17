@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* removed useless import in line_mode.py plugin which breaks it on python 3.2
 * added version strings to components log and usage outputs.
 * added sr_poll to flow_test (from Daniel)
 * some re-organizing of code in sr_watch.
