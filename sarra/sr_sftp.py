@@ -101,14 +101,12 @@ class sr_sftp():
             except: pass
 
             # create and go to subdir
-            #self.sftp.mkdir(d,eval('0o'+ str(perm)))
             self.sftp.mkdir(d,self.parent.chmod_dir)
             self.sftp.chdir(d)
 
     # chmod
     def chmod(self,perm,path):
-        self.logger.debug("sr_sftp chmod %s %s" % (str(perm),path))
-        #self.sftp.chmod(path,eval('0o'+str(perm)))
+        self.logger.debug("sr_sftp chmod %s %s" % ( "{0:o}".format(perm),path))
         self.sftp.chmod(path,perm)
 
     # close
@@ -312,7 +310,6 @@ class sr_sftp():
     # mkdir
     def mkdir(self, remote_dir):
         self.logger.debug("sr_sftp mkdir %s" % remote_dir)
-        #self.sftp.mkdir(remote_dir,0o775)
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
 
     # put
