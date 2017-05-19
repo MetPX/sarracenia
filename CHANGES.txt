@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* added the poll_script.py plugin as an example for sr_poll.
 * fix from Eric for wrong permissions in sr_sftp.
 * added version strings to components log and usage outputs.
 * added sr_poll to flow_test (from Daniel)
