@@ -47,6 +47,12 @@ class POLL_SCRIPT(object):
       msg    = parent.msg
 
       import subprocess
+      try:
+           from sr_util import timestr2flt
+      except:
+           from sarra.sr_util import timestr2flt
+
+
 
       cmd = parent.poll_script_command
 
@@ -70,13 +76,14 @@ class POLL_SCRIPT(object):
           fst = os.stat(fname)
           msg.partstr = '1,%s,1,0,0' % fst.st_size
           msg.sumstr  = '0,0'
-          #msg.headers = {}
-          msg.headers[ 'mode' ] = "%o" % fst.st_mode
+          mtimestr = timeflt2str(fst.st_mtime)
+          atimestr = timeflt2str(fst.st_atime)
 
           logger.debug(\
               "poll_script exchange: %s url: %s to_cluster: %s partstr: %s " \
               % (parent.exchange, msg.url, parent.to_clusters, msg.partstr) )
-          ok = parent.poster.post(parent.exchange,msg.url,parent.to_clusters, msg.partstr,msg.sumstr)
+          ok = parent.poster.post(parent.exchange,msg.url,parent.to_clusters, msg.partstr,msg.sumstr, \
+               mtime=mtimestr, atime=atimestr)
 
 
       return True 
