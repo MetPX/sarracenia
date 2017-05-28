@@ -494,9 +494,7 @@ class sr_subscribe(sr_instances):
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           if self.strip >= len(token)-1 : token = [token[-1]]
-           else :                          token = token[self.strip:]
-           rel_path = '/'.join(token)
+           rel_path = '/'.join(token[self.strip:])
 
         # if mirror... we need to add to document_root the relative path
         # strip taken into account

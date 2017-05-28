@@ -570,16 +570,25 @@ class sr_sarra(sr_instances):
         # loop/process messages
 
         self.connect()
+        active = self.has_vip()
+        if not active:
+            self.logger.debug("sr_sarra does not have vip=%s, is sleeping", self.vip)
+        else:
+            self.logger.debug("sr_sarra is active on vip=%s", self.vip)
 
         while True :
               try  :
                       #  is it sleeping ?
-                      if not self.has_vip() :
-                         self.logger.debug("sr_sarra does not have vip=%s, is sleeping", self.vip)
-                         time.sleep(5)
-                         continue
+                      if not self.has_vip():
+                          if active:
+                             self.logger.debug("sr_sarra does not have vip=%s, is sleeping", self.vip)
+                             active=False
+                          time.sleep(5)
+                          continue
                       else:
-                         self.logger.debug("sr_sarra is active on vip=%s", self.vip)
+                         if not active:
+                             self.logger.debug("sr_sarra is active on vip=%s", self.vip)
+                             active=True
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
@@ -597,6 +606,7 @@ class sr_sarra(sr_instances):
         # relative path by default mirror 
 
         self.rel_path = '%s' % self.msg.path
+
         if 'rename' in self.msg.headers :
            self.rel_path = '%s' % self.msg.headers['rename']
 
@@ -616,16 +626,14 @@ class sr_sarra(sr_instances):
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           if self.strip > len(token) : token = [token[-1]]
-           else :                       token = token[self.strip:]
-           self.rel_path = '/'.join(token)
-
+           self.rel_path = '/'.join(token[self.strip:])
 
         self.local_dir  = ''
         if self.document_root != None :
            self.local_dir = self.document_root 
+
         if len(token) > 1 :
-           self.local_dir = self.local_dir + '/' + '/'.join(token[:-1])
+           self.local_dir = self.local_dir + '/' + '/'.join(token[self.strip:-1])
 
         # Local directory (directory created if needed)
 

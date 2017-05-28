@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* sr_sarra: suppressedn excessive messages about who has vip in debug mode.
+* sr_sarra:  fixed -strip.  Did not work at all before.
 * added the poll_script.py plugin as an example for sr_poll.
 * fix from Eric for wrong permissions in sr_sftp.
 * removed useless import in line_mode.py plugin which breaks it on python 3.2
