@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* fix bug#66 for sr_sender to put the actual file name on the destination (after destfn, etc...) 
 * sr_sarra: suppressedn excessive messages about who has vip in debug mode.
 * sr_sarra:  fixed -strip.  Did not work at all before.
 * added the poll_script.py plugin as an example for sr_poll.

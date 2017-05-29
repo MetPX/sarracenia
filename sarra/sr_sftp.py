@@ -581,8 +581,8 @@ class sftp_transport():
     
                 #download file
     
-                msg.logger.info('Sends: %s %s into %s %d-%d' % 
-                    (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
+                msg.logger.info('Sends: %s %s into %s/%s %d-%d' % 
+                    (parent.local_file,str_range,parent.remote_dir,parent.remote_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None or msg.partflg == 'i' :
                    sftp.put(local_file, parent.remote_file, offset, offset, msg.length, msg.filesize)

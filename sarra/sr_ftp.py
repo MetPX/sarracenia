@@ -527,8 +527,8 @@ class ftp_transport():
     
                 # deliver file
     
-                msg.logger.debug('Beginning put of %s %s into %s %d-%d' % 
-                    (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
+                msg.logger.debug('Beginning put of %s %s into %s/%s %d-%d' % 
+                    (parent.local_file,str_range,parent.remote_dir,parent.remote_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None :
                    ftp.put(local_file, parent.remote_file)
