@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* added download_dd plugin, which does multiple process copies (striping individual files.)
 * documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.
   there was an error in that usage of parts actually referred partially to blocksize
 * fixed blocksize=1 to mean send entire file, not 1 byte blocks.
