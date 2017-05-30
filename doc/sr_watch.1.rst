@@ -265,7 +265,7 @@ FIXME :  Daluma :  **cache** **blocksize** **reset**   how will Daluma
          deals/uses these to have an sr_watch that uses caching... etc.
 
 
-**[--parts <value>]**
+**[--blocksize <value>]**
 
 the value should be one of::
 
@@ -273,18 +273,16 @@ the value should be one of::
    1 - always send files in a single part.
    p,<sz> - used a fixed partition size (example size: 1M )
 
-Files can be announced as multiple parts.  Each part has a separate checksum.
+Files can be announced as multiple blocks (or parts.) Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
 the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
 for files of various sizes.  As the file size varies, the automatic computation will give different
-results.  this will result in resending information which has not changed as partitions of a different
-size will have different sums, and therefore be tagged as different.  In cases where large files are
-being appended to, it make sense to specify a fixed partition size so that the blocks in the cache
-will be the same blocks as those generated when the file is larger, and so avoid re-transmission.
-So use of 'p,10M' would make sense in that case.
+results. This will result in resending information which has not changed as partitions of a different
+size will have different sums.  Where large files are being appended to, it make sense to specify a 
+fixed partition size. 
 
 In cases where a custom downloader is used which does not understand partitioning, it is necessary
 to avoid having the file split into parts, so one would specify '1' to force all files to be send

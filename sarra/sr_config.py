@@ -841,6 +841,10 @@ class sr_config:
 
                 elif words0 == 'blocksize' :   # See: sr_config.7
                      self.blocksize = self.chunksize_from_str(words[1])
+                     if self.blocksize == 1:
+                        self.parts   =  '1'
+                        ok = self.validate_parts()
+                             
                      n = 2
 
                 elif words0 == 'bufsize' :   # See: sr_config.7

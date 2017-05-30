@@ -4,6 +4,9 @@
 
 **git repo(unreleased)**
 
+* documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.
+  there was an error in that usage of parts actually referred partially to blocksize
+* fixed blocksize=1 to mean send entire file, not 1 byte blocks.
 * fix bug#66 for sr_sender to put the actual file name on the destination (after destfn, etc...) 
 * sr_sarra: suppressedn excessive messages about who has vip in debug mode.
 * sr_sarra:  fixed -strip.  Did not work at all before.
