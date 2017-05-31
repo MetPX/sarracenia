@@ -72,10 +72,9 @@ VIP, INTERFACE
 sr_poll can be configured on multiple servers, where posting should occur only from
 whichever one owns the virtual IP address (VIP) at a given time.  
 As only one instance of sr_poll that should be used for each configuration, the *instances* option is forced to 1. 
-To check that the *vip* is present on a given *interface* periodically::
+To check that the *vip* is present on any *interface* on the server periodically::
 
 **vip       <ip>         (None)**
-**interface <string>     (None)**
 
 When these options are omitted, sr_poll is always active.
 
@@ -306,6 +305,12 @@ DEVELOPER SPECIFIC OPTIONS
 Active if *-debug|--debug* appears in the command line... or
 *debug* is set to True in the configuration file used.
 
+DEPRECATED
+=========
+
+The interface option used to be required with *vip*, now all interfaces are scanned.
+
+**interface <string>     (None)**
 
 SEE ALSO
 --------

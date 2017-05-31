@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* deprecating *interface* setting, code from Jun. one less thing to set. Now scans all interfaces for *vip*
 * polling script should still sleep for *sleep* seconds if the script fails. busyloop is bad.
 * added download_dd plugin, which does multiple process copies (striping individual files.)
 * documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.

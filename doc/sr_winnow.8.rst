@@ -64,7 +64,6 @@ Both servers would run **sr_winnow**. It is for that reason that the
 following options were implemented:
 
  - **vip          <string>          (None)** 
- - **interface    <string>          (None)**
 
 When you run only one **sr_winnow** on one server, these options are not set,
 and sr_winnow will run in 'standalone mode'.
@@ -73,7 +72,6 @@ In the case of clustered brokers, you would set the options for the
 moving vip.
 
 **vip 153.14.126.3**
-**interface eth0**
 
 When **sr_winnow** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and process a message and than rechecks for the vip.
@@ -169,6 +167,12 @@ publish to the **post_broker** and under the **post_exchange**, the
 **on_post** script is called... with the **sr_winnow** class instance as argument.
 The script can perform whatever you want... if it returns False, the message will not 
 bepublished. If True, the program will continue processing from there.  
+
+DEPRECATED
+==========
+
+**interface -option formerly required in conjunction with *vip*.  
+Now just scans all interfaces.
 
 SEE ALSO
 ========

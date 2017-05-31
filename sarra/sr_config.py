@@ -548,32 +548,15 @@ class sr_config:
     def has_vip(self): 
 
         # no vip given... standalone always has vip.
-        if self.vip == None and self.interface == None :
+        if self.vip == None: 
            return True
 
-        #mis-configured options.
-        if self.vip == None :
-           self.logger.error("vip missing")
-           return False
-
-        if self.interface == None :
-           self.logger.error("inteface missing")
-           return False
-
-        try   :
-                a = netifaces.ifaddresses(self.interface)
-                self.logger.debug("vip inteface=%s a=%s " % (self.interface, a) )
-                if netifaces.AF_INET in a :
-                   for inet in a[netifaces.AF_INET]:
-                       if 'addr' in inet :
-                           if inet['addr'] == self.vip :
-                              return True
-        except: 
-               self.logger.error("interface %s lookup failed" % self.interface )
-
+        for i in netifaces.interfaces():
+            for a in netifaces.ifaddresses(i):
+                if self.vip in netifaces.ifaddresses(i)[a][0].get('addr'):
+                   return True
         return False
-
-
+ 
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
@@ -1058,6 +1041,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'interface': # See: sr_poll, sr_winnow
+                     self.logger.warning("deprecated *interface* option no longer has any effect, vip is enough." )
                      self.interface = words[1]
                      n = 2
 
