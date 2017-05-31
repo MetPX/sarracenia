@@ -660,9 +660,8 @@ class sr_poll(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-              if not ok :
-                 self.logger.debug("poll is sleeping %d seconds " % self.sleep)
-                 time.sleep(self.sleep)
+              self.logger.debug("poll is sleeping %d seconds " % self.sleep)
+              time.sleep(self.sleep)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

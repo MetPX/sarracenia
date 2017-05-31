@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* polling script should still sleep for *sleep* seconds if the script fails. busyloop is bad.
 * added download_dd plugin, which does multiple process copies (striping individual files.)
 * documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.
   there was an error in that usage of parts actually referred partially to blocksize
