@@ -470,15 +470,19 @@ DELIVERY
 These options set what files will be downloaded, where they will be placed,
 and under which name.
 
-- **attempts  <count>          (default: 3)**
-- **directory <path>           (default: .)** 
-- **filename  <spec>           (default: WHATFN, which means no modification)**
-- **flatten   <boolean>        (default: false)** 
-- **inflight  <.string>        (default: .tmp)** 
-- **mirror    <boolean>        (default: false)** 
-- **overwrite <boolean>        (default: true)** 
-- **strip     <count>         (default: 0)**
-- **kbytes_ps** <count>       (default: 0)**
+- **attempts  <count>                 (default: 3)**
+- **default_mode     <octalint>       (default: 0755)**
+- **default_dir_mode <octalint>       (default: 0755)**
+- **directory <path>                  (default: .)** 
+- **filename  <spec>                  (default: WHATFN, which means no modification)**
+- **flatten   <boolean>               (default: false)** 
+- **inflight  <.string>               (default: .tmp)** 
+- **kbytes_ps** <count>               (default: 0)**
+- **mirror    <boolean>               (default: false)** 
+- **overwrite <boolean>               (default: true)** 
+- **strip     <count>                 (default: 0)**
+- **preserve_mode** <boolean>         (default: true)**
+- **preserve_time** <boolean>         (default: true)**
 
 The **attempts** option sets how many times to try to download a product.
 The  **inflight**  option sets how to ignore files when they are being transferred
@@ -581,7 +585,10 @@ would result in the file being placed as follows::
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery 
 speed in kilobytes per second... ftp,ftps,or sftp)
 
-
+Permission bits on the destination files written are controlled by the *mode* directives.
+*preserve_modes* will apply the mode permissions posted by the source of the file.
+If no source mode is available, the *default_mode* will be applied to files, and the
+*default_dir_mode* will be applied to directories.
 
 SUNDEW COMPATIBILITY OPTIONS
 ----------------------------

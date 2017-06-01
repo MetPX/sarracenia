@@ -270,10 +270,18 @@ class sr_sftp():
         
         if fp.tell() >= filesize :
            fp.truncate(filesize) 
+
         rfp.close()
         fp.close()
 
         if chk : self.checksum = chk.get_value()
+
+        h = self.parent.msg.headers
+        if self.parent.preserve_mode and 'mode' in h :
+           os.chmod(local_file, int( h['mode'], base=8) )
+
+        if self.parent.preserve_time and 'mtime' in h:
+           os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
 
     # ls
     def ls(self):
@@ -360,6 +368,13 @@ class sr_sftp():
 
         if rfp.tell() >= filesize:
            rfp.truncate(filesize)
+
+        msg = self.parent.msg
+        if self.parent.preserve_mode and 'mode' in msg.headers :
+           rfp.chmod( int(msg.headers['mode'], base=8) )
+
+        if self.parent.preserve_time and 'mtime' in msg.headers :
+           rfp.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
 
         rfp.close()
 
@@ -486,7 +501,7 @@ class sftp_transport():
                    sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
-            
+                      
                 elif parent.inflight[0] == '.' :
                    local_lock  = msg.local_file + parent.inflight
                    sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
@@ -595,7 +610,9 @@ class sftp_transport():
                    sftp.put(local_file, remote_lock, filesize=msg.filesize)
                    sftp.rename(remote_lock, parent.remote_file)
     
-                try   : sftp.chmod(parent.chmod,parent.remote_file)
+                try   : 
+                   if ( 'mode' in msg.headers ) and not parent.preserve_mode:
+                      sftp.chmod(parent.chmod,parent.remote_file)
                 except: pass
     
                 if parent.reportback :

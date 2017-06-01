@@ -205,20 +205,20 @@ class http_transport():
                 # and file_reassemble... take into account the locking
 
                 if   parent.inflight == None or msg.partflg == 'i' :
-                     ok = self.http_write(response,msg.local_file,msg)
+                     ok = self.get(response,msg.local_file,msg)
 
                 elif parent.inflight == '.' :
                      local_lock = ''
                      local_dir  = os.path.dirname (msg.local_file)
                      if local_dir != '' : local_lock = local_dir + os.sep
                      local_lock += '.' + os.path.basename(msg.local_file)
-                     ok = self.http_write(response,local_lock,msg)
+                     ok = self.get(response,local_lock,msg)
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
                 
                 elif parent.inflight[0] == '.' :
                      local_lock  = msg.local_file + parent.inflight
-                     ok = self.http_write(response,local_lock,msg)
+                     ok = self.get(response,local_lock,msg)
                      if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                      os.rename(local_lock, msg.local_file)
 
@@ -245,8 +245,8 @@ class http_transport():
 
         return False
 
-    def http_write(self,req,local_file,msg) :
-        self.logger.debug("sr_http http_write")
+    def get(self,req,local_file,msg) :
+        self.logger.debug("sr_http get")
 
         # on fly checksum 
 
@@ -278,7 +278,7 @@ class http_transport():
         # http provides exact data
 
         while True:
-              self.logger.debug("http_write read loop")
+              self.logger.debug("get read loop")
               chunk = req.read(self.bufsize)
               if not chunk: break
               fp.write(chunk)
@@ -292,6 +292,15 @@ class http_transport():
         fp.close()
 
         if chk : self.checksum = chk.get_value()
+
+        h = self.parent.msg.headers
+
+        if self.parent.preserve_mode and 'mode' in h :
+           os.chmod(local_file, int(h['mode'], base=8) )
+
+        if self.parent.preserve_time and 'mtime' in h :
+           os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+
 
         return True
 

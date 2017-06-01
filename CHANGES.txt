@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* Adding *preserve_time* option (default: True), to have mtime from source reflected in files written.
+* Adding *preserve_mode* option (default: True)  the move mode bits from source reflected in files written.
 * deprecating *interface* setting, code from Jun. one less thing to set. Now scans all interfaces for *vip*
 * polling script should still sleep for *sleep* seconds if the script fails. busyloop is bad.
 * added download_dd plugin, which does multiple process copies (striping individual files.)

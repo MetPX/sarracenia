@@ -338,6 +338,13 @@ def file_write_length(req,msg,bufsize,filesize):
 
     fp.close()
   
+    h = self.parent.msg.headers
+    if self.parent.preserve_mode and 'mode' in h :
+        os.chmod(local_file, int( h['mode'], base=8) )
+
+    if self.parent.preserve_time and 'mtime' in h:
+        os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+
     if chk : msg.onfly_checksum = chk.get_value()
 
     msg.report_publish(201,'Copied')

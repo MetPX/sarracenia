@@ -433,6 +433,8 @@ class sr_config:
         self.post_exchange        = None
         self.post_exchange_split = 0
 
+        self.preserve_mode        = True
+        self.preserve_time        = True
         self.restore              = False
         self.restore_queue        = None
         self.save                 = False
@@ -842,11 +844,14 @@ class sr_config:
                         self.caching = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'chmod':    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
+                     if self.preserve_mode: 
+                         self.logger.warning("preserve_mode True means chmod will only be used when no remote mode is available")
+
                      self.chmod = int(words[1],8)
                      n = 2
 
-                elif words0 == 'chmod_dir':    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: function not actually implemented, stub of ftp support.
                      self.chmod_dir = int(words[1],8)
                      n = 2
 
@@ -1279,6 +1284,22 @@ class sr_config:
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
                      self.prefetch = int(words1)
                      n = 2
+
+                elif words0 in ['preserve_mode','pm'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.preserve_mode = True
+                        n = 1
+                     else :
+                        self.preserve_mode = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['preserve_time','pt'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.preserve_time = True
+                        n = 1
+                     else :
+                        self.preserve_time = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
                      if (words1 is None) or words[0][0:1] == '-' : 

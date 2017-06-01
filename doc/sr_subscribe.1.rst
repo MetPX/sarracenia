@@ -112,6 +112,7 @@ and under which name.
 - **attempts     <count>          (default: 3)**
 - **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
+- **discard   <boolean>        (default: false)**
 - **filename (for sundew compatibility..  see that section)**
 - **flatten   <boolean>        (default: false)** 
 - **inflight      <.string>        (default: .tmp)** 
@@ -119,7 +120,6 @@ and under which name.
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>          (default: 0)**
-- **discard   <boolean>        (default: false)**
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
