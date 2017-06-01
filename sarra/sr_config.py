@@ -395,7 +395,7 @@ class sr_config:
         #self.topic_prefix        = 'v02.post'
         #self.subtopic            = None
 
-        self.to_clusters          = None
+        self.to_clusters          = 'ALL'
         self.parts                = None
         self.sumflg               = 'd'
 
@@ -445,7 +445,7 @@ class sr_config:
         # general cluster stuff
         self.cluster              = None
         self.cluster_aliases      = []
-        self.gateway_for          = []
+        self.gateway_for          = ['ALL']
         self.users                = {}
 
         self.sleep                = 0

@@ -237,17 +237,23 @@ The options are :
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
   In this case, the *directory, accept/reject* combination should target only one file.
 
+**[-to_clusters|--to <csv-string>]**
+
+  Once a messages is delivered to the first pump, the *to_clusters* option suggests other pumps to which the 
+  data should be disseminated.  The default value is ALL.  Multiple pump identifiers can be specified by separating 
+  the names by commas.
+
+**[-sub|--subtopic <key>]**
+
+  The subtopic default can be overwritten with the *subtopic* option.
+  The default being the file's path with '/' replaced by '.'
+
 **[-tp|--topic_prefix <key>]**
 
   *Not usually used*
   By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
   You can overwrite the topic_prefix by setting this option.
-
-**[-sub|--subtopic <key>]**
-
-The subtopic default can be overwritten with the *subtopic* option.
-The default being the file's path with '/' replaced by '.'
 
 
 ADVANCED FEATURES

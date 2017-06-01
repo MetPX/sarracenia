@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* Added default value of 'ALL' for *to_clusters* of  and *gateway_for* to make those options... optional.
 * Adding *preserve_time* option (default: True), to have mtime from source reflected in files written.
 * Adding *preserve_mode* option (default: True)  the move mode bits from source reflected in files written.
 * deprecating *interface* setting, code from Jun. one less thing to set. Now scans all interfaces for *vip*
