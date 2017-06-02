@@ -99,9 +99,73 @@ def rabbitmq_broker_get_exchanges( url, ssl_key_file=None, ssl_cert_file=None ):
 
         return exchanges
 
+def rabbitmq_user_access( url, user ):
+    """ 
+      return a list of exchanges and queues the user can access.
+
+    """
+    import json
+    import re
+
+    found=False
+    for p in json.loads(exec_rabbitmqadmin(url,"list permissions")[1]) :
+        if user == p['user'] :
+               found=True
+               re_cf = re.compile(p['configure'])
+               re_wr = re.compile(p['write'])
+               re_rd = re.compile(p['read'])
+
+    exchanges = rabbitmq_broker_get_exchanges(url)
+    x_cf=[]
+    x_wr=[]
+    x_rd=[]
+
+    for x in  list( map( lambda x: x['name'], json.loads(exec_rabbitmqadmin(url,"list exchanges name")[1]) )):
+        #print( "x: %s\n" % x )
+        if re_cf.match(x): 
+            x_cf += [ x ]
+            continue
+        if re_wr.match(x): 
+            x_wr += [ x ]
+            continue
+        if re_rd.match(x): 
+            x_rd += [ x ]
+            continue
+
+    q_cf={}
+    q_wr={}
+    q_rd={}
+
+    for qq in json.loads(exec_rabbitmqadmin(url,"list queues")[1]) :
+        #print( "qq name=%s ready=%d\n\n" % (qq['name'], qq['messages_ready_ram'])  )
+        q = qq['name']
+        nq =  qq['messages_ready_ram']
+        if re_cf.match(q): 
+            q_cf[q] = nq 
+            continue
+        if re_wr.match(q): 
+            q_wr[q] = nq 
+            continue
+        if re_rd.match(q): 
+            q_rd[q] = nq 
+            continue
+
+    return( { 'exchanges': { 'configure' : x_cf , 'write': x_wr, 'read': x_rd }, \
+               'queues': { 'configure' : q_cf , 'write': q_wr, 'read': q_rd } } )
+
+
 if __name__ == "__main__":
     print(sys.argv[1])
     url = urllib.parse.urlparse(sys.argv[1])
-    print(rabbitmq_broker_get_exchanges(url))
-    print(exec_rabbitmqadmin(url,"list exchanges name"))
+    print( exec_rabbitmqadmin(url,"list queue names")[1])
+    
+    import json
+
+    lex = list( map( lambda x: x['name'], json.loads(exec_rabbitmqadmin(url,"list exchanges name")[1]) ))
+    print( "exchanges: %s\n\n" %  lex )
+
+    u='tsource'
+    print( "permissions for %s: %s" % ( u , rabbitmq_user_access( url, u ) ))
+
+
 
