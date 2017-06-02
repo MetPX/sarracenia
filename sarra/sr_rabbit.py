@@ -101,8 +101,14 @@ def rabbitmq_broker_get_exchanges( url, ssl_key_file=None, ssl_cert_file=None ):
 
 def rabbitmq_user_access( url, user ):
     """ 
-      return a list of exchanges and queues the user can access.
+      Given an administrative URL, return a list of exchanges and queues the user can access.
 
+      lox = list of exchanges, just a list of names.
+      loq = array of queues, where the value of each is the number of messages ready.
+
+      { 'exchanges': { 'configure': lox, 'write': lox, 'read': lox },
+        'queues' : { 'configure': loq, 'write': loq, 'read': loq }
+      }
     """
     import json
     import re
