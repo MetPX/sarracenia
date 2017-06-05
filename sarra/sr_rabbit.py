@@ -107,7 +107,8 @@ def rabbitmq_user_access( url, user ):
       loq = array of queues, where the value of each is the number of messages ready.
 
       { 'exchanges': { 'configure': lox, 'write': lox, 'read': lox },
-        'queues' : { 'configure': loq, 'write': loq, 'read': loq }
+        'queues' : { 'configure': loq, 'write': loq, 'read': loq },
+        'bindings' : { <queue> : { 'exchange': <exchange> , 'key' : <routing_key> } }
       }
     """
     import json
@@ -121,7 +122,7 @@ def rabbitmq_user_access( url, user ):
                re_wr = re.compile(p['write'])
                re_rd = re.compile(p['read'])
 
-    exchanges = rabbitmq_broker_get_exchanges(url)
+    #exchanges = rabbitmq_broker_get_exchanges(url)
     x_cf=[]
     x_wr=[]
     x_rd=[]
@@ -156,12 +157,26 @@ def rabbitmq_user_access( url, user ):
             q_rd[q] = nq 
             continue
 
+    
+    b={}
+    for bb in json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) :
+        #print("\n binding: %s" % bb )
+        if bb['source'] != '' :
+           q = bb['destination']
+           if ( q in q_cf ) or ( q in q_wr ) or ( q in q_rd ):
+               #print(" exchange: %s, queue: %s, topic: %s" % ( bb['source'], q, bb['routing_key']  ) )
+               if not q in b:
+                   b[q] = { 'exchange' : bb['source'] , 'key' : bb['routing_key']  }
+               else:
+                   b[q] += { 'exchange' : bb['source'] , 'key' : bb['routing_key']  }
+
+
     return( { 'exchanges': { 'configure' : x_cf , 'write': x_wr, 'read': x_rd }, \
-               'queues': { 'configure' : q_cf , 'write': q_wr, 'read': q_rd } } )
+               'queues':   { 'configure' : q_cf , 'write': q_wr, 'read': q_rd }, \
+               'bindings':  b } )
 
 
 if __name__ == "__main__":
-    print(sys.argv[1])
     url = urllib.parse.urlparse(sys.argv[1])
     print( exec_rabbitmqadmin(url,"list queue names")[1])
     
@@ -171,7 +186,9 @@ if __name__ == "__main__":
     print( "exchanges: %s\n\n" %  lex )
 
     u='tsource'
-    print( "permissions for %s: %s" % ( u , rabbitmq_user_access( url, u ) ))
+    up=rabbitmq_user_access( url, u )
+    print( "permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" % ( u , up['queues'], up['exchanges'], up['bindings'] ) )
+    #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
 
 
