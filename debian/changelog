@@ -1,3 +1,31 @@
+metpx-sarracenia (2.17.06a1) unstable; urgency=medium
+
+  * Added default value of 'ALL' for *to_clusters* of  and *gateway_for* to make those options... optional.
+  * Adding *preserve_time* option (default: True), to have mtime from source reflected in files written.
+  * Adding *preserve_mode* option (default: True)  the move mode bits from source reflected in files written.
+  * deprecating *interface* setting, code from Jun. one less thing to set. Now scans all interfaces for *vip*
+  * polling script should still sleep for *sleep* seconds if the script fails. busyloop is bad.
+  * added download_dd plugin, which does multiple process copies (striping individual files.)
+  * documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.
+  there was an error in that usage of parts actually referred partially to blocksize
+  * fixed blocksize=1 to mean send entire file, not 1 byte blocks.
+  * fix bug#66 for sr_sender to put the actual file name on the destination (after destfn, etc...) 
+  * sr_sarra: suppressedn excessive messages about who has vip in debug mode.
+  * sr_sarra:  fixed -strip.  Did not work at all before.
+  * added the poll_script.py plugin as an example for sr_poll.
+  * fix from Eric for wrong permissions in sr_sftp.
+  * removed useless import in line_mode.py plugin which breaks it on python 3.2
+  * fix from Eric for wrong permissions in sr_ftp. (bug #84)
+  * added version strings to components log and usage outputs.
+  * added sr_poll to flow_test (from Daniel)
+  * some re-organizing of code in sr_watch.
+  * implement 0400 default permission mask in sr_poll.
+  * note on how to encode special characters in passwords in credentials.conf
+  * some plugin improvements from Dominic Racette.
+
+
+ -- Peter Silva <peter@idefix>  Wed, 07 Jun 2017 13:47:55 -0400
+
 metpx-sarracenia (2.17.03a5) unstable; urgency=medium
 
   * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.
