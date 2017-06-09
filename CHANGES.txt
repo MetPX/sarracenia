@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+**2.17.06a1**
+
 * Added default value of 'ALL' for *to_clusters* of  and *gateway_for* to make those options... optional.
 * Adding *preserve_time* option (default: True), to have mtime from source reflected in files written.
 * Adding *preserve_mode* option (default: True)  the move mode bits from source reflected in files written.
