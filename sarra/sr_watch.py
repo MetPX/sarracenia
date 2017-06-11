@@ -202,7 +202,6 @@ class sr_watch(sr_instances):
             self.validate_cache()
             self.post.connect()
 
-            #try:
             if self.post.realpath: 
                sld = os.path.realpath( self.watch_path )
             else:
