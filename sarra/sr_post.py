@@ -372,7 +372,7 @@ class sr_post(sr_config):
 
         if self.document_root != None :
            dr = self.document_root
-           rpath = fpath.replace(dr,'')
+           rpath = fpath.replace(dr,'',1)
            if rpath == fpath :
               if fpath[0] != os.sep :
                  rpath = dr + os.sep + fpath
@@ -385,6 +385,7 @@ class sr_post(sr_config):
 
         url = self.url
         self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
+
         self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, url.geturl() ) )
         self.posting()
         self.url = url
