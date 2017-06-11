@@ -130,7 +130,7 @@ class sr_subscribe(sr_instances):
     def __do_download__(self):
 
 
-        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.msg.local_file))
+        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.msg.new_file))
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -222,11 +222,15 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
+        self.msg.local_file = self.msg.new_file
+
         for plugin in self.on_message_list :
            if not plugin(self): return False
+           if ( self.msg.local_file != self.msg.new_file ):
+               self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
+               self.msg.new_file = self.msg.local_file
 
         # notify only : we are done with this message
-
         if self.notify_only : return False
 
         return True
@@ -249,10 +253,10 @@ class sr_subscribe(sr_instances):
         # self.msg.set_local : how message settings (like parts) applies in this case
         #=================================
 
-        self.set_local()
-        self.msg.set_local(self.inplace,self.local_path,self.local_url)
+        self.set_new()
+        self.msg.set_new(self.inplace,self.new_path,self.new_url)
 
-        self.msg.headers['rename'] = self.local_path
+        self.msg.headers['rename'] = self.new_path
 
         #=================================
         # now invoke __on_message__
@@ -273,14 +277,14 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('R') :
-           self.logger.debug("message is to remove %s" % self.msg.local_file)
+           self.logger.debug("message is to remove %s" % self.msg.new_file)
            try : 
-               if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
-               if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
-               self.logger.debug("%s removed" % self.msg.local_file)
+               if os.path.isfile(self.msg.new_file) : os.unlink(self.msg.new_file)
+               if os.path.isdir( self.msg.new_file) : os.rmdir( self.msg.new_file)
+               self.logger.debug("%s removed" % self.msg.new_file)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               self.logger.error("remove %s failed." % self.msg.local_file )
+               self.logger.error("remove %s failed." % self.msg.new_file )
                if self.reportback: self.msg.report_publish(500, 'remove failed')
            return True
 
@@ -289,13 +293,13 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('L') :
-           self.logger.debug("message is to link %s to %s" % ( self.msg.local_file, self.msg.headers[ 'link' ] ) )
+           self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
            try : 
-               os.symlink( self.msg.headers[ 'link' ], self.msg.local_file )
-               self.logger.debug("%s linked to %s " % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+               os.symlink( self.msg.headers[ 'link' ], self.msg.new_file )
+               self.logger.debug("%s linked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201, 'linked')
            except:
-               self.logger.error("symlink of %s %s failed." % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 		
            return True
@@ -316,7 +320,7 @@ class sr_subscribe(sr_instances):
               return False
 
         # pass no warning it may already exists
-        try    : os.makedirs(self.local_dir,0o775,True)
+        try    : os.makedirs(self.new_dir,0o775,True)
         except : pass
 
         #=================================
@@ -328,7 +332,7 @@ class sr_subscribe(sr_instances):
         if not self.overwrite and self.msg.checksum_match() :
            if self.reportback:
               self.msg.report_publish(304, 'not modified')
-           self.logger.debug("file not modified %s " % self.msg.local_file)
+           self.logger.debug("file not modified %s " % self.msg.new_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False
@@ -357,8 +361,13 @@ class sr_subscribe(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
+           self.msg.local_file = self.msg.new_file # FIXME: remove in 2018
+
            for plugin in self.on_part_list :
               if not plugin(self): return False
+              if ( self.msg.local_file != self.msg.new_file ): # FIXME: remove in 2018
+                 self.logger.warning("on_part plugins should replace self.msg.local_file, by self.msg.new_file" )
+                 self.msg.new_file = self.msg.local_file
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace" (discard True)
@@ -390,13 +399,16 @@ class sr_subscribe(sr_instances):
 
                  for plugin in self.on_file_list:
                      if not plugin(self): return False
+                     if ( self.msg.local_file != self.msg.new_file ): # FIXME remove in 2018
+                        self.logger.warning("on_file plugins should replace self.msg.local_file, by self.msg.new_file" )
+                        self.msg.new_file = self.msg.local_file
 
            # discard option
 
            if self.discard :
               try    :
-                        os.unlink(self.msg.local_file)
-                        self.logger.debug("Discarded  %s" % self.msg.local_file)
+                        os.unlink(self.msg.new_file)
+                        self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
                         (stype, svalue, tb) = sys.exc_info()
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
@@ -470,11 +482,11 @@ class sr_subscribe(sr_instances):
     # with all options, this is really tricky
     # ==============================================
 
-    def set_local(self):
+    def set_new(self):
 
         # default the file is dropped in document_root directly
 
-        local_dir  = self.document_root
+        new_dir  = self.document_root
 
         # relative path and filename from message
 
@@ -501,7 +513,7 @@ class sr_subscribe(sr_instances):
 
         if self.mirror :
            rel_dir    = '/'.join(token[:-1])
-           local_dir  = self.document_root + '/' + rel_dir
+           new_dir  = self.document_root + '/' + rel_dir
            
         # if flatten... we flatten relative path
         # strip taken into account
@@ -512,17 +524,17 @@ class sr_subscribe(sr_instances):
         if self.currentFileOption != None :
            filename = self.sundew_getDestInfos(filename)
 
-        self.local_dir  = local_dir
+        self.new_dir  = new_dir
 
         if 'sundew_extension' in self.msg.headers.keys() :
          
             tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
-            self.local_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,local_dir,filename)
+            self.new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
-        self.local_file = filename
-        self.local_path = self.local_dir + '/' + filename
-        self.local_url  = 'file:' + self.local_path
-        self.local_url  = urllib.parse.urlparse(self.local_url)
+        self.new_file = filename
+        self.new_path = self.new_dir + '/' + filename
+        self.new_url  = 'file:' + self.new_path
+        self.new_url  = urllib.parse.urlparse(self.new_url)
 
 
     def reload(self):
@@ -637,7 +649,7 @@ def test_sr_subscribe():
           if not ok : continue
           if subscribe.msg.mtype_m == 1: j += 1
           if subscribe.msg.mtype_f == 1: k += 1
-          logger.debug(" local_file = %s" % msg.local_file)
+          logger.debug(" new_file = %s" % msg.new_file)
           subscribe.msg.sumflg = 'R'
           subscribe.msg.checksum = '0'
           ok = subscribe.process_message()

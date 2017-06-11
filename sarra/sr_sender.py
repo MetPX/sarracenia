@@ -201,9 +201,10 @@ class sr_sender(sr_instances):
 
     def __do_send__(self):
 
-        self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.remote_dir ) )
+        self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.new_dir ) )
 
-        try :
+        #try : FIXME
+        if True:
                 if   self.do_send :
                      return self.do_send(self)
 
@@ -219,7 +220,8 @@ class sr_sender(sr_instances):
                         self.sftp_link = sftp_transport()
                      return self.sftp_link.send(self)
 
-        except :
+        #except :
+        else:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
@@ -313,10 +315,16 @@ class sr_sender(sr_instances):
                    msg.report_publish(499,'ftp cannot deliver partitioned files')
                 return False
 
+        self.remote_file = self.new_file #FIXME: remove in 2018
+
         # invoke user defined on_message when provided
 
         for plugin in self.on_message_list:
             if not plugin(self): return False
+
+            if self.remote_file != self.new_file : #FIXME: remove in 2018
+                logger.warning("on_message plugin should be updated: replace self.msg.remote_file, by self.msg.new_file")
+                self.new_file = self.remote_file 
 
         return True
 
@@ -327,9 +335,15 @@ class sr_sender(sr_instances):
     def __on_post__(self):
 
         # invoke on_post when provided
+        self.msg.remote_file = self.msg.new_file #FIXME: remove in 2018
 
         for plugin in self.on_post_list:
             if not plugin(self): return False
+            if self.msg.remote_file != self.msg.new_file : #FIXME: remove in 2018
+                self.logger.warning("on_post plugin should be updated: replace self.msg.remote_file, by self.msg.new_file")
+                self.new_file = self.msg.remote_file 
+
+        self.logger.warning("on_post plugins done.")
 
         ok = self.msg.publish( )
 
@@ -369,12 +383,12 @@ class sr_sender(sr_instances):
         #=================================
         # setting up message with sr_sender config options
         # self.set_local  : setting local info for the file/part
-        # self.set_remote : setting remote server info for the file/part
+        # self.set_new : setting remote server info for the file/part
         #=================================
 
         self.set_local()
-        self.set_remote()
-        self.set_remote_url()
+        self.set_new()
+        self.set_new_url()
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -405,8 +419,8 @@ class sr_sender(sr_instances):
         #=================================
 
         if self.post_broker :
-           self.msg.set_topic_url('v02.post',self.remote_url)
-           self.msg.set_notice(self.remote_url,self.msg.time)
+           self.msg.set_topic_url('v02.post',self.new_url)
+           self.msg.set_notice(self.new_url,self.msg.time)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')
@@ -519,66 +533,66 @@ class sr_sender(sr_instances):
         self.local_length = self.msg.length
 
 
-    def set_remote(self):
+    def set_new(self):
 
-        self.remote_root  = ''
-        if self.post_document_root != None : self.remote_root = self.post_document_root
+        self.new_root  = ''
+        if self.post_document_root != None : self.new_root = self.post_document_root
 
         # mirror case by default
 
-        self.remote_rpath = self.local_rpath
-        self.remote_file  = self.local_file
+        self.new_rpath = self.local_rpath
+        self.new_file  = self.local_file
        
 
         if self.strip > 0 :
-           token = self.remote_rpath.split('/')
-           self.remote_rpath = '/'.join(token[self.strip:])
+           token = self.new_rpath.split('/')
+           self.new_rpath = '/'.join(token[self.strip:])
 
         # no mirror and no directory ...
         if not self.mirror and self.currentDir == None :
            self.logger.warning("no mirroring and directory unset : assumed None ")
-           self.remote_rpath = ''
+           self.new_rpath = ''
 
         # a target directory was provided
         if self.use_pattern and self.currentDir != None:
-           self.remote_rpath = self.currentDir
+           self.new_rpath = self.currentDir
 
         # PDS like destination pattern/keywords
 
         if self.currentFileOption != None :
-           self.remote_file = self.sundew_getDestInfos(self.local_file)
+           self.new_file = self.sundew_getDestInfos(self.local_file)
 
         if self.destfn_script :
-            last_remote_file = self.remote_file
+            last_new_file = self.new_file
             ok = self.destfn_script(self)
-            if last_remote_file != self.remote_file :
-               self.logger.debug("destfn_script : %s becomes %s "  % (last_remote_file,self.remote_file) )
+            if last_new_file != self.new_file :
+               self.logger.debug("destfn_script : %s becomes %s "  % (last_new_file,self.new_file) )
 
-        destDir = self.remote_rpath
-        destDir = self.sundew_dirPattern(self.msg.urlstr,self.local_file,destDir,self.remote_file)
+        destDir = self.new_rpath
+        destDir = self.sundew_dirPattern(self.msg.urlstr,self.local_file,destDir,self.new_file)
 
-        self.remote_rpath = destDir
+        self.new_rpath = destDir
 
         # build dir/path and url from options
 
-        self.remote_dir  = self.remote_root + '/' + self.remote_rpath
-        #self.remote_path = self.remote_dir  + '/' + self.remote_file
+        self.new_dir  = self.new_root + '/' + self.new_rpath
+        #self.new_path = self.new_dir  + '/' + self.new_file
 
-    def set_remote_url(self):
+    def set_new_url(self):
 
-        self.remote_urlstr    = self.destination
+        self.new_urlstr    = self.destination
         if self.url != None :
-           self.remote_urlstr = self.url.geturl()
+           self.new_urlstr = self.url.geturl()
 
-        if self.remote_urlstr[-1] != '/' : self.remote_urlstr += '/'
+        if self.new_urlstr[-1] != '/' : self.new_urlstr += '/'
 
-        if self.remote_rpath != '' and self.remote_rpath[0] == '/':
-           self.rempote_rpath = self.remote_rpath[1:]
+        if self.new_rpath != '' and self.new_rpath[0] == '/':
+           self.pnew_rpath = self.new_rpath[1:]
 
-        if not self.post_document_root and 'ftp' in self.remote_urlstr[:4] : self.remote_urlstr += '/'
+        if not self.post_document_root and 'ftp' in self.new_urlstr[:4] : self.new_urlstr += '/'
 
-        self.remote_urlstr += self.remote_rpath + '/' + self.remote_file
-        self.remote_url     = urllib.parse.urlparse(self.remote_urlstr)
+        self.new_urlstr += self.new_rpath + '/' + self.new_file
+        self.new_url     = urllib.parse.urlparse(self.new_urlstr)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

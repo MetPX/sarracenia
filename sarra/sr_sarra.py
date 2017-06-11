@@ -188,7 +188,7 @@ class sr_sarra(sr_instances):
 
     def __do_download__(self):
 
-        self.logger.debug("downloading/copying into %s " % self.msg.local_file)
+        self.logger.debug("downloading/copying into %s " % self.msg.new_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -302,10 +302,15 @@ class sr_sarra(sr_instances):
            self.logger.warning("skipped : not for this cluster...")
            return False
 
+        self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+
         # invoke user defined on_message when provided
 
         for plugin in self.on_message_list :
             if not plugin(self): return False
+            if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+                self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
+                self.msg.new_file = self.msg.local_file
 
         return True
 
@@ -315,10 +320,15 @@ class sr_sarra(sr_instances):
 
     def __on_post__(self):
 
+        self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+
         # invoke on_post when provided
 
         for plugin in self.on_post_list:
            if not plugin(self): return False
+           if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+                self.logger.warning("on_post plugins should replace self.local_file, by self.new_file" )
+                self.msg.new_file = self.msg.local_file
 
         ok = self.msg.publish( )
 
@@ -378,12 +388,12 @@ class sr_sarra(sr_instances):
 
         #=================================
         # setting up message with sr_sarra config options
-        # self.set_local     : how/where sr_subscribe is configured for that product
-        # self.msg.set_local : how message settings (like parts) applies in this case
+        # self.set_new     : how/where sr_subscribe is configured for that product
+        # self.msg.set_new : how message settings (like parts) applies in this case
         #=================================
 
-        self.set_local()
-        self.msg.set_local(self.inplace,self.local_path,self.local_url)
+        self.set_new()
+        self.msg.set_new(self.inplace,self.new_path,self.new_url)
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -397,13 +407,13 @@ class sr_sarra(sr_instances):
         #=================================
 
         if self.msg.sumflg == 'R' :
-           self.logger.debug("message is to remove %s" % self.msg.local_file)
+           self.logger.debug("message is to remove %s" % self.msg.new_file)
            try : 
-                  if os.path.isfile(self.msg.local_file) : os.unlink(self.msg.local_file)
-                  if os.path.isdir( self.msg.local_file) : os.rmdir( self.msg.local_file)
+                  if os.path.isfile(self.msg.new_file) : os.unlink(self.msg.new_file)
+                  if os.path.isdir( self.msg.new_file) : os.rmdir( self.msg.new_file)
            except:pass
-           self.msg.set_topic_url('v02.post',self.msg.local_url)
-           self.msg.set_notice(self.msg.local_url,self.msg.time)
+           self.msg.set_topic_url('v02.post',self.msg.new_url)
+           self.msg.set_notice(self.msg.new_url,self.msg.time)
            self.__on_post__()
            self.msg.report_publish(205,'Reset Content : deleted')
            return True
@@ -412,18 +422,18 @@ class sr_sarra(sr_instances):
         # link event, try to link and propagate message
         #=================================
         if self.msg.sumflg == 'L' :
-           self.logger.debug("message is to link %s to %s" % self.msg.local_file, self.msg.headers['link'] )
+           self.logger.debug("message is to link %s to %s" % self.msg.new_file, self.msg.headers['link'] )
            ok=False
            try :
-               ok = os.symlink( self.msg.headers[ 'link' ], self.msg.local_file )
+               ok = os.symlink( self.msg.headers[ 'link' ], self.msg.new_file )
                if ok:
-                  self.logger.debug("%s linked to %s " % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+                  self.logger.debug("%s linked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
            except:
-               self.logger.error("symlink of %s %s failed." % (self.msg.local_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
 
            if ok:
-              self.msg.set_topic_url('v02.post',self.msg.local_url)
-              self.msg.set_notice(self.msg.local_url,self.msg.time)
+              self.msg.set_topic_url('v02.post',self.msg.new_url)
+              self.msg.set_notice(self.msg.new_url,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -434,8 +444,8 @@ class sr_sarra(sr_instances):
         #=================================
 
         # pass no warning it may already exists
-        self.logger.debug("directory %s" % self.local_dir)
-        try    : os.makedirs(self.local_dir,0o775,True)
+        self.logger.debug("directory %s" % self.new_dir)
+        try    : os.makedirs(self.new_dir,0o775,True)
         except : pass
 
         #=================================
@@ -446,7 +456,7 @@ class sr_sarra(sr_instances):
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
            self.msg.report_publish(304, 'not modified')
-           self.logger.debug("file not modified %s " % self.msg.local_file)
+           self.logger.debug("file not modified %s " % self.msg.new_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False
@@ -492,10 +502,17 @@ class sr_sarra(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
+           self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+
            #if self.on_part :
            #   ok = self.on_part(self)
            for plugin in self.on_part_list :
               if not plugin(self): return False
+
+              if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+                  self.logger.warning("on_part plugins should replace self.local_file, by self.new_file" )
+                  self.msg.new_file = self.msg.local_file
+
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace"
@@ -511,32 +528,11 @@ class sr_sarra(sr_instances):
                  for plugin in self.on_file_list:
                      if not plugin(self): return False
 
+                     if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+                         self.logger.warning("on_part plugins should replace self.local_file, by self.new_file" )
+                         self.msg.new_file = self.msg.local_file
 
-             """
-              # entire file pumped in
-              if self.msg.partflg == '1' :
-                 ok = self.on_file(self)
 
-              # parts : not inplace... all considered files
-              else:
-                 if not self.inplace :
-                    ok = self.on_file(self)
-
-                 # ***FIX ME***: When reassembled, lastchunk is inserted last and therefore
-                 # calling on_file on lastchunk is accurate... Here, the lastchunk was inserted
-                 # directly into the target file... The decision of directly inserting the part
-                 # into the file is based on the file'size being bigger or equal to part's offset.
-                 # It may be the case that we were at the point of inserting the last chunk...
-                 # BUT IT IS POSSIBLE THAT,WHEN OVERWRITING A FILE WITH PARTS BEING SENT IN PARALLEL,
-                 # THE PROGRAM INSERTS THE LASTCHUNK BEFORE THE END OF COLLECTING THE FILE'PARTS...
-                 # HENCE AN APPROPRIATE CALL TO on_file ... 
-
-                 # inplace : last part(chunk) is inserted
-                 elif (self.msg.lastchunk and not self.msg.in_partfile) :
-                    ok = self.on_file(self)
-              
-              if not ok : return False
-             """
 
 
         #=================================
@@ -547,8 +543,8 @@ class sr_sarra(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.msg.local_url)
-        self.msg.set_notice(self.msg.local_url,self.msg.time)
+        self.msg.set_topic_url('v02.post',self.msg.new_url)
+        self.msg.set_notice(self.msg.new_url,self.msg.time)
         self.__on_post__()
         self.msg.report_publish(201,'Published')
 
@@ -601,7 +597,7 @@ class sr_sarra(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-    def set_local(self):
+    def set_new(self):
 
         # relative path by default mirror 
 
@@ -628,19 +624,19 @@ class sr_sarra(sr_instances):
         if self.strip > 0 :
            self.rel_path = '/'.join(token[self.strip:])
 
-        self.local_dir  = ''
+        self.new_dir  = ''
         if self.document_root != None :
-           self.local_dir = self.document_root 
+           self.new_dir = self.document_root 
 
         if len(token) > 1 :
-           self.local_dir = self.local_dir + '/' + '/'.join(token[self.strip:-1])
+           self.new_dir = self.new_dir + '/' + '/'.join(token[self.strip:-1])
 
         # Local directory (directory created if needed)
 
-        self.local_dir  = self.local_dir.replace('//','/')
-        self.local_file = self.filename
-        self.local_path = self.local_dir   + '/' + self.filename
-        self.local_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
+        self.new_dir  = self.new_dir.replace('//','/')
+        self.new_file = self.filename
+        self.new_path = self.new_dir   + '/' + self.filename
+        self.new_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
 
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']

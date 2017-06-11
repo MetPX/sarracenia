@@ -694,16 +694,16 @@ class sr_config:
                  destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
                  old_destfn_script  = self.destfn_script
-                 old_remote_file    = self.remote_file
-                 self.remote_file   = destFileName
+                 saved_new_file    = self.new_file
+                 self.new_file   = destFileName
                  self.destfn_script = None
                  script = spec[13:]
                  self.execfile('destfn_script',script)
                  if self.destfn_script != None :
                     ok = self.destfn_script(self)
-                 destFileName       = self.remote_file
+                 destFileName       = self.new_file
                  self.destfn_script = old_destfn_script
-                 self.remote_file   = old_remote_file
+                 self.new_file   = saved_new_file
                  if destFileName == None : destFileName = old_destFileName
             elif spec == 'TIME':
                 if destFileName != filename :

@@ -84,12 +84,12 @@ class sr_message():
         self.logger.debug("sr_message checksum_match")
         self.local_checksum = None
 
-        if not os.path.isfile(self.local_file) : return False
+        if not os.path.isfile(self.new_file) : return False
         if self.sumflg in ['0','n','z']        : return False
 
         # insert : file big enough to compute part checksum ?
 
-        lstat = os.stat(self.local_file)
+        lstat = os.stat(self.new_file)
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
 
@@ -107,9 +107,9 @@ class sr_message():
         bufsize = self.bufsize
         if self.length < bufsize : bufsize = self.length
 
-        self.sumalgo.set_path(os.path.basename(self.local_file))
+        self.sumalgo.set_path(os.path.basename(self.new_file))
 
-        fp = open(self.local_file,'rb')
+        fp = open(self.new_file,'rb')
         if self.local_offset != 0 : fp.seek(self.local_offset,0)
         i  = 0
         while i<self.length :
@@ -343,23 +343,23 @@ class sr_message():
     def set_exchange(self,name):
         self.exchange = name
 
-    def set_file(self, local_file, sumstr):
+    def set_file(self, new_file, sumstr):
         """ 
             set_file: modify a message to reflect a new file.
-                      make a file URL of the local_file.
+                      make a file URL of the new_file.
             sumstr should be the properly formatted checksum field for a message
               '<algorithm>,<value>', e.g.  'd,cbe9047d1b979561bed9a334111878c6'
             to be used by filter plugins when changing the output url.
         """
-        fstat = os.stat(local_file)
+        fstat = os.stat(new_file)
 
         # Modify message for posting.
-        self.urlstr = 'file:/' + local_file
+        self.urlstr = 'file:/' + new_file
         self.url = urllib.parse.urlparse(self.urlstr)
-        self.topic = 'v02.post' + local_file.replace('/','.')
+        self.topic = 'v02.post' + new_file.replace('/','.')
         self.headers[ 'sum' ] = sumstr
         self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
-        self.headers[ 'filename' ] = os.path.basename(local_file)
+        self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
         self.set_notice(self.url)
@@ -378,12 +378,12 @@ class sr_message():
     # Once we know the local file we want to use
     # we can have a few flavor of it
 
-    def set_local(self,inplace,local_file,local_url):
+    def set_new(self,inplace,new_file,new_url):
 
         self.inplace       = inplace
 
-        self.local_file    = local_file
-        self.local_url     = local_url
+        self.new_file    = new_file
+        self.new_url     = new_url
         self.local_offset  = 0
         self.in_partfile   = False
         self.local_checksum= None
@@ -406,8 +406,8 @@ class sr_message():
            # file inserts to part file
 
            if self.partflg == 'i' :
-              self.local_file = local_file + self.suffix
-              self.local_url  = urllib.parse.urlparse( local_url.geturl() + self.suffix )
+              self.new_file = new_file + self.suffix
+              self.new_url  = urllib.parse.urlparse( new_url.geturl() + self.suffix )
               return
 
         
@@ -418,31 +418,31 @@ class sr_message():
            # part file inserts to file (maybe in file, maybe in part file)
 
            if self.partflg == 'p' :
-              self.target_file  = local_file.replace(self.suffix,'')
-              self.target_url   = urllib.parse.urlparse( local_url.geturl().replace(self.suffix,''))
-              part_file    = local_file
-              part_url     = local_url
+              self.target_file  = new_file.replace(self.suffix,'')
+              self.target_url   = urllib.parse.urlparse( new_url.geturl().replace(self.suffix,''))
+              part_file    = new_file
+              part_url     = new_url
 
         
            # file insert inserts into file (maybe in file, maybe in part file)
 
            if self.partflg == 'i' :
-              self.target_file  = local_file
-              self.target_url   = local_url
-              part_file    = local_file + self.suffix
-              part_url     = urllib.parse.urlparse( local_url.geturl() + self.suffix )
+              self.target_file  = new_file
+              self.target_url   = new_url
+              part_file    = new_file + self.suffix
+              part_url     = urllib.parse.urlparse( new_url.geturl() + self.suffix )
 
            # default setting : redirect to temporary part file
 
-           self.local_file  = part_file
-           self.local_url   = part_url
+           self.new_file  = part_file
+           self.new_url   = part_url
            self.in_partfile = True
         
            # try to make this message a file insert
 
            # file exists
            if os.path.isfile(self.target_file) :
-              self.logger.debug("local_file exists")
+              self.logger.debug("new_file exists")
               lstat   = os.stat(self.target_file)
               fsiz    = lstat[stat.ST_SIZE] 
 
@@ -450,8 +450,8 @@ class sr_message():
               # part/insert can be inserted 
               if self.offset <= fsiz :
                  self.logger.debug("insert")
-                 self.local_file   = self.target_file
-                 self.local_url    = self.target_url
+                 self.new_file   = self.target_file
+                 self.new_url    = self.target_url
                  self.local_offset = self.offset
                  self.in_partfile  = False
                  return
@@ -461,11 +461,11 @@ class sr_message():
               return
 
 
-           # file does not exists but first part/insert ... write directly to local_file
+           # file does not exists but first part/insert ... write directly to new_file
            elif self.current_block == 0 :
               self.logger.debug("not exist but first block")
-              self.local_file  = self.target_file
-              self.local_url   = self.target_url
+              self.new_file  = self.target_file
+              self.new_url   = self.target_url
               self.in_partfile = False
               return
 

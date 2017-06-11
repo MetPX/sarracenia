@@ -196,7 +196,7 @@ class http_transport():
                        
                 #download file
 
-                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.new_file,msg.local_offset,msg.length))  
 
                 response = urllib.request.urlopen(req)
                 #msg.logger.debug('response header = %s' % response.headers)
@@ -205,22 +205,22 @@ class http_transport():
                 # and file_reassemble... take into account the locking
 
                 if   parent.inflight == None or msg.partflg == 'i' :
-                     ok = self.get(response,msg.local_file,msg)
+                     ok = self.get(response,msg.new_file,msg)
 
                 elif parent.inflight == '.' :
                      local_lock = ''
-                     local_dir  = os.path.dirname (msg.local_file)
+                     local_dir  = os.path.dirname (msg.new_file)
                      if local_dir != '' : local_lock = local_dir + os.sep
-                     local_lock += '.' + os.path.basename(msg.local_file)
+                     local_lock += '.' + os.path.basename(msg.new_file)
                      ok = self.get(response,local_lock,msg)
-                     if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                     os.rename(local_lock, msg.local_file)
+                     if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
+                     os.rename(new_lock, msg.new_file)
                 
                 elif parent.inflight[0] == '.' :
-                     local_lock  = msg.local_file + parent.inflight
-                     ok = self.get(response,local_lock,msg)
-                     if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                     os.rename(local_lock, msg.local_file)
+                     new_lock  = msg.new_file + parent.inflight
+                     new= self.get(response,new_lock,msg)
+                     if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
+                     os.rename(new_lock, msg.new_file)
 
                 msg.onfly_checksum = self.checksum
 
@@ -241,7 +241,7 @@ class http_transport():
 
         msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
-        if os.path.isfile(local_lock) : os.remove(local_lock)
+        if os.path.isfile(new_lock) : os.remove(new_lock)
 
         return False
 
@@ -370,7 +370,7 @@ def self_test():
 
     cfg.msg = msg
     cfg.msg.sumalgo = None
-    cfg.msg.local_file = "toto"
+    cfg.msg.new_file = "toto"
     cfg.msg.local_offset = 0
 
     try:

@@ -484,7 +484,7 @@ class sftp_transport():
                 #download file
     
                 msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
-                    (urlstr,str_range,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
+                    (urlstr,str_range,msg.new_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
@@ -492,21 +492,21 @@ class sftp_transport():
                 sftp.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
-                   sftp.get(remote_file,msg.local_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   sftp.get(remote_file,msg.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
                 elif parent.inflight == '.' :
-                   local_dir  = os.path.dirname (msg.local_file)
-                   if local_dir != '' : local_lock = local_dir + os.sep
-                   local_lock += '.' + os.path.basename(msg.local_file)
-                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
-                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                   os.rename(local_lock, msg.local_file)
+                   new_dir  = os.path.dirname (msg.new_file)
+                   if new_dir != '' : new_lock = new_dir + os.sep
+                   new_lock += '.' + os.path.basename(msg.new_file)
+                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
+                   os.rename(new_lock, msg.new_file)
                       
                 elif parent.inflight[0] == '.' :
-                   local_lock  = msg.local_file + parent.inflight
-                   sftp.get(remote_file,local_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
-                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                   os.rename(local_lock, msg.local_file)
+                   new_lock  = msg.new_file + parent.inflight
+                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
+                   os.rename(new_lock, msg.new_file)
     
                 msg.report_publish(201,'Downloaded')
 
@@ -531,7 +531,7 @@ class sftp_transport():
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
                 msg.report_publish(499,'sftp download failed')
-                if os.path.isfile(local_lock) : os.remove(local_lock)
+                if os.path.isfile(new_lock) : os.remove(new_lock)
  
                 return False
     
@@ -547,7 +547,7 @@ class sftp_transport():
         msg    = parent.msg
     
         local_file = parent.local_path
-        remote_dir = parent.remote_dir
+        new_dir = parent.new_dir
     
         try :
 
@@ -558,18 +558,18 @@ class sftp_transport():
                    sftp.connect()
                    self.sftp = sftp
                 
-                if self.cdir != remote_dir :
-                   self.logger.debug("sftp_transport send cd to %s" % remote_dir)
-                   sftp.cd_forced(775,remote_dir)
-                   self.cdir  = remote_dir
+                if self.cdir != new_dir :
+                   self.logger.debug("sftp_transport send cd to %s" % new_dir)
+                   sftp.cd_forced(775,new_dir)
+                   self.cdir  = new_dir
 
                 #=================================
                 # delete event
                 #=================================
 
                 if msg.sumflg == 'R' :
-                   msg.logger.debug("message is to remove %s" % parent.remote_file)
-                   sftp.delete(parent.remote_file)
+                   msg.logger.debug("message is to remove %s" % parent.new_file)
+                   sftp.delete(parent.new_file)
                    msg.report_publish(205,'Reset Content : deleted')
                    return True
 
@@ -578,8 +578,8 @@ class sftp_transport():
                 #=================================
 
                 if msg.sumflg == 'L' :
-                   msg.logger.debug("message is to link %s to: %s" % ( parent.remote_file, msg.headers['link'] ))
-                   sftp.symlink(msg.headers['link'],parent.remote_file)
+                   msg.logger.debug("message is to link %s to: %s" % ( parent.new_file, msg.headers['link'] ))
+                   sftp.symlink(msg.headers['link'],parent.new_file)
                    msg.report_publish(205,'Reset Content : linked')
                    return True
 
@@ -594,25 +594,25 @@ class sftp_transport():
                 if msg.partflg == 'i' :
                    str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
     
-                #download file
+                #upload file
     
                 msg.logger.info('Sends: %s %s into %s/%s %d-%d' % 
-                    (parent.local_file,str_range,parent.remote_dir,parent.remote_file,offset,offset+msg.length-1))
+                    (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None or msg.partflg == 'i' :
-                   sftp.put(local_file, parent.remote_file, offset, offset, msg.length, msg.filesize)
+                   sftp.put(local_file, parent.new_file, offset, offset, msg.length, msg.filesize)
                 elif parent.inflight == '.' :
-                   remote_lock = '.'  + parent.remote_file
-                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
-                   sftp.rename(remote_lock, parent.remote_file)
+                   new_lock = '.'  + parent.new_file
+                   sftp.put(local_file, new_lock, filesize=msg.filesize)
+                   sftp.rename(new_lock, parent.new_file)
                 elif parent.inflight[0] == '.' :
-                   remote_lock = parent.remote_file + parent.inflight
-                   sftp.put(local_file, remote_lock, filesize=msg.filesize)
-                   sftp.rename(remote_lock, parent.remote_file)
+                   new_lock = parent.new_file + parent.inflight
+                   sftp.put(local_file, new_lock, filesize=msg.filesize)
+                   sftp.rename(new_lock, parent.new_file)
     
                 try   : 
                    if ( 'mode' in msg.headers ) and not parent.preserve_mode:
-                      sftp.chmod(parent.chmod,parent.remote_file)
+                      sftp.chmod(parent.chmod,parent.new_file)
                 except: pass
     
                 if parent.reportback :
@@ -629,7 +629,7 @@ class sftp_transport():
                 #except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
                 msg.report_publish(497,'sftp delivery failed')
     
                 return False

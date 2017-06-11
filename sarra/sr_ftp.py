@@ -399,7 +399,7 @@ class ftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        local_lock = ''
+        new_lock = ''
     
         try :
                 parent.destination = msg.urlcred
@@ -493,7 +493,7 @@ class ftp_transport():
             return False
     
         local_file = parent.local_path
-        remote_dir = parent.remote_dir
+        new_dir = parent.new_dir
     
         try :
                 ftp = self.ftp
@@ -503,18 +503,18 @@ class ftp_transport():
                    ftp.connect()
                    self.ftp = ftp
                 
-                if self.cdir != remote_dir :
-                   self.logger.debug("ftp_transport send cd to %s" % remote_dir)
-                   ftp.cd_forced(775,remote_dir)
-                   self.cdir  = remote_dir
+                if self.cdir != new_dir :
+                   self.logger.debug("ftp_transport send cd to %s" % new_dir)
+                   ftp.cd_forced(775,new_dir)
+                   self.cdir  = new_dir
 
                 #=================================
                 # delete event
                 #=================================
 
                 if msg.sumflg == 'R' :
-                   msg.logger.debug("message is to remove %s" % parent.remote_file)
-                   ftp.delete(parent.remote_file)
+                   msg.logger.debug("message is to remove %s" % parent.new_file)
+                   ftp.delete(parent.new_file)
                    msg.report_publish(205,'Reset Content : deleted')
                    return True
 
@@ -528,23 +528,23 @@ class ftp_transport():
                 # deliver file
     
                 msg.logger.debug('Beginning put of %s %s into %s/%s %d-%d' % 
-                    (parent.local_file,str_range,parent.remote_dir,parent.remote_file,offset,offset+msg.length-1))
+                    (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None :
-                   ftp.put(local_file, parent.remote_file)
+                   ftp.put(local_file, parent.new_file)
                 elif parent.inflight == '.' :
-                   remote_lock = '.'  + parent.remote_file
-                   ftp.put(local_file, remote_lock)
-                   ftp.rename(remote_lock, parent.remote_file)
+                   new_lock = '.'  + parent.new_file
+                   ftp.put(local_file, new_lock)
+                   ftp.rename(new_lock, parent.new_file)
                 elif parent.inflight[0] == '.' :
-                   remote_lock = parent.remote_file + parent.inflight
-                   ftp.put(local_file, remote_lock)
-                   ftp.rename(remote_lock, parent.remote_file)
+                   new_lock = parent.new_file + parent.inflight
+                   ftp.put(local_file, new_lock)
+                   ftp.rename(new_lock, parent.new_file)
                 elif parent.inflight == 'umask' :
                    ftp.umask()
-                   ftp.put(local_file, parent.remote_file)
+                   ftp.put(local_file, parent.new_file)
     
-                try   : ftp.chmod(parent.chmod,parent.remote_file)
+                try   : ftp.chmod(parent.chmod,parent.new_file)
                 except: pass
     
                 msg.report_publish(201,'Delivered')

@@ -4,6 +4,9 @@
 
 **git repo(unreleased)**
 
+* fix bug#51 started work. made everybody use new_ rather than senders using remote_ and subs local_
+
+
 **2.17.06a1**
 
 * Added default value of 'ALL' for *to_clusters* of  and *gateway_for* to make those options... optional.
