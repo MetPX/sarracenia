@@ -335,15 +335,9 @@ class sr_sender(sr_instances):
     def __on_post__(self):
 
         # invoke on_post when provided
-        self.msg.remote_file = self.msg.new_file #FIXME: remove in 2018
 
         for plugin in self.on_post_list:
             if not plugin(self): return False
-            if self.msg.remote_file != self.msg.new_file : #FIXME: remove in 2018
-                self.logger.warning("on_post plugin should be updated: replace self.msg.remote_file, by self.msg.new_file")
-                self.new_file = self.msg.remote_file 
-
-        self.logger.warning("on_post plugins done.")
 
         ok = self.msg.publish( )
 
