@@ -17,12 +17,12 @@ class Renamer(object):
       def perform(self,parent):
           import time
 
-          parts = parent.msg.local_file.split(':')
+          parts = parent.msg.new_file.split(':')
 
           # join mets les ':' entre les parts... donc ajout de ':' au debut
           extra = ':' + ':'.join(parts[1:])
 
-          parent.msg.local_file         = parent.msg.local_file.replace(extra,'')
+          parent.msg.new_file         = parent.msg.new_file.replace(extra,'')
           parent.msg.headers['rename']  = parent.msg.headers['rename'].replace(extra,'')
 
           return True

@@ -54,7 +54,7 @@ class Transformer(object):
         lag=now-then
 
         if lag > int(parent.msg_skip_threshold) :
-           logger.info("msg_skip_old, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.local_file))
+           logger.info("msg_skip_old, Excessive lag: %g sec. Skipping download of: %s, " % (lag, msg.new_file))
            return False
 
         return True

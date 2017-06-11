@@ -37,14 +37,14 @@ class PartClamAvScan(object):
         # it is possible to optimize scanning by not  ... FIXME! this is not tested. not sure how PS!
         if hasattr(parent,'part_clamav_maxblock'):
             if parent.current_block > parent.part_clamav_maxblock[0] :
-               logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.local_file) )
+               logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.new_file) )
                return True  
 
         # scanner wants an absolute path name... dunno why.
-        if msg.local_file[0] != '/' : 
-             scanfn= os.getcwd() + '/' + msg.local_file
+        if msg.new_file[0] != '/' : 
+             scanfn= os.getcwd() + '/' + msg.new_file
         else:
-             scanfn= msg.local_file 
+             scanfn= msg.new_file 
 
         # worried about how long the scan will take.
         start=time.time()
@@ -52,10 +52,10 @@ class PartClamAvScan(object):
         end=time.time()
 
         if virus_found:
-           logger.error("part_clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.local_file) )
+           logger.error("part_clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.new_file) )
            return False
                    
-        logger.info("part_clamav_scan took %g seconds, no viruses in %s" % (end-start,msg.local_file) )
+        logger.info("part_clamav_scan took %g seconds, no viruses in %s" % (end-start,msg.new_file) )
         return True
 
 partclamavscan = PartClamAvScan(self)

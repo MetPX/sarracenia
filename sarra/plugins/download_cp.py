@@ -42,7 +42,7 @@ class CP_DOWNLOAD(object):
 
       # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
 
-      cmd = parent.download_cp_command[0].split() + [ msg.url.path, msg.local_file ] 
+      cmd = parent.download_cp_command[0].split() + [ msg.url.path, msg.new_file ] 
 
       logger.debug("download_cp invoking: %s " % cmd )
       
@@ -52,7 +52,7 @@ class CP_DOWNLOAD(object):
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          if hasattr(parent,'chmod'):
-            os.chmod(msg.local_file, parent.chmod)
+            os.chmod(msg.new_file, parent.chmod)
          return True
          
       #Failure!

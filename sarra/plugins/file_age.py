@@ -31,7 +31,7 @@ class File_Age(object):
         now = time.time()
         mtime = timestr2flt(parent.msg.headers['mtime'])
         age = now-mtime
-        parent.logger.info("file_age %g seconds for %s" % ( age, parent.msg.local_file) )
+        parent.logger.info("file_age %g seconds for %s" % ( age, parent.msg.new_file) )
         return True
 
 file_age = File_Age(self)

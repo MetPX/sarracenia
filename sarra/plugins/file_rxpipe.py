@@ -36,7 +36,7 @@ class File_RxPipe(object):
         self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
   def perform(self, parent):
-        self.rxpipe.write( parent.msg.local_file + "\n" )
+        self.rxpipe.write( parent.msg.new_file + "\n" )
         self.rxpipe.flush()
         return None
 

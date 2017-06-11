@@ -49,7 +49,7 @@ class DD_DOWNLOAD(object):
 
       import subprocess
 
-      args = [ "if=%s" % msg.url.path, "of=%s" % msg.local_file, \
+      args = [ "if=%s" % msg.url.path, "of=%s" % msg.new_file, \
          "bs=%d" % parent.download_dd_blocksize ] 
 
       # parse 'parts' header to find slice to transfer.
@@ -81,7 +81,7 @@ class DD_DOWNLOAD(object):
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          if hasattr(parent,'chmod'):
-            os.chmod(msg.local_file, parent.chmod)
+            os.chmod(msg.new_file, parent.chmod)
          return True
          
       #Failure!
