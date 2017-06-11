@@ -203,8 +203,7 @@ class sr_sender(sr_instances):
 
         self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.new_dir ) )
 
-        #try : FIXME
-        if True:
+        try : 
                 if   self.do_send :
                      return self.do_send(self)
 
@@ -220,8 +219,7 @@ class sr_sender(sr_instances):
                         self.sftp_link = sftp_transport()
                      return self.sftp_link.send(self)
 
-        #except :
-        else:
+        except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
