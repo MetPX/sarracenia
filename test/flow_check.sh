@@ -49,7 +49,7 @@ function calcres {
    tno=$((${tno}+1))
 
    if [ $1 -lt $min -o $2 -lt $min -o $1 -gt $max -o $1 -gt $max ]; then
-      printf "test %2d FAILURE: ${3}\n" ${tno}
+	   printf "test %2d FAILURE: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
       fi    
@@ -75,7 +75,7 @@ function tallyres {
 
    tno=$((${tno}+1))
 
-   if [ ${1} -lt ${2} -o ${2} -eq 0 ]; then
+   if [ ${1} -ne ${2} -o ${2} -eq 0 ]; then
       printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
@@ -131,7 +131,7 @@ function countall {
   countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'msg_log received' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
   totsub3="${tot}"
   countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
   totpost1="${tot}"
@@ -274,7 +274,7 @@ tallyres $good_files $all_files "files sent with identical content to those down
 
 tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
 
-tallyres ${totpost1} ${totsub3} "post test2 and subscribe r run together. Should have equal results."
+calcres ${totpost1} ${totsub3} "post test2 ${totpost1} and subscribe r ${totsub3} run together. Should have equal results."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 

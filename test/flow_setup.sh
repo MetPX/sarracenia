@@ -90,7 +90,7 @@ templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
 
 for cf in ${templates}; do
     echo "installing $cf"
-    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g' <flow_templates/${cf} >$HOME/.config/sarra/${cf}
+    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <flow_templates/${cf} >$HOME/.config/sarra/${cf}
 done
 
 # ensure users have exchanges:
