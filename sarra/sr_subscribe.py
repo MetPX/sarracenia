@@ -222,13 +222,13 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        self.msg.local_file = self.msg.new_file
+        self.local_file = self.new_file
 
         for plugin in self.on_message_list :
            if not plugin(self): return False
-           if ( self.msg.local_file != self.msg.new_file ):
+           if ( self.local_file != self.new_file ):
                self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
-               self.msg.new_file = self.msg.local_file
+               self.new_file = self.local_file
 
         # notify only : we are done with this message
         if self.notify_only : return False

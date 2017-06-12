@@ -302,15 +302,15 @@ class sr_sarra(sr_instances):
            self.logger.warning("skipped : not for this cluster...")
            return False
 
-        self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+        self.local_file = self.new_file # FIXME, remove in 2018
 
         # invoke user defined on_message when provided
 
         for plugin in self.on_message_list :
             if not plugin(self): return False
-            if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+            if ( self.local_file != self.new_file ): # FIXME, remove in 2018
                 self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
-                self.msg.new_file = self.msg.local_file
+                self.new_file = self.local_file
 
         return True
 
