@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* bugfix when DESTFNSCRIPT specified, it took over following accepts.  
+
 * fix bug#51 started work. made everybody use new_ rather than senders using remote_ and subs local_
 
 

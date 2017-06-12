@@ -782,10 +782,16 @@ class sr_config:
                      n = 2
 
                      if len(words) > 2:
+                        save_currentFileOption = self.currentFileOption
                         self.currentFileOption = words[2]
                         n = 3
+                     
 
                      self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+
+                     if len(words) > 2:
+                         self.currentFileOption = save_currentFileOption 
+
                      self.logger.debug("Masks")
                      self.logger.debug("Masks %s"% self.masks)
 
