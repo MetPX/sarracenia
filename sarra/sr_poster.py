@@ -61,6 +61,7 @@ class sr_poster:
         self.bufsize        = parent.bufsize
         self.caching        = parent.caching
         self.batch          = parent.batch
+        self.accept_unmatch = True
 
         self.build_connection()
         self.build_publisher()
@@ -208,7 +209,12 @@ class sr_poster:
 
     def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
         self.logger.debug("sr_poster post %s caching(%s) exchange(%s)" % \
-            ( url.path, self.caching, exchange ) )
+            ( url.geturl(), self.caching, exchange ) )
+
+        # apply accept/reject
+        if not self.parent.isMatchingPattern(url.geturl(),self.accept_unmatch) :
+           self.logger.debug("post of %s Rejected by accept/reject options" % url.geturl() )
+           return True  # need to return true because this isn´t a failure.
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
