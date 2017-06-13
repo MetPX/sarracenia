@@ -353,7 +353,7 @@ For compatibility with sundew, there are some additional delivery options which 
 This option defines a script to be run when everything is ready
 for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.local_file**  will change the name of the file written locally.
+modification to  **parent.new_file**  will change the name of the file written locally.
 
 **filename <keyword> (default:WHATFN)**
 

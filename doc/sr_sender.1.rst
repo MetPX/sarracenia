@@ -174,7 +174,7 @@ SETUP 1 : PUMP TO PUMP REPLICATION
  - **kbytes_ps          <int>       (default: 0)** 
  - **post_document_root <directory> (default: '')** 
 
- - **to               <clustername> (default: None)** 
+ - **to               <clustername> (default: <post_broker host>)** 
  - **on_post           <script>     (default: None)** 
  - **post_broker        amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
  - **url                <url>       (default: destination)** 

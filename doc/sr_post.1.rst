@@ -236,12 +236,12 @@ files are posted.
 
 The subtopic default can be overwritten with the *subtopic* option.
 
-**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
+**[-to|--to <destination>,<destination>,... ]** 
 
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
 
-  default: None.
+  default: the hostname of the broker.
 
 .. note:: 
   FIXME: a good list of destination should be discoverable.

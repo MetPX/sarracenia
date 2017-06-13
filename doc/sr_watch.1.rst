@@ -200,12 +200,12 @@ path ends with '/' it suggests a directory path...
 If it doesn't, the option specifies a file renaming.
 
 
-**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
+**[-to|--to <destination>,<destination>,... ]** 
 
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
 
-  default: None.
+  default: the hostname of the broker being posted to.
 
 .. note:: 
   FIXME: a good list of destination should be discoverable.

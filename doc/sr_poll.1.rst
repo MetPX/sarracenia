@@ -239,9 +239,10 @@ The options are :
 
 **[-to_clusters|--to <csv-string>]**
 
-  Once a messages is delivered to the first pump, the *to_clusters* option suggests other pumps to which the 
-  data should be disseminated.  The default value is ALL.  Multiple pump identifiers can be specified by separating 
-  the names by commas.
+  Once a messages is delivered to the first pump, the *to_clusters* option 
+  suggests other pumps to which the data should be disseminated.  The default 
+  value is the hostname of the broker being posted to.  Multiple pump 
+  identifiers can be specified by separating the names by commas. 
 
 **[-sub|--subtopic <key>]**
 

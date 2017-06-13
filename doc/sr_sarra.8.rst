@@ -201,7 +201,7 @@ Depending of **inplace** and if the message was a part, the path can
 change again (adding a part suffix if necessary). The resulting variables used for
 the local destination to download a file (or a part) are :
 
-self.msg.local_file   :  the local path where to download the file(part)
+self.msg.new_file    :   the local path where to download the file(part)
 self.msg.local_offset :  offset position in the local file
 self.msg.offset       :  offset position of the remote file
 self.msg.length       :  length of file or part
