@@ -214,13 +214,13 @@ class http_transport():
                      local_lock += '.' + os.path.basename(msg.new_file)
                      ok = self.get(response,local_lock,msg)
                      if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                     os.rename(new_lock, msg.new_file)
+                     os.rename(local_lock, msg.new_file)
                 
                 elif parent.inflight[0] == '.' :
-                     new_lock  = msg.new_file + parent.inflight
-                     new= self.get(response,new_lock,msg)
+                     local_lock  = msg.new_file + parent.inflight
+                     new= self.get(response,local_lock,msg)
                      if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                     os.rename(new_lock, msg.new_file)
+                     os.rename(local_lock, msg.new_file)
 
                 msg.onfly_checksum = self.checksum
 
@@ -241,7 +241,7 @@ class http_transport():
 
         msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
-        if os.path.isfile(new_lock) : os.remove(new_lock)
+        if os.path.isfile(local_lock) : os.remove(local_lock)
 
         return False
 

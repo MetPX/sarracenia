@@ -86,6 +86,10 @@ class sr_watch(sr_instances):
         self.observer.stop()
 
     def overwrite_defaults(self):
+
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
         self.sleep     = 0.1

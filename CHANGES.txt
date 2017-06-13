@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* changed posting default for to_clusters from ALL to the hostname of the broker.
 * moved accept/reject processing into sr_poster.post, so automatically honoured when using plugin scripts that call it.
 * fix bug#86 DESTFNSCRIPT in one accept would be used by subsequent ones.
 * fix bug#51 now use new_path, rather than local_path in consumers, and remote_path in senders. all can use same plugins.

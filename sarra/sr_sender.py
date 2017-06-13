@@ -129,10 +129,9 @@ class sr_sender(sr_instances):
 
         # to clusters required
 
-        if self.post_broker != None and self.to_clusters == None :
-           self.logger.error("Need to know post_broker cluster name")
-           self.logger.error("-to option is mandatory in this case\n")
-           sys.exit(1)
+        if self.to_clusters == None:
+            self.to_clusters = self.post_broker.hostname
+
 
     def close(self):
         self.consumer.close()

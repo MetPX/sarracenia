@@ -395,7 +395,7 @@ class sr_config:
         #self.topic_prefix        = 'v02.post'
         #self.subtopic            = None
 
-        self.to_clusters          = 'ALL'
+        self.to_clusters          = None
         self.parts                = None
         self.sumflg               = 'd'
 

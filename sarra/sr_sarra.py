@@ -175,6 +175,9 @@ class sr_sarra(sr_instances):
 
         self.hc_pst = HostConnect( logger = self.logger )
         self.hc_pst.set_url( self.post_broker )
+        if self.to_clusters == None:
+             self.to_clusters = self.post_broker.hostname
+
         self.hc_pst.connect()
 
         # publisher

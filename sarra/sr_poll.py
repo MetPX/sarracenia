@@ -105,6 +105,9 @@ class sr_poll(sr_instances):
 
         # to clusters required
 
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
            self.help()
@@ -125,6 +128,8 @@ class sr_poll(sr_instances):
 
         if self.exchange  == None :
            self.exchange   = 'xs_%s' % self.broker.username
+
+
         self.post_exchange = self.exchange
 
         # check sumflg should start with z,

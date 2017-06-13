@@ -178,7 +178,10 @@ class sr_post(sr_config):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_post overwrite_defaults")
-        pass
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+           
+        self.logger.debug("sr_post overwrite_defaults Done")
 
     def posting(self):
         self.logger.debug("sr_post posting %s" % ( self.url.path ) )
