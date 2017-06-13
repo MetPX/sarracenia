@@ -295,13 +295,13 @@ the **sr_poll** class
 The **do_poll** script could be written to support other protocol than
 ftp,ftps,sftp.  Again this script would be responsible to determine
 what to do under its protocol with the various options **destination**,
-**directory**, **accept(get)/reject** and should it determine to post a
+**directory**, and should it determine to post a
 file, it would need to build its url, partstr, sumstr and  use
 
 **parent.poster.post(parent.exchange,url,parent.to_clusters, \**
 **                   partstr,sumstr,rename,remote_file)**
 
-to post the message (and trigger **on_post** if provided)
+to post the message, applying accept/reject clauses and triggering on_post processing. 
 
 
 DEVELOPER SPECIFIC OPTIONS

@@ -463,6 +463,7 @@ class sr_config:
         self.inflight             = None
         self.chmod                = 0o775
         self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
+        self.chmod_log            = 0o600 
 
         self.notify_only          = False
 
@@ -859,6 +860,10 @@ class sr_config:
 
                 elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: function not actually implemented, stub of ftp support.
                      self.chmod_dir = int(words[1],8)
+                     n = 2
+
+                elif words0 in [ 'chmod_log', 'default_log_mode', 'dlm' ]:    
+                     self.chmod_log = int(words[1],8)
                      n = 2
 
                 elif words0 in ['cluster','cl']: # See: sr_config.7
@@ -1599,7 +1604,7 @@ class sr_config:
         self.logger = logging.RootLogger(logging.WARNING)
         self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
-
+        os.chmod( self.logpath, self.chmod_log )
         if self.debug :
            self.logger.setLevel(logging.DEBUG)
 

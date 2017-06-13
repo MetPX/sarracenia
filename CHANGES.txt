@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* added chmod_log for log files, which were defaulting to public writable... no idea why, set default to 600.
 * changed posting default for to_clusters from ALL to the hostname of the broker.
 * moved accept/reject processing into sr_poster.post, so automatically honoured when using plugin scripts that call it.
 * fix bug#86 DESTFNSCRIPT in one accept would be used by subsequent ones.

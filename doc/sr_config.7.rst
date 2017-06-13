@@ -723,6 +723,8 @@ is set by the 'logdays' parameter.  Log files older than **logdays** days are de
 - **loglevel** the level of logging as expressed by python's logging. 
                possible values are :  critical, error, info, warning, debug.
 
+- **chmod_log** the permission bits to set on log files (default 0600 )
+
 Note: for **sr-post** only,  option **log** should be a logfile
 
 .. note::
