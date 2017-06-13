@@ -171,7 +171,7 @@ bepublished. If True, the program will continue processing from there.
 DEPRECATED
 ==========
 
-**interface -option formerly required in conjunction with *vip*.  
+**interface -option formerly required in conjunction with *vip*.  **
 Now just scans all interfaces.
 
 SEE ALSO

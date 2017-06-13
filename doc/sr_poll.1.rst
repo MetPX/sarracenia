@@ -312,7 +312,7 @@ Active if *-debug|--debug* appears in the command line... or
 *debug* is set to True in the configuration file used.
 
 DEPRECATED
-=========
+==========
 
 The interface option used to be required with *vip*, now all interfaces are scanned.
 

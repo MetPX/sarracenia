@@ -361,7 +361,7 @@ old name will transfer it again under the new name, with no relation being made 
 
 
 Inotify Instance
----------------
+----------------
 
 Many linux systems have limits on how many directories can be watched that are set quite low, to minimize
 kernel memory usage.  If you see a message like so::
