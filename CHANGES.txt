@@ -4,6 +4,10 @@
 
 **git repo(unreleased)**
 
+* crasher bug when sr_sender doesn´t have a post_broker.
+
+**2.17.06a2**
+
 * added chmod_log for log files, which were defaulting to public writable... no idea why, set default to 600.
 * changed posting default for to_clusters from ALL to the hostname of the broker.
 * moved accept/reject processing into sr_poster.post, so automatically honoured when using plugin scripts that call it.
