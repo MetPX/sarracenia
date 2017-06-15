@@ -129,7 +129,7 @@ class sr_sender(sr_instances):
 
         # to clusters required
 
-        if self.to_clusters == None:
+        if self.to_clusters == None and self.post_broker != None :
             self.to_clusters = self.post_broker.hostname
 
 
