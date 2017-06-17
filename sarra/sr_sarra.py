@@ -137,9 +137,8 @@ class sr_sarra(sr_instances):
            self.queue_name += self.program_name + '.' + self.config_name 
 
         # umask change for directory creation and chmod
-
-        try    : os.umask(0)
-        except : pass
+        #try    : os.umask(0)
+        #except : pass
 
     def close(self):
         self.consumer.close()
