@@ -278,7 +278,6 @@ class http_transport():
         # http provides exact data
 
         while True:
-              self.logger.debug("get read loop")
               chunk = req.read(self.bufsize)
               if not chunk: break
               fp.write(chunk)

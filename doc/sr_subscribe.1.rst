@@ -114,8 +114,8 @@ and under which name.
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
 - **filename (for sundew compatibility..  see that section)**
-- **flatten   <boolean>        (default: false)** 
-- **inflight      <.string>        (default: .tmp)** 
+- **flatten   <string>         (default: '/')** 
+- **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
@@ -177,10 +177,10 @@ For example ::
 would result in the creation of the directories and the file
 /mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-The  **flatten**  option is use to set a separator character. This character
-will be used to replace the '/' in the url directory and create a "flatten" filename
-form its dd.weather.gc.ca path.  For example retrieving the following url, 
-with options::
+The  **flatten**  option is use to set a separator character. The default value ( '/' )
+nullifies the effect of this option.  This character replaces the '/' in the url 
+directory and create a "flatten" filename form its dd.weather.gc.ca path.  
+For example retrieving the following url, with options::
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 

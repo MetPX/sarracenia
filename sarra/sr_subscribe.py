@@ -200,7 +200,7 @@ class sr_subscribe(sr_instances):
           "\nLocal File Delivery settings:\n" +
           "\taccept    <regexp pattern> (MANDATORY)\n" +
           "\tdirectory <path>           (default: .)\n" +
-          "\tflatten   <boolean>        (default: false)\n" +
+          "\tflatten   <string>        (default: '/' )\n" +
           "\tinflight  <.string>        (default: .tmp)\n" +
           "\tmirror    <boolean>        (default: false)\n" +
           "\treject    <regexp pattern> (optional)\n" +
@@ -484,6 +484,8 @@ class sr_subscribe(sr_instances):
 
     def set_new(self):
 
+        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.path=%s" %  \
+             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.path ) ) 
         # default the file is dropped in document_root directly
 
         new_dir  = self.document_root
@@ -512,7 +514,7 @@ class sr_subscribe(sr_instances):
         # strip taken into account
 
         if self.mirror :
-           rel_dir    = '/'.join(token[:-1])
+           rel_dir    = '/'.join(token[self.strip:-1])
            new_dir  = self.document_root + '/' + rel_dir
            
         # if flatten... we flatten relative path

@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* strip fixed in sr_subscribe.
+* flatten fixed in sr_config.
 * crasher bug when sr_sender doesn´t have a post_broker.
 
 **2.17.06a2**

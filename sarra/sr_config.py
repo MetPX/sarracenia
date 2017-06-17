@@ -1012,6 +1012,10 @@ class sr_config:
                      self.currentFileOption = words[1]
                      n = 2
 
+                elif words0 in [ 'flatten' ]: # See: sr_poll.1, sr_sender.1
+                     self.flatten = words[1]
+                     n = 2
+
                 elif words0 in ['flow','f']: # See: sr_post.1, sr_log.7, shovel, subscribe, watch 
                      self.flow = words1 
                      n = 2
