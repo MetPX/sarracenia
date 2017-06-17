@@ -246,7 +246,6 @@ class http_transport():
         return False
 
     def get(self,req,local_file,msg) :
-        self.logger.debug("sr_http get")
 
         # on fly checksum 
 

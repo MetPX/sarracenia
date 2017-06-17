@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* files were created as public write because umask was overridden. Dunno why it was there in the first place.
 * strip fixed in sr_subscribe.
 * flatten fixed in sr_config.
 * crasher bug when sr_sender doesn´t have a post_broker.

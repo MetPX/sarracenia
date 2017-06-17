@@ -82,9 +82,9 @@ class sr_config:
         self.http_dir         = self.user_config_dir + '/Downloads'
 
         # umask change for directory creation and chmod
-
-        try    : os.umask(0)
-        except : pass
+        # 2017/06/20- FIXME commenting this out, because it seems wrong!... why override umask?
+        #try    : os.umask(0)
+        #except : pass
 
         # FIXME:
         # before 2.16.08x sr_log was a comment (that became sr_report). so the log directory was needed
