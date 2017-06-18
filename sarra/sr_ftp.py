@@ -560,7 +560,7 @@ class ftp_transport():
                 #except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
                 msg.report_publish(499,'ftp delivery failed')
     
                 return False
