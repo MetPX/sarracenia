@@ -130,7 +130,7 @@ class sr_subscribe(sr_instances):
     def __do_download__(self):
 
 
-        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.msg.new_file))
+        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -223,12 +223,18 @@ class sr_subscribe(sr_instances):
         # invoke user defined on_message when provided
 
         self.local_file = self.new_file
+        self.msg.local_file = self.new_file
+        self.logger.warning("on_message self.msg.local_file=%s" % self.msg.local_file )
 
         for plugin in self.on_message_list :
            if not plugin(self): return False
            if ( self.local_file != self.new_file ):
-               self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
+               self.logger.warning("on_message plugins should replace parent.local_file, by parent.new_file" )
                self.new_file = self.local_file
+
+           if ( self.msg.local_file != self.new_file ):
+               self.logger.warning("on_message plugins should replace parent.msg.local_file, by parent.new_file" )
+               self.new_file = self.msg.local_file
 
         # notify only : we are done with this message
         if self.notify_only : return False
@@ -277,14 +283,14 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('R') :
-           self.logger.debug("message is to remove %s" % self.msg.new_file)
+           self.logger.debug("message is to remove %s" % self.new_file)
            try : 
-               if os.path.isfile(self.msg.new_file) : os.unlink(self.msg.new_file)
-               if os.path.isdir( self.msg.new_file) : os.rmdir( self.msg.new_file)
-               self.logger.debug("%s removed" % self.msg.new_file)
+               if os.path.isfile(self.new_file) : os.unlink(self.new_file)
+               if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
+               self.logger.debug("%s removed" % self.new_file)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               self.logger.error("remove %s failed." % self.msg.new_file )
+               self.logger.error("remove %s failed." % self.new_file )
                if self.reportback: self.msg.report_publish(500, 'remove failed')
            return True
 
@@ -293,13 +299,13 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('L') :
-           self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
+           self.logger.debug("message is to link %s to %s" % ( self.new_file, self.msg.headers[ 'link' ] ) )
            try : 
-               os.symlink( self.msg.headers[ 'link' ], self.msg.new_file )
-               self.logger.debug("%s linked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               os.symlink( self.msg.headers[ 'link' ], self.new_file )
+               self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201, 'linked')
            except:
-               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 		
            return True
@@ -332,7 +338,7 @@ class sr_subscribe(sr_instances):
         if not self.overwrite and self.msg.checksum_match() :
            if self.reportback:
               self.msg.report_publish(304, 'not modified')
-           self.logger.debug("file not modified %s " % self.msg.new_file)
+           self.logger.debug("file not modified %s " % self.new_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False
@@ -361,13 +367,13 @@ class sr_subscribe(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
-           self.msg.local_file = self.msg.new_file # FIXME: remove in 2018
+           self.msg.local_file = self.new_file # FIXME: remove in 2018
 
            for plugin in self.on_part_list :
               if not plugin(self): return False
-              if ( self.msg.local_file != self.msg.new_file ): # FIXME: remove in 2018
-                 self.logger.warning("on_part plugins should replace self.msg.local_file, by self.msg.new_file" )
-                 self.msg.new_file = self.msg.local_file
+              if ( self.msg.local_file != self.new_file ): # FIXME: remove in 2018
+                 self.logger.warning("on_part plugins should replace parent.msg.local_file, by parent.new_file" )
+                 self.new_file = self.msg.local_file
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace" (discard True)
@@ -399,16 +405,17 @@ class sr_subscribe(sr_instances):
 
                  for plugin in self.on_file_list:
                      if not plugin(self): return False
-                     if ( self.msg.local_file != self.msg.new_file ): # FIXME remove in 2018
-                        self.logger.warning("on_file plugins should replace self.msg.local_file, by self.msg.new_file" )
-                        self.msg.new_file = self.msg.local_file
+
+                     if ( self.msg.local_file != self.new_file ): # FIXME remove in 2018
+                        self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.new_file" )
+                        self.new_file = self.msg.local_file
 
            # discard option
 
            if self.discard :
               try    :
-                        os.unlink(self.msg.new_file)
-                        self.logger.debug("Discarded  %s" % self.msg.new_file)
+                        os.unlink(self.new_file)
+                        self.logger.debug("Discarded  %s" % self.new_file)
               except :
                         (stype, svalue, tb) = sys.exc_info()
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))

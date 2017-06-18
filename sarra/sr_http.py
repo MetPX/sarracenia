@@ -196,31 +196,34 @@ class http_transport():
                        
                 #download file
 
-                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.new_file,msg.local_offset,msg.length))  
+                msg.logger.debug('Beginning fetch of %s %s into %s/%s %d-%d inflight=+%s+' % \
+                      (urlstr, str_range, parent.new_dir,parent.new_file,msg.local_offset,msg.length, parent.inflight))
 
                 response = urllib.request.urlopen(req)
-                #msg.logger.debug('response header = %s' % response.headers)
+
+                if os.getcwd() != parent.new_dir:
+                    os.chdir(parent.new_dir)
 
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
                 if   parent.inflight == None or msg.partflg == 'i' :
-                     ok = self.get(response,msg.new_file,msg)
+                     ok = self.get(response,parent.new_file,msg)
 
                 elif parent.inflight == '.' :
                      local_lock = ''
-                     local_dir  = os.path.dirname (msg.new_file)
+                     local_dir  = os.path.dirname (parent.new_file)
                      if local_dir != '' : local_lock = local_dir + os.sep
-                     local_lock += '.' + os.path.basename(msg.new_file)
+                     local_lock += '.' + os.path.basename(parent.new_file)
                      ok = self.get(response,local_lock,msg)
-                     if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                     os.rename(local_lock, msg.new_file)
+                     if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                     os.rename(local_lock, parent.new_file)
                 
                 elif parent.inflight[0] == '.' :
-                     local_lock  = msg.new_file + parent.inflight
+                     local_lock  = parent.new_file + parent.inflight
                      new= self.get(response,local_lock,msg)
-                     if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                     os.rename(local_lock, msg.new_file)
+                     if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                     os.rename(local_lock, parent.new_file)
 
                 msg.onfly_checksum = self.checksum
 
@@ -238,7 +241,7 @@ class http_transport():
                (stype, svalue, tb) = sys.exc_info()
                msg.logger.error('Download failed %s ' % urlstr)
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
-
+        
         msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
         if os.path.isfile(local_lock) : os.remove(local_lock)

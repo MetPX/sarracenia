@@ -484,7 +484,7 @@ class sftp_transport():
                 #download file
     
                 msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
-                    (urlstr,str_range,msg.new_file,msg.local_offset,msg.local_offset+msg.length-1))
+                    (urlstr,str_range,parent.new_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
@@ -492,21 +492,21 @@ class sftp_transport():
                 sftp.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
-                   sftp.get(remote_file,msg.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   sftp.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
                 elif parent.inflight == '.' :
-                   new_dir  = os.path.dirname (msg.new_file)
+                   new_dir  = os.path.dirname (parent.new_file)
                    if new_dir != '' : new_lock = new_dir + os.sep
-                   new_lock += '.' + os.path.basename(msg.new_file)
+                   new_lock += '.' + os.path.basename(parent.new_file)
                    sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
-                   if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                   os.rename(new_lock, msg.new_file)
+                   if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                   os.rename(new_lock, parent.new_file)
                       
                 elif parent.inflight[0] == '.' :
-                   new_lock  = msg.new_file + parent.inflight
+                   new_lock  = parent.new_file + parent.inflight
                    sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
-                   if os.path.isfile(msg.new_file) : os.remove(msg.new_file)
-                   os.rename(new_lock, msg.new_file)
+                   if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                   os.rename(new_lock, parent.new_file)
     
                 msg.report_publish(201,'Downloaded')
 

@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* still harmonizing sender vs. subsribe api senders use parent.new_file, subs use parent.msg.new_file
 * fixed sender using ftp broken by error message referring to *remote_urlstr* ( replaced by *new_urlstr* )
 * files were created as public write because umask was overridden. Dunno why it was there in the first place.
 * strip fixed in sr_subscribe.

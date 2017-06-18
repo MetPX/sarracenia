@@ -190,7 +190,7 @@ class sr_sarra(sr_instances):
 
     def __do_download__(self):
 
-        self.logger.debug("downloading/copying into %s " % self.msg.new_file)
+        self.logger.debug("downloading/copying into %s " % self.new_file)
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -308,12 +308,14 @@ class sr_sarra(sr_instances):
 
         # invoke user defined on_message when provided
 
+
         for plugin in self.on_message_list :
             if not plugin(self): return False
             if ( self.local_file != self.new_file ): # FIXME, remove in 2018
                 self.logger.warning("on_message plugins should replace self.local_file, by self.new_file" )
                 self.new_file = self.local_file
 
+        self.logger.warning("on_message end" )
         return True
 
     # =============
@@ -322,15 +324,15 @@ class sr_sarra(sr_instances):
 
     def __on_post__(self):
 
-        self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+        self.msg.local_file = self.new_file # FIXME, remove in 2018
 
         # invoke on_post when provided
 
         for plugin in self.on_post_list:
            if not plugin(self): return False
-           if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
-                self.logger.warning("on_post plugins should replace self.local_file, by self.new_file" )
-                self.msg.new_file = self.msg.local_file
+           if ( self.msg.local_file != self.new_file ): # FIXME, remove in 2018
+                self.logger.warning("on_post plugins should replace self.msg.local_file, by self.new_file" )
+                self.new_file = self.msg.local_file
 
         ok = self.msg.publish( )
 
@@ -409,13 +411,13 @@ class sr_sarra(sr_instances):
         #=================================
 
         if self.msg.sumflg == 'R' :
-           self.logger.debug("message is to remove %s" % self.msg.new_file)
+           self.logger.debug("message is to remove %s" % self.new_file)
            try : 
-                  if os.path.isfile(self.msg.new_file) : os.unlink(self.msg.new_file)
-                  if os.path.isdir( self.msg.new_file) : os.rmdir( self.msg.new_file)
+                  if os.path.isfile(self.new_file) : os.unlink(self.new_file)
+                  if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
            except:pass
-           self.msg.set_topic_url('v02.post',self.msg.new_url)
-           self.msg.set_notice(self.msg.new_url,self.msg.time)
+           self.msg.set_topic_url('v02.post',self.new_url)
+           self.msg.set_notice(self.new_url,self.msg.time)
            self.__on_post__()
            self.msg.report_publish(205,'Reset Content : deleted')
            return True
@@ -424,18 +426,18 @@ class sr_sarra(sr_instances):
         # link event, try to link and propagate message
         #=================================
         if self.msg.sumflg == 'L' :
-           self.logger.debug("message is to link %s to %s" % self.msg.new_file, self.msg.headers['link'] )
+           self.logger.debug("message is to link %s to %s" % self.new_file, self.msg.headers['link'] )
            ok=False
            try :
-               ok = os.symlink( self.msg.headers[ 'link' ], self.msg.new_file )
+               ok = os.symlink( self.msg.headers[ 'link' ], self.new_file )
                if ok:
-                  self.logger.debug("%s linked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+                  self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
            except:
-               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
 
            if ok:
-              self.msg.set_topic_url('v02.post',self.msg.new_url)
-              self.msg.set_notice(self.msg.new_url,self.msg.time)
+              self.msg.set_topic_url('v02.post',self.new_url)
+              self.msg.set_notice(self.new_url,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -458,7 +460,7 @@ class sr_sarra(sr_instances):
         need_download = True
         if not self.overwrite and self.msg.checksum_match() :
            self.msg.report_publish(304, 'not modified')
-           self.logger.debug("file not modified %s " % self.msg.new_file)
+           self.logger.debug("file not modified %s " % self.new_file)
 
            # if we are processing an entire file... we are done
            if self.msg.partflg == '1' :  return False
@@ -504,16 +506,16 @@ class sr_sarra(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
-           self.msg.local_file = self.msg.new_file # FIXME, remove in 2018
+           self.msg.local_file = self.new_file # FIXME, remove in 2018
 
            #if self.on_part :
            #   ok = self.on_part(self)
            for plugin in self.on_part_list :
               if not plugin(self): return False
 
-              if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+              if ( self.msg.local_file != self.new_file ): # FIXME, remove in 2018
                   self.logger.warning("on_part plugins should replace self.local_file, by self.new_file" )
-                  self.msg.new_file = self.msg.local_file
+                  self.new_file = self.msg.local_file
 
 
            # running on_file : if it is a file, or 
@@ -530,9 +532,9 @@ class sr_sarra(sr_instances):
                  for plugin in self.on_file_list:
                      if not plugin(self): return False
 
-                     if ( self.msg.local_file != self.msg.new_file ): # FIXME, remove in 2018
+                     if ( self.msg.local_file != self.new_file ): # FIXME, remove in 2018
                          self.logger.warning("on_part plugins should replace self.local_file, by self.new_file" )
-                         self.msg.new_file = self.msg.local_file
+                         self.new_file = self.msg.local_file
 
 
 
@@ -545,8 +547,8 @@ class sr_sarra(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.msg.new_url)
-        self.msg.set_notice(self.msg.new_url,self.msg.time)
+        self.msg.set_topic_url('v02.post',self.new_url)
+        self.msg.set_notice(self.new_url,self.msg.time)
         self.__on_post__()
         self.msg.report_publish(201,'Published')
 

@@ -320,7 +320,7 @@ class sr_sender(sr_instances):
             if not plugin(self): return False
 
             if self.remote_file != self.new_file : #FIXME: remove in 2018
-                logger.warning("on_message plugin should be updated: replace self.msg.remote_file, by self.msg.new_file")
+                logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
                 self.new_file = self.remote_file 
 
         return True
