@@ -4,6 +4,10 @@
 
 **git repo(unreleased)**
 
+* FIXME.
+* currently master is working but confused.  downloads to cwd where started, rather than correct dir.
+  self-test does not detect the problem, as it looks at the logs, and no-one uses the downloaded files.
+  a bug in transition from msg.local_file (complete absolute path) to parent.new_file (only the file name.)
 * still harmonizing sender vs. subsribe api senders use parent.new_file, subs use parent.msg.new_file
 * fixed sender using ftp broken by error message referring to *remote_urlstr* ( replaced by *new_urlstr* )
 * files were created as public write because umask was overridden. Dunno why it was there in the first place.

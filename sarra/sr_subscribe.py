@@ -222,12 +222,17 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        self.local_file = self.new_file
+        self.local_file = self.new_file     # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_file = self.new_file
+        self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
+        self.msg.local_dir = self.new_dir
+
         self.logger.warning("on_message self.msg.local_file=%s" % self.msg.local_file )
 
         for plugin in self.on_message_list :
+
            if not plugin(self): return False
+
            if ( self.local_file != self.new_file ):
                self.logger.warning("on_message plugins should replace parent.local_file, by parent.new_file" )
                self.new_file = self.local_file
@@ -235,6 +240,10 @@ class sr_subscribe(sr_instances):
            if ( self.msg.local_file != self.new_file ):
                self.logger.warning("on_message plugins should replace parent.msg.local_file, by parent.new_file" )
                self.new_file = self.msg.local_file
+
+           if ( self.msg.local_dir != self.new_dir ):
+               self.logger.warning("on_message plugins should replace parent.msg.local_dir, by parent.new_dir" )
+               self.new_dir = self.msg.local_dir
 
         # notify only : we are done with this message
         if self.notify_only : return False
@@ -370,10 +379,16 @@ class sr_subscribe(sr_instances):
            self.msg.local_file = self.new_file # FIXME: remove in 2018
 
            for plugin in self.on_part_list :
+
               if not plugin(self): return False
+
               if ( self.msg.local_file != self.new_file ): # FIXME: remove in 2018
                  self.logger.warning("on_part plugins should replace parent.msg.local_file, by parent.new_file" )
                  self.new_file = self.msg.local_file
+
+              if ( self.msg.local_dir != self.new_dir ): # FIXME: remove in 2018
+                 self.logger.warning("on_part plugins should replace parent.msg.local_dir, by parent.new_dir" )
+                 self.new_dir = self.msg.local_dir
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace" (discard True)

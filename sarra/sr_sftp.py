@@ -459,6 +459,9 @@ class sftp_transport():
         remote_file = token[-1]
         local_lock = ''
     
+        if os.getcwd() != parent.new_dir:
+            os.chdir(parent.new_dir)
+
         try :
                 parent.destination = msg.urlcred
 
