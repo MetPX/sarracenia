@@ -567,7 +567,6 @@ class sr_sender(sr_instances):
         # build dir/path and url from options
 
         self.new_dir  = self.new_root + '/' + self.new_rpath
-        #self.new_path = self.new_dir  + '/' + self.new_file
 
     def set_new_url(self):
 

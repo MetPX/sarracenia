@@ -224,8 +224,11 @@ class sr_subscribe(sr_instances):
 
         self.local_file = self.new_file     # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_file = self.new_file
+        saved_file = self.new_file
+
         self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_dir = self.new_dir
+        saved_dir = self.new_dir
 
         self.logger.warning("on_message self.msg.local_file=%s" % self.msg.local_file )
 
@@ -233,16 +236,13 @@ class sr_subscribe(sr_instances):
 
            if not plugin(self): return False
 
-           if ( self.local_file != self.new_file ):
-               self.logger.warning("on_message plugins should replace parent.local_file, by parent.new_file" )
+           if self.local_file != saved_file :
+               self.logger.warning("on_message plugins 2 should replace parent.local_file, by parent.new_file" )
                self.new_file = self.local_file
 
-           if ( self.msg.local_file != self.new_file ):
-               self.logger.warning("on_message plugins should replace parent.msg.local_file, by parent.new_file" )
-               self.new_file = self.msg.local_file
-
-           if ( self.msg.local_dir != self.new_dir ):
-               self.logger.warning("on_message plugins should replace parent.msg.local_dir, by parent.new_dir" )
+           if self.msg.local_dir != saved_dir :
+               self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
+               self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
                self.new_dir = self.msg.local_dir
 
         # notify only : we are done with this message
@@ -269,9 +269,7 @@ class sr_subscribe(sr_instances):
         #=================================
 
         self.set_new()
-        self.msg.set_new(self.inplace,self.new_path,self.new_url)
-
-        self.msg.headers['rename'] = self.new_path
+        self.msg.set_new(self.inplace, self.new_dir + '/' + self.new_file, self.new_url)
 
         #=================================
         # now invoke __on_message__
@@ -377,17 +375,21 @@ class sr_subscribe(sr_instances):
            # a 1 part product... we run on_part in all cases)
 
            self.msg.local_file = self.new_file # FIXME: remove in 2018
+           saved_file = self.new_file
+
+           self.msg.local_dir = self.new_dir # FIXME: remove in 2018
+           saved_dir = self.new_dir
 
            for plugin in self.on_part_list :
 
               if not plugin(self): return False
 
-              if ( self.msg.local_file != self.new_file ): # FIXME: remove in 2018
-                 self.logger.warning("on_part plugins should replace parent.msg.local_file, by parent.new_file" )
+              if ( self.msg.local_file != saved_file ): # FIXME: remove in 2018
+                 self.logger.warning("on_part plugins 1 should replace parent.msg.local_file, by parent.new_file" )
                  self.new_file = self.msg.local_file
 
-              if ( self.msg.local_dir != self.new_dir ): # FIXME: remove in 2018
-                 self.logger.warning("on_part plugins should replace parent.msg.local_dir, by parent.new_dir" )
+              if ( self.msg.local_dir != saved_dir ): # FIXME: remove in 2018
+                 self.logger.warning("on_part plugins 1 should replace parent.msg.local_dir, by parent.new_dir" )
                  self.new_dir = self.msg.local_dir
 
            # running on_file : if it is a file, or 
@@ -556,8 +558,7 @@ class sr_subscribe(sr_instances):
             self.new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
         self.new_file = filename
-        self.new_path = self.new_dir + '/' + filename
-        self.new_url  = 'file:' + self.new_path
+        self.new_url  = 'file:' + self.new_dir + '/' + filename
         self.new_url  = urllib.parse.urlparse(self.new_url)
 
 

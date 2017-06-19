@@ -21,15 +21,15 @@ class Renamer(object):
       def perform(self,parent):
           import time
 
-          if not 'ccstn.dat' in parent.msg.new_file : return True
+          if not 'ccstn.dat' in parent.new_file : return True
 
           # build new name
-          local_file = parent.msg.new_file
+          local_file = parent.new_file
           datestr    = time.strftime('%Y%m%d%H%M',time.localtime())
           local_file = local_file.replace('ccstn.dat', 'jicc.' + datestr + '.ccstn.dat')
 
           # set in message (and headers for logging)
-          parent.msg.new_file        = local_file
+          parent.new_file        = local_file
           parent.msg.headers['rename'] = local_file
 
           # on garde tous les messages

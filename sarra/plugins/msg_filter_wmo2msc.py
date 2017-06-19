@@ -293,14 +293,14 @@ else:
     
     class TestMessage():
     
-        def __init__(self,fname,dest):
+        def __init__(self,fname):
             self.urlstr = "download://" + fname
-            self.local_file = dest + os.sep + 'hoho'
             self.headers = {}
     
     class TestParent(object):
     
         def __init__(self,fname):
+            self.new_file = fname + os.sep + 'hoho'
             self.msg= TestMessage(fname,'/tmp/dest/')
             self.logger=TestLogger()
             pass

@@ -397,7 +397,7 @@ class sr_sarra(sr_instances):
         #=================================
 
         self.set_new()
-        self.msg.set_new(self.inplace,self.new_path,self.new_url)
+        self.msg.set_new(self.inplace,  self.new_dir   + '/' + self.filename, self.new_url)
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -639,7 +639,6 @@ class sr_sarra(sr_instances):
 
         self.new_dir  = self.new_dir.replace('//','/')
         self.new_file = self.filename
-        self.new_path = self.new_dir   + '/' + self.filename
         self.new_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
 
         # we dont propagate renaming... once used get rid of it

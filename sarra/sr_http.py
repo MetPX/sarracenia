@@ -208,7 +208,7 @@ class http_transport():
                 # and file_reassemble... take into account the locking
 
                 if   parent.inflight == None or msg.partflg == 'i' :
-                     ok = self.get(response,parent.new_path,msg)
+                     ok = self.get(response,parent.new_file,msg)
 
                 elif parent.inflight == '.' :
                      local_lock = ''
