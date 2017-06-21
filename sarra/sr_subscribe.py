@@ -222,8 +222,8 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        self.local_file = self.new_file     # FIXME: remove in 2018, once all plugins are converted.
-        self.msg.local_file = self.new_file
+        self.local_file = self.new_dir + '/' + self.new_file     # FIXME: remove in 2018, once all plugins are converted.
+        self.msg.local_file = self.local_file
         saved_file = self.new_file
 
         self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
@@ -237,8 +237,9 @@ class sr_subscribe(sr_instances):
            if not plugin(self): return False
 
            if self.local_file != saved_file :
-               self.logger.warning("on_message plugins 2 should replace parent.local_file, by parent.new_file" )
-               self.new_file = self.local_file
+               self.logger.warning("on_message plugins 2 should replace parent.local_file, by parent.new_dir and parent.new_file" )
+               self.new_file = os.path.basename(self.local_file)
+               self.new_dir = os.path.dirname(self.local_file)
 
            if self.msg.local_dir != saved_dir :
                self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
