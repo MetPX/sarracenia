@@ -236,8 +236,8 @@ class sr_subscribe(sr_instances):
 
            if not plugin(self): return False
 
-           if self.local_file != saved_file :
-               self.logger.warning("on_message plugins 2 should replace parent.local_file, by parent.new_dir and parent.new_file" )
+           if self.msg.local_file != saved_file :
+               self.logger.warning("on_message plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
                self.new_file = os.path.basename(self.local_file)
                self.new_dir = os.path.dirname(self.local_file)
 
