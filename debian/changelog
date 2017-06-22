@@ -1,3 +1,16 @@
+metpx-sarracenia (2.17.06a3) unstable; urgency=medium
+
+  * git repo url was wrong. Thanks Canadian Tire!
+  * compatibility editing local_file (full path) now results in setting new_dir and new_file.
+  * still harmonizing sender vs. subsribe api senders use parent.new_file, subs use parent.msg.new_file
+  * fixed sender using ftp broken by error message referring to *remote_urlstr* ( replaced by *new_urlstr* )
+  * files were created as public write because umask was overridden. Dunno why it was there in the first place.
+  * strip fixed in sr_subscribe.
+  * flatten fixed in sr_config.
+  * crasher bug when sr_sender doesn´t have a post_broker.
+
+ -- Peter Silva <peter@idefix>  Thu, 22 Jun 2017 17:20:03 -0400
+
 metpx-sarracenia (2.17.06a2) unstable; urgency=medium
 
   * added chmod_log for log files, which were defaulting to public writable... no idea why, set default to 600.
