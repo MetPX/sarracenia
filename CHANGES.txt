@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+**2.17.06a3**
+
 * git repo url was wrong. Thanks Canadian Tire!
 * compatibility editing local_file (full path) now results in setting new_dir and new_file.
 * still harmonizing sender vs. subsribe api senders use parent.new_file, subs use parent.msg.new_file
