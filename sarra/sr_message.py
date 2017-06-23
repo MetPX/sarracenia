@@ -80,12 +80,15 @@ class sr_message():
         self.partstr       = '%s,%d,%d,%d,%d' %\
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
 
-    def checksum_match(self):
-        self.logger.debug("sr_message checksum_match")
+    def content_should_not_be_downloaded(self):
+        """
+        if the file advertised is newer than the local one, and it has a different checksum, return True.
+
+        """
+        self.logger.debug("sr_message content_match")
         self.local_checksum = None
 
         if not os.path.isfile(self.new_file) : return False
-        if self.sumflg in ['0','n','z']        : return False
 
         # insert : file big enough to compute part checksum ?
 
@@ -93,8 +96,18 @@ class sr_message():
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
 
+        # compare dates...
+
+        if self.preserve_time and 'mtime' in self.headers:
+            new_mtime = timestr2flt(self.headers[ 'mtime' ])
+            if new_mtime <= lstat[stat.ST_MTIME]:
+               return True
+
+        if self.sumflg in ['0','n','z'] : 
+            return False
+ 
         if end > fsiz :
-           self.logger.warning("sr_message checksum_match file not big enough (insert?)")
+           self.logger.warning("sr_message content_match file not big enough (insert?)")
            return False
 
         self.compute_local_checksum()

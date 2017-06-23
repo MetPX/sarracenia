@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* added mtime check to sarra and sr_subscribe so that if of new file is <= file_on_disk, then don't download.
+
 **2.17.06a3**
 
 * git repo url was wrong. Thanks Canadian Tire!

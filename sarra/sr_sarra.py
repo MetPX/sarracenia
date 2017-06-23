@@ -459,7 +459,7 @@ class sr_sarra(sr_instances):
         #=================================
 
         need_download = True
-        if not self.overwrite and self.msg.checksum_match() :
+        if not self.overwrite and self.msg.content_should_not_be_downloaded() :
            self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.new_file)
 
