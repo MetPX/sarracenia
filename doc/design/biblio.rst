@@ -19,6 +19,7 @@ basically:
 
 The CAP theorem says that these three properties battle one another and one cannot have perfect
 implementations of all of them. This is similar to the engineering quip: Fast, Good, Cheap: Pick any two,
+A good discussion is http://berb.github.io/diploma-thesis/original/061_challenge.html
     
 Another very short, but very helpful reference is "Fallacies of Distributed Computing." by Peter L. Deutsch.
 Essentially:
@@ -50,13 +51,11 @@ expands the problem space to be covered by deployment staff when things go wrong
     
 An alternative to using quorum protocols is state-machine replication. Nodes do the same thing
 and so they get the same answers. There is no vote, no communication among nodes, because
-they should just have come to the same conclusions.
-
-This is better for deployments in practice because each node is participating individually, 
-each node can be tested on it's own, and messages from other nodes can be sent to it to cover 
-all of its possible behaviours, there is no magical other protocol and the various failure
-modes to cover. It is also easy to test, because you just run two nodes, and when they disagree,
-you have an application problem.  
+they should just have come to the same conclusions.  This is better for deployments in practice 
+because each node is participating individually, each node can be tested on it's own, and messages 
+from other nodes can be sent to it to cover all of its possible behaviours, there is no magical other 
+protocol and the various failure modes to cover. It is also easy to test, because you just run two 
+nodes, and when they disagree, you have an application problem.  
 
 For application scaling (getting a system to run over many nodes to increase performance), state-machine
 replication is far better because as you add nodes, the votes just get more complicated (in terms of
@@ -65,9 +64,10 @@ algorithmic complexity and naturally, elapsed time.)
 The complexity for applications come from when nodes are far from one another, they may not get 
 the same inputs in the same order, and so the application needs to understand how to account for
 that.  The 100% certain answer is that one can't (this is a manifestation of the principles and CAP.)
+Evaluating whether results are equivalent is the primary challenge introduced.
 
 The debate often boils down to the application developers wanting to avoid consideration of distributed 
-computing, by getting a lower layer to take care of it, and the deployment people saying: ok we
+computing by getting a lower layer to take care of it, and the deployment people saying: ok we
 can do that, but it has a high cost in deployment of those layers, and often in practice, the difficulty of
 configuring and testing those layers introduces more failures than they avoid.  If the goal is high availability,
 then these solutions are often not achieving it.
@@ -77,7 +77,6 @@ to do.  Applications communicate by passing files to one another.  For that to w
 be implement transactions on finite state machines to ensure the participating nodes have parallel state.  
 The applications are simpler, Sarracenia itself is relatively simple, all the components compose in easily
 understood ways.
-
 
 
 HPC oriented practical advice
