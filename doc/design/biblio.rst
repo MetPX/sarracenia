@@ -145,7 +145,7 @@ This process resulted in AMQP 1.0, which is completely different from 0.8, from 
 Sarracenia uses rabbitmq which is fundamentally a 0.8 broker.  I don't know if that will ever change.
 
 Pieter Hintjens is an early AMQP developer, who eventually gave up on it, and decided to do 0MQ.
-The store he tells is a very compelling account, of a disease that often occurs in designs of distributed
+The story he tells is a very compelling account, of a disease that often occurs in designs of distributed
 systems.  People do not appreciate CAP and the fallacies, and they thing they can *solve* the problem.
 
 reference: http://www.imatix.com/articles:whats-wrong-with-amqp/ 
