@@ -7,7 +7,8 @@
  author: Peter Silva
 
 status: 
-  This is just a beginning stub, not working at all. 
+  This is just a beginning stub, it does basic stuff required for posting.
+  and throws an *unimplemented* option for the rest.
 
   Purpose is to have something that parses the sarracenia configuration files in C.
 

@@ -93,6 +93,14 @@ int main(int argc, char **argv)
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
   
+  if ( argc < 3 ) 
+  {
+     fprintf( stderr, "usage: sr_cpost <config> <files>\n\n" );
+     fprintf( stderr, "\t<config> - sr_post compatible configuration file.\n" );
+     fprintf( stderr, "\t<files> - list of files to post\n\n" );
+     exit(1);
+  }
+ 
   fprintf( stderr, "starting cpost, using config file: %s\n", argv[1] );
 
   sr_config_read( &sr_cfg, argv[1] );

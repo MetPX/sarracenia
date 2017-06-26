@@ -14,41 +14,12 @@
   Minimal c implementation to allow posting of sr_post(7) messages.
   It has a lot of limitations, and no error checking for now.
 
-  how to use:
+  call an sr_context_init to set things up.
+  then sr_post will post files,
+  then sr_close to tear the connection down.
 
-  in a shell, set the SR_AMQP_MINI_OPTS environment variable to a space 
-  separated sequence of settings.  The settings are:
-
-  protocol scheme ( amqps, or amqp ) whether to use SSL or not.
-  broker hostname
-  broker port 
-  broker exchange
-  broker username (AMQP username to connect to broker)
-  broker password (password for AMQP username)
-  base URL to advertise  (examples: file:, http://localhost, sftp://hoho@host )
-
-  comma separated list of destinations to target (examples: localhost, all)
- 
-  there are no defaults, it will just die horribly if something is missing.
-
-  export SR_AMQP_MINI_OPTS="amqp localhost 5672 xs_tsource tsource tspw sftp://peter@localhost localhost"
-
-  then just:
-
-  sr_cpost <file>
-
- building it:
-
-  cc -o sr_cpost sr_cpost.c -lrabbitmq
-
- (debian package: librabbitmq, and librabbitmq-dev. )
-
- limitations:
-    - Doesn't calculate checksums, enforces sum 0.
-    - Doesn't do file partitioning strategies, enforced post as 1 part.
-    - Doesn't support document_root, absolute paths posted.
-    - Doesn't read sr configuration files, only uses the SR_ environment variable listed above.
-    - as part of the no config file support, no accept/reject support     
+  there is an all in one function: connect_and_post that does all of the above.
+  
 
  */
 #include <stdlib.h>

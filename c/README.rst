@@ -8,10 +8,16 @@ rationale:
 
   - talking about working on an in-process invocation of sr_post on file closes.
 
+one can access from C directly using the sr_context.h routines.
+It uses sr_config(7) style config files, but a lot of options are 
+unimplemented.
 
-sample from reading:
+So there is a command line binary, that can call the library:
 
-cc -fPIC -c -Wall sr_poc.c 
-cc -fPIC -c -Wall sr_context.c 
-gcc -shared -Wl,-soname,libsr.so.1 -o libsr.so.1.0.0 sr_poc.o sr_context.o -ldl -lrabbitmq -lc
+   sr_cpost
+
+There is also an LD_PRELOAD shim library example. (sr_poc.c) that
+uses the posting api.
+
+sample build instructions are in build.sh
 
