@@ -24,6 +24,8 @@ status:
 
 #include <uriparser/Uri.h>
 
+#include "sr_credentials.h"
+
 #include "sr_config.h"
 
 
@@ -61,13 +63,24 @@ int StringIsTrue(const char *s) {
 
 char token_line[TOKMAX];
 
-void parse(struct sr_config_t *sr_cfg, char* option, char* argument) {
+void parse(struct sr_config_t *sr_cfg, char* option, char* argument) 
+{
+
+  char *brokerstr;
 
   if ( strcspn(option," \t\n#") == 0 ) return;
 
   // printf( "option: %s,  argument: %s \n", option, argument );
-  if ( !strcmp( option, "broker" ) ) {
-      config_uri_parse( argument, &(sr_cfg->broker), sr_cfg->brokeruricb );
+  if ( !strcmp( option, "broker" ) ) 
+  {
+      brokerstr = sr_credentials_fetch(argument); 
+      if ( brokerstr == NULL ) 
+      {
+          fprintf( stderr,"notice: no stored credential: %s.\n", argument );
+          config_uri_parse( argument, &(sr_cfg->broker), sr_cfg->brokeruricb );
+      } else {
+          config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
+      }
   } else if ( !strcmp( option, "url" ) ) {
       sr_cfg->url = strdup(argument);
   } else if ( !strcmp( option, "exchange" ) ) {
@@ -81,7 +94,8 @@ void parse(struct sr_config_t *sr_cfg, char* option, char* argument) {
   } 
 }
 
-void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) {
+void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) 
+{
   FILE *f;
   char *option;
   char *argument;
@@ -92,13 +106,16 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) {
     return;
   }
   // Initialization...
+  sr_credentials_init();
   sr_cfg->debug=0;
   sr_cfg->to=NULL;
 
-  while ( fgets(token_line,TOKMAX,f) != NULL ) {
+  while ( fgets(token_line,TOKMAX,f) != NULL ) 
+   {
      //printf( "line: %s", token_line );
 
-     if (strspn(token_line," \t\n") == strlen(token_line) ) {
+     if (strspn(token_line," \t\n") == strlen(token_line) ) 
+     {
          continue; // blank line.
      }
      option   = strtok(token_line," \t\n");
