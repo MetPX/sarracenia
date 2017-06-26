@@ -16,7 +16,7 @@
 
   how to use:
 
-  in a shell, set the SW_AMQP_MINI_OPTS environment variable to a space 
+  in a shell, set the SR_AMQP_MINI_OPTS environment variable to a space 
   separated sequence of settings.  The settings are:
 
   protocol scheme ( amqps, or amqp ) whether to use SSL or not.
@@ -84,9 +84,9 @@ struct sr_context {
 };
 
 
-struct sr_context *sr_context_init();
-/* context_init sets up a connection to a broker
-   returns an sr_context ready for use by post
+struct sr_context *sr_context_init_env();
+/* context_init sets up a connection to a broker based on SR_AMQP_MINI_OPTS environment variable.
+   returns an sr_context ready for use by post.
 
    connection establishment is done here.
  */
