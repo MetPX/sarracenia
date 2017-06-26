@@ -1,10 +1,8 @@
 
 /*
- copyright Government of Canada 2017 
-
- This file is part of sarracenia.
+ This file is part of metpx-sarracenia.
  The sarracenia suite is Free and is proudly provided by the Government of Canada
- Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2017
+ Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2017
 
  author: Peter Silva
 
@@ -26,150 +24,89 @@ status:
 
 #include <uriparser/Uri.h>
 
+#include "sr_config.h"
 
 
-struct sr_config_t {
-  UriUriA broker;
-  char brokeruricb[1024];
-
-};
-
-
+#define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
 void config_uri_parse( char *src, UriUriA *ua, char *buf ) {
-
-  /* 
-   *
+  /* copy src string to buf, adding nuls to separate path elements. 
+     so each string is nul-treminated.
    */
+
   UriParserStateA state; 
-
-  fprintf( stderr, "c_u_p 1\n" );
   state.uri = ua;
-  
   strcpy( buf, src );
+  if (uriParseUriA(&state, buf ) != URI_SUCCESS) return;
 
-  fprintf( stderr, "c_u_p 2\n" );
-  if (uriParseUriA(&state, buf ) != URI_SUCCESS) {
-                // uriFreeUriMembersA(ua);
-                return;
-  } 
-  fprintf( stderr, "c_u_p 3\n" );
-  *(char*)(ua->scheme.afterLast) = '\0';
-  *(char*)(ua->userInfo.afterLast) = '\0';
-  *(char*)(ua->hostText.afterLast) = '\0';
-  *(char*)(ua->portText.afterLast) = '\0';
-
-  fprintf( stderr, "c_u_p 3\n" );
+  NULTERM( (char*)(ua->scheme.afterLast) );
+  NULTERM( (char*)(ua->userInfo.afterLast) );
+  NULTERM( (char*)(ua->hostText.afterLast) );
+  NULTERM( (char*)(ua->portText.afterLast) );
 } 
 
+int StringIsTrue(const char *s) {
 
-char keyword_buf[255];
+   if (s == NULL ) return(1);
 
-char *config_keyword_get(char *cfg, char *keyword ) {
-  /* read cfg (dump of file in memory), looking a keyword opt.
-     return the value, copied in keywrod_buf, and null terminated.
-   */ 
-  size_t lenk; 
-  char *c;
+   if ( !strcasecmp(s,"true") || 
+        !strcasecmp(s,"on")  ||
+        !strcasecmp(s,"yes")  ) 
+     return (1);
 
-  lenk = strlen(keyword);
-  c=cfg;
-  while( strncmp(c,keyword,lenk) ) {
-     while ( *c != '\n' ) {
-        if ( *c == '\0' ) return NULL;
-        c++;
-     } 
-     c++;
-  }
-
-  c += lenk+1; // skip past keyword 
-  lenk = strspn(c, " \t"); // skip intervening white space.
-  c += lenk;
-
-  lenk = strcspn(c,"\n"); // find the end of the line.
-
-  strncpy((char*)keyword_buf,c,lenk);
-
-  keyword_buf[lenk]='\0'; 
-
-  return(keyword_buf);
+   return(0);
 }
 
+#define TOKMAX (1024)
 
-char *config_file_read(char *filename) {
+char token_line[TOKMAX];
 
-  struct stat finfo;
-  char *cfgdat;
-  int fd;
-  int ret;
-  char *token;
-  int i;
-  int lcount;
-  char **cfgarray;
+void parse(struct sr_config_t *sr_cfg, char* option, char* argument) {
 
+  if ( strcspn(option," \t\n#") == 0 ) return;
 
-  stat(filename,&finfo);
-      
-  cfgdat = (char*)malloc(finfo.st_size+1);
-  fd = open( filename, O_RDONLY );
-  ret = read(fd,cfgdat,finfo.st_size);
-  close(fd);
-
-  if ( ret < finfo.st_size )  {
-     fprintf( stderr, "sz wrong\n" );
-     return NULL ;  
-  }
-  
-  return cfgdat;
-}
-
-
-void main( char* argv, int argc ) {
-
-  char *cfg;
-  char **tag, *value;
-  int i;
-  UriParserStateA state; 
-  struct UriPathSegmentStructA *pathelem;
-  struct sr_config_t sr_c;
-
-  cfg = config_file_read( "/home/peter/.config/sarra/post/test2.conf" );
-
-  state.uri = &(sr_c.broker);
-  
-  fprintf( stderr, "1\n" );
-/*
-  strcpy( sr_c.brokeruricb, config_keyword_get(cfg, "broker") );
-
-  if (uriParseUriA(&state, sr_c.brokeruricb ) != URI_SUCCESS) {
-                uriFreeUriMembersA(&(sr_c.broker));
-                return;
+  // printf( "option: %s,  argument: %s \n", option, argument );
+  if ( !strcmp( option, "broker" ) ) {
+      config_uri_parse( argument, &(sr_cfg->broker), sr_cfg->brokeruricb );
+  } else if ( !strcmp( option, "url" ) ) {
+      sr_cfg->url = strdup(argument);
+  } else if ( !strcmp( option, "exchange" ) ) {
+      sr_cfg->exchange = strdup(argument);
+  } else if ( !strcmp( option, "to" ) ) {
+      sr_cfg->to = strdup(argument);
+  } else if ( !strcmp( option, "debug" ) ) {
+      sr_cfg->debug = StringIsTrue(argument);
+  } else {
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
   } 
- */
-  fprintf( stderr, "2\n" );
-
-  config_uri_parse( config_keyword_get(cfg,"broker"), &(sr_c.broker), sr_c.brokeruricb );
-
-  fprintf( stderr, "3\n" );
-
-  printf( "config keyword get %s=%s\n", "broker", config_keyword_get(cfg,"broker") );
-  printf( "config keyword get %s=%s\n", "sleep", config_keyword_get(cfg,"sleep") );
-  printf( "config keyword get %s=%s\n", "url", config_keyword_get(cfg,"url") );
-  printf( "config keyword get %s=%s\n", "exchange", config_keyword_get(cfg,"exchange") );
-
-  printf( "broker, scheme=%s\n", sr_c.broker.scheme );
-  printf( "broker, userInfo=%s \n", sr_c.broker.userInfo );
-  printf( "broker, hostText=%s \n", sr_c.broker.hostText );
-  printf( "broker, portText=%s \n", sr_c.broker.portText );
-
-  //*(char*)(uri.pathHead.afterLast) = '\0';
-  pathelem= sr_c.broker.pathHead;
-  while ( pathelem != NULL )  {
-      fprintf( stderr, "broker, pathelem=%s \n", pathelem->text );
-      pathelem = pathelem->next;
-  }
-
-  // no, because storage is static in uricb...  uriFreeUriMembersA(&uri);
-  exit(0);
-
 }
+
+void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) {
+  FILE *f;
+  char *option;
+  char *argument;
+
+  f = fopen( filename, "r" );
+  if ( f == NULL ) {
+    fprintf( stderr, "fopen of %s failed", filename );
+    return;
+  }
+  // Initialization...
+  sr_cfg->debug=0;
+  sr_cfg->to=NULL;
+
+  while ( fgets(token_line,TOKMAX,f) != NULL ) {
+     //printf( "line: %s", token_line );
+
+     if (strspn(token_line," \t\n") == strlen(token_line) ) {
+         continue; // blank line.
+     }
+     option   = strtok(token_line," \t\n");
+     argument = strtok(NULL," \t\n");
+
+     parse(sr_cfg, option,argument);
+
+  };
+  fclose( f );
+}
+

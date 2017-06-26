@@ -50,7 +50,16 @@
 
   how to use:
 
-  in a shell, set the SW_AMQP_MINI_OPTS environment variable to a space 
+ 
+
+  In a shell, to use an sr_config(7) style configuration file:
+  set the SR_POST_CONFIG environment variable to the name of the
+  file to use.
+
+
+
+  If that variable is not set, then 
+  set the SR_AMQP_MINI_OPTS environment variable to a space 
   separated sequence of settings.  The settings are:
 
   protocol scheme ( amqps, or amqp ) whether to use SSL or not.
@@ -101,6 +110,8 @@
 #include <amqp.h>
 #include <amqp_framing.h>
 
+#include "sr_context.h"
+
 char time2str_result[18];
 
 char *time2str( struct timespec *tin ) {
@@ -142,55 +153,18 @@ void add_header( char *tag, const char * value ) {
 
 }
 
-struct sr_context {
+struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
-  char settings[255];
-  char const *scheme;
-  char const *exchange;
-  char const *file;
-  char const *hostname;
-  char const *url;
-  char const *user;
-  char const *password;
-  char const *to;
-  amqp_socket_t *socket;
-  amqp_connection_state_t conn;
-  int port;
-};
+ /* set up a connection given a context.
+  */
 
-
-struct sr_context *sr_context_init_env() {
-
-  struct sr_context *sr_c;
   signed int status;
   amqp_rpc_reply_t reply;
   amqp_channel_open_ok_t *open_status;
-  char *setstr;
 
-  sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "_initialize, new_connection\n" );
 
-  setstr = getenv( "SR_AMQP_MINI_OPTS" ) ;
-
-  if ( setstr == NULL ) {
-    fprintf(stderr, "SR_AMQP_MINI_OPTS needs to be set to: scheme host port exchange user password url to\n");
-    fprintf(stderr, "example: amqps localhost 5671  xpublic guest guest file: localhost\n");
-  }
-  strcpy( sr_c->settings, setstr );
-
-  sr_c->scheme = strtok(sr_c->settings," ");
-  sr_c->hostname = strtok(NULL," ");
-  sr_c->port = atol( strtok(NULL, " ") );
-  sr_c->exchange = strtok(NULL, " ");
-  sr_c->user = strtok(NULL, " ");
-  sr_c->password = strtok(NULL, " ");
-  sr_c->url = strtok(NULL, " ");
-  sr_c->to = strtok(NULL, " ");
-  sr_c->socket = NULL;
-
-  /*
-  fprintf( stderr, "broker from SR_AMQP_MINI_OPTS: %s://%s:%s@%s:%d #%s \n", 
-       sr_c->scheme, sr_c->user, sr_c->password, sr_c->hostname, sr_c->port, sr_c->exchange );
-   */
   sr_c->conn = amqp_new_connection();
 
   if ( !strcmp(sr_c->scheme,"amqps") ) {
@@ -232,11 +206,92 @@ struct sr_context *sr_context_init_env() {
     fprintf(stderr, "failed AMQP get_rpc_reply \n");
     return(NULL);
   }
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "_initialize, done!\n" );
+
 
   return(sr_c);
 }
 
-void post(struct sr_context *sr_c, const char *fn ) {
+struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
+
+  struct sr_context *sr_c;
+  char *buf;
+  int len;
+
+  sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
+
+  sr_c->cfg = sr_cfg;
+
+  sr_c->scheme = sr_cfg->broker.scheme.first ;
+  sr_c->hostname = sr_cfg->broker.hostText.first ;
+  
+  if ( sr_cfg->broker.portText.first == NULL ) {
+     if ( !strcmp(sr_c->scheme,"amqps") ) sr_c->port = 5671;
+     else sr_c->port= 5672;
+  } else sr_c->port = atol( sr_cfg->broker.portText.first );
+  
+  sr_c->exchange = sr_cfg->exchange ;
+  
+  len = strcspn(sr_cfg->broker.userInfo.first, ":");
+
+  buf = (char *)malloc(len+1);
+
+  strncpy(buf, sr_cfg->broker.userInfo.first, len );
+
+  sr_c->user = buf;
+  sr_c->password = sr_cfg->broker.userInfo.first + len +1 ;
+  sr_c->url = sr_cfg->url;
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "debug to: %s, broker host: %s", sr_cfg->to,
+         sr_cfg->broker.hostText.first );
+
+  sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker.hostText.first : sr_cfg->to;
+  sr_c->socket = NULL;
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
+       sr_c->scheme, sr_c->user, sr_c->password, sr_c->hostname, sr_c->port );
+
+  return( sr_context_initialize(sr_c) );
+
+}
+
+struct sr_context *sr_context_init_env() {
+
+  struct sr_context *sr_c;
+  char *setstr;
+
+  sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
+
+  setstr = getenv( "SR_AMQP_MINI_OPTS" ) ;
+
+  if ( setstr == NULL ) {
+    fprintf(stderr, "SR_AMQP_MINI_OPTS needs to be set to: scheme host port exchange user password url to\n");
+    fprintf(stderr, "example: amqps localhost 5671  xpublic guest guest file: localhost\n");
+  }
+  strcpy( sr_c->settings, setstr );
+
+  sr_c->scheme = strtok(sr_c->settings," ");
+  sr_c->hostname = strtok(NULL," ");
+  sr_c->port = atol( strtok(NULL, " ") );
+  sr_c->exchange = strtok(NULL, " ");
+  sr_c->user = strtok(NULL, " ");
+  sr_c->password = strtok(NULL, " ");
+  sr_c->url = strtok(NULL, " ");
+  sr_c->to = strtok(NULL, " ");
+  sr_c->socket = NULL;
+
+  /*
+  fprintf( stderr, "broker from SR_AMQP_MINI_OPTS: %s://%s:%s@%s:%d #%s \n", 
+       sr_c->scheme, sr_c->user, sr_c->password, sr_c->hostname, sr_c->port, sr_c->exchange );
+   */
+  return( sr_context_initialize(sr_c) );
+
+}
+
+void sr_post(struct sr_context *sr_c, const char *fn ) {
 
   char routingkey[255];
   char message_body[1024];
@@ -247,6 +302,9 @@ void post(struct sr_context *sr_c, const char *fn ) {
   amqp_table_t table;
   amqp_basic_properties_t props;
 
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting to exchange:  %s\n", sr_c->exchange );
+
   strcpy(routingkey,"v02.post");
   if (fn[0] != '/' ) strcat(routingkey,".");
 
@@ -254,9 +312,9 @@ void post(struct sr_context *sr_c, const char *fn ) {
   for( int i=8; i< strlen(routingkey); i++ )
       if ( routingkey[i] == '/' ) routingkey[i]='.';
 
-  /*
-  printf( "routingkey: %s\n", routingkey );
-   */
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, routingkey: %s\n", routingkey );
+
   stat(fn,&sb);
 
   strcpy( message_body, time2str(NULL));
@@ -265,9 +323,8 @@ void post(struct sr_context *sr_c, const char *fn ) {
   strcat( message_body, " " );
   strcat( message_body, fn);
 
-  /*
-  printf( "message_body: %s\n", message_body );
-   */
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, message_body: %s\n", message_body );
 
   hdrcnt=0;
 
@@ -275,11 +332,20 @@ void post(struct sr_context *sr_c, const char *fn ) {
   add_header( "mtime", time2str(&(sb.st_mtim)));
 
   sprintf( partstr, "1,%ld,0,0", sb.st_size );
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, parts: %s\n", partstr );
+
   add_header( "parts", partstr );
 
   sprintf( sumstr, "0,%ld", random()%1000 );
   add_header( "sum", sumstr );
 
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, sunstr: %s\n", sumstr );
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, to: %s\n", sr_c->to );
 
   add_header( "to_clusters", sr_c->to );
 
@@ -299,9 +365,12 @@ void post(struct sr_context *sr_c, const char *fn ) {
                                     0,
                                     &props,
                                     amqp_cstring_bytes(message_body));
- if ( status < 0 )  {
-   fprintf( stderr, "sr_post: amqp publish failed.\n");
- }
+
+ if ( status < 0 ) 
+     fprintf( stderr, "sr_post: amqp publish failed.\n");
+ else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "posting, publish over.\n" );
+
 }
 
 void sr_context_close(struct sr_context *sr_c) {
@@ -328,15 +397,27 @@ void sr_context_close(struct sr_context *sr_c) {
 
 void connect_and_post(const char *fn) {
 
-  struct sr_context *sr_c;
+  static struct sr_config_t sr_cfg; 
+  static int config_read = 0;
+  struct sr_context *sr_c = NULL;
+  char *setstr;
 
-  sr_c = sr_context_init_env();
+  setstr = getenv( "SR_POST_CONFIG" ) ;
+  if ( setstr != NULL ){ 
+     if ( config_read == 0 ) {
+       sr_config_read(&sr_cfg,setstr);
+       config_read=1;
+     }
+     sr_c = sr_context_init_config(&sr_cfg);
+  } else 
+     sr_c = sr_context_init_env();
+
   if (sr_c == NULL ) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
 
-  post( sr_c, fn );
+  sr_post( sr_c, fn );
 
   sr_context_close(sr_c);
 

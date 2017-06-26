@@ -81,23 +81,29 @@
     - Doesn't calculate checksums, enforces sum 0.
     - Doesn't do file partitioning strategies, enforced post as 1 part.
     - Doesn't support document_root, absolute paths posted.
-    - Doesn't read sr configuration files, only uses the SR_ environment variable listed above.
-    - as part of the no config file support, no accept/reject support     
-
+    - Doesn't do a lot of things... 
  */
 #include <stdio.h>
 
 #include "sr_context.h"
 
 
-int main(int argc, char const *const *argv)
+int main(int argc, char **argv)
 {
-  struct sr_context sr_c;
+  struct sr_context *sr_c;
+  struct sr_config_t sr_cfg;
   
-  sr_c = sr_context_init_env();
+  fprintf( stderr, "starting cpost, using config file: %s\n", argv[1] );
 
-  for( int i=0; i < argc-1 ; i++ ) { 
-     sr_post(sr_c,argv[++i]);
+  sr_config_read( &sr_cfg, argv[1] );
+  
+  sr_c = sr_context_init_config( &sr_cfg );
+  fprintf( stderr, "context is %x\n", sr_c );
+
+  for( int i=2; i < argc ; i++ ) { 
+     fprintf( stderr, "posting %s\n", argv[i] );
+
+     sr_post(sr_c,argv[i]);
   }
 
   sr_context_close(sr_c);

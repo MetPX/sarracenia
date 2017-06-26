@@ -67,20 +67,24 @@
 #include <amqp.h>
 #include <amqp_framing.h>
 
+#include "sr_config.h"
+
+
 struct sr_context {
 
   char settings[255];
-  char const *scheme;
-  char const *exchange;
-  char const *file;
-  char const *hostname;
-  char const *url;
-  char const *user;
-  char const *password;
-  char const *to;
+  const char *scheme;
+  const char *exchange;
+  const char *file;
+  const char *hostname;
+  const char *url;
+  const char *user;
+  const char *password;
+  const char *to;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
   int port;
+  struct sr_config_t *cfg;
 };
 
 
@@ -90,6 +94,14 @@ struct sr_context *sr_context_init_env();
 
    connection establishment is done here.
  */
+
+struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg);
+
+/* context_init sets up a connection to a broker based on given configuration.
+   returns an sr_context ready for use by post.
+   connection establishment is done here.
+ */
+
 
 void sr_post(struct sr_context *sr_c, const char *fn ); 
 /* post the given file name based on the established context.
