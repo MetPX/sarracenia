@@ -29,6 +29,7 @@ int main( int argc, char *const *argv ) {
 
   printf( "reading: %s\n", argv[1] );
 
+  sr_config_init( &sr_cfg );
   sr_config_read( &sr_cfg, argv[1] );
 
 

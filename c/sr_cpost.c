@@ -101,6 +101,7 @@ int main(int argc, char **argv)
      exit(1);
   }
  
+  sr_config_init( &sr_cfg );
   sr_config_read( &sr_cfg, argv[1] );
   
   sr_c = sr_context_init_config( &sr_cfg );

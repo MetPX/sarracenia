@@ -109,7 +109,7 @@ int StringIsTrue(const char *s)
 
 char token_line[TOKMAX];
 
-void parse(struct sr_config_t *sr_cfg, char* option, char* argument) 
+void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argument) 
 {
 
   char *brokerstr;
@@ -150,6 +150,17 @@ void parse(struct sr_config_t *sr_cfg, char* option, char* argument)
   } 
 }
 
+void sr_config_init( struct sr_config_t *sr_cfg ) 
+{
+  sr_credentials_init();
+  sr_cfg->debug=0;
+  sr_cfg->accept_unmatched=1;
+  sr_cfg->to=NULL;
+  sr_cfg->directory=NULL;
+  sr_cfg->masks=NULL;
+  sr_cfg->url=NULL;
+}
+
 void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) 
 {
   FILE *f;
@@ -161,13 +172,6 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
     fprintf( stderr, "fopen of %s failed", filename );
     return;
   }
-  // Initialization...
-  sr_credentials_init();
-  sr_cfg->debug=0;
-  sr_cfg->accept_unmatched=1;
-  sr_cfg->to=NULL;
-  sr_cfg->directory=NULL;
-  sr_cfg->masks=NULL;
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 
    {
@@ -180,7 +184,7 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
      option   = strtok(token_line," \t\n");
      argument = strtok(NULL,"\n");
 
-     parse(sr_cfg, option,argument);
+     sr_config_parse_option(sr_cfg, option,argument);
 
   };
   fclose( f );

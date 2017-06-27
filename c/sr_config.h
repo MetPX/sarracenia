@@ -51,6 +51,15 @@ struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* cha
  /* return pointer to matched pattern, if there is one, NULL otherwise.
   */
 
+void sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument );
+ /* update sr_cfg with the option setting (and it's argument) given
+  */
+
+
+void sr_config_init( struct sr_config_t *sr_cfg );
+ /* Initialize an sr_config structure (setting defaults)
+  */
+
 void sr_config_read( struct sr_config_t *sr_cfg, char *filename );
 
 /* sr_config_read:
