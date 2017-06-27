@@ -243,16 +243,12 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
   sr_c->password = sr_cfg->broker.userInfo.first + len +1 ;
   sr_c->url = sr_cfg->url;
 
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "debug to: %s, broker host: %s", sr_cfg->to,
-         sr_cfg->broker.hostText.first );
-
   sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker.hostText.first : sr_cfg->to;
   sr_c->socket = NULL;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
-       sr_c->scheme, sr_c->user, sr_c->password, sr_c->hostname, sr_c->port );
+       sr_c->scheme, sr_c->user, "<pw>", sr_c->hostname, sr_c->port );
 
   return( sr_context_initialize(sr_c) );
 
@@ -301,7 +297,17 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   char sumstr[255];
   amqp_table_t table;
   amqp_basic_properties_t props;
+  struct sr_mask_t *mask;
 
+  /* apply the accept/reject clauses */
+  mask = isMatchingPattern(sr_c->cfg, fn);
+
+  if ( (mask && !(mask->accepting)) || !( sr_c->cfg->accept_unmatched ))
+  { //reject.
+      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+         fprintf( stderr, "rejected: %s\n", fn );
+      return;
+  }
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "posting to exchange:  %s\n", sr_c->exchange );
 
@@ -416,7 +422,6 @@ void connect_and_post(const char *fn) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
-
   sr_post( sr_c, fn );
 
   sr_context_close(sr_c);

@@ -796,7 +796,7 @@ class sr_config:
                      self.logger.debug("Masks")
                      self.logger.debug("Masks %s"% self.masks)
 
-                elif words0 in ['accept_unmatch','au']: # See: sr_config.7
+                elif words0 in ['accept_unmatched','accept_unmatch','au']: # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.accept_unmatch = True
                         n = 1

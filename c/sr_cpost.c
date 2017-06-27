@@ -101,16 +101,11 @@ int main(int argc, char **argv)
      exit(1);
   }
  
-  fprintf( stderr, "starting cpost, using config file: %s\n", argv[1] );
-
   sr_config_read( &sr_cfg, argv[1] );
   
   sr_c = sr_context_init_config( &sr_cfg );
-  fprintf( stderr, "context is %x\n", sr_c );
 
   for( int i=2; i < argc ; i++ ) { 
-     fprintf( stderr, "posting %s\n", argv[i] );
-
      sr_post(sr_c,argv[i]);
   }
 

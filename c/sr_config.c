@@ -31,7 +31,52 @@ status:
 
 #define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
-void config_uri_parse( char *src, UriUriA *ua, char *buf ) {
+struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chaine )
+   /* return pointer to matched pattern, if there is one, NULL otherwise.
+    */
+{
+   struct sr_mask_t *entry;
+   
+   entry = sr_cfg->masks;
+   while( entry ) 
+   {
+       if ( regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) )
+           break; // matched
+       entry = entry->next; 
+   }
+   return(entry);
+}
+
+
+void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int accept )
+{
+    struct sr_mask_t *new_entry;
+    struct sr_mask_t *next_entry;
+
+    if ( (sr_cfg) && sr_cfg->debug )
+        fprintf( stderr, "adding mask: %s, accept=%d\n", option, accept );
+
+    new_entry = (struct sr_mask_t *)malloc( sizeof(struct sr_mask_t) );
+    new_entry->next=NULL;
+    new_entry->directory = (directory?strdup(directory):NULL);
+    new_entry->accepting = accept;
+    regcomp( &(new_entry->regexp), option, REG_EXTENDED|REG_NOSUB );
+
+    // append new entry to existing masks.
+    if ( sr_cfg->masks == NULL ) 
+    {
+        sr_cfg->masks = new_entry;
+    } else {
+        next_entry = sr_cfg->masks;
+        while( next_entry->next != NULL ) 
+           next_entry = next_entry->next;
+        next_entry->next = new_entry;
+    }
+}
+
+
+void config_uri_parse( char *src, UriUriA *ua, char *buf ) 
+{
   /* copy src string to buf, adding nuls to separate path elements. 
      so each string is nul-treminated.
    */
@@ -47,7 +92,8 @@ void config_uri_parse( char *src, UriUriA *ua, char *buf ) {
   NULTERM( (char*)(ua->portText.afterLast) );
 } 
 
-int StringIsTrue(const char *s) {
+int StringIsTrue(const char *s) 
+{
 
    if (s == NULL ) return(1);
 
@@ -70,7 +116,9 @@ void parse(struct sr_config_t *sr_cfg, char* option, char* argument)
 
   if ( strcspn(option," \t\n#") == 0 ) return;
 
-  // printf( "option: %s,  argument: %s \n", option, argument );
+  if (sr_cfg->debug)
+     fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
+
   if ( !strcmp( option, "broker" ) ) 
   {
       brokerstr = sr_credentials_fetch(argument); 
@@ -81,14 +129,22 @@ void parse(struct sr_config_t *sr_cfg, char* option, char* argument)
       } else {
           config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
       }
-  } else if ( !strcmp( option, "url" ) ) {
-      sr_cfg->url = strdup(argument);
-  } else if ( !strcmp( option, "exchange" ) ) {
-      sr_cfg->exchange = strdup(argument);
-  } else if ( !strcmp( option, "to" ) ) {
-      sr_cfg->to = strdup(argument);
+  } else if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
+      add_mask( sr_cfg, sr_cfg->directory, option, 1 );
+  } else if ( !strcmp( option, "accept_unmatch" ) ) {
+      sr_cfg->accept_unmatched = StringIsTrue(argument);
   } else if ( !strcmp( option, "debug" ) ) {
       sr_cfg->debug = StringIsTrue(argument);
+  } else if ( !strcmp( option, "directory" ) ) {
+      sr_cfg->directory = strdup(argument);
+  } else if ( !strcmp( option, "exchange" ) ) {
+      sr_cfg->exchange = strdup(argument);
+  } else if ( !strcmp( option, "reject" ) ) {
+      add_mask( sr_cfg, sr_cfg->directory, option, 0 );
+  } else if ( !strcmp( option, "to" ) ) {
+      sr_cfg->to = strdup(argument);
+  } else if ( !strcmp( option, "url" ) ) {
+      sr_cfg->url = strdup(argument);
   } else {
       fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
   } 
@@ -108,7 +164,10 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   // Initialization...
   sr_credentials_init();
   sr_cfg->debug=0;
+  sr_cfg->accept_unmatched=1;
   sr_cfg->to=NULL;
+  sr_cfg->directory=NULL;
+  sr_cfg->masks=NULL;
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 
    {
@@ -119,7 +178,7 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
          continue; // blank line.
      }
      option   = strtok(token_line," \t\n");
-     argument = strtok(NULL," \t\n");
+     argument = strtok(NULL,"\n");
 
      parse(sr_cfg, option,argument);
 

@@ -22,18 +22,34 @@ status:
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <regex.h>
 
 #include <uriparser/Uri.h>
 
+struct sr_mask_t {
+  char* clause;
+  char* directory;
+  regex_t regexp;
+  int   accepting;
+  struct sr_mask_t *next;
+};
 
 struct sr_config_t {
   UriUriA broker;
   char brokeruricb[1024];
+  char *directory;
   char *exchange;
+  struct sr_mask_t *masks;
   char *url;
   char *to;
   int  debug;
+  int  accept_unmatched;
+  
 };
+
+struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
+ /* return pointer to matched pattern, if there is one, NULL otherwise.
+  */
 
 void sr_config_read( struct sr_config_t *sr_cfg, char *filename );
 
