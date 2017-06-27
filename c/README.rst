@@ -21,3 +21,12 @@ uses the posting api.
 
 sample build instructions are in build.sh
 
+
+build dependencies:
+liburiparser-dev - development files for uriparser
+librabbitmq-dev - AMQP client library written in C - Dev Files
+
+run dependencies:
+liburiparser1 - URI parsing library compliant with RFC 3986
+librabbitmq4 - AMQP client library written in C
+
