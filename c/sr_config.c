@@ -133,6 +133,8 @@ void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argu
       add_mask( sr_cfg, sr_cfg->directory, option, 1 );
   } else if ( !strcmp( option, "accept_unmatch" ) ) {
       sr_cfg->accept_unmatched = StringIsTrue(argument);
+  } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" )) {
+      sr_config_read( sr_cfg, argument );
   } else if ( !strcmp( option, "debug" ) ) {
       sr_cfg->debug = StringIsTrue(argument);
   } else if ( !strcmp( option, "directory" ) ) {
@@ -169,7 +171,7 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   f = fopen( filename, "r" );
   if ( f == NULL ) {
-    fprintf( stderr, "fopen of %s failed", filename );
+    fprintf( stderr, "fopen of %s failed\n", filename );
     return;
   }
 
