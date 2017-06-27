@@ -35,7 +35,7 @@ char *sr_credentials_fetch( char *s )
       {
          result= (char*)malloc(i+1);
          strncpy(result,start,i); 
-         //fprintf( stderr, "result: %s\n", result );
+         fprintf( stderr, "result: %s\n", result );
          return(result);
       }
 
@@ -45,17 +45,19 @@ char *sr_credentials_fetch( char *s )
           //fprintf( stderr, "skipping password..\n" );
           while ( start[i] != '@' ) i++;
 
-          //fprintf( stderr, "start[i]=%c, s[smatching]=%c\n", 
+          //fprintf( stderr, "rest of url, start[i]=%c, s[smatching]=%c\n", 
           //        start[i], s[smatching] );
 
           while ( ( smatching < slen ) && start[i] == s[smatching] ) 
           {
-             //fprintf( stderr, "start[i]=%c, s[smatching]=%c\n", 
-             //     start[i], s[smatching] );
+             //fprintf( stderr, "start[i]=%c, i=%d s[smatching]=%c smatching=%d\n", 
+             //     start[i], i, s[smatching], smatching );
              i++; smatching++; 
           }
-          if ( (smatching >= slen) && ( (start[i] == ' ') || (start[i] == '/')  ||
-               (start[i] == '\t') || (start[i] == '\n') )) 
+          //fprintf( stderr, "out of loop, slen=%d, start[i]=%c, i=%d s[smatching]=%c smatching=%d\n", 
+          //        slen, start[i], i, s[smatching], smatching );
+
+          if ( (smatching == slen-1) && ( (start[i] == ' ') || (start[i] == '/')  || (start[i] == '\t') || (start[i] == '\n') )) 
           {
              result= (char*)malloc(i+1);
              strncpy(result,start,i); 

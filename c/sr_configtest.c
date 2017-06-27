@@ -33,17 +33,17 @@ int main( int argc, char *const *argv ) {
   sr_config_read( &sr_cfg, argv[1] );
 
 
-  printf( "broker, scheme=%s\n", sr_cfg.broker.scheme );
-  printf( "broker, userInfo=%s \n", sr_cfg.broker.userInfo );
-  printf( "broker, hostText=%s \n", sr_cfg.broker.hostText );
-  printf( "broker, portText=%s \n", sr_cfg.broker.portText );
+  printf( "broker, scheme=%s\n", sr_cfg.broker.scheme.first );
+  printf( "broker, userInfo=%s \n", sr_cfg.broker.userInfo.first );
+  printf( "broker, hostText=%s \n", sr_cfg.broker.hostText.first );
+  printf( "broker, portText=%s \n", sr_cfg.broker.portText.first );
   printf( "posting exchange=%s \n", sr_cfg.exchange);
   printf( "posting url=%s \n", sr_cfg.url);
 
   //*(char*)(uri.pathHead.afterLast) = '\0';
   pathelem= sr_cfg.broker.pathHead;
   while ( pathelem != NULL )  {
-      fprintf( stderr, "broker, pathelem=%s \n", pathelem->text );
+      fprintf( stderr, "broker, pathelem=%s \n", pathelem->text.first );
       pathelem = pathelem->next;
   }
 

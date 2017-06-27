@@ -105,6 +105,10 @@ int main(int argc, char **argv)
   sr_config_read( &sr_cfg, argv[1] );
   
   sr_c = sr_context_init_config( &sr_cfg );
+  if (!sr_c) {
+     fprintf( stderr, "failed to establish sr context\n");
+     return(1);
+  }
 
   for( int i=2; i < argc ; i++ ) { 
      sr_post(sr_c,argv[i]);

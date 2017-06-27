@@ -105,8 +105,8 @@
 
 
 #include <stdint.h>
-#include <amqp_ssl_socket.h>
 #include <amqp_tcp_socket.h>
+#include <amqp_ssl_socket.h>
 #include <amqp.h>
 #include <amqp_framing.h>
 
@@ -153,6 +153,54 @@ void add_header( char *tag, const char * value ) {
 
 }
 
+void amqp_error_print(int x, char const *context)
+{
+  if (x < 0) {
+    fprintf(stderr, "%s: %s\n", context, amqp_error_string2(x));
+    return;
+  }
+}
+
+void amqp_reply_print(amqp_rpc_reply_t x, char const *context)
+{
+  switch (x.reply_type) {
+  case AMQP_RESPONSE_NORMAL:
+    return;
+
+  case AMQP_RESPONSE_NONE:
+    fprintf(stderr, "%s: missing RPC reply type!\n", context);
+    break;
+
+  case AMQP_RESPONSE_LIBRARY_EXCEPTION:
+    fprintf(stderr, "%s: %s\n", context, amqp_error_string2(x.library_error));
+    break;
+  
+  case AMQP_RESPONSE_SERVER_EXCEPTION:
+    switch (x.reply.id) {
+    case AMQP_CONNECTION_CLOSE_METHOD: {
+      amqp_connection_close_t *m = (amqp_connection_close_t *) x.reply.decoded;
+      fprintf(stderr, "%s: server connection error %uh, message: %.*s\n",
+              context,
+              m->reply_code,
+              (int) m->reply_text.len, (char *) m->reply_text.bytes);
+      break;
+    }
+    case AMQP_CHANNEL_CLOSE_METHOD: {
+      amqp_channel_close_t *m = (amqp_channel_close_t *) x.reply.decoded;
+      fprintf(stderr, "%s: server channel error %uh, message: %.*s\n",
+              context,
+              m->reply_code,
+              (int) m->reply_text.len, (char *) m->reply_text.bytes);
+      break;
+    }
+    default:
+      fprintf(stderr, "%s: unknown server error, method id 0x%08X\n", context, x.reply.id);
+      break;
+    }
+    break;
+  }
+}
+
 struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
  /* set up a connection given a context.
@@ -169,15 +217,16 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
   if ( !strcmp(sr_c->scheme,"amqps") ) {
      sr_c->socket = amqp_ssl_socket_new(sr_c->conn);
-     if (!sr_c->socket) {
+     if (!(sr_c->socket)) {
         fprintf( stderr, "failed to create SSL amqp client socket.\n" );
         return(NULL);
      }
-     amqp_ssl_socket_set_verify_peer(sr_c->socket, 0);
-     amqp_ssl_socket_set_verify_hostname(sr_c->socket, 0);
+     fprintf( stderr, "SSL amqp peer verify off.\n" );
+     amqp_ssl_socket_set_verify(sr_c->socket, 0);
+     //amqp_ssl_socket_set_verify_hostname(sr_c->socket, 0);
   } else {
      sr_c->socket = amqp_tcp_socket_new(sr_c->conn);
-     if (!sr_c->socket) {
+     if (!(sr_c->socket)) {
         fprintf( stderr, "failed to create AMQP client socket. \n" );
         return(NULL);
      }
@@ -185,13 +234,13 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
   status = amqp_socket_open(sr_c->socket, sr_c->hostname, sr_c->port);
   if (status < 0) {
-    fprintf(stderr, "failed opening AMQP socket\n");
+    amqp_error_print(status, "failed opening AMQP socket");
     return(NULL);
   }
 
   reply = amqp_login(sr_c->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->user, sr_c->password);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-    fprintf(stderr, "failed AMQP login\n");
+    amqp_reply_print(reply, "failed AMQP login");
     return(NULL);
   }
 
@@ -203,9 +252,10 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
   reply = amqp_get_rpc_reply(sr_c->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-    fprintf(stderr, "failed AMQP get_rpc_reply \n");
+    amqp_reply_print(reply, "failed AMQP get_rpc_reply");
     return(NULL);
   }
+
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "_initialize, done!\n" );
 
