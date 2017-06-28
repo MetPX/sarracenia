@@ -224,13 +224,13 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
           fprintf( stderr, "SSL amqp peer verify off version.\n" );
 
-#if AMQP_VERSION > 0x080000    
+// #if AMQP_VERSION > 0x080000    
      // rabbitmq >= 0.8
      amqp_ssl_socket_set_verify_peer(sr_c->socket, 0);
      amqp_ssl_socket_set_verify_hostname(sr_c->socket, 0);
-#else
-     amqp_ssl_socket_set_verify(sr_c->socket, 0);
-#endif
+// #else
+//      amqp_ssl_socket_set_verify(sr_c->socket, 0);
+// #endif
 
   } else {
      sr_c->socket = amqp_tcp_socket_new(sr_c->conn);
