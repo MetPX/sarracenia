@@ -211,7 +211,7 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
   amqp_channel_open_ok_t *open_status;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "_initialize, new_connection AMQP_VERSION=%08x\n", AMQP_VERSION );
+     fprintf( stderr, "sr_context_initialize, new_connection AMQP_VERSION=%08x\n", AMQP_VERSION );
 
   sr_c->conn = amqp_new_connection();
 
@@ -221,8 +221,8 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
         fprintf( stderr, "failed to create SSL amqp client socket.\n" );
         return(NULL);
      }
-     fprintf( stderr, "SSL amqp peer verify off version: %08x.\n", AMQP_VERSION );
-     // rabbitmq < 0.8
+     if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+          fprintf( stderr, "SSL amqp peer verify off version.\n" );
 
 #if AMQP_VERSION > 0x080000    
      // rabbitmq >= 0.8
@@ -265,7 +265,7 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
   }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "_initialize, done!\n" );
+     fprintf( stderr, "sr_context_initialize, done!\n" );
 
 
   return(sr_c);

@@ -35,7 +35,7 @@ char *sr_credentials_fetch( char *s )
       {
          result= (char*)malloc(i+1);
          strncpy(result,start,i); 
-         fprintf( stderr, "result: %s\n", result );
+         //fprintf( stderr, "result: %s\n", result );
          return(result);
       }
 
