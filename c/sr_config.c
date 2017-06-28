@@ -40,9 +40,22 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    entry = sr_cfg->masks;
    while( entry ) 
    {
-       if ( regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) )
+       if ( (sr_cfg) && sr_cfg->debug )
+           fprintf( stderr, "isMatchingPattern, testing mask: %s %s next=%p\n", 
+                (entry->accepting)?"accept":"reject", entry->clause, (entry->next) );
+
+       if ( !regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) ) {
            break; // matched
+       }
        entry = entry->next; 
+   }
+   if ( (sr_cfg) && sr_cfg->debug )
+   {
+       if (entry) 
+           fprintf( stderr, "isMatchingPattern: %s did not match any masks\n",  chaine );
+       else
+           fprintf( stderr, "isMatchingPattern: %s matched mask: %s %s\n",  chaine,
+               (entry->accepting)?"accept":"reject", entry->clause );
    }
    return(entry);
 }
@@ -54,12 +67,13 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
     struct sr_mask_t *next_entry;
 
     if ( (sr_cfg) && sr_cfg->debug )
-        fprintf( stderr, "adding mask: %s, accept=%d\n", option, accept );
+        fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
 
     new_entry = (struct sr_mask_t *)malloc( sizeof(struct sr_mask_t) );
     new_entry->next=NULL;
     new_entry->directory = (directory?strdup(directory):NULL);
     new_entry->accepting = accept;
+    new_entry->clause = strdup(option);
     regcomp( &(new_entry->regexp), option, REG_EXTENDED|REG_NOSUB );
 
     // append new entry to existing masks.
@@ -69,7 +83,12 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
     } else {
         next_entry = sr_cfg->masks;
         while( next_entry->next != NULL ) 
-           next_entry = next_entry->next;
+        {
+            if ( (sr_cfg) && sr_cfg->debug )
+                 fprintf( stderr, "going through next_entry->clause=%s %s\n", 
+                       (next_entry->accepting)?"accept":"reject", next_entry->clause );
+            next_entry = next_entry->next;
+        }
         next_entry->next = new_entry;
     }
 }
@@ -130,7 +149,7 @@ void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argu
           config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
       }
   } else if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
-      add_mask( sr_cfg, sr_cfg->directory, option, 1 );
+      add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
   } else if ( !strcmp( option, "accept_unmatch" ) ) {
       sr_cfg->accept_unmatched = StringIsTrue(argument);
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" )) {
@@ -142,7 +161,7 @@ void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argu
   } else if ( !strcmp( option, "exchange" ) ) {
       sr_cfg->exchange = strdup(argument);
   } else if ( !strcmp( option, "reject" ) ) {
-      add_mask( sr_cfg, sr_cfg->directory, option, 0 );
+      add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
   } else if ( !strcmp( option, "to" ) ) {
       sr_cfg->to = strdup(argument);
   } else if ( !strcmp( option, "url" ) ) {

@@ -221,8 +221,6 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
         fprintf( stderr, "failed to create SSL amqp client socket.\n" );
         return(NULL);
      }
-     if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-          fprintf( stderr, "SSL amqp peer verify off version.\n" );
 
 // #if AMQP_VERSION > 0x080000    
      // rabbitmq >= 0.8
@@ -356,6 +354,9 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   amqp_table_t table;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     fprintf( stderr, "sr_post called with: %s\n", fn );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
