@@ -41,7 +41,7 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    while( entry ) 
    {
        if ( (sr_cfg) && sr_cfg->debug )
-           fprintf( stderr, "isMatchingPattern, testing mask: %s %s next=%p\n", 
+           fprintf( stderr, "isMatchingPattern, testing mask: %s %-30s next=%p\n", 
                 (entry->accepting)?"accept":"reject", entry->clause, (entry->next) );
 
        if ( !regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) ) {
@@ -52,10 +52,10 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    if ( (sr_cfg) && sr_cfg->debug )
    {
        if (entry) 
-           fprintf( stderr, "isMatchingPattern: %s did not match any masks\n",  chaine );
-       else
            fprintf( stderr, "isMatchingPattern: %s matched mask: %s %s\n",  chaine,
                (entry->accepting)?"accept":"reject", entry->clause );
+       else
+           fprintf( stderr, "isMatchingPattern: %s did not match any masks\n",  chaine );
    }
    return(entry);
 }
@@ -112,13 +112,25 @@ void config_uri_parse( char *src, UriUriA *ua, char *buf )
 } 
 
 int StringIsTrue(const char *s) 
+ /*
+    return bitmask:  0-1 string value,  argument is a value 0-1
+    0- 00 - unlikely to occur, there is no value, and returning false.
+    1- 01 - value is false and argument provide ( -option no )
+    2- 10 - value is true and argument omitted  ( -option    )
+    3- 11 - value is true and argument provided ( -option yes ) 
+  */
 {
 
-   if (s == NULL ) return(1);
+   if ((s == NULL ) || (*s=='-')) return(2);
 
    if ( !strcasecmp(s,"true") || 
         !strcasecmp(s,"on")  ||
         !strcasecmp(s,"yes")  ) 
+     return (3);
+
+   if ( !strcasecmp(s,"false") || 
+        !strcasecmp(s,"off")  ||
+        !strcasecmp(s,"no")  ) 
      return (1);
 
    return(0);
@@ -128,12 +140,13 @@ int StringIsTrue(const char *s)
 
 char token_line[TOKMAX];
 
-void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argument) 
+int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argument) 
 {
 
   char *brokerstr;
+  int val;
 
-  if ( strcspn(option," \t\n#") == 0 ) return;
+  if ( strcspn(option," \t\n#") == 0 ) return(0);
 
   if (sr_cfg->debug)
      fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
@@ -148,27 +161,50 @@ void sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argu
       } else {
           config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
       }
+      return(2);
+
   } else if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
+      return(2);
+
   } else if ( !strcmp( option, "accept_unmatch" ) ) {
-      sr_cfg->accept_unmatched = StringIsTrue(argument);
+      val = StringIsTrue(argument);
+      sr_cfg->accept_unmatched = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" )) {
       sr_config_read( sr_cfg, argument );
+      return(2);
+
   } else if ( !strcmp( option, "debug" ) ) {
-      sr_cfg->debug = StringIsTrue(argument);
+      val = StringIsTrue(argument);
+      sr_cfg->debug = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "directory" ) ) {
       sr_cfg->directory = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "exchange" ) ) {
       sr_cfg->exchange = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
+      return(2);
+
   } else if ( !strcmp( option, "to" ) ) {
       sr_cfg->to = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "url" ) ) {
       sr_cfg->url = strdup(argument);
+      return(2);
+
   } else {
       fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
   } 
+  return(0);
 }
 
 void sr_config_init( struct sr_config_t *sr_cfg ) 
