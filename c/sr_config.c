@@ -133,6 +133,26 @@ int StringIsTrue(const char *s)
    return(0);
 }
 
+long int chunksize_from_str(char *s) 
+{
+   char u; // unit char spec.
+   long unsigned int value;
+   long unsigned int power;
+
+   u = s[strlen(s)-1];
+   value=atoll(s);
+   power=0;
+   switch(u) 
+   { 
+   //case 'b': case 'B': factor=1; break;
+   case 'k': case 'K': power=10; break;
+   case 'm': case 'M': power=20; break;
+   case 'g': case 'G': power=30; break;
+   case 't': case 'T': power=40; break;
+   }
+   return( value<<power);
+   
+}
 #define TOKMAX (1024)
 
 char token_line[TOKMAX];
@@ -170,6 +190,25 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       val = StringIsTrue(argument);
       sr_cfg->accept_unmatched = val&2;
       return(1+(val&1));
+
+  } else if ( !strcmp( option, "blocksize" ) ) {
+      if (!argument) {
+         fprintf( stderr, "blocksize argument missing\n");  
+         return(1);
+      }
+      sr_cfg->blocksize = chunksize_from_str( argument );
+
+      if ( sr_cfg->blocksize == 0 ) 
+         sr_cfg->parts = 0;
+      else if ( sr_cfg->blocksize == 1 )
+         sr_cfg->parts = 1;
+      else if ( sr_cfg->blocksize == 2 )
+         sr_cfg->parts = 2;  // partstr=p
+      else if ( sr_cfg->blocksize > 1 )
+         sr_cfg->parts = 3;  // partstr=i
+      fprintf( stderr, "partition spec=%d, sz=%lu\n", sr_cfg->parts, sr_cfg->blocksize );
+      
+      return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
       sr_config_read( sr_cfg, argument );
@@ -209,12 +248,14 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 void sr_config_init( struct sr_config_t *sr_cfg ) 
 {
   sr_credentials_init();
+  sr_cfg->blocksize=1;
   sr_cfg->broker_specified=0;
   sr_cfg->debug=0;
   sr_cfg->accept_unmatched=1;
   sr_cfg->to=NULL;
   sr_cfg->directory=NULL;
   sr_cfg->masks=NULL;
+  sr_cfg->parts=1;
   sr_cfg->url=NULL;
 }
 

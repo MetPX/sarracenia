@@ -35,16 +35,18 @@ struct sr_mask_t {
 };
 
 struct sr_config_t {
-  int  broker_specified;
-  UriUriA broker;
-  char brokeruricb[1024];
-  char *directory;
-  char *exchange;
+  int               accept_unmatched;
+  long unsigned     blocksize; // if partitioned, how big are they?
+  UriUriA           broker;
+  int               broker_specified;
+  char              brokeruricb[1024];
+  int               debug;
+  char             *directory;
+  char             *exchange;
   struct sr_mask_t *masks;
-  char *url;
-  char *to;
-  int  debug;
-  int  accept_unmatched;
+  int              parts;  // partition strategy.
+  char             *url;
+  char             *to;
   
 };
 
