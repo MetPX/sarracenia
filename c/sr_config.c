@@ -151,7 +151,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   if (sr_cfg->debug)
      fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
-  if ( !strcmp( option, "broker" ) ) 
+  if ( !strcmp( option, "broker" ) || !strcmp(option,"b") ) 
   {
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
@@ -167,12 +167,13 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
       return(2);
 
-  } else if ( !strcmp( option, "accept_unmatch" ) ) {
+  } else if ( !strcmp( option, "accept_unmatch" ) || !strcmp( option, "accept_unmatched" ) || !strcmp( option, "au" ) 
+    ) {
       val = StringIsTrue(argument);
       sr_cfg->accept_unmatched = val&2;
       return(1+(val&1));
 
-  } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" )) {
+  } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
       sr_config_read( sr_cfg, argument );
       return(2);
 
@@ -185,7 +186,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->directory = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "exchange" ) ) {
+  } else if ( !strcmp( option, "exchange" ) || !strcmp( option, "ex") ) {
       sr_cfg->exchange = strdup(argument);
       return(2);
 
@@ -197,7 +198,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->to = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "url" ) ) {
+  } else if ( !strcmp( option, "url" ) || !strcmp( option, "u" ) ) {
       sr_cfg->url = strdup(argument);
       return(2);
 
