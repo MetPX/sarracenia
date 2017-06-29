@@ -66,8 +66,8 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
     struct sr_mask_t *new_entry;
     struct sr_mask_t *next_entry;
 
-    if ( (sr_cfg) && sr_cfg->debug )
-        fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
+    // if ( (sr_cfg) && sr_cfg->debug )
+    //    fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
 
     new_entry = (struct sr_mask_t *)malloc( sizeof(struct sr_mask_t) );
     new_entry->next=NULL;
@@ -84,9 +84,6 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
         next_entry = sr_cfg->masks;
         while( next_entry->next != NULL ) 
         {
-            if ( (sr_cfg) && sr_cfg->debug )
-                 fprintf( stderr, "going through next_entry->clause=%s %s\n", 
-                       (next_entry->accepting)?"accept":"reject", next_entry->clause );
             next_entry = next_entry->next;
         }
         next_entry->next = new_entry;
@@ -148,8 +145,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
-  if (sr_cfg->debug)
-     fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
+  //if (sr_cfg->debug)
+  //   fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
   if ( !strcmp( option, "broker" ) || !strcmp(option,"b") ) 
   {
@@ -161,6 +158,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       } else {
           config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
       }
+      sr_cfg->broker_specified=1;
       return(2);
 
   } else if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
@@ -211,6 +209,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 void sr_config_init( struct sr_config_t *sr_cfg ) 
 {
   sr_credentials_init();
+  sr_cfg->broker_specified=0;
   sr_cfg->debug=0;
   sr_cfg->accept_unmatched=1;
   sr_cfg->to=NULL;

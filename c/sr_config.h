@@ -35,6 +35,7 @@ struct sr_mask_t {
 };
 
 struct sr_config_t {
+  int  broker_specified;
   UriUriA broker;
   char brokeruricb[1024];
   char *directory;

@@ -194,13 +194,8 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
         return(NULL);
      }
 
-// #if AMQP_VERSION > 0x080000    
-     // rabbitmq >= 0.8
      amqp_ssl_socket_set_verify_peer(sr_c->socket, 0);
      amqp_ssl_socket_set_verify_hostname(sr_c->socket, 0);
-// #else
-//      amqp_ssl_socket_set_verify(sr_c->socket, 0);
-// #endif
 
   } else {
      sr_c->socket = amqp_tcp_socket_new(sr_c->conn);
@@ -251,6 +246,12 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
   sr_c->cfg = sr_cfg;
 
+  if (!(sr_cfg->broker_specified)) 
+  {
+    fprintf( stderr, "no broker given\n" );
+    return( NULL );
+  }
+
   sr_c->scheme = sr_cfg->broker.scheme.first ;
   sr_c->hostname = sr_cfg->broker.hostText.first ;
   
@@ -259,6 +260,13 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
      else sr_c->port= 5672;
   } else sr_c->port = atol( sr_cfg->broker.portText.first );
   
+
+  if (sr_cfg->exchange==NULL) 
+  {
+    fprintf( stderr, "no exchange given\n" );
+    return( NULL );
+  }
+
   sr_c->exchange = sr_cfg->exchange ;
   
   len = strcspn(sr_cfg->broker.userInfo.first, ":");
@@ -304,11 +312,11 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   if ( (mask && !(mask->accepting)) || !(!mask && sr_c->cfg->accept_unmatched ))
   { //reject.
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "rejected: %s\n", fn );
+         fprintf( stderr, "sr_post rejected: %s\n", fn );
       return;
   }
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting to exchange:  %s\n", sr_c->exchange );
+     fprintf( stderr, "sr_post accepted posting to exchange:  %s\n", sr_c->exchange );
 
   strcpy(routingkey,"v02.post");
   if (fn[0] != '/' ) strcat(routingkey,".");

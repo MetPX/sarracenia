@@ -111,11 +111,9 @@ int main(int argc, char **argv)
          consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
       else
           break;
-      //fprintf( stderr, "argv[%d]=%s consume=%d\n", i, argv[i], consume );
       if (!consume) break;
       i+=consume;
   }
-  //sr_config_read( &sr_cfg, argv[1] );
   
   sr_c = sr_context_init_config( &sr_cfg );
   if (!sr_c) {
