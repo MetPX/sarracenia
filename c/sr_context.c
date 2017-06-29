@@ -58,34 +58,6 @@
 
 
 
-  If that variable is not set, then 
-  set the SR_AMQP_MINI_OPTS environment variable to a space 
-  separated sequence of settings.  The settings are:
-
-  protocol scheme ( amqps, or amqp ) whether to use SSL or not.
-  broker hostname
-  broker port 
-  broker exchange
-  broker username (AMQP username to connect to broker)
-  broker password (password for AMQP username)
-  base URL to advertise  (examples: file:, http://localhost, sftp://hoho@host )
-
-  comma separated list of destinations to target (examples: localhost, all)
- 
-  there are no defaults, it will just die horribly if something is missing.
-
-  export SR_AMQP_MINI_OPTS="amqp localhost 5672 xs_tsource tsource tspw sftp://peter@localhost localhost"
-
-  then just:
-
-  sr_cpost <file>
-
- building it:
-
-  cc -o sr_cpost sr_cpost.c -lrabbitmq
-
- (debian package: librabbitmq, and librabbitmq-dev. )
-
  limitations:
     - Doesn't calculate checksums, enforces sum 0.
     - Doesn't do file partitioning strategies, enforced post as 1 part.
@@ -310,38 +282,6 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
 }
 
-struct sr_context *sr_context_init_env() {
-
-  struct sr_context *sr_c;
-  char *setstr;
-
-  sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
-
-  setstr = getenv( "SR_AMQP_MINI_OPTS" ) ;
-
-  if ( setstr == NULL ) {
-    fprintf(stderr, "SR_AMQP_MINI_OPTS needs to be set to: scheme host port exchange user password url to\n");
-    fprintf(stderr, "example: amqps localhost 5671  xpublic guest guest file: localhost\n");
-  }
-  strcpy( sr_c->settings, setstr );
-
-  sr_c->scheme = strtok(sr_c->settings," ");
-  sr_c->hostname = strtok(NULL," ");
-  sr_c->port = atol( strtok(NULL, " ") );
-  sr_c->exchange = strtok(NULL, " ");
-  sr_c->user = strtok(NULL, " ");
-  sr_c->password = strtok(NULL, " ");
-  sr_c->url = strtok(NULL, " ");
-  sr_c->to = strtok(NULL, " ");
-  sr_c->socket = NULL;
-
-  /*
-  fprintf( stderr, "broker from SR_AMQP_MINI_OPTS: %s://%s:%s@%s:%d #%s \n", 
-       sr_c->scheme, sr_c->user, sr_c->password, sr_c->hostname, sr_c->port, sr_c->exchange );
-   */
-  return( sr_context_initialize(sr_c) );
-
-}
 
 void sr_post(struct sr_context *sr_c, const char *fn ) {
 
@@ -475,8 +415,7 @@ void connect_and_post(const char *fn) {
        config_read=1;
      }
      sr_c = sr_context_init_config(&sr_cfg);
-  } else 
-     sr_c = sr_context_init_env();
+  } 
 
   if (sr_c == NULL ) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
