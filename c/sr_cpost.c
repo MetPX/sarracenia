@@ -96,9 +96,16 @@ int main(int argc, char **argv)
   
   if ( argc < 3 ) 
   {
-     fprintf( stderr, "usage: sr_cpost <config> <files>\n\n" );
-     fprintf( stderr, "\t<config> - sr_post compatible configuration file.\n" );
+     fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
+     fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
+     fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
+     fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
+     fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to publish to\n" );
+     fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
+     fprintf( stderr, "\t\tto <destination> - clusters pump network should forward to.\n" );
+     fprintf( stderr, "\t\turl <url> - retrieval base url in the posted files.\n" );
      fprintf( stderr, "\t<files> - list of files to post\n\n" );
+     fprintf( stderr, "This is a stripped down C implementation of sr_post(1), see man page for details\n\n" );
      exit(1);
   }
  
