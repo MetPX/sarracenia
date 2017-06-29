@@ -140,11 +140,12 @@ long int chunksize_from_str(char *s)
    long unsigned int power;
 
    u = s[strlen(s)-1];
+   if ((u == 'b') || (u=='B')) u = s[strlen(s)-2];
+
    value=atoll(s);
    power=0;
    switch(u) 
    { 
-   //case 'b': case 'B': factor=1; break;
    case 'k': case 'K': power=10; break;
    case 'm': case 'M': power=20; break;
    case 'g': case 'G': power=30; break;
