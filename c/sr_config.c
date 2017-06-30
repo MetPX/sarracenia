@@ -37,6 +37,9 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
 {
    struct sr_mask_t *entry;
    
+   if (sr_cfg->already_matched) return(sr_cfg->match);
+
+   sr_cfg->already_matched=1;
    entry = sr_cfg->masks;
    while( entry ) 
    {
@@ -57,6 +60,7 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
        else
            fprintf( stderr, "isMatchingPattern: %s did not match any masks\n",  chaine );
    }
+   sr_cfg->match = entry;
    return(entry);
 }
 
@@ -255,7 +259,9 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->blocksize=1;
   sr_cfg->broker_specified=0;
   sr_cfg->debug=0;
+  sr_cfg->already_matched=0;
   sr_cfg->accept_unmatched=1;
+  sr_cfg->match=NULL;
   sr_cfg->to=NULL;
   sr_cfg->directory=NULL;
   sr_cfg->masks=NULL;

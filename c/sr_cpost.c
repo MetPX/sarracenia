@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   // i set before...
   for( ; i < argc ; i++ ) { 
      sr_post(sr_c,argv[i]);
+     sr_c->cfg->already_matched=0;
   }
 
   sr_context_close(sr_c);

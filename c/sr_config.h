@@ -44,6 +44,8 @@ struct sr_config_t {
   char             *directory;
   char             *exchange;
   struct sr_mask_t *masks;
+  struct sr_mask_t *match;
+  int              already_matched;  //have run isMatching.
   int              parts;  // partition strategy.
   char             sumalgo; // checksum algorithm to use.
   char             *url;
@@ -53,6 +55,10 @@ struct sr_config_t {
 
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
  /* return pointer to matched pattern, if there is one, NULL otherwise.
+
+    sets sr_cfg->already_matched=1, and sr_cfg->match to the returned pointer.
+    if called again, it returns the same pointer without repeating the comparison
+    until someone does sr_cfg->already_matched=0;
   */
 
 int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument );
