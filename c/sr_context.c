@@ -69,12 +69,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <fcntl.h>
 
+#include <openssl/md5.h>
+#include <openssl/sha.h>
 
 #include <stdint.h>
 #include <amqp_tcp_socket.h>
@@ -173,6 +177,139 @@ void amqp_reply_print(amqp_rpc_reply_t x, char const *context)
   }
 }
 
+// SHA512 being the longest digest...
+char sumstr[ 2 * SHA512_DIGEST_LENGTH + 3 ];
+
+void hash2sumstr( unsigned char *h, int l )
+{
+  int i;
+  for(i=1; i < l+1; i++ )
+     //printf( "h[%d] = %u\n", i, (unsigned char)h[i] );
+     sprintf( &(sumstr[i*2]), "%02x", (unsigned char)h[i-1]);
+  sumstr[2*i]='\0';
+}
+
+#define SUMBUFSIZE (4096*1024)
+
+char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned long block_count, 
+       unsigned long block_rem, unsigned long block_num )
+ /* 
+   return a correct sumstring (assume it is big enough)  as per sr_post(7)
+   algo = 
+     '0' - no checksum, value is random.
+     'd' - md5sum of block.
+     'n' - md5sum of filename (fn).
+     's' - sha512 sum of block.
+
+   block starts at block_size * block_num, and ends 
+  */
+{
+   MD5_CTX md5ctx;
+   SHA512_CTX shactx;
+   unsigned char hash[SHA512_DIGEST_LENGTH]; // Assumed longest possible hash.
+
+   static int fd;
+   static char buf[SUMBUFSIZE];
+   long bytes_read ; 
+   long how_many_to_read;
+   char *just_the_name;
+
+   unsigned long start = block_size * block_num ;
+   unsigned long end;
+
+   end =  (block_num = block_count-1) ? (start + block_rem) : (start +block_size );
+
+   sumstr[0]=algo;
+   sumstr[1]=',';
+   sumstr[2]='\0'; 
+   switch (algo) {
+
+   case '0' :
+       sprintf( sumstr+2, "%ld", random()%1000 );
+       break;
+
+   case 'd' :
+       MD5_Init(&md5ctx);
+
+       // keep file open through repeated calls.
+       if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
+       if ( fd < 0 ) 
+       { 
+           fprintf( stderr, "unable to read file for checksumming\n" );
+           return(NULL);
+       } 
+       lseek( fd, start, SEEK_SET );
+       while ( start < end ) 
+       {
+           how_many_to_read= ( SUMBUFSIZE > (end-start) ) ? SUMBUFSIZE : (end-start) ;
+
+           bytes_read=read(fd,buf, how_many_to_read );           
+           if ( bytes_read >= 0 ) 
+           {
+              MD5_Update(&md5ctx, buf, bytes_read );
+              start += bytes_read;
+           } else {
+              fprintf( stderr, "error reading %s\n", fn );
+              break;
+           } 
+       }
+
+       // close fd, when end of file reached.
+       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
+
+       MD5_Final(hash, &md5ctx);
+       hash2sumstr(hash,MD5_DIGEST_LENGTH); 
+       break;
+
+   case 'n' :
+       MD5_Init(&md5ctx);
+       just_the_name = rindex(fn,'/')+1;
+       MD5_Update(&md5ctx, just_the_name, strlen(just_the_name) );
+       MD5_Final(hash, &md5ctx);
+       hash2sumstr(hash,MD5_DIGEST_LENGTH); 
+       break;
+       
+   case 's' :
+       SHA512_Init(&shactx);
+
+       // keep file open through repeated calls.
+       if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
+       if ( fd < 0 ) 
+       { 
+           fprintf( stderr, "unable to read file for checksumming\n" );
+           return(NULL);
+       } 
+       lseek( fd, start, SEEK_SET );
+       while ( start < end ) 
+       {
+           how_many_to_read= ( SUMBUFSIZE > (end-start) ) ? SUMBUFSIZE : (end-start) ;
+
+           bytes_read=read(fd,buf, how_many_to_read );           
+           if ( bytes_read >= 0 ) 
+           {
+              SHA512_Update(&shactx, buf, bytes_read );
+              start += bytes_read;
+           } else {
+              fprintf( stderr, "error reading %s\n", fn );
+              break;
+           } 
+       }
+
+       // close fd, when end of file reached.
+       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
+
+       SHA512_Final(hash, &shactx);
+       hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
+       break;
+
+   default:
+       fprintf( stderr, "sum algorithm %c unimplemented\n", algo );
+       return(NULL);
+   }
+   return(sumstr);
+
+}
+
 struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
  /* set up a connection given a context.
@@ -235,6 +372,7 @@ struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
 
   return(sr_c);
 }
+
 
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
@@ -303,7 +441,6 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   unsigned long block_num;
   unsigned long block_rem;
   unsigned long tfactor;
-  char sumstr[255];
   amqp_table_t table;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
@@ -393,11 +530,13 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
       sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, sr_c->cfg->blocksize, 
              block_count, block_rem, block_num );
       add_header( "parts", partstr );
-      // FIXME: memory leak here where sumstring causes alloc on each post.
 
-      sprintf( sumstr, "0,%ld", random()%1000 );
+      if (! set_sumstr( sr_c->cfg->sumalgo, fn, sr_c->cfg->blocksize, block_count, block_rem, block_num ) ) 
+      {
+         fprintf( stderr, "sr_post unable to generate %c checksum for: %s\n", sr_c->cfg->sumalgo, fn );
+         return;
+      }
       add_header( "sum", sumstr );
-      // FIXME: memory leak here where sumstring causes alloc on each post.
 
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
          fprintf( stderr, "posting, parts: %s, sumstr: %s\n", partstr, sumstr );
@@ -419,6 +558,12 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
                                     &props,
                                     amqp_cstring_bytes(message_body));
      block_num++;
+
+     /*
+        FIXME: possible memory leak here where amqp_cstring_bytes conversion causes alloc on each post?
+        need to look into it. would need to free after each publish, including sum and part headers
+        which get re-written.
+      */
 
      if ( status < 0 ) 
          fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
