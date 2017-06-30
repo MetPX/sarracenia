@@ -305,14 +305,15 @@ class sr_sarra(sr_instances):
            return False
 
         self.local_file = self.new_dir + '/' + self.new_file # FIXME, remove in 2018
+        self.msg.local_file = self.local_file
         saved_file = self.local_file
         # invoke user defined on_message when provided
 
 
         for plugin in self.on_message_list :
             if not plugin(self): return False
-            if ( self.local_file != saved_file ): # FIXME, remove in 2018
-                self.logger.warning("on_message plugins should replace self.local_file, by self.new_dir and self.new_file" )
+            if ( self.msg.local_file != saved_file ): # FIXME, remove in 2018
+                self.logger.warning("on_message plugins should replace self.msg.local_file, by self.new_dir and self.new_file" )
                 self.new_file = os.path.basename(self.local_file)
                 self.new_dir = os.path.dirname(self.local_file)
 

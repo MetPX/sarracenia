@@ -224,13 +224,11 @@ class sr_subscribe(sr_instances):
 
         self.local_file = self.new_dir + '/' + self.new_file     # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_file = self.local_file
-        saved_file = self.new_file
+        saved_file = self.local_file
 
         self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_dir = self.new_dir
         saved_dir = self.new_dir
-
-        self.logger.warning("on_message self.msg.local_file=%s" % self.msg.local_file )
 
         for plugin in self.on_message_list :
 
