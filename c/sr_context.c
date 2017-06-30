@@ -217,7 +217,7 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    unsigned long start = block_size * block_num ;
    unsigned long end;
 
-   end =  (block_num = block_count-1) ? (start + block_rem) : (start +block_size );
+   end =  (block_num == (block_count-1)) ? (start + block_rem) : (start +block_size );
 
    sumstr[0]=algo;
    sumstr[1]=',';
@@ -239,9 +239,10 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
+       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
-           how_many_to_read= ( SUMBUFSIZE > (end-start) ) ? SUMBUFSIZE : (end-start) ;
+           how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
            if ( bytes_read >= 0 ) 
@@ -280,11 +281,16 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
+       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
-           how_many_to_read= ( SUMBUFSIZE > (end-start) ) ? SUMBUFSIZE : (end-start) ;
+           how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
+
+           fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
+               how_many_to_read, bytes_read );
+
            if ( bytes_read >= 0 ) 
            {
               SHA512_Update(&shactx, buf, bytes_read );
