@@ -33,13 +33,17 @@ status:
 
 struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chaine )
    /* return pointer to matched pattern, if there is one, NULL otherwise.
+      if called repeatedly with the same argument, just return the same result.
     */
 {
    struct sr_mask_t *entry;
    
-   if (sr_cfg->already_matched) return(sr_cfg->match);
+   if (sr_cfg->last_matched && !strcmp(sr_cfg->last_matched,chaine)) 
+       return(sr_cfg->match);
 
-   sr_cfg->already_matched=1;
+   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
+   sr_cfg->last_matched=strdup(chaine);
+
    entry = sr_cfg->masks;
    while( entry ) 
    {
@@ -259,7 +263,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->blocksize=1;
   sr_cfg->broker_specified=0;
   sr_cfg->debug=0;
-  sr_cfg->already_matched=0;
+  sr_cfg->last_matched=NULL;
   sr_cfg->accept_unmatched=1;
   sr_cfg->match=NULL;
   sr_cfg->to=NULL;

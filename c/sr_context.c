@@ -548,16 +548,20 @@ void sr_context_close(struct sr_context *sr_c) {
   reply = amqp_channel_close(sr_c->conn, 1, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       fprintf( stderr, "sr_post: amqp channel close failed.\n");
+      return;
   }
 
   reply = amqp_connection_close(sr_c->conn, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       fprintf( stderr, "sr_post: amqp connection close failed.\n");
+      return;
   }
 
   status = amqp_destroy_connection(sr_c->conn);
-  if (status < 0 ) {
+  if (status < 0 ) 
+  {
       fprintf( stderr, "sr_post: amqp context close failed.\n");
+      return;
   }
 
 }
@@ -571,8 +575,10 @@ void connect_and_post(const char *fn) {
   char *setstr;
 
   setstr = getenv( "SR_POST_CONFIG" ) ;
-  if ( setstr != NULL ){ 
-     if ( config_read == 0 ) {
+  if ( setstr != NULL )
+  { 
+     if ( config_read == 0 ) 
+     {
        sr_config_init(&sr_cfg);
        sr_config_read(&sr_cfg,setstr);
        config_read=1;
@@ -582,23 +588,18 @@ void connect_and_post(const char *fn) {
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || !(!mask && sr_cfg.accept_unmatched ))
   { //reject.
-      if (sr_cfg.debug)
-         fprintf( stderr, "sr_post rejected: %s\n", fn );
+      if (sr_cfg.debug) fprintf( stderr, "sr_post rejected: %s\n", fn );
       return;
   }
 
-
-
   sr_c = sr_context_connect(sr_c);
-  if (sr_c == NULL ) {
+  if (sr_c == NULL ) 
+  {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
-
   sr_post( sr_c, fn );
-
   sr_context_close(sr_c);
 
 }
-
 
