@@ -12,14 +12,12 @@
 
 /* 
   Minimal c implementation to allow posting of sr_post(7) messages.
-  It has a lot of limitations, and no error checking for now.
 
   call an sr_context_init to set things up.
   then sr_post will post files,
   then sr_close to tear the connection down.
 
   there is an all in one function: connect_and_post that does all of the above.
-  
 
  */
 #include <stdlib.h>

@@ -21,12 +21,17 @@ uses the posting api.
 
 sample build instructions are in build.sh
 
+The librabbitmq version needs to be > 0.8,  this is newer than what is in ubuntu 16.04.
+So you need to git clone ... see build.sh
+
 
 build dependencies:
 liburiparser-dev - development files for uriparser
 librabbitmq-dev - AMQP client library written in C - Dev Files
+libssl-dev  - OpenSSL client library (used for hash algorithms.)
 
 run dependencies:
 liburiparser1 - URI parsing library compliant with RFC 3986
 librabbitmq4 - AMQP client library written in C
+libssl - OpenSSL client library.
 

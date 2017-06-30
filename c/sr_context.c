@@ -50,20 +50,12 @@
 
   how to use:
 
- 
-
   In a shell, to use an sr_config(7) style configuration file:
   set the SR_POST_CONFIG environment variable to the name of the
   file to use.
 
-
-
  limitations:
-    - Doesn't calculate checksums, enforces sum 0.
-    - Doesn't do file partitioning strategies, enforced post as 1 part.
     - Doesn't support document_root, absolute paths posted.
-    - Doesn't read sr configuration files, only uses the SR_ environment variable listed above.
-    - as part of the no config file support, no accept/reject support     
 
  */
 #include <stdlib.h>

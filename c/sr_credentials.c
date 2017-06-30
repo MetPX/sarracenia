@@ -1,4 +1,17 @@
 
+/*
+ This file is part of sarracenia.
+ The sarracenia suite is Free and is proudly provided by the Government of Canada
+ Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
+
+ Questions or bugs report: dps-client@ec.gc.ca
+ sarracenia repository: git://git.code.sf.net/p/metpx/git
+ Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+
+ Code contributed by:
+     Peter Silva - 2017
+
+ */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
