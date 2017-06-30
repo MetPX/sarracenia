@@ -45,6 +45,7 @@ struct sr_config_t {
   char             *exchange;
   struct sr_mask_t *masks;
   int              parts;  // partition strategy.
+  char             sum;
   char             *url;
   char             *to;
   

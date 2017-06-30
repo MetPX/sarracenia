@@ -158,6 +158,8 @@ long int chunksize_from_str(char *s)
 
 char token_line[TOKMAX];
 
+// OPTIS - Option Is ... the option string matches x.
+
 int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argument) 
 {
 
@@ -169,7 +171,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   //if (sr_cfg->debug)
   //   fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
-  if ( !strcmp( option, "broker" ) || !strcmp(option,"b") ) 
+  if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
   {
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
@@ -204,10 +206,12 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       else if ( sr_cfg->blocksize == 1 )
          sr_cfg->parts = 1;
       else if ( sr_cfg->blocksize == 2 )
-         sr_cfg->parts = 2;  // partstr=p
+         sr_cfg->parts = 2;  // partstr=p (autocompute)
       else if ( sr_cfg->blocksize > 1 )
-         sr_cfg->parts = 3;  // partstr=i
+         sr_cfg->parts = 3;  // partstr=i (autocompute)
+
       fprintf( stderr, "partition spec=%d, sz=%lu\n", sr_cfg->parts, sr_cfg->blocksize );
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
       
       return(2);
 
@@ -231,7 +235,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
       return(2);
-
+  } else if ( !strcmp( option, "sum" ) ) {
+      sr_cfg->sum = argument[0];
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      return(2);
   } else if ( !strcmp( option, "to" ) ) {
       sr_cfg->to = strdup(argument);
       return(2);
@@ -257,6 +264,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->directory=NULL;
   sr_cfg->masks=NULL;
   sr_cfg->parts=1;
+  sr_cfg->sum='0';
   sr_cfg->url=NULL;
 }
 

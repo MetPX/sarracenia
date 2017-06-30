@@ -298,10 +298,16 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   char partstr[255];
   struct stat sb;
   signed int status;
+  int parthdridx;
+  unsigned long block_count;
+  unsigned long block_num;
+  unsigned long block_rem;
+  unsigned long tfactor;
   char sumstr[255];
   amqp_table_t table;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
+  char psc; // part strategy character.
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "sr_post called with: %s\n", fn );
@@ -315,6 +321,7 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
          fprintf( stderr, "sr_post rejected: %s\n", fn );
       return;
   }
+
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "sr_post accepted posting to exchange:  %s\n", sr_c->exchange );
 
@@ -343,34 +350,66 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
   add_header( "atime", time2str(&(sb.st_atim)));
   add_header( "mtime", time2str(&(sb.st_mtim)));
-
-  sprintf( partstr, "1,%ld,0,0", sb.st_size );
-
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, parts: %s\n", partstr );
-
-  add_header( "parts", partstr );
-
-  sprintf( sumstr, "0,%ld", random()%1000 );
-  add_header( "sum", sumstr );
-
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, sunstr: %s\n", sumstr );
-
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, to: %s\n", sr_c->to );
-
   add_header( "to_clusters", sr_c->to );
 
-  table.num_entries = hdrcnt;
-  table.entries=headers;
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+      fprintf( stderr, "posting, to: %s blocksize=%lu, parts=%c\n", sr_c->to,  
+          sr_c->cfg->blocksize, sr_c->cfg->parts+'0' );
 
-  props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
-  props.content_type = amqp_cstring_bytes("text/plain");
-  props.delivery_mode = 2; /* persistent delivery mode */
-  props.headers = table;
 
-  status = amqp_basic_publish(sr_c->conn,
+  switch( sr_c->cfg->parts )
+  {
+    case 0: // autocompute 
+         tfactor =  ( sr_c->cfg->blocksize > 2 )?(sr_c->cfg->blocksize):(50*1024*1024) ;
+         if ( sb.st_size > 100*tfactor ) sr_c->cfg->blocksize= 10*tfactor;
+         else if ( sb.st_size > 10*tfactor ) sr_c->cfg->blocksize= 10 *tfactor ;
+         else if ( sb.st_size > tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+2)/ 3) ;
+         psc='i' ;
+         break;
+
+    case 1: // send file as one piece.
+         sr_c->cfg->blocksize=sb.st_size;
+         psc='1' ;
+         break;
+
+    case 2: // partstr=p
+         psc='p' ;
+         break;
+
+   default: // partstr=i
+         psc='i' ;
+         break;
+  }
+
+  parthdridx = hdrcnt;
+  block_rem = sb.st_size%sr_c->cfg->blocksize ;
+  block_count = ( sb.st_size / sr_c->cfg->blocksize ) + ( block_rem?1:0 );
+  block_num = 0;
+ 
+  while ( block_num < block_count ) 
+  {
+      hdrcnt = parthdridx;
+      sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, sr_c->cfg->blocksize, 
+             block_count, block_rem, block_num );
+      add_header( "parts", partstr );
+      // FIXME: memory leak here where sumstring causes alloc on each post.
+
+      sprintf( sumstr, "0,%ld", random()%1000 );
+      add_header( "sum", sumstr );
+      // FIXME: memory leak here where sumstring causes alloc on each post.
+
+      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+         fprintf( stderr, "posting, parts: %s, sumstr: %s\n", partstr, sumstr );
+
+      table.num_entries = hdrcnt;
+      table.entries=headers;
+    
+      props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+      props.content_type = amqp_cstring_bytes("text/plain");
+      props.delivery_mode = 2; /* persistent delivery mode */
+      props.headers = table;
+
+      status = amqp_basic_publish(sr_c->conn,
                                     1,
                                     amqp_cstring_bytes(sr_c->exchange),
                                     amqp_cstring_bytes(routingkey),
@@ -378,11 +417,16 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
                                     0,
                                     &props,
                                     amqp_cstring_bytes(message_body));
+     block_num++;
 
- if ( status < 0 ) 
-     fprintf( stderr, "sr_post: amqp publish failed.\n");
- else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, publish over.\n" );
+     if ( status < 0 ) 
+         fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
+     else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+         fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
+
+  }
+
+
 
 }
 
