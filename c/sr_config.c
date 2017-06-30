@@ -168,8 +168,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
-  if (sr_cfg->debug)
-     fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
+  //if (sr_cfg->debug)
+  //   fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
   if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
   {
@@ -234,7 +234,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(2);
   } else if ( !strcmp( option, "sum" ) ) {
       sr_cfg->sumalgo = argument[0];
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
       return(2);
   } else if ( !strcmp( option, "to" ) ) {
       sr_cfg->to = strdup(argument);
@@ -279,7 +278,7 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 
    {
-     printf( "line: %s", token_line );
+     //printf( "line: %s", token_line );
 
      if (strspn(token_line," \t\n") == strlen(token_line) ) 
      {

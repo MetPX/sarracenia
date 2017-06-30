@@ -55,6 +55,7 @@ int main(int argc, char **argv)
   }
   
   sr_c = sr_context_init_config( &sr_cfg );
+  sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
      fprintf( stderr, "failed to establish sr context\n");
      return(1);

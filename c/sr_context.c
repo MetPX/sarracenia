@@ -197,7 +197,7 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
@@ -239,15 +239,15 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
 
-           fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
-               how_many_to_read, bytes_read );
+           //fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
+           //    how_many_to_read, bytes_read );
 
            if ( bytes_read >= 0 ) 
            {
@@ -274,7 +274,7 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
 
 }
 
-struct sr_context *sr_context_initialize(struct sr_context *sr_c) {
+struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
  /* set up a connection given a context.
   */
@@ -388,7 +388,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
      fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
        sr_c->scheme, sr_c->user, (sr_c->password)?"<pw>":"<null>", sr_c->hostname, sr_c->port );
 
-  return( sr_context_initialize(sr_c) );
+  return( sr_c );
 
 }
 
@@ -579,10 +579,13 @@ void connect_and_post(const char *fn) {
      sr_c = sr_context_init_config(&sr_cfg);
   } 
 
+
+  sr_c = sr_context_connect(sr_c);
   if (sr_c == NULL ) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
+
   sr_post( sr_c, fn );
 
   sr_context_close(sr_c);

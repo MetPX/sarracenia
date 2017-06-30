@@ -57,26 +57,24 @@ struct sr_context {
 };
 
 
-struct sr_context *sr_context_init_env();
-/* context_init sets up a connection to a broker based on SR_AMQP_MINI_OPTS environment variable.
-   returns an sr_context ready for use by post.
-
-   connection establishment is done here.
- */
-
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg);
 
-/* context_init sets up a connection to a broker based on given configuration.
+/* context_init sets up a context.
+   returns connection to a broker based on given configuration.
+   returns an sr_context ready for use by connect.
+ */
+
+
+struct sr_context *sr_context_connect(struct sr_context *sr_c);
+/* 
+   returns open connection to a broker based on given configuration.
    returns an sr_context ready for use by post.
    connection establishment is done here.
  */
-
 
 void sr_post(struct sr_context *sr_c, const char *fn ); 
 /* post the given file name based on the established context.
-
    posts over an existing connection.
-
  */
 
 void sr_context_close(struct sr_context *sr_c); 
