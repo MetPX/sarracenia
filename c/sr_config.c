@@ -210,9 +210,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       else if ( sr_cfg->blocksize > 1 )
          sr_cfg->parts = 3;  // partstr=i (autocompute)
 
-      fprintf( stderr, "partition spec=%d, sz=%lu\n", sr_cfg->parts, sr_cfg->blocksize );
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
-      
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
@@ -276,7 +273,7 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   f = fopen( filename, "r" );
   if ( f == NULL ) {
-    fprintf( stderr, "fopen of %s failed\n", filename );
+    fprintf( stderr, "error: failed to fopen configuration file: %s\n", filename );
     return;
   }
 

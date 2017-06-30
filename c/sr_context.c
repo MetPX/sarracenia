@@ -362,8 +362,9 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
     case 0: // autocompute 
          tfactor =  ( sr_c->cfg->blocksize > 2 )?(sr_c->cfg->blocksize):(50*1024*1024) ;
          if ( sb.st_size > 100*tfactor ) sr_c->cfg->blocksize= 10*tfactor;
-         else if ( sb.st_size > 10*tfactor ) sr_c->cfg->blocksize= 10 *tfactor ;
-         else if ( sb.st_size > tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+2)/ 3) ;
+         else if ( sb.st_size > 10*tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+9)/10);
+         else if ( sb.st_size > tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+2)/3) ;
+         else sr_c->cfg->blocksize=sb.st_size;
          psc='i' ;
          break;
 
