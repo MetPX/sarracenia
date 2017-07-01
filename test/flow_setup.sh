@@ -50,6 +50,7 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot
   cp -r testree/* $testdocroot
   mkdir $testdocroot/downloaded_by_sub_t
+  mkdir $testdocroot/downloaded_by_sub_u
   mkdir $testdocroot/sent_by_tsource2send
   mkdir $testdocroot/recd_by_srpoll_test1
   mkdir $testdocroot/posted_by_srpost_test2

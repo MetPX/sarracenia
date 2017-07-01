@@ -127,12 +127,17 @@ function countall {
   totsent="${tot}"
 
   countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_q_000*.log | wc -l`"
-  totsub2="${tot}"
+  totsubq="${tot}"
   countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
   totpoll1="${tot}"
 
   countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
-  totsub3="${tot}"
+  totsubr="${tot}"
+
+  countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_u_000*.log | wc -l`"
+  totsubu="${tot}"
+
+
   countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
   totpost1="${tot}"
 
@@ -272,9 +277,10 @@ done
 
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
-tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
+tallyres ${totpoll1} ${totsubq} "poll test1 and subscribe q run together. Should have equal results."
 
-calcres ${totpost1} ${totsub3} "post test2 ${totpost1} and subscribe r ${totsub3} run together. Should have equal results."
+calcres ${totpost1} ${totsubr} "post test2 ${totpost1} and subscribe r ${totsubr} run together. Should be about the same."
+calcres ${totpost1} ${totsubu} "post test2 ${totpost1} and subscribe u ${totsubu} run together. Should be about the same."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
