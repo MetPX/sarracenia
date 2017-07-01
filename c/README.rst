@@ -42,10 +42,12 @@ whereami:
   - was looking at how to do partitioned files, wrote footnote #1 in sr_context.c
   - result was that the cache is probably required before doing partition support.
   - so thinking about doing the cache.
+  
 
 
 Plan:
-  - local posting (Done.)
+  - local posting (mostly done.)
+  - probably need to do symlinks, unlinks, links.
   - see how well it goes with shim.
   - figure out packaging?
 

@@ -395,6 +395,8 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
 void sr_post(struct sr_context *sr_c, const char *fn ) {
 
+  static const char *cu_url=NULL;
+  char *sp;
   char routingkey[255];
   char message_body[1024];
   char partstr[255];
@@ -411,7 +413,7 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   amqp_table_t table;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
-  char psc; // part strategy character.
+  char psc;                     // part strategy character.
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "sr_post called with: %s\n", fn );
@@ -443,7 +445,26 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
   strcpy( message_body, time2str(NULL));
   strcat( message_body, " " );
-  strcat( message_body, sr_c->url );
+
+  if ( strchr(sr_c->url,',') ) {
+     //fprintf( stderr, "1 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
+     if (cu_url) {
+         cu_url = strchr(cu_url,','); // if there is a previous one, pick the next one.
+         //fprintf( stderr, "2 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
+     }
+     if (cu_url) {
+         cu_url++;                    // skip to after the comma.
+         //fprintf( stderr, "3 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
+     } else {
+         cu_url = sr_c->url ;                // start from the beginning.
+         //fprintf( stderr, "4 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
+     }
+     sp=strchr(cu_url,',');
+     if (sp) strncat( message_body, cu_url, sp-cu_url );
+     else strcat( message_body, cu_url );
+  } else 
+     strcat( message_body, sr_c->url );
+  
   strcat( message_body, " " );
   strcat( message_body, fn);
 

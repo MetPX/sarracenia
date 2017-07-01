@@ -270,7 +270,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->directory=NULL;
   sr_cfg->masks=NULL;
   sr_cfg->parts=1;
-  sr_cfg->sumalgo='0';
+  sr_cfg->sumalgo='d';
   sr_cfg->url=NULL;
 }
 

@@ -24,6 +24,7 @@ int main(int argc, char **argv)
 {
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
+  struct stat sb;
   int consume,i,lastopt;
   
   if ( argc < 3 ) 
@@ -35,9 +36,15 @@ int main(int argc, char **argv)
      fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to publish to\n" );
      fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
      fprintf( stderr, "\t\tto <destination> - clusters pump network should forward to.\n" );
-     fprintf( stderr, "\t\turl <url> - retrieval base url in the posted files.\n" );
+     fprintf( stderr, "\t\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
+     fprintf( stderr, "\t\t    (a comma separated list of urls will result in alternation.)" );
+
      fprintf( stderr, "\t<files> - list of files to post\n\n" );
      fprintf( stderr, "This is a stripped down C implementation of sr_post(1), see man page for details\n\n" );
+     fprintf( stderr, "examples of missing features: \n\n" );
+     fprintf( stderr, "\t\tno cache.\n" );
+     fprintf( stderr, "\t\tcan only post files (not directories.)\n" );
+     fprintf( stderr, "\t\tno symlinks\n\n" );
      exit(1);
   }
  
@@ -63,6 +70,14 @@ int main(int argc, char **argv)
 
   // i set before...
   for( ; i < argc ; i++ ) { 
+     if ( stat(argv[i], &sb) < 0 ) {
+         fprintf( stderr, "failed to stat: %s\n", argv[i] );
+         continue;
+     }
+     if ( ( sb.st_mode & S_IFREG ) != S_IFREG )  {
+         fprintf( stderr,  "only posting of regular files supported. skipped %s\n", argv[i] );
+         continue;
+     }
      sr_post(sr_c,argv[i]);
   }
 

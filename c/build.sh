@@ -17,7 +17,7 @@ RABBIT_INCDIR=/local/home/peter/src/rabbitmq-c/librabbitmq
 RABBIT_LIBDIR=/local/home/peter/src/rabbitmq-c/build/librabbitmq
 RABBIT_INCDIR=/home/peter/src/rabbitmq-c/librabbitmq
 RABBIT_LIBDIR=/home/peter/src/rabbitmq-c/build/librabbitmq
-CFLAGS= -fPIC -g
+CFLAGS=" -fPIC -g "
 
 gcc $CFLAGS -c -Wall sr_poc.c 
 gcc $CFLAGS -c -Wall sr_credentials.c 
