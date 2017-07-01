@@ -20,8 +20,12 @@
   set the SR_POST_CONFIG environment variable to the name of the
   file to use.
 
+ 
  limitations:
     - Doesn't support document_root, absolute paths posted.
+    - Doesn't support cache.
+    - does support csv for url, to allow load spreading.
+    - seems to be about 30x faster than python version.
 
  */
 #include <stdlib.h>
@@ -182,8 +186,8 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    sumstr[2]='\0'; 
    switch (algo) {
 
-   case '0' :
-       sprintf( sumstr+2, "%ld", random()%1000 );
+   case '0' : case 'R' : case 'L' :  // null checksum, removal, or symlinks.
+       sprintf( sumstr+2, "%ld", random()%100 );
        break;
 
    case 'd' :
@@ -273,6 +277,35 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    return(sumstr);
 
 }
+
+void set_url( char* m, char* spec ) 
+  /* append a url spec to the given message buffer
+   */
+{
+  static const char* cu_url = NULL;
+  char *sp;
+
+  if ( strchr(spec,',') ) {
+     //fprintf( stderr, "1 picking url, set=%s, cu=%s\n", spec, cu_url );
+     if (cu_url) {
+         cu_url = strchr(cu_url,','); // if there is a previous one, pick the next one.
+         //fprintf( stderr, "2 picking url, set=%s, cu=%s\n", spec, cu_url );
+     }
+     if (cu_url) {
+         cu_url++;                    // skip to after the comma.
+         //fprintf( stderr, "3 picking url, set=%s, cu=%s\n", spec, cu_url );
+     } else {
+         cu_url = spec ;                // start from the beginning.
+         //fprintf( stderr, "4 picking url, set=%s, cu=%s\n", spec, cu_url );
+     }
+     sp=strchr(cu_url,',');
+     if (sp) strncat( m, cu_url, sp-cu_url );
+     else strcat( m, cu_url );
+  } else  {
+     strcat( m, spec );
+  }
+}
+
 
 struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
@@ -392,11 +425,8 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
 }
 
-
 void sr_post(struct sr_context *sr_c, const char *fn ) {
 
-  static const char *cu_url=NULL;
-  char *sp;
   char routingkey[255];
   char message_body[1024];
   char partstr[255];
@@ -441,37 +471,23 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "posting, routingkey: %s\n", routingkey );
 
-  stat(fn,&sb);
-
   strcpy( message_body, time2str(NULL));
   strcat( message_body, " " );
 
-  if ( strchr(sr_c->url,',') ) {
-     //fprintf( stderr, "1 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
-     if (cu_url) {
-         cu_url = strchr(cu_url,','); // if there is a previous one, pick the next one.
-         //fprintf( stderr, "2 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
-     }
-     if (cu_url) {
-         cu_url++;                    // skip to after the comma.
-         //fprintf( stderr, "3 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
-     } else {
-         cu_url = sr_c->url ;                // start from the beginning.
-         //fprintf( stderr, "4 picking url, set=%s, cu=%s\n", sr_c->url, cu_url );
-     }
-     sp=strchr(cu_url,',');
-     if (sp) strncat( message_body, cu_url, sp-cu_url );
-     else strcat( message_body, cu_url );
-  } else 
-     strcat( message_body, sr_c->url );
-  
+  set_url( message_body, sr_c->cfg->url );
+ 
   strcat( message_body, " " );
   strcat( message_body, fn);
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, message_body: %s\n", message_body );
+     fprintf( stderr, "sr_post message_body: %s\n", message_body );
 
   hdrcnt=0;
+
+  if (  lstat(fn,&sb) < 0 ) {
+     fprintf( stderr, "sr_post stat faied: %s\n", fn );
+     return;
+  }
 
   strcpy( atimestr, time2str(&(sb.st_atim)));
   add_header( "atime", atimestr);
@@ -485,7 +501,7 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   add_header( "to_clusters", sr_c->to );
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-      fprintf( stderr, "posting, to: %s blocksize=%lu, parts=%c\n", sr_c->to,  
+      fprintf( stderr, "sr_post to: %s blocksize=%lu, parts=%c\n", sr_c->to,  
           sr_c->cfg->blocksize, sr_c->cfg->parts+'0' );
 
 
@@ -530,14 +546,10 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   block_num = 0;
 
   while ( block_num < block_count ) 
-  {
+  { /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
       hdrcnt = parthdridx;
-
-      /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
-
       sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, sr_c->cfg->blocksize, 
           block_count, block_rem, block_num );
-
       add_header( "parts", partstr );
 
       if (! set_sumstr( sr_c->cfg->sumalgo, fn, sr_c->cfg->blocksize, block_count, block_rem, block_num ) ) 
@@ -552,7 +564,6 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
       table.num_entries = hdrcnt;
       table.entries=headers;
-
       status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
           amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
       block_num++;
@@ -563,9 +574,6 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
           fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
 
   }
-
-
-
 }
 
 void sr_context_close(struct sr_context *sr_c) {
