@@ -17,14 +17,15 @@ RABBIT_INCDIR=/local/home/peter/src/rabbitmq-c/librabbitmq
 RABBIT_LIBDIR=/local/home/peter/src/rabbitmq-c/build/librabbitmq
 RABBIT_INCDIR=/home/peter/src/rabbitmq-c/librabbitmq
 RABBIT_LIBDIR=/home/peter/src/rabbitmq-c/build/librabbitmq
+CFLAGS= -fPIC -g
 
-gcc -fPIC  -c -Wall sr_poc.c 
-gcc -fPIC  -c -Wall sr_credentials.c 
-gcc -fPIC  -c -Wall sr_config.c 
-gcc -fPIC  -c -Wall -I${RABBIT_INCDIR} sr_context.c 
-gcc -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 sr_poc.o sr_context.o sr_config.o sr_credentials.o -ldl -Wl,-rpath,/home/peter/src/rabbitmq-c/build/librabbitmq -L/home/peter/src/rabbitmq-c/build/librabbitmq -lrabbitmq -luriparser -lcrypto -lc 
+gcc $CFLAGS -c -Wall sr_poc.c 
+gcc $CFLAGS -c -Wall sr_credentials.c 
+gcc $CFLAGS -c -Wall sr_config.c 
+gcc $CFLAGS -c -Wall -I${RABBIT_INCDIR} sr_context.c 
+gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 sr_poc.o sr_context.o sr_config.o sr_credentials.o -ldl -Wl,-rpath,/home/peter/src/rabbitmq-c/build/librabbitmq -L/home/peter/src/rabbitmq-c/build/librabbitmq -lrabbitmq -luriparser -lcrypto -lc 
 
-gcc -o sr_configtest sr_configtest.c sr_config.o sr_credentials.o -luriparser
-gcc -o sr_cpost sr_cpost.c sr_context.o sr_config.o sr_credentials.o -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR} -lrabbitmq -luriparser -lcrypto
+gcc $CFLAGS -o sr_configtest sr_configtest.c sr_config.o sr_credentials.o -luriparser
+gcc $CFLAGS -o sr_cpost sr_cpost.c sr_context.o sr_config.o sr_credentials.o -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR} -lrabbitmq -luriparser -lcrypto
 
 # using libcrypto from libssl for hash algorithms.

@@ -398,6 +398,9 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   char routingkey[255];
   char message_body[1024];
   char partstr[255];
+  char modebuf[6];
+  char atimestr[18];
+  char mtimestr[18];
   struct stat sb;
   signed int status;
   int parthdridx;
@@ -449,8 +452,15 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
   hdrcnt=0;
 
-  add_header( "atime", time2str(&(sb.st_atim)));
-  add_header( "mtime", time2str(&(sb.st_mtim)));
+  strcpy( atimestr, time2str(&(sb.st_atim)));
+  add_header( "atime", atimestr);
+
+  strcpy( mtimestr, time2str(&(sb.st_mtim)));
+  add_header( "mtime", mtimestr );
+
+  sprintf( modebuf, "%04o", (sb.st_mode & 07777) );
+  add_header( "mode", modebuf);
+
   add_header( "to_clusters", sr_c->to );
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
@@ -489,15 +499,24 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
   props.headers = table;
  
   parthdridx = hdrcnt;
-  block_rem = sb.st_size%sr_c->cfg->blocksize ;
-  block_count = ( sb.st_size / sr_c->cfg->blocksize ) + ( block_rem?1:0 );
+  if ( sb.st_size == 0 ) {
+     block_rem = 0;
+     block_count = 1;
+  } else {
+     block_rem = sb.st_size%sr_c->cfg->blocksize ;
+     block_count = ( sb.st_size / sr_c->cfg->blocksize ) + ( block_rem?1:0 );
+  }
   block_num = 0;
 
   while ( block_num < block_count ) 
   {
       hdrcnt = parthdridx;
+
+      /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
+
       sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, sr_c->cfg->blocksize, 
-             block_count, block_rem, block_num );
+          block_count, block_rem, block_num );
+
       add_header( "parts", partstr );
 
       if (! set_sumstr( sr_c->cfg->sumalgo, fn, sr_c->cfg->blocksize, block_count, block_rem, block_num ) ) 
@@ -512,22 +531,15 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
       table.num_entries = hdrcnt;
       table.entries=headers;
-    
 
-      status = amqp_basic_publish(sr_c->conn,
-                                    1,
-                                    amqp_cstring_bytes(sr_c->exchange),
-                                    amqp_cstring_bytes(routingkey),
-                                    0,
-                                    0,
-                                    &props,
-                                    amqp_cstring_bytes(message_body));
-     block_num++;
+      status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
+          amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
+      block_num++;
 
-     if ( status < 0 ) 
-         fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
-     else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
+      if ( status < 0 ) 
+          fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
+      else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+          fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
 
   }
 
@@ -598,3 +610,37 @@ void connect_and_post(const char *fn) {
 
 }
 
+
+
+/*
+   Footnote 1: FIXME: posting partitioned parts Not yet implemented.
+
+   pseudo-code
+      if (psc == 'p') 
+      {
+              If you find a file that ends in .p.4096.20.13.0.Part, which
+              decodes as: psc.blocksize.block_count.block_rem.block_num".Part"
+              then adjust: 
+                   - message to contain path with suffix included.
+                   - path to feed into checksum calc.
+              if the part file is not found, then skip to next part.
+
+              this algo posts all the parts present on local disk.
+
+            confusing things:
+               - I don't think it is useful to post all parts, most likely
+                 end up repeatedly posting many of the parts that way.
+               - likely only want to post each part once, so then would need
+                 a way to specify a particular part to post?
+               - perhaps require cache to suppress repeats?
+
+          sprintf( suffixstr, ".%c.%lu.%lu.%lu.%lu.Part", psc, sr_c->cfg->blocksize, 
+              block_count, block_rem, block_num );
+           part_fn = fn + suffixstr
+             stat( partfn, partsb );  
+          if (Parf_file_found) {
+          } else {
+             suffixtr[0]='\0';
+          }
+      };
+*/
