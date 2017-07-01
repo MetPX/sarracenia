@@ -4,6 +4,7 @@
 
 **git repo(unreleased)**
 
+* mode bits limited to the last four digits (upper digits non portable anyways.)
 * implementation of sr_post in C (not packaged yet.)
 * fixed bogus error message from backward compatibility plugins.
 * added mtime check to sarra and sr_subscribe so that if of new file is <= file_on_disk, then don't download.

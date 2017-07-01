@@ -267,7 +267,7 @@ class sr_poster:
         if rename   != None : self.msg.headers['rename']       = rename
         if mtime    != None : self.msg.headers['mtime']        = mtime
         if atime    != None : self.msg.headers['atime']        = atime
-        if mode    != None : self.msg.headers['mode']          = "%o" % mode
+        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
         if link     != None : self.msg.headers['link']         = link
 
         if self.parent.cluster != None : self.msg.headers['from_cluster'] = self.parent.cluster
