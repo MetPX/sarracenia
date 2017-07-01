@@ -483,11 +483,16 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
          break;
   }
 
+  props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+  props.content_type = amqp_cstring_bytes("text/plain");
+  props.delivery_mode = 2; /* persistent delivery mode */
+  props.headers = table;
+ 
   parthdridx = hdrcnt;
   block_rem = sb.st_size%sr_c->cfg->blocksize ;
   block_count = ( sb.st_size / sr_c->cfg->blocksize ) + ( block_rem?1:0 );
   block_num = 0;
- 
+
   while ( block_num < block_count ) 
   {
       hdrcnt = parthdridx;
@@ -508,10 +513,6 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
       table.num_entries = hdrcnt;
       table.entries=headers;
     
-      props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
-      props.content_type = amqp_cstring_bytes("text/plain");
-      props.delivery_mode = 2; /* persistent delivery mode */
-      props.headers = table;
 
       status = amqp_basic_publish(sr_c->conn,
                                     1,
@@ -522,12 +523,6 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
                                     &props,
                                     amqp_cstring_bytes(message_body));
      block_num++;
-
-     /*
-        FIXME: possible memory leak here where amqp_cstring_bytes conversion causes alloc on each post?
-        need to look into it. would need to free after each publish, including sum and part headers
-        which get re-written.
-      */
 
      if ( status < 0 ) 
          fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
