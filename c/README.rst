@@ -47,7 +47,8 @@ whereami:
 
 Plan:
   - local posting (mostly done.)
-  - probably need to do symlinks, unlinks, links.
+  - shim likely needs to work with symlink, unlink, and link calls as well as just close.
+  - probably need to do symlinks (done) unlinks, links.
   - see how well it goes with shim.
   - figure out packaging?
 
