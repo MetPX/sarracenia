@@ -320,6 +320,30 @@ void set_url( char* m, char* spec )
   }
 }
 
+unsigned long int set_blocksize( long int bssetting, size_t fsz )
+{
+      unsigned long int tfactor =  (50*1024*1024) ;
+
+      switch( bssetting )
+      {
+        case 0: // autocompute 
+             if ( fsz > 100*tfactor ) return( 10*tfactor );
+             else if ( fsz > 10*tfactor ) return( (unsigned long int)( (fsz+9)/10) );
+             else if ( fsz > tfactor ) return( (unsigned long int)( (fsz+2)/3) ) ;
+             else return(fsz);
+             break;
+
+        case 1: // send file as one piece.
+             return(fsz);
+             break;
+
+       default: // partstr=i
+             return(bssetting);
+             break;
+      }
+
+}
+
 
 struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
@@ -456,7 +480,6 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   unsigned long block_count;
   unsigned long block_num;
   unsigned long block_rem;
-  unsigned long tfactor;
   amqp_table_t table;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
@@ -519,32 +542,13 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
       linkstr[linklen]='\0';
       header_add( "link", linkstr );
       block_count = 1;
-  } else {
-
+  } else {  /* regular files, add mode and determinr block parameters */
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
+      block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
+      if ( sr_c->cfg->blocksize == sb->st_size ) psc='1';
+      else psc='i';
 
-      switch( sr_c->cfg->blocksize )
-      {
-        case 0: // autocompute 
-             tfactor =  (50*1024*1024) ;
-             if ( sb->st_size > 100*tfactor ) block_size= 10*tfactor;
-             else if ( sb->st_size > 10*tfactor ) block_size= (unsigned long int)( (sb->st_size+9)/10);
-             else if ( sb->st_size > tfactor ) block_size= (unsigned long int)( (sb->st_size+2)/3) ;
-             else block_size=sb->st_size;
-             psc='i' ;
-             break;
-
-        case 1: // send file as one piece.
-             block_size=sb->st_size;
-             psc='1' ;
-             break;
-
-       default: // partstr=i
-             psc='i' ;
-             block_size = sr_c->cfg->blocksize;
-             break;
-      }
       if ( sb->st_size == 0 ) {
           block_rem = 0;
           block_count = 1;
