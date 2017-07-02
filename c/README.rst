@@ -39,21 +39,18 @@ libssl - OpenSSL client library.
 Developer Notes:
 
 whereami:
-  - was looking at how to do partitioned files, wrote footnote #1 in sr_context.c
+  - was looking at how to do partitioned (partflg='p') files, wrote footnote #1 in sr_context.c
   - result was that the cache is probably required before doing partition support.
   - so thinking about doing the cache.
   
 
-
 Plan:
   - local posting (mostly done.)
   - shim likely needs to work with symlink, unlink, and link calls as well as just close.
-  - probably need to do symlinks (done) unlinks, links.
   - see how well it goes with shim.
   - figure out packaging?
 
   - if the local shim does not go well, step 2 is: sr_cwatch.
-  - 
 
 
 
