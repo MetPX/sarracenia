@@ -72,7 +72,7 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c);
    connection establishment is done here.
  */
 
-void sr_post(struct sr_context *sr_c, const char *fn ); 
+void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb); 
 /* post the given file name based on the established context.
    posts over an existing connection.
  */

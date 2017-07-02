@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <fcntl.h>
+#include <linux/limits.h>
 
 #include <openssl/md5.h>
 #include <openssl/sha.h>
@@ -79,17 +80,30 @@ char *time2str( struct timespec *tin ) {
 }
 
 
-amqp_table_entry_t headers[10];
-int hdrcnt;
+#define HDRMAX (20)
+amqp_table_entry_t headers[HDRMAX];
 
-void add_header( char *tag, const char * value ) {
+int hdrcnt = 0 ;
 
+void header_reset() {
+    hdrcnt = 0 ;
+}
+
+void header_add( char *tag, const char * value ) {
+
+  if ( hdrcnt >= HDRMAX ) 
+  {
+     fprintf( stderr, "ERROR too many headers! ignoring %s=%s\n", tag, value );
+     return;
+  }
   headers[hdrcnt].key = amqp_cstring_bytes(tag);
   headers[hdrcnt].value.kind = AMQP_FIELD_KIND_UTF8;
   headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
   hdrcnt++;
-
+  //fprintf( stderr, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
 }
+
+
 
 void amqp_error_print(int x, char const *context)
 {
@@ -425,17 +439,20 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
 
 }
 
-void sr_post(struct sr_context *sr_c, const char *fn ) {
+void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
 
   char routingkey[255];
   char message_body[1024];
   char partstr[255];
   char modebuf[6];
+  char linkstr[PATH_MAX];
+  int  linklen;
   char atimestr[18];
   char mtimestr[18];
-  struct stat sb;
+  char sumalgo;
   signed int status;
   int parthdridx;
+  unsigned long block_size;
   unsigned long block_count;
   unsigned long block_num;
   unsigned long block_rem;
@@ -473,99 +490,109 @@ void sr_post(struct sr_context *sr_c, const char *fn ) {
 
   strcpy( message_body, time2str(NULL));
   strcat( message_body, " " );
-
   set_url( message_body, sr_c->cfg->url );
- 
   strcat( message_body, " " );
   strcat( message_body, fn);
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      fprintf( stderr, "sr_post message_body: %s\n", message_body );
 
-  hdrcnt=0;
+  header_reset();
 
-  if (  lstat(fn,&sb) < 0 ) {
-     fprintf( stderr, "sr_post stat faied: %s\n", fn );
-     return;
-  }
+  strcpy( atimestr, time2str(&(sb->st_atim)));
+  header_add( "atime", atimestr);
 
-  strcpy( atimestr, time2str(&(sb.st_atim)));
-  add_header( "atime", atimestr);
+  strcpy( mtimestr, time2str(&(sb->st_mtim)));
+  header_add( "mtime", mtimestr );
 
-  strcpy( mtimestr, time2str(&(sb.st_mtim)));
-  add_header( "mtime", mtimestr );
-
-  sprintf( modebuf, "%04o", (sb.st_mode & 07777) );
-  add_header( "mode", modebuf);
-
-  add_header( "to_clusters", sr_c->to );
+  header_add( "to_clusters", sr_c->to );
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
       fprintf( stderr, "sr_post to: %s blocksize=%lu, parts=%c\n", sr_c->to,  
           sr_c->cfg->blocksize, sr_c->cfg->parts+'0' );
 
+  sumalgo = sr_c->cfg->sumalgo;
 
-  switch( sr_c->cfg->parts )
-  {
-    case 0: // autocompute 
-         tfactor =  ( sr_c->cfg->blocksize > 2 )?(sr_c->cfg->blocksize):(50*1024*1024) ;
-         if ( sb.st_size > 100*tfactor ) sr_c->cfg->blocksize= 10*tfactor;
-         else if ( sb.st_size > 10*tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+9)/10);
-         else if ( sb.st_size > tfactor ) sr_c->cfg->blocksize= (unsigned long int)( (sb.st_size+2)/3) ;
-         else sr_c->cfg->blocksize=sb.st_size;
-         psc='i' ;
-         break;
-
-    case 1: // send file as one piece.
-         sr_c->cfg->blocksize=sb.st_size;
-         psc='1' ;
-         break;
-
-    case 2: // partstr=p
-         psc='p' ;
-         break;
-
-   default: // partstr=i
-         psc='i' ;
-         break;
-  }
-
-  props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
-  props.content_type = amqp_cstring_bytes("text/plain");
-  props.delivery_mode = 2; /* persistent delivery mode */
-  props.headers = table;
- 
-  parthdridx = hdrcnt;
-  if ( sb.st_size == 0 ) {
-     block_rem = 0;
-     block_count = 1;
+  if ( S_ISLNK(sb->st_mode) ) {
+      sumalgo='L';
+      linklen = readlink( fn, linkstr, PATH_MAX );
+      linkstr[linklen]='\0';
+      header_add( "link", linkstr );
+      block_count = 1;
   } else {
-     block_rem = sb.st_size%sr_c->cfg->blocksize ;
-     block_count = ( sb.st_size / sr_c->cfg->blocksize ) + ( block_rem?1:0 );
+
+      sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
+      header_add( "mode", modebuf);
+
+      switch( sr_c->cfg->parts )
+      {
+        case 0: // autocompute 
+             tfactor =  ( sr_c->cfg->blocksize > 2 )?(sr_c->cfg->blocksize):(50*1024*1024) ;
+             if ( sb->st_size > 100*tfactor ) block_size= 10*tfactor;
+             else if ( sb->st_size > 10*tfactor ) block_size= (unsigned long int)( (sb->st_size+9)/10);
+             else if ( sb->st_size > tfactor ) block_size= (unsigned long int)( (sb->st_size+2)/3) ;
+             else block_size=sb->st_size;
+             psc='i' ;
+             break;
+
+        case 1: // send file as one piece.
+             block_size=sb->st_size;
+             psc='1' ;
+             break;
+
+       default: // partstr=i
+             psc='i' ;
+             block_size = sr_c->cfg->blocksize;
+             break;
+      }
+      if ( sb->st_size == 0 ) {
+          block_rem = 0;
+          block_count = 1;
+      } else {
+          block_rem = sb->st_size%block_size ;
+          block_count = ( sb->st_size / block_size ) + ( block_rem?1:0 );
+      }
   }
+
+ 
+  parthdridx = hdrcnt; // note save location for loop.
   block_num = 0;
 
   while ( block_num < block_count ) 
   { /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
       hdrcnt = parthdridx;
-      sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, sr_c->cfg->blocksize, 
-          block_count, block_rem, block_num );
-      add_header( "parts", partstr );
 
-      if (! set_sumstr( sr_c->cfg->sumalgo, fn, sr_c->cfg->blocksize, block_count, block_rem, block_num ) ) 
+      if ( sumalgo != 'L' ) {
+
+          sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, block_size, 
+              block_count, block_rem, block_num );
+          header_add( "parts", partstr );
+          if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+              fprintf( stderr, "posting, parts: %s\n", partstr );
+
+      }
+
+      if (! set_sumstr( sumalgo, fn, block_size, block_count, block_rem, block_num ) ) 
       {
-         fprintf( stderr, "sr_post unable to generate %c checksum for: %s\n", sr_c->cfg->sumalgo, fn );
+         fprintf( stderr, "sr_post unable to generate %c checksum for: %s\n", sumalgo, fn );
          return;
       }
-      add_header( "sum", sumstr );
+      header_add( "sum", sumstr );
 
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "posting, parts: %s, sumstr: %s\n", partstr, sumstr );
+         fprintf( stderr, "posting, sumstr: %s hdrcnt=%d\n", sumstr, hdrcnt );
 
       table.num_entries = hdrcnt;
       table.entries=headers;
+
+      props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+      props.content_type = amqp_cstring_bytes("text/plain");
+      props.delivery_mode = 2; /* persistent delivery mode */
+      props.headers = table;
+
       status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
           amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
+
       block_num++;
 
       if ( status < 0 ) 
@@ -609,6 +636,7 @@ void connect_and_post(const char *fn) {
   struct sr_mask_t *mask; 
   struct sr_context *sr_c = NULL;
   char *setstr;
+  struct stat sb;
 
   setstr = getenv( "SR_POST_CONFIG" ) ;
   if ( setstr != NULL )
@@ -634,7 +662,8 @@ void connect_and_post(const char *fn) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
-  sr_post( sr_c, fn );
+  stat( fn, &sb );
+  sr_post( sr_c, fn, &sb );
   sr_context_close(sr_c);
 
 }
