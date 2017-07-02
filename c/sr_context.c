@@ -493,7 +493,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
          fprintf( stderr, "sr_cpost rejected: %s\n", fn );
       return;
   }
-  if ( S_ISDIR(sb->st_mode) ) {
+  if ( sb && S_ISDIR(sb->st_mode) ) {
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
          fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
       return;
@@ -531,37 +531,38 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   header_add( "to_clusters", sr_c->to );
 
   sumalgo = sr_c->cfg->sumalgo;
+  block_count = 1;
 
-  if ( S_ISLNK(sb->st_mode) ) {
+  if ( !sb ) 
+  {
+      sumalgo='R';
+  } else if ( S_ISLNK(sb->st_mode) ) {
       sumalgo='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
       linkstr[linklen]='\0';
       header_add( "link", linkstr );
-      block_count = 1;
-  } else {  /* regular files, add mode and determinr block parameters */
+  } else {  /* regular files, add mode and determine block parameters */
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
       block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
-      if ( (sr_c->cfg->blocksize < sb->st_size )) psc='i';
-      else psc='1';
+      psc = (sr_c->cfg->blocksize < sb->st_size )? 'i':'1' ;
 
-      if ( sb->st_size == 0 ) {
+      if ( block_size == 0 ) {
           block_rem = 0;
-          block_count = 1;
       } else {
           block_rem = sb->st_size%block_size ;
           block_count = ( sb->st_size / block_size ) + ( block_rem?1:0 );
       }
   }
  
-  commonhdridx = hdrcnt; // note save location for loop.
+  commonhdridx = hdrcnt; // save location of headers common to all messages.
   block_num = 0;
 
   while ( block_num < block_count ) 
   { /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
       hdrcnt = commonhdridx;
 
-      if ( sumalgo != 'L' ) {
+      if ( ( sumalgo != 'L' ) && ( sumalgo != 'R' ) )  {
 
           sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, block_size, 
               block_count, block_rem, block_num );

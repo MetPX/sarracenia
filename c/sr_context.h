@@ -81,6 +81,9 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb);
    sr_post reads:  st_size, st_atim, st_mtim, and st_mode.
    those fields are used to build the advertisement.
 
+   if passed sb=NULL, then the sr_post generates an 'R' (remove) message
+   for the named file.
+
  */
 
 void sr_context_close(struct sr_context *sr_c); 
