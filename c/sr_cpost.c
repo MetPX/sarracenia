@@ -70,14 +70,15 @@ int main(int argc, char **argv)
 
   // i set before...
   for( ; i < argc ; i++ ) { 
-     if ( stat(argv[i], &sb) < 0 ) {
+     if ( lstat(argv[i], &sb) < 0 ) {
          fprintf( stderr, "failed to stat: %s\n", argv[i] );
          continue;
      }
-     if ( ( sb.st_mode & S_IFREG ) != S_IFREG )  {
-         fprintf( stderr,  "only posting of regular files supported. skipped %s\n", argv[i] );
+     if (S_ISDIR(sb.st_mode))  {
+         fprintf( stderr,  "posting of directories not supported. skipped %s\n", argv[i] );
          continue;
      }
+     //sr_post(sr_c,argv[i], &sb);
      sr_post(sr_c,argv[i]);
   }
 
