@@ -74,12 +74,7 @@ int main(int argc, char **argv)
          fprintf( stderr, "failed to stat: %s\n", argv[i] );
          continue;
      }
-     if (S_ISDIR(sb.st_mode))  {
-         fprintf( stderr,  "posting of directories not supported. skipped %s\n", argv[i] );
-         continue;
-     }
      sr_post(sr_c,argv[i], &sb);
-     //sr_post(sr_c,argv[i]);
   }
 
   sr_context_close(sr_c);

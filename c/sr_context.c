@@ -354,9 +354,6 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
   amqp_rpc_reply_t reply;
   amqp_channel_open_ok_t *open_status;
 
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_context_initialize, new_connection AMQP_VERSION=%08x\n", AMQP_VERSION );
-
   sr_c->conn = amqp_new_connection();
 
   if ( !strcmp(sr_c->scheme,"amqps") ) {
@@ -402,8 +399,7 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
   }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_context_initialize, done!\n" );
-
+     fprintf( stderr, "sr_context_connect succeeded!\n" );
 
   return(sr_c);
 }
@@ -475,7 +471,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   char mtimestr[18];
   char sumalgo;
   signed int status;
-  int parthdridx;
+  int commonhdridx;
   unsigned long block_size;
   unsigned long block_count;
   unsigned long block_num;
@@ -486,7 +482,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   char psc;                     // part strategy character.
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_post called with: %s\n", fn );
+     fprintf( stderr, "sr_cpost called with: %s\n", fn );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
@@ -494,12 +490,16 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   if ( (mask && !(mask->accepting)) || !(!mask && sr_c->cfg->accept_unmatched ))
   { //reject.
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "sr_post rejected: %s\n", fn );
+         fprintf( stderr, "sr_cpost rejected: %s\n", fn );
       return;
   }
-
+  if ( S_ISDIR(sb->st_mode) ) {
+      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+         fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
+      return;
+  }
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_post accepted posting to exchange:  %s\n", sr_c->exchange );
+     fprintf( stderr, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
 
   strcpy(routingkey,"v02.post");
   if (fn[0] != '/' ) strcat(routingkey,".");
@@ -518,7 +518,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   strcat( message_body, fn);
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_post message_body: %s\n", message_body );
+     fprintf( stderr, "sr_cpost message_body: %s\n", message_body );
 
   header_reset();
 
@@ -529,10 +529,6 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   header_add( "mtime", mtimestr );
 
   header_add( "to_clusters", sr_c->to );
-
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-      fprintf( stderr, "sr_post to: %s blocksize=%lu\n", sr_c->to,  
-          sr_c->cfg->blocksize );
 
   sumalgo = sr_c->cfg->sumalgo;
 
@@ -546,8 +542,8 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
       block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
-      if ( sr_c->cfg->blocksize == sb->st_size ) psc='1';
-      else psc='i';
+      if ( (sr_c->cfg->blocksize < sb->st_size )) psc='i';
+      else psc='1';
 
       if ( sb->st_size == 0 ) {
           block_rem = 0;
@@ -557,34 +553,27 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
           block_count = ( sb->st_size / block_size ) + ( block_rem?1:0 );
       }
   }
-
  
-  parthdridx = hdrcnt; // note save location for loop.
+  commonhdridx = hdrcnt; // note save location for loop.
   block_num = 0;
 
   while ( block_num < block_count ) 
   { /* Footnote 1: FIXME: posting partitioned parts not implemented, see end notes */
-      hdrcnt = parthdridx;
+      hdrcnt = commonhdridx;
 
       if ( sumalgo != 'L' ) {
 
           sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, block_size, 
               block_count, block_rem, block_num );
           header_add( "parts", partstr );
-          if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-              fprintf( stderr, "posting, parts: %s\n", partstr );
-
       }
 
       if (! set_sumstr( sumalgo, fn, block_size, block_count, block_rem, block_num ) ) 
       {
-         fprintf( stderr, "sr_post unable to generate %c checksum for: %s\n", sumalgo, fn );
+         fprintf( stderr, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );
          return;
       }
       header_add( "sum", sumstr );
-
-      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "posting, sumstr: %s hdrcnt=%d\n", sumstr, hdrcnt );
 
       table.num_entries = hdrcnt;
       table.entries=headers;
@@ -600,7 +589,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
       block_num++;
 
       if ( status < 0 ) 
-          fprintf( stderr, "ERROR: sr_post: publish of block %lu of %lu failed.\n", block_num, block_count );
+          fprintf( stderr, "ERROR: sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
       else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
           fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
 
@@ -614,20 +603,20 @@ void sr_context_close(struct sr_context *sr_c) {
 
   reply = amqp_channel_close(sr_c->conn, 1, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-      fprintf( stderr, "sr_post: amqp channel close failed.\n");
+      fprintf( stderr, "sr_cpost: amqp channel close failed.\n");
       return;
   }
 
   reply = amqp_connection_close(sr_c->conn, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-      fprintf( stderr, "sr_post: amqp connection close failed.\n");
+      fprintf( stderr, "sr_cpost: amqp connection close failed.\n");
       return;
   }
 
   status = amqp_destroy_connection(sr_c->conn);
   if (status < 0 ) 
   {
-      fprintf( stderr, "sr_post: amqp context close failed.\n");
+      fprintf( stderr, "sr_cpost: amqp context close failed.\n");
       return;
   }
 
@@ -656,7 +645,7 @@ void connect_and_post(const char *fn) {
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || !(!mask && sr_cfg.accept_unmatched ))
   { //reject.
-      if (sr_cfg.debug) fprintf( stderr, "sr_post rejected: %s\n", fn );
+      if (sr_cfg.debug) fprintf( stderr, "sr_cpost rejected: %s\n", fn );
       return;
   }
 
