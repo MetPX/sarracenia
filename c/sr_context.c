@@ -508,8 +508,8 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   header_add( "to_clusters", sr_c->to );
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-      fprintf( stderr, "sr_post to: %s blocksize=%lu, parts=%c\n", sr_c->to,  
-          sr_c->cfg->blocksize, sr_c->cfg->parts+'0' );
+      fprintf( stderr, "sr_post to: %s blocksize=%lu\n", sr_c->to,  
+          sr_c->cfg->blocksize );
 
   sumalgo = sr_c->cfg->sumalgo;
 
@@ -524,10 +524,10 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
 
-      switch( sr_c->cfg->parts )
+      switch( sr_c->cfg->blocksize )
       {
         case 0: // autocompute 
-             tfactor =  ( sr_c->cfg->blocksize > 2 )?(sr_c->cfg->blocksize):(50*1024*1024) ;
+             tfactor =  (50*1024*1024) ;
              if ( sb->st_size > 100*tfactor ) block_size= 10*tfactor;
              else if ( sb->st_size > 10*tfactor ) block_size= (unsigned long int)( (sb->st_size+9)/10);
              else if ( sb->st_size > tfactor ) block_size= (unsigned long int)( (sb->st_size+2)/3) ;

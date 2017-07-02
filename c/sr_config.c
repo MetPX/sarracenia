@@ -209,15 +209,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       }
       sr_cfg->blocksize = chunksize_from_str( argument );
 
-      if ( sr_cfg->blocksize == 0 ) 
-         sr_cfg->parts = 0;
-      else if ( sr_cfg->blocksize == 1 )
-         sr_cfg->parts = 1;
-      else if ( sr_cfg->blocksize == 2 )
-         sr_cfg->parts = 2;  // partstr=p (autocompute)
-      else if ( sr_cfg->blocksize > 1 )
-         sr_cfg->parts = 3;  // partstr=i (autocompute)
-
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
@@ -269,7 +260,6 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->to=NULL;
   sr_cfg->directory=NULL;
   sr_cfg->masks=NULL;
-  sr_cfg->parts=1;
   sr_cfg->sumalgo='d';
   sr_cfg->url=NULL;
 }
