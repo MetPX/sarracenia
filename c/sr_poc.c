@@ -17,6 +17,10 @@
  preload proof of concept from Alain St-Denis...
  with mods to work with sr_context
 
+ missing:
+     symlink
+     link
+     unlink...
 
  */
 

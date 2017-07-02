@@ -73,8 +73,14 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c);
  */
 
 void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb); 
-/* post the given file name based on the established context.
-   posts over an existing connection.
+/* 
+   post the given file name using the established context.
+   (posts over an existing connection.)
+
+   The struct stat is normally the result of lstat(fn,sb);
+   sr_post reads:  st_size, st_atim, st_mtim, and st_mode.
+   those fields are used to build the advertisement.
+
  */
 
 void sr_context_close(struct sr_context *sr_c); 
