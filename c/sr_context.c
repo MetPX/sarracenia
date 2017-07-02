@@ -201,7 +201,7 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    switch (algo) {
 
    case '0' : case 'R' : case 'L' :  // null checksum, removal, or symlinks.
-       sprintf( sumstr+2, "%ld", random()%100 );
+       sprintf( sumstr+2, "%ld", random()%1000 );
        break;
 
    case 'd' :
@@ -410,6 +410,11 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
   struct sr_context *sr_c;
   char *buf;
   int len;
+  struct timespec ts;
+
+  // seed for random checksums... random enough...
+  clock_gettime( CLOCK_REALTIME , &ts);
+  srandom(ts.tv_nsec);
 
   sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
 
@@ -455,6 +460,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
      fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
        sr_c->scheme, sr_c->user, (sr_c->password)?"<pw>":"<null>", sr_c->hostname, sr_c->port );
 
+  
   return( sr_c );
 
 }
