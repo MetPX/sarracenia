@@ -43,11 +43,12 @@ char *sr_credentials_fetch( char *s )
           //fprintf( stderr, "start[i]=%c, s[i]=%c\n", start[i], s[i] );
           i++;
       }
-      //fprintf( stderr, "out of loop: start[i]=%c, s[i]=%c\n", start[i], s[i] );
+      //fprintf( stderr, "out of loop 1: start[i]=%c, s[i]=%c\n", start[i], s[i] );
       if (i == slen) 
       {
          result= (char*)malloc(i+1);
          strncpy(result,start,i); 
+         result[i]='\0';
          //fprintf( stderr, "result: %s\n", result );
          return(result);
       }
@@ -67,13 +68,14 @@ char *sr_credentials_fetch( char *s )
              //     start[i], i, s[smatching], smatching );
              i++; smatching++; 
           }
-          //fprintf( stderr, "out of loop, slen=%d, start[i]=%c, i=%d s[smatching]=%c smatching=%d\n", 
+          //fprintf( stderr, "out of loop 2, slen=%d, start[i]=%c, i=%d s[smatching]=%c smatching=%d\n", 
           //        slen, start[i], i, s[smatching], smatching );
 
           if ( (smatching >= slen-1) && ( (start[i] == ' ') || (start[i] == '/')  || (start[i] == '\t') || (start[i] == '\n') )) 
           {
              result= (char*)malloc(i+1);
              strncpy(result,start,i); 
+             result[i]='\0';
              //fprintf( stderr, "result: %s\n", result );
              return(result);
           };

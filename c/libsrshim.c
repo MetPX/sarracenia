@@ -54,8 +54,6 @@ int link(const char *target, const char* linkpath)
   }
   status = link_fn_ptr(target,linkpath);
 
-  fprintf( stderr, "about to post link: %s\n", linkpath );
-
   if (!status) connect_and_post(linkpath);
   return(status);
 }
@@ -68,13 +66,11 @@ int unlinkat(int dirfd, const char *path, int flags)
 {
   int status;
 
-  fprintf( stderr, "my unlinkat: %s\n", path );
   if (!unlinkat_init_done) {
     unlinkat_fn_ptr = (unlinkat_fn) dlsym(RTLD_NEXT, "unlinkat");
     unlinkat_init_done = 1;
   }
   status = unlinkat_fn_ptr(dirfd, path, flags);
-  fprintf( stderr, "about to post unlinkat: %s\n", path );
   if (!status) connect_and_post(path);
   return(status);
 }
@@ -87,14 +83,12 @@ int unlink(const char *path)
 {
   int status;
 
-  fprintf( stderr, "my unlink: %s\n", path );
   if (!unlink_init_done) 
   {
       unlink_fn_ptr = (unlink_fn) dlsym(RTLD_NEXT, "unlink");
       unlink_init_done = 1;
   }
   status = unlink_fn_ptr(path);
-  fprintf( stderr, "about to post unlink: %s\n", path );
   if (!status) connect_and_post(path);
   return(status);
 }
@@ -115,8 +109,6 @@ int close(int fd) {
     close_init_done = 1;
   }
     
-  fprintf( stderr, "closing fd=%d\n", fd );
-
   // hack to prevent loops on close, when calling posting routines...
   // is there a better way? - PS.
   if ( getenv("SR_LD_USE_REAL_FN") != NULL )
@@ -135,7 +127,6 @@ int close(int fd) {
   // something like stdout, or stdin, no way to obtain file name...
   if (!real_fdpath) 
   {
-       fprintf( stderr, "no realpath\n" );
        return(close_fn_ptr(fd));
   }
 

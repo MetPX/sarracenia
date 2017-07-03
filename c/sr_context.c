@@ -457,21 +457,23 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
   sr_c->socket = NULL;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+  {
      fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
        sr_c->scheme, sr_c->user, (sr_c->password)?"<pw>":"<null>", sr_c->hostname, sr_c->port );
-
+  }
   
   return( sr_c );
 
 }
 
-void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
+void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
 
   char routingkey[255];
   char message_body[1024];
   char partstr[255];
   char modebuf[6];
   char linkstr[PATH_MAX];
+  char fn[PATH_MAX];
   int  linklen;
   char atimestr[18];
   char mtimestr[18];
@@ -487,34 +489,41 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   struct sr_mask_t *mask;
   char psc;                     // part strategy character.
 
+  if (*pathspec != '/' ) // need absolute path.
+  { 
+      getcwd( fn, PATH_MAX);
+      strcat( fn, "/" );
+      strcat( fn, pathspec);
+  } else {
+      strcpy( fn, pathspec );
+  }
+
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost called with: %s\n", fn );
+     fprintf( stderr, "sr_cpost called with: %s sb=%p\n", fn, sb );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
 
-  if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched) ))
-  { //reject.
-      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "sr_cpost rejected: %s\n", fn );
+  if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) )
+  {
+      if ( (sr_c->cfg) && sr_c->cfg->debug ) fprintf( stderr, "rejecting: %s\n", fn );
       return;
   }
   if ( sb && S_ISDIR(sb->st_mode) ) {
-      if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-         fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
+      if ( (sr_c->cfg) && sr_c->cfg->debug )
+          fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
       return;
   }
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+  if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
 
   strcpy(routingkey,"v02.post");
-  if (fn[0] != '/' ) strcat(routingkey,".");
 
   strcat(routingkey,fn);
   for( int i=8; i< strlen(routingkey); i++ )
       if ( routingkey[i] == '/' ) routingkey[i]='.';
 
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+  if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "posting, routingkey: %s\n", routingkey );
 
   strcpy( message_body, time2str(NULL));
@@ -523,31 +532,34 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   strcat( message_body, " " );
   strcat( message_body, fn);
 
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+  if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "sr_cpost message_body: %s\n", message_body );
 
   header_reset();
-
-  strcpy( atimestr, time2str(&(sb->st_atim)));
-  header_add( "atime", atimestr);
-
-  strcpy( mtimestr, time2str(&(sb->st_mtim)));
-  header_add( "mtime", mtimestr );
 
   header_add( "to_clusters", sr_c->to );
 
   sumalgo = sr_c->cfg->sumalgo;
   block_count = 1;
 
-  if ( !sb ) 
-  {
+  if ( !sb ) {
+
       sumalgo='R';
+
   } else if ( S_ISLNK(sb->st_mode) ) {
+
       sumalgo='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
       linkstr[linklen]='\0';
       header_add( "link", linkstr );
+
   } else {  /* regular files, add mode and determine block parameters */
+
+      strcpy( atimestr, time2str(&(sb->st_atim)));
+      header_add( "atime", atimestr);
+
+      strcpy( mtimestr, time2str(&(sb->st_mtim)));
+      header_add( "mtime", mtimestr );
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
       block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
@@ -597,7 +609,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
 
       if ( status < 0 ) 
           fprintf( stderr, "ERROR: sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
-      else if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+      else if ( (sr_c->cfg) && sr_c->cfg->debug )
           fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
 
   }
@@ -638,6 +650,12 @@ void connect_and_post(const char *fn) {
   char *setstr;
   struct stat sb;
 
+  if ( !fn ) 
+  {
+     fprintf( stderr, "post null\n" );
+     return;
+  }
+
   setstr = getenv( "SR_POST_CONFIG" ) ;
   if ( setstr != NULL )
   { 
@@ -649,10 +667,13 @@ void connect_and_post(const char *fn) {
      }
      sr_c = sr_context_init_config(&sr_cfg);
   } 
+
   mask = isMatchingPattern(&sr_cfg, fn);
-  if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched) ))
+  if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
-      if (sr_cfg.debug) fprintf( stderr, "sr_cpost rejected: %s\n", fn );
+      fprintf( stderr, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
+            mask, mask->accepting, sr_cfg.accept_unmatched );
+      if (sr_cfg.debug) fprintf( stderr, "sr_cpost rejected 2: %s\n", fn );
       return;
   }
 
@@ -662,10 +683,9 @@ void connect_and_post(const char *fn) {
     fprintf( stderr, "failed to parse AMQP broker settings\n");
     return;
   }
-  stat( fn, &sb );
-  sr_post( sr_c, fn, &sb );
+  if ( lstat( fn, &sb ) ) sr_post( sr_c, fn, NULL );
+  else sr_post( sr_c, fn, &sb );
   sr_context_close(sr_c);
-
 }
 
 
