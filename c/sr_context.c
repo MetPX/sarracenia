@@ -493,7 +493,7 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb ) {
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
 
-  if ( (mask && !(mask->accepting)) || !(!mask && sr_c->cfg->accept_unmatched ))
+  if ( (mask && !(mask->accepting)) || (!mask && !sr_c->cfg->accept_unmatched ))
   { //reject.
       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
          fprintf( stderr, "sr_cpost rejected: %s\n", fn );
@@ -650,7 +650,7 @@ void connect_and_post(const char *fn) {
      sr_c = sr_context_init_config(&sr_cfg);
   } 
   mask = isMatchingPattern(&sr_cfg, fn);
-  if ( (mask && !(mask->accepting)) || !(!mask && sr_cfg.accept_unmatched ))
+  if ( (mask && !(mask->accepting)) || (!mask && !sr_cfg.accept_unmatched ))
   { //reject.
       if (sr_cfg.debug) fprintf( stderr, "sr_cpost rejected: %s\n", fn );
       return;

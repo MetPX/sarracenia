@@ -123,7 +123,7 @@ int StringIsTrue(const char *s)
     1- 01 - value is false and argument provide ( -option no )
     2- 10 - value is true and argument omitted  ( -option    )
     3- 11 - value is true and argument provided ( -option yes ) 
-  */
+ */
 {
 
    if ((s == NULL ) || (*s=='-')) return(2);

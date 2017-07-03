@@ -27,15 +27,21 @@ RABBIT_INCDIR=
 RABBIT_LINK=" -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR} "
 RABBIT_LINK=
 
+SARRA_LIBDIR=`pwd`
+SARRA_LINK=" -Wl,-rpath,${SARRA_LIBDIR} -L${SARRA_LIBDIR} "
+
 CFLAGS=" -fPIC -g "
 
 gcc $CFLAGS -c -Wall sr_poc.c 
 gcc $CFLAGS -c -Wall sr_credentials.c 
 gcc $CFLAGS -c -Wall sr_config.c 
 gcc $CFLAGS -c -Wall ${RABBIT_INCDIR} sr_context.c 
-gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 sr_poc.o sr_context.o sr_config.o sr_credentials.o -ldl $RABBIT_LINK -lrabbitmq -luriparser -lcrypto -lc 
+gcc $CFLAGS -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 sr_context.o sr_config.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
 
-gcc $CFLAGS -o sr_configtest sr_configtest.c sr_config.o sr_credentials.o -luriparser
-gcc $CFLAGS -o sr_cpost sr_cpost.c sr_context.o sr_config.o sr_credentials.o ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto
+gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 sr_poc.c libsarra.so.1.0.0 -ldl ${SARRA_LINK} ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
+#gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 sr_poc.c sr_context.o sr_config.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
+
+gcc $CFLAGS -o sr_configtest sr_configtest.c -lsarra ${SARRA_LINK} -luriparser
+gcc $CFLAGS -o sr_cpost sr_cpost.c -lsarra ${SARRA_LINK} ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto
 
 # using libcrypto from libssl for hash algorithms.
