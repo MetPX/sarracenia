@@ -563,7 +563,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);
       block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
-      psc = (sr_c->cfg->blocksize < sb->st_size )? 'i':'1' ;
+      psc = (block_size < sb->st_size )? 'i':'1' ;
 
       if ( block_size == 0 ) {
           block_rem = 0;

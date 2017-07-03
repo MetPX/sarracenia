@@ -41,6 +41,14 @@ gcc $CFLAGS -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 sr_context.o 
 gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0 -ldl ${SARRA_LINK} ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
 #gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c sr_context.o sr_config.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
 
+if [ ! -f libsarra.so ]; then
+   ln -s libsarra.so.1.0.0 libsarra.so
+fi
+
+if [ ! -f libsarra.so.1 ]; then
+   ln -s libsarra.so.1.0.0 libsarra.so.1
+fi
+
 gcc $CFLAGS -o sr_configtest sr_configtest.c -lsarra ${SARRA_LINK} -luriparser
 gcc $CFLAGS -o sr_cpost sr_cpost.c -lsarra ${SARRA_LINK} ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto
 
