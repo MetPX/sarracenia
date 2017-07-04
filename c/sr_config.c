@@ -224,9 +224,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->directory = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "events" ) ) {
+  } else if ( !strcmp( option, "events" ) || !strcmp( option, "e") ) {
       sr_cfg->events = parse_events(argument);
-      fprintf( stderr, "events: %04x\n", sr_cfg->events );
       return(2);
 
   } else if ( !strcmp( option, "exchange" ) || !strcmp( option, "ex") ) {
