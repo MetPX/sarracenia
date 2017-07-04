@@ -34,7 +34,6 @@ int symlink(const char *target, const char* linkpath)
   }
   status = symlink_fn_ptr(target,linkpath);
 
-  fprintf( stderr, "about to post symlink: %s\n", linkpath );
   if (!status) connect_and_post(linkpath);
   return(status);
 }
@@ -134,7 +133,6 @@ int close(int fd) {
 
   connect_and_post(real_fdpath);
  
-  fprintf( stderr, "back from connect_and_post %s\n", real_fdpath );
   unsetenv("SR_LD_USE_REAL_FN");
   free(real_fdpath);
 

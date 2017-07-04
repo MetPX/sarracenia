@@ -668,7 +668,8 @@ void connect_and_post(const char *fn) {
      }
      sr_c = sr_context_init_config(&sr_cfg);
   } 
-
+  if (!sr_c) return;
+ 
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
