@@ -302,7 +302,8 @@ It is a comma separated string.  Valid checksum flags are ::
     [0|n|d|c=<scriptname>]
     where 0 : no checksum... value in post is a random integer
           n : do checksum on filename
-          d : do md5sum on file content (default)
+          d : do md5sum on file content (default for now, compatibility)
+          s : do SHA512 on file content (default in future)
 
 Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.

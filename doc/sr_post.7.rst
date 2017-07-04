@@ -218,14 +218,14 @@ in messages when appropriate.   Headers are a mandatory element included in late
  Indicates what partitioning method, if any, was used in transmission. 
 
  +-----------+---------------------------------------------------------------------+
- +   Method  + Description                                                         +
+ |   Method  | Description                                                         |
  +-----------+---------------------------------------------------------------------+
- +    p      + File is partitioned, individual part files are created.             +
+ |    p      | File is partitioned, individual part files are created.             |
  +-----------+---------------------------------------------------------------------+
- +    i      + file is partitioned, but blocks are read from a single file,        |
- +           + rather than parts.                                                  +
+ |    i      | file is partitioned, but blocks are read from a single file,        |
+ |           | rather than parts.                                                  |
  +-----------+---------------------------------------------------------------------+
- +    1      + file is in a single part (no partitioning)                          +
+ |    1      | file is in a single part (no partitioning)                          |
  +-----------+---------------------------------------------------------------------+
 
  - analogous to rsync options: --inplace, --partial,
@@ -292,17 +292,19 @@ in messages when appropriate.   Headers are a mandatory element included in late
  *<method>* - character field indicating the checksum algorithm used.
 
  +-----------+---------------------------------------------------------------------+
- +   Method  + Description                                                         +
+ |   Method  | Description                                                         |
  +-----------+---------------------------------------------------------------------+
- |     0     + no checksums (unconditional copy.) Skips reading file (faster)      |
+ |     0     | no checksums (unconditional copy.) Skips reading file (faster)      |
  +-----------+---------------------------------------------------------------------+
  |     d     | checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +-----------+---------------------------------------------------------------------+
  |     L     | Linked: file is symbolic link, no checksum applies.                 |
  +-----------+---------------------------------------------------------------------+
+ |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ +-----------+---------------------------------------------------------------------+
  |     R     | Removed: file was removed, rather than updated, no checksum applies.|
  +-----------+---------------------------------------------------------------------+
- |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ |     s     | checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +-----------+---------------------------------------------------------------------+
  |  *<name>* | checksum with a some other algorithm, named *<name>*                |
  |           | *<name>* should be *registered* in the data pumping network.        |

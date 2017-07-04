@@ -264,7 +264,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->last_matched=NULL;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
-  sr_cfg->sumalgo='d';
+  sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   sr_cfg->url=NULL;
 }
