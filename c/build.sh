@@ -34,12 +34,13 @@ CFLAGS=" -fPIC -g "
 
 gcc $CFLAGS -c -Wall libsrshim.c 
 gcc $CFLAGS -c -Wall sr_credentials.c 
+gcc $CFLAGS -c -Wall sr_event.c 
 gcc $CFLAGS -c -Wall sr_config.c 
 gcc $CFLAGS -c -Wall ${RABBIT_INCDIR} sr_context.c 
-gcc $CFLAGS -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 sr_context.o sr_config.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
+gcc $CFLAGS -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 sr_context.o sr_config.o sr_event.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
 
 gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0 -ldl ${SARRA_LINK} ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
-#gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c sr_context.o sr_config.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
+#gcc $CFLAGS -shared -Wl,-soname,libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c sr_context.o sr_config.o sr_event.o sr_credentials.o -ldl ${RABBIT_LINK} -lrabbitmq -luriparser -lcrypto -lc 
 
 if [ ! -f libsarra.so ]; then
    ln -s libsarra.so.1.0.0 libsarra.so

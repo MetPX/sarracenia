@@ -37,8 +37,12 @@ int main( int argc, char *const *argv ) {
   printf( "broker, userInfo=%s \n", sr_cfg.broker.userInfo.first );
   printf( "broker, hostText=%s \n", sr_cfg.broker.hostText.first );
   printf( "broker, portText=%s \n", sr_cfg.broker.portText.first );
+  printf( "posting accept_unmatched=%s \n", sr_cfg.accept_unmatched?"on":"off" );
+  printf( "posting debug=%s \n", sr_cfg.debug?"on":"off" );
+  printf( "posting events=%x \n", sr_cfg.events);
   printf( "posting exchange=%s \n", sr_cfg.exchange);
   printf( "posting url=%s \n", sr_cfg.url);
+  printf( "posting sumalgo=%c \n", sr_cfg.sumalgo);
 
   //*(char*)(uri.pathHead.afterLast) = '\0';
   pathelem= sr_cfg.broker.pathHead;

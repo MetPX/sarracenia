@@ -533,7 +533,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   strcat( message_body, fn);
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost message_body: %s\n", message_body );
+     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event:%x\n", 
+          message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
 
@@ -543,17 +544,17 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   block_count = 1;
 
   if ( !sb ) {
-
+      if ( ! ((sr_c->cfg->events)&SR_DELETE) ) return;
       sumalgo='R';
-
   } else if ( S_ISLNK(sb->st_mode) ) {
-
+      if ( ! ((sr_c->cfg->events)&SR_LINK) ) return;
       sumalgo='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
       linkstr[linklen]='\0';
       header_add( "link", linkstr );
 
   } else {  /* regular files, add mode and determine block parameters */
+      if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return;
 
       strcpy( atimestr, time2str(&(sb->st_atim)));
       header_add( "atime", atimestr);

@@ -224,6 +224,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->directory = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "events" ) ) {
+      sr_cfg->events = parse_events(argument);
+      fprintf( stderr, "events: %04x\n", sr_cfg->events );
+      return(2);
+
   } else if ( !strcmp( option, "exchange" ) || !strcmp( option, "ex") ) {
       sr_cfg->exchange = strdup(argument);
       return(2);
@@ -251,16 +256,17 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 void sr_config_init( struct sr_config_t *sr_cfg ) 
 {
   sr_credentials_init();
+  sr_cfg->accept_unmatched=1;
   sr_cfg->blocksize=1;
   sr_cfg->broker_specified=0;
   sr_cfg->debug=0;
-  sr_cfg->last_matched=NULL;
-  sr_cfg->accept_unmatched=1;
-  sr_cfg->match=NULL;
-  sr_cfg->to=NULL;
   sr_cfg->directory=NULL;
+  sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
+  sr_cfg->last_matched=NULL;
   sr_cfg->masks=NULL;
+  sr_cfg->match=NULL;
   sr_cfg->sumalgo='d';
+  sr_cfg->to=NULL;
   sr_cfg->url=NULL;
 }
 

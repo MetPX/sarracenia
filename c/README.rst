@@ -16,7 +16,7 @@ So there is a command line binary, that can call the library:
 
    sr_cpost
 
-There is also an LD_PRELOAD shim library example. (sr_poc.c) that
+There is also an LD_PRELOAD shim library example. (sr_srshim.c) that
 uses the posting api.
 
 sample build instructions are in build.sh
@@ -45,11 +45,7 @@ whereami:
   
 
 Plan:
-  - local posting (mostly done.)
-  - shim likely needs to work with symlink, unlink, and link calls as well as just close.
-  - see how well it goes with shim.
   - figure out packaging?
-
   - if the local shim does not go well, step 2 is: sr_cwatch.
 
 

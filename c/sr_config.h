@@ -26,6 +26,9 @@ status:
 
 #include <uriparser/Uri.h>
 
+#include "sr_event.h"
+
+
 struct sr_mask_t {
   char* clause;
   char* directory;
@@ -42,6 +45,7 @@ struct sr_config_t {
   char              brokeruricb[1024];
   int               debug;
   char             *directory;
+  sr_event_t       events;
   char             *exchange;
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
