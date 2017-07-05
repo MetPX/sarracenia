@@ -312,9 +312,10 @@ in messages when appropriate.   Headers are a mandatory element included in late
  |           | algorithm to validate the checksum.                                 |
  +-----------+---------------------------------------------------------------------+
 
- *<value>* The value is computed by applying the given method to the partition being transferred.
-for algorithms for which no value makes sense, a random integer is generated to support
-checksum based load balancing.
+
+*<value>* The value is computed by applying the given method to the partition being transferred.
+  for algorithms for which no value makes sense, a random integer is generated to support
+  checksum based load balancing.
 
 
 **to_clusters=<cluster_name1,cluster_name2,...>**
