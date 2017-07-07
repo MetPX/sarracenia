@@ -5,13 +5,29 @@ testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
 
-if [ ! -f $HOME/.config/sarra/default.conf -o ! -f $HOME/.config/sarra/credentials.conf ]; then
+function application_dirs {
+python3 << EOF
+import appdirs
+print('export CONFDIR=%s'%appdirs.user_config_dir('sarra','science.gc.ca'))
+print('export LOGDIR=%s'%appdirs.user_log_dir('sarra','science.gc.ca'))
+print('export CACHEDIR=%s'%appdirs.user_cache_dir('sarra','science.gc.ca'))
+EOF
+}
+
+eval `application_dirs`
+
+#echo $CACHEDIR
+#echo $CONFDIR
+#echo $LOGDIR
+
+
+if [ ! -f $CONFDIR/default.conf -o ! -f $CONFDIR/credentials.conf ]; then
  cat <<EOT
  ERROR:
  test users for each role: tsource, tsub, tfeed, bunnymaster (admin)
  need to be created before this script can be run.
  rabbitmq-server needs to be installed on localhost with admin account set and
- manually setup ~/.config/sarra/default.conf, something like this:
+ manually setup $CONFDIR/default.conf, something like this:
 
 cluster localhost
 gateway_for alta,cluster1,cluster2
@@ -29,7 +45,7 @@ declare exchange xs_tsource_dest
 declare exchange xs_tsource_poll
 declare exchange xs_tsource_post
  
-and ~/.config/sarra/credentials.conf will need to contain something like:
+and $CONFDIR/credentials.conf will need to contain something like:
 
 amqp://bunnymaster:PickAPassword@localhost
 amqp://tsource:PickAPassword2@localhost
@@ -74,16 +90,17 @@ cd $testrundir
 echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 
-for d in .config .config/sarra ; do
-   if [ ! -d $HOME/$d ]; then
-      mkdir $HOME/$d
-   fi
-done
+#for d in .config .config/sarra ; do
+#   if [ ! -d $HOME/$d ]; then
+#      mkdir $HOME/$d
+#   fi
+#done
+mkdir -p $CONFDIR 2> /dev/null
 
 
 for d in poll post report sarra sender shovel subscribe watch winnow ; do
-   if [ ! -d $HOME/.config/sarra/$d ]; then
-      mkdir $HOME/.config/sarra/$d
+   if [ ! -d $CONFDIR/sarra/$d ]; then
+      mkdir $CONFDIR/sarra/$d
    fi
 done
 
@@ -91,13 +108,13 @@ templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
 
 for cf in ${templates}; do
     echo "installing $cf"
-    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <flow_templates/${cf} >$HOME/.config/sarra/${cf}
+    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <flow_templates/${cf} >$CONFDIR/${cf}
 done
 
 # ensure users have exchanges:
 sr_audit --users foreground
 
-adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' ~/.config/sarra/credentials.conf`"
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' $CONFDIR/credentials.conf`"
 
 for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output xs_tsource_src xs_tsource_dest xs_tsource_poll xs_tsource_post ; do 
    echo "declaring $exchange"

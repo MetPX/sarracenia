@@ -1,5 +1,22 @@
 #!/bin/bash
 
+function application_dirs {
+python3 << EOF
+import appdirs
+print('export CONFDIR=%s'%appdirs.user_config_dir('sarra','science.gc.ca'))
+print('export LOGDIR=%s'%appdirs.user_log_dir('sarra','science.gc.ca'))
+print('export CACHEDIR=%s'%appdirs.user_cache_dir('sarra','science.gc.ca'))
+EOF
+}
+
+eval `application_dirs`
+
+echo $CACHEDIR
+echo $CONFDIR
+echo $LOGDIR
+
+
+
 sr stop
 
 
@@ -19,7 +36,7 @@ remove_if_present=".httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test
 rm -f ${remove_if_present}
 
 
-adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' ~/.config/sarra/credentials.conf`"
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' $CONFDIR/credentials.conf`"
 
 queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' ( NR > 1 ) { print $1; }; '`"
 
@@ -31,10 +48,10 @@ done
 templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
 for cf in ${templates}; do
     echo "removing $cf"
-    rm $HOME/.config/sarra/${cf}
+    rm $CONFDIR/${cf}
 done
 
-#for cf in $HOME/.config/sarra/shovel/rr*.conf  ; do
+#for cf in $CONFDIR/shovel/rr*.conf  ; do
 #    rm ${cf}
 #done
 
@@ -43,5 +60,5 @@ if [ -f .httpdocroot ]; then
    echo " you may want to rm -rf `cat .httpdocroot` "
 fi
 
-echo " you may want to rm -rf ~/.cache/sarra/log/* ~/.cache/sarra/watch/*/* "
+echo " you may want to rm -rf "$LOGDIR"/* "$CACHEDIR"/watch/*/* "
 
