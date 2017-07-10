@@ -99,8 +99,8 @@ mkdir -p $CONFDIR 2> /dev/null
 
 
 for d in poll post report sarra sender shovel subscribe watch winnow ; do
-   if [ ! -d $CONFDIR/sarra/$d ]; then
-      mkdir $CONFDIR/sarra/$d
+   if [ ! -d $CONFDIR/$d ]; then
+      mkdir $CONFDIR/$d
    fi
 done
 
