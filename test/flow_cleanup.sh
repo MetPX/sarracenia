@@ -11,11 +11,6 @@ EOF
 
 eval `application_dirs`
 
-echo $CACHEDIR
-echo $CONFDIR
-echo $LOGDIR
-
-
 
 sr stop
 
