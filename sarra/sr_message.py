@@ -98,7 +98,7 @@ class sr_message():
 
         # compare dates...
 
-        if self.preserve_time and 'mtime' in self.headers:
+        if self.parent.preserve_time and 'mtime' in self.headers:
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
             if new_mtime <= lstat[stat.ST_MTIME]:
                return True
