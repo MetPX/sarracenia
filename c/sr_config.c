@@ -232,6 +232,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->exchange = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
+      sr_cfg->queuename = strdup(argument);
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      return(2);
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
       return(2);
@@ -264,6 +268,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->last_matched=NULL;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
+  sr_cfg->queuename=NULL;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   sr_cfg->url=NULL;

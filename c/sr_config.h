@@ -50,6 +50,7 @@ struct sr_config_t {
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.
+  char             *queuename;
   char              sumalgo; // checksum algorithm to use.
   char             *url;
   char             *to;

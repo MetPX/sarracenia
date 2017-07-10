@@ -405,7 +405,8 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 }
 
 
-struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
+struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) 
+{
 
   struct sr_context *sr_c;
   char *buf;
@@ -464,6 +465,76 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) {
   
   return( sr_c );
 
+}
+
+void sr_consume_init(struct sr_context *sr_c) 
+ /*
+    declare a queue and bind it to the configured exchange.
+
+  */
+{
+  amqp_rpc_reply_t reply;
+  amqp_boolean_t  passive = 0;
+  amqp_boolean_t  durable = 1;
+  amqp_boolean_t  exclusive = 0;
+  amqp_boolean_t  auto_delete = 0;
+
+  amqp_queue_declare_ok_t *r = amqp_queue_declare( 
+             sr_c->conn, 
+             1, 
+             amqp_cstring_bytes(sr_c->cfg->queuename), 
+             passive,
+             durable, 
+             exclusive, 
+             auto_delete, 
+             amqp_empty_table 
+  );
+  /* FIXME how to parse r for error? */
+
+  reply = amqp_get_rpc_reply(sr_c->conn);
+  if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+      amqp_reply_print(reply, "queue declare failed");
+      return;
+  }
+
+  amqp_queue_bind(sr_c->conn, 1, 
+        amqp_cstring_bytes(sr_c->cfg->queuename), 
+        amqp_cstring_bytes(sr_c->cfg->exchange), 
+        amqp_cstring_bytes("#"),
+        amqp_empty_table);
+
+  reply = amqp_get_rpc_reply(sr_c->conn);
+  if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+      amqp_reply_print(reply, "binding failed");
+      return;
+  }
+
+}
+
+
+void sr_consume(struct sr_context *sr_c) 
+ /*
+    read messages from the queue. 
+  */
+{
+    amqp_rpc_reply_t reply;
+
+    amqp_basic_consume(sr_c->conn, 1, 
+          amqp_cstring_bytes(sr_c->cfg->queuename), 
+          amqp_empty_bytes, // consumer_tag
+          0,  // no_local
+          1,  // no_ack
+          0,  // exclusive
+          amqp_empty_table);
+
+    reply = amqp_get_rpc_reply(sr_c->conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+        amqp_reply_print(reply, "consume failed");
+        return;
+    }
+
+
+    return;   
 }
 
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {

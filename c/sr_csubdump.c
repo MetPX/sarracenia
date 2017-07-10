@@ -33,17 +33,14 @@ int main(int argc, char **argv)
      fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
      fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
      fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
-     fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to publish to\n" );
+     fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to bind to\n" );
      fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
-     fprintf( stderr, "\t\tto <destination> - clusters pump network should forward to.\n" );
-     fprintf( stderr, "\t\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
-     fprintf( stderr, "\t\t    (a comma separated list of urls will result in alternation.)" );
+     fprintf( stderr, "\t\tqueue <name> - queue to declare & use.\n" );
 
-     fprintf( stderr, "\t<files> - list of files to post\n\n" );
-     fprintf( stderr, "This is a stripped down C implementation of sr_post(1), see man page for details\n\n" );
+     fprintf( stderr, "\nThis is a stripped down C implementation of sr_subscribe(1), see man page for details\n\n" );
      fprintf( stderr, "examples of missing features: \n\n" );
      fprintf( stderr, "\t\tno cache.\n" );
-     fprintf( stderr, "\t\tcan only post files (not directories.)\n" );
+     fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
      exit(1);
   }
  
@@ -62,21 +59,13 @@ int main(int argc, char **argv)
   
   sr_c = sr_context_init_config( &sr_cfg );
   sr_c = sr_context_connect( sr_c );
-
   if (!sr_c) {
      fprintf( stderr, "failed to establish sr context\n");
      return(1);
   }
+  sr_consume_init(sr_c);
 
-  // i set before...
-  for( ; i < argc ; i++ ) { 
-     if ( lstat(argv[i], &sb) < 0 ) {
-         fprintf( stderr, "failed to stat: %s\n", argv[i] );
-         continue;
-     }
-     sr_post(sr_c,argv[i], &sb);
-  }
-
+  sr_consume(sr_c);
   sr_context_close(sr_c);
 
   return 0;
