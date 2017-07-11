@@ -1,6 +1,6 @@
 # 
 # RABBITMQC_HOME is required - Rabbit-MQ C version
-#
+# 
 
 RABBIT_LIBDIR = ${RABBITMQC_HOME}/lib
 RABBIT_INCDIR = -I${RABBITMQC_HOME}/include
@@ -37,11 +37,12 @@ all:
 
 
 install:
-	@mkdir bin lib
+	@mkdir bin lib include
 	@mv *.so lib
 	@mv *.so.* lib
 	@mv sr_cpost bin
+	@cp *.h include/
 
 clean:
 	@rm -f *.o *.so *.so.* sr_cpost
-	@rm -rf bin lib
+	@rm -rf bin lib include
