@@ -196,8 +196,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
       return(2);
 
-  } else if ( !strcmp( option, "accept_unmatch" ) || !strcmp( option, "accept_unmatched" ) || !strcmp( option, "au" ) 
-    ) {
+  } else if ( !strcmp( option, "accept_unmatch" ) || !strcmp( option, "accept_unmatched" ) || !strcmp( option, "au" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->accept_unmatched = val&2;
       return(1+(val&1));
@@ -239,6 +238,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
       return(2);
+  } else if ( !strcmp( option, "pipe" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->pipe = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "sum" ) ) {
       sr_cfg->sumalgo = argument[0];
       return(2);

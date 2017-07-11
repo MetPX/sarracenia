@@ -16,15 +16,28 @@
   spits out ´unimplemented option´ where appropriate...
  */
 #include <stdio.h>
+#include <linux/limits.h>
+
 
 #include "sr_context.h"
+
+void do1file( struct sr_context *sr_c, char *fn ) 
+{
+    struct stat sb;
+    if ( lstat(fn, &sb) < 0 ) {
+         fprintf( stderr, "failed to stat: %s\n", fn );
+         return;
+    }
+    sr_post(sr_c,fn, &sb);
+}
 
 
 int main(int argc, char **argv)
 {
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
-  struct stat sb;
+  char inbuff[PATH_MAX+1];
+  ssize_t howlong;
   int consume,i,lastopt;
   
   if ( argc < 3 ) 
@@ -68,14 +81,16 @@ int main(int argc, char **argv)
      return(1);
   }
 
-  // i set before...
-  for( ; i < argc ; i++ ) { 
-     if ( lstat(argv[i], &sb) < 0 ) {
-         fprintf( stderr, "failed to stat: %s\n", argv[i] );
-         continue;
-     }
-     sr_post(sr_c,argv[i], &sb);
-  }
+  // i initialized by arg parsing above...
+  for( ; i < argc ; i++ ) 
+            do1file(sr_c,argv[i]);
+
+  if ( sr_cfg.pipe ) 
+      while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
+      {
+          inbuff[strlen(inbuff)-1]='\0';
+          do1file(sr_c,inbuff);
+      }
 
   sr_context_close(sr_c);
 
