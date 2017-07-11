@@ -17,18 +17,43 @@
  */
 #include <stdio.h>
 #include <linux/limits.h>
-
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "sr_context.h"
 
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
+    DIR *dir;
+    struct dirent *e;
     struct stat sb;
+    char ep[PATH_MAX];
+
     if ( lstat(fn, &sb) < 0 ) {
          fprintf( stderr, "failed to stat: %s\n", fn );
          return;
     }
-    sr_post(sr_c,fn, &sb);
+    if (S_ISDIR(sb.st_mode)) 
+    {
+         dir=opendir(fn);
+         if (!dir) {
+             fprintf( stderr, "failed to open directory: %s\n", fn );
+             return;
+         }
+         while ( e = readdir(dir) ) 
+         {
+             if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") ) 
+                 continue;
+
+             strcpy(ep,fn);
+             strcat(ep,"/");
+             strcat(ep,e->d_name );
+             do1file(sr_c, ep);         
+         }
+         closedir(dir); 
+    } else
+         sr_post(sr_c,fn, &sb);
+
 }
 
 

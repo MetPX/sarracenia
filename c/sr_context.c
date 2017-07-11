@@ -627,6 +627,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   } else {  /* regular files, add mode and determine block parameters */
       if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return;
 
+      if ( access( fn, R_OK ) ) return; // will not be able to checksum if we cannot read.
+
       strcpy( atimestr, time2str(&(sb->st_atim)));
       header_add( "atime", atimestr);
 
