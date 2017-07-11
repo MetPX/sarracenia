@@ -46,17 +46,17 @@ all:
 	then \
 		ln -s libsarra.so.1.0.0 libsarra.so.1 ; \
 	fi;
-	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -luriparser
+	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) $(RABBIT_LINK) -lrabbitmq -luriparser -lcrypto
 
 
 install:
-	@mkdir bin lib include
-	@mv *.so lib
-	@mv *.so.* lib
-	@mv sr_cpost bin
-	@cp *.h include/
+	@mkdir build build/bin build/lib build/include
+	@mv *.so build/lib
+	@mv *.so.* build/lib
+	@mv sr_cpost build/bin
+	@cp *.h build/include/
 
 clean:
 	@rm -f *.o *.so *.so.* sr_cpost sr_configtest
-	@rm -rf bin lib include
+	@rm -rf build

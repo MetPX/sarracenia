@@ -765,35 +765,3 @@ void connect_and_post(const char *fn) {
 
 
 
-/*
-   Footnote 1: FIXME: posting partitioned parts Not yet implemented.
-
-   pseudo-code
-      if (psc == 'p') 
-      {
-              If you find a file that ends in .p.4096.20.13.0.Part, which
-              decodes as: psc.blocksize.block_count.block_rem.block_num".Part"
-              then adjust: 
-                   - message to contain path with suffix included.
-                   - path to feed into checksum calc.
-              if the part file is not found, then skip to next part.
-
-              this algo posts all the parts present on local disk.
-
-            confusing things:
-               - I don't think it is useful to post all parts, most likely
-                 end up repeatedly posting many of the parts that way.
-               - likely only want to post each part once, so then would need
-                 a way to specify a particular part to post?
-               - perhaps require cache to suppress repeats?
-
-          sprintf( suffixstr, ".%c.%lu.%lu.%lu.%lu.Part", psc, sr_c->cfg->blocksize, 
-              block_count, block_rem, block_num );
-           part_fn = fn + suffixstr
-             stat( partfn, partsb );  
-          if (Parf_file_found) {
-          } else {
-             suffixtr[0]='\0';
-          }
-      };
-*/
