@@ -117,7 +117,7 @@ class sr_post(sr_config):
         print("-h|--help\n")
         print("-l   <logpath>         default:stdout")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
-        print("-to  <name1,name2,...> defines target clusters, mandatory")
+        print("-to  <name1,name2,...> defines target clusters, default: ALL")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
@@ -178,7 +178,10 @@ class sr_post(sr_config):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_post overwrite_defaults")
-        pass
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+           
+        self.logger.debug("sr_post overwrite_defaults Done")
 
     def posting(self):
         self.logger.debug("sr_post posting %s" % ( self.url.path ) )
@@ -372,7 +375,7 @@ class sr_post(sr_config):
 
         if self.document_root != None :
            dr = self.document_root
-           rpath = fpath.replace(dr,'')
+           rpath = fpath.replace(dr,'',1)
            if rpath == fpath :
               if fpath[0] != os.sep :
                  rpath = dr + os.sep + fpath
@@ -385,6 +388,7 @@ class sr_post(sr_config):
 
         url = self.url
         self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
+
         self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, url.geturl() ) )
         self.posting()
         self.url = url
@@ -430,43 +434,52 @@ class sr_post(sr_config):
 # MAIN
 # ===================================
 
+def post1file(p, fn):
+
+    print( "0=%s, fn=+%s+\n" % ( fn[0], fn ) )
+    if fn[0] != os.path.sep :
+        fn = os.getcwd() + os.path.sep + fn
+
+    p.watch_path = fn
+
+    if os.path.islink(fn) : 
+        p.watching(fn,'link')
+    elif os.path.isfile(fn) : 
+        p.watching(fn,'modify')
+    else :
+        p.scandir_and_post(fn,p.recursive)
+
+
 def main():
 
     post = sr_post(config=None,args=sys.argv[1:])
     if post.in_error : sys.exit(1)
 
     try :
-             post.connect()
+        post.connect()
 
-             if len(post.postpath) == 0 :
-                post.postpath = sys.argv[post.first_arg:]
+        if len(post.postpath) == 0 :
+            post.postpath = sys.argv[post.first_arg:]
 
-             if len(post.postpath) == 0 :
-                post.logger.error("no path to post")
-                post.help()
-                os._exit(1)
+        if len(post.postpath) == 0 :
+            post.logger.error("no path to post")
+            post.help()
+            os._exit(1)
                
-             post.poster.logger = post.logger
+        post.poster.logger = post.logger
 
-             post.lock_set()
-             for watchpath in post.postpath :
+        post.lock_set()
 
-                 if watchpath[0] != os.path.sep :
-                      watchpath = os.getcwd() + os.path.sep + watchpath
+        for watchpath in post.postpath :
+            post1file(post, watchpath)
 
-                 post.watch_path = watchpath
-
-
-                 if os.path.islink(watchpath) : 
-                    post.watching(watchpath,'link')
-                 elif os.path.isfile(watchpath) : 
-                    post.watching(watchpath,'modify')
-                 else :
-                    post.scandir_and_post(watchpath,post.recursive)
+        if post.pipe:
+            for watchpath in sys.stdin:
+                post1file(post, watchpath.strip())
 
 
-             post.lock_unset()
-             post.close()
+        post.lock_unset()
+        post.close()
 
     except :
              (stype, value, tb) = sys.exc_info()

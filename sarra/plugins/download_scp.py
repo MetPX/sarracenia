@@ -47,7 +47,7 @@ class SCP_DOWNLOAD(object):
       if msg.url.username:
            sourcefile = msg.url.username +'@' + sourcefile
 
-      cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.local_file ] 
+      cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.new_file ] 
 
       logger.debug("download_scp invoking: %s " % cmd )
       

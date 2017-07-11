@@ -4,6 +4,57 @@
 
 **git repo(unreleased)**
 
+* mode bits limited to the last four digits (upper digits non portable anyways.)
+* implementation of sr_post in C (not packaged yet.)
+* fixed bogus error message from backward compatibility plugins.
+* added mtime check to sarra and sr_subscribe so that if of new file is <= file_on_disk, then don't download.
+
+**2.17.06a3**
+
+* git repo url was wrong. Thanks Canadian Tire!
+* compatibility editing local_file (full path) now results in setting new_dir and new_file.
+* still harmonizing sender vs. subsribe api senders use parent.new_file, subs use parent.msg.new_file
+* fixed sender using ftp broken by error message referring to *remote_urlstr* ( replaced by *new_urlstr* )
+* files were created as public write because umask was overridden. Dunno why it was there in the first place.
+* strip fixed in sr_subscribe.
+* flatten fixed in sr_config.
+* crasher bug when sr_sender doesn´t have a post_broker.
+
+**2.17.06a2**
+
+* added chmod_log for log files, which were defaulting to public writable... no idea why, set default to 600.
+* changed posting default for to_clusters from ALL to the hostname of the broker.
+* moved accept/reject processing into sr_poster.post, so automatically honoured when using plugin scripts that call it.
+* fix bug#86 DESTFNSCRIPT in one accept would be used by subsequent ones.
+* fix bug#51 now use new_path, rather than local_path in consumers, and remote_path in senders. all can use same plugins.
+  includes warnings for existing plugins to change their variable names, old ones should still work, just prompt warning in log.
+
+
+**2.17.06a1**
+
+* Added default value of 'ALL' for *to_clusters* of  and *gateway_for* to make those options... optional.
+* Adding *preserve_time* option (default: True), to have mtime from source reflected in files written.
+* Adding *preserve_mode* option (default: True)  the move mode bits from source reflected in files written.
+* deprecating *interface* setting, code from Jun. one less thing to set. Now scans all interfaces for *vip*
+* polling script should still sleep for *sleep* seconds if the script fails. busyloop is bad.
+* added download_dd plugin, which does multiple process copies (striping individual files.)
+* documentation improvement: made *blocksize* the main partitioning option, *parts* is developer only.
+  there was an error in that usage of parts actually referred partially to blocksize
+* fixed blocksize=1 to mean send entire file, not 1 byte blocks.
+* fix bug#66 for sr_sender to put the actual file name on the destination (after destfn, etc...) 
+* sr_sarra: suppressedn excessive messages about who has vip in debug mode.
+* sr_sarra:  fixed -strip.  Did not work at all before.
+* added the poll_script.py plugin as an example for sr_poll.
+* fix from Eric for wrong permissions in sr_sftp.
+* removed useless import in line_mode.py plugin which breaks it on python 3.2
+* fix from Eric for wrong permissions in sr_ftp. (bug #84)
+* added version strings to components log and usage outputs.
+* added sr_poll to flow_test (from Daniel)
+* some re-organizing of code in sr_watch.
+* implement 0400 default permission mask in sr_poll.
+* note on how to encode special characters in passwords in credentials.conf
+* some plugin improvements from Dominic Racette.
+
 **2.17.03a5**
 
 * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.

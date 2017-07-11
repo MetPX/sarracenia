@@ -94,9 +94,9 @@ The specific error codes returned, and their meaning are implementation dependen
 For the sarracenia implementation, the following codes are defined:
 
 +----------+--------------------------------------------------------------------------------------------+
-+   Code   | Corresponding text and meaning for sarracenia implementation                               |
+|   Code   | Corresponding text and meaning for sarracenia implementation                               |
 +==========+============================================================================================+
-+   201    | Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)      |
+|   201    | Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)      |
 +----------+--------------------------------------------------------------------------------------------+
 |   205    | Reset Content: truncated. file is shorter than originally expected (changed length         |
 |          | during transfer) This only arises during multi-part transfers.                             |

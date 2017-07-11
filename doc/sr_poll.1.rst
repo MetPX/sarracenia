@@ -72,10 +72,9 @@ VIP, INTERFACE
 sr_poll can be configured on multiple servers, where posting should occur only from
 whichever one owns the virtual IP address (VIP) at a given time.  
 As only one instance of sr_poll that should be used for each configuration, the *instances* option is forced to 1. 
-To check that the *vip* is present on a given *interface* periodically::
+To check that the *vip* is present on any *interface* on the server periodically::
 
 **vip       <ip>         (None)**
-**interface <string>     (None)**
 
 When these options are omitted, sr_poll is always active.
 
@@ -114,7 +113,7 @@ These options set what files the user wants to be notified for and where
 - **directory <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
-- **chmod     <integer>        (optional)**
+- **chmod     <integer>        (default: 0o400)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -165,7 +164,7 @@ They are fixed...
 The **chmod** option allows users to specify a linux-style numeric octal
 permission mask::
 
-  chmod 40
+  chmod 040
 
 means that a file will not be posted unless the group has read permission 
 (on an ls output that looks like: ---r-----, like a chmod 040 <file> command.)
@@ -238,17 +237,24 @@ The options are :
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
   In this case, the *directory, accept/reject* combination should target only one file.
 
+**[-to_clusters|--to <csv-string>]**
+
+  Once a messages is delivered to the first pump, the *to_clusters* option 
+  suggests other pumps to which the data should be disseminated.  The default 
+  value is the hostname of the broker being posted to.  Multiple pump 
+  identifiers can be specified by separating the names by commas. 
+
+**[-sub|--subtopic <key>]**
+
+  The subtopic default can be overwritten with the *subtopic* option.
+  The default being the file's path with '/' replaced by '.'
+
 **[-tp|--topic_prefix <key>]**
 
   *Not usually used*
   By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
   You can overwrite the topic_prefix by setting this option.
-
-**[-sub|--subtopic <key>]**
-
-The subtopic default can be overwritten with the *subtopic* option.
-The default being the file's path with '/' replaced by '.'
 
 
 ADVANCED FEATURES
@@ -289,13 +295,13 @@ the **sr_poll** class
 The **do_poll** script could be written to support other protocol than
 ftp,ftps,sftp.  Again this script would be responsible to determine
 what to do under its protocol with the various options **destination**,
-**directory**, **accept(get)/reject** and should it determine to post a
+**directory**, and should it determine to post a
 file, it would need to build its url, partstr, sumstr and  use
 
 **parent.poster.post(parent.exchange,url,parent.to_clusters, \**
 **                   partstr,sumstr,rename,remote_file)**
 
-to post the message (and trigger **on_post** if provided)
+to post the message, applying accept/reject clauses and triggering on_post processing. 
 
 
 DEVELOPER SPECIFIC OPTIONS
@@ -306,6 +312,12 @@ DEVELOPER SPECIFIC OPTIONS
 Active if *-debug|--debug* appears in the command line... or
 *debug* is set to True in the configuration file used.
 
+DEPRECATED
+==========
+
+The interface option used to be required with *vip*, now all interfaces are scanned.
+
+**interface <string>     (None)**
 
 SEE ALSO
 --------

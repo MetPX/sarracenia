@@ -112,14 +112,14 @@ and under which name.
 - **attempts     <count>          (default: 3)**
 - **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
+- **discard   <boolean>        (default: false)**
 - **filename (for sundew compatibility..  see that section)**
-- **flatten   <boolean>        (default: false)** 
-- **inflight      <.string>        (default: .tmp)** 
+- **flatten   <string>         (default: '/')** 
+- **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>          (default: 0)**
-- **discard   <boolean>        (default: false)**
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
@@ -177,10 +177,10 @@ For example ::
 would result in the creation of the directories and the file
 /mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-The  **flatten**  option is use to set a separator character. This character
-will be used to replace the '/' in the url directory and create a "flatten" filename
-form its dd.weather.gc.ca path.  For example retrieving the following url, 
-with options::
+The  **flatten**  option is use to set a separator character. The default value ( '/' )
+nullifies the effect of this option.  This character replaces the '/' in the url 
+directory and create a "flatten" filename form its dd.weather.gc.ca path.  
+For example retrieving the following url, with options::
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
@@ -353,7 +353,7 @@ For compatibility with sundew, there are some additional delivery options which 
 This option defines a script to be run when everything is ready
 for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.local_file**  will change the name of the file written locally.
+modification to  **parent.new_file**  will change the name of the file written locally.
 
 **filename <keyword> (default:WHATFN)**
 

@@ -105,6 +105,9 @@ class sr_poll(sr_instances):
 
         # to clusters required
 
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
            self.help()
@@ -125,6 +128,8 @@ class sr_poll(sr_instances):
 
         if self.exchange  == None :
            self.exchange   = 'xs_%s' % self.broker.username
+
+
         self.post_exchange = self.exchange
 
         # check sumflg should start with z,
@@ -432,6 +437,12 @@ class sr_poll(sr_instances):
         self.exchange       = None
         self.destination    = None
 
+        # Set minimum permissions to something that might work most of the time.
+        self.chmod = 0o400
+
+        #chmod sets a mask used by line_mode plugin to determine the permission 
+        # bits which must be set in order for a file to be posted.
+
         # Should there be accept/reject option used unmatch are accepted
 
         self.accept_unmatch = False
@@ -654,9 +665,8 @@ class sr_poll(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
-              if not ok :
-                 self.logger.debug("poll is sleeping %d seconds " % self.sleep)
-                 time.sleep(self.sleep)
+              self.logger.debug("poll is sleeping %d seconds " % self.sleep)
+              time.sleep(self.sleep)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

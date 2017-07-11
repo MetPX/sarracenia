@@ -80,13 +80,13 @@ class DOWNLOAD_REWRITE(object):
               sz=int(parts[1])*int(parts[2])
 
           logger.debug("msg_download sz: %d, threshold: %d download: %s to %s, " % ( \
-                sz, parent.msg_download_threshold, parent.msg.urlstr, msg.local_file ) )
-          if sz > parent.msg_download_threshold :
+                sz, parent.msg_download_threshold, parent.msg.urlstr, msg.new_file ) )
+          if sz >= parent.msg_download_threshold :
               for p in parent.msg_download_protocol :
                   parent.msg.urlstr = msg.urlstr.replace(p,"download")
 
               parent.msg.url = urllib.parse.urlparse(msg.urlstr)
-              logger.info("msg_download triggering alternate method for: %s to %s, " % (parent.msg.urlstr, msg.local_file))
+              logger.info("msg_download triggering alternate method for: %s to %s, " % (parent.msg.urlstr, msg.new_file))
 
           return True
 

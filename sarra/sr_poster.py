@@ -61,6 +61,7 @@ class sr_poster:
         self.bufsize        = parent.bufsize
         self.caching        = parent.caching
         self.batch          = parent.batch
+        self.accept_unmatch = True
 
         self.build_connection()
         self.build_publisher()
@@ -206,9 +207,14 @@ class sr_poster:
         self.msg.user      = self.broker.username
         self.msg.publisher = self.publisher
 
-    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,link=None):
+    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
         self.logger.debug("sr_poster post %s caching(%s) exchange(%s)" % \
-            ( url.path, self.caching, exchange ) )
+            ( url.geturl(), self.caching, exchange ) )
+
+        # apply accept/reject
+        if not self.parent.isMatchingPattern(url.geturl(),self.accept_unmatch) :
+           self.logger.debug("post of %s Rejected by accept/reject options" % url.geturl() )
+           return True  # need to return true because this isn´t a failure.
 
         # if caching is enabled make sure it was not already posted
         if self.caching :
@@ -261,6 +267,7 @@ class sr_poster:
         if rename   != None : self.msg.headers['rename']       = rename
         if mtime    != None : self.msg.headers['mtime']        = mtime
         if atime    != None : self.msg.headers['atime']        = atime
+        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
         if link     != None : self.msg.headers['link']         = link
 
         if self.parent.cluster != None : self.msg.headers['from_cluster'] = self.parent.cluster
@@ -283,6 +290,7 @@ class sr_poster:
 
         mtime = timeflt2str(lstat.st_mtime)
         atime = timeflt2str(lstat.st_atime)
+        mode    = lstat[stat.ST_MODE]
 
         partstr = '1,%d,1,0,0' % fsiz
 
@@ -320,7 +328,7 @@ class sr_poster:
 
         filename = os.path.basename(path)
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
+        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
         self.logger.debug("sr_poster post_local_file exchange(%s)" % exchange )
 
@@ -335,6 +343,7 @@ class sr_poster:
 
         mtime = timeflt2str(lstat.st_mtime)
         atime = timeflt2str(lstat.st_atime)
+        mode = lstat[stat.ST_MODE]
 
         # file too small for chunksize
 
@@ -410,7 +419,7 @@ class sr_poster:
 
               # post
 
-              ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
+              ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
               if not ok : return ok
 
               # reconnect ?
@@ -455,8 +464,9 @@ class sr_poster:
 
         mtime = timeflt2str(lstat.st_mtime)
         atime = timeflt2str(lstat.st_atime)
+        mode = timeflt2str(lstat.st_mode)
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime)
+        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
         return ok
 

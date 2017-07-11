@@ -69,7 +69,7 @@ class SundewRoute(object):
         logger = parent.logger
         msg    = parent.msg
         
-        ahl = msg.local_file.split('/')[-1][0:11]
+        ahl = msg.new_file.split('/')[-1][0:11]
 
         if ( len(ahl) < 11 ) or ( ahl[6] != '_' ): 
             logger.debug("sundew_pxroute not an AHL: %s, " % ahl )

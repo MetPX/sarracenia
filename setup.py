@@ -39,7 +39,6 @@ setup(
               "sr_poll=sarra.sr_poll:main",
               "sr_post=sarra.sr_post:main",
               "sr_watch=sarra.sr_watch:main",
-              "sr_watchb=sarra.sr_watchb:main",
               "sr_winnow=sarra.sr_winnow:main",
               "sr_sarra=sarra.sr_sarra:main",
               "sr_shovel=sarra.sr_shovel:main",

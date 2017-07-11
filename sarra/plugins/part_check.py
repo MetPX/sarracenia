@@ -49,7 +49,7 @@ class PartCheck(object):
           lag= now-then
 
           if msg.onfly_checksum != msg.checksum :
-             msg = "checksum differ - %s - %s  msg %s" % (msg.local_file, parent.ongly_checksum,msg.checksum)
+             msg = "checksum differ - %s - %s  msg %s" % (msg.new_file, parent.ongly_checksum,msg.checksum)
              if lag > parent.part_check_lag_threshold :
                  logger.warning("part_check might just be referring to an older version of file, but " + msg)
                  return True
@@ -57,7 +57,7 @@ class PartCheck(object):
                  logger.error( "part_check rejecting " + msg)
                  return False
 
-          logger.info("part_check Checksum matched for : %s" % msg.local_file )
+          logger.info("part_check Checksum matched for : %s" % msg.new_file )
           return True
 
 partcheck = PartCheck(self)

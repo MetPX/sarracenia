@@ -68,6 +68,11 @@ Format of argument to the *path* option::
        or
        relative_path_to_the/filename
 
+the *-pipe* option can be specified to have sr_post read path names from standard 
+input as well.
+
+
+
 An example invocation of *sr_post*::
 
  sr_post -b amqp://broker.com -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
@@ -132,7 +137,8 @@ common settings, and methods of specifying them.
   when invoked again.   This is incompatible with the default *parts 0* strategy, one
   must specify an alternate strategy.
 
-  So **parts** needs to be set (to either 1 or a fixed blocksize.)
+  If caching is in use,  **blocksize** should be set (to either 1 (announce entire file) 
+  or a fixed blocksize.) as otherwise blocksize will vary as a function of file size.
 
 **[-dr|--document_root <path>]**
 
@@ -161,7 +167,7 @@ common settings, and methods of specifying them.
 
   Display program options.
 
-**[--parts <value>]**
+**[--blocksize <value>]**
 
 This option controls the partitioning strategy used to post files.
 the value should be one of::
@@ -169,7 +175,6 @@ the value should be one of::
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send entire files in a single part.
    <blocksize> - used a fixed partition size (example size: 1M )
-
 
 Files can be announced as multiple parts.  Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
@@ -215,6 +220,12 @@ The AMQP announcements are made of the three fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn from
 the *document_root*, present and needed.
 
+**[-pipe <boolean>]**
+
+The pipe option is for sr_post to read the names of the files to post from standard input to read from
+redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
+
+
 **[-rec|--recursive <boolean>]**
 
 The recursive default is False when the **path** given (possibly combined with **document_root**)
@@ -236,12 +247,12 @@ files are posted.
 
 The subtopic default can be overwritten with the *subtopic* option.
 
-**[-to|--to <destination>,<destination>,... ]** -- MANDATORY
+**[-to|--to <destination>,<destination>,... ]** 
 
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
 
-  default: None.
+  default: the hostname of the broker.
 
 .. note:: 
   FIXME: a good list of destination should be discoverable.
@@ -254,7 +265,8 @@ It is a comma separated string.  Valid checksum flags are ::
     [0|n|d|c=<scriptname>]
     where 0 : no checksum... value in post is random integer (for load balancing purposes.)
           n : do checksum on filename
-          d : do md5sum on file content (default)
+          d : do md5sum on file content (default... for compatibility with older releases.)
+          s : do SHA512 on file content (future default)
 
 Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.
@@ -329,9 +341,10 @@ reconnection to the broker everytime a post is to be sent.
 
 **[--parts]**
 
-While the usual usage of the parts option are described above, there are a number of ways of using 
-the parts flag that are not generally useful aside from within development.
-In addition to the user oriented partition specifications listed before, any valid 'parts' header, as given in the 
+The usual usage of the *blocksize* option is described above, which is what is usually used to set
+the *parts* header in the messages produced, however there are a number of ways of using the parts flag 
+that are not generally useful aside from within development.
+In addition to the user oriented *blocksize* specifications listed before, any valid 'parts' header, as given in the 
 parts header (e.g. 'i,1,150,0,0') .  One can also specify an alternate basic blocksize for the automatic 
 algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 50M) as the basic block size, so one
 can see how the algorithm works.

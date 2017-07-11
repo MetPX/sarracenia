@@ -201,12 +201,13 @@ Depending of **inplace** and if the message was a part, the path can
 change again (adding a part suffix if necessary). The resulting variables used for
 the local destination to download a file (or a part) are :
 
-self.msg.local_file   :  the local path where to download the file(part)
-self.msg.local_offset :  offset position in the local file
-self.msg.offset       :  offset position of the remote file
-self.msg.length       :  length of file or part
-self.msg.in_partfile  :  T/F file temporary in part file
-self.msg.local_url    :  url for reannouncement
+parent.new_file         :  name of the file to write.
+parent.new_dir          :  name of the directory in which to write the file.
+parent.msg.local_offset :  offset position in the local file
+parent.msg.offset       :  offset position of the remote file
+parent.msg.length       :  length of file or part
+parent.msg.in_partfile  :  T/F file temporary in part file
+parent.msg.local_url    :  url for reannouncement
 
 These variables are important to know if one wants to use an **on_message**,
 **on_part** or **on_file** plugin.

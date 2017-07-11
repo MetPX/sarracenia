@@ -82,9 +82,9 @@ class sr_config:
         self.http_dir         = self.user_config_dir + '/Downloads'
 
         # umask change for directory creation and chmod
-
-        try    : os.umask(0)
-        except : pass
+        # 2017/06/20- FIXME commenting this out, because it seems wrong!... why override umask?
+        #try    : os.umask(0)
+        #except : pass
 
         # FIXME:
         # before 2.16.08x sr_log was a comment (that became sr_report). so the log directory was needed
@@ -401,53 +401,59 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'create|delete|link|modify'
-        self.event                = 'create|delete|modify'
 
-        self.randomize            = False
-        self.reconnect            = False
 
-        self.partflg              = '0'
         #
 
         self.batch                = 100
+
+        self.chmod                = 0o775
+        self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
+        self.chmod_log            = 0o600 
+        self.cluster              = None
+        self.cluster_aliases      = []
+
         self.destination          = None
-        self.timeout              = None
-
-        # subscribe
-
         self.discard              = False
-        self.flatten              = '/'
-        self.reportback           = True
 
-        self.realpath             = False
-        self.recursive            = False
-        self.reload               = False
+        self.events               = 'create|delete|link|modify'
+        self.event                = 'create|delete|modify'
+
+        self.flatten              = '/'
         self.follow_symlinks      = False
         self.force_polling        = False
 
-        self.pump_flag            = False
-        self.users_flag           = False
+        self.gateway_for          = ['ALL']
+        self.mirror               = False
 
+        self.partflg              = '0'
+        self.pipe                 = False
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
         self.post_exchange_split = 0
+        self.preserve_mode        = True
+        self.preserve_time        = True
+        self.pump_flag            = False
 
+        self.randomize            = False
+        self.realpath             = False
+        self.reconnect            = False
+        self.recursive            = False
+        self.reload               = False
+        self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
+
         self.save                 = False
         self.save_file            = None
+        self.sleep                = 0
+        self.strip                = 0
         self.source               = None
         self.source_from_exchange = False
 
-        # general cluster stuff
-        self.cluster              = None
-        self.cluster_aliases      = []
-        self.gateway_for          = []
+        self.timeout              = None
         self.users                = {}
-
-        self.sleep                = 0
-        self.strip                = 0
+        self.users_flag           = False
 
         self.blocksize            = 0
 
@@ -459,8 +465,6 @@ class sr_config:
         self.inplace              = False
 
         self.inflight             = None
-        self.chmod                = 0o775
-        self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
 
         self.notify_only          = False
 
@@ -473,7 +477,6 @@ class sr_config:
         self.nbr_instances        = 1
 
 
-        self.mirror               = False
 
         self.overwrite            = False
         self.recompute_chksum     = False
@@ -548,32 +551,15 @@ class sr_config:
     def has_vip(self): 
 
         # no vip given... standalone always has vip.
-        if self.vip == None and self.interface == None :
+        if self.vip == None: 
            return True
 
-        #mis-configured options.
-        if self.vip == None :
-           self.logger.error("vip missing")
-           return False
-
-        if self.interface == None :
-           self.logger.error("inteface missing")
-           return False
-
-        try   :
-                a = netifaces.ifaddresses(self.interface)
-                self.logger.debug("vip inteface=%s a=%s " % (self.interface, a) )
-                if netifaces.AF_INET in a :
-                   for inet in a[netifaces.AF_INET]:
-                       if 'addr' in inet :
-                           if inet['addr'] == self.vip :
-                              return True
-        except: 
-               self.logger.error("interface %s lookup failed" % self.interface )
-
+        for i in netifaces.interfaces():
+            for a in netifaces.ifaddresses(i):
+                if self.vip in netifaces.ifaddresses(i)[a][0].get('addr'):
+                   return True
         return False
-
-
+ 
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
@@ -709,16 +695,16 @@ class sr_config:
                  destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
                  old_destfn_script  = self.destfn_script
-                 old_remote_file    = self.remote_file
-                 self.remote_file   = destFileName
+                 saved_new_file    = self.new_file
+                 self.new_file   = destFileName
                  self.destfn_script = None
                  script = spec[13:]
                  self.execfile('destfn_script',script)
                  if self.destfn_script != None :
                     ok = self.destfn_script(self)
-                 destFileName       = self.remote_file
+                 destFileName       = self.new_file
                  self.destfn_script = old_destfn_script
-                 self.remote_file   = old_remote_file
+                 self.new_file   = saved_new_file
                  if destFileName == None : destFileName = old_destFileName
             elif spec == 'TIME':
                 if destFileName != filename :
@@ -797,14 +783,20 @@ class sr_config:
                      n = 2
 
                      if len(words) > 2:
+                        save_currentFileOption = self.currentFileOption
                         self.currentFileOption = words[2]
                         n = 3
+                     
 
                      self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+
+                     if len(words) > 2:
+                         self.currentFileOption = save_currentFileOption 
+
                      self.logger.debug("Masks")
                      self.logger.debug("Masks %s"% self.masks)
 
-                elif words0 in ['accept_unmatch','au']: # See: sr_config.7
+                elif words0 in ['accept_unmatched','accept_unmatch','au']: # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.accept_unmatch = True
                         n = 1
@@ -841,6 +833,10 @@ class sr_config:
 
                 elif words0 == 'blocksize' :   # See: sr_config.7
                      self.blocksize = self.chunksize_from_str(words[1])
+                     if self.blocksize == 1:
+                        self.parts   =  '1'
+                        ok = self.validate_parts()
+                             
                      n = 2
 
                 elif words0 == 'bufsize' :   # See: sr_config.7
@@ -855,12 +851,19 @@ class sr_config:
                         self.caching = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'chmod':    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
+                     if self.preserve_mode: 
+                         self.logger.warning("preserve_mode True means chmod will only be used when no remote mode is available")
+
                      self.chmod = int(words[1],8)
                      n = 2
 
-                elif words0 == 'chmod_dir':    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: function not actually implemented, stub of ftp support.
                      self.chmod_dir = int(words[1],8)
+                     n = 2
+
+                elif words0 in [ 'chmod_log', 'default_log_mode', 'dlm' ]:    
+                     self.chmod_log = int(words[1],8)
                      n = 2
 
                 elif words0 in ['cluster','cl']: # See: sr_config.7
@@ -1009,6 +1012,10 @@ class sr_config:
                      self.currentFileOption = words[1]
                      n = 2
 
+                elif words0 in [ 'flatten' ]: # See: sr_poll.1, sr_sender.1
+                     self.flatten = words[1]
+                     n = 2
+
                 elif words0 in ['flow','f']: # See: sr_post.1, sr_log.7, shovel, subscribe, watch 
                      self.flow = words1 
                      n = 2
@@ -1054,6 +1061,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'interface': # See: sr_poll, sr_winnow
+                     self.logger.warning("deprecated *interface* option no longer has any effect, vip is enough." )
                      self.interface = words[1]
                      n = 2
 
@@ -1075,6 +1083,14 @@ class sr_config:
                      else :
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
+
+                elif words0 == 'pipe' : # See: FIXME
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.pipe = True
+                        n = 1
+                     else :
+                        self.pipe = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'restore' : # See: sr_config.7 
                      #-- report_daemons left for transition, should be removed in 2017
@@ -1291,6 +1307,22 @@ class sr_config:
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
                      self.prefetch = int(words1)
                      n = 2
+
+                elif words0 in ['preserve_mode','pm'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.preserve_mode = True
+                        n = 1
+                     else :
+                        self.preserve_mode = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['preserve_time','pt'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.preserve_time = True
+                        n = 1
+                     else :
+                        self.preserve_time = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1584,7 +1616,7 @@ class sr_config:
         self.logger = logging.RootLogger(logging.WARNING)
         self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
-
+        os.chmod( self.logpath, self.chmod_log )
         if self.debug :
            self.logger.setLevel(logging.DEBUG)
 

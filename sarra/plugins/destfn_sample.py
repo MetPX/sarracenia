@@ -6,16 +6,16 @@
 
   filename DESFTN=desftn_sample
 
-  and whenever writing a file (remote_file, when used in a sender)
+  and whenever writing a file (new_file, when used in a sender)
 
 """
 class Transformer():
       def __init__(self,parent):
           pass
       def perform(self,parent):
-          parent.remote_file = "renamed_" + parent.remote_file
+          parent.new_file = "renamed_" + parent.new_file
           # return true/false   but ignored at this point
-          # the remote_file is modified or not... that is it
+          # the new_file is modified or not... that is it
           return True
 
 transformer = Transformer(self)

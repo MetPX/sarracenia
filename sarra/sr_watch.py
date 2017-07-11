@@ -86,6 +86,10 @@ class sr_watch(sr_instances):
         self.observer.stop()
 
     def overwrite_defaults(self):
+
+        if self.to_clusters == None:
+            self.to_clusters = self.broker.hostname
+
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
         self.sleep     = 0.1
@@ -202,7 +206,6 @@ class sr_watch(sr_instances):
             self.validate_cache()
             self.post.connect()
 
-            #try:
             if self.post.realpath: 
                sld = os.path.realpath( self.watch_path )
             else:
@@ -358,8 +361,8 @@ def main():
         
         def do_post(self, path, tag):
             try:
-                if watch.isMatchingPattern(path, accept_unmatch=True) :
-                    watch.post.watching(path, tag)
+                #if watch.isMatchingPattern(path, accept_unmatch=True) :
+                watch.post.watching(path, tag)
             except PermissionError as err:
                 self.outstanding_events[path] = tag
                 watch.logger.error(str(err))
@@ -392,11 +395,12 @@ def main():
             if (not event.is_directory):
                # not so sure about testing accept/reject on src and dst
                # but we dont care for now... it is not supported
-               if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
-                  watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-                  #Every file rename inside the watch path will trigger new copy
-                  #watch.post.move(event.src_path,event.dest_path)
-                  self.event_post(event.dest_path, 'modify')
+               #if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
+               #   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
+               #Every file rename inside the watch path will trigger new copy
+               #watch.post.move(event.src_path,event.dest_path)
+               # FIXME: what if dest_path is outside of the tree being watched? what happens?
+               self.event_post(event.dest_path, 'modify')
 
     watch.event_handler(MyEventHandler())
 

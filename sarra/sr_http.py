@@ -196,31 +196,34 @@ class http_transport():
                        
                 #download file
 
-                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % (urlstr,str_range,msg.local_file,msg.local_offset,msg.length))  
+                msg.logger.debug('Beginning fetch of %s %s into %s/%s %d-%d inflight=+%s+' % \
+                      (urlstr, str_range, parent.new_dir,parent.new_file,msg.local_offset,msg.length, parent.inflight))
 
                 response = urllib.request.urlopen(req)
-                #msg.logger.debug('response header = %s' % response.headers)
+
+                if os.getcwd() != parent.new_dir:
+                    os.chdir(parent.new_dir)
 
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
                 if   parent.inflight == None or msg.partflg == 'i' :
-                     ok = self.http_write(response,msg.local_file,msg)
+                     ok = self.get(response,parent.new_file,msg)
 
                 elif parent.inflight == '.' :
                      local_lock = ''
-                     local_dir  = os.path.dirname (msg.local_file)
+                     local_dir  = parent.new_dir
                      if local_dir != '' : local_lock = local_dir + os.sep
-                     local_lock += '.' + os.path.basename(msg.local_file)
-                     ok = self.http_write(response,local_lock,msg)
-                     if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                     os.rename(local_lock, msg.local_file)
+                     local_lock += '.' + os.path.basename(parent.new_file)
+                     ok = self.get(response,local_lock,msg)
+                     if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                     os.rename(local_lock, parent.new_file)
                 
                 elif parent.inflight[0] == '.' :
-                     local_lock  = msg.local_file + parent.inflight
-                     ok = self.http_write(response,local_lock,msg)
-                     if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                     os.rename(local_lock, msg.local_file)
+                     local_lock  = parent.new_file + parent.inflight
+                     new= self.get(response,local_lock,msg)
+                     if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                     os.rename(local_lock, parent.new_file)
 
                 msg.onfly_checksum = self.checksum
 
@@ -238,15 +241,14 @@ class http_transport():
                (stype, svalue, tb) = sys.exc_info()
                msg.logger.error('Download failed %s ' % urlstr)
                msg.logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
-
+        
         msg.report_publish(499,'http download failed')
         msg.logger.error("sr_http could not download")
         if os.path.isfile(local_lock) : os.remove(local_lock)
 
         return False
 
-    def http_write(self,req,local_file,msg) :
-        self.logger.debug("sr_http http_write")
+    def get(self,req,local_file,msg) :
 
         # on fly checksum 
 
@@ -278,7 +280,6 @@ class http_transport():
         # http provides exact data
 
         while True:
-              self.logger.debug("http_write read loop")
               chunk = req.read(self.bufsize)
               if not chunk: break
               fp.write(chunk)
@@ -292,6 +293,15 @@ class http_transport():
         fp.close()
 
         if chk : self.checksum = chk.get_value()
+
+        h = self.parent.msg.headers
+
+        if self.parent.preserve_mode and 'mode' in h :
+           os.chmod(local_file, int(h['mode'], base=8) )
+
+        if self.parent.preserve_time and 'mtime' in h :
+           os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+
 
         return True
 
@@ -361,7 +371,7 @@ def self_test():
 
     cfg.msg = msg
     cfg.msg.sumalgo = None
-    cfg.msg.local_file = "toto"
+    cfg.msg.new_file = "toto"
     cfg.msg.local_offset = 0
 
     try:

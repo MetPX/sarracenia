@@ -19,7 +19,7 @@ class Renamer(object):
 
           datestr = time.strftime(':%Y%m%d%H%M%S',time.localtime())
 
-          parent.msg.local_file        += datestr
+          parent.msg.new_file        += datestr
           parent.msg.headers['rename'] += datestr
 
           return True

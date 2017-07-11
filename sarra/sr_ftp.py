@@ -101,13 +101,13 @@ class sr_ftp():
 
             # create and go to subdir
             self.ftp.mkd(d)
-            self.ftp.voidcmd('SITE CHMOD ' + str(perm) + ' ' + d)
+            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
             self.ftp.cwd(d)
 
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
-        self.ftp.voidcmd('SITE CHMOD ' + str(perm) + ' ' + path)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
 
     # close
     def close(self):
@@ -275,7 +275,7 @@ class sr_ftp():
     def mkdir(self, remote_dir):
         self.logger.debug("sr_ftp mkdir %s" % remote_dir)
         self.ftp.mkd(remote_dir)
-        self.ftp.voidcmd('SITE CHMOD ' + str(self.parent.chmod_dir) + ' ' + remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.parent.chmod_dir) + ' ' + remote_dir)
 #        self.ftp.chmod(self.parent.chmod_dir,remote_dir)
 
     # put
@@ -399,7 +399,7 @@ class ftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        local_lock = ''
+        new_lock = ''
     
         try :
                 parent.destination = msg.urlcred
@@ -493,7 +493,7 @@ class ftp_transport():
             return False
     
         local_file = parent.local_path
-        remote_dir = parent.remote_dir
+        new_dir = parent.new_dir
     
         try :
                 ftp = self.ftp
@@ -503,18 +503,18 @@ class ftp_transport():
                    ftp.connect()
                    self.ftp = ftp
                 
-                if self.cdir != remote_dir :
-                   self.logger.debug("ftp_transport send cd to %s" % remote_dir)
-                   ftp.cd_forced(775,remote_dir)
-                   self.cdir  = remote_dir
+                if self.cdir != new_dir :
+                   self.logger.debug("ftp_transport send cd to %s" % new_dir)
+                   ftp.cd_forced(775,new_dir)
+                   self.cdir  = new_dir
 
                 #=================================
                 # delete event
                 #=================================
 
                 if msg.sumflg == 'R' :
-                   msg.logger.debug("message is to remove %s" % parent.remote_file)
-                   ftp.delete(parent.remote_file)
+                   msg.logger.debug("message is to remove %s" % parent.new_file)
+                   ftp.delete(parent.new_file)
                    msg.report_publish(205,'Reset Content : deleted')
                    return True
 
@@ -527,24 +527,24 @@ class ftp_transport():
     
                 # deliver file
     
-                msg.logger.debug('Beginning put of %s %s into %s %d-%d' % 
-                    (parent.local_file,str_range,parent.remote_dir,offset,offset+msg.length-1))
+                msg.logger.debug('Beginning put of %s %s into %s/%s %d-%d' % 
+                    (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None :
-                   ftp.put(local_file, parent.remote_file)
+                   ftp.put(local_file, parent.new_file)
                 elif parent.inflight == '.' :
-                   remote_lock = '.'  + parent.remote_file
-                   ftp.put(local_file, remote_lock)
-                   ftp.rename(remote_lock, parent.remote_file)
+                   new_lock = '.'  + parent.new_file
+                   ftp.put(local_file, new_lock)
+                   ftp.rename(new_lock, parent.new_file)
                 elif parent.inflight[0] == '.' :
-                   remote_lock = parent.remote_file + parent.inflight
-                   ftp.put(local_file, remote_lock)
-                   ftp.rename(remote_lock, parent.remote_file)
+                   new_lock = parent.new_file + parent.inflight
+                   ftp.put(local_file, new_lock)
+                   ftp.rename(new_lock, parent.new_file)
                 elif parent.inflight == 'umask' :
                    ftp.umask()
-                   ftp.put(local_file, parent.remote_file)
+                   ftp.put(local_file, parent.new_file)
     
-                try   : ftp.chmod(parent.chmod,parent.remote_file)
+                try   : ftp.chmod(parent.chmod,parent.new_file)
                 except: pass
     
                 msg.report_publish(201,'Delivered')
@@ -560,7 +560,7 @@ class ftp_transport():
                 #except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.remote_urlstr, stype ,svalue))
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
                 msg.report_publish(499,'ftp delivery failed')
     
                 return False

@@ -1,5 +1,23 @@
 #!/bin/bash
 
+function application_dirs {
+
+python3 << EOF
+import appdirs
+print('export CONFDIR=%s'%appdirs.user_config_dir('sarra','science.gc.ca'))
+print('export LOGDIR=%s'%appdirs.user_log_dir('sarra','science.gc.ca'))
+print('export CACHEDIR=%s'%appdirs.user_cache_dir('sarra','science.gc.ca'))
+EOF
+
+}
+
+eval `application_dirs`
+
+#echo $CACHEDIR
+#echo $CONFDIR
+#echo $LOGDIR
+
+
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
 
@@ -49,7 +67,7 @@ function calcres {
    tno=$((${tno}+1))
 
    if [ $1 -lt $min -o $2 -lt $min -o $1 -gt $max -o $1 -gt $max ]; then
-      printf "test %2d FAILURE: ${3}\n" ${tno}
+	   printf "test %2d FAILURE: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
       fi    
@@ -75,7 +93,7 @@ function tallyres {
 
    tno=$((${tno}+1))
 
-   if [ ${1} -lt ${2} -o ${2} -eq 0 ]; then
+   if [ ${1} -ne ${2} -o ${2} -eq 0 ]; then
       printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
@@ -90,13 +108,13 @@ function tallyres {
 
 function countall {
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
+  countthem "`grep msg_total $LOGDIR/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
   totsarra="${tot}"
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total $LOGDIR/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow00="${tot}"
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total $LOGDIR/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow01="${tot}"
    
   if [ ${totwinnow00} -gt ${totwinnow01} ]; then
@@ -105,34 +123,39 @@ function countall {
        totwinnow=$(( ${totwinnow01} *2 ))
   fi
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total $LOGDIR/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
   totsub="${tot}"
 
-  countthem "`grep file_total ~/.cache/sarra/log/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep file_total $LOGDIR/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
   totsubr="${tot}"
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total $LOGDIR/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel1="${tot}"
 
-  countthem "`grep msg_total ~/.cache/sarra/log/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total $LOGDIR/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel2="${tot}"
 
-  countthem "`grep post_total ~/.cache/sarra/log/sr_watch_sub_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep post_total $LOGDIR/sr_watch_sub_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwatch="${tot}"
 
-  countthem "`grep truncating ~/.cache/sarra/log/sr_sarra_download_000*.log | wc -l`"
+  countthem "`grep truncating $LOGDIR/sr_sarra_download_000*.log | wc -l`"
   totshortened="${tot}"
 
-  countthem "`grep Sends: ~/.cache/sarra/log/sr_sender_tsource2send_000*.log | wc -l`"
+  countthem "`grep Sends: $LOGDIR/sr_sender_tsource2send_000*.log | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' ~/.cache/sarra/log/sr_subscribe_q_000*.log | wc -l`"
-  totsub2="${tot}"
-  countthem  "`grep 'post_log notice' ~/.cache/sarra/log/sr_poll_test1_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' $LOGDIR/sr_subscribe_q_000*.log | wc -l`"
+  totsubq="${tot}"
+  countthem  "`grep 'post_log notice' $LOGDIR/sr_poll_test1_000*.log | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'msg_log received' ~/.cache/sarra/log/sr_subscribe_r_000*.log | wc -l`"
-  totsub3="${tot}"
+  countthem "`grep 'downloaded to:' $LOGDIR/sr_subscribe_r_000*.log | wc -l`"
+  totsubr="${tot}"
+
+  countthem "`grep 'downloaded to:' $LOGDIR/sr_subscribe_u_000*.log | wc -l`"
+  totsubu="${tot}"
+
+
   countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
   totpost1="${tot}"
 
@@ -163,7 +186,7 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total ~/.cache/sarra/log/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total $LOGDIR/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
@@ -186,7 +209,7 @@ while [ $totsarra -lt $smin ]; do
 
    if ! [ "$srpostdelta" == "" ]; then
      #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-     sr_post -c ~/.config/sarra/post/test2.conf  $srpostdelta >> $srpostlogfile 2>&1
+     sr_post -c $CONFDIR/post/test2.conf  $srpostdelta >> $srpostlogfile 2>&1
    fi
 
    cp -p $srpostlstfile_new $srpostlstfile_old
@@ -272,9 +295,10 @@ done
 
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
-tallyres ${totpoll1} ${totsub2} "poll test1 and subscribe q run together. Should have equal results."
+tallyres ${totpoll1} ${totsubq} "poll test1 and subscribe q run together. Should have equal results."
 
-tallyres ${totpost1} ${totsub3} "post test2 and subscribe r run together. Should have equal results."
+calcres ${totpost1} ${totsubr} "post test2 ${totpost1} and subscribe r ${totsubr} run together. Should be about the same."
+calcres ${totpost1} ${totsubu} "post test2 ${totpost1} and subscribe u ${totsubu} run together. Should be about the same."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 

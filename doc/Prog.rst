@@ -147,11 +147,11 @@ will stop there and another message will be consumed from the broker.
 Popular Variables in Plugins
 -----------------------------
 
-A popular variable in on_file and on_part plugins is: *parent.msg.local_file*,
+A popular variable in on_file and on_part plugins is: *parent.new_file*,
 giving the file name the downloaded product has been written to.  When the
 same variable is modified in an on_message plugin, it changes the name of
 the file to be downloaded.  Similarly Another oft used variable is 
-*parent.msg.local_dir*, which operates on the directory to which the file
+*parent.new_dir*, which operates on the directory to which the file
 will be downloaded.
 
 There is one difference between on_* scripts used in a sender when compared to
@@ -254,7 +254,7 @@ provided with sarracenia::
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
       def perform(self, parent):
-          self.rxpipe.write( parent.msg.local_file + "\n" )
+          self.rxpipe.write( parent.new_file + "\n" )
           self.rxpipe.flush()
           return None
 
@@ -322,7 +322,7 @@ of the buffer used is given by the **bufsize** option (default 8192)
 Sending vs. Subscribing
 -----------------------
 
-FIXME: local_file vs. remote_file
+FIXME: new_file vs. remote_file
 if you are using
 
 
@@ -391,13 +391,13 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'to_clusters': None,
   'site_data_dir': '/usr/share/ubuntu/sarra',
   'source_from_exchange': False,
-  'local_url': ParseResult(scheme='file', netloc='',
+  'new_url': ParseResult(scheme='file', netloc='',
   path='/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
   params='', query='', fragment=''),
   'sumflg': 'd',
   'user_log_dir': '/local/home/peter/.cache/sarra/log',
   'topic_prefix': 'v02.post',
-  'local_file': 'SACN62_CYVT_142200___11878',
+  'new_file': 'SACN62_CYVT_142200___11878',
   'on_post': None,
   'do_poll': None,
   'message_ttl': None,
@@ -446,14 +446,14 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'credentials': <sarra.sr_credentials.sr_credentials object at 0x7f4fcdc911d0>,
   'on_message': None,
   'currentFileOption': None,
-  'local_dir': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22',
+  'new_dir': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22',
   'user_config': 'dd.conf',
   'lpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
   'bufsize': 8192,
   'do_download': None,
   'post_exchange': None,
   'report_exchange': 'xlog',
-  'local_path': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
+  'new_path': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22/SACN62_CYVT_142200___11878',
   'instance_name': 'sr_subscribe_dd_0001',
   'statefile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd.state',
   'use_pattern': True,
@@ -495,13 +495,12 @@ and/or *parent.msg.header.parts*  in their code.)::
  'topic_prefix': 'v02.post',
  'current_block': 0,
  'tbegin': 1466165094.82,
- 'local_file': '/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919',
  'remainder': 0,
  'to_clusters': ['DD', 'DDI.CMC', 'DDI.EDM'],
  'local_offset': 0,
  'mtype': 'post',
   'user': 'anonymous',
-  'bufsize': 8192, 'local_url':
+  'bufsize': 8192, 'new_url':
   ParseResult(scheme='file', netloc='', path='/home/peter/test/dd/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''), 'exchange': 'xpublic', 'url': ParseResult(scheme='http', netloc='dd2.weather.gc.ca', path='/bulletins/alphanumeric/20160617/CA/CWAO/12/CACN00_CWAO_171133__WAR_00919', params='', query='', fragment=''),
  'onfly_checksum': 'ab1ba0020e91119fb024a2c115ccd908',
   'host': 'blacklab',
@@ -629,7 +628,7 @@ For more complicated tests, just add more testing code::
 
           # writing filename in pipe
           f = open('/users/dor/aspy/mjg/mon_fifo','w')
-          f.write(msg.local_file)
+          f.write(parent.new_file)
           f.flush()
           f.close()
 
@@ -659,11 +658,11 @@ For more complicated tests, just add more testing code::
 
   class TestMessage() :
       def __init__(self):
-          self.local_file = "a string"
           self.headers = {}
 
   class TestParent(object):
       def __init__(self):
+          self.new_file = "a string"
           self.msg = TestMessage()
           self.logger = TestLogger()
           pass

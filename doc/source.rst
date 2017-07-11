@@ -328,10 +328,8 @@ product listings, so custom processing of the list is often needed.  That is why
 has the do_poll setting, meaning that use of a plugin script is virtually required
 to use it.
 
-.. warning::
-  **FIXME**: sr_poll example neeeded.
-
-  **FIXME**: example do_poll scripts should be in distribution.
+.. note::
+   see the poll_script included in the package plugins directory for an example.
 
 
 
