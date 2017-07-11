@@ -68,6 +68,11 @@ Format of argument to the *path* option::
        or
        relative_path_to_the/filename
 
+the *-pipe* option can be specified to have sr_post read path names from standard 
+input as well.
+
+
+
 An example invocation of *sr_post*::
 
  sr_post -b amqp://broker.com -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
@@ -214,6 +219,12 @@ until the entire tree is scanned.
 The AMQP announcements are made of the three fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn from
 the *document_root*, present and needed.
+
+**[-pipe <boolean>]**
+
+The pipe option is for sr_post to read the names of the files to post from standard input to read from
+redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
+
 
 **[-rec|--recursive <boolean>]**
 

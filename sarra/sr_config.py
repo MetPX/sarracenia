@@ -401,55 +401,59 @@ class sr_config:
 
         self.rename               = None
         self.flow                 = None
-        self.events               = 'create|delete|link|modify'
-        self.event                = 'create|delete|modify'
 
-        self.randomize            = False
-        self.reconnect            = False
 
-        self.partflg              = '0'
         #
 
         self.batch                = 100
+
+        self.chmod                = 0o775
+        self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
+        self.chmod_log            = 0o600 
+        self.cluster              = None
+        self.cluster_aliases      = []
+
         self.destination          = None
-        self.timeout              = None
-
-        # subscribe
-
         self.discard              = False
-        self.flatten              = '/'
-        self.reportback           = True
 
-        self.realpath             = False
-        self.recursive            = False
-        self.reload               = False
+        self.events               = 'create|delete|link|modify'
+        self.event                = 'create|delete|modify'
+
+        self.flatten              = '/'
         self.follow_symlinks      = False
         self.force_polling        = False
 
-        self.pump_flag            = False
-        self.users_flag           = False
+        self.gateway_for          = ['ALL']
+        self.mirror               = False
 
+        self.partflg              = '0'
+        self.pipe                 = False
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
         self.post_exchange_split = 0
-
         self.preserve_mode        = True
         self.preserve_time        = True
+        self.pump_flag            = False
+
+        self.randomize            = False
+        self.realpath             = False
+        self.reconnect            = False
+        self.recursive            = False
+        self.reload               = False
+        self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
+
         self.save                 = False
         self.save_file            = None
+        self.sleep                = 0
+        self.strip                = 0
         self.source               = None
         self.source_from_exchange = False
 
-        # general cluster stuff
-        self.cluster              = None
-        self.cluster_aliases      = []
-        self.gateway_for          = ['ALL']
+        self.timeout              = None
         self.users                = {}
-
-        self.sleep                = 0
-        self.strip                = 0
+        self.users_flag           = False
 
         self.blocksize            = 0
 
@@ -461,9 +465,6 @@ class sr_config:
         self.inplace              = False
 
         self.inflight             = None
-        self.chmod                = 0o775
-        self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
-        self.chmod_log            = 0o600 
 
         self.notify_only          = False
 
@@ -476,7 +477,6 @@ class sr_config:
         self.nbr_instances        = 1
 
 
-        self.mirror               = False
 
         self.overwrite            = False
         self.recompute_chksum     = False
@@ -1083,6 +1083,14 @@ class sr_config:
                      else :
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
+
+                elif words0 == 'pipe' : # See: FIXME
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.pipe = True
+                        n = 1
+                     else :
+                        self.pipe = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'restore' : # See: sr_config.7 
                      #-- report_daemons left for transition, should be removed in 2017
