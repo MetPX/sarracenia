@@ -22,7 +22,11 @@ uses the posting api.
 sample build instructions are in build.sh
 
 The librabbitmq version needs to be > 0.8,  this is newer than what is in ubuntu 16.04.
-So you need to git clone ... see build.sh
+So you need to git clone ... then 
+
+export RABBIT_BUILD=*directory where rabbit has been built*
+
+
 
 
 build dependencies:
@@ -43,6 +47,19 @@ whereami:
   - result was that the cache is probably required before doing partition support.
   - so thinking about doing the cache.
   
+
+Dorval Computing Centre
+-----------------------
+
+If you are in the Dorval computing centre environment, then SSM is available and 
+a compatible version of rabbitmq-c can be obtained 
+
+. ssmuse-sh -d /fs/ssm/main/opt/rabbitmqc/rabbitmqc-0.8.0
+ 
+To load sr_cpost
+. ssmuse-sh -d /fs/ssm/hpco/exp/sarrac-0.1
+ 
+
 
 Plan:
   - figure out packaging?

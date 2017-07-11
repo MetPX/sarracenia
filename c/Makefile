@@ -1,12 +1,26 @@
-# 
-# RABBITMQC_HOME is required - Rabbit-MQ C version
-# 
 
+
+# 
+# if rabbitmq library is provided by SSM package, RABBITMQC_HOME is required. 
+# 
+ifdef RABBITMQ_HOME
 RABBIT_LIBDIR = ${RABBITMQC_HOME}/lib
 RABBIT_INCDIR = -I${RABBITMQC_HOME}/include
 RABBIT_LINK = -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR}
 SARRA_LIBDIR = ${CURDIR}
 SARRA_LINK = -Wl,-rpath,${SARRA_LIBDIR} -L${SARRA_LIBDIR}
+endif
+
+# If rabbitmq library is only built (not installed) then set RABBIT_BUILD
+ifdef RABBIT_BUILD
+RABBIT_LIBDIR=${RABBIT_BUILD}/build/librabbitmq
+RABBIT_INCDIR = -I${RABBIT_BUILD}/librabbitmq
+RABBIT_LINK = -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR}
+SARRA_LIBDIR = ${CURDIR}
+SARRA_LINK = -Wl,-rpath,${SARRA_LIBDIR} -L${SARRA_LIBDIR}
+endif
+
+# if neither variable is set, then it is assumed to be available from default environment.
 
 CC = gcc
 CFLAGS = -fPIC -g -std=gnu99
@@ -44,5 +58,5 @@ install:
 	@cp *.h include/
 
 clean:
-	@rm -f *.o *.so *.so.* sr_cpost
+	@rm -f *.o *.so *.so.* sr_cpost sr_configtest
 	@rm -rf bin lib include
