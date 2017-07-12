@@ -95,3 +95,10 @@ void connect_and_post(const char *fn);
  /* do all of the above: connect, post, and close in one call.
     less efficient when you know you are doing many posts.
   */
+
+
+void sr_consume_init(struct sr_context *sr_c);
+
+void sr_consume(struct sr_context *sr_c);
+
+ 

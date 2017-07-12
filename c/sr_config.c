@@ -31,6 +31,34 @@ status:
 
 #define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
+void add_topic( struct sr_config_t *sr_cfg, const char* sub )
+  /* append to linked list of topics
+   */
+{
+   struct sr_topic_t *t;
+   struct sr_topic_t *n;
+
+   t = (struct sr_topic_t *)malloc(sizeof (struct sr_topic_t));
+   if (t == NULL) 
+   {
+       fprintf(stderr, "malloc of topic failed!\n" );
+       return;
+   }
+   t->next = NULL;
+   strcpy(t->topic,sr_cfg->topic_prefix);
+   strcat(t->topic,".");
+   strcat(t->topic, sub );
+   if ( ! sr_cfg->topics ) 
+   {
+       sr_cfg->topics = t;
+   } else {
+       n=sr_cfg->topics;
+       while( n->next ) n=n->next;
+       n->next = t;
+   }
+}
+
+
 struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chaine )
    /* return pointer to matched pattern, if there is one, NULL otherwise.
       if called repeatedly with the same argument, just return the same result.
@@ -233,7 +261,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
       sr_cfg->queuename = strdup(argument);
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
       return(2);
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
@@ -243,11 +270,19 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->pipe = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "subtopic" ) || !strcmp( option, "sub") ) {
+      add_topic( sr_cfg, argument );
+      return(2);
+
   } else if ( !strcmp( option, "sum" ) ) {
       sr_cfg->sumalgo = argument[0];
       return(2);
   } else if ( !strcmp( option, "to" ) ) {
       sr_cfg->to = strdup(argument);
+      return(2);
+
+  } else if ( !strcmp( option, "topic_prefix" ) || !strcmp( option, "tp") ) {
+      strcpy( sr_cfg->topic_prefix, argument);
       return(2);
 
   } else if ( !strcmp( option, "url" ) || !strcmp( option, "u" ) ) {
@@ -273,8 +308,11 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
+  sr_cfg->pipe=0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
+  strcpy( sr_cfg->topic_prefix, "v02.post" );
+  sr_cfg->topics=NULL;
   sr_cfg->url=NULL;
 }
 

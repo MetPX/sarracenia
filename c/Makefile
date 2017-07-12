@@ -48,6 +48,7 @@ all:
 	fi;
 	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) $(RABBIT_LINK) -lrabbitmq -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_csubdump sr_csubdump.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
 
 
 install:

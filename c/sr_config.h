@@ -28,6 +28,13 @@ status:
 
 #include "sr_event.h"
 
+// AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
+#define AMQP_MAX_SS (255)
+
+struct sr_topic_t {
+  char topic[AMQP_MAX_SS]; 
+  struct sr_topic_t *next;
+};
 
 struct sr_mask_t {
   char* clause;
@@ -53,6 +60,8 @@ struct sr_config_t {
   char             *queuename;
   int               pipe;  // pipe mode, read file names from standard input
   char              sumalgo; // checksum algorithm to use.
+  struct sr_topic_t *topics;
+  char             topic_prefix[AMQP_MAX_SS];
   char             *url;
   char             *to;
   
@@ -69,6 +78,9 @@ int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argu
     return the number of arguments consumed:  0, 1, or 2.
   */
 
+void add_topic( struct sr_config_t *sr_cfg, const char* sub );
+ /* add a topic to the list of bindings, based on the current topic prefix
+  */
 
 void sr_config_init( struct sr_config_t *sr_cfg );
  /* Initialize an sr_config structure (setting defaults)
