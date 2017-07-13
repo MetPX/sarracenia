@@ -499,6 +499,8 @@ class sr_config:
         self.execfile("on_line",'line_mode')
         self.on_line_list = [ self.on_line ]
 
+        self.on_watch             = None
+        self.on_watch_list        = []
 
     def execfile(self, opname, path):
 
@@ -1238,6 +1240,18 @@ class sr_config:
                             needexit = True
                      else:
                         self.on_post_list.append(self.on_post)
+                     n = 2
+
+                elif words0 == 'on_watch': # See: sr_config
+                     self.execfile("on_watch",words1)
+                     if ( self.on_watch == None ):
+                        if self.isNone(words1):
+                            self.on_watch_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_watch_list.append(self.on_watch)
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7
