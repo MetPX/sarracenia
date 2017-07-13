@@ -48,6 +48,7 @@ void add_topic( struct sr_config_t *sr_cfg, const char* sub )
    strcpy(t->topic,sr_cfg->topic_prefix);
    strcat(t->topic,".");
    strcat(t->topic, sub );
+
    if ( ! sr_cfg->topics ) 
    {
        sr_cfg->topics = t;

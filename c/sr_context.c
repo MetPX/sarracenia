@@ -505,9 +505,13 @@ void sr_consume_init(struct sr_context *sr_c)
   {
       add_topic(sr_c->cfg, "#" );
   }
+  //fprintf( stderr, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
 
-  for( t = sr_c->cfg->topics; t->next ; t=t->next )  
+  for( t = sr_c->cfg->topics; t ; t=t->next )
   {
+      if (sr_c->cfg->debug) 
+          fprintf( stderr, " binding queue: %s to exchange: %s topic: %s\n",
+              sr_c->cfg->queuename, sr_c->cfg->exchange, t->topic );
       amqp_queue_bind(sr_c->conn, 1, 
             amqp_cstring_bytes(sr_c->cfg->queuename), 
             amqp_cstring_bytes(sr_c->cfg->exchange), 
@@ -520,7 +524,6 @@ void sr_consume_init(struct sr_context *sr_c)
           return;
       }
   }
-
 }
 
 
@@ -617,7 +620,7 @@ void sr_consume(struct sr_context *sr_c)
                      (char *) p->headers.entries[i].value.value.bytes.bytes
                  );
             } else
-                fprintf( stderr, "header not UTF\n");
+                fprintf( stderr, "header not UTF8\n");
         }
 
         body_target = frame.payload.properties.body_size;
