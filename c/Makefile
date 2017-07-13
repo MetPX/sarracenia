@@ -25,18 +25,16 @@ endif
 CC = gcc
 CFLAGS = -fPIC -g -std=gnu99
 
-SARRA_OBJECT = libsarra.so.1.0.0 sr_context.o sr_config.o sr_event.o sr_credentials.o
+SARRA_OBJECT = sr_consume.o sr_context.o sr_config.o sr_event.o sr_credentials.o
+SARRA_LIB = libsarra.so.1.0.0 
 EXT_LIB = -lrabbitmq -luriparser -lcrypto -lc
 SHARED_LIB = libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0
 
+.c.o:
+	$(CC) $(CFLAGS) -c -Wall $(RABBIT_INCDIR) $<
 
-all: 
-	$(CC) $(CFLAGS) -c -Wall libsrshim.c
-	$(CC) $(CFLAGS) -c -Wall sr_credentials.c
-	$(CC) $(CFLAGS) -c -Wall sr_event.c
-	$(CC) $(CFLAGS) -c -Wall sr_config.c
-	$(CC) $(CFLAGS) -c -Wall $(RABBIT_INCDIR) sr_context.c
-	$(CC) $(CFLAGS) -shared -Wl,-soname,libsarra.so.1 -o $(SARRA_OBJECT) -ldl $(RABBIT_LINK) $(EXT_LIB)
+all: $(SARRA_OBJECT)
+	$(CC) $(CFLAGS) -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 $(SARRA_OBJECT) -ldl $(RABBIT_LINK) $(EXT_LIB)
 	$(CC) $(CFLAGS) -shared -Wl,-soname,$(SHARED_LIB) -ldl $(SARRA_LINK) $(RABBIT_LINK) $(EXT_LIB)
 	if [ ! -f libsarra.so ]; \
 	then \
@@ -59,5 +57,5 @@ install:
 	@cp *.h build/include/
 
 clean:
-	@rm -f *.o *.so *.so.* sr_cpost sr_configtest
+	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_csubdump
 	@rm -rf build

@@ -17,8 +17,7 @@
  */
 #include <stdio.h>
 
-#include "sr_context.h"
-
+#include "sr_consume.h"
 
 int main(int argc, char **argv)
 {
