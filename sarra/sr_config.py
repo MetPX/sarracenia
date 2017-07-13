@@ -492,6 +492,9 @@ class sr_config:
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
 
+        self.execfile("on_html_page",'html_page')
+        self.on_html_page_list    = [self.on_html_page]
+
         self.on_part              = None
         self.on_part_list         = []
 
@@ -1190,6 +1193,18 @@ class sr_config:
                      else:
                         self.on_file_list.append(self.on_file)
 
+                     n = 2
+
+                elif words0 == 'on_html_page': # See: sr_config
+                     self.execfile("on_html_page",words1)
+                     if ( self.on_html_page == None ):
+                        if self.isNone(words1):
+                            self.on_html_page_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_html_page_list.append(self.on_html_page)
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
