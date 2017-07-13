@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#include "sr_context.h"
+#include "sr_post.h"
 
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
