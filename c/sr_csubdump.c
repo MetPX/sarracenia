@@ -23,8 +23,7 @@ int main(int argc, char **argv)
 {
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
-  struct stat sb;
-  int consume,i,lastopt;
+  int consume,i;
   
   if ( argc < 3 ) 
   {

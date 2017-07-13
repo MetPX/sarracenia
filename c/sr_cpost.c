@@ -40,7 +40,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "failed to open directory: %s\n", fn );
              return;
          }
-         while ( e = readdir(dir) ) 
+         while ( ( e = readdir(dir)) ) 
          {
              if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") ) 
                  continue;
@@ -62,8 +62,7 @@ int main(int argc, char **argv)
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
   char inbuff[PATH_MAX+1];
-  ssize_t howlong;
-  int consume,i,lastopt;
+  int consume,i;
   
   if ( argc < 3 ) 
   {

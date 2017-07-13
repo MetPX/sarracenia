@@ -20,10 +20,6 @@ status:
 
 int main( int argc, char *const *argv ) {
 
-  char *cfg;
-  char **tag, *value;
-  int i;
-  UriParserStateA state; 
   struct UriPathSegmentStructA *pathelem;
   struct sr_config_t sr_cfg;
 
