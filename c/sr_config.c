@@ -261,9 +261,9 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->accept_unmatched = val&2;
       return(1+(val&1));
 
-  } else if ( !strcmp( option, "blocksize" ) ) {
+  } else if ( !strcmp( option, "blocksize" ) || !strcmp( option, "parts") ) {
       if (!argument) {
-         fprintf( stderr, "blocksize argument missing\n");  
+         fprintf( stderr, "parts (partition strategy) argument missing\n");  
          return(1);
       }
       sr_cfg->blocksize = chunksize_from_str( argument );
