@@ -192,7 +192,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     amqp_rpc_reply_t reply;
     amqp_frame_t frame;
     int result;
-    char buf[2*PATH_MAX];
+    char buf[2*PATH_MAXNUL];
 
     amqp_basic_deliver_t *d;
     amqp_basic_properties_t *p;

@@ -32,7 +32,9 @@ status:
 #include "sr_event.h"
 
 // AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
-#define AMQP_MAX_SS (255)
+// 255 characters, + terminating nul
+#define AMQP_MAX_SS (255+1)
+#define PATH_MAXNUL (PATH_MAX+1)
 
 struct sr_topic_t {
   char topic[AMQP_MAX_SS]; 
@@ -52,7 +54,7 @@ struct sr_config_t {
   long unsigned     blocksize; // if partitioned, how big are they?
   UriUriA           broker;
   int               broker_specified;
-  char              brokeruricb[PATH_MAX];
+  char              brokeruricb[PATH_MAXNUL];
   int               debug;
   char             *directory;
   sr_event_t       events;

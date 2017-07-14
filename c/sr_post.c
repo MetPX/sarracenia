@@ -272,8 +272,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   char message_body[1024];
   char partstr[255];
   char modebuf[6];
-  char linkstr[PATH_MAX];
-  char fn[PATH_MAX];
+  char linkstr[PATH_MAXNUL];
+  char fn[PATH_MAXNUL];
   int  linklen;
   char atimestr[18];
   char mtimestr[18];

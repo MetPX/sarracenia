@@ -57,6 +57,10 @@ int main(int argc, char **argv)
   }
   
   sr_c = sr_context_init_config( &sr_cfg );
+  if (!sr_c) {
+     fprintf( stderr, "failed to read configuration\n");
+     return(1);
+  }
   sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
      fprintf( stderr, "failed to establish sr context\n");

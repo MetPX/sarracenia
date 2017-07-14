@@ -45,7 +45,7 @@ all: $(SARRA_OBJECT)
 	fi;
 	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) $(RABBIT_LINK) -lrabbitmq -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_csubdump sr_csubdump.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_csubjsondump sr_csubjsondump.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
 
 
 install:
@@ -56,5 +56,5 @@ install:
 	@cp *.h build/include/
 
 clean:
-	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_csubdump
+	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_csubjsondump
 	@rm -rf build

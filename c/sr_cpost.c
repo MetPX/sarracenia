@@ -27,7 +27,7 @@ void do1file( struct sr_context *sr_c, char *fn )
     DIR *dir;
     struct dirent *e;
     struct stat sb;
-    char ep[PATH_MAX];
+    char ep[PATH_MAXNUL];
 
     if ( lstat(fn, &sb) < 0 ) {
          fprintf( stderr, "failed to stat: %s\n", fn );
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 {
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
-  char inbuff[PATH_MAX+1];
+  char inbuff[PATH_MAXNUL];
   int consume,i;
   
   if ( argc < 3 ) 
