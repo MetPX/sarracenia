@@ -70,7 +70,7 @@ struct sr_config_t {
   
 };
 
-#define SR_TIMESTRLEN (18)
+#define SR_TIMESTRLEN (19)
 #define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
 
 char *sr_time2str( struct timespec *tin );
