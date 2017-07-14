@@ -339,13 +339,11 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
-**[-on_watch]**
+**[--on_watch]**
 
-The means to use a plugin in sr_watch. It would be envoked
-at every iteration when the events are collected. The plugin
-is called before the processing of the collection. This means
-that should the on_watch write a file in the watch directory,
-the event of its creation will be collected on the spot.
+When the gathering of sr_watch events starts, the *on_watch* plugin is envoked.
+It could be used to put a file in one of the watched directories... 
+and have it published.
 
 
 CAVEATS
