@@ -36,13 +36,29 @@
 
 import os, urllib.request, urllib.error, sys
 
+#============================================================
+# http protocol in sarracenia supports/uses :
+#
+# connect
+# close
+#
+# if a source    : get    (remote,local)
+#                  ls     ()
+#                  cd     (dir)
+#
+# *** will never support source part:
+#                  delete (path)
+#
+# *** will never support sender part:
+#                  put    (local,remote)
+#                  cd     (dir)
+#                  mkdir  (dir)
+#                  umask  ()
+#                  chmod  (perm)
+#                  rename (old,new)
+#                  symlink(link,path)
+
 class sr_http():
-    """
-      mocked sr_http class to eventually be able to work with sr_poll.
-      copied stuff from sr_sftp.  Will see what is needed to get it to work.
-     
-      FIXME: does not do anything useful yet.
-    """
     def __init__(self, parent) :
         self.logger = parent.logger
         self.logger.debug("sr_http __init__")
@@ -50,92 +66,220 @@ class sr_http():
         self.parent      = parent
         self.connected   = False
         self.http        = None
+        self.details     = None
 
         self.sumalgo     = None
         self.checksum    = None
 
+        self.urlstr      = ''
+        self.path        = ''
+
+        self.data        = ''
+        self.entries     = {}
+
+
     # cd
     def cd(self, path):
-        self.logger.debug("sr_http cd %s NOT IMPLEMENTED" % path)
-        self.pwd = path
+        self.logger.debug("sr_http cd %s" % path)
+        self.path = self.destination + path
 
-    def cd_forced(self,perm,path) :
-        """ cd creating directories to get there if they don't exist 
-        """
-        self.logger.debug("sr_sftp cd_forced %d %s NOT IMPLEMENTED" % (perm,path))
-
-
-    # chmod
-    def chmod(self,perm,path):
-        pass 
-
-   # close
+    # close
     def close(self):
         self.logger.debug("sr_http close")
         self.connected = False
-        try   : self.http.close()
-        except: pass
-        self.http  = None
+        self.http      = None
 
-    # chmod
+    # connect... 
     def connect(self):
-        pass 
+        self.logger.debug("sr_http connect %s" % self.parent.destination)
 
+        self.connected   = False
+        self.destination = self.parent.destination
+        self.timeout     = self.parent.timeout
+
+        try:
+                ok, self.details = self.parent.credentials.get(self.destination)
+                if self.details  : url = self.details.url
+
+                self.user        = url.username
+                self.password    = url.password
+
+                self.kbytes_ps = 0
+                self.bufsize   = 8192
+
+                if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
+                if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Unable to get credentials for %s" % self.destination)
+                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+
+    # delete
     def delete(self, path):
-        pass
+        self.logger.debug( "sr_http delete %s not supported" % path)
 
-    def symlink(self, link, path):
-        pass
+    # get
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
+        self.logger.debug( "sr_http get %s %s %d" % (remote_file,local_file,local_offset))
 
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
-        self.logger.debug("sr_http get %s %s %d %d %d NOT IMPLEMENTED" % (remote_file,local_file,remote_offset,local_offset,length))
+        # open self.http
 
+        self.urlstr = self.path + '/' + remote_file
+
+        self.__open__()
+
+        # on fly checksum 
+
+        chk           = self.sumalgo
+        self.checksum = None
+
+        # throttle 
+
+        cb = None
+
+        if self.kbytes_ps > 0.0 :
+           cb = self.throttle
+           d1,d2,d3,d4,now = os.times()
+           self.tbytes     = 0.0
+           self.tbegin     = now + 0.0
+           self.bytes_ps   = self.kbytes_ps * 1024.0
+
+        if not os.path.isfile(local_file) :
+           fp = open(local_file,'w')
+           fp.close
+
+        fp = open(local_file,'r+b')
+        if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+
+
+        if chk : chk.set_path(self.remote_file)
+
+        # should not worry about length...
+        # http provides exact data
+
+        while True:
+              chunk = self.http.read(self.bufsize)
+              if not chunk: break
+              fp.write(chunk)
+              if chk : chk.update(chunk)
+              if cb  : cb(chunk)
+
+        # if new version of file replaces longer previous version.
+        if fp.tell() >= msg.filesize:
+           fp.truncate()
+
+        fp.close()
+
+        if chk : self.checksum = chk.get_value()
+
+        return True
+
+   # ls
     def ls(self):
-        self.logger.debug("sr_http ls NOT IMPLEMENTED")
- 
+        self.logger.debug("sr_http ls")
 
-    def line_callback(self,iline):
-        self.logger.debug("sr_http line_callback %s" % iline)
+        # open self.http
 
-        oline  = iline
-        oline  = oline.strip('\n')
-        oline  = oline.strip()
-        oline  = oline.replace('\t',' ')
-        opart1 = oline.split(' ')
-        opart2 = []
+        self.urlstr = self.path
 
-        for p in opart1 :
-            if p == ''  : continue
-            opart2.append(p)
+        self.__open__()
 
-        fil  = opart2[-1]
-        line = ' '.join(opart2)
+        self.entries = {}
 
-        self.entries[fil] = line
+        # get html page for directory
 
+        try :
+                 dbuf = None
+                 while  True:
+                        chunk = self.http.read(self.bufsize)
+                        if not chunk: break
+                        if dbuf : dbuf += chunk
+                        else    : dbuf  = chunk
+
+                 self.data = dbuf.decode('utf-8')
+
+                 # invoke parent defined on_html_page ... if any
+
+                 for plugin in self.parent.on_html_page_list:
+                     if not plugin(self):
+                        self.logger.warning("something wrong")
+                        return self.entries
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.warning("Unable to open %s" % self.urlstr)
+                self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
+
+        return self.entries
+
+    # mkdir
     def mkdir(self, remote_dir):
-        self.logger.debug("sr_http mkdir %s NOT IMPLEMENTED" % remote_dir)
- 
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
-        self.logger.debug("sr_http put %s %s %d %d %d NOT IMPLEMENTED" % (local_file,remote_file,local_offset,remote_offset,length))
+        self.logger.debug( "sr_http mkdir %s not supported" % remote_dir)
 
+    # open
+    def __open__(self):
+        self.logger.debug( "sr_http open")
+
+        self.http      = None
+        self.connected = False
+
+        try:
+                # when credentials are needed.
+                if self.user != None :                          
+                   password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+                   password_mgr.add_password(None, self.urlstr,self.user,self.password)
+                   handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+            
+                   # create "opener" (OpenerDirector instance)
+                   opener = urllib.request.build_opener(handler)
+
+                   # use the opener to fetch a URL
+                   opener.open(self.urlstr)
+
+                   # Install the opener.
+                   urllib.request.install_opener(opener)
+
+                # Now all calls to get the request use our opener.
+                req       = urllib.request.Request(self.urlstr)
+                self.http = urllib.request.urlopen(req)
+                self.connected = True
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.warning("Unable to open %s" % self.urlstr)
+                self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
+
+    # put
+    def put(self, local_file, remote_file, local_offset = 0, remote_offset = 0, length = 0):
+        self.logger.debug( "sr_http put %s %s not supported" % (local_file,remote_file))
+
+    # rename
     def rename(self,remote_old,remote_new) :
-        self.logger.debug("sr_http rename %s %s NOT IMPLEMENTED" % (remote_old,remote_new))
- 
-    def rmdir(self,path) :
-        self.logger.debug("sr_http rmdir %s  NOT IMPLEMENTED" % path)
- 
+        self.logger.debug( "sr_http rename %s %s not supported" % (remote_old,remote_new))
+
+    # rmdir
+    def rmdir(self, path):
+        self.logger.debug( "sr_http rmdir %s not supported" % path)
+
+    # set_sumalgo
     def set_sumalgo(self,sumalgo) :
         self.logger.debug("sr_http set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
 
+    # throttle
     def throttle(self,buf) :
-        self.logger.debug("sr_http throttle NOT IMPLEMENTED")
- 
-    
+        self.logger.debug("sr_http throttle")
+        self.tbytes = self.tbytes + len(buf)
+        span = self.tbytes / self.bytes_ps
+        d1,d2,d3,d4,now = os.times()
+        rspan = now - self.tbegin
+        if span > rspan :
+           time.sleep(span-rspan)
 
-
-
+    # umask
+    def umask(self) :
+        self.logger.debug("sr_http umask %s unsupported")
 
 class http_transport():
     def __init__(self) :

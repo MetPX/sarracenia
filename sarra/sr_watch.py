@@ -114,6 +114,20 @@ class sr_watch(sr_instances):
            self.post.connect()
            self.post.poster.cache_reset()
 
+
+    # =============
+    # __on_watch__
+    # =============
+
+    def __on_watch__(self):
+ 
+        # invoke user defined on_message when provided
+
+        for plugin in self.on_watch_list:
+           if not plugin(self): return False
+
+        return True
+
     def validate_cache(self):
         self.cache_file  = self.user_cache_dir
         self.cache_file += '/' + self.watch_path.replace('/','_')
@@ -229,7 +243,8 @@ class sr_watch(sr_instances):
             # do periodic events (at most, once every 'sleep' seconds)
             while True:
                start_sleep_event = time.time()
-               self.myeventhandler.event_wakeup()
+               ok = self.__on_watch__()
+               if ok : self.myeventhandler.event_wakeup()
                end_sleep_event = time.time()
                how_long = self.sleep - ( end_sleep_event - start_sleep_event )
                if how_long > 0:

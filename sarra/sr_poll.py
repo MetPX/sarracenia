@@ -72,12 +72,14 @@ import os,sys,time
 try :    
          from sr_amqp           import *
          from sr_ftp            import *
+         from sr_http           import *
          from sr_instances      import *
          from sr_message        import *
          from sr_poster         import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_ftp       import *
+         from sarra.sr_http      import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
          from sarra.sr_poster    import *
@@ -190,6 +192,9 @@ class sr_poll(sr_instances):
         self.dest = None
         if url.scheme == 'ftp'  : self.dest = sr_ftp(self)
         if url.scheme == 'ftps' : self.dest = sr_ftp(self)
+
+        if url.scheme == 'http' : self.dest = sr_http(self)
+
         if url.scheme == 'sftp' :
            try    : from sr_sftp       import sr_sftp
            except : from sarra.sr_sftp import sr_sftp
@@ -365,9 +370,9 @@ class sr_poll(sr_instances):
                            break
 
                 if matched:
-                    self.logger.debug("sftp.lsdir: accept line: %s" % self.line)
+                    self.logger.debug("lsdir: accept line: %s" % self.line)
                 else:
-                    self.logger.debug("sftp.lsdir: rejected line: %s" % self.line)
+                    self.logger.debug("lsdir: rejected line: %s" % self.line)
 
             self.ls = new_ls
             return True
@@ -402,6 +407,10 @@ class sr_poll(sr_instances):
         if keywd[:8] == "{JJJ-1D}"       : 
                                            epoch  = time.mktime(time.gmtime()) - 24*60*60
                                            return   time.strftime("%j", time.localtime(epoch) ) + keywd[8:]
+
+        if keywd[:4] == "{HH}"           : 
+                                           return   time.strftime("%H", time.gmtime()) + keywd[4:]
+
 
         if keywd[:10] == "{YYYYMMDD}"    : 
                                            return   time.strftime("%Y%m%d", time.gmtime()) + keywd[10:]
@@ -547,13 +556,16 @@ class sr_poll(sr_instances):
                     if mask_regexp.match(remote_file) and accepting :
                        FileOption = maskFileOption
 
-                desc   = desclst[remote_file]
-                fsiz   = desc.split()[4]
-
+                desc         = desclst[remote_file]
+                ssiz         = desc.split()[4]
                 self.urlstr  = self.destination + self.destDir + '/'+ remote_file
                 self.url     = urllib.parse.urlparse(self.urlstr)
-                self.partstr = '1,%s,1,0,0' % fsiz
                 self.sumstr  = self.sumflg
+
+                try :
+                        isiz = int(ssiz)
+                        self.partstr = '1,%d,1,0,0' % isiz
+                except: self.partstr = '2,0,1,0,0'
 
                 this_rename  = self.rename
 
