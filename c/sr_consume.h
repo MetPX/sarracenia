@@ -23,6 +23,13 @@
 
 #include "sr_context.h"
 
+struct sr_message_t {
+  char exchange[AMQP_MAX_SS];
+  char key[AMQP_MAX_SS];
+  char queue[AMQP_MAX_SS];
+
+};
+
 
 void sr_consume_init(struct sr_context *sr_c);
 /* 

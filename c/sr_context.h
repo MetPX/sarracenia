@@ -41,7 +41,7 @@
 
 struct sr_context {
 
-  char settings[255];
+  char settings[AMQP_MAX_SS];
   const char *scheme;
   const char *exchange;
   const char *file;

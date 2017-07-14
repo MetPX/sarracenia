@@ -23,6 +23,8 @@ status:
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <regex.h>
+#include <linux/limits.h>
+#include <time.h>
 
 #include <uriparser/Uri.h>
 
@@ -49,7 +51,7 @@ struct sr_config_t {
   long unsigned     blocksize; // if partitioned, how big are they?
   UriUriA           broker;
   int               broker_specified;
-  char              brokeruricb[1024];
+  char              brokeruricb[PATH_MAX];
   int               debug;
   char             *directory;
   sr_event_t       events;
@@ -66,6 +68,12 @@ struct sr_config_t {
   char             *to;
   
 };
+
+char *sr_time2str( struct timespec *tin );
+  /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
+      if argument is NULL, then the string should correspond to the current system time.
+   */
+ 
 
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
  /* return pointer to matched pattern, if there is one, NULL otherwise.
