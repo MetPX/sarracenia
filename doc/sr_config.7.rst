@@ -909,8 +909,8 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_line -- In **sr_poll** a line from the ls on the remote host is read in.
 
-- on_html_page -- In **sr_poll** turn an html page into a dictionary of the form
-  self.entries["remote_filename"] = "ls like line of 9 blank separeted fields"
+- on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
+  the files already published. The package provide a working example under plugins/html_page.py.
 
 - on_message -- when an sr_post(7) message has been received.  For example, a message has been received 
   and additional criteria are being evaluated for download of the corresponding file.  if the on_msg 
