@@ -116,6 +116,9 @@ void sr_consume_init(struct sr_context *sr_c)
 
 
 void assign_field( const char* key, char *value )
+ /* Assign the value of the field given by key to the corresponding member
+    of the static msg struct.
+  */
 {
      char *s;
 

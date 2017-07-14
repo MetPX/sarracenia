@@ -10,7 +10,7 @@
 * on_watch added in config and sr_watch
 * sr_http.py now has a valid class sr_http (used in sr_poll)
 * mode bits limited to the last four digits (upper digits non portable anyways.)
-* implementation of sr_post in C (not packaged yet.)
+* C implementation of libsrshim, libsarra, sr_cpost, and sr_subjsondump  in C (not packaged yet.)
 * fixed bogus error message from backward compatibility plugins.
 * added mtime check to sarra and sr_subscribe so that if of new file is <= file_on_disk, then don't download.
 
