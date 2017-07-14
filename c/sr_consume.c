@@ -49,8 +49,10 @@
 #include <amqp.h>
 #include <amqp_framing.h>
 
-#include "sr_context.h"
+#include "sr_consume.h"
 
+
+static struct sr_message_t msg;
 
 
 void sr_consume_init(struct sr_context *sr_c) 
@@ -113,8 +115,75 @@ void sr_consume_init(struct sr_context *sr_c)
 }
 
 
+void assign_field( const char* key, char *value )
+{
+     char *s;
 
-void sr_consume(struct sr_context *sr_c) 
+     //fprintf( stderr, "parsing: \"%s\" : \"%s\"\n", key, value );
+     if ( !strcmp(key,"parts") ) {
+         //FIXME: no error checking, invalid parts header will cause a bobo.
+         msg.parts_s=value[0];
+         s=strtok(&(value[2]),",");
+         msg.parts_blksz = atol(s);
+         s=strtok(NULL,",");
+         msg.parts_blkcount = atol(s);
+         s=strtok(NULL,",");
+         msg.parts_rem = atol(s);
+         s=strtok(NULL,",");
+         msg.parts_num = atol(s);
+     } else if ( !strcmp(key,"mode") ) {
+         msg.mode=strtoul( value, NULL, 8);
+     } else if ( !strcmp(key,"to_clusters") ) {
+         strcpy(msg.to_clusters,value); 
+     } else if ( !strcmp(key,"atime") ) {
+         strcpy(msg.atime,value); 
+     } else if ( !strcmp(key,"mtime") ) {
+         strcpy(msg.mtime,value); 
+     } else if ( !strcmp(key,"sum") ) {
+         strcpy(msg.sum,value); 
+     } else if ( !strcmp(key,"url") ) {
+         strcpy(msg.url,value); 
+     } else if ( !strcmp(key,"path") ) {
+         strcpy(msg.path,value); 
+     }
+
+}
+
+void json_dump_strheader(char *tag, char*value)
+{
+    printf( "\"%s\" : \"%s\"", tag, value );
+}
+
+void sr_message_2json(struct sr_message_t *m)
+{
+     printf( "{\n\t" );
+     json_dump_strheader( "exchange", m->exchange );
+     printf( ",\n\t" );
+     json_dump_strheader( "datestamp", m->datestamp );
+     printf( ",\n\t" );
+     json_dump_strheader( "routing_key", m->routing_key );
+     printf( ",\n\t" );
+     json_dump_strheader( "to_clusters", m->to_clusters );
+     printf( ",\n\t" );
+     json_dump_strheader( "atime", m->atime );
+     printf( ",\n\t" );
+     json_dump_strheader( "mtime", m->mtime );
+     printf( ",\n\t" );
+     printf( "\"mode\" : \"%04o\"", m->mode );
+     printf( ",\n\t" );
+     printf( "\"parts\" : \"%c,%ld,%ld,%ld,%ld\"", 
+           m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+     printf( ",\n\t" );
+     json_dump_strheader( "path", m->path );
+     printf( ",\n\t" );
+     json_dump_strheader( "sum", m->sum );
+     printf( ",\n\t" );
+     json_dump_strheader( "url", m->url );
+     printf( "\n}\n" );
+}
+
+
+struct sr_message_t *sr_consume(struct sr_context *sr_c) 
  /*
     read messages from the queue. dump to stdout in json format.
 
@@ -131,6 +200,8 @@ void sr_consume(struct sr_context *sr_c)
     char *tok;
     size_t body_target;
     size_t body_received;
+    char tag[AMQP_MAX_SS];
+    char value[AMQP_MAX_SS];
 
     amqp_basic_consume(sr_c->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 
@@ -144,118 +215,135 @@ void sr_consume(struct sr_context *sr_c)
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "consume failed");
-        return;
+        return(NULL);
     }
 
-    while (1) {
+    amqp_maybe_release_buffers(sr_c->conn);
+    result = amqp_simple_wait_frame(sr_c->conn, &frame);
 
-        amqp_maybe_release_buffers(sr_c->conn);
-        result = amqp_simple_wait_frame(sr_c->conn, &frame);
-
-        //fprintf( stderr, "Result %d\n", result);
-        if (result < 0) break;
+    //fprintf( stderr, "Result %d\n", result);
+    if (result < 0) return(NULL);
   
-        //fprintf( stderr, "Frame type %d, channel %d\n", frame.frame_type, frame.channel);
+    //fprintf( stderr, "Frame type %d, channel %d\n", frame.frame_type, frame.channel);
 
-        if (frame.frame_type != AMQP_FRAME_METHOD) continue;
+    if (frame.frame_type != AMQP_FRAME_METHOD) return(NULL);
   
-        //fprintf( stderr, "Method %s\n", amqp_method_name(frame.payload.method.id));
+    //fprintf( stderr, "Method %s\n", amqp_method_name(frame.payload.method.id));
 
-        if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) continue;
+    if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) return(NULL);
   
-        d = (amqp_basic_deliver_t *) frame.payload.method.decoded;
+    d = (amqp_basic_deliver_t *) frame.payload.method.decoded;
 
-        /*
-        fprintf( stderr, "Delivery %u, exchange %.*s routingkey %.*s\n",
-               (unsigned) d->delivery_tag,
+    /*
+    fprintf( stdout, " {\n\t\"exchange\": \"%.*s\",\n\t\"routingkey\": \"%.*s\",\n",
                (int) d->exchange.len, (char *) d->exchange.bytes,
                (int) d->routing_key.len, (char *) d->routing_key.bytes);
-         */ 
-        fprintf( stdout, " {\n\t\"exchange\": \"%.*s\",\n\t\"routingkey\": \"%.*s\",\n",
-               (int) d->exchange.len, (char *) d->exchange.bytes,
-               (int) d->routing_key.len, (char *) d->routing_key.bytes);
+     */
   
-        is_report = ( ! strncmp( d->routing_key.bytes, "v02.report", 10 )  );
+    sprintf( msg.exchange, "%.*s",  (int) d->exchange.len, (char *) d->exchange.bytes );
+    sprintf( msg.routing_key, "%.*s",  (int) d->routing_key.len, (char *) d->routing_key.bytes );
+
+    is_report = ( ! strncmp( d->routing_key.bytes, "v02.report", 10 )  );
    
-        result = amqp_simple_wait_frame(sr_c->conn, &frame);
+    result = amqp_simple_wait_frame(sr_c->conn, &frame);
 
-        if (result < 0) break;
+    if (result < 0) return(NULL);
   
-        if (frame.frame_type != AMQP_FRAME_HEADER) {
+    if (frame.frame_type != AMQP_FRAME_HEADER) 
+    {
             fprintf(stderr, "Expected header!");
             abort();
-        }
+    }
 
-        p = (amqp_basic_properties_t *) frame.payload.properties.decoded;
+    p = (amqp_basic_properties_t *) frame.payload.properties.decoded;
 
-        /*
-        if (p->_flags & AMQP_BASIC_CONTENT_TYPE_FLAG) 
-            fprintf( stderr, "Content-type: %.*s\n",
-                 (int) p->content_type.len, (char *) p->content_type.bytes);
-
-        fprintf( stderr, "Num headers received %d \n", p->headers.num_entries);
-        */
-        for ( int i=0; i < p->headers.num_entries; i++ ) 
-        {
+    for ( int i=0; i < p->headers.num_entries; i++ ) 
+    {
             if ( p->headers.entries[i].value.kind == AMQP_FIELD_KIND_UTF8 )
             {
+                sprintf( tag, "%.*s",  
+                           (int) p->headers.entries[i].key.len, 
+                        (char *) p->headers.entries[i].key.bytes );
+
+                sprintf( value, "%.*s",  
+                           (int) p->headers.entries[i].value.value.bytes.len, 
+                        (char *) p->headers.entries[i].value.value.bytes.bytes );
+
+                assign_field( tag, value );
+
+              /*
                 fprintf( stdout, "\t\"%.*s\": \"%.*s\",\n",
                      (int) p->headers.entries[i].key.len, 
                      (char *) p->headers.entries[i].key.bytes,
                      (int) p->headers.entries[i].value.value.bytes.len,
                      (char *) p->headers.entries[i].value.value.bytes.bytes
                  );
+               */
             } else
                 fprintf( stderr, "header not UTF8\n");
-        }
+    }
 
-        body_target = frame.payload.properties.body_size;
-        body_received = 0;
+    body_target = frame.payload.properties.body_size;
+    body_received = 0;
   
-        while (body_received < body_target) {
+    while (body_received < body_target) 
+    {
             result = amqp_simple_wait_frame(sr_c->conn, &frame);
 
-            if (result < 0) break;
+            if (result < 0) return(NULL);
     
-            if (frame.frame_type != AMQP_FRAME_BODY) {
+            if (frame.frame_type != AMQP_FRAME_BODY) 
+            {
                 fprintf(stderr, "Expected body!");
                 abort();
             }
     
-            body_received += frame.payload.body_fragment.len;
-            //assert(body_received <= body_target);
+        body_received += frame.payload.body_fragment.len;
+        //assert(body_received <= body_target);
     
-            strncpy( buf, (char*) frame.payload.body_fragment.bytes, (int)frame.payload.body_fragment.len );
-            tok = strtok(buf," ");
-            fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
-            tok = strtok(NULL," ");
-            fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
-            tok = strtok(NULL," ");
-            fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
-            if (is_report) {
+        strncpy( buf, (char*) frame.payload.body_fragment.bytes, (int)frame.payload.body_fragment.len );
+        tok = strtok(buf," ");
+        //fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
+        strcpy( msg.datestamp, tok );
+        tok = strtok(NULL," ");
+        //fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
+        strcpy( msg.url, tok );
+        tok = strtok(NULL," ");
+        //fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
+        strcpy( msg.path, tok );
+        if (is_report) 
+        {
                 tok = strtok(NULL," ");
-                fprintf( stdout, "\t\"statuscode\" : \"%s\", \n", tok);
+                //fprintf( stdout, "\t\"statuscode\" : \"%s\", \n", tok);
+                msg.statuscode = atoi( tok );
                 tok = strtok(NULL," ");
-                fprintf( stdout, "\t\"consumingurl\" : \"%s\", \n", tok);
+                //fprintf( stdout, "\t\"consumingurl\" : \"%s\", \n", tok);
+                strcpy( msg.consumingurl, tok );
                 tok = strtok(NULL," ");
-                fprintf( stdout, "\t\"consuminguser\" : \"%s\", \n", tok);
+                //fprintf( stdout, "\t\"consuminguser\" : \"%s\", \n", tok);
+                strcpy( msg.consuminguser, tok );
                 tok = strtok(NULL," ");
-                fprintf( stdout, "\t\"duration\" : \"%s\", \n", tok);
-            }
-            fprintf( stdout, " }\n");
-            
-            /*
-            fprintf( stdout, "\t\"body\" : \"%.*s\"\n }\n",
+                //fprintf( stdout, "\t\"duration\" : \"%s\", \n", tok);
+                msg.duration = atof( tok );
+        } else {
+            msg.statuscode=0;
+            msg.consumingurl[0]='\0';
+            msg.consuminguser[0]='\0';
+            msg.duration=0.0;
+       
+        }
+        //fprintf( stdout, " }\n");
+    /*
+    fprintf( stdout, "\t\"body\" : \"%.*s\"\n }\n",
                  (int) frame.payload.body_fragment.len, 
                  (char *)frame.payload.body_fragment.bytes 
             );
-            */
-        }
+     */
+    }
   
-        if (body_received != body_target) break;
+    if (body_received != body_target) return(NULL);
           /* Can only happen when amqp_simple_wait_frame returns <= 0 */
           /* We break here to close the connection */
-    }
-    return;   
+    return(&msg);
 }
 

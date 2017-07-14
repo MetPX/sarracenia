@@ -25,6 +25,7 @@ status:
 #include <regex.h>
 #include <linux/limits.h>
 #include <time.h>
+#include <openssl/sha.h>
 
 #include <uriparser/Uri.h>
 
@@ -69,8 +70,11 @@ struct sr_config_t {
   
 };
 
+#define SR_TIMESTRLEN (18)
+#define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
+
 char *sr_time2str( struct timespec *tin );
-  /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
+  /* turn a timespec into an SR_TIMESTRLEN character sr_post(7) conformant time stamp string.
       if argument is NULL, then the string should correspond to the current system time.
    */
  

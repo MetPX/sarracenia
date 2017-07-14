@@ -75,7 +75,7 @@ void header_add( char *tag, const char * value ) {
 }
 
 // SHA512 being the longest digest...
-char sumstr[ 2 * SHA512_DIGEST_LENGTH + 3 ];
+char sumstr[ SR_SUMSTRLEN ];
 
 void hash2sumstr( unsigned char *h, int l )
 {
