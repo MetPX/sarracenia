@@ -21,6 +21,7 @@
 
 int main(int argc, char **argv)
 {
+  struct sr_message_t *m;
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
   int consume,i;
@@ -56,6 +57,10 @@ int main(int argc, char **argv)
   }
   
   sr_c = sr_context_init_config( &sr_cfg );
+  if (!sr_c) {
+     fprintf( stderr, "failed to read configuration\n");
+     return(1);
+  }
   sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
      fprintf( stderr, "failed to establish sr context\n");
@@ -63,7 +68,11 @@ int main(int argc, char **argv)
   }
   sr_consume_init(sr_c);
 
-  sr_consume(sr_c);
+  while(1)
+  {
+      m=sr_consume(sr_c);
+      if (m) sr_message_2json(m);      
+  }
   sr_context_close(sr_c);
 
   return 0;

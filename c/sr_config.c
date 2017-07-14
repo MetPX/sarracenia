@@ -31,6 +31,37 @@ status:
 
 #define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
+
+char time2str_result[18];
+
+char *sr_time2str( struct timespec *tin ) {
+   /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
+      if argument is NULL, then the string should correspond to the current system time.
+    */
+   struct tm s;
+   time_t when;
+   struct timespec ts;
+   long msec;
+
+   if ( tin == NULL ) {
+     clock_gettime( CLOCK_REALTIME , &ts);
+     when = ts.tv_sec;
+     msec = ts.tv_nsec/1000000 ;
+   } else {
+     when = tin->tv_sec;
+     msec = tin->tv_nsec/1000000 ;
+   }
+
+   gmtime_r(&when,&s);
+   /*                YYYY  MM  DD  hh  mm  ss */
+   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
+        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
+
+   return(time2str_result);
+}
+
+
+
 void add_topic( struct sr_config_t *sr_cfg, const char* sub )
   /* append to linked list of topics
    */
@@ -205,8 +236,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
-  //if (sr_cfg->debug)
-  //   fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
+  if (sr_cfg->debug)
+     fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
   if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
   {

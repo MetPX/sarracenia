@@ -36,7 +36,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <time.h>
 #include <fcntl.h>
 #include <linux/limits.h>
 
@@ -50,34 +49,6 @@
 #include <amqp_framing.h>
 
 #include "sr_context.h"
-
-char time2str_result[18];
-
-char *time2str( struct timespec *tin ) {
-   /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
-      if argument is NULL, then the string should correspond to the current system time.
-    */
-   struct tm s;
-   time_t when;
-   struct timespec ts;
-   long msec;
-
-   if ( tin == NULL ) {
-     clock_gettime( CLOCK_REALTIME , &ts);
-     when = ts.tv_sec;
-     msec = ts.tv_nsec/1000000 ;
-   } else {
-     when = tin->tv_sec;
-     msec = tin->tv_nsec/1000000 ;
-   }
-
-   gmtime_r(&when,&s);
-   /*                YYYY  MM  DD  hh  mm  ss */
-   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1, 
-        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
- 
-   return(time2str_result);
-}
 
 
 #define HDRMAX (20)
@@ -104,7 +75,7 @@ void header_add( char *tag, const char * value ) {
 }
 
 // SHA512 being the longest digest...
-char sumstr[ 2 * SHA512_DIGEST_LENGTH + 3 ];
+char sumstr[ SR_SUMSTRLEN ];
 
 void hash2sumstr( unsigned char *h, int l )
 {
@@ -301,8 +272,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   char message_body[1024];
   char partstr[255];
   char modebuf[6];
-  char linkstr[PATH_MAX];
-  char fn[PATH_MAX];
+  char linkstr[PATH_MAXNUL];
+  char fn[PATH_MAXNUL];
   int  linklen;
   char atimestr[18];
   char mtimestr[18];
@@ -355,7 +326,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "posting, routingkey: %s\n", routingkey );
 
-  strcpy( message_body, time2str(NULL));
+  strcpy( message_body, sr_time2str(NULL));
   strcat( message_body, " " );
   set_url( message_body, sr_c->cfg->url );
   strcat( message_body, " " );
@@ -387,10 +358,10 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
 
       if ( access( fn, R_OK ) ) return; // will not be able to checksum if we cannot read.
 
-      strcpy( atimestr, time2str(&(sb->st_atim)));
+      strcpy( atimestr, sr_time2str(&(sb->st_atim)));
       header_add( "atime", atimestr);
 
-      strcpy( mtimestr, time2str(&(sb->st_mtim)));
+      strcpy( mtimestr, sr_time2str(&(sb->st_mtim)));
       header_add( "mtime", mtimestr );
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
       header_add( "mode", modebuf);

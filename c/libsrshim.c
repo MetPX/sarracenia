@@ -19,10 +19,29 @@
 
  */
 
+/*
+  to avoid recursive calls.
+ */
+
+static int in_librshim_already_dammit = 0;
+int shimpost( const char *path, int status )
+{
+
+  if (in_librshim_already_dammit) return(status);
+
+  in_librshim_already_dammit=1;
+
+  if (!status) connect_and_post(path);
+
+  in_librshim_already_dammit=0;
+
+  return(status);
+}
 
 static int symlink_init_done = 0;
 typedef int  (*symlink_fn) (const char*,const char*);
 static symlink_fn symlink_fn_ptr = symlink;
+
 
 int symlink(const char *target, const char* linkpath) 
 {
@@ -34,8 +53,7 @@ int symlink(const char *target, const char* linkpath)
   }
   status = symlink_fn_ptr(target,linkpath);
 
-  if (!status) connect_and_post(linkpath);
-  return(status);
+  return(shimpost(linkpath, status));
 }
 
 
@@ -53,8 +71,7 @@ int link(const char *target, const char* linkpath)
   }
   status = link_fn_ptr(target,linkpath);
 
-  if (!status) connect_and_post(linkpath);
-  return(status);
+  return(shimpost(linkpath, status));
 }
 
 static int unlinkat_init_done = 0;
@@ -70,8 +87,7 @@ int unlinkat(int dirfd, const char *path, int flags)
     unlinkat_init_done = 1;
   }
   status = unlinkat_fn_ptr(dirfd, path, flags);
-  if (!status) connect_and_post(path);
-  return(status);
+  return(shimpost(path,status));
 }
 
 static int unlink_init_done = 0;
@@ -88,8 +104,7 @@ int unlink(const char *path)
       unlink_init_done = 1;
   }
   status = unlink_fn_ptr(path);
-  if (!status) connect_and_post(path);
-  return(status);
+  return(shimpost(path,status));
 }
 
 
@@ -101,40 +116,25 @@ int close(int fd) {
 
   int fdstat;
   char fdpath[32];
-  char *real_fdpath = NULL;
+  char real_path[PATH_MAX];
+  char *real_return;
+  int status;
 
   if (!close_init_done) {
     close_fn_ptr = (close_fn) dlsym(RTLD_NEXT, "close");
     close_init_done = 1;
   }
     
-  // hack to prevent loops on close, when calling posting routines...
-  // is there a better way? - PS.
-  if ( getenv("SR_LD_USE_REAL_FN") != NULL )
-      return close_fn_ptr(fd);
-
   fdstat = fcntl(fd, F_GETFL);
 
-  if ( (fdstat & O_ACCMODE) == O_RDONLY )
-      return close_fn_ptr(fd);
+  if ( (fdstat & O_ACCMODE) == O_RDONLY ) return close_fn_ptr(fd);
   
-  real_fdpath = NULL;
-
   snprintf(fdpath, 32, "/proc/self/fd/%d", fd);
-  real_fdpath = realpath(fdpath, NULL);
+  real_return = realpath(fdpath, real_path);
+  status = close_fn_ptr(fd);
 
   // something like stdout, or stdin, no way to obtain file name...
-  if (!real_fdpath) 
-  {
-       return(close_fn_ptr(fd));
-  }
-
-  putenv("SR_LD_USE_REAL_FN=True");
-
-  connect_and_post(real_fdpath);
+  if (!real_return) return(status);
  
-  unsetenv("SR_LD_USE_REAL_FN");
-  free(real_fdpath);
-
-  return(close_fn_ptr(fd));
+  return shimpost(real_path, status) ;
 }
