@@ -909,6 +909,9 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_line -- In **sr_poll** a line from the ls on the remote host is read in.
 
+- on_html_page -- In **sr_poll** turn an html page into a dictionary of the form
+  self.entries["remote_filename"] = "ls like line of 9 blank separeted fields"
+
 - on_message -- when an sr_post(7) message has been received.  For example, a message has been received 
   and additional criteria are being evaluated for download of the corresponding file.  if the on_msg 
   script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
@@ -919,6 +922,10 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
   adjustments of the post.
+
+- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
+  It could be used to put a file in one of the watch directory and have it published when needed.
+
 
 The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
