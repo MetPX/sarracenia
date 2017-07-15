@@ -32,12 +32,29 @@ void do1file( struct sr_context *sr_c, char *fn )
     char ep[PATH_MAXNUL];
 
     if ( lstat(fn, &sb) < 0 ) {
-         fprintf( stderr, "failed to stat: %s\n", fn );
+         fprintf( stderr, "failed to lstat: %s\n", fn );
          return;
     }
-    if (S_ISDIR(sb.st_mode)) 
+
+    if (S_ISLNK(sb.st_mode)) 
+    {   // process a symbolic link.
+        if (sr_c->cfg->debug)
+           fprintf( stderr, "debug: %s is a symbolic link. (follow=%s) posting\n", 
+               fn, ( sr_c->cfg->follow_symlinks )?"on":"off" );
+
+        sr_post(sr_c,fn, &sb);       // post the link itself.
+
+        if ( ! ( sr_c->cfg->follow_symlinks ) )  return;
+
+        if ( stat(fn, &sb) < 0 ) {  // repeat the stat, but for the destination.
+             fprintf( stderr, "ERROR: failed to stat: %s\n", fn );
+             return;
+        }
+    }
+
+    if (S_ISDIR(sb.st_mode))   // process a directory.
     {
-         if ( !(sr_c->cfg->debug) ) 
+         if (sr_c->cfg->debug)
              fprintf( stderr, "info: opening directory: %s, first_call=%s, recursive=%s\n", 
                  fn, first_call?"on":"off", (sr_c->cfg->recursive)?"on":"off" );
 
@@ -46,7 +63,8 @@ void do1file( struct sr_context *sr_c, char *fn )
          first_call=0;
 
          dir=opendir(fn);
-         if (!dir) {
+         if (!dir) 
+         {
              fprintf( stderr, "failed to open directory: %s\n", fn );
              return;
          }
@@ -55,18 +73,18 @@ void do1file( struct sr_context *sr_c, char *fn )
              if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") ) 
                  continue;
 
-             strcpy(ep,fn);
-             strcat(ep,"/");
-             strcat(ep,e->d_name );
-             do1file(sr_c, ep);         
+             strcpy( ep, fn );
+             strcat( ep, "/" );
+             strcat( ep, e->d_name );
+             do1file( sr_c, ep);         
          }
          closedir(dir); 
 
-         if ( !(sr_c->cfg->debug) ) 
+         if (sr_c->cfg->debug)
              fprintf( stderr, "info: closing directory: %s\n", fn );
 
-    } else
-         sr_post(sr_c,fn, &sb);
+    } else 
+        sr_post(sr_c,fn, &sb);  // process a file
 
 }
 

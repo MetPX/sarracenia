@@ -29,7 +29,7 @@ SARRA_LIB = libsarra.so.1.0.0
 EXT_LIB = -lrabbitmq -luriparser -lcrypto -lc
 SHARED_LIB = libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0
 
-.c.o:
+.c.o: 
 	$(CC) $(CFLAGS) -c  $(RABBIT_INCDIR) $<
 
 all: $(SARRA_OBJECT)
