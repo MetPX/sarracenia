@@ -157,27 +157,10 @@ class sr_poster:
 
         self.cache_files_set()
         self.logger.debug("cache_file = %s" % self.cache_file)
-        #self.logger.debug("cache_lock = %s" % self.cache_lock)
 
         if not self.cache_file: return
 
         self.cache_acces = 0
-
-        # increase sleeping time when it taks more time..
-        #self.logger.debug("check for lock file %s" % self.cache_lock)
-        #while os.path.exists(self.cache_lock) :
-        #      self.logger.debug("cache locked sleeping for %f" % self.sleep_list[self.sleep_idx])
-        #      time.sleep(self.sleep_list[self.sleep_idx])
-        #      self.sleep_idx = self.sleep_idx + 1
-        #      if self.sleep_idx > self.sleep_max : self.sleep_idx = self.sleep_max
-
-        # out of the loop will start over with a short sleep time
-        #self.sleep_idx = 0
-
-        #self.logger.debug("acquiring lock")
-        #f=open(self.cache_lock,'wb')
-        #f.write(b'lock')
-        #f.close()
 
         self.logger.debug("load cache")
         self.cache = shelve.open(self.cache_file)

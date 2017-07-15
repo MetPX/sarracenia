@@ -49,6 +49,7 @@ struct sr_mask_t {
   struct sr_mask_t *next;
 };
 
+
 struct sr_config_t {
   int               accept_unmatched;
   long unsigned     blocksize; // if partitioned, how big are they?
@@ -64,6 +65,7 @@ struct sr_config_t {
   char             *last_matched;  //have run isMatching.
   char             *queuename;
   int               pipe;  // pipe mode, read file names from standard input
+  int               recursive;
   char              sumalgo; // checksum algorithm to use.
   struct sr_topic_t *topics;
   char             topic_prefix[AMQP_MAX_SS];

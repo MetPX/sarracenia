@@ -43,17 +43,17 @@ char *sr_time2str( struct timespec *tin ) {
    struct timespec ts;
    long msec;
 
-   if ( tin == NULL ) {
+   if ( tin ) {
+     when = tin->tv_sec;
+     msec = tin->tv_nsec/1000000 ;
+   } else {
      clock_gettime( CLOCK_REALTIME , &ts);
      when = ts.tv_sec;
      msec = ts.tv_nsec/1000000 ;
-   } else {
-     when = tin->tv_sec;
-     msec = tin->tv_nsec/1000000 ;
    }
 
    gmtime_r(&when,&s);
-   /*                YYYY  MM  DD  hh  mm  ss */
+   /*                         YYYY  MM  DD  hh  mm  ss */
    sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
 
@@ -302,6 +302,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->pipe = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "recursive" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->recursive = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "subtopic" ) || !strcmp( option, "sub") ) {
       add_topic( sr_cfg, argument );
       return(2);
@@ -341,6 +346,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
   sr_cfg->pipe=0;
+  sr_cfg->recursive=0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   strcpy( sr_cfg->topic_prefix, "v02.post" );

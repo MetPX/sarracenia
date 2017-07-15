@@ -35,6 +35,8 @@ void do1file( struct sr_context *sr_c, char *fn )
     }
     if (S_ISDIR(sb.st_mode)) 
     {
+         if ( !(sr_c->cfg->recursive) ) return;
+
          dir=opendir(fn);
          if (!dir) {
              fprintf( stderr, "failed to open directory: %s\n", fn );
