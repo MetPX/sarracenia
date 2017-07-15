@@ -40,12 +40,6 @@ librabbitmq4 - AMQP client library written in C
 libssl - OpenSSL client library.
 
 
-Developer Notes:
-
-whereami:
-  - was looking at how to do partitioned (partflg='p') files, wrote footnote #1 in sr_context.c
-  - result was that the cache is probably required before doing partition support.
-  - so thinking about doing the cache.
   
 
 Dorval Computing Centre
@@ -66,7 +60,13 @@ Plan:
   - if the local shim does not go well, step 2 is: sr_cwatch.
 
 
+Developer Notes:
 
+whereami:
+  - was looking at how to do partitioned (partflg='p') files, wrote footnote #1 in sr_context.c
+  - result was that the cache is probably required before doing partition support.
+  - so thinking about doing the cache.
+  - also need the directory cache (to avoid looping.)
 
 worries/notes to self:
 
