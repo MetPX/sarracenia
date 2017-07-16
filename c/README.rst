@@ -63,10 +63,23 @@ Plan:
 Developer Notes:
 
 whereami:
-  - was looking at how to do partitioned (partflg='p') files, wrote footnote #1 in sr_context.c
-  - result was that the cache is probably required before doing partition support.
-  - so thinking about doing the cache.
-  - also need the directory cache (to avoid looping.)
+  - was looking at how to do partitioned (partflg='p') files, wrote footnote #1. 
+
+  - result is that the cache is probably required before doing partition support.
+    so thinking about doing the cache.
+
+  - when sleep > 0, cpost now walks trees by keeping track of the start mtime of the last pass.
+    algorithm based on *mtime* > start of previous pass... that's not necessarily good.
+
+    for example search of new directory.
+        whereas when you post a directory initially, is posts with mtime=0 first pass, so whole thing.
+        but if a directory is added, mtime is already current, so only files that change in future
+        will be posted... HMM...
+
+  - FIXME: did all this with *second* resolution, might want to go hi-res.
+
+  - do we go to the whole (copy directories into a file for comparison schtick?
+    that's more sr_poll.
 
 worries/notes to self:
 

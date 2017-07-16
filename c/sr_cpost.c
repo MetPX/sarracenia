@@ -98,8 +98,17 @@ int dir_stack_push( int fd, dev_t dev, ino_t ino )
 }
 
 static    int first_call = 1;
-static time_t latest_min_mtime = 0;
+struct timespec latest_min_mtim;
 
+int ts_newer( struct timespec a, struct timespec b)
+   /*  return true is a is newer than b.
+    */
+{
+   if ( a.tv_sec > b.tv_sec ) return (1);
+   if ( a.tv_sec < b.tv_sec ) return (0);
+   if ( a.tv_nsec > b.tv_nsec ) return(1);
+   return(0);
+}
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
     DIR *dir;
@@ -124,7 +133,7 @@ void do1file( struct sr_context *sr_c, char *fn )
            fprintf( stderr, "debug: %s is a symbolic link. (follow=%s) posting\n", 
                fn, ( sr_c->cfg->follow_symlinks )?"on":"off" );
 
-        if (sb.st_mtime > latest_min_mtime ) 
+        if (ts_newer( sb.st_mtim, latest_min_mtim ))
             sr_post(sr_c,fn, &sb);       // post the link itself.
 
     /* FIXME:  INOT  - necessary? I think symlinks can be skipped?
@@ -139,7 +148,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              return;
         }
 
-        if (sb.st_mtime <= latest_min_mtime ) return; // only the link was new.
+        if (ts_newer( latest_min_mtim, sb.st_mtim ) ) return; // only the link was new.
 
     }
 
@@ -147,9 +156,9 @@ void do1file( struct sr_context *sr_c, char *fn )
     {
          if (sr_c->cfg->debug)
              fprintf( stderr, 
-                 "info: opening directory: %s, first_call=%s, recursive=%s, follow_symlinks=%s latest_min_mtime=%ld\n", 
+                 "info: opening directory: %s, first_call=%s, recursive=%s, follow_symlinks=%s latest_min_mtim=%ld.%09ld\n", 
                  fn, first_call?"on":"off", (sr_c->cfg->recursive)?"on":"off", 
-                 (sr_c->cfg->follow_symlinks)?"on":"off", latest_min_mtime );
+                 (sr_c->cfg->follow_symlinks)?"on":"off", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );
 
          if ( !first_call && !(sr_c->cfg->recursive) ) return;
 
@@ -190,7 +199,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "info: closing directory: %s\n", fn );
 
     } else 
-        if (sb.st_mtime > latest_min_mtime ) 
+        if (ts_newer( sb.st_mtim, latest_min_mtim )) 
             sr_post(sr_c,fn, &sb);  // process a file
     /* FIXME:  INOT 
         if ( sr_c->cfg->inotify ) 
@@ -258,8 +267,10 @@ int main(int argc, char **argv)
      return(1);
   }
 
-  // i initialized by arg parsing above...
-  firstpath=i;
+  firstpath=i;     // i initialized by arg parsing above...
+
+  latest_min_mtim.tv_sec = 0;
+  latest_min_mtim.tv_nsec = 0;
 
   while (1) 
   {
@@ -287,8 +298,8 @@ int main(int argc, char **argv)
      } else 
           fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
 
-     //latest_min_mtime = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
-     latest_min_mtime = start_time_of_run;
+     //latest_min_mtim = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
+     latest_min_mtim = tstart;
 
      //FIXME:  if ( ! sr_c->cfg->inotify ) ... only visit once in inotify method, but reset each time for polling.
          dir_stack_reset(); 
