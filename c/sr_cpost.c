@@ -24,6 +24,8 @@
 
 static int first_call = 1;
 
+static time_t latest_min_mtime = 0;
+
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
     DIR *dir;
@@ -31,10 +33,14 @@ void do1file( struct sr_context *sr_c, char *fn )
     struct stat sb;
     char ep[PATH_MAXNUL];
 
+    if (sr_c->cfg->debug)
+        fprintf( stderr, "debug: do1file starting on: %s\n", fn );
+
     if ( lstat(fn, &sb) < 0 ) {
          fprintf( stderr, "failed to lstat: %s\n", fn );
          return;
     }
+
 
     if (S_ISLNK(sb.st_mode)) 
     {   // process a symbolic link.
@@ -42,7 +48,8 @@ void do1file( struct sr_context *sr_c, char *fn )
            fprintf( stderr, "debug: %s is a symbolic link. (follow=%s) posting\n", 
                fn, ( sr_c->cfg->follow_symlinks )?"on":"off" );
 
-        sr_post(sr_c,fn, &sb);       // post the link itself.
+        if (sb.st_mtime > latest_min_mtime ) 
+            sr_post(sr_c,fn, &sb);       // post the link itself.
 
         if ( ! ( sr_c->cfg->follow_symlinks ) )  return;
 
@@ -50,6 +57,9 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "ERROR: failed to stat: %s\n", fn );
              return;
         }
+
+        if (sb.st_mtime <= latest_min_mtime ) return; // only the link was new.
+
     }
 
     if (S_ISDIR(sb.st_mode))   // process a directory.
@@ -84,20 +94,13 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "info: closing directory: %s\n", fn );
 
     } else 
-        sr_post(sr_c,fn, &sb);  // process a file
+        if (sb.st_mtime > latest_min_mtime ) 
+            sr_post(sr_c,fn, &sb);  // process a file
 
 }
 
-
-int main(int argc, char **argv)
+void usage() 
 {
-  struct sr_context *sr_c;
-  struct sr_config_t sr_cfg;
-  char inbuff[PATH_MAXNUL];
-  int consume,i;
-  
-  if ( argc < 3 ) 
-  {
      fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
      fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
      fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
@@ -114,7 +117,20 @@ int main(int argc, char **argv)
      fprintf( stderr, "\t\tno cache.\n" );
      fprintf( stderr, "\t\tcan only post files (not directories.)\n" );
      exit(1);
-  }
+}
+
+
+int main(int argc, char **argv)
+{
+  struct sr_context *sr_c;
+  struct sr_config_t sr_cfg;
+  char inbuff[PATH_MAXNUL];
+  int consume,i,firstpath;
+  struct timespec tstart, tsleep, tend;
+  time_t start_time_of_run;
+  float elapsed;
+  
+  if ( argc < 3 ) usage();
  
   sr_config_init( &sr_cfg );
 
@@ -143,15 +159,53 @@ int main(int argc, char **argv)
   }
 
   // i initialized by arg parsing above...
-  for( ; i < argc ; i++ ) 
+  firstpath=i;
+
+  while (1) 
+  {
+     clock_gettime( CLOCK_REALTIME, &tstart );  
+    
+     if (sr_cfg.debug) 
+          fprintf( stderr, "debug: poll sleeping latest_min_mtime=%ld. \n", latest_min_mtime);
+
+     time(&start_time_of_run);
+
+     for(i=firstpath ; i < argc ; i++ ) 
+     {
+            first_call=1;
             do1file(sr_c,argv[i]);
+     }
+     if  (sr_c->cfg->sleep <= 0.0) break; // one shot.
+
+     clock_gettime( CLOCK_REALTIME, &tend );  
+     elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
+
+     if ( elapsed < sr_cfg.sleep ) 
+     {
+          tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
+          tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
+          if (sr_cfg.debug) 
+               fprintf( stderr, "debug: poll sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+          nanosleep( &tsleep, NULL );
+     } else 
+          fprintf( stderr, "INFO: poll takes longer than sleep interval, not sleeping at all\n");
+
+     //latest_min_mtime = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
+     latest_min_mtime = start_time_of_run;
+
+  }
 
   if ( sr_cfg.pipe ) 
-      while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
-      {
-          inbuff[strlen(inbuff)-1]='\0';
-          do1file(sr_c,inbuff);
-      }
+  {
+      if (sr_cfg.sleep > 0.0 ) {
+         fprintf( stderr, "ERROR: sleep conflicts with pipe. pipe ignored.\n");
+     } else
+          while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
+          {
+              inbuff[strlen(inbuff)-1]='\0';
+              do1file(sr_c,inbuff);
+          }
+  }
 
   sr_context_close(sr_c);
 

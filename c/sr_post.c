@@ -463,6 +463,7 @@ void connect_and_post(const char *fn) {
   }
   if ( lstat( fn, &sb ) ) sr_post( sr_c, fn, NULL );
   else sr_post( sr_c, fn, &sb );
+
   sr_context_close(sr_c);
 }
 

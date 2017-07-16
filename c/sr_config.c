@@ -312,6 +312,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->recursive = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "sleep" ) ) {
+      sr_cfg->sleep = atof(argument);
+      return(2);
+
   } else if ( !strcmp( option, "subtopic" ) || !strcmp( option, "sub") ) {
       add_topic( sr_cfg, argument );
       return(2);
@@ -353,6 +357,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->queuename=NULL;
   sr_cfg->pipe=0;
   sr_cfg->recursive=0;
+  sr_cfg->sleep=0.0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   strcpy( sr_cfg->topic_prefix, "v02.post" );

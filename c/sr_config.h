@@ -67,6 +67,7 @@ struct sr_config_t {
   char             *queuename;
   int               pipe;  // pipe mode, read file names from standard input
   int               recursive;
+  float             sleep;
   char              sumalgo; // checksum algorithm to use.
   struct sr_topic_t *topics;
   char             topic_prefix[AMQP_MAX_SS];
