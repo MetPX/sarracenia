@@ -291,9 +291,14 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->exchange = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "follow_symlinks" ) || !strcmp( option, "fs") ) {
+  } else if ( !strcmp( option, "follow_symlinks" ) || !strcmp( option, "fs") || !strcmp(option, "follow") ) {
       val = StringIsTrue(argument);
       sr_cfg->follow_symlinks = val&2;
+      return(1+(val&1));
+
+  } else if ( !strcmp( option, "inotify" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->inotify = val&2;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
