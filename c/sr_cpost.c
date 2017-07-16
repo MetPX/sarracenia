@@ -33,8 +33,10 @@ void do1file( struct sr_context *sr_c, char *fn )
     struct stat sb;
     char ep[PATH_MAXNUL];
 
+  /*
     if (sr_c->cfg->debug)
         fprintf( stderr, "debug: do1file starting on: %s\n", fn );
+   */
 
     if ( lstat(fn, &sb) < 0 ) {
          fprintf( stderr, "failed to lstat: %s\n", fn );
@@ -166,7 +168,7 @@ int main(int argc, char **argv)
      clock_gettime( CLOCK_REALTIME, &tstart );  
     
      if (sr_cfg.debug) 
-          fprintf( stderr, "debug: poll sleeping latest_min_mtime=%ld. \n", latest_min_mtime);
+          fprintf( stderr, "debug: watch sleeping latest_min_mtime=%ld. \n", latest_min_mtime);
 
      time(&start_time_of_run);
 
@@ -185,10 +187,10 @@ int main(int argc, char **argv)
           tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
           tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
           if (sr_cfg.debug) 
-               fprintf( stderr, "debug: poll sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+               fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
           nanosleep( &tsleep, NULL );
      } else 
-          fprintf( stderr, "INFO: poll takes longer than sleep interval, not sleeping at all\n");
+          fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
 
      //latest_min_mtime = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
      latest_min_mtime = start_time_of_run;
