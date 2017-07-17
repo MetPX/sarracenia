@@ -70,6 +70,7 @@ class sr_http():
 
         self.sumalgo     = None
         self.checksum    = None
+        self.fpos        = 0
 
         self.urlstr      = ''
         self.path        = ''
@@ -120,14 +121,12 @@ class sr_http():
         self.logger.debug( "sr_http delete %s not supported" % path)
 
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug( "sr_http get %s %s %d" % (remote_file,local_file,local_offset))
 
         # open self.http
 
-        self.urlstr = self.path + '/' + remote_file
-
-        self.__open__()
+        self.__open__(self.path + '/' + remote_file, remote_offset, length )
 
         # on fly checksum 
 
@@ -150,10 +149,10 @@ class sr_http():
            fp.close
 
         fp = open(local_file,'r+b')
-        if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+        if local_offset != 0 : fp.seek(local_offset,0)
 
 
-        if chk : chk.set_path(self.remote_file)
+        if chk : chk.set_path(remote_file)
 
         # should not worry about length...
         # http provides exact data
@@ -165,8 +164,10 @@ class sr_http():
               if chk : chk.update(chunk)
               if cb  : cb(chunk)
 
+        self.fpos = fp.tell()
         # if new version of file replaces longer previous version.
-        if fp.tell() >= msg.filesize:
+        # FIXME  this truncate code makes no sense...  
+        if self.fpos >= filesize:
            fp.truncate()
 
         fp.close()
@@ -181,9 +182,7 @@ class sr_http():
 
         # open self.http
 
-        self.urlstr = self.path
-
-        self.__open__()
+        self.__open__(self.path)
 
         self.entries = {}
 
@@ -218,11 +217,13 @@ class sr_http():
         self.logger.debug( "sr_http mkdir %s not supported" % remote_dir)
 
     # open
-    def __open__(self):
+    def __open__(self, path, remote_offset=0, length=0):
         self.logger.debug( "sr_http open")
 
         self.http      = None
         self.connected = False
+        self.req       = None
+        self.urlstr    = path
 
         try:
                 # when credentials are needed.
@@ -241,8 +242,15 @@ class sr_http():
                    urllib.request.install_opener(opener)
 
                 # Now all calls to get the request use our opener.
-                req       = urllib.request.Request(self.urlstr)
-                self.http = urllib.request.urlopen(req)
+                self.req = urllib.request.Request(self.urlstr)
+
+                # set range in byte if needed
+                if remote_offset != 0 :
+                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset + length-1)
+                   self.req.headers['Range'] = str_range
+
+                # open... we are connected
+                self.http = urllib.request.urlopen(self.req)
                 self.connected = True
 
         except:
@@ -286,6 +294,7 @@ class http_transport():
         self.bufsize   = 8192
         self.sumalgo   = None
         self.kbytes_ps = 0
+        self.fpos      = 0
 
     def close(self) :
         pass
@@ -369,6 +378,11 @@ class http_transport():
                      if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                      os.rename(local_lock, parent.new_file)
 
+                # fix message if no partflg (means file size unknown until now)
+
+                if msg.partflg == None:
+                   msg.set_parts(partflg='1',chunksize=self.fpos)
+
                 msg.onfly_checksum = self.checksum
 
                 msg.report_publish(201,'Downloaded')
@@ -431,7 +445,8 @@ class http_transport():
               if cb  : cb(chunk)
 
         # if new version of file replaces longer previous version.
-        if fp.tell() >= msg.filesize:
+        self.fpos = fp.tell()
+        if self.fpos >= msg.filesize:
            fp.truncate()
 
         fp.close()
