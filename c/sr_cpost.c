@@ -247,6 +247,9 @@ void do1file( struct sr_context *sr_c, char *fn )
 }
 
 void dir_stack_check4events( struct sr_context *sr_c )
+ /* at the end of each sleeping interval, read the queue of outstanding events
+    and process them.
+  */
 {
     char buff[PATH_MAX*4];
     char fn[PATH_MAX];
@@ -254,6 +257,15 @@ void dir_stack_check4events( struct sr_context *sr_c )
     struct inotify_event *e;
     struct dir_stack *d;
     int ret;
+
+    /* fixme: MISSING: process pending list
+            - go sequentially through the pending list,
+              removing things if they succeed.
+     */ 
+
+    /* normal event processing. */
+
+    /* FIXME: MISSING: initialize done_list? */
 
     fprintf( stderr, "checking for events\n");
     while ( ( ret = read( inot_fd, buff, sizeof buff ) ) > 0 )
@@ -272,14 +284,25 @@ void dir_stack_check4events( struct sr_context *sr_c )
                  continue;
             } 
             sprintf( fn, "%s/%s", d->path, e->name ); 
-            printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
-                ret, sizeof(struct inotify_event)+e->len,
-                inotify_event_2string(e->mask), e->len, fn );
-
+            if (sr_c->cfg->debug)
+            {
+                printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
+                    ret, sizeof(struct inotify_event)+e->len,
+                    inotify_event_2string(e->mask), e->len, fn );
+            }
+            /* FIXME: missing: check for repeats. if post succeeds, remove from list.
+                  if post fails, move to *pending* list.
+ 
+               done_list and pending_list options: 
+                  1. build a linked list of fn-strings, search... O(n^2)... blch, but small n?
+                  2. build a linked list of hashes of the strings (faster per string.)
+                     store the list in order, so faster search.
+               best to do 1 first, and then optimize later if necessary.                     
+             */
             do1file( sr_c, fn);
         }
     }
-
+    /* FIXME: Missing: empty out done list */
 }
 
 void usage() 
@@ -388,7 +411,6 @@ int main(int argc, char **argv)
      } else 
           fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
 
-     //latest_min_mtim = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
      latest_min_mtim = tstart;
      pass++; 
   }
