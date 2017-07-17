@@ -15,11 +15,14 @@
 
   spits out ´unimplemented option´ where appropriate...
  */
-#include <stdio.h>
 #include <linux/limits.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <stdlib.h>
 #include <sys/inotify.h>
+#include <unistd.h>
+
 
 #include "sr_post.h"
 
@@ -28,6 +31,7 @@
    The FD is the file descriptor returned by an inotify_init.
 
  */ 
+static  int   inotify_event_mask;  // translation of sr_events to inotify events.
 
 struct dir_stack {
    int ifd;                    // fd returned by inotify_init.
@@ -45,6 +49,7 @@ struct dir_stack {
  */
 
 static struct dir_stack *dir_stack_top = NULL;   /* insertion point (end of line.) */
+int dir_stack_size = 0;
 
 /* 
    at the beginning of each poll, need to walk the tree again.
@@ -58,7 +63,7 @@ void dir_stack_reset()
 
 }
 
-int dir_stack_push( int fd, dev_t dev, ino_t ino )
+int dir_stack_push( char *fn, int fd, dev_t dev, ino_t ino )
  /* add the given directory to the list of ones that are being scanned.
 
     Return value:  1 if this is a new directory and it has been added.
@@ -80,6 +85,13 @@ int dir_stack_push( int fd, dev_t dev, ino_t ino )
    if (!present) 
    {
        t= (struct dir_stack *)(malloc(sizeof(struct dir_stack)));
+       if (!t)
+       {
+           fprintf( stderr, "ERROR: failed to malloc adding to dir_stack for: %s\n", fn );
+           return(0);
+       }
+
+       dir_stack_size++;
        t->ifd = fd;
        t->dev = dev;
        t->ino = ino;
@@ -97,6 +109,47 @@ int dir_stack_push( int fd, dev_t dev, ino_t ino )
    }
 }
 
+char evstr[8];
+
+char *inotify_event_2string( uint32_t mask )
+{
+    
+    if (mask|IN_CREATE) strcpy(evstr, "create");
+    else if (mask|IN_MODIFY) strcpy(evstr, "modify");
+    else if (mask|IN_DELETE) strcpy(evstr, "delete");
+    else strcpy( evstr, "dunno!" );
+    return(evstr);
+}
+
+// see man 7 inotify for size of struct inotify_event
+#define INOTIFY_EVENT_MAX  (sizeof(struct inotify_event) + NAME_MAX + 1)
+
+static    int inot_fd=0;
+
+void dir_stack_check4events()
+{
+    char buff[PATH_MAX*4];
+    char *p;
+    struct inotify_event *e;
+    int ret;
+
+    fprintf( stderr, "checking for events\n");
+    while ( ( ret = read( inot_fd, buff, sizeof buff ) ) > 0 )
+    {
+        for( p=buff; 
+             p < (buff+ret) ; 
+             p+= sizeof(struct inotify_event) + e->len )
+        {
+            e = (struct inotify_event *)p;
+            printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
+                ret, sizeof(struct inotify_event)+e->len,
+                inotify_event_2string(e->mask), e->len, e->name );
+        }
+    }
+
+}
+
+
 static    int first_call = 1;
 struct timespec latest_min_mtim;
 
@@ -109,9 +162,12 @@ int ts_newer( struct timespec a, struct timespec b)
    if ( a.tv_nsec > b.tv_nsec ) return(1);
    return(0);
 }
+
+
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
     DIR *dir;
+    int w;
     struct dirent *e;
     struct stat sb;
     char ep[PATH_MAXNUL];
@@ -137,8 +193,6 @@ void do1file( struct sr_context *sr_c, char *fn )
             sr_post(sr_c,fn, &sb);       // post the link itself.
 
     /* FIXME:  INOT  - necessary? I think symlinks can be skipped?
-        if ( sr_c->cfg->inotify ) 
-             ret = inotify_add_watch(xx, fn, inot_event_mask);
      */
 
         if ( ! ( sr_c->cfg->follow_symlinks ) )  return;
@@ -164,14 +218,21 @@ void do1file( struct sr_context *sr_c, char *fn )
 
          first_call=0;
 
-    /* FIXME: INOT   
-         if ( sr_c->cfg->inotify ) 
-             xx = inotify_init(IN_NONBLOCK);
-             xx would be supplied to dir_stack_push.
-     */
-         if ( !dir_stack_push( 0, sb.st_dev, sb.st_ino ) )
+        /* FIXME:  INOT 
+         */
+        if ( sr_c->cfg->inotify ) 
+        {
+            w = inotify_add_watch( inot_fd, fn, inotify_event_mask);
+            if (w < 0)
+            {
+               fprintf( stderr, "failed to add_watch: %s\n", fn );
+               return;
+            }
+         } else w=0;
+
+         if ( !dir_stack_push( fn, w, sb.st_dev, sb.st_ino ) )
          {
-             //close(xx);
+             close(inot_fd);
              fprintf( stderr, "info: loop detected, skipping: %s\n", fn );
              return;
          } else 
@@ -201,10 +262,7 @@ void do1file( struct sr_context *sr_c, char *fn )
     } else 
         if (ts_newer( sb.st_mtim, latest_min_mtim )) 
             sr_post(sr_c,fn, &sb);  // process a file
-    /* FIXME:  INOT 
-        if ( sr_c->cfg->inotify ) 
-             ret = inotify_add_watch(xx, fn, inot_event_mask);
-     */
+
 
 }
 
@@ -234,9 +292,8 @@ int main(int argc, char **argv)
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
   char inbuff[PATH_MAXNUL];
-  int consume,i,firstpath;
+  int consume,i,firstpath,pass;
   struct timespec tstart, tsleep, tend;
-  time_t start_time_of_run;
   float elapsed;
   
   if ( argc < 3 ) usage();
@@ -268,22 +325,39 @@ int main(int argc, char **argv)
   }
 
   firstpath=i;     // i initialized by arg parsing above...
-
+  pass=0;     // when using inotify, have to walk the tree to set the watches initially.
   latest_min_mtim.tv_sec = 0;
   latest_min_mtim.tv_nsec = 0;
+  if (sr_cfg.inotify) 
+  {
+      inotify_event_mask=0; 
+      if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes symlink.
+      if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
+      if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
+
+      inot_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+      if ( inot_fd < 0) 
+          fprintf( stderr, "error: inot init failed: error: %d\n", errno );
+  }
 
   while (1) 
   {
      clock_gettime( CLOCK_REALTIME, &tstart );  
     
-     time(&start_time_of_run);
-
-     for(i=firstpath ; i < argc ; i++ ) 
+     if (!sr_cfg.inotify || !pass ) 
      {
+         fprintf( stderr, "starting polling loop pass: %d\n", pass);
+         for(i=firstpath ; i < argc ; i++ ) 
+         {
             first_call=1;
             do1file(sr_c,argv[i]);
+         }
+         dir_stack_reset(); 
+     } else {
+         fprintf( stderr, "checking for events, pass: %d\n", pass);
+         dir_stack_check4events(); // inotify. process accumulated events.
      }
-     if  (sr_c->cfg->sleep <= 0.0) break; // one shot.
+     if  (sr_cfg.sleep <= 0.0) break; // one shot.
 
      clock_gettime( CLOCK_REALTIME, &tend );  
      elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
@@ -300,9 +374,7 @@ int main(int argc, char **argv)
 
      //latest_min_mtim = ( time(&this_second) > max_mtime ) ? max_mtime : this_second ;
      latest_min_mtim = tstart;
-
-     //FIXME:  if ( ! sr_c->cfg->inotify ) ... only visit once in inotify method, but reset each time for polling.
-         dir_stack_reset(); 
+     pass++; 
   }
 
   if ( sr_cfg.pipe ) 
