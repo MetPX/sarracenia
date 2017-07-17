@@ -34,7 +34,8 @@
 static  int   inotify_event_mask;  // translation of sr_events to inotify events.
 
 struct dir_stack {
-   int ifd;                    // fd returned by inotify_init.
+   char *path;                 // path of directory.
+   int wd;                    // fd returned by inotify_init.
    dev_t dev;                  // info from stat buf of directory.
    ino_t ino;
    int   visited;
@@ -63,7 +64,7 @@ void dir_stack_reset()
 
 }
 
-int dir_stack_push( char *fn, int fd, dev_t dev, ino_t ino )
+int dir_stack_push( char *fn, int wd, dev_t dev, ino_t ino )
  /* add the given directory to the list of ones that are being scanned.
 
     Return value:  1 if this is a new directory and it has been added.
@@ -92,7 +93,8 @@ int dir_stack_push( char *fn, int fd, dev_t dev, ino_t ino )
        }
 
        dir_stack_size++;
-       t->ifd = fd;
+       t->path = strdup(fn);
+       t->wd = wd;
        t->dev = dev;
        t->ino = ino;
        t->visited = 1;
@@ -109,7 +111,7 @@ int dir_stack_push( char *fn, int fd, dev_t dev, ino_t ino )
    }
 }
 
-char evstr[8];
+char evstr[80];
 
 char *inotify_event_2string( uint32_t mask )
 {
@@ -118,6 +120,7 @@ char *inotify_event_2string( uint32_t mask )
     else if (mask|IN_MODIFY) strcpy(evstr, "modify");
     else if (mask|IN_DELETE) strcpy(evstr, "delete");
     else strcpy( evstr, "dunno!" );
+    if (mask|IN_ISDIR) strcat( evstr, ",directory" );
     return(evstr);
 }
 
@@ -125,29 +128,6 @@ char *inotify_event_2string( uint32_t mask )
 #define INOTIFY_EVENT_MAX  (sizeof(struct inotify_event) + NAME_MAX + 1)
 
 static    int inot_fd=0;
-
-void dir_stack_check4events()
-{
-    char buff[PATH_MAX*4];
-    char *p;
-    struct inotify_event *e;
-    int ret;
-
-    fprintf( stderr, "checking for events\n");
-    while ( ( ret = read( inot_fd, buff, sizeof buff ) ) > 0 )
-    {
-        for( p=buff; 
-             p < (buff+ret) ; 
-             p+= sizeof(struct inotify_event) + e->len )
-        {
-            e = (struct inotify_event *)p;
-            printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
-                ret, sizeof(struct inotify_event)+e->len,
-                inotify_event_2string(e->mask), e->len, e->name );
-        }
-    }
-
-}
 
 
 static    int first_call = 1;
@@ -266,6 +246,42 @@ void do1file( struct sr_context *sr_c, char *fn )
 
 }
 
+void dir_stack_check4events( struct sr_context *sr_c )
+{
+    char buff[PATH_MAX*4];
+    char fn[PATH_MAX];
+    char *p;
+    struct inotify_event *e;
+    struct dir_stack *d;
+    int ret;
+
+    fprintf( stderr, "checking for events\n");
+    while ( ( ret = read( inot_fd, buff, sizeof buff ) ) > 0 )
+    {
+        for( p=buff; 
+             p < (buff+ret) ; 
+             p+= sizeof(struct inotify_event) + e->len )
+        {
+            e = (struct inotify_event *)p;
+
+            for ( d = dir_stack_top; d && ( e->wd != d->wd ) ; d=d->next );
+            if (!d) 
+            {
+                 fprintf( stderr, "ERROR: cannot find path for event %s\n",
+                     e->name );
+                 continue;
+            } 
+            sprintf( fn, "%s/%s", d->path, e->name ); 
+            printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
+                ret, sizeof(struct inotify_event)+e->len,
+                inotify_event_2string(e->mask), e->len, fn );
+
+            do1file( sr_c, fn);
+        }
+    }
+
+}
+
 void usage() 
 {
      fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
@@ -330,7 +346,7 @@ int main(int argc, char **argv)
   latest_min_mtim.tv_nsec = 0;
   if (sr_cfg.inotify) 
   {
-      inotify_event_mask=0; 
+      inotify_event_mask=IN_DONT_FOLLOW; 
       if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes symlink.
       if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
       if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
@@ -355,7 +371,7 @@ int main(int argc, char **argv)
          dir_stack_reset(); 
      } else {
          fprintf( stderr, "checking for events, pass: %d\n", pass);
-         dir_stack_check4events(); // inotify. process accumulated events.
+         dir_stack_check4events(sr_c); // inotify. process accumulated events.
      }
      if  (sr_cfg.sleep <= 0.0) break; // one shot.
 
