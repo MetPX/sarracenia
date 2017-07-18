@@ -266,7 +266,8 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
 }
 
 
-void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
+void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
+{
 
   char routingkey[255];
   char message_body[1024];
@@ -306,7 +307,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
 
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) )
   {
-      if ( (sr_c->cfg) && sr_c->cfg->debug ) fprintf( stderr, "rejecting: %s\n", fn );
+      if ( (sr_c->cfg) && sr_c->cfg->debug ) 
+          fprintf( stderr, "rejecting: %s\n", fn );
       return;
   }
   if ( sb && S_ISDIR(sb->st_mode) ) {
@@ -317,10 +319,10 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
 
-  strcpy(routingkey,"v02.post");
+  strcpy( routingkey, sr_c->cfg->topic_prefix );
 
-  strcat(routingkey,fn);
-  for( int i=8; i< strlen(routingkey); i++ )
+  strcat( routingkey, fn );
+  for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(routingkey) ; i++ )
       if ( routingkey[i] == '/' ) routingkey[i]='.';
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
@@ -418,7 +420,39 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) {
   }
 }
 
-void connect_and_post(const char *fn) {
+int sr_post_cleanup( struct sr_context *sr_c )
+{
+    amqp_rpc_reply_t reply;
+
+    amqp_exchange_delete( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
+
+    reply = amqp_get_rpc_reply(sr_c->conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+    {
+        sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
+        return(0);
+    }
+    return(1);
+}
+
+int sr_post_init( struct sr_context *sr_c )
+{
+    amqp_rpc_reply_t reply;
+
+    amqp_exchange_declare( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
+          amqp_cstring_bytes("topic"), 0, 1, 0, 0, amqp_empty_table );
+
+    reply = amqp_get_rpc_reply(sr_c->conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+    {
+        sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
+        return(0);
+    }
+    return(1);
+}
+
+void connect_and_post(const char *fn) 
+{
 
   static struct sr_config_t sr_cfg; 
   static int config_read = 0;

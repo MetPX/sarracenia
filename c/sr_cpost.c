@@ -328,106 +328,132 @@ void usage()
 
 int main(int argc, char **argv)
 {
-  struct sr_context *sr_c;
-  struct sr_config_t sr_cfg;
-  char inbuff[PATH_MAXNUL];
-  int consume,i,firstpath,pass;
-  struct timespec tstart, tsleep, tend;
-  float elapsed;
-  
-  if ( argc < 3 ) usage();
- 
-  sr_config_init( &sr_cfg );
-
-  i=1;
-  while( i < argc ) 
-  {
-      if (argv[i][0] == '-') 
-         consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
-      else
-          break;
-      if (!consume) break;
-      i+=consume;
-  }
-  
-  sr_c = sr_context_init_config( &sr_cfg );
-  if (!sr_c) {
-     fprintf( stderr, "failed to read config\n");
-     return(1);
-  }
-  
-  sr_c = sr_context_connect( sr_c );
-
-  if (!sr_c) {
-     fprintf( stderr, "failed to establish sr_context\n");
-     return(1);
-  }
-
-  firstpath=i;     // i initialized by arg parsing above...
-  pass=0;     // when using inotify, have to walk the tree to set the watches initially.
-  latest_min_mtim.tv_sec = 0;
-  latest_min_mtim.tv_nsec = 0;
-  if (sr_cfg.inotify) 
-  {
-      inotify_event_mask=IN_DONT_FOLLOW; 
-      if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes symlink.
-      if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
-      if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
-
-      inot_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
-      if ( inot_fd < 0) 
-          fprintf( stderr, "error: inot init failed: error: %d\n", errno );
-  }
-
-  while (1) 
-  {
-     clock_gettime( CLOCK_REALTIME, &tstart );  
+    struct sr_context *sr_c;
+    struct sr_config_t sr_cfg;
+    char inbuff[PATH_MAXNUL];
+    int consume,i,firstpath,pass;
+    struct timespec tstart, tsleep, tend;
+    float elapsed;
     
-     if (!sr_cfg.inotify || !pass ) 
-     {
-         fprintf( stderr, "starting polling loop pass: %d\n", pass);
-         for(i=firstpath ; i < argc ; i++ ) 
-         {
-            first_call=1;
-            do1file(sr_c,argv[i]);
-         }
-         dir_stack_reset(); 
-     } else {
-         fprintf( stderr, "checking for events, pass: %d\n", pass);
-         dir_stack_check4events(sr_c); // inotify. process accumulated events.
-     }
-     if  (sr_cfg.sleep <= 0.0) break; // one shot.
+    if ( argc < 3 ) usage();
+   
+    sr_config_init( &sr_cfg );
+  
+    i=1;
+    while( i < argc ) 
+    {
+        if (argv[i][0] == '-') 
+           consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
+        else
+            break;
+        if (!consume) break;
+        i+=consume;
+    }
+    
+    sr_c = sr_context_init_config( &sr_cfg );
+    if (!sr_c) {
+        fprintf( stderr, "failed to read config\n");
+        return(1);
+    }
+    
+    sr_c = sr_context_connect( sr_c );
+  
+    if (!sr_c) 
+    {
+        fprintf( stderr, "failed to establish sr_context\n");
+        return(1);
+    }
 
-     clock_gettime( CLOCK_REALTIME, &tend );  
-     elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
+    if ( !strcmp( sr_cfg.action, "cleanup" ) )
+    {
+        if ( !sr_post_cleanup( sr_c ) ) 
+        {
+            fprintf( stderr, "failed to delete exchange: %s\n", 
+                 sr_cfg.exchange );
+            return(1);
+        }
+        fprintf( stderr, "exchange: %s deleted\n", sr_cfg.exchange );
+        return(0);
+    }
+  
+    if ( !sr_post_init( sr_c ) ) 
+    {
+        fprintf( stderr, "failed to declare exchange: %s\n", sr_cfg.exchange );
+        return(1);
+    }
 
-     if ( elapsed < sr_cfg.sleep ) 
-     {
-          tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
-          tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-          if (sr_cfg.debug) 
-               fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
-          nanosleep( &tsleep, NULL );
-     } else 
-          fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
-
-     latest_min_mtim = tstart;
-     pass++; 
-  }
-
-  if ( sr_cfg.pipe ) 
-  {
-      if (sr_cfg.sleep > 0.0 ) {
-         fprintf( stderr, "ERROR: sleep conflicts with pipe. pipe ignored.\n");
-     } else
-          while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
-          {
-              inbuff[strlen(inbuff)-1]='\0';
-              do1file(sr_c,inbuff);
-          }
-  }
-
-  sr_context_close(sr_c);
-
-  return 0;
+    if ( !strcmp( sr_cfg.action, "setup" ) )
+    {
+        return(0);
+    }
+  
+  
+    firstpath=i;     // i initialized by arg parsing above...
+    pass=0;     // when using inotify, have to walk the tree to set the watches initially.
+    latest_min_mtim.tv_sec = 0;
+    latest_min_mtim.tv_nsec = 0;
+    if (sr_cfg.inotify) 
+    {
+        inotify_event_mask=IN_DONT_FOLLOW|IN_ONESHOT; 
+        if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes symlink.
+        if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
+        if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
+  
+        inot_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+        if ( inot_fd < 0) 
+            fprintf( stderr, "error: inot init failed: error: %d\n", errno );
+    }
+  
+    while (1) 
+    {
+       clock_gettime( CLOCK_REALTIME, &tstart );  
+      
+       if (!sr_cfg.inotify || !pass ) 
+       {
+           fprintf( stderr, "starting polling loop pass: %d\n", pass);
+           for(i=firstpath ; i < argc ; i++ ) 
+           {
+              first_call=1;
+              do1file(sr_c,argv[i]);
+           }
+           dir_stack_reset(); 
+       } else {
+           fprintf( stderr, "checking for events, pass: %d\n", pass);
+           dir_stack_check4events(sr_c); // inotify. process accumulated events.
+       }
+       if  (sr_cfg.sleep <= 0.0) break; // one shot.
+  
+       clock_gettime( CLOCK_REALTIME, &tend );  
+       elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - 
+                 ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
+  
+       if ( elapsed < sr_cfg.sleep ) 
+       {
+            tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
+            tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
+            if (sr_cfg.debug) 
+                 fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+            nanosleep( &tsleep, NULL );
+       } else 
+            fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
+  
+       latest_min_mtim = tstart;
+       pass++; 
+    }
+  
+    if ( sr_cfg.pipe ) 
+    {
+        if (sr_cfg.sleep > 0.0 ) {
+           fprintf( stderr, "ERROR: sleep conflicts with pipe. pipe ignored.\n");
+       } else
+            while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
+            {
+                inbuff[strlen(inbuff)-1]='\0';
+                do1file(sr_c,inbuff);
+            }
+    }
+  
+    sr_context_close(sr_c);
+  
+    return(0);
 }
