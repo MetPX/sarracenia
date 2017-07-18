@@ -67,6 +67,7 @@ class sr_sftp():
 
         self.sumalgo     = None
         self.checksum    = None
+        self.fpos        = 0
 
     # cd
     def cd(self, path):
@@ -268,7 +269,8 @@ class sr_sftp():
                  if cb  : cb(chunk)
 
         
-        if fp.tell() >= filesize :
+        self.fpos = fp.tell()
+        if self.fpos >= filesize :
            fp.truncate(filesize) 
 
         rfp.close()
@@ -510,6 +512,11 @@ class sftp_transport():
                    sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
                    if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                    os.rename(new_lock, parent.new_file)
+
+                # fix message if no partflg (means file size unknown until now)
+
+                if msg.partflg == None:
+                   msg.set_parts(partflg='1',chunksize=sftp.fpos)
     
                 msg.report_publish(201,'Downloaded')
 

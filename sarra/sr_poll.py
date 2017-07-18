@@ -561,11 +561,12 @@ class sr_poll(sr_instances):
                 self.urlstr  = self.destination + self.destDir + '/'+ remote_file
                 self.url     = urllib.parse.urlparse(self.urlstr)
                 self.sumstr  = self.sumflg
+                self.partstr = None
 
                 try :
                         isiz = int(ssiz)
                         self.partstr = '1,%d,1,0,0' % isiz
-                except: self.partstr = '2,0,1,0,0'
+                except: pass
 
                 this_rename  = self.rename
 
