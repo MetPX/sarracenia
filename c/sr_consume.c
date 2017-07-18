@@ -168,7 +168,7 @@ void assign_field( const char* key, char *value )
 
 void json_dump_strheader(char *tag, char*value)
 {
-    printf( "\"%s\" : \"%s\"", tag, value );
+    printf( "\"%s\": \"%s\"", tag, value );
 }
 
 void sr_message_2json(struct sr_message_t *m)
@@ -177,11 +177,11 @@ void sr_message_2json(struct sr_message_t *m)
      printf( " \"%s\", {", m->routing_key );
      json_dump_strheader( "atime", m->atime );
      printf( ", " );
-     printf( "\"mode\" : \"%04o\"", m->mode );
+     printf( "\"mode\": \"%04o\"", m->mode );
      printf( ", " );
      json_dump_strheader( "mtime", m->mtime );
      printf( ", " );
-     printf( "\"parts\" : \"%c,%ld,%ld,%ld,%ld\"", 
+     printf( "\"parts\": \"%c,%ld,%ld,%ld,%ld\"", 
            m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
      printf( ", " );
      json_dump_strheader( "sum", m->sum );
