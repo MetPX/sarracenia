@@ -54,8 +54,21 @@
 
 static struct sr_message_t msg;
 
+int sr_consume_cleanup(struct sr_context *sr_c)
+{
+  amqp_rpc_reply_t reply;
 
-void sr_consume_init(struct sr_context *sr_c) 
+  amqp_queue_delete( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->queuename), 0, 0 );
+
+  reply = amqp_get_rpc_reply(sr_c->conn);
+  if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+      sr_amqp_reply_print(reply, "queue delete failed");
+      return(0);
+  }
+  return(1);
+}
+
+int sr_consume_setup(struct sr_context *sr_c) 
  /*
     declare a queue and bind it to the configured exchange.
 
@@ -83,7 +96,7 @@ void sr_consume_init(struct sr_context *sr_c)
   reply = amqp_get_rpc_reply(sr_c->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
       sr_amqp_reply_print(reply, "queue declare failed");
-      return;
+      return(0);
   }
 
   /*
@@ -109,9 +122,10 @@ void sr_consume_init(struct sr_context *sr_c)
       reply = amqp_get_rpc_reply(sr_c->conn);
       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
           sr_amqp_reply_print(reply, "binding failed");
-          return;
+          return(0);
       }
   }
+  return(1);
 }
 
 
@@ -159,30 +173,22 @@ void json_dump_strheader(char *tag, char*value)
 
 void sr_message_2json(struct sr_message_t *m)
 {
-     printf( "{\n\t" );
-     json_dump_strheader( "exchange", m->exchange );
-     printf( ",\n\t" );
-     json_dump_strheader( "datestamp", m->datestamp );
-     printf( ",\n\t" );
-     json_dump_strheader( "routing_key", m->routing_key );
-     printf( ",\n\t" );
-     json_dump_strheader( "to_clusters", m->to_clusters );
-     printf( ",\n\t" );
+     printf( "[" );
+     printf( " \"%s\", {", m->routing_key );
      json_dump_strheader( "atime", m->atime );
-     printf( ",\n\t" );
-     json_dump_strheader( "mtime", m->mtime );
-     printf( ",\n\t" );
+     printf( ", " );
      printf( "\"mode\" : \"%04o\"", m->mode );
-     printf( ",\n\t" );
+     printf( ", " );
+     json_dump_strheader( "mtime", m->mtime );
+     printf( ", " );
      printf( "\"parts\" : \"%c,%ld,%ld,%ld,%ld\"", 
            m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
-     printf( ",\n\t" );
-     json_dump_strheader( "path", m->path );
-     printf( ",\n\t" );
+     printf( ", " );
      json_dump_strheader( "sum", m->sum );
-     printf( ",\n\t" );
-     json_dump_strheader( "url", m->url );
-     printf( "\n}\n" );
+     printf( ", " );
+     json_dump_strheader( "to_clusters", m->to_clusters );
+     printf( ", \"%s %s  %s\"", m->datestamp, m->url, m->path );
+     printf( "]\n" );
 }
 
 

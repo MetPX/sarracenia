@@ -53,12 +53,21 @@ struct sr_message_t {
 //extern struct sr_message_t msg;
 
 
-void sr_consume_init(struct sr_context *sr_c);
+
+
+
+int sr_consume_setup(struct sr_context *sr_c);
 /* 
    declare and bind queue over a connection already established by context_init
-
-
  */
+
+
+int sr_consume_cleanup(struct sr_context *sr_c);
+/* 
+   delete queue declared by setup.
+ */
+
+
 
 void sr_message_2json(struct sr_message_t *m);
 /* 

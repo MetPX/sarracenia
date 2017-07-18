@@ -66,7 +66,17 @@ int main(int argc, char **argv)
      fprintf( stderr, "failed to establish sr context\n");
      return(1);
   }
-  sr_consume_init(sr_c);
+  if ( !strcmp( sr_cfg.action, "cleanup" ) )
+  {
+      sr_consume_cleanup(sr_c);
+      return(0);
+  }
+  sr_consume_setup(sr_c);
+
+  if ( !strcmp( sr_cfg.action, "setup" ) )
+  {
+      return(0);
+  }
 
   while(1)
   {
