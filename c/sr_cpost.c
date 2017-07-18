@@ -309,10 +309,11 @@ void usage()
 {
      fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
      fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
+     fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
+     fprintf( stderr, "\t\taction [setup|cleanup|foreground] \n" );
      fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
      fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
      fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to publish to\n" );
-     fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
      fprintf( stderr, "\t\tto <destination> - clusters pump network should forward to.\n" );
      fprintf( stderr, "\t\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
      fprintf( stderr, "\t\t    (a comma separated list of urls will result in alternation.)" );
