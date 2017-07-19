@@ -109,10 +109,39 @@ class HostConnect:
                self.logger.error("Sleeping 5 seconds ...")
                time.sleep(5)
 
+   def exchange_declare(self,exchange,edelete=False,edurable=True):
+       try    :
+                    self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete,durable=edurable)
+                    self.logger.info("declaring exchange %s (%s@%s)" % (exchange,self.user,self.host))
+       except :
+                    (stype, svalue, tb) = sys.exc_info()
+                    self.logger.error("could not declare exchange %s (%s@%s)" % (exchange,self.user,self.host))
+                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+
+   def exchange_delete(self,exchange):
+       try    :
+                    self.channel.exchange_delete(exchange)
+                    self.logger.info("deleting exchange %s (%s@%s)" % (exchange,self.user,self.host))
+       except :
+                    (stype, svalue, tb) = sys.exc_info()
+                    self.logger.error("could not delete exchange %s (%s@%s)" % (exchange,self.user,self.host))
+                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+
+
    def new_channel(self):
        channel = self.connection.channel()
        self.toclose.append(channel)
        return channel
+
+   def queue_delete(self,queue_name):
+       self.logger.info("deleting queue %s (%s@%s)" % (queue_name,self.user,self.host))
+       try    :
+                    self.channel.queue_delete(queue_name)
+       except :
+                    (stype, svalue, tb) = sys.exc_info()
+                    if 'NOT_FOUND - no queue' in svalue.amqp_reply_text : return
+                    self.logger.error("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
+                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
 
    def reconnect(self):
        self.close()
@@ -325,7 +354,7 @@ class Queue:
        # reset 
        if self.reset :
           try    : self.channel.queue_delete( self.name )
-          except : self.logger.debug("could not delete queue %s" % self.name)
+          except : self.logger.debug("could not delete queue %s (%s@%s)" % (self.name,self.hc.user,self.hc.host))
                   
        # create queue
        try:
@@ -336,7 +365,7 @@ class Queue:
                                    nowait=False,
                                    arguments= args )
        except : 
-              self.logger.error( "queue declare: %s failed. Often a permission issue." % self.name )
+              self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
 
        # queue bindings
        for exchange_name,exchange_key in self.bindings:
@@ -344,8 +373,9 @@ class Queue:
            try:
               self.bind(exchange_name, exchange_key )
            except : 
-              self.logger.error( \
-                 "bind queue: %s to exchange: %s with key: %s failed.  Often a permission issue." % \
-                 ( self.name, exchange_name, exchange_key ) )
+              self.logger.error( "bind queue: %s to exchange: %s with key: %s failed.." % \
+                                 (self.name,exchange_name, exchange_key ) )
+              self.logger.error( "Permission issue with %s@%s or exchange %s not found." % \
+                                 (self.hc.user,self.hc.host,exchange_name ) )
 
        self.logger.debug("queue build done")

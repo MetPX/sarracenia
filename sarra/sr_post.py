@@ -429,6 +429,56 @@ class sr_post(sr_config):
  
         return watch_path
 
+    def cleanup(self):
+
+        # on posting host
+        host = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.exchange + "%02d" % n )
+        else :
+               exchanges.append(self.exchange)
+
+        # do exchange cleanup
+              
+        self.logger.info("exchanges = %s" % exchanges)
+        for x in exchanges :
+            host.exchange_delete(x)
+
+    def declare(self):
+
+        # on posting host
+       
+        host = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.exchange + "%02d" % n )
+        else :
+               exchanges.append(self.exchange)
+
+        # do exchange setup
+              
+        for x in exchanges :
+            host.exchange_declare(x)
+
+
+    def setup(self):
+
+        # declare posting exchanges
+
+        self.declare()
+       
+
 
 # ===================================
 # MAIN
@@ -452,33 +502,55 @@ def post1file(p, fn):
 
 def main():
 
+    actions = ['foreground','reload','restart','start','stop','status','cleanup','declare','setup']
+
+    action = None
+    args   = sys.argv
+
+    if len(sys.argv) >= 2 : 
+       if sys.argv[-1] in actions :
+          action = sys.argv[-1]
+          args   = sys.argv[:-1]
+
     post = sr_post(config=None,args=sys.argv[1:])
     if post.in_error : sys.exit(1)
 
     try :
         post.connect()
 
-        if len(post.postpath) == 0 :
-            post.postpath = sys.argv[post.first_arg:]
+        if   action == 'cleanup'    :
+             post.logger.info("%s %s" % (post.program_name,action))
+             post.cleanup()
+        elif action == 'declare'    :
+             post.logger.info("%s %s" % (post.program_name,action))
+             post.declare()
+        elif action == 'setup'      :
+             post.logger.info("%s %s" % (post.program_name,action))
+             post.setup()
 
-        if len(post.postpath) == 0 :
-            post.logger.error("no path to post")
-            post.help()
-            os._exit(1)
-               
-        post.poster.logger = post.logger
+        else:
 
-        post.lock_set()
+              if len(post.postpath) == 0 :
+                  post.postpath = sys.argv[post.first_arg:]
 
-        for watchpath in post.postpath :
-            post1file(post, watchpath)
+              if len(post.postpath) == 0 :
+                  post.logger.error("no path to post")
+                  post.help()
+                  os._exit(1)
 
-        if post.pipe:
-            for watchpath in sys.stdin:
-                post1file(post, watchpath.strip())
+              post.poster.logger = post.logger
 
+              post.lock_set()
 
-        post.lock_unset()
+              for watchpath in post.postpath :
+                  post1file(post, watchpath)
+
+              if post.pipe:
+                  for watchpath in sys.stdin:
+                      post1file(post, watchpath.strip())
+
+              post.lock_unset()
+
         post.close()
 
     except :

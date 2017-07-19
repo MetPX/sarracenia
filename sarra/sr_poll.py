@@ -35,7 +35,7 @@
 #============================================================
 # usage example
 #
-# sr_poll [options] [config] [start|stop|restart|reload|status]
+# sr_poll [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 # sr_poll connects to a destination. For each directory given, it lists its content
 # and match the accept/reject products in that directory. Each file is announced and
@@ -293,7 +293,7 @@ class sr_poll(sr_instances):
         return ok
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
@@ -696,6 +696,77 @@ class sr_poll(sr_instances):
         self.close()
         os._exit(0)
 
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # on posting host
+       
+        self.post_broker = self.broker
+        self.poster      = sr_poster(self)
+        host             = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+              
+        for x in exchanges :
+            host.exchange_delete(x)
+
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # declare posting exchange
+       
+        self.declare_exchanges()
+
+        self.close()
+        os._exit(0)
+
+    def declare_exchanges(self):
+
+        # on posting host
+       
+        self.post_broker = self.broker
+        self.poster      = sr_poster(self)
+        host             = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange setup
+              
+        for x in exchanges :
+            host.exchange_declare(x)
+
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # declare posting exchange
+       
+        self.declare_exchanges()
+
+        self.close()
+        os._exit(0)
+
 # ===================================
 # MAIN
 # ===================================
@@ -721,6 +792,10 @@ def main():
     elif action == 'start'      : poll.start_parent()
     elif action == 'stop'       : poll.stop_parent()
     elif action == 'status'     : poll.status_parent()
+
+    elif action == 'cleanup'    : poll.cleanup()
+    elif action == 'declare'    : poll.declare()
+    elif action == 'setup'      : poll.setup()
     else :
            poll.logger.error("action unknown %s" % action)
            poll.help()
