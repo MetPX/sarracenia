@@ -492,6 +492,9 @@ class sr_config:
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
 
+        self.execfile("on_html_page",'html_page')
+        self.on_html_page_list    = [self.on_html_page]
+
         self.on_part              = None
         self.on_part_list         = []
 
@@ -499,6 +502,8 @@ class sr_config:
         self.execfile("on_line",'line_mode')
         self.on_line_list = [ self.on_line ]
 
+        self.on_watch             = None
+        self.on_watch_list        = []
 
     def execfile(self, opname, path):
 
@@ -1190,6 +1195,18 @@ class sr_config:
 
                      n = 2
 
+                elif words0 == 'on_html_page': # See: sr_config
+                     self.execfile("on_html_page",words1)
+                     if ( self.on_html_page == None ):
+                        if self.isNone(words1):
+                            self.on_html_page_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_html_page_list.append(self.on_html_page)
+                     n = 2
+
                 elif words0 == 'on_line': # See: sr_poll.1
                      self.execfile("on_line",words1)
                      if ( self.on_line == None ):
@@ -1238,6 +1255,18 @@ class sr_config:
                             needexit = True
                      else:
                         self.on_post_list.append(self.on_post)
+                     n = 2
+
+                elif words0 == 'on_watch': # See: sr_config
+                     self.execfile("on_watch",words1)
+                     if ( self.on_watch == None ):
+                        if self.isNone(words1):
+                            self.on_watch_list = []
+                        else:
+                            ok = False
+                            needexit = True
+                     else:
+                        self.on_watch_list.append(self.on_watch)
                      n = 2
 
                 elif words0 in ['overwrite','o'] : # See: sr_config.7

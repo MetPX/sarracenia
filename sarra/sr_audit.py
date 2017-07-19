@@ -87,7 +87,7 @@ class sr_audit(sr_instances):
         # source
 
         if role == 'source':
-           c="configure='^q_%s.*'"%u
+           c="configure='^q_%s.*|^xs_%s.*'" % ( u, u )
            w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
            r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
@@ -118,7 +118,8 @@ class sr_audit(sr_instances):
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
 
-
+    def close(self):
+        self.logger.debug("sr_audit close")
 
     def check(self):
         self.logger.debug("sr_audit check")
@@ -658,6 +659,21 @@ class sr_audit(sr_instances):
         self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
+
+    def cleanup(self):
+        self.logger.info("%s %s cleanup" % (self.program_name, sarra.__version__) )
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s %s declare" % (self.program_name, sarra.__version__) )
+        self.close()
+        os._exit(0)
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+        self.close()
+        os._exit(0)
                  
 # ===================================
 # MAIN
@@ -696,6 +712,10 @@ def main():
     elif action == 'start'      : audit.start_parent()
     elif action == 'stop'       : audit.stop_parent()
     elif action == 'status'     : audit.status_parent()
+
+    elif action == 'cleanup'    : audit.cleanup()
+    elif action == 'declare'    : audit.declare()
+    elif action == 'setup'      : audit.setup()
     else :
            audit.logger.error("action unknown %s" % action)
            sys.exit(1)

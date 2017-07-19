@@ -36,7 +36,7 @@
 #============================================================
 # usage example
 #
-# sr_sender [options] [config] [start|stop|restart|reload|status]
+# sr_sender [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 # sr_sender connects to a broker. For each product it has selected, it sends it onto the other
 # broker and reannounce it there.
@@ -229,7 +229,7 @@ class sr_sender(sr_instances):
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
         print("instances <nb_of_instances>      default 1")
@@ -599,6 +599,100 @@ class sr_sender(sr_instances):
         self.close()
         os._exit(0)
 
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # on consuming host, do cleanup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.cleanup()
+
+        # no posting ?
+       
+        if self.post_broker == None :
+           self.close()
+           os._exit(0)
+
+        # on posting host
+
+        self.poster = sr_poster(self)
+        host        = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+              
+        for x in exchanges :
+            host.exchange_delete(x)
+
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # on consuming host, do setup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.declare()
+
+        # declare posting exchanges if any
+
+        self.declare_exchanges()
+       
+        self.close()
+        os._exit(0)
+
+    def declare_exchanges(self):
+
+        # no posting ?
+       
+        if self.post_broker == None : return
+
+        # on posting host
+       
+        self.poster = sr_poster(self)
+        host        = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange setup
+              
+        for x in exchanges :
+            host.exchange_declare(x)
+
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # on consuming host, do setup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.setup()
+
+        # declare posting exchanges if any
+
+        self.declare_exchanges()
+       
+        self.close()
+        os._exit(0)
+
 # ===================================
 # MAIN
 # ===================================
@@ -624,6 +718,11 @@ def main():
     elif action == 'start'      : sender.start_parent()
     elif action == 'stop'       : sender.stop_parent()
     elif action == 'status'     : sender.status_parent()
+
+    elif action == 'cleanup'    : sender.cleanup()
+    elif action == 'declare'    : sender.declare()
+    elif action == 'setup'      : sender.setup()
+
     else :
            sender.logger.error("action unknown %s" % action)
            sys.exit(1)

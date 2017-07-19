@@ -67,6 +67,7 @@ class sr_ftp():
 
         self.sumalgo     = None
         self.checksum    = None
+        self.fpos        = 0
  
     # cd
     def cd(self, path):
@@ -234,11 +235,13 @@ class sr_ftp():
            self.fp = open(local_file,'r+b')
            if local_offset != 0 : self.fp.seek(local_offset,0)
            self.ftp.retrbinary('RETR ' + remote_file, self.fpwrite, self.bufsize )
+           self.fpos = self.fp.tell()
            self.fp.close()
         else :
            self.fp = open(local_file,'r+')
            if local_offset != 0 : self.fp.seek(local_offset,0)
            self.ftp.retrlines ('RETR ' + remote_file, self.fpwritel )
+           self.fpos = self.fp.tell()
            self.fp.close()
 
         if self.chk : self.checksum = self.chk.get_value()
@@ -442,6 +445,11 @@ class ftp_transport():
                    ftp.get(remote_file,local_lock,msg.local_offset)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
+    
+                # fix message if no partflg (means file size unknown until now)
+
+                if msg.partflg == None :
+                   msg.set_parts(partflg='1',chunksize=ftp.fpos)
     
                 msg.report_publish(201,'Downloaded')
 

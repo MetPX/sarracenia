@@ -37,7 +37,7 @@
 #============================================================
 # usage example
 #
-# sr_subscribe [options] [config] [start|stop|restart|reload|status]
+# sr_subscribe [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 #============================================================
 
@@ -170,7 +170,7 @@ class sr_subscribe(sr_instances):
 
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
         print("Examples:\n")    
@@ -575,6 +575,30 @@ class sr_subscribe(sr_instances):
         self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
+
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.cleanup()
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.declare()
+        self.close()
+        os._exit(0)
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.setup()
+        self.close()
+        os._exit(0)
                  
 # ===================================
 # self test
@@ -733,6 +757,11 @@ def main():
     elif action == 'start'      : subscribe.start_parent()
     elif action == 'stop'       : subscribe.stop_parent()
     elif action == 'status'     : subscribe.status_parent()
+
+    elif action == 'cleanup'    : subscribe.cleanup()
+    elif action == 'declare'    : subscribe.declare()
+    elif action == 'setup'      : subscribe.setup()
+
     elif action == 'TEST'       : test_sr_subscribe()
     else :
            subscribe.logger.error("action unknown %s" % action)

@@ -41,7 +41,7 @@
 
 struct sr_context {
 
-  char settings[255];
+  char settings[AMQP_MAX_SS];
   const char *scheme;
   const char *exchange;
   const char *file;
@@ -56,6 +56,17 @@ struct sr_context {
   struct sr_config_t *cfg;
 };
 
+
+void sr_amqp_error_print(int x, char const *context);
+/* utility functions for handling rabbitmq-c call return values.
+   for rabbitmq-c routines that return an integer, process the output.
+ */
+
+void sr_amqp_reply_print(amqp_rpc_reply_t x, char const *context);
+/* utility functions for handling rabbitmq-c call return values.
+   if return value from a function is an amqp_rpc_reply_t, then feed it to this routine.
+   context, is a descriptive string.
+ */
 
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg);
 
@@ -72,26 +83,12 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c);
    connection establishment is done here.
  */
 
-void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb); 
-/* 
-   post the given file name using the established context.
-   (posts over an existing connection.)
-
-   The struct stat is normally the result of lstat(fn,sb);
-   sr_post reads:  st_size, st_atim, st_mtim, and st_mode.
-   those fields are used to build the advertisement.
-
-   if passed sb=NULL, then the sr_post generates an 'R' (remove) message
-   for the named file.
-
- */
-
 void sr_context_close(struct sr_context *sr_c); 
 /* clean up an initialized context.
    tears down the connection.
  */
 
-void connect_and_post(const char *fn);
- /* do all of the above: connect, post, and close in one call.
-    less efficient when you know you are doing many posts.
-  */
+
+
+
+ 

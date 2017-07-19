@@ -45,10 +45,12 @@ except :
 
 class sr_consumer:
 
-    def __init__(self, parent):
+    def __init__(self, parent, admin=False ):
         self.logger         = parent.logger
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
+
+        if admin : return
 
         self.use_pattern    = parent.masks != []
         self.accept_unmatch = parent.accept_unmatch
@@ -104,24 +106,11 @@ class sr_consumer:
 
         self.broker      = self.parent.broker
         self.bindings    = self.parent.bindings
-        self.durable     = self.parent.durable
-        self.expire      = self.parent.expire
-        self.reset       = self.parent.reset
-        self.message_ttl = self.parent.message_ttl
 
         self.broker_str  = self.broker.geturl().replace(':'+self.broker.password+'@','@')
 
         # queue name 
-        self.set_queue_name()
-
-        # queue settings
-        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable,reset=self.reset)
-
-        if self.expire != None :
-           self.msg_queue.add_expire(self.expire)
-
-        if self.message_ttl != None :
-           self.msg_queue.add_message_ttl(self.message_ttl)
+        self.queue_declare(build=False)
 
         # queue bindings 
 
@@ -179,6 +168,31 @@ class sr_consumer:
 
         return True,self.msg
 
+    def queue_declare(self,build=False):
+        self.logger.debug("sr_consumer queue_declare")
+
+        self.durable     = self.parent.durable
+        self.reset       = self.parent.reset
+        self.expire      = self.parent.expire
+        self.message_ttl = self.parent.message_ttl
+
+        # queue name 
+        self.set_queue_name()
+
+        # queue settings
+        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable,reset=self.reset)
+
+        if self.expire != None :
+           self.msg_queue.add_expire(self.expire)
+
+        if self.message_ttl != None :
+           self.msg_queue.add_message_ttl(self.message_ttl)
+
+        # queue creation if needed
+        if build :
+           self.logger.info("declaring queue %s on %s" % (self.queue_name,self.broker.hostname))
+           self.msg_queue.build()
+
     def random_queue_name(self) :
 
         # queue file : fix it 
@@ -225,6 +239,27 @@ class sr_consumer:
 
         self.random_queue_name()
 
+    def cleanup(self):
+        self.logger.debug("sr_consume cleanup")
+        self.build_connection()
+        self.set_queue_name()
+        self.hc.queue_delete(self.queue_name)
+        try    :
+                 if hasattr(self,'queuepath') :
+                    os.unlink(self.queuepath)
+        except : pass
+
+    def declare(self):
+        self.logger.debug("sr_consume declare")
+        self.build_connection()
+        self.queue_declare(build=True)
+                  
+    def setup(self):
+        self.logger.debug("sr_consume setup")
+        self.build_connection()
+        self.build_queue()
+
+
 # ===================================
 # self_test
 # ===================================
@@ -243,7 +278,7 @@ def self_test():
     logger = test_logger()
 
     yyyy   = time.strftime("%Y",time.gmtime())
-    opt1   = 'accept .*' + yyyy + '.*'
+    opt1   = 'accept .*bulletins.*'
     opt2   = 'reject .*'
 
     #setup consumer to catch first post

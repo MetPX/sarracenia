@@ -339,6 +339,12 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
+**[--on_watch]**
+
+When the gathering of sr_watch events starts, the *on_watch* plugin is envoked.
+It could be used to put a file in one of the watched directories... 
+and have it published.
+
 
 CAVEATS
 =======

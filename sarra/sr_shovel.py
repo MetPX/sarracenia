@@ -34,7 +34,7 @@
 #============================================================
 # usage example
 #
-# sr_shovel [options] [config] [start|stop|restart|reload|status]
+# sr_shovel [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 # sr_shovel consumes message, for each selected message it reannounces it.
 # One usage of shovel is to acquire log from source brokers.
@@ -51,7 +51,7 @@
 # post_broker             = where sarra is running (manager)
 # post_exchange           = default to the value of exchange
 #
-# report_exchange            = xreport (sent back to broker)
+# report_exchange         = xreport (sent back to broker)
 #
 #============================================================
 #
@@ -180,7 +180,7 @@ class sr_shovel(sr_instances):
 
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("read messages from exchange, apply on_message if provided, reannounce/post them to post_broker & post_exchange\n")
         print("OPTIONS:")
@@ -460,6 +460,91 @@ class sr_shovel(sr_instances):
         self.close()
         os._exit(0)
 
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # consuming host, do cleanup (queue)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.cleanup()
+
+        # posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
+
+        # post exchange(s)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # cleanup (exchange)
+              
+        for x in exchanges :
+            self.hc_pst.exchange_delete(x)
+
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # consuming host, do setup (queue)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.declare()
+
+        # declare posting exchanges
+
+        self.declare_exchanges()
+       
+        self.close()
+        os._exit(0)
+
+    def declare_exchanges(self):
+
+        # posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
+
+        # post exchange(s)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # setup (exchange)
+              
+        for x in exchanges :
+            self.hc_pst.exchange_declare(x)
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # consuming host, do setup (queue)
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.setup()
+
+        # declare posting exchanges
+
+        self.declare_exchanges()
+       
+        self.close()
+        os._exit(0)
+
 # ===================================
 # MAIN
 # ===================================
@@ -485,6 +570,11 @@ def main():
     elif action == 'start'      : shovel.start_parent()
     elif action == 'stop'       : shovel.stop_parent()
     elif action == 'status'     : shovel.status_parent()
+
+    elif action == 'cleanup'    : shovel.cleanup()
+    elif action == 'declare'    : shovel.declare()
+    elif action == 'setup'      : shovel.setup()
+
     else :
            shovel.logger.error("action unknown %s" % action)
            shovel.help()

@@ -17,15 +17,14 @@
  */
 #include <stdio.h>
 
-#include "sr_context.h"
-
+#include "sr_consume.h"
 
 int main(int argc, char **argv)
 {
+  struct sr_message_t *m;
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
-  struct stat sb;
-  int consume,i,lastopt;
+  int consume,i;
   
   if ( argc < 3 ) 
   {
@@ -58,14 +57,32 @@ int main(int argc, char **argv)
   }
   
   sr_c = sr_context_init_config( &sr_cfg );
+  if (!sr_c) {
+     fprintf( stderr, "failed to read configuration\n");
+     return(1);
+  }
   sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
      fprintf( stderr, "failed to establish sr context\n");
      return(1);
   }
-  sr_consume_init(sr_c);
+  if ( !strcmp( sr_cfg.action, "cleanup" ) )
+  {
+      sr_consume_cleanup(sr_c);
+      return(0);
+  }
+  sr_consume_setup(sr_c);
 
-  sr_consume(sr_c);
+  if ( !strcmp( sr_cfg.action, "setup" ) )
+  {
+      return(0);
+  }
+
+  while(1)
+  {
+      m=sr_consume(sr_c);
+      if (m) sr_message_2json(m);      
+  }
   sr_context_close(sr_c);
 
   return 0;

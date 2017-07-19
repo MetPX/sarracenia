@@ -41,12 +41,13 @@ try :
 except : 
          from sarra.sr_config    import *
 
-cfg = sr_config()
+cfg    = sr_config()
+action = sys.argv[-1]
 
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
 
-def invoke(confpath):
+def invoke(confpath,action):
 
     parts = confpath.split('/')
 
@@ -54,8 +55,11 @@ def invoke(confpath):
     config  = re.sub(r'(\.conf)','',parts[-1])
 
     try :
-             cfg.logger.info("%s %s %s" % (program,config,sys.argv[-1]))
-             subprocess.check_call([program,config,sys.argv[-1]])
+             cfg.logger.info("%s %s %s" % (program,config,action))
+             if program != 'sr_post' :
+                subprocess.check_call([program,config,action])
+             else :
+                subprocess.check_call([program,'-c',confpath,action])
     except :
              (stype, svalue, tb) = sys.exc_info()
              print("Type: %s, Value: %s" % (stype, svalue))
@@ -77,7 +81,7 @@ def nbr_config(dirconf):
 # recursive scan of ~/.config/sarra/* , invoking process according to
 # the process named from the parent directory
 
-def scandir(dirconf):
+def scandir(dirconf,action):
     if not os.path.isdir(dirconf)       : return
 
     for confname in os.listdir(dirconf) :
@@ -85,7 +89,7 @@ def scandir(dirconf):
         if not '.conf' in confname[-5:]      : continue
         confpat = dirconf + '/' + confname
  
-        invoke(confpat)
+        invoke(confpat,action)
 
 
 # ===================================
@@ -95,23 +99,37 @@ def scandir(dirconf):
 def main():
     # first check action
 
-    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload']:
-       print("USAGE: %s (start|stop|restart|reload|status) (version: %s) " % (sys.argv[0], sarra.__version__) )
+    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'force_setup' ]:
+       print("USAGE: %s (start|stop|restart|reload|status|cleanup|declare|setup) (version: %s) " % (sys.argv[0], sarra.__version__) )
        sys.exit(1)
+
+    force  = False
+    action = sys.argv[-1]
+    if action == 'force_setup' :
+       force = True
+       action = 'setup'
 
     # sarracenia program that may start without config file
     REPORT_PROGRAMS=['audit']
     for d in REPORT_PROGRAMS:
         if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
-           scandir(cfg.user_config_dir+os.sep+d)
+           scandir(cfg.user_config_dir+os.sep+d,action)
         else :
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
-           subprocess.check_call(['sr_'+d,sys.argv[-1]])
+           subprocess.check_call(['sr_'+d,action])
 
     # sarracenia program requiring configs
-    SR_PROGRAMS =['watch','winnow','sarra','shovel','subscribe','sender','poll','report']
+    
+    SR_PROGRAMS =['post','watch','winnow','sarra','shovel','subscribe','sender','poll','report']
+
+    if not force and action == 'setup' :
+       subprocess.check_call(['sr','declare'])
+       subprocess.check_call(['sr','force_setup'])
+       sys.exit(0)
+
     for d in SR_PROGRAMS:
-        scandir(cfg.user_config_dir+os.sep+d)
+        if d == 'post' and not action in ['cleanup','declare','setup'] : continue
+        scandir(cfg.user_config_dir+os.sep+d,action)
 
     sys.exit(0)
 

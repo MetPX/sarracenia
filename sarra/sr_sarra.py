@@ -35,7 +35,7 @@
 #============================================================
 # usage example
 #
-# sr_sarra [options] [config] [start|stop|restart|reload|status]
+# sr_sarra [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 # sr_sarra consumes message, for each message it downloads the product
 # and reannounce it. On usage of sarra is to acquire data from source
@@ -227,7 +227,7 @@ class sr_sarra(sr_instances):
         self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [start|stop|restart|reload|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("Subscribe to download, and then Recursively Re-Announce (implements a sarracenia pump)\n")
         print("OPTIONS:")
@@ -676,8 +676,89 @@ class sr_sarra(sr_instances):
         self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # consumer
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.cleanup()
+
+        # on posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+              
+        for x in exchanges :
+            self.hc_pst.exchange_delete(x)
+
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # on consuming host, do cleanup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.declare()
+
+        # posting exchanges
+       
+        self.declare_exchanges()
+
+        self.close()
+        os._exit(0)
+
+    def declare_exchanges(self):
+
+        # on posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+              
+        for x in exchanges :
+            self.hc_pst.exchange_declare(x)
+
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # on consuming host, do setup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.setup()
+
+        # posting exchanges
+       
+        self.declare_exchanges()
+
         self.close()
         os._exit(0)
 
@@ -706,6 +787,11 @@ def main():
     elif action == 'start'      : sarra.start_parent()
     elif action == 'stop'       : sarra.stop_parent()
     elif action == 'status'     : sarra.status_parent()
+
+    elif action == 'cleanup'    : sarra.cleanup()
+    elif action == 'declare'    : sarra.declare()
+    elif action == 'setup'      : sarra.setup()
+
     else :
            sarra.logger.error("action unknown %s" % action)
            self.help()

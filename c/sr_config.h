@@ -23,11 +23,23 @@ status:
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <regex.h>
+#include <linux/limits.h>
+#include <time.h>
+#include <openssl/sha.h>
 
 #include <uriparser/Uri.h>
 
 #include "sr_event.h"
 
+// AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
+// 255 characters, + terminating nul
+#define AMQP_MAX_SS (255+1)
+#define PATH_MAXNUL (PATH_MAX+1)
+
+struct sr_topic_t {
+  char topic[AMQP_MAX_SS]; 
+  struct sr_topic_t *next;
+};
 
 struct sr_mask_t {
   char* clause;
@@ -37,26 +49,43 @@ struct sr_mask_t {
   struct sr_mask_t *next;
 };
 
+
 struct sr_config_t {
   int               accept_unmatched;
+  char*             action;
   long unsigned     blocksize; // if partitioned, how big are they?
   UriUriA           broker;
   int               broker_specified;
-  char              brokeruricb[1024];
+  char              brokeruricb[PATH_MAXNUL];
   int               debug;
   char             *directory;
   sr_event_t       events;
   char             *exchange;
+  int               follow_symlinks;
+  int               inotify;
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.
   char             *queuename;
   int               pipe;  // pipe mode, read file names from standard input
+  int               recursive;
+  float             sleep;
   char              sumalgo; // checksum algorithm to use.
+  struct sr_topic_t *topics;
+  char             topic_prefix[AMQP_MAX_SS];
   char             *url;
   char             *to;
   
 };
+
+#define SR_TIMESTRLEN (19)
+#define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
+
+char *sr_time2str( struct timespec *tin );
+  /* turn a timespec into an SR_TIMESTRLEN character sr_post(7) conformant time stamp string.
+      if argument is NULL, then the string should correspond to the current system time.
+   */
+ 
 
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
  /* return pointer to matched pattern, if there is one, NULL otherwise.
@@ -69,6 +98,9 @@ int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argu
     return the number of arguments consumed:  0, 1, or 2.
   */
 
+void add_topic( struct sr_config_t *sr_cfg, const char* sub );
+ /* add a topic to the list of bindings, based on the current topic prefix
+  */
 
 void sr_config_init( struct sr_config_t *sr_cfg );
  /* Initialize an sr_config structure (setting defaults)

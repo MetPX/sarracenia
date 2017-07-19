@@ -194,8 +194,10 @@ class sr_winnow(sr_instances):
         if hasattr(self,'manager'):
            self.broker   = self.manager
 
+        self.poster      = None
+
     def help(self):
-        print("Usage: sr_winnow [OPTIONS] configfile [start|stop|restart|reload|status]\n" )
+        print("Usage: sr_winnow [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" )
         print("version: %s \n" % sarra.__version__ )
         print("read file announcements from exchange and reannounce them to post_exchange, suppressing duplicates\n")
         print("OPTIONS:")
@@ -318,6 +320,94 @@ class sr_winnow(sr_instances):
         self.logger.info("%s stop" % self.program_name)
         self.close()
         os._exit(0)
+
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # on consuming host, do cleanup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.cleanup()
+
+        # on posting host
+       
+        host = self.consumer.hc
+        if self.post_broker.geturl() != self.broker.geturl() :
+           self.poster = sr_poster(self)
+           host        = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+              
+        for x in exchanges :
+            host.exchange_delete(x)
+
+        self.close()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # on consuming host, do setup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.declare()
+
+        # declare posting exchanges
+
+        self.declare_exchanges()
+
+        self.close()
+        os._exit(0)
+
+    def declare_exchanges(self):
+
+        # on posting host
+       
+        host = self.consumer.hc
+        if self.post_broker.geturl() != self.broker.geturl() :
+           self.poster = sr_poster(self)
+           host        = self.poster.hc
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange setup
+              
+        for x in exchanges :
+            host.exchange_declare(x)
+
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # on consuming host, do setup
+
+        self.consumer = sr_consumer(self,admin=True)
+        self.consumer.setup()
+
+        # declare posting exchanges
+
+        self.declare_exchanges()
+
+        self.close()
+        os._exit(0)
                  
 # ===================================
 # MAIN
@@ -344,6 +434,11 @@ def main():
     elif action == 'start'      : winnow.start_parent()
     elif action == 'stop'       : winnow.stop_parent()
     elif action == 'status'     : winnow.status_parent()
+
+    elif action == 'cleanup'    : winnow.cleanup()
+    elif action == 'declare'    : winnow.declare()
+    elif action == 'setup'      : winnow.setup()
+
     else :
            winnow.logger.error("action unknown %s" % action)
            sys.exit(1)

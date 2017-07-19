@@ -35,7 +35,7 @@
 #============================================================
 # usage example
 #
-# sr_watch [options] [config] [start|stop|restart|reload|status]
+# sr_watch [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
 # sr_watch watch a file or a directory. When event occurs on file, sr_watch connects
 # to a broker and an amqp message is sent...
@@ -113,6 +113,20 @@ class sr_watch(sr_instances):
         if self.reset :
            self.post.connect()
            self.post.poster.cache_reset()
+
+
+    # =============
+    # __on_watch__
+    # =============
+
+    def __on_watch__(self):
+ 
+        # invoke user defined on_message when provided
+
+        for plugin in self.on_watch_list:
+           if not plugin(self): return False
+
+        return True
 
     def validate_cache(self):
         self.cache_file  = self.user_cache_dir
@@ -229,7 +243,8 @@ class sr_watch(sr_instances):
             # do periodic events (at most, once every 'sleep' seconds)
             while True:
                start_sleep_event = time.time()
-               self.myeventhandler.event_wakeup()
+               ok = self.__on_watch__()
+               if ok : self.myeventhandler.event_wakeup()
                end_sleep_event = time.time()
                how_long = self.sleep - ( end_sleep_event - start_sleep_event )
                if how_long > 0:
@@ -257,6 +272,42 @@ class sr_watch(sr_instances):
         self.close()
         os._exit(0)
 
+    def cleanup(self):
+        self.logger.info("%s cleanup" % self.program_name)
+
+        # on posting host
+        self.post.check()
+        self.post.connect()
+
+        self.post.cleanup()
+
+        self.post.close()
+        self.post.poster.cache_reset()
+        os._exit(0)
+
+    def declare(self):
+        self.logger.info("%s declare" % self.program_name)
+
+        # on posting host
+        self.post.check()
+        self.post.connect()
+
+        self.post.declare()
+
+        self.post.close()
+        os._exit(0)
+
+    def setup(self):
+        self.logger.info("%s setup" % self.program_name)
+
+        # on posting host
+        self.post.check()
+        self.post.connect()
+
+        self.post.declare()
+
+        self.post.close()
+        os._exit(0)
 
 # ===================================
 # GLOBAL
@@ -410,6 +461,10 @@ def main():
     elif action == 'start'      : watch.start_parent()
     elif action == 'stop'       : watch.stop_parent()
     elif action == 'status'     : watch.status_parent()
+
+    elif action == 'cleanup'    : watch.cleanup()
+    elif action == 'declare'    : watch.declare()
+    elif action == 'setup'      : watch.setup()
     else :
         watch.logger.error("action unknown %s" % action)
         sys.exit(1)
