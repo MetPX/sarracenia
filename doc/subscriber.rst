@@ -131,7 +131,7 @@ subscriber.
 
 Let´s start up a subscriber (assume the config file was called dd_swob.conf)::
 
-  blacklab% sr_subscribe ../dd_swob.conf start
+  blacklab% sr_subscribe start ../dd_swob.conf 
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
   2015-12-03 06:53:35,269 [INFO] instances 1 
   2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
@@ -244,7 +244,7 @@ directory: ~/.config/sarra/subscribe/
 Imagine there are two files in that directory:  CMC.conf and NWS.conf.
 One could then run:: 
 
-  peter@idefix:~/test$ sr_subscribe CMC.conf start
+  peter@idefix:~/test$ sr_subscribe start CMC.conf 
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
@@ -259,7 +259,7 @@ from anywhere, and the configuration in the directory would be invoked.  Also, o
 the sr command to start/stop multiple configurations at once.  The sr command will go through the 
 default directories and start up all the configurations it finds::
 
-  peter@idefix:~/test$ sr_subscribe CMC.conf start
+  peter@idefix:~/test$ sr_subscribe start CMC.conf 
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
@@ -616,7 +616,7 @@ configuration file::
 so that each file downloaded (or each part of the file if it is large),
 to be AV scanned. Sample run::
 
-  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
   clam_scan on_part plugin initialized
   clam_scan on_part plugin initialized
   2016-05-07 18:01:15,007 [INFO] sr_subscribe start
@@ -645,7 +645,7 @@ result in::
   
 Gives lines in the log like so::
 
-  blacklab% sr_subscribe --reset ../dd_swob.conf foreground
+  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
   2016-05-07 18:05:52,097 [INFO] sr_subscribe start
   2016-05-07 18:05:52,097 [INFO] sr_subscribe run
   2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)

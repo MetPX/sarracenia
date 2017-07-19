@@ -47,7 +47,7 @@ Example usage::
    EOT
     
    sr_log2save <log/sr_sarra_download_0003.log >shovel/save/sr_shovel_save_0000.save
-   sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 save.conf foreground
+   sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf 
 
 
 SEE ALSO

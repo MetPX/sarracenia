@@ -16,7 +16,7 @@ Select and Conditionally Download Posted Files
 SYNOPSIS
 ========
 
- **sr_subscribe** configfile foreground|start|stop|restart|reload|status
+ **sr_subscribe** foreground|start|stop|restart|reload|status configfile
  (formerly **dd_subscribe** )
 
 DESCRIPTION
@@ -36,8 +36,8 @@ supplying to an external program) specifying the -n (*notify_only*, or *no downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.
 
-The **sr_subscribe** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
+followed by an a configuration file described below.
 
 The **foreground** action is different. It would be used when building a configuration
 or debugging things. It is used when the user wants to run the program and its configfile 

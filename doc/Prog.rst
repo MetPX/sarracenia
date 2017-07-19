@@ -343,7 +343,7 @@ every message received.)  Essentially the entire program state is available to p
 A sample output is shown (reformatted for legibility) is given below.  For every field *xx* listed,
 a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
 
-  peter@idefix:~/test$ sr_subscribe dd.conf foreground
+  peter@idefix:~/test$ sr_subscribe foreground dd.conf 
   ^C to stop it immediately after the first message.
   peter@idefix:~/test$ tail -f ~/.cache/sarra/log/sr_subscribe_dd_0001.log
 

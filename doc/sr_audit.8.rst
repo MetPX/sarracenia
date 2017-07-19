@@ -16,9 +16,9 @@ Audit Broker State
 SYNOPSIS
 ========
 
- **sr_audit** configfile foreground|start|stop|restart|reload|status
- **sr_audit** --pump  configfile foreground
- **sr_audit** --users configfile foreground
+ **sr_audit** configfile foreground|start|stop|restart|reload|status 
+ **sr_audit** --pump  foreground configfile
+ **sr_audit** --users foreground configfile
 
 DESCRIPTION
 ===========
@@ -78,7 +78,7 @@ From the users and roles, it determines the exchanges that should be present and
 missing. Extra exchanges are deleted if their names do not start with 'x'.
 
 When adding or deleting a user, the broker administrator adds or delete the role declaration for a
-username and in the **default.conf** file.  Then he runs **sr_audit --users configfile foreground**. 
+username and in the **default.conf** file.  Then he runs **sr_audit --users foreground configfile**. 
 The log on standard output would tell the administrator what broker resources were 
 added/deleted (user,exchanges, queue, etc).   
 

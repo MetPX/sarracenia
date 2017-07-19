@@ -740,7 +740,7 @@ Now to configure the pump execute the following::
 
 Sample run::
 
-  sarra@boule:~/.config/sarra$ sr_audit --debug --users foreground
+  sarra@boule:~/.config/sarra$ sr_audit foreground --debug --users 
   2016-03-28 00:41:25,380 [INFO] sr_audit start
   2016-03-28 00:41:25,380 [INFO] sr_audit run
   2016-03-28 00:41:25,380 [INFO] sr_audit waking up
@@ -885,6 +885,7 @@ add the password for the upstream pump to credentials.conf ::
 
 then do a short foreground run, to see if it is working. hit Ctrl-C to stop it after a few messages::
 
+  sarra@boule:~/.config/sarra$ sr_subscribe foreground dd
   2016-03-28 09:21:27,708 [INFO] sr_subscribe start
   2016-03-28 09:21:27,708 [INFO] sr_subscribe run
   2016-03-28 09:21:27,708 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
@@ -902,7 +903,13 @@ then do a short foreground run, to see if it is working. hit Ctrl-C to stop it a
   2016-03-28 09:21:30,693 [INFO] sr_subscribe stop
   sarra@boule:~/.config/sarra/subscribe$
 
-So the connection to upstream is functional, now lets make sure the subscription does not start automatically::
+So the connection to upstream is functional.  Connecting to the server means a queue is allocated on the server,
+and it will continue to accumulate messages, waiting for the client to connect again.  This was just a test, so we
+want the server to discard the queue::
+
+  sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
+
+now lets make sure the subscription does not start automatically::
 
   sarra@boule:~/.config/sarra/subscribe$ mv dd.conf dd.off
 
@@ -971,7 +978,7 @@ mirror False
 
 so then try it out::
 
-  sarra@boule:~/.config/sarra/sarra$ sr_sarra dd.off foreground
+  sarra@boule:~/.config/sarra/sarra$ sr_sarra foreground dd.off 
   2016-03-28 10:38:16,999 [INFO] sr_sarra start
   2016-03-28 10:38:16,999 [INFO] sr_sarra run
   2016-03-28 10:38:17,000 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
@@ -1068,7 +1075,7 @@ Example::
 
   blacklab%
 
-  blacklab% sr_report boulelog.conf foreground
+  blacklab% sr_report foreground boulelog.conf 
   2016-03-28 16:29:53,721 [INFO] sr_report start
   2016-03-28 16:29:53,721 [INFO] sr_report run
   2016-03-28 16:29:53,722 [INFO] AMQP  broker(boule.example.com) user(feeder) vhost(/)

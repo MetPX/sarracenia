@@ -14,7 +14,7 @@ watch a directory and post messages when files in it change
 SYNOPSIS
 ========
 
-**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path* ] path] [reload|restart|start|status|stop]
+**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path* ] [reload|restart|start|status|stop] [path]
 
 DESCRIPTION
 ===========
@@ -68,7 +68,7 @@ There is usually one post per file.
 
 An example of an excution of  *sr_watch*  checking a file::
 
- sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -b amqp://broker.com start
+ sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -b amqp://broker.com -action start
 
 Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
 Default events settings reports if the file the file is modified or deleted.
@@ -103,7 +103,7 @@ is the checksum value.  When the event on a file is a deletion, sum=R,0  R stand
 
 Another example watching a file::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com start
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com -action start
 
 By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the document_root and relative path of the source url to obtain the local file path).
@@ -115,7 +115,7 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -b amqp://broker.com start
+ sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -b amqp://broker.com -action start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the document_root and relative path of the source url to obtain the directory path).
