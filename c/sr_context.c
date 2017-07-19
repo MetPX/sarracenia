@@ -224,7 +224,8 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
 
 }
 
-void sr_context_close(struct sr_context *sr_c) {
+void sr_context_close(struct sr_context *sr_c) 
+{
 
   amqp_rpc_reply_t reply;
   signed int status;
@@ -249,6 +250,5 @@ void sr_context_close(struct sr_context *sr_c) {
   }
 
 }
-
 
 

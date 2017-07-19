@@ -239,7 +239,29 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   if (sr_cfg->debug)
      fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
 
-  if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
+  if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
+      add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
+      return(2);
+
+  } else if ( !strcmp( option, "accept_unmatch" ) || !strcmp( option, "accept_unmatched" ) || !strcmp( option, "au" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->accept_unmatched = val&2;
+      return(1+(val&1));
+
+  } else if ( !strcmp( option, "action" ) ) {
+      sr_cfg->action = strdup(argument);
+      return(2);
+
+  } else if ( !strcmp( option, "blocksize" ) || !strcmp( option, "parts") ) {
+      if (!argument) {
+         fprintf( stderr, "parts (partition strategy) argument missing\n");  
+         return(1);
+      }
+      sr_cfg->blocksize = chunksize_from_str( argument );
+
+      return(2);
+
+  } else if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
   {
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
@@ -250,24 +272,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
           config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
       }
       sr_cfg->broker_specified=1;
-      return(2);
-
-  } else if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
-      add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
-      return(2);
-
-  } else if ( !strcmp( option, "accept_unmatch" ) || !strcmp( option, "accept_unmatched" ) || !strcmp( option, "au" ) ) {
-      val = StringIsTrue(argument);
-      sr_cfg->accept_unmatched = val&2;
-      return(1+(val&1));
-
-  } else if ( !strcmp( option, "blocksize" ) || !strcmp( option, "parts") ) {
-      if (!argument) {
-         fprintf( stderr, "parts (partition strategy) argument missing\n");  
-         return(1);
-      }
-      sr_cfg->blocksize = chunksize_from_str( argument );
-
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {

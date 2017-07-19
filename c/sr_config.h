@@ -52,6 +52,7 @@ struct sr_mask_t {
 
 struct sr_config_t {
   int               accept_unmatched;
+  char*             action;
   long unsigned     blocksize; // if partitioned, how big are they?
   UriUriA           broker;
   int               broker_specified;

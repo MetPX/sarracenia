@@ -38,6 +38,17 @@ void sr_post(struct sr_context *sr_c, const char *fn, struct stat *sb);
 
  */
 
+
+int sr_post_init( struct sr_context *sr_c );
+ /*
+   At beginning of posting session, initialize (involves declaring an exchange.)
+  */
+
+int sr_post_cleanup( struct sr_context *sr_c );
+ /*
+   Clean up broker resources declared by post_init (deletes an exchange.)
+  */
+
 void connect_and_post(const char *fn);
  /* do all of the above: connect, post, and close in one call.
     less efficient when you know you are doing many posts.
