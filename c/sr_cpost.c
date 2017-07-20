@@ -24,22 +24,37 @@
 #include <unistd.h>
 
 
-#include "sr_post.h"
+/*
+   https://troydhanson.github.io/uthash/userguide.html
 
-/* for each directory opened, store it's dev+inode pair.
-   if you encounter another directory witht the same numbers, there is a loop.
-   The FD is the file descriptor returned by an inotify_init.
+ */
+
+#include "uthash.h"
+
+
+/* 
+  for each directory opened, store it's dev+inode pair.
+  if you encounter another directory witht the same numbers, there is a loop.
+  The FD is the file descriptor returned by an inotify_init.
 
  */ 
+
+struct hash_entry {
+    char *fn;                  // key & payload
+    UT_hash_handle hh;
+};
+
+#include "sr_post.h"
+
 static  int   inotify_event_mask;  // translation of sr_events to inotify events.
 
 struct dir_stack {
-   char *path;                 // path of directory.
+   char *path;                // path of directory.
    int wd;                    // fd returned by inotify_init.
-   dev_t dev;                  // info from stat buf of directory.
+   dev_t dev;                 // info from stat buf of directory.
    ino_t ino;
    int   visited;
-   struct dir_stack *next;     // pointer towards the top of the stack.
+   struct dir_stack *next;    // pointer towards the top of the stack.
 };
 
 /* FIXME: crappy algorithm single linked stack, no optimizations at all.
@@ -200,7 +215,7 @@ void do1file( struct sr_context *sr_c, char *fn )
 
         /* FIXME:  INOT 
          */
-        if ( sr_c->cfg->inotify ) 
+        if ( ! sr_c->cfg->force_polling ) 
         {
             w = inotify_add_watch( inot_fd, fn, inotify_event_mask);
             if (w < 0)
@@ -246,6 +261,7 @@ void do1file( struct sr_context *sr_c, char *fn )
 
 }
 
+
 void dir_stack_check4events( struct sr_context *sr_c )
  /* at the end of each sleeping interval, read the queue of outstanding events
     and process them.
@@ -257,11 +273,13 @@ void dir_stack_check4events( struct sr_context *sr_c )
     struct inotify_event *e;
     struct dir_stack *d;
     int ret;
+    struct hash_entry *new_entry, *entries_done, *tmpe = NULL;
 
     /* fixme: MISSING: process pending list
             - go sequentially through the pending list,
               removing things if they succeed.
      */ 
+    entries_done = NULL; 
 
     /* normal event processing. */
 
@@ -299,10 +317,23 @@ void dir_stack_check4events( struct sr_context *sr_c )
                      store the list in order, so faster search.
                best to do 1 first, and then optimize later if necessary.                     
              */
-            do1file( sr_c, fn);
+            HASH_FIND_STR( entries_done, fn, tmpe );
+            if (!tmpe) {
+                new_entry = (struct hash_entry *)malloc( sizeof(struct hash_entry) );
+                new_entry->fn = strdup(fn);
+                HASH_ADD_KEYPTR( hh, entries_done, new_entry->fn, strlen(new_entry->fn), new_entry );
+                do1file( sr_c, fn);
+            } 
         }
     }
-    /* FIXME: Missing: empty out done list */
+
+    /* empty out done list */
+    HASH_ITER( hh, entries_done, tmpe , new_entry ) 
+    {
+       free(tmpe->fn);
+       HASH_DEL(entries_done, tmpe);
+       free(tmpe);
+    }
 }
 
 void usage() 
@@ -393,10 +424,10 @@ int main(int argc, char **argv)
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     latest_min_mtim.tv_sec = 0;
     latest_min_mtim.tv_nsec = 0;
-    if (sr_cfg.inotify) 
+    if (!sr_cfg.force_polling) 
     {
         inotify_event_mask=IN_DONT_FOLLOW|IN_ONESHOT; 
-        if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes symlink.
+        if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes mkdir & symlink.
         if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
         if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
   
@@ -409,7 +440,7 @@ int main(int argc, char **argv)
     {
        clock_gettime( CLOCK_REALTIME, &tstart );  
       
-       if (!sr_cfg.inotify || !pass ) 
+       if (sr_cfg.force_polling || !pass ) 
        {
            fprintf( stderr, "starting polling loop pass: %d\n", pass);
            for(i=firstpath ; i < argc ; i++ ) 
@@ -419,7 +450,6 @@ int main(int argc, char **argv)
            }
            dir_stack_reset(); 
        } else {
-           fprintf( stderr, "checking for events, pass: %d\n", pass);
            dir_stack_check4events(sr_c); // inotify. process accumulated events.
        }
        if  (sr_cfg.sleep <= 0.0) break; // one shot.
@@ -432,7 +462,6 @@ int main(int argc, char **argv)
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
             tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-            if (sr_cfg.debug) 
                  fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
             nanosleep( &tsleep, NULL );
        } else 
