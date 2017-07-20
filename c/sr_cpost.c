@@ -425,7 +425,7 @@ int main(int argc, char **argv)
     latest_min_mtim.tv_nsec = 0;
     if (!sr_cfg.force_polling) 
     {
-        inotify_event_mask=IN_DONT_FOLLOW|IN_ONESHOT; 
+        inotify_event_mask=IN_DONT_FOLLOW; 
         if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes mkdir & symlink.
         if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
         if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
