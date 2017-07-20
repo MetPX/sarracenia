@@ -300,9 +300,9 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->follow_symlinks = val&2;
       return(1+(val&1));
 
-  } else if ( !strcmp( option, "inotify" ) ) {
+  } else if ( !strcmp( option, "force_polling" ) ) {
       val = StringIsTrue(argument);
-      sr_cfg->inotify = val&2;
+      sr_cfg->force_polling = val&2;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
@@ -360,6 +360,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->directory=NULL;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->follow_symlinks=0;
+  sr_cfg->force_polling=0;
   sr_cfg->last_matched=NULL;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;

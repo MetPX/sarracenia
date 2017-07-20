@@ -16,7 +16,7 @@ Poll products from a remote server
 SYNOPSIS
 ========
 
-**sr_poll** configfile foreground|start|stop|restart|reload|status
+**sr_poll** foreground|start|stop|restart|reload|status configfile 
 
 DESCRIPTION
 ===========

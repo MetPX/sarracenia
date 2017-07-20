@@ -15,7 +15,7 @@ Select and Process Posted Reports
 SYNOPSIS
 ========
 
- **sr_report** configfile foreground|start|stop|restart|reload|status
+ **sr_report** foreground|start|stop|restart|reload|status configfile
  (formerly **dd_subscribe** )
 
 DESCRIPTION

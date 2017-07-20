@@ -62,7 +62,7 @@ struct sr_config_t {
   sr_event_t       events;
   char             *exchange;
   int               follow_symlinks;
-  int               inotify;
+  int               force_polling;
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.

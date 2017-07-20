@@ -16,7 +16,7 @@ Subscribe, Acquire and ReAnnounce Products
 SYNOPSIS
 ========
 
-**sr_sarra** configfile foreground|start|stop|restart|reload|status
+**sr_sarra** foreground|start|stop|restart|reload|status configfile
 
 DESCRIPTION
 ===========
@@ -35,8 +35,8 @@ After, it produces a new notification for the local file on a broker (usually on
 or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
 that announce its' products.
 
-The **sr_sarra** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+The **sr_sarra** command takes two arguments: an action start|stop|restart|reload|status.
+followed by a configuration file described below.
 
 The **foreground** action is different. It would be used when building a configuration
 or debugging things. It is used when the user wants to run the program and its configfile
@@ -60,7 +60,7 @@ Standard sarracenia configuration would expect the config file to be found in :
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\configfile.conf
 
 When creating a new configuration file, the user can take advantage of executing
-the program with  **--debug configfile foreground**  with a configfile.conf in
+the program with  **--debug foreground configfile**  with a configfile.conf in
 the current working directory.
 
 The options used in the configfile are described in the next sections.

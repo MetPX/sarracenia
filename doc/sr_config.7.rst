@@ -16,7 +16,7 @@ Overview of Sarra Configuration Files
 SYNOPSIS
 ========
 
- - **sr_component** <config> [foreground|start|stop|restart|status]
+ - **sr_component** [foreground|start|stop|restart|status] <config> 
  - **<config_dir>**/ [ default.conf ]
  - **<config_dir>**/ [ sarra | subscribe | report | sender ] / <config.conf>
  - **<config_dir>**/ scripts / <script.py>
@@ -35,7 +35,7 @@ a configuration file and an operation are specified.  The operation is one of:
  - status: check if the configuration is running.
  - stop: stop the configuration from running 
 
-For example:  *sr_subscribe dd foreground* runs the sr_subcribe component with 
+For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with 
 the dd configuration as a single foreground instance.
 
 The **foreground** action is used when building a configuration or for debugging. 
