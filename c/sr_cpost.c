@@ -285,7 +285,6 @@ void dir_stack_check4events( struct sr_context *sr_c )
 
     /* FIXME: MISSING: initialize done_list? */
 
-    fprintf( stderr, "checking for events\n");
     while ( ( ret = read( inot_fd, buff, sizeof buff ) ) > 0 )
     {
         for( p=buff; 
@@ -462,7 +461,7 @@ int main(int argc, char **argv)
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
             tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-                 fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+            // fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
             nanosleep( &tsleep, NULL );
        } else 
             fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
