@@ -17,6 +17,7 @@ SYNOPSIS
 ========
 
 **sr_poll** foreground|start|stop|restart|reload|status configfile 
+**sr_poll** cleanup|declare|setup configfile 
 
 DESCRIPTION
 ===========
@@ -40,6 +41,11 @@ subscribed to the posted notifications, to download and repost them from a data 
 
 The **sr_poll** command takes two argument: a configuration file described below,
 followed by an action start|stop|restart|reload|status...
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
+
 
 CONFIGURATION
 =============

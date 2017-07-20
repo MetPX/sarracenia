@@ -15,6 +15,7 @@ SYNOPSIS
 ========
 
 **sr_sender** foreground|start|stop|restart|reload|status configfile
+**sr_sender** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -47,6 +48,10 @@ interactively...   The **foreground** instance is not concerned by other actions
 but should the configured instances be running it shares the same (configured) message queue.
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 In general, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first.

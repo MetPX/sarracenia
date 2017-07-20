@@ -17,6 +17,7 @@ SYNOPSIS
 ========
 
  **sr_subscribe** foreground|start|stop|restart|reload|status configfile
+ **sr_subscribe** cleanup|declare|setup configfile
  (formerly **dd_subscribe** )
 
 DESCRIPTION
@@ -45,6 +46,10 @@ interactively...   The **foreground** instance is not concerned by other actions
 but should the configured instances be running it shares the same (configured) message queue.
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process. That would be the old **dd_subscribe** behavior...
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 CONFIGURATION
 =============

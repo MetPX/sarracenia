@@ -77,9 +77,10 @@ class sr_audit(sr_instances):
         # admin and feeder gets the same permissions
 
         if role in ['admin,','feeder','manager']:
-           c="configure='.*'"
-           w="write='.*'"
-           r="read='.*'"
+           # MG: before we had '.*' and it caused problem
+           c="configure=.*"
+           w="write=.*"
+           r="read=.*"
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'feeder',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            return
@@ -92,6 +93,11 @@ class sr_audit(sr_instances):
            r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
+           # setting up default exchanges for a source
+           dummy = self.rabbitmqadmin("declare exchange name='xs_%s' type=topic auto_delete=false durable=true"%u)
+           dummy = self.rabbitmqadmin("declare exchange name='xr_%s' type=topic auto_delete=false durable=true"%u)
+           # deprecated
+           dummy = self.rabbitmqadmin("declare exchange name='xl_%s' type=topic auto_delete=false durable=true"%u)
            return
 
         # PS asked not to implement this (Fri Mar  4 2016)
@@ -116,6 +122,11 @@ class sr_audit(sr_instances):
            r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
+           # setting up default exchanges for a subscriber
+           dummy = self.rabbitmqadmin("declare exchange name='xs_%s' type=topic auto_delete=false durable=true"%u)
+           dummy = self.rabbitmqadmin("declare exchange name='xr_%s' type=topic auto_delete=false durable=true"%u)
+           # deprecated
+           dummy = self.rabbitmqadmin("declare exchange name='xl_%s' type=topic auto_delete=false durable=true"%u)
            return
 
     def close(self):
@@ -197,6 +208,7 @@ class sr_audit(sr_instances):
         self.sleep = 60
 
     def rabbitmqadmin(self,options):
+        self.logger.debug("sr_audit rabbitmqadmin %s" % options)
         try :
                  (status, answer) = exec_rabbitmqadmin(self.admin,options,self.logger)
                  if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
@@ -216,6 +228,10 @@ class sr_audit(sr_instances):
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error("rabbimtqadmin "+ options)
         return []
+
+    def run_sr_setup(self):
+        self.logger.debug("setting up exchanges and queues from all config")
+        subprocess.check_call(['sr','setup'])
 
     def verify_exchanges(self):
         self.logger.debug("sr_audit verify_exchanges")
@@ -239,7 +255,8 @@ class sr_audit(sr_instances):
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
-        self.logger.info("exchanges to verify: %s" % self.exchanges)
+        self.logger.info("sr_audit verify_exchanges, defined: %s" % lst_dict )
+
         for e in self.exchanges : 
             if e in exchange_lst :
                exchange_lst.remove(e)
@@ -249,32 +266,39 @@ class sr_audit(sr_instances):
         # all sources should have: xs_ and xr_"user"
 
         for u in self.sources+self.subscribes :
+            
+            tmp_lst = []
+            tmp_lst.extend(exchange_lst)
+
             se = 'xs_' + u
-            self.add_exchange(se)
+
+            if not se in exchange_lst: self.add_exchange(se)
             
             for e in exchange_lst:
                if e.startswith(se) :  
-                 self.logger.warning("ok user source exchange %s" % e)
-                 exchange_lst.remove(e)
+                 if e != se : self.logger.warning("ok user source exchange %s" % e)
+                 tmp_lst.remove(e)
 
             se = 'xr_' + u
-            self.add_exchange(se)
+
+            if not se in exchange_lst: self.add_exchange(se)
 
             for e in exchange_lst:
                if e.startswith(se) :  
-                  self.logger.warning("ok user report exchange %s" % e)
-                  exchange_lst.remove(e)
-               continue
+                  if e != se : self.logger.warning("ok user report exchange %s" % e)
+                  tmp_lst.remove(e)
 
             # remove once all users using version > 2.16.08a
             se = 'xl_' + u
-            self.add_exchange(se)
+
+            if not se in exchange_lst: self.add_exchange(se)
 
             for e in exchange_lst:
                if e.startswith(se) :  
-                  self.logger.warning("ok legacy user log exchange %s" % e)
-                  exchange_lst.remove(e)
-               continue
+                  if e != se : self.logger.warning("ok legacy user log exchange %s" % e)
+                  tmp_lst.remove(e)
+
+            exchange_lst = tmp_lst
 
 
         # all sources and subscribes should have: xs_"user"
@@ -332,7 +356,11 @@ class sr_audit(sr_instances):
         feeder = feeder[0:colon] + feeder[ampersand:]
 
         self.logger.info("sr_audit pumps using account: %s for report routing" % feeder )
-           
+
+        # shovel directory must exists
+        try    : os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
+        except : pass
+
         for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
              self.logger.info("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
@@ -453,6 +481,11 @@ class sr_audit(sr_instances):
             # get queue size
             try    : qsize = int(edict['messages'])
             except : qsize = -1
+            # FIXME MG : there is a problem with 'state'
+            #            first : it is 'status' for older version of rabbitmq
+            #            second: it is most of the time 'running' whatever the
+            #                    state of the queue...
+            #            so all queues are discarded (no further check)
             # skip running queue
             try    : s = edict['state']
             except : s= ''
@@ -479,7 +512,7 @@ class sr_audit(sr_instances):
             # so any queue should start with q_"username".
 
             if lq < 2 or q[:2] != 'q_'  :
-               self.logger.debug("queue with invalid name %s " % q)
+               self.logger.debug("queue %s deleted: invalid name" % q)
                self.delete_queue(q)
                continue
 
@@ -498,7 +531,7 @@ class sr_audit(sr_instances):
                   continue
 
                # queue of with invalid or obsolete username
-               self.logger.debug("queue with invalid username %s " % q)
+               self.logger.debug("queue %s deleted: invalid username" % q)
                self.delete_queue(q)
 
 
@@ -628,13 +661,26 @@ class sr_audit(sr_instances):
 
                       self.logger.info("sr_audit waking up")
                       self.configure()
-                      self.verify_queues()
-                      if self.users_flag : 
-                          self.verify_users()
-                          self.verify_exchanges()
-                          self.verify_report_routing()
+
+                      # verify pump before anything else...
 
                       if self.pump_flag  : self.verify_pump()
+
+                      # verify setup : users/exchanges/queues
+
+                      if self.users_flag : 
+                          # create report shovel configs first
+                          self.verify_report_routing()
+                          # verify users from default/credentials
+                          self.verify_users()
+                          # setup all exchanges and queues from configs
+                          self.run_sr_setup()
+                          # verify overall exchanges (once everything created)
+                          self.verify_exchanges()
+
+                      # verify overall queues
+                      self.verify_queues()
+
               except:
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
