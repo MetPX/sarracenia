@@ -15,6 +15,7 @@ SYNOPSIS
 ========
 
 **sr_winnow** foreground|start|stop|restart|reload|status configfile
+**sr_winnow** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -43,6 +44,10 @@ run the program and its configfile interactively...   The **foreground** instanc
 is not concerned by other actions. 
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 CONFIGURATION
 =============

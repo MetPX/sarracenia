@@ -17,6 +17,7 @@ SYNOPSIS
 ========
 
  **sr_shovel** foreground|start|stop|restart|reload|status configfile
+ **sr_shovel** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -34,6 +35,10 @@ There is no default.  On startup, the sr_shovel component takes two
 argument: 
 an action start|stop|restart|reload|status... (self explanatory.) and
 a configuration file described below.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 CONFIGURATION
 =============

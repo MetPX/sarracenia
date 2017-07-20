@@ -16,9 +16,9 @@ Overview of Sarra Configuration Files
 SYNOPSIS
 ========
 
- - **sr_component** [foreground|start|stop|restart|status] <config> 
+ - **sr_component** [foreground|start|stop|restart|status|cleanup|declare|setup] <config> 
  - **<config_dir>**/ [ default.conf ]
- - **<config_dir>**/ [ sarra | subscribe | report | sender ] / <config.conf>
+ - **<config_dir>**/ [ sarra | subscribe | report | sender | watch ] / <config.conf>
  - **<config_dir>**/ scripts / <script.py>
 
 
@@ -34,6 +34,13 @@ a configuration file and an operation are specified.  The operation is one of:
  - start:  start the configuration running
  - status: check if the configuration is running.
  - stop: stop the configuration from running 
+
+The remaining operations manage the resources (exchanges,queues) used by the component on
+the rabbitmq server.
+
+ - cleanup:  deletes the component's resources on the server
+ - declare:  creates the component's resources on the server
+ - setup:    like declare, additionnaly does queue bindings 
 
 For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with 
 the dd configuration as a single foreground instance.
