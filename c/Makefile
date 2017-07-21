@@ -3,7 +3,7 @@
 # 
 # if rabbitmq library is provided by SSM package, RABBITMQC_HOME is required. 
 # 
-ifdef RABBITMQ_HOME
+ifdef RABBITMQC_HOME
 RABBIT_LIBDIR = ${RABBITMQC_HOME}/lib
 RABBIT_INCDIR = -I${RABBITMQC_HOME}/include
 RABBIT_LINK = -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR}
