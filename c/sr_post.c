@@ -355,7 +355,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       linkstr[linklen]='\0';
       header_add( "link", linkstr );
 
-  } else {  /* regular files, add mode and determine block parameters */
+  } else if (S_ISREG(sb->st_mode)) {  /* regular files, add mode and determine block parameters */
       if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return;
 
       if ( access( fn, R_OK ) ) return; // will not be able to checksum if we cannot read.
@@ -376,7 +376,15 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           block_rem = sb->st_size%block_size ;
           block_count = ( sb->st_size / block_size ) + ( block_rem?1:0 );
       }
-  }
+  } 
+  /* FIXME:  should we do these as well?
+   else 
+      S_ISIFO(sb->st_mode)  -> sumstr P,random
+      S_ISCHR(sb->st_mode)  -> sumstr C,maj,min
+      S_ISBLK(sb->st_mode)  -> sumstr B,maj,min
+      could be done, does it make any sense?
+
+   */
  
   commonhdridx = hdrcnt; // save location of headers common to all messages.
   block_num = 0;
