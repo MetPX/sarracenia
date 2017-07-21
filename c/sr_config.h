@@ -62,7 +62,7 @@ struct sr_config_t {
   sr_event_t       events;
   char             *exchange;
   int               follow_symlinks;
-  int               inotify;
+  int               force_polling;
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.
@@ -101,6 +101,8 @@ int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argu
 void add_topic( struct sr_config_t *sr_cfg, const char* sub );
  /* add a topic to the list of bindings, based on the current topic prefix
   */
+
+void sr_config_free( struct sr_config_t *sr_cfg );
 
 void sr_config_init( struct sr_config_t *sr_cfg );
  /* Initialize an sr_config structure (setting defaults)

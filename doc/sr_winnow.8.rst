@@ -14,7 +14,8 @@ Suppress Redundant Messages
 SYNOPSIS
 ========
 
-**sr_winnow** configfile foreground|start|stop|restart|reload|status
+**sr_winnow** foreground|start|stop|restart|reload|status configfile
+**sr_winnow** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -35,14 +36,18 @@ to the cache and the notification is posted.
 used when there are multiple sources of the same data, so that clients only download the
 source data once, from the first source that posted it.
 
-The **sr_winnow** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+The **sr_winnow** command takes two argument: an action start|stop|restart|reload|status... (self described)
+followed by a configuration file described below.
 
 The **foreground** is used when debugging a configuration, when the user wants to 
 run the program and its configfile interactively...   The **foreground** instance 
 is not concerned by other actions. 
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 CONFIGURATION
 =============

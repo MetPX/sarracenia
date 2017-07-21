@@ -16,7 +16,8 @@ Copy Messages Between Brokers
 SYNOPSIS
 ========
 
- **sr_shovel** configfile foreground|start|stop|restart|reload|status
+ **sr_shovel** foreground|start|stop|restart|reload|status configfile
+ **sr_shovel** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -31,8 +32,13 @@ The *topic_prefix* option must to be set to:
  - **v02.log** to shovel `sr_report(7) <sr_report.7.html>`_ messages
 
 There is no default.  On startup, the sr_shovel component takes two 
-argument: a configuration file described below, and 
-an action start|stop|restart|reload|status... (self explanatory.)
+argument: 
+an action start|stop|restart|reload|status... (self explanatory.) and
+a configuration file described below.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 CONFIGURATION
 =============
@@ -116,7 +122,7 @@ note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.9952
 and save them to disk::
 
   % cd ~/tools
-  % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 save.conf foreground
+  % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
 
 
   2017-03-18 13:07:27,786 [INFO] sr_shovel start
@@ -150,7 +156,7 @@ configuration is automatically set, so to save multiple queues, one would need o
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages 
 saved to a file into the same queue::
 
-  % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 save.conf foreground
+  % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
 
   2017-03-18 13:15:33,610 [INFO] sr_shovel start
   2017-03-18 13:15:33,611 [INFO] sr_sarra run

@@ -291,7 +291,7 @@ which results in a configuration like so::
 
 then a watch is started::
 
-  sr_watch project start
+  sr_watch start project 
 
 .. warning::
   **FIXME**: real example.

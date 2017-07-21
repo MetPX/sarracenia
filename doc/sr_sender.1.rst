@@ -14,7 +14,8 @@ Sends file from messages to remote server (option repost to remote broker)
 SYNOPSIS
 ========
 
-**sr_sender** configfile foreground|start|stop|restart|reload|status
+**sr_sender** foreground|start|stop|restart|reload|status configfile
+**sr_sender** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
@@ -38,8 +39,8 @@ onto another that would not be allowed to acquire the products directly (PAZ, or
 firewalled network pump)...  or to provide direct file delivery to clients.
 For this second objective, we added **metpx-sundew** like options and behaviors.
 
-The **sr_sender** command takes two argument: a configuration file described below,
-followed by an action start|stop|restart|reload|status... (self described).
+The **sr_sender** command takes two argument: an action start|stop|restart|reload|status (self described)
+followed by a configuration file described below.
 
 The **foreground** action is different. It would be used when building a configuration
 or debugging things. It is used when the user wants to run the program and its configfile 
@@ -47,6 +48,10 @@ interactively...   The **foreground** instance is not concerned by other actions
 but should the configured instances be running it shares the same (configured) message queue.
 The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
 or use other means to kill its process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionnaly does the bindings of queues.
 
 In general, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first.
@@ -136,8 +141,8 @@ The *-save* option copies the messages to a (per instance) disk file (in the sam
 that stores state and pid files), as json encoded strings, one per line.
 When a queue is building up::
 
-   sr_sender <config> stop
-   sr_sender -save <config> start
+   sr_sender stop <config> 
+   sr_sender -save start <config> 
 
 And run the sender in *save* mode (which continually writes incoming messages to disk)
 in the log, a line for each message written to disk::
@@ -146,8 +151,8 @@ in the log, a line for each message written to disk::
 
 Continue in this mode until the absent server is again available.  At that point::
 
-   sr_sender <config> stop
-   sr_sender -restore <config> start
+   sr_sender stop <config> 
+   sr_sender -restore start <config> 
 
 While restoring from the disk file, messages like the following will appear in the log::
 
