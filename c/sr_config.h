@@ -102,6 +102,8 @@ void add_topic( struct sr_config_t *sr_cfg, const char* sub );
  /* add a topic to the list of bindings, based on the current topic prefix
   */
 
+void sr_config_free( struct sr_config_t *sr_cfg );
+
 void sr_config_init( struct sr_config_t *sr_cfg );
  /* Initialize an sr_config structure (setting defaults)
   */

@@ -407,12 +407,14 @@ int main(int argc, char **argv)
         return(0);
     }
   
+ /*
     if ( !sr_post_init( sr_c ) ) 
     {
         fprintf( stderr, "failed to declare exchange: %s\n", sr_cfg.exchange );
         return(1);
     }
-
+  wait until next version of sarra is released... not permitted on old ones.
+ */
     if ( !strcmp( sr_cfg.action, "setup" ) )
     {
         return(0);
@@ -483,6 +485,6 @@ int main(int argc, char **argv)
     }
   
     sr_context_close(sr_c);
-  
+    sr_config_free(&sr_cfg);  
     return(0);
 }

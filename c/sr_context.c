@@ -177,6 +177,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
 
   sr_c->cfg = sr_cfg;
+  sr_c->conn = NULL;
 
   if (!(sr_cfg->broker_specified)) 
   {
@@ -248,6 +249,7 @@ void sr_context_close(struct sr_context *sr_c)
       fprintf( stderr, "sr_cpost: amqp context close failed.\n");
       return;
   }
+  free(sr_c->user);
 
 }
 

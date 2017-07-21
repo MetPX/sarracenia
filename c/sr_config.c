@@ -249,6 +249,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(1+(val&1));
 
   } else if ( !strcmp( option, "action" ) ) {
+      if (sr_cfg->action) free(sr_cfg->action);
       sr_cfg->action = strdup(argument);
       return(2);
 
@@ -350,9 +351,32 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   return(0);
 }
 
+void sr_config_free( struct sr_config_t *sr_cfg )
+{
+  struct sr_mask_t *e;
+
+  if (sr_cfg->action) free(sr_cfg->action);
+  if (sr_cfg->directory) free(sr_cfg->directory);
+  if (sr_cfg->exchange) free(sr_cfg->exchange);
+  if (sr_cfg->queuename) free(sr_cfg->queuename);
+  if (sr_cfg->to) free(sr_cfg->to);
+  if (sr_cfg->url) free(sr_cfg->url);
+
+  while (sr_cfg->masks)
+  {
+       e=sr_cfg->masks;
+       sr_cfg->masks = e->next;
+       regfree(&(e->regexp));
+       free(e->directory);
+       free(e->clause);
+       free(e);
+  }
+
+}
 void sr_config_init( struct sr_config_t *sr_cfg ) 
 {
   sr_credentials_init();
+  sr_cfg->action=strdup("foreground");
   sr_cfg->accept_unmatched=1;
   sr_cfg->blocksize=1;
   sr_cfg->broker_specified=0;
