@@ -84,6 +84,8 @@ int main(int argc, char **argv)
       if (m) sr_message_2json(m);      
   }
   sr_context_close(sr_c);
+  free(sr_c);
+  sr_config_free(&sr_cfg);
 
   return 0;
 }

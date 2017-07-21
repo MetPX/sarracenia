@@ -20,7 +20,6 @@ status:
 
 int main( int argc, char *const *argv ) {
 
-  struct UriPathSegmentStructA *pathelem;
   struct sr_config_t sr_cfg;
 
   printf( "reading: %s\n", argv[1] );
@@ -29,10 +28,10 @@ int main( int argc, char *const *argv ) {
   sr_config_read( &sr_cfg, argv[1] );
 
 
-  printf( "broker, scheme=%s\n", sr_cfg.broker.scheme.first );
-  printf( "broker, userInfo=%s \n", sr_cfg.broker.userInfo.first );
-  printf( "broker, hostText=%s \n", sr_cfg.broker.hostText.first );
-  printf( "broker, portText=%s \n", sr_cfg.broker.portText.first );
+  printf( "broker, scheme=%s\n", sr_cfg.broker->ssl?"amqps":"amqp" );
+  printf( "broker, userInfo=%s \n", sr_cfg.broker->user );
+  printf( "broker, hostText=%s \n", sr_cfg.broker->hostname );
+  printf( "broker, portText=%d \n", sr_cfg.broker->port );
   printf( "posting accept_unmatched=%s \n", sr_cfg.accept_unmatched?"on":"off" );
   printf( "posting debug=%s \n", sr_cfg.debug?"on":"off" );
   printf( "posting events=%x \n", sr_cfg.events);
@@ -40,14 +39,6 @@ int main( int argc, char *const *argv ) {
   printf( "posting url=%s \n", sr_cfg.url);
   printf( "posting sumalgo=%c \n", sr_cfg.sumalgo);
 
-  //*(char*)(uri.pathHead.afterLast) = '\0';
-  pathelem= sr_cfg.broker.pathHead;
-  while ( pathelem != NULL )  {
-      fprintf( stderr, "broker, pathelem=%s \n", pathelem->text.first );
-      pathelem = pathelem->next;
-  }
-
-  // no, because storage is static in uricb...  uriFreeUriMembersA(&uri);
   exit(0);
 
 }

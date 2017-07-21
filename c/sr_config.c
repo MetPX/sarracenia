@@ -22,14 +22,11 @@ status:
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <uriparser/Uri.h>
-
 #include "sr_credentials.h"
 
 #include "sr_config.h"
 
 
-#define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
 
 char time2str_result[18];
@@ -158,22 +155,60 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
     }
 }
 
+#define NULTERM(x)  if (x != NULL) *x = '\0' ;
 
-void config_uri_parse( char *src, UriUriA *ua, char *buf ) 
+struct sr_broker_t *broker_uri_parse( char *src ) 
 {
-  /* copy src string to buf, adding nuls to separate path elements. 
-     so each string is nul-treminated.
-   */
+    /* copy src string to buf, adding nuls to separate path elements. 
+       so each string is nul-treminated.
+     */
 
-  UriParserStateA state; 
-  state.uri = ua;
-  strcpy( buf, src );
-  if (uriParseUriA(&state, buf ) != URI_SUCCESS) return;
+    struct sr_broker_t *b;
+    char buf[PATH_MAX];
+    char *c, *d, *save;
 
-  NULTERM( (char*)(ua->scheme.afterLast) );
-  NULTERM( (char*)(ua->userInfo.afterLast) );
-  NULTERM( (char*)(ua->hostText.afterLast) );
-  NULTERM( (char*)(ua->portText.afterLast) );
+    b = (struct sr_broker_t *)malloc( sizeof(struct sr_broker_t) );
+    fprintf( stderr, "FIXME 1\n");
+    strcpy( buf, src );
+
+    b->ssl = (buf[4] == 's');
+    save = buf + 7 + (b->ssl);
+    fprintf( stderr, "FIXME 1.1 c=%s\n", save);
+    d = strchr( save, '@' );
+    if (!d) 
+    {
+     free(b);
+     return(NULL);
+    } 
+    // save points at user string, null terminated.
+    *d='\0';
+    c = d+1; // continuation point.
+    d = strchr( save, ':' );
+    if (d) {
+       *d='\0';
+       d++;
+       b->password=strdup(d); 
+    } else b->password=NULL;
+
+    b->user = strdup(save);
+
+    // c points at hostname
+    save = c;
+    d = strchr( save, ':' );
+    if (d) { // port specified.
+        d++;
+        b->port = atoi(d);
+        *d='\0';
+    } else if (b->ssl) {
+      b->port=5671;
+    } else b->port=5672;
+    if (!d) d = strchr(save,'/');
+    if (d) *d='\0';
+    b->hostname=strdup(save); 
+
+    fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 
+       b->ssl, b->hostname, b->port, b->user, b->password );
+    return(b);
 } 
 
 int StringIsTrue(const char *s) 
@@ -268,11 +303,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       if ( brokerstr == NULL ) 
       {
           fprintf( stderr,"notice: no stored credential: %s.\n", argument );
-          config_uri_parse( argument, &(sr_cfg->broker), sr_cfg->brokeruricb );
+          sr_cfg->broker = broker_uri_parse( argument );
       } else {
-          config_uri_parse( brokerstr, &(sr_cfg->broker), sr_cfg->brokeruricb );
+          sr_cfg->broker = broker_uri_parse( brokerstr );
       }
-      sr_cfg->broker_specified=1;
+      free(brokerstr);
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
@@ -362,6 +397,13 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->url) free(sr_cfg->url);
 
+  if (sr_cfg->broker)
+  {
+     if (sr_cfg->broker->hostname) free(sr_cfg->broker->hostname);
+     if (sr_cfg->broker->user) free(sr_cfg->broker->user);
+     if (sr_cfg->broker->password) free(sr_cfg->broker->password);
+     free(sr_cfg->broker);
+  }
   while (sr_cfg->masks)
   {
        e=sr_cfg->masks;
@@ -379,7 +421,7 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->action=strdup("foreground");
   sr_cfg->accept_unmatched=1;
   sr_cfg->blocksize=1;
-  sr_cfg->broker_specified=0;
+  sr_cfg->broker=NULL;
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;

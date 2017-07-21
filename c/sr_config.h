@@ -27,8 +27,6 @@ status:
 #include <time.h>
 #include <openssl/sha.h>
 
-#include <uriparser/Uri.h>
-
 #include "sr_event.h"
 
 // AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
@@ -49,14 +47,20 @@ struct sr_mask_t {
   struct sr_mask_t *next;
 };
 
+struct sr_broker_t {
+  int ssl;                     
+  char *user;
+  char *password;
+  char *hostname;
+  int   port;
+};
+
 
 struct sr_config_t {
   int               accept_unmatched;
   char*             action;
   long unsigned     blocksize; // if partitioned, how big are they?
-  UriUriA           broker;
-  int               broker_specified;
-  char              brokeruricb[PATH_MAXNUL];
+  struct sr_broker_t *broker;
   int               debug;
   char             *directory;
   sr_event_t       events;

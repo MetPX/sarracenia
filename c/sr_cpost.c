@@ -492,6 +492,7 @@ int main(int argc, char **argv)
     }
   
     sr_context_close(sr_c);
+    free(sr_c);
     sr_config_free(&sr_cfg);  
     return(0);
 }

@@ -28,6 +28,7 @@
     - seems to be about 30x faster than python version.
 
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -113,7 +114,7 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
   sr_c->conn = amqp_new_connection();
 
-  if ( !strcmp(sr_c->scheme,"amqps") ) {
+  if ( sr_c->cfg->broker->ssl ) {
      sr_c->socket = amqp_ssl_socket_new(sr_c->conn);
      if (!(sr_c->socket)) {
         fprintf( stderr, "failed to create SSL amqp client socket.\n" );
@@ -131,13 +132,13 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
      }
   }
 
-  status = amqp_socket_open(sr_c->socket, sr_c->hostname, sr_c->port);
+  status = amqp_socket_open(sr_c->socket, sr_c->cfg->broker->hostname, sr_c->cfg->broker->port);
   if (status < 0) {
     sr_amqp_error_print(status, "failed opening AMQP socket");
     return(NULL);
   }
 
-  reply = amqp_login(sr_c->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->user, sr_c->password);
+  reply = amqp_login(sr_c->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->cfg->broker->user, sr_c->cfg->broker->password);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
     sr_amqp_reply_print(reply, "failed AMQP login");
     return(NULL);
@@ -166,8 +167,6 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
 {
 
   struct sr_context *sr_c;
-  char *buf;
-  int len;
   struct timespec ts;
 
   // seed for random checksums... random enough...
@@ -179,20 +178,11 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c->cfg = sr_cfg;
   sr_c->conn = NULL;
 
-  if (!(sr_cfg->broker_specified)) 
+  if (!(sr_cfg->broker)) 
   {
     fprintf( stderr, "no broker given\n" );
     return( NULL );
   }
-
-  sr_c->scheme = sr_cfg->broker.scheme.first ;
-  sr_c->hostname = sr_cfg->broker.hostText.first ;
-  
-  if ( sr_cfg->broker.portText.first == NULL ) {
-     if ( !strcmp(sr_c->scheme,"amqps") ) sr_c->port = 5671;
-     else sr_c->port= 5672;
-  } else sr_c->port = atol( sr_cfg->broker.portText.first );
-  
 
   if (sr_cfg->exchange==NULL) 
   {
@@ -202,23 +192,15 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
 
   sr_c->exchange = sr_cfg->exchange ;
   
-  len = strcspn(sr_cfg->broker.userInfo.first, ":");
-
-  buf = (char *)malloc(len+1);
-
-  strncpy(buf, sr_cfg->broker.userInfo.first, len );
-
-  sr_c->user = buf;
-  sr_c->password = sr_cfg->broker.userInfo.first + len +1 ;
   sr_c->url = sr_cfg->url;
 
-  sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker.hostText.first : sr_cfg->to;
+  sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker->hostname : sr_cfg->to;
   sr_c->socket = NULL;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
-     fprintf( stderr, "debug broker: %s://%s:%s@%s:%d\n", 
-       sr_c->scheme, sr_c->user, (sr_c->password)?"<pw>":"<null>", sr_c->hostname, sr_c->port );
+     fprintf( stderr, "debug broker: amqp%s://%s:%s@%s:%d\n", 
+       sr_cfg->broker->ssl?"s":"", sr_cfg->broker->user, (sr_cfg->broker->password)?"<pw>":"<null>", sr_cfg->broker->hostname, sr_cfg->broker->port );
   }
   
   return( sr_c );
@@ -249,8 +231,6 @@ void sr_context_close(struct sr_context *sr_c)
       fprintf( stderr, "sr_cpost: amqp context close failed.\n");
       return;
   }
-  free(sr_c->user);
-
 }
 
 
