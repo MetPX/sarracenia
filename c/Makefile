@@ -3,7 +3,7 @@
 # 
 # if rabbitmq library is provided by SSM package, RABBITMQC_HOME is required. 
 # 
-ifdef RABBITMQ_HOME
+ifdef RABBITMQC_HOME
 RABBIT_LIBDIR = ${RABBITMQC_HOME}/lib
 RABBIT_INCDIR = -I${RABBITMQC_HOME}/include
 RABBIT_LINK = -Wl,-rpath,${RABBIT_LIBDIR} -L${RABBIT_LIBDIR}
@@ -43,9 +43,9 @@ all: $(SARRA_OBJECT)
 	then \
 		ln -s libsarra.so.1.0.0 libsarra.so.1 ; \
 	fi;
-	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) $(RABBIT_LINK) -lrabbitmq -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_csubjsondump sr_csubjsondump.c -lsarra $(SARRA_LINK) -lrabbitmq -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_csubjsondump sr_csubjsondump.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
 
 
 install:
