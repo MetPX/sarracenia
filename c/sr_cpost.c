@@ -237,8 +237,8 @@ void do1file( struct sr_context *sr_c, char *fn )
              close(inot_fd);
              fprintf( stderr, "info: loop detected, skipping: %s\n", fn );
              return;
-         } else 
-             fprintf( stderr, "FIXME: pushed on stack: %s\n", fn );
+         } //else 
+           //fprintf( stderr, "FIXME: pushed on stack: %s\n", fn );
                       
          dir=opendir(fn);
          if (!dir) 
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
       
        if (sr_cfg.force_polling || !pass ) 
        {
-           fprintf( stderr, "starting polling loop pass: %d\n", pass);
+           // fprintf( stderr, "starting polling loop pass: %d\n", pass);
            for(i=firstpath ; i < argc ; i++ ) 
            {
               first_call=1;

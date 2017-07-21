@@ -168,12 +168,10 @@ struct sr_broker_t *broker_uri_parse( char *src )
     char *c, *d, *save;
 
     b = (struct sr_broker_t *)malloc( sizeof(struct sr_broker_t) );
-    fprintf( stderr, "FIXME 1\n");
     strcpy( buf, src );
 
     b->ssl = (buf[4] == 's');
     save = buf + 7 + (b->ssl);
-    fprintf( stderr, "FIXME 1.1 c=%s\n", save);
     d = strchr( save, '@' );
     if (!d) 
     {
@@ -206,8 +204,8 @@ struct sr_broker_t *broker_uri_parse( char *src )
     if (d) *d='\0';
     b->hostname=strdup(save); 
 
-    fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 
-       b->ssl, b->hostname, b->port, b->user, b->password );
+    //fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 
+    //   b->ssl, b->hostname, b->port, b->user, b->password );
     return(b);
 } 
 
@@ -393,6 +391,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->action) free(sr_cfg->action);
   if (sr_cfg->directory) free(sr_cfg->directory);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
+  if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->url) free(sr_cfg->url);
