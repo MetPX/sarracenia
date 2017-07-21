@@ -44,12 +44,13 @@ try :
          from sr_instances      import *
          from sr_message        import *
          from sr_poster         import *
+         from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_consumer  import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-         from sarra.sr_poster    import *
+         from sarra.sr_util      import *
 
 class sr_winnow(sr_instances):
 
@@ -105,7 +106,7 @@ class sr_winnow(sr_instances):
 
         # exchange must be provided 
         if self.exchange == None:
-           self.logger.error("exchange (input) unset...")
+           self.logger.error("exchange (input) unset... exitting")
            sys.exit(1)
 
         # by default, post_broker  is the broker
@@ -114,7 +115,7 @@ class sr_winnow(sr_instances):
 
         # post_exchange must be provided and must be different from exchange
         if self.post_exchange == None or self.post_exchange == self.exchange :
-           self.logger.error("post_exchange (output) not properly set...")
+           self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
 
         # no vip given... so should not matter ?
@@ -197,7 +198,7 @@ class sr_winnow(sr_instances):
         self.poster      = None
 
     def help(self):
-        print("Usage: sr_winnow [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" )
+        print("Usage: sr_winnow [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" )
         print("version: %s \n" % sarra.__version__ )
         print("read file announcements from exchange and reannounce them to post_exchange, suppressing duplicates\n")
         print("OPTIONS:")
@@ -415,18 +416,12 @@ class sr_winnow(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+    args,action,config,old = startup_args(sys.argv)
 
     winnow = sr_winnow(config,args)
+
+    if old :
+       winnow.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground' : winnow.foreground_parent()
     elif action == 'reload'     : winnow.reload_parent()

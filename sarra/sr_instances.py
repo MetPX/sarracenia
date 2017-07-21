@@ -186,8 +186,8 @@ class sr_instances(sr_config):
         cmd.append("--no")
         cmd.append("%d" % self.instance)
         if self.user_args   != None : cmd.extend(self.user_args)
-        if self.user_config != None : cmd.append(self.user_config)
         cmd.append("start")
+        if self.user_config != None : cmd.append(self.user_config)
      
         self.logger.info("%s starting" % self.instance_str)
         self.logger.debug(" cmd = %s" % cmd)

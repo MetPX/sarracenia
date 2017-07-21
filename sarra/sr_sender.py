@@ -77,6 +77,7 @@ try :
          from sr_instances      import *
          from sr_message        import *
          from sr_poster         import *
+         from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_consumer  import *
@@ -84,6 +85,7 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
          from sarra.sr_poster    import *
+         from sarra.sr_util      import *
 
 class sr_sender(sr_instances):
 
@@ -699,18 +701,12 @@ class sr_sender(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+    args,action,config,old = startup_args(sys.argv)
 
     sender = sr_sender(config,args)
+
+    if old:
+       sender.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground' : sender.foreground_parent()
     elif action == 'reload'     : sender.reload_parent()

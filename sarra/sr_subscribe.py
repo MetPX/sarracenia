@@ -49,12 +49,14 @@ try :
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
+         from sr_util           import *
 except : 
          from sarra.sr_consumer  import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
+         from sarra.sr_util      import *
 
 class sr_subscribe(sr_instances):
 
@@ -170,7 +172,7 @@ class sr_subscribe(sr_instances):
 
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
         print("Examples:\n")    
@@ -732,24 +734,16 @@ def test_sr_subscribe():
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+    args,action,config,old = startup_args(sys.argv)
 
     subscribe = sr_subscribe(config,args)
 
-    if len(sys.argv) < 2:
+    if action == None and config == None:
        subscribe.help()
        sys.exit(1)
 
+    if old :
+       subscribe.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground' : subscribe.foreground_parent()
     elif action == 'reload'     : subscribe.reload_parent()
@@ -762,7 +756,6 @@ def main():
     elif action == 'declare'    : subscribe.declare()
     elif action == 'setup'      : subscribe.setup()
 
-    elif action == 'TEST'       : test_sr_subscribe()
     else :
            subscribe.logger.error("action unknown %s" % action)
            subscribe.help()

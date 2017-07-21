@@ -47,18 +47,17 @@ action = sys.argv[-1]
 # an sr_subscribe config will be under ~/.config/sarra/subscribe,
 # will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
 
-def invoke(confpath,action):
+def invoke(dirconf,pgm,confname,action):
 
-    parts = confpath.split('/')
-
-    program = 'sr_' + parts[-2]
-    config  = re.sub(r'(\.conf)','',parts[-1])
+    program = 'sr_' + pgm
+    config  = re.sub(r'(\.conf)','',confname)
 
     try :
-             cfg.logger.info("%s %s %s" % (program,config,action))
+             cfg.logger.info("%s %s %s" % (program,action,config))
              if program != 'sr_post' :
-                subprocess.check_call([program,config,action])
+                subprocess.check_call([program,action,config])
              else :
+                confpath = dirconf + os.sep + pgm + os.sep + confname
                 subprocess.check_call([program,'-c',confpath,action])
     except :
              (stype, svalue, tb) = sys.exc_info()
@@ -81,15 +80,16 @@ def nbr_config(dirconf):
 # recursive scan of ~/.config/sarra/* , invoking process according to
 # the process named from the parent directory
 
-def scandir(dirconf,action):
-    if not os.path.isdir(dirconf)       : return
+def scandir(dirconf,pgm,action):
 
-    for confname in os.listdir(dirconf) :
+    path = dirconf + os.sep + pgm
+
+    if not os.path.isdir(path) : return
+
+    for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue
-        confpat = dirconf + '/' + confname
- 
-        invoke(confpat,action)
+        invoke(dirconf,pgm,confname,action)
 
 
 # ===================================
@@ -112,11 +112,12 @@ def main():
     # sarracenia program that may start without config file
     REPORT_PROGRAMS=['audit']
     for d in REPORT_PROGRAMS:
+        pgm = d
         if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
-           scandir(cfg.user_config_dir+os.sep+d,action)
+           scandir(cfg.user_config_dir,pgm,action)
         else :
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
-           subprocess.check_call(['sr_'+d,action])
+           subprocess.check_call(['sr_'+pgm,action])
 
     # sarracenia program requiring configs
     
@@ -128,8 +129,9 @@ def main():
        sys.exit(0)
 
     for d in SR_PROGRAMS:
-        if d == 'post' and not action in ['cleanup','declare','setup'] : continue
-        scandir(cfg.user_config_dir+os.sep+d,action)
+        pgm = d
+        if pgm == 'post' and not action in ['cleanup','declare','setup'] : continue
+        scandir(cfg.user_config_dir,pgm,action)
 
     sys.exit(0)
 

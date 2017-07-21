@@ -90,6 +90,7 @@ try :
          from sr_http           import *
          from sr_instances      import *
          from sr_message        import *
+         from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_consumer  import *
@@ -98,6 +99,7 @@ except :
          from sarra.sr_http      import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
+         from sarra.sr_util      import *
 
 class sr_sarra(sr_instances):
 
@@ -676,6 +678,11 @@ class sr_sarra(sr_instances):
         self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
         self.run()
 
+    def stop(self):
+        self.logger.info("%s stop" % (self.program_name) )
+        self.close()
+        os.exit(0)
+
     def cleanup(self):
         self.logger.info("%s cleanup" % self.program_name)
 
@@ -768,18 +775,12 @@ class sr_sarra(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+    args,action,config,old = startup_args(sys.argv)
 
     sarra = sr_sarra(config,args)
+
+    if old :
+       sarra.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground' : sarra.foreground_parent()
     elif action == 'reload'     : sarra.reload_parent()

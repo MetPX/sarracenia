@@ -65,9 +65,11 @@ from watchdog.events import PatternMatchingEventHandler
 try :    
          from sr_instances       import *
          from sr_post            import *
+         from sr_util            import *
 except : 
          from sarra.sr_instances import *
          from sarra.sr_post      import *
+         from sarra.sr_util      import *
 
 inl = []
 
@@ -320,24 +322,13 @@ class sr_watch(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
-   
-
-    # =========================================
-    # instantiate sr_watch
-    # =========================================
+    args,action,config,old = startup_args(sys.argv)
 
     watch = sr_watch(config,args)
-   
+
+    if old :
+       watch.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+
     # =========================================
     # setup watchdog
     # =========================================

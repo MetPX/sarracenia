@@ -502,17 +502,13 @@ def post1file(p, fn):
 
 def main():
 
-    actions = ['foreground','reload','restart','start','stop','status','cleanup','declare','setup']
+    args,action,config,old = startup_args(sys.argv)
 
-    action = None
-    args   = sys.argv
+    if action in ['cleanup','declare','setup' ] :
+       post = sr_post(config,args)
+    else :
+       post = sr_post(config=None,args=sys.argv[1:])
 
-    if len(sys.argv) >= 2 : 
-       if sys.argv[-1] in actions :
-          action = sys.argv[-1]
-          args   = sys.argv[:-1]
-
-    post = sr_post(config=None,args=sys.argv[1:])
     if post.in_error : sys.exit(1)
 
     try :
