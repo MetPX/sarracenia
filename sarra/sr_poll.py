@@ -76,6 +76,7 @@ try :
          from sr_instances      import *
          from sr_message        import *
          from sr_poster         import *
+         from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_ftp       import *
@@ -83,6 +84,7 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
          from sarra.sr_poster    import *
+         from sarra.sr_util      import *
 
 class sr_poll(sr_instances):
 
@@ -773,18 +775,12 @@ class sr_poll(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
-
-    if len(sys.argv) >= 2 : 
-       action = sys.argv[-1]
-
-    if len(sys.argv) >= 3 : 
-       config = sys.argv[-2]
-       args   = sys.argv[1:-2]
+    args,action,config,old = startup_args(sys.argv)
 
     poll = sr_poll(config,args)
+
+    if old :
+       poll.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground' : poll.foreground_parent()
     elif action == 'reload'     : poll.reload_parent()

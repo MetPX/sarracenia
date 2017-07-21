@@ -331,6 +331,8 @@ class sr_config:
         if not hasattr(self, 'cfg_already_read' ):
             self.cfg_already_read = []
 
+        self.action               = None
+
         # IN BIG DEBUG
         #self.debug = True
         self.debug                = False
@@ -809,6 +811,10 @@ class sr_config:
                         self.accept_unmatch = self.isTrue(words[1])
                         n = 2
 
+                elif words0 in [ 'a', 'action' ]:
+                     self.action = words1
+                     n = 2
+
                 elif words0 == 'admin': # See: sr_audit.8 
                      urlstr     = words1
                      ok, url    = self.validate_urlstr(urlstr)
@@ -819,7 +825,7 @@ class sr_config:
                         needexit = True
                      n = 2
 
-                elif words0 in [ 'a', 'at', 'attempts' ]: # FIXME
+                elif words0 in [ 'at', 'attempts' ]: # FIXME
                      self.attempts = int(words1)
                      n = 2
 

@@ -47,9 +47,11 @@ import signal
 try :    
          from sr_consumer        import *
          from sr_instances       import *
+         from sr_util            import *
 except : 
          from sarra.sr_consumer  import *
          from sarra.sr_instances import *
+         from sarra.sr_util      import *
 
 
 class sr_report(sr_instances):
@@ -204,24 +206,22 @@ class sr_report(sr_instances):
 
 def main():
 
-    action = None
-    args   = None
-    config = None
+    args,action,config,old = startup_args(sys.argv)
 
-    if len(sys.argv) > 1 :
-       action = sys.argv[-1]
-       args   = sys.argv[1:-1]
-
-    if len(sys.argv) > 2 : 
-       config    = sys.argv[-2]
-       cfg       = sr_config()
+    # config is optional so check the argument
+    if config != None:
+       cfg = sr_config()
        cfg.defaults()
        cfg.general()
        ok,config = cfg.config_path('report',config,mandatory=False)
-       if ok     : args = sys.argv[1:-2]
-       if not ok : config = None
+       if not ok :
+          args.append(config)
+          config = None
 
     srreport = sr_report(config,args)
+
+    if old :
+       srreport.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if   action == 'foreground': srreport.foreground_parent()
     elif action == 'reload'    : srreport.reload_parent()

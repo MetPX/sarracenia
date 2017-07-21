@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* All sarra programs have standard invoke : pgm [args] action config... old way still supported (MG)
+* sr_util defines a funtion startup_args to parse sarra program arguments (MG)
 * sr_audit --users : makes sure exchanges/queues configured on pump are setup (MG)
 * all programs manage exchanges/queues through action 'cleanup','declare','setup' (MG)
 * sr_poll nows supports http (MG)
