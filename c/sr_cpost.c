@@ -62,6 +62,13 @@ struct dir_stack {
           (case: directory exists, while code runs, directory is deleted, then
            the inode is re-used for a file or another directory. if it turns
            out to be a directory, then it will be in the stack, but not watched.
+
+   would be straightforward to:
+       - use an uthash for the stack, rather than a stack a hash list on id.
+       - have each dir_stak entry have a hash_entry for the files modified within that directory,
+         rather than one big one in check4events.  would bring the size of  'n' way down for various algos.
+         also use relative paths, that way, rather than absolute ones used in current hash.
+
  */
 
 static struct dir_stack *dir_stack_top = NULL;   /* insertion point (end of line.) */
