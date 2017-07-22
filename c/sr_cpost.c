@@ -415,13 +415,13 @@ int main(int argc, char **argv)
     }
   
  /*
+    FIXME: wait until next version of sarra is released... not permitted on old ones.
+    warn for now, error exit on future versions.
+  */
     if ( !sr_post_init( sr_c ) ) 
     {
-        fprintf( stderr, "failed to declare exchange: %s\n", sr_cfg.exchange );
-        return(1);
+        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
     }
-  wait until next version of sarra is released... not permitted on old ones.
- */
     if ( !strcmp( sr_cfg.action, "setup" ) )
     {
         return(0);
