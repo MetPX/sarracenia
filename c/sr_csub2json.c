@@ -19,6 +19,23 @@
 
 #include "sr_consume.h"
 
+void usage()
+{
+    fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
+    fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
+    fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
+    fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
+    fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to bind to\n" );
+    fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
+    fprintf( stderr, "\t\tqueue <name> - queue to declare & use.\n" );
+
+    fprintf( stderr, "\nThis is a stripped down C implementation of sr_subscribe(1), see man page for details\n\n" );
+    fprintf( stderr, "examples of missing features: \n\n" );
+    fprintf( stderr, "\t\tno cache.\n" );
+    fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
+    exit(1);
+}
+
 int main(int argc, char **argv)
 {
   struct sr_message_t *m;
@@ -26,24 +43,9 @@ int main(int argc, char **argv)
   struct sr_config_t sr_cfg;
   int consume,i;
   
-  if ( argc < 3 ) 
-  {
-     fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
-     fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
-     fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
-     fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
-     fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to bind to\n" );
-     fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
-     fprintf( stderr, "\t\tqueue <name> - queue to declare & use.\n" );
-
-     fprintf( stderr, "\nThis is a stripped down C implementation of sr_subscribe(1), see man page for details\n\n" );
-     fprintf( stderr, "examples of missing features: \n\n" );
-     fprintf( stderr, "\t\tno cache.\n" );
-     fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
-     exit(1);
-  }
+  if ( argc < 3 ) usage();
  
-  sr_config_init( &sr_cfg );
+  sr_config_init( &sr_cfg, argv[0] );
 
   i=1;
   while( i < argc ) 
@@ -55,7 +57,12 @@ int main(int argc, char **argv)
       if (!consume) break;
       i+=consume;
   }
-  
+  if (!sr_config_finalize( &sr_cfg, 1 ))
+  {
+     fprintf( stderr, "failed to finalize configuration\n");
+     return(1); 
+  }
+
   sr_c = sr_context_init_config( &sr_cfg );
   if (!sr_c) {
      fprintf( stderr, "failed to read configuration\n");

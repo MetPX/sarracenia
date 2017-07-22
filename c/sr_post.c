@@ -463,7 +463,7 @@ int sr_post_init( struct sr_context *sr_c )
     return(1);
 }
 
-void connect_and_post(const char *fn) 
+void connect_and_post(const char *fn,const char* progname) 
 {
 
   static struct sr_config_t sr_cfg; 
@@ -484,9 +484,9 @@ void connect_and_post(const char *fn)
   { 
      if ( config_read == 0 ) 
      {
-       sr_config_init(&sr_cfg);
-       sr_config_read(&sr_cfg,setstr);
-       config_read=1;
+       sr_config_init(&sr_cfg,progname);
+       config_read = sr_config_read(&sr_cfg,setstr);
+       if (!config_read) return;
      }
      sr_c = sr_context_init_config(&sr_cfg);
   } 

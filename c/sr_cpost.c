@@ -375,7 +375,7 @@ int main(int argc, char **argv)
     
     if ( argc < 3 ) usage();
    
-    sr_config_init( &sr_cfg );
+    sr_config_init( &sr_cfg, argv[0] );
   
     i=1;
     while( i < argc ) 
@@ -387,9 +387,16 @@ int main(int argc, char **argv)
         if (!consume) break;
         i+=consume;
     }
+    if (!sr_config_finalize( &sr_cfg, 0 ))
+    {
+        fprintf( stderr, "something missing, failed to finalize config\n");
+        return(1);
+    }
+    
     
     sr_c = sr_context_init_config( &sr_cfg );
-    if (!sr_c) {
+    if (!sr_c) 
+    {
         fprintf( stderr, "failed to read config\n");
         return(1);
     }

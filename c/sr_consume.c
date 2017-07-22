@@ -57,6 +57,7 @@ static struct sr_message_t msg;
 int sr_consume_cleanup(struct sr_context *sr_c)
 {
   amqp_rpc_reply_t reply;
+  char p[PATH_MAX];
 
   amqp_queue_delete( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->queuename), 0, 0 );
 
@@ -65,6 +66,13 @@ int sr_consume_cleanup(struct sr_context *sr_c)
       sr_amqp_reply_print(reply, "queue delete failed");
       return(0);
   }
+  /* PS - should this be in sr_config? see sr_config_finalize for the other end of this
+   */
+
+  sprintf( p, "%s/.cache/sarra/%s/%s/sr_%s.%s.%s", getenv("HOME"),
+            sr_c->cfg->progname, sr_c->cfg->configname, sr_c->cfg->progname, 
+            sr_c->cfg->configname, sr_c->cfg->broker->user );
+  unlink(p);
   return(1);
 }
 
@@ -80,6 +88,8 @@ int sr_consume_setup(struct sr_context *sr_c)
   amqp_boolean_t  exclusive = 0;
   amqp_boolean_t  auto_delete = 0;
   struct sr_topic_t *t;
+
+  msg.user_headers=NULL;
 
   amqp_queue_declare_ok_t *r = amqp_queue_declare( 
              sr_c->conn, 
@@ -164,7 +174,6 @@ void assign_field( const char* key, char *value )
      } else if ( !strcmp(key,"path") ) {
          strcpy(msg.path,value); 
      } else {
-         fprintf(stderr, "got a user header: key=%s, value=%s\n", key, value );
          h = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
          h->key=strdup(key);
          h->value=strdup(value);
@@ -197,8 +206,6 @@ void sr_message_2json(struct sr_message_t *m)
      printf( ", " );
      json_dump_strheader( "to_clusters", m->to_clusters );
 
-     fprintf( stderr, "msg.user_headers=%p\n", msg.user_headers );
-
      for(  h=msg.user_headers; h ; h=h->next ) 
      {
           printf( ", " );
@@ -228,8 +235,16 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     size_t body_received;
     char tag[AMQP_MAX_SS];
     char value[AMQP_MAX_SS];
+    struct sr_header_t *tmph;
 
-    msg.user_headers=NULL;
+    while (msg.user_headers)
+    {
+        tmph=msg.user_headers;
+        free(tmph->key);        
+        free(tmph->value);        
+        msg.user_headers=tmph->next;
+        free(tmph);
+    }
 
     amqp_basic_consume(sr_c->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 

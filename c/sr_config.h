@@ -68,6 +68,7 @@ struct sr_config_t {
   long unsigned     blocksize; // if partitioned, how big are they?
   struct sr_broker_t *broker;
   int               debug;
+  char             *configname;
   char             *directory;
   sr_event_t       events;
   char             *exchange;
@@ -78,6 +79,7 @@ struct sr_config_t {
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.
   char             *queuename;
+  char             *progname;
   int               pipe;  // pipe mode, read file names from standard input
   int               recursive;
   float             sleep;
@@ -115,12 +117,24 @@ void add_topic( struct sr_config_t *sr_cfg, const char* sub );
 
 void sr_config_free( struct sr_config_t *sr_cfg );
 
-void sr_config_init( struct sr_config_t *sr_cfg );
+void sr_config_init( struct sr_config_t *sr_cfg, const char *progname );
  /* Initialize an sr_config structure (setting defaults)
   */
 
-void sr_config_read( struct sr_config_t *sr_cfg, char *filename );
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename );
 
 /* sr_config_read:
    read an sr configuration file, initialize the struct sr_config_t 
+   return 1 on success, 0 on failure.
  */
+
+int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer );
+ /* 
+    after all options and files have been read, initialize 
+    remaining values in an sr_config structure (setting defaults)
+    prior to use.
+
+    if is_consumer, then a queue will be needed, so perform queue guessing logic.
+
+   return 1 on success, 0 on failure.
+  */

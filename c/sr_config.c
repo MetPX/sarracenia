@@ -422,10 +422,12 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   struct sr_mask_t *e;
 
   if (sr_cfg->action) free(sr_cfg->action);
+  if (sr_cfg->configname) free(sr_cfg->configname);
   if (sr_cfg->directory) free(sr_cfg->directory);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
+  if (sr_cfg->progname) free(sr_cfg->progname);
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->url) free(sr_cfg->url);
 
@@ -456,13 +458,16 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   }
 
 }
-void sr_config_init( struct sr_config_t *sr_cfg ) 
+void sr_config_init( struct sr_config_t *sr_cfg, const char *progname ) 
 {
+  char *c;
+
   sr_credentials_init();
   sr_cfg->action=strdup("foreground");
   sr_cfg->accept_unmatched=1;
   sr_cfg->blocksize=1;
   sr_cfg->broker=NULL;
+  sr_cfg->configname=NULL;
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
@@ -473,6 +478,12 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
   sr_cfg->pipe=0;
+  if (progname) { /* skip the sr_ prefix */
+     c = strchr(progname,'_');
+     if (c) sr_cfg->progname = strdup(c+1);
+  } else 
+     sr_cfg->progname=NULL;
+
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
   sr_cfg->sumalgo='s';
@@ -481,18 +492,90 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   strcpy( sr_cfg->topic_prefix, "v02.post" );
   sr_cfg->topics=NULL;
   sr_cfg->url=NULL;
+
+  /* FIXME: should probably do this at some point.
+  sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
+  sr_config_read( sr_cfg, p );
+   */
 }
 
-void sr_config_read( struct sr_config_t *sr_cfg, char *filename ) 
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename ) 
+/* 
+  search for the given configuration 
+  return 1 if it was found and read int, 0 otherwise.
+
+ */
 {
+  static int config_depth = 0;
   FILE *f;
   char *option;
   char *argument;
+  char *c,*d;
+  int plen;
+  char p[PATH_MAX];
 
-  f = fopen( filename, "r" );
-  if ( f == NULL ) {
-    fprintf( stderr, "error: failed to fopen configuration file: %s\n", filename );
-    return;
+  /* set config name */
+  if (! config_depth ) 
+  {
+      strcpy(p,filename);
+      c=strrchr(p, '/' );
+      if (c) c++;
+      else c=p;
+
+      d=strrchr(c,'.'); 
+      if (d) *d='\0';
+      sr_cfg->configname = strdup(c);
+      config_depth++;
+  }
+  /* linux config location */
+  if ( *filename != '/' ) 
+  {
+      sprintf( p, "%s/.config/sarra/%s/%s", getenv("HOME"), sr_cfg->progname, filename );
+
+  } else {
+      strcpy( p, filename );
+  }
+  plen=strlen(p);
+  if ( strcmp(&(p[plen-5]), ".conf") )  // append .conf if not already there.
+     strcat(p,".conf");
+
+  // absolute paths in the normal places...
+  if (sr_cfg->debug) 
+        fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+
+  f = fopen( p, "r" );
+  if ( f == NULL )  // drop the suffix
+  {
+      plen=strlen(p);
+      p[plen-5]='\0';
+      plen -= 5; 
+      f = fopen( p, "r" );
+  }
+  if ( f == NULL ) 
+  {
+     if (*filename != '/')  /* relative path, with or without suffix */
+     { 
+         strcpy( p, filename );
+         if (sr_cfg->debug) 
+             fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+         f = fopen( p, "r" );
+     }
+     if ( f == NULL ) 
+     {
+         if ( strcmp(&(p[plen-5]), ".conf") ) 
+         {
+             strcat(p,".conf");
+             if (sr_cfg->debug) 
+                 fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+             f = fopen( p, "r" );
+         }
+     }
+  }
+
+  if ( f==NULL ) 
+  {
+          fprintf( stderr, "error: failed to find configuration: %s\n", filename );
+          return(0);
   }
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 
@@ -510,5 +593,92 @@ void sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   };
   fclose( f );
+
+  return(1);
 }
 
+
+int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer) 
+{
+  char p[PATH_MAX];
+  char q[AMQP_MAX_SS];
+  FILE *f;
+  int ret;
+  struct stat sb;
+
+  /* FIXME: missing: build .config and .cache directories?
+   */
+
+  if (! sr_cfg->configname )
+     sr_cfg->configname=strdup("NONE");
+
+  if (! sr_cfg->progname )
+     sr_cfg->progname=strdup("NONE");
+
+  // if the state directory is missing, build it.
+  sprintf( p, "%s/.cache/%s/%s", getenv("HOME"), sr_cfg->progname, sr_cfg->configname ) ;
+  ret = stat( p, &sb );
+  if ( ret ) {
+     sprintf( p, "%s/.cache", getenv("HOME") );
+     mkdir( p, 0700 );
+     strcat( p, "/" );
+     strcat( p, "sarra" );
+     mkdir( p, 0700 );
+     strcat( p, "/" );
+     strcat( p, sr_cfg->progname );
+     mkdir( p, 0700 );
+     strcat( p, "/" );
+     strcat( p, sr_cfg->configname );
+     mkdir( p, 0700 );
+  }
+
+  if (! is_consumer ) 
+     return(1);
+
+  if (! sr_cfg->queuename ) { // was not specified, pick one.
+
+     if (!sr_cfg->progname || !sr_cfg->configname || !sr_cfg->broker || !sr_cfg->broker->user ) 
+     {
+          fprintf( stderr, "incomplete configuration, cannot guess queue\n"  );
+          return(0);
+     }
+     sprintf( p, "%s/.cache/sarra/%s/%s/sr_%s.%s.%s", getenv("HOME"),
+            sr_cfg->progname, sr_cfg->configname, sr_cfg->progname, sr_cfg->configname, sr_cfg->broker->user );
+     f =  fopen( p, "r" );
+     if ( f ) // read the queue name from the file.
+     {
+         fgets(p,PATH_MAX,f);
+         sr_cfg->queuename=strdup(p);
+         fclose(f);
+     } else {
+         sprintf( q, "q_%s.sr_%s.%s.%ld.%ld",
+            sr_cfg->broker->user, sr_cfg->progname, sr_cfg->configname,
+             random(), random() );
+         sr_cfg->queuename=strdup(q);
+
+         f = fopen( p, "w" ); // save the queue name for next time.
+         if (f) 
+         {
+             if (sr_cfg->debug)
+                fprintf( stderr, "writing %s to %s\n", q, p );
+             fputs( q, f );
+             fclose(f);
+         }
+     }
+  }
+
+  /*
+  if (configname) {
+     c= strrchr(configname,'.');
+     if (!strcmp(c,".conf")) {
+        strncpy(p,configname,(c-configname) );
+        p[ (c-configname) ] = '\0';
+        fprintf(stderr, "configname is: %s\n", p );
+        cfg->configname=strdup(p);
+     } else
+        cfg->configname=strdup(configname);
+  } else
+     sr_cfg->configname=NULL;
+  */
+  return(1);
+}

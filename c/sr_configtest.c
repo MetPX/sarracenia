@@ -20,12 +20,22 @@ status:
 
 int main( int argc, char *const *argv ) {
 
+  int ret;
   struct sr_config_t sr_cfg;
 
   printf( "reading: %s\n", argv[1] );
 
-  sr_config_init( &sr_cfg );
-  sr_config_read( &sr_cfg, argv[1] );
+  sr_config_init( &sr_cfg, argv[0] );
+  ret = sr_config_read( &sr_cfg, argv[1] );
+  if (!ret) {
+     fprintf(stderr, "failed to read config %s\n", argv[1] );
+     exit(1);
+  }
+  ret = sr_config_finalize( &sr_cfg, 1 );
+  if (!ret) {
+     fprintf(stderr, "failed to finalize config %s\n", argv[1] );
+     exit(1);
+  }
 
 
   printf( "broker, scheme=%s\n", sr_cfg.broker->ssl?"amqps":"amqp" );
@@ -34,8 +44,9 @@ int main( int argc, char *const *argv ) {
   printf( "broker, portText=%d \n", sr_cfg.broker->port );
   printf( "posting accept_unmatched=%s \n", sr_cfg.accept_unmatched?"on":"off" );
   printf( "posting debug=%s \n", sr_cfg.debug?"on":"off" );
-  printf( "posting events=%x \n", sr_cfg.events);
+  printf( "posting events= 0x%02x \n", sr_cfg.events);
   printf( "posting exchange=%s \n", sr_cfg.exchange);
+  printf( "posting queue_name=%s \n", sr_cfg.queuename);
   printf( "posting url=%s \n", sr_cfg.url);
   printf( "posting sumalgo=%c \n", sr_cfg.sumalgo);
 

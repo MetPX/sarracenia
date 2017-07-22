@@ -31,7 +31,7 @@ int shimpost( const char *path, int status )
 
   in_librshim_already_dammit=1;
 
-  if (!status) connect_and_post(path);
+  if (!status) connect_and_post(path,"libsrshim");
 
   in_librshim_already_dammit=0;
 

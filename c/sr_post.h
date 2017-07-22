@@ -49,7 +49,7 @@ int sr_post_cleanup( struct sr_context *sr_c );
    Clean up broker resources declared by post_init (deletes an exchange.)
   */
 
-void connect_and_post(const char *fn);
+void connect_and_post(const char *fn, const char* progname);
  /* do all of the above: connect, post, and close in one call.
     less efficient when you know you are doing many posts.
   */
