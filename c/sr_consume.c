@@ -135,6 +135,7 @@ void assign_field( const char* key, char *value )
   */
 {
      char *s;
+     struct sr_header_t *h;
 
      //fprintf( stderr, "parsing: \"%s\" : \"%s\"\n", key, value );
      if ( !strcmp(key,"parts") ) {
@@ -162,8 +163,14 @@ void assign_field( const char* key, char *value )
          strcpy(msg.url,value); 
      } else if ( !strcmp(key,"path") ) {
          strcpy(msg.path,value); 
+     } else {
+         fprintf(stderr, "got a user header: key=%s, value=%s\n", key, value );
+         h = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
+         h->key=strdup(key);
+         h->value=strdup(value);
+         h->next=msg.user_headers;
+         msg.user_headers = h;
      }
-
 }
 
 void json_dump_strheader(char *tag, char*value)
@@ -173,8 +180,10 @@ void json_dump_strheader(char *tag, char*value)
 
 void sr_message_2json(struct sr_message_t *m)
 {
+     struct sr_header_t *h;
+
      printf( "[" );
-     printf( " \"%s\", {", m->routing_key );
+     printf( " \"%s\", { ", m->routing_key );
      json_dump_strheader( "atime", m->atime );
      printf( ", " );
      printf( "\"mode\": \"%04o\"", m->mode );
@@ -187,7 +196,15 @@ void sr_message_2json(struct sr_message_t *m)
      json_dump_strheader( "sum", m->sum );
      printf( ", " );
      json_dump_strheader( "to_clusters", m->to_clusters );
-     printf( ", \"%s %s  %s\"", m->datestamp, m->url, m->path );
+
+     fprintf( stderr, "msg.user_headers=%p\n", msg.user_headers );
+
+     for(  h=msg.user_headers; h ; h=h->next ) 
+     {
+          printf( ", " );
+          json_dump_strheader( h->key, h->value );
+     } 
+     printf( " } \"%s %s  %s\"", m->datestamp, m->url, m->path );
      printf( "]\n" );
 }
 
@@ -211,6 +228,8 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     size_t body_received;
     char tag[AMQP_MAX_SS];
     char value[AMQP_MAX_SS];
+
+    msg.user_headers=NULL;
 
     amqp_basic_consume(sr_c->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 

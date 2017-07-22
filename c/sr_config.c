@@ -59,6 +59,7 @@ char *sr_time2str( struct timespec *tin ) {
 
 
 
+
 void add_topic( struct sr_config_t *sr_cfg, const char* sub )
   /* append to linked list of topics
    */
@@ -209,6 +210,34 @@ struct sr_broker_t *broker_uri_parse( char *src )
     return(b);
 } 
 
+int sr_add_header(struct sr_config_t *cfg, char *s)
+  /*
+    Add a (user defined) header to the list of existing ones. 
+    see StrinIsTrue for explanation of bitmask return values.
+   */
+{
+  char *eq;
+  struct sr_header_t *new_header;
+
+  eq=strchr(s, '=');
+  if (!eq) {
+    return(0);
+  }
+  new_header = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
+
+  if (!new_header) {
+    return(1);
+  }
+  *eq='\0';
+  new_header->key=strdup(s);
+  *eq='=';
+  new_header->value=strdup(eq+1); 
+  new_header->next=cfg->user_headers;
+  cfg->user_headers=new_header; 
+  return(3);
+}
+
+
 int StringIsTrue(const char *s) 
  /*
     return bitmask:  0-1 string value,  argument is a value 0-1
@@ -339,6 +368,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->force_polling = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "header" ) ) {
+      val = sr_add_header(sr_cfg, argument);
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
       sr_cfg->queuename = strdup(argument);
       return(2);
@@ -412,6 +445,15 @@ void sr_config_free( struct sr_config_t *sr_cfg )
        free(e->clause);
        free(e);
   }
+  while (sr_cfg->user_headers)
+  {
+       struct sr_header_t *tmph;
+       tmph=sr_cfg->user_headers;
+       free(tmph->key);
+       free(tmph->value);
+       sr_cfg->user_headers=tmph->next;
+       free(tmph);
+  }
 
 }
 void sr_config_init( struct sr_config_t *sr_cfg ) 
@@ -431,10 +473,11 @@ void sr_config_init( struct sr_config_t *sr_cfg )
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
   sr_cfg->pipe=0;
-  sr_cfg->recursive=0;
+  sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
+  sr_cfg->user_headers=NULL; 
   strcpy( sr_cfg->topic_prefix, "v02.post" );
   sr_cfg->topics=NULL;
   sr_cfg->url=NULL;

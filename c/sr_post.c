@@ -286,6 +286,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   unsigned long block_num;
   unsigned long block_rem;
   amqp_table_t table;
+  struct sr_header_t *uh;
   amqp_basic_properties_t props;
   struct sr_mask_t *mask;
   char psc;                     // part strategy character.
@@ -341,6 +342,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   header_reset();
 
   header_add( "to_clusters", sr_c->to );
+
+  for(  uh=sr_c->cfg->user_headers; uh ; uh=uh->next )
+     header_add(uh->key, uh->value);
 
   sumalgo = sr_c->cfg->sumalgo;
   block_count = 1;

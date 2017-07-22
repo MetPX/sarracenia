@@ -39,6 +39,7 @@ struct sr_message_t {
   char routing_key[AMQP_MAX_SS];
   char sum[SR_SUMSTRLEN];
   char to_clusters[AMQP_MAX_SS];
+  struct sr_header_t *user_headers;
   char url[PATH_MAXNUL];
   char path[PATH_MAXNUL];
 

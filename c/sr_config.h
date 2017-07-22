@@ -39,6 +39,12 @@ struct sr_topic_t {
   struct sr_topic_t *next;
 };
 
+struct sr_header_t {
+  char *key;
+  char *value;
+  struct sr_header_t *next;
+};
+
 struct sr_mask_t {
   char* clause;
   char* directory;
@@ -67,6 +73,7 @@ struct sr_config_t {
   char             *exchange;
   int               follow_symlinks;
   int               force_polling;
+  struct sr_header_t *user_headers;
   struct sr_mask_t *masks;
   struct sr_mask_t *match;
   char             *last_matched;  //have run isMatching.
