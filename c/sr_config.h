@@ -120,6 +120,11 @@ void sr_config_free( struct sr_config_t *sr_cfg );
 
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname );
  /* Initialize an sr_config structure (setting defaults)
+
+    progname sets where in the configuration file tree to look for defaults, as well
+    as where the .cache files will be placed ( .(config|cache)/sarra/<progname>/<config>/ )
+    config name is guessed later during read, and the cache directories are made
+    when the config is finalized.
   */
 
 int sr_config_read( struct sr_config_t *sr_cfg, char *filename );

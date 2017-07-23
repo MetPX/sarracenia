@@ -92,6 +92,8 @@ void hash2sumstr( unsigned char *h, int l )
   sumstr[2*i]='\0';
 }
 
+/* size of buffer used to read the file content in calculating checksums.
+ */
 #define SUMBUFSIZE (4096*1024)
 
 
