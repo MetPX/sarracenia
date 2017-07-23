@@ -50,8 +50,14 @@
 
 #include "sr_context.h"
 
+/*
+ Statically assign the maximum number of headers that can be included in a message.
+ just picked a number.  I remember picking a larger one before, and it bombed, don't know why.
 
-#define HDRMAX (20)
+ */
+#define HDRMAX (255)
+
+
 amqp_table_entry_t headers[HDRMAX];
 
 int hdrcnt = 0 ;
@@ -88,14 +94,19 @@ void hash2sumstr( unsigned char *h, int l )
 
 #define SUMBUFSIZE (4096*1024)
 
-char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned long block_count, 
-       unsigned long block_rem, unsigned long block_num )
+
+char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
+          unsigned long block_size, unsigned long block_count, unsigned long block_rem, unsigned long block_num 
+     )
  /* 
    return a correct sumstring (assume it is big enough)  as per sr_post(7)
    algo = 
-     '0' - no checksum, value is random.
+     '0' - no checksum, value is random. -> now same as N.
      'd' - md5sum of block.
      'n' - md5sum of filename (fn).
+     'L' - now sha512 sum of link value.
+     'N' - md5sum of filename (fn) + partstr.
+     'R' - no checksum, value is random. -> now same as N.
      's' - sha512 sum of block.
 
    block starts at block_size * block_num, and ends 
@@ -109,7 +120,7 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    static char buf[SUMBUFSIZE];
    long bytes_read ; 
    long how_many_to_read;
-   char *just_the_name;
+   const char *just_the_name=NULL;
 
    unsigned long start = block_size * block_num ;
    unsigned long end;
@@ -119,9 +130,10 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    sumstr[0]=algo;
    sumstr[1]=',';
    sumstr[2]='\0'; 
+
    switch (algo) {
 
-   case '0' : case 'R' : case 'L' :  // null checksum, removal, or symlinks.
+   case '0' : 
        sprintf( sumstr+2, "%ld", random()%1000 );
        break;
 
@@ -162,11 +174,35 @@ char *set_sumstr( char algo, const char* fn, unsigned long block_size, unsigned 
    case 'n' :
        MD5_Init(&md5ctx);
        just_the_name = rindex(fn,'/')+1;
+       if (!just_the_name) just_the_name=fn;
        MD5_Update(&md5ctx, just_the_name, strlen(just_the_name) );
        MD5_Final(hash, &md5ctx);
        hash2sumstr(hash,MD5_DIGEST_LENGTH); 
        break;
        
+   
+   case 'L' : // symlink case
+        just_the_name=linkstr;       
+
+   case 'R' : // null, or removal.
+
+   case 'N' :
+       SHA512_Init(&shactx);
+       if (!just_the_name) {
+           just_the_name = rindex(fn,'/')+1;
+           if (!just_the_name) just_the_name=fn;
+           strcpy( buf, just_the_name);
+           if (strlen(partstr) > 0 ) { 
+               strcat( buf, " " );
+               strcat( buf, partstr );
+           }     
+           just_the_name=buf;
+       }
+       SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
+       SHA512_Final(hash, &shactx);
+       hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
+       break;
+
    case 's' :
        SHA512_Init(&shactx);
 
@@ -273,8 +309,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   char message_body[1024];
   char partstr[255];
   char modebuf[6];
-  char linkstr[PATH_MAXNUL];
   char fn[PATH_MAXNUL];
+  char linkstr[PATH_MAXNUL];
   int  linklen;
   char atimestr[18];
   char mtimestr[18];
@@ -408,9 +444,10 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, block_size, 
               block_count, block_rem, block_num );
           header_add( "parts", partstr );
-      }
+      } else
+          strcpy(partstr,"");
 
-      if (! set_sumstr( sumalgo, fn, block_size, block_count, block_rem, block_num ) ) 
+      if (! set_sumstr( sumalgo, fn, partstr, linkstr, block_size, block_count, block_rem, block_num ) ) 
       {
          fprintf( stderr, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );
          return;
@@ -494,6 +531,8 @@ void connect_and_post(const char *fn,const char* progname)
        config_read = sr_config_read(&sr_cfg,setstr);
        if (!config_read) return;
      }
+     sr_config_finalize( &sr_cfg, 0 );
+
      sr_c = sr_context_init_config(&sr_cfg);
   } 
   if (!sr_c) return;

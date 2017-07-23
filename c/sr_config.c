@@ -492,6 +492,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);
+     else sr_cfg->progname = strdup(progname);
   } else 
      sr_cfg->progname=NULL;
 
