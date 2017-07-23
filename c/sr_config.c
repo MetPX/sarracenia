@@ -295,6 +295,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   char *brokerstr;
   int val;
+  char p[PATH_MAX];
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
@@ -361,6 +362,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   } else if ( !strcmp( option, "exchange" ) || !strcmp( option, "ex") ) {
       sr_cfg->exchange = strdup(argument);
       return(2);
+
+  } else if ( !strcmp( option, "flow" ) ) {
+      sprintf(p,"flow=%s", argument );
+      val = sr_add_header(sr_cfg, p);
+      return(1+(val&1));
 
   } else if ( !strcmp( option, "follow_symlinks" ) || !strcmp( option, "fs") || !strcmp(option, "follow") ) {
       val = StringIsTrue(argument);
