@@ -333,7 +333,13 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   strcat( message_body, " " );
   set_url( message_body, sr_c->cfg->url );
   strcat( message_body, " " );
-  strcat( message_body, fn);
+
+  if ( sr_c->cfg->documentroot ) 
+  {
+      if ( !strncmp( sr_c->cfg->documentroot, fn, strlen(sr_c->cfg->documentroot) ) ) 
+          strcat( message_body, fn+strlen(sr_c->cfg->documentroot) );
+  } else 
+      strcat( message_body, fn);
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event:%x\n", 

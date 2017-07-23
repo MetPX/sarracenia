@@ -350,6 +350,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->directory = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "document_root" )|| !strcmp( option, "dr") ) {
+      sr_cfg->documentroot = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "events" ) || !strcmp( option, "e") ) {
       sr_cfg->events = parse_events(argument);
       return(2);
@@ -470,6 +474,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->configname=NULL;
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
+  sr_cfg->documentroot=NULL;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;

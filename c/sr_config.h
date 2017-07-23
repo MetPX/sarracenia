@@ -70,6 +70,7 @@ struct sr_config_t {
   int               debug;
   char             *configname;
   char             *directory;
+  char             *documentroot;
   sr_event_t       events;
   char             *exchange;
   int               follow_symlinks;
