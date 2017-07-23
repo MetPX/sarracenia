@@ -21,6 +21,10 @@
 
  */
 
+#ifndef SR_CONSUME_H
+
+#define SR_CONSUME_H 1
+
 #include "sr_context.h"
 
 struct sr_message_t {
@@ -76,4 +80,4 @@ void sr_message_2json(struct sr_message_t *m);
  */
 struct sr_message_t *sr_consume(struct sr_context *sr_c);
 
- 
+#endif 

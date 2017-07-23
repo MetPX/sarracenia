@@ -1,5 +1,8 @@
 /* vim:set ft=c ts=2 sw=2 sts=2 et cindent: */
 
+#ifndef SR_POST_H
+#define SR_POST_H 1
+
 /*
  * Usage info after license block.
  *
@@ -54,3 +57,4 @@ void connect_and_post(const char *fn, const char* progname);
     less efficient when you know you are doing many posts.
   */
 
+#endif

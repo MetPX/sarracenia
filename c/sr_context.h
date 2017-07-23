@@ -20,6 +20,11 @@
   there is an all in one function: connect_and_post that does all of the above.
 
  */
+
+#ifndef SR_CONTEXT_H
+
+#define SR_CONTEXT_H 1
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,4 +92,4 @@ void sr_context_close(struct sr_context *sr_c);
 
 
 
- 
+#endif 

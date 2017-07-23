@@ -1,4 +1,7 @@
 
+#ifndef SR_EVENT_H
+#define SR_EVENT_H 1
+
 typedef unsigned char sr_event_t;
 
 #define SR_CREATE ((sr_event_t)(0x01))
@@ -8,3 +11,6 @@ typedef unsigned char sr_event_t;
 
 
 sr_event_t parse_events( char * );
+
+#endif
+

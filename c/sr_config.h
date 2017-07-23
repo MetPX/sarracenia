@@ -14,6 +14,10 @@ status:
 
  */
 
+#ifndef SR_CONFIG_H
+
+#define SR_CONFIG_H 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -144,3 +148,5 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer );
 
    return 1 on success, 0 on failure.
   */
+
+#endif

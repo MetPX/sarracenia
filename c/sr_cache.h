@@ -7,39 +7,44 @@
   is the use of the hash enough of a key?  dunno.
  */
 
+#ifndef SR_CACHE_H
+#define SR_CACHE_H 1
+
 #include <openssl/sha.h>
 #include <time.h>
 #include "uthash.h"
 
+#define SR_CACHEKEYSZ (SHA512_DIGEST_LENGTH+1)
 struct sr_cache_t {
-  unsigned char key[SHA512_DIGEST_LENGTH+1]; // Assumed longest possible hash. first character is algorithm marker.
+  unsigned char key[SR_CACHEKEYSZ]; // Assumed longest possible hash. first character is algorithm marker.
   struct timespec created;
   UT_hash_handle hh;
 };
 
 
-int sr_cache_check( struct sr_cache_t *cache, char algo, char *value ); 
+int sr_cache_check( struct sr_cache_t *cache, char algo, void *ekey, int ekeylen ); 
  /* 
-   insert new item if it isn't in the cache.
+   insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
    retun value:
        0 - present, so not added,
        1 - was not present, so added to cache.
+       <0 - something bad happenned
  */
 
 
-sr_cache_clean( struct sr_cache_t *cache, struct timespec *since );
+void sr_cache_clean( struct sr_cache_t *cache, struct timespec *since );
  /* 
      remove entries in the cache older than since.
  */
 
-sr_cache_free( struct sr_cache_t *cache, struct timespec *since );
+void sr_cache_free( struct sr_cache_t *cache, struct timespec *since );
  /* 
      remove all entries in the cache  (cleanup to discard.)
  */
 
-sr_cache_save( struct sr_cache_t *cache, const char *fn);
+void sr_cache_save( struct sr_cache_t *cache, const char *fn);
  /* 
-     remove entries in the cache older than since.
+     write entire cache to the given file name.
  */
 
 struct sr_cache_t *sr_cache_load( const char *fn);
@@ -47,4 +52,4 @@ struct sr_cache_t *sr_cache_load( const char *fn);
      create an sr_cache based on the content of the named file.     
  */
 
-
+#endif
