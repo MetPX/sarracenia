@@ -114,6 +114,7 @@ class sr_watch(sr_instances):
         self.post.force_polling   = self.force_polling
         if self.reset :
            self.post.connect()
+           self.post.setup()
            self.post.poster.cache_reset()
 
 
@@ -221,6 +222,9 @@ class sr_watch(sr_instances):
                   ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
             self.validate_cache()
             self.post.connect()
+
+            # amqp resources
+            self.post.setup()
 
             if self.post.realpath: 
                sld = os.path.realpath( self.watch_path )

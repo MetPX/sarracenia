@@ -179,6 +179,12 @@ class sr_poll(sr_instances):
         self.msg.post_exchange_split = self.post_exchange_split
 
         self.connected        = True 
+
+        # =============
+        # amqp resources
+        # =============
+       
+        self.declare_exchanges()
            
 
     # =============
@@ -728,7 +734,12 @@ class sr_poll(sr_instances):
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
-        # declare posting exchange
+        # on posting host
+       
+        self.post_broker = self.broker
+        self.poster      = sr_poster(self)
+
+        # declare posting exchange(s)
        
         self.declare_exchanges()
 
@@ -737,11 +748,7 @@ class sr_poll(sr_instances):
 
     def declare_exchanges(self):
 
-        # on posting host
-       
-        self.post_broker = self.broker
-        self.poster      = sr_poster(self)
-        host             = self.poster.hc
+        host = self.poster.hc
 
         # define post exchange (splitted ?)
 
@@ -762,7 +769,12 @@ class sr_poll(sr_instances):
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
 
-        # declare posting exchange
+        # on posting host
+       
+        self.post_broker = self.broker
+        self.poster      = sr_poster(self)
+
+        # declare posting exchange(s)
        
         self.declare_exchanges()
 

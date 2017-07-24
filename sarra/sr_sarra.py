@@ -189,6 +189,10 @@ class sr_sarra(sr_instances):
         self.msg.pub_exchange = self.post_exchange
         self.msg.post_exchange_split = self.post_exchange_split
 
+        # amqp resources
+
+        self.declare_exchanges()
+
 
     def __do_download__(self):
 
@@ -718,12 +722,16 @@ class sr_sarra(sr_instances):
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
-        # on consuming host, do cleanup
+        # on consuming host, do declare
 
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
-        # posting exchanges
+        # on posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
        
         self.declare_exchanges()
 
@@ -731,12 +739,6 @@ class sr_sarra(sr_instances):
         os._exit(0)
 
     def declare_exchanges(self):
-
-        # on posting host
-       
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
 
         # define post exchange (splitted ?)
 
@@ -762,7 +764,11 @@ class sr_sarra(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
-        # posting exchanges
+        # on posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
        
         self.declare_exchanges()
 
