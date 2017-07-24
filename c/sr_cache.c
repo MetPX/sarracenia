@@ -19,7 +19,7 @@
 #include "sr_cache.h"
 
 
-int sr_cache_check( struct sr_cache_t **cache, char algo, void *ekey, int ekeylen )
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen )
  /* 
    insert new item if it isn't in the cache.
    retun value:
@@ -41,44 +41,47 @@ int sr_cache_check( struct sr_cache_t **cache, char algo, void *ekey, int ekeyle
        memset(e+1, 0, SR_CACHEKEYSZ-1);
    memcpy(e+1, ekey, ekeylen );
 
-   HASH_FIND(hh,*cache,e,SR_CACHEKEYSZ,c);
+   HASH_FIND(hh,(*cachep),e,SR_CACHEKEYSZ,c);
 
    if (!c) 
    { 
+       
        c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
        memcpy(c->key, e, SR_CACHEKEYSZ );
-       HASH_ADD_KEYPTR( hh, *cache, c->key, SR_CACHEKEYSZ, c );
+       clock_gettime( CLOCK_REALTIME, &(c->created) );
+
+       HASH_ADD_KEYPTR( hh, (*cachep), c->key, SR_CACHEKEYSZ, c );
        return(1);
    } 
    return(0);
 }
 
-void sr_cache_clean( struct sr_cache_t **cache, struct timespec *since )
+void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since )
  /* 
      remove entries in the cache older than since. (resolution is in seconds.)
  */
 {
     struct sr_cache_t *c, *tmpc;
 
-    HASH_ITER(hh, *cache, c, tmpc )
+    HASH_ITER(hh, *cachep, c, tmpc )
     {
         if (c->created.tv_sec < since->tv_sec) {
-            HASH_DEL(*cache,c);
+            HASH_DEL(*cachep,c);
             free(c);
         }
     }
 }
 
-void sr_cache_free( struct sr_cache_t *cache, struct timespec *since )
+void sr_cache_free( struct sr_cache_t **cachep)
  /* 
      remove all entries in the cache  (cleanup to discard.)
  */
 {
     struct sr_cache_t *c, *tmpc;
 
-    HASH_ITER(hh, cache, c, tmpc )
+    HASH_ITER(hh, (*cachep), c, tmpc )
     {
-        HASH_DEL(cache,c);
+        HASH_DEL((*cachep),c);
         free(c);
     }
 }
@@ -122,14 +125,16 @@ int convert_hex_digit( char c )
 }
 
 
+#define load_buflen (SR_CACHEKEYSZ*2 + SR_TIMESTRLEN + 4)
+
+static char buf[ load_buflen ];
+
 struct sr_cache_t *sr_cache_load( const char *fn)
  /* 
      create an sr_cache based on the content of the named file.     
  */
 {
     struct sr_cache_t *c, *cache;
-    const int buflen = 80;
-    char buf[ buflen ];
     FILE *f;
 
     f = fopen( fn, "r" );
@@ -140,7 +145,7 @@ struct sr_cache_t *sr_cache_load( const char *fn)
     }
     cache = NULL;
 
-    while( fgets( buf, buflen, f ) )
+    while( fgets( buf, load_buflen, f ) )
     {
        c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
        c->key[0] = buf[0];
@@ -149,7 +154,7 @@ struct sr_cache_t *sr_cache_load( const char *fn)
        {
             c->key[i]= convert_hex_digit(buf[2*i]) * 16 + convert_hex_digit(buf[2*i+1])  ;
        }
-       memcpy( &(c->created), sr_str2time( buf+SR_CACHEKEYSZ ), sizeof(struct timespec) );
+       memcpy( &(c->created), sr_str2time( buf+(SR_CACHEKEYSZ*2) ), sizeof(struct timespec) );
 
        HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
         

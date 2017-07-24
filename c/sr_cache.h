@@ -23,7 +23,7 @@ struct sr_cache_t {
 };
 
 
-int sr_cache_check( struct sr_cache_t **cache, char algo, void *ekey, int ekeylen ); 
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen ); 
  /* 
    insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
    retun value:
@@ -33,12 +33,12 @@ int sr_cache_check( struct sr_cache_t **cache, char algo, void *ekey, int ekeyle
  */
 
 
-void sr_cache_clean( struct sr_cache_t **cache, struct timespec *since );
+void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since );
  /* 
      remove entries in the cache older than since.
  */
 
-void sr_cache_free( struct sr_cache_t *cache, struct timespec *since );
+void sr_cache_free( struct sr_cache_t **cachep );
  /* 
      remove all entries in the cache  (cleanup to discard.)
  */
