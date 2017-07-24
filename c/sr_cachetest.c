@@ -81,6 +81,6 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "OK: %d of %d tests passed\n", success_count, test_count );
        exit(0);
    }
-   fprintf( stdout, "FAILED: %d of %d tests\n", test_count-success_count, test_count );
+   fprintf( stdout, "FAILED: only %d of %d tests passed.\n", success_count, test_count );
    exit(1); 
 }

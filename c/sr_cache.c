@@ -136,6 +136,7 @@ struct sr_cache_t *sr_cache_load( const char *fn)
 {
     struct sr_cache_t *c, *cache;
     FILE *f;
+    int line_count=0;
 
     f = fopen( fn, "r" );
     if ( !f ) 
@@ -147,6 +148,13 @@ struct sr_cache_t *sr_cache_load( const char *fn)
 
     while( fgets( buf, load_buflen, f ) )
     {
+       line_count++;
+       fprintf( stderr, "strlen(buf)=%ld loadbuflen: %ld\n", strlen(buf), load_buflen );
+       if (strlen( buf ) <  load_buflen-3) 
+       {
+          fprintf( stderr, "ERROR: cache file line %ld too short, corrupted, skipping!\n", line_count );
+          continue;
+       }
        c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
        c->key[0] = buf[0];
        int i=1;
@@ -157,7 +165,6 @@ struct sr_cache_t *sr_cache_load( const char *fn)
        memcpy( &(c->created), sr_str2time( buf+(SR_CACHEKEYSZ*2) ), sizeof(struct timespec) );
 
        HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
-        
     }
     fclose(f);
     return(cache);
