@@ -193,8 +193,11 @@ class sr_sender(sr_instances):
            self.msg.publisher    = self.poster.publisher
            self.msg.pub_exchange = self.post_exchange
            self.msg.user         = self.post_broker.username
+           # amqp resources
+           self.declare_exchanges()
 
-        self.connected        = True 
+        self.connected = True 
+
 
     # =============
     # __do_send__
@@ -646,23 +649,17 @@ class sr_sender(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
-        # declare posting exchanges if any
+        # on posting host ?
+       
+        if self.post_broker == None : return
 
+        self.poster = sr_poster(self)
         self.declare_exchanges()
        
         self.close()
         os._exit(0)
 
     def declare_exchanges(self):
-
-        # no posting ?
-       
-        if self.post_broker == None : return
-
-        # on posting host
-       
-        self.poster = sr_poster(self)
-        host        = self.poster.hc
 
         # define post exchange (splitted ?)
 
@@ -677,7 +674,7 @@ class sr_sender(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            host.exchange_declare(x)
+            self.poster.hc.exchange_declare(x)
 
 
     def setup(self):
@@ -688,8 +685,11 @@ class sr_sender(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
-        # declare posting exchanges if any
+        # on posting host ?
+       
+        if self.post_broker == None : return
 
+        self.poster = sr_poster(self)
         self.declare_exchanges()
        
         self.close()

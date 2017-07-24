@@ -169,13 +169,15 @@ class sr_winnow(sr_instances):
         if self.post_broker.geturl() != self.broker.geturl() :
            self.poster            = sr_poster(self)
            self.msg.publisher     = self.poster.publisher
+           self.post_hc           = self.poster.hc
 
         # =============
         # publisher if post_broker is same as broker
         # =============
 
         else :
-           self.publisher = Publisher(self.consumer.hc)
+           self.post_hc   = self.consumer.hc
+           self.publisher = Publisher(self.post_hc)
            self.publisher.build()
            self.msg.publisher = self.publisher
            self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
@@ -184,6 +186,14 @@ class sr_winnow(sr_instances):
         self.msg.pub_exchange  = self.post_exchange
         self.msg.post_exchange_split  = self.post_exchange_split
         self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
+
+        # =============
+        # amqp resources
+        # =============
+
+        self.declare_exchanges()
+
+ 
 
 
     def overwrite_defaults(self):
@@ -363,7 +373,12 @@ class sr_winnow(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
-        # declare posting exchanges
+        # on posting host
+       
+        self.post_hc = self.consumer.hc
+        if self.post_broker.geturl() != self.broker.geturl() :
+           self.poster  = sr_poster(self)
+           self.post_hc = self.poster.hc
 
         self.declare_exchanges()
 
@@ -371,13 +386,6 @@ class sr_winnow(sr_instances):
         os._exit(0)
 
     def declare_exchanges(self):
-
-        # on posting host
-       
-        host = self.consumer.hc
-        if self.post_broker.geturl() != self.broker.geturl() :
-           self.poster = sr_poster(self)
-           host        = self.poster.hc
 
         # define post exchange (splitted ?)
 
@@ -392,7 +400,7 @@ class sr_winnow(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            host.exchange_declare(x)
+            self.post_hc.exchange_declare(x)
 
 
     def setup(self):
@@ -403,7 +411,12 @@ class sr_winnow(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
-        # declare posting exchanges
+        # on posting host
+       
+        self.post_hc = self.consumer.hc
+        if self.post_broker.geturl() != self.broker.geturl() :
+           self.poster  = sr_poster(self)
+           self.post_hc = self.poster.hc
 
         self.declare_exchanges()
 

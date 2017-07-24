@@ -538,6 +538,9 @@ def main():
 
               post.lock_set()
 
+              # amqp resources
+              post.setup()
+
               for watchpath in post.postpath :
                   post1file(post, watchpath)
 

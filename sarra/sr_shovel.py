@@ -180,6 +180,10 @@ class sr_shovel(sr_instances):
 
         self.msg.post_exchange_split = self.post_exchange_split
 
+        # amqp resources
+
+        self.declare_exchanges()
+
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
@@ -502,7 +506,11 @@ class sr_shovel(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
-        # declare posting exchanges
+        # posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
 
         self.declare_exchanges()
        
@@ -510,12 +518,6 @@ class sr_shovel(sr_instances):
         os._exit(0)
 
     def declare_exchanges(self):
-
-        # posting host
-       
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
 
         # post exchange(s)
 
@@ -540,7 +542,11 @@ class sr_shovel(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
-        # declare posting exchanges
+        # posting host
+       
+        self.hc_pst = HostConnect( logger = self.logger )
+        self.hc_pst.set_url( self.post_broker )
+        self.hc_pst.connect()
 
         self.declare_exchanges()
        
