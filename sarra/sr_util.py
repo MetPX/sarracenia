@@ -291,3 +291,196 @@ def timestr2flt( s ):
     t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
     f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
     return(f)
+
+# ===================================
+# self_test
+# ===================================
+
+def self_test():
+
+    import tempfile
+
+    status = 0
+
+    # ===================================
+    # TESTING checksum
+    # ===================================
+
+    # creating a temporary directory with testfile test_chksum_file
+
+    tmpdirname = tempfile.TemporaryDirectory().name
+    try    : os.mkdir(tmpdirname)
+    except : pass
+    tmpfilname = 'test_chksum_file'
+    tmppath    = tmpdirname + os.sep + 'test_chksum_file'
+
+    f=open(tmppath,'wb')
+    f.write(b"0123456789")
+    f.write(b"abcdefghij")
+    f.write(b"ABCDEFGHIJ")
+    f.write(b"9876543210")
+    f.close()
+
+    # checksum_0
+
+    chk0 = checksum_0()
+    chk0.set_path(tmppath)
+    f = open(tmppath,'rb')
+    for i in 0,1,2,3 :
+        chunk = f.read(10)
+        chk0.update(chunk)
+    f.close()
+
+    if chk0.get_value() != '0' :
+          print("test checksum_0 Failed")
+          status = 1
+      
+
+    # checksum_d
+
+    chkd = checksum_d()
+    chkd.set_path(tmppath)
+    f = open(tmppath,'rb')
+    for i in 0,1,2,3 :
+        chunk = f.read(10)
+        chkd.update(chunk)
+    f.close()
+
+    if chkd.get_value() != '7efaff9e615737b379a45646c755c492' :
+          print("test checksum_d Failed")
+          status = 1
+      
+
+    # checksum_n
+
+    chkn = checksum_n()
+    chkn.set_path(tmpfilname)
+    f = open(tmppath,'rb')
+    for i in 0,1,2,3 :
+        chunk = f.read(10)
+        chkn.update(chunk)
+    f.close()
+
+    if chkn.get_value() != 'fd6b0296fe95e19fcef6f21f77efdfed' :
+          print("test checksum_n Failed")
+          status = 1
+
+    # checksum_s
+
+    chks = checksum_s()
+    chks.set_path(tmppath)
+    f = open(tmppath,'rb')
+    for i in 0,1,2,3 :
+        chunk = f.read(10)
+        chks.update(chunk)
+    f.close()
+
+    if chks.get_value() != 'e0103da78bbff9a741116e04f8bea2a5b291605c00731dcf7d26c0848bccf76dd2caa6771cb4b909d5213d876ab85094654f36d15e265d322b68fea4b78efb33':
+          print("test checksum_s Failed")
+          status = 1
+      
+    os.unlink(tmppath)
+    os.rmdir(tmpdirname)
+
+    if status < 1 : print("test checksum_[0,d,n,s] OK")
+
+    # ===================================
+    # TESTING startup_args
+    # ===================================
+
+    targs   = [ '-recursive', 'True' ]
+    taction = 'cleanup'
+    tconfig = 'toto'
+    told    = False
+
+    # Tests
+
+    testing_args     = {}
+
+    testing_args[ 1] = ['program']
+    testing_args[ 2] = ['program', taction ]
+
+    testing_args[ 3] = ['program',                       taction, tconfig ]
+    testing_args[ 4] = ['program', '-recursive', 'True', taction, tconfig ]
+
+    testing_args[ 5] = ['program', '-a', taction,      '-recursive', 'True', tconfig ]
+    testing_args[ 6] = ['program', '-c', tconfig,      '-recursive', 'True', taction ]
+
+    testing_args[ 7] = ['program', '-action', taction, '-recursive', 'True', tconfig ]
+    testing_args[ 8] = ['program', '-config', tconfig, '-recursive', 'True', taction ]
+
+    testing_args[ 9] = ['program', '-config', tconfig, '-a', taction, '-recursive', 'True' ]
+
+    # old style
+    testing_args[10] = ['program', '-recursive', 'True', tconfig, taction ]
+    testing_args[11] = ['program',                       tconfig, taction ]
+
+
+    # testing...
+
+    args,action,config,old = startup_args(testing_args[1])
+    if args or action or config or old :
+       print("test01 startup_args with %s : Failed" % testing_args[1])
+       status = 2
+
+    args,action,config,old = startup_args(testing_args[2])
+    if args or action != taction or config or old :
+       print("test02 startup_args with %s : Failed" % testing_args[2])
+       status = 2
+
+    args,action,config,old = startup_args(testing_args[3])
+    if args != [] or action != taction or config != tconfig or old :
+       print("test03 startup_args with %s : Failed" % testing_args[2])
+       status = 2
+
+    i = 4
+    while i<11 :
+          args,action,config,old = startup_args(testing_args[i])
+          if args != targs  or action != taction or config != tconfig or old != told :
+             print("test%.2d startup_args %s : Failed" % (i,testing_args[i]))
+             status = 2
+          i = i + 1
+          if i == 10 : told = True
+
+    args,action,config,old = startup_args(testing_args[11])
+    if args != [] or action != taction or config != tconfig or old != told :
+       print("test11 startup_args with %s : Failed" % testing_args[11])
+       print(args,action,config,old)
+       status = 2
+
+    if status < 2 : print("test startup_args OK")
+
+    # ===================================
+    # TESTING timeflt2str and timestr2flt
+    # ===================================
+
+    dflt = 1500897051.125
+    dstr = '20170724115051.125'
+
+    tstr = timeflt2str(dflt)
+    tflt = timestr2flt(dstr)
+
+    if dflt != tflt or dstr != tstr :
+          print("test timeflt2str timestr2flt : Failed")
+          status = 3
+
+    if status < 3 : print("test timeflt2str timestr2flt : OK")
+
+    return status
+
+# ===================================
+# MAIN
+# ===================================
+
+def main():
+
+    status = self_test()
+    sys.exit(status)
+
+# =========================================
+# direct invocation : self testing
+# =========================================
+
+if __name__=="__main__":
+   main()
+
