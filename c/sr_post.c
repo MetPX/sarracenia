@@ -369,7 +369,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       strcat( message_body, fn);
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event:%x\n", 
+     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
           message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
@@ -483,17 +483,22 @@ int sr_post_cleanup( struct sr_context *sr_c )
 
 int sr_post_init( struct sr_context *sr_c )
 {
+  /* weird incompatibility with earlier versions...
+
     amqp_rpc_reply_t reply;
 
     amqp_exchange_declare( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
           amqp_cstring_bytes("topic"), 0, 1, 0, 0, amqp_empty_table );
 
+ 
     reply = amqp_get_rpc_reply(sr_c->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
-        return(0);
+        //return(0);
     }
+
+  */
     return(1);
 }
 

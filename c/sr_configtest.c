@@ -31,7 +31,7 @@ int main( int argc, char *const *argv ) {
      fprintf(stderr, "failed to read config %s\n", argv[1] );
      exit(1);
   }
-  ret = sr_config_finalize( &sr_cfg, 1 );
+  ret = sr_config_finalize( &sr_cfg, 1);
   if (!ret) {
      fprintf(stderr, "failed to finalize config %s\n", argv[1] );
      exit(1);

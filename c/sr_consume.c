@@ -97,7 +97,7 @@ int sr_consume_setup(struct sr_context *sr_c)
              1, 
              amqp_cstring_bytes(sr_c->cfg->queuename), 
              passive,
-             durable, 
+             sr_c->cfg->durable, 
              exclusive, 
              auto_delete, 
              amqp_empty_table 
@@ -115,7 +115,7 @@ int sr_consume_setup(struct sr_context *sr_c)
    */
   if ( ! sr_c->cfg->topics ) 
   {
-      add_topic(sr_c->cfg, "#" );
+      sr_add_topic(sr_c->cfg, "#" );
   }
   //fprintf( stderr, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
 

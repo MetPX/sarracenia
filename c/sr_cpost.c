@@ -369,7 +369,7 @@ int main(int argc, char **argv)
     struct sr_context *sr_c;
     struct sr_config_t sr_cfg;
     char inbuff[PATH_MAXNUL];
-    int consume,i,firstpath,pass;
+    int consume,i,pass;
     struct timespec tstart, tsleep, tend;
     float elapsed;
     
@@ -387,6 +387,9 @@ int main(int argc, char **argv)
         if (!consume) break;
         i+=consume;
     }
+    for (; i < argc; i++ )
+        sr_add_path(&sr_cfg, argv[i]);
+
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         fprintf( stderr, "something missing, failed to finalize config\n");
@@ -435,7 +438,6 @@ int main(int argc, char **argv)
     }
   
   
-    firstpath=i;     // i initialized by arg parsing above...
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     latest_min_mtim.tv_sec = 0;
     latest_min_mtim.tv_nsec = 0;
@@ -458,10 +460,10 @@ int main(int argc, char **argv)
        if (sr_cfg.force_polling || !pass ) 
        {
            // fprintf( stderr, "starting polling loop pass: %d\n", pass);
-           for(i=firstpath ; i < argc ; i++ ) 
+           for(struct sr_path_t *i=sr_cfg.paths ; i ; i=i->next ) 
            {
               first_call=1;
-              do1file(sr_c,argv[i]);
+              do1file(sr_c,i->path);
            }
            dir_stack_reset(); 
        } else {

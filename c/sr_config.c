@@ -32,7 +32,33 @@ status:
 
 
 
-void add_topic( struct sr_config_t *sr_cfg, const char* sub )
+void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
+   /* Append to linked list of paths to post
+    */
+{
+   struct sr_path_t *p;
+   struct sr_path_t *n;
+
+   p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
+   if (p == NULL)
+   {
+       fprintf(stderr, "malloc of path failed!\n" );
+       return;
+   }
+   p->next = NULL;
+   strcpy(p->path, option );
+
+   if ( ! sr_cfg->paths )
+   {
+       sr_cfg->paths = p;
+   } else {
+       n=sr_cfg->paths;
+       while( n->next ) n=n->next;
+       n->next = p;
+   }
+}
+
+void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub )
   /* append to linked list of topics
    */
 {
@@ -327,6 +353,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->documentroot = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "durable" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->durable = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "events" ) || !strcmp( option, "e") ) {
       sr_cfg->events = parse_events(argument);
       return(2);
@@ -360,9 +391,20 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
       return(2);
+
+  } else if ( !strcmp( option, "path" ) || !strcmp( option, "p") ) {
+      sr_add_path( sr_cfg, argument );
+      return(2);
+
   } else if ( !strcmp( option, "pipe" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->pipe = val&2;
+      return(1+(val&1));
+
+  } else if ( !strcmp( option, "realpath" ) ) {
+      val = StringIsTrue(argument);
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      sr_cfg->realpath = val&2;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "recursive" ) ) {
@@ -375,7 +417,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(2);
 
   } else if ( !strcmp( option, "subtopic" ) || !strcmp( option, "sub") ) {
-      add_topic( sr_cfg, argument );
+      sr_add_topic( sr_cfg, argument );
       return(2);
 
   } else if ( !strcmp( option, "sum" ) ) {
@@ -468,6 +510,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   } else 
      sr_cfg->progname=NULL;
 
+  sr_cfg->realpath=0;
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
   sr_cfg->sumalgo='s';
@@ -582,7 +625,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 }
 
 
-int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer) 
+int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 {
   char p[PATH_MAX];
   char q[AMQP_MAX_SS];

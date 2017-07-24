@@ -57,7 +57,7 @@ int main(int argc, char **argv)
       if (!consume) break;
       i+=consume;
   }
-  if (!sr_config_finalize( &sr_cfg, 1 ))
+  if (!sr_config_finalize( &sr_cfg, 1))
   {
      fprintf( stderr, "failed to finalize configuration\n");
      return(1); 
