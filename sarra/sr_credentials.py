@@ -290,6 +290,7 @@ class sr_credentials:
 class test_logger:
       def silence(self,str):
           pass
+
       def __init__(self):
           self.debug   = self.silence
           self.error   = print
@@ -298,6 +299,7 @@ class test_logger:
 
 def test_sr_credentials():
 
+    status      = 0
     logger      = test_logger()
     credentials = sr_credentials(logger)
 
@@ -309,65 +311,69 @@ def test_sr_credentials():
     urlstr = "ftp://guest:toto@localhost"
     ok, details = credentials.get(urlstr)
     if not ok :
-       print("sr_credentials TEST 1a FAILED")
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("parsed %s and could not get %s " % (line,urlstr))
+       status = 1
 
     # check details
     if not details.passive == False or \
        not details.binary  == True   :
-       print("sr_credentials TEST 1b FAILED")
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("parsed %s and passive = %s, binary = " % (line,details.passive,details.binary))
+       status = 1
 
 
     # covers get with resolve 1
     urlstr = "ftp://localhost"
     ok, details = credentials.get(urlstr)
     if not ok :
-       print("sr_credentials TEST 2 FAILED")
-       print(urlstr,details)
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("parsed %s and could not get %s " % (line,urlstr))
+       status = 1
 
     # covers get with resolve 2
     urlstr = "ftp://guest@localhost"
     ok, details = credentials.get(urlstr)
     if not ok :
-       print("sr_credentials TEST 3 FAILED")
-       print(urlstr,details)
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("parsed %s and could not get %s " % (line,urlstr))
+       status = 1
 
     # covers unresolve get
     urlstr = "http://localhost"
     ok, details = credentials.get(urlstr)
     if ok :
-       print("sr_credentials TEST 4 FAILED")
-       print(urlstr,details)
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("parsed %s and could get %s " % (line,urlstr))
+       status = 1
 
     # covers read
     urlstr = "sftp://ruser@remote"
+    line   = urlstr + " ssh_keyfile=/tmp/mytoto2\n"
     f = open('/tmp/mytoto2','w')
-    f.write(urlstr + " ssh_keyfile=/tmp/mytoto2\n")
+    f.write(line)
     f.close()
 
     credentials.read('/tmp/mytoto2')
     ok, details = credentials.get(urlstr)
     if not ok or details.ssh_keyfile != '/tmp/mytoto2' :
-       print("sr_credentials TEST 5 FAILED")
-       print(urlstr,details)
-       sys.exit(1)
+       print("test sr_credentials FAILED")
+       print("read %s and could not get %s (ssh_keyfile = %s) " % (line,urlstr,details.ssh_keyfile))
+       status = 1
 
     os.unlink('/tmp/mytoto2')
 
     # covers isValid
-    if credentials.isValid(urllib.parse.urlparse("ftp://host"))       or \
-       credentials.isValid(urllib.parse.urlparse("file://aaa/"))      or \
-       credentials.isValid(urllib.parse.urlparse("ftp://user@host"))  or \
-       credentials.isValid(urllib.parse.urlparse("ftp://user:@host")) or \
-       credentials.isValid(urllib.parse.urlparse("ftp://:pass@host"))    :
-       print("sr_credentials TEST 6 FAILED")
-       sys.exit(1)
+    bad_urls = ["ftp://host","file://aaa/","ftp://user@host","ftp://user:@host","ftp://:pass@host"]
+    for urlstr in bad_urls :
+        if credentials.isValid(urllib.parse.urlparse(urlstr)) :
+           print("test sr_credentials FAILED")
+           print("isValid %s returned True" % urlstr)
+           status = 1
 
-    print("sr_credentials TEST PASSED")
+    if status < 1 : print("test sr_credentials OK")
+
+    return status
 
 
 # ===================================
@@ -376,8 +382,8 @@ def test_sr_credentials():
 
 def main():
 
-    test_sr_credentials()
-    sys.exit(0)
+    status = test_sr_credentials()
+    sys.exit(status)
 
 # =========================================
 # direct invocation : self testing
