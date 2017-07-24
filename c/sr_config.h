@@ -31,6 +31,7 @@ status:
 #include <time.h>
 #include <openssl/sha.h>
 
+#include "sr_util.h"
 #include "sr_event.h"
 
 // AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
@@ -95,15 +96,6 @@ struct sr_config_t {
   char             *to;
   
 };
-
-#define SR_TIMESTRLEN (19)
-#define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
-
-char *sr_time2str( struct timespec *tin );
-  /* turn a timespec into an SR_TIMESTRLEN character sr_post(7) conformant time stamp string.
-      if argument is NULL, then the string should correspond to the current system time.
-   */
- 
 
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
  /* return pointer to matched pattern, if there is one, NULL otherwise.

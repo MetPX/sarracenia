@@ -15,6 +15,7 @@
 #include "uthash.h"
 
 #define SR_CACHEKEYSZ (SHA512_DIGEST_LENGTH+1)
+
 struct sr_cache_t {
   unsigned char key[SR_CACHEKEYSZ]; // Assumed longest possible hash. first character is algorithm marker.
   struct timespec created;
@@ -22,7 +23,7 @@ struct sr_cache_t {
 };
 
 
-int sr_cache_check( struct sr_cache_t *cache, char algo, void *ekey, int ekeylen ); 
+int sr_cache_check( struct sr_cache_t **cache, char algo, void *ekey, int ekeylen ); 
  /* 
    insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
    retun value:
@@ -32,7 +33,7 @@ int sr_cache_check( struct sr_cache_t *cache, char algo, void *ekey, int ekeylen
  */
 
 
-void sr_cache_clean( struct sr_cache_t *cache, struct timespec *since );
+void sr_cache_clean( struct sr_cache_t **cache, struct timespec *since );
  /* 
      remove entries in the cache older than since.
  */

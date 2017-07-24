@@ -18,45 +18,17 @@ status:
 #include <unistd.h>
 
 #include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
+
+#include <time.h>
+
 #include "sr_credentials.h"
 
 #include "sr_config.h"
-
-
-
-
-char time2str_result[18];
-
-char *sr_time2str( struct timespec *tin ) {
-   /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
-      if argument is NULL, then the string should correspond to the current system time.
-    */
-   struct tm s;
-   time_t when;
-   struct timespec ts;
-   long msec;
-
-   if ( tin ) {
-     when = tin->tv_sec;
-     msec = tin->tv_nsec/1000000 ;
-   } else {
-     clock_gettime( CLOCK_REALTIME , &ts);
-     when = ts.tv_sec;
-     msec = ts.tv_nsec/1000000 ;
-   }
-
-   gmtime_r(&when,&s);
-   /*                         YYYY  MM  DD  hh  mm  ss */
-   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
-        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
-
-   return(time2str_result);
-}
-
 
 
 
