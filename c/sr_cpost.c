@@ -246,6 +246,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "failed to open directory: %s\n", fn );
              return;
          }
+
          while ( ( e = readdir(dir)) ) 
          {
              if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") ) 
@@ -428,12 +429,12 @@ int main(int argc, char **argv)
     FIXME: wait until next version of sarra is released... not permitted on old ones.
     warn for now, error exit on future versions.
   */
-    if ( !sr_post_init( sr_c ) ) 
-    {
-        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
-    }
     if ( !strcmp( sr_cfg.action, "setup" ) )
     {
+        if ( !sr_post_init( sr_c ) ) 
+        {
+        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
+        }
         return(0);
     }
   

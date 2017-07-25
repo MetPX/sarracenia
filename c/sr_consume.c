@@ -84,7 +84,6 @@ int sr_consume_setup(struct sr_context *sr_c)
 {
   amqp_rpc_reply_t reply;
   amqp_boolean_t  passive = 0;
-  amqp_boolean_t  durable = 1;
   amqp_boolean_t  exclusive = 0;
   amqp_boolean_t  auto_delete = 0;
   struct sr_topic_t *t;
@@ -251,8 +250,8 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
           amqp_cstring_bytes(sr_c->cfg->queuename), 
           amqp_empty_bytes, // consumer_tag
           0,  // no_local
-          1,  // no_ack
-          0,  // exclusive
+          1,  // ack
+          0,  // not_exclusive
           amqp_empty_table);
 
     reply = amqp_get_rpc_reply(sr_c->conn);
@@ -347,13 +346,13 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     
         strncpy( buf, (char*) frame.payload.body_fragment.bytes, (int)frame.payload.body_fragment.len );
         tok = strtok(buf," ");
-        //fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
+        fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
         strcpy( msg.datestamp, tok );
         tok = strtok(NULL," ");
-        //fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
+        fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
         strcpy( msg.url, tok );
         tok = strtok(NULL," ");
-        //fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
+        fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
         strcpy( msg.path, tok );
         if (is_report) 
         {
@@ -376,7 +375,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
             msg.duration=0.0;
        
         }
-        //fprintf( stdout, " }\n");
+        fprintf( stdout, " }\n");
     /*
     fprintf( stdout, "\t\"body\" : \"%.*s\"\n }\n",
                  (int) frame.payload.body_fragment.len, 

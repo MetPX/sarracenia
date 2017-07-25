@@ -495,6 +495,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
   sr_cfg->documentroot=NULL;
+  sr_cfg->durable=1;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
@@ -502,6 +503,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
+  sr_cfg->paths=NULL;
   sr_cfg->pipe=0;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
