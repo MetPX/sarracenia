@@ -685,7 +685,7 @@ class sr_sarra(sr_instances):
     def stop(self):
         self.logger.info("%s stop" % (self.program_name) )
         self.close()
-        os.exit(0)
+        os._exit(0)
 
     def cleanup(self):
         self.logger.info("%s cleanup" % self.program_name)
