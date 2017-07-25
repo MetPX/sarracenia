@@ -345,14 +345,15 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
         //assert(body_received <= body_target);
     
         strncpy( buf, (char*) frame.payload.body_fragment.bytes, (int)frame.payload.body_fragment.len );
+        buf[frame.payload.body_fragment.len]='\0';
         tok = strtok(buf," ");
-        fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
+        //fprintf( stdout, "\t\"datestamp\" : \"%s\",\n", tok);
         strcpy( msg.datestamp, tok );
         tok = strtok(NULL," ");
-        fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
+        //fprintf( stdout, "\t\"url\" : \"%s\", \n", tok);
         strcpy( msg.url, tok );
         tok = strtok(NULL," ");
-        fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
+        //fprintf( stdout, "\t\"path\" : \"%s\", \n", tok);
         strcpy( msg.path, tok );
         if (is_report) 
         {

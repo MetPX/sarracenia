@@ -143,7 +143,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        MD5_Init(&md5ctx);
 
        // keep file open through repeated calls.
-       fprintf( stderr, "opening %s to checksum\n", fn );
+       //fprintf( stderr, "opening %s to checksum\n", fn );
        if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
        if ( fd < 0 ) 
        { 
@@ -152,7 +152,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
@@ -178,7 +178,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
        MD5_Final(hash, &md5ctx);
        sr_hash2sumstr(hash,MD5_DIGEST_LENGTH); 
-       fprintf( stderr, "sumstr=%s\n", sumstr );
+       //fprintf( stderr, "sumstr=%s\n", sumstr );
        break;
 
    case 'n' :
@@ -225,15 +225,15 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
 
-           fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
-               how_many_to_read, bytes_read );
+           // fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
+           //    how_many_to_read, bytes_read );
 
            if ( bytes_read >= 0 ) 
            {
