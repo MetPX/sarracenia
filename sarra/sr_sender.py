@@ -551,7 +551,10 @@ class sr_sender(sr_instances):
 
         # a target directory was provided
         if self.use_pattern and self.currentDir != None:
-           self.new_rpath = self.currentDir
+           if self.mirror :
+              self.new_rpath = self.currentDir + self.new_rpath
+           else :
+              self.new_rpath = self.currentDir
 
         # PDS like destination pattern/keywords
 
