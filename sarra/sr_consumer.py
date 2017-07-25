@@ -30,7 +30,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import os,sys,random
+import os,sys,random,time
 
 try :    
          from sr_amqp           import *
@@ -60,6 +60,10 @@ class sr_consumer:
         self.build_consumer()
         self.build_queue()
         self.get_message()
+
+        self.heartbeat         = self.parent.heartbeat
+        self.on_heartbeat_list = self.parent.on_heartbeat_list
+        self.last_heartbeat    = time.time()
 
     def build_connection(self):
         self.logger.debug("sr_consumer build_broker")
@@ -131,6 +135,13 @@ class sr_consumer:
         # acknowledge last message... we are done with it since asking for a new one
         if self.raw_msg != None : self.consumer.ack(self.raw_msg)
 
+        # heartbeat
+        now    = time.time()
+        elapse = now - self.last_heartbeat
+        if elapse > self.heartbeat :
+           self.__on_heartbeat__()
+           self.last_heartbeat = now
+
         # consume a new one
         self.raw_msg = self.consumer.consume(self.queue_name)
         if self.raw_msg == None : return False, self.msg
@@ -167,6 +178,15 @@ class sr_consumer:
               return False,self.msg
 
         return True,self.msg
+
+    def __on_heartbeat__(self):
+        self.logger.debug("__on_heartbeat__")
+
+        # invoke on_hearbeat when provided
+        for plugin in self.on_heartbeat_list:
+           if not plugin(self): return False
+
+        return True
 
     def queue_declare(self,build=False):
         self.logger.debug("sr_consumer queue_declare")
@@ -277,7 +297,6 @@ def self_test():
 
     logger = test_logger()
 
-    yyyy   = time.strftime("%Y",time.gmtime())
     opt1   = 'accept .*bulletins.*'
     opt2   = 'reject .*'
 
@@ -299,6 +318,11 @@ def self_test():
     cfg.option( opt1.split()  )
     cfg.option( opt2.split()  )
 
+    optL = "heartbeat 1"
+    optP = "on_heartbeat heartbeat_log"
+    cfg.option( optL.split()  )
+    cfg.option( optP.split()  )
+
     consumer = sr_consumer(cfg)
 
     #FIXME setup another consumer
@@ -319,7 +343,7 @@ def self_test():
     consumer.close()
 
     if msg != None :
-       if yyyy in msg.notice :
+       if 'bulletins' in msg.notice :
            print("sr_consumer TEST PASSED")
            sys.exit(0)
        print("sr_consumer TEST Failed 1 wrong message")

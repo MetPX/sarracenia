@@ -340,6 +340,7 @@ class sr_config:
         self.remote_config        = False
         self.remote_config_url    = []
 
+        self.heartbeat            = 300
         self.loglevel             = logging.INFO
         self.logrotate            = 5
         self.report_daemons          = False
@@ -493,6 +494,9 @@ class sr_config:
         self.execfile("on_file",'file_log')
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
+
+        self.on_heartbeat         = None
+        self.on_heartbeat_list    = []
 
         self.execfile("on_html_page",'html_page')
         self.on_html_page_list    = [self.on_html_page]
@@ -1051,6 +1055,10 @@ class sr_config:
                      self.gateway_for = words1.split(',')
                      n = 2
 
+                elif words0 == 'heartbeat' :   # See: sr_config.7
+                     self.heartbeat = int(words[1])
+                     n = 2
+
                 elif words0 in ['help','h']: # See: sr_config.7
                      self.help()
                      needexit = True
@@ -1198,6 +1206,19 @@ class sr_config:
                            needexit = True
                      else:
                         self.on_file_list.append(self.on_file)
+
+                     n = 2
+
+                elif words0 == 'on_heartbeat': # See: sr_config.7, sr_sarra,shovel,subscribe
+                     self.execfile("on_heartbeat",words1)
+                     if ( self.on_heartbeat == None ):
+                        if self.isNone(words1):
+                           self.on_heartbeat_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_heartbeat_list.append(self.on_heartbeat)
 
                      n = 2
 
