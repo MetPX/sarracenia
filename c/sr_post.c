@@ -123,11 +123,9 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
    unsigned long start = block_size * block_num ;
    unsigned long end;
 
-   if (block_count == 1) 
-       end = block_size;
-   else
-       end =  (block_num == (block_count-1)) ?  (start + block_rem ) :  /* last block */
-                                                (start +block_size ) ; /* not last block */
+   end = start + ((block_num < (block_count -(block_rem!=0)))?block_size:block_rem) ;
+ 
+   //fprintf( stderr, "start: %ld, end: %ld\n", start, end );
 
    sumstr[0]=algo;
    sumstr[1]=',';
@@ -144,6 +142,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
        // keep file open through repeated calls.
        //fprintf( stderr, "opening %s to checksum\n", fn );
+
        if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
        if ( fd < 0 ) 
        { 
@@ -158,7 +157,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
-           if ( bytes_read >= 0 ) 
+           if ( bytes_read > 0 ) 
            {
               MD5_Update(&md5ctx, buf, bytes_read );
               start += bytes_read;
@@ -225,15 +224,15 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "DBG checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
 
-           // fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
-           //    how_many_to_read, bytes_read );
+            //fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
+            //   how_many_to_read, bytes_read );
 
            if ( bytes_read >= 0 ) 
            {
@@ -482,8 +481,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       } else
           strcpy(partstr,"");
 
-      fprintf( stderr, "sumaglo: %c, fn=+%s+, partstr=+%s+, linkstr=+%s+\n", sumalgo, fn, partstr, linkstr );
+      /* fprintf( stderr, "sumaglo: %c, fn=+%s+, partstr=+%s+, linkstr=+%s+\n", sumalgo, fn, partstr, linkstr );
       fprintf( stderr, " bsz=%ld, bc=%ld, brem=%ld, bnum=%ld\n", block_size, block_count, block_rem, block_num ) ;
+       */
       if (! set_sumstr( sumalgo, fn, partstr, linkstr, block_size, block_count, block_rem, block_num ) ) 
       {
          fprintf( stderr, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );

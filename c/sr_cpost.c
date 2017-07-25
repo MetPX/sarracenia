@@ -382,15 +382,18 @@ int main(int argc, char **argv)
     while( i < argc ) 
     {
         if (argv[i][0] == '-') 
-           consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
+           consume = sr_config_parse_option( &sr_cfg, 
+                  &(argv[i][ (argv[i][1] == '-' )?2:1 ]),  /* skip second hyphen if necessary */
+                    argv[i+1] );
         else
             break;
         if (!consume) break;
         i+=consume;
     }
     for (; i < argc; i++ )
+    {
         sr_add_path(&sr_cfg, argv[i]);
-
+    }
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         fprintf( stderr, "something missing, failed to finalize config\n");
