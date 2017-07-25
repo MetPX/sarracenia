@@ -70,6 +70,7 @@ void header_reset() {
         headers[hdrcnt].value.kind = AMQP_FIELD_KIND_VOID;
         headers[hdrcnt].value.value.bytes = amqp_cstring_bytes("");
     }
+    hdrcnt=0;
 }
 
 void header_add( char *tag, const char * value ) {
@@ -122,8 +123,11 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
    unsigned long start = block_size * block_num ;
    unsigned long end;
 
-   end =  (block_num == (block_count-1)) ?  ((block_num==0)?block_size:(start + block_rem)) :  /* last block */
-              (start +block_size ); /* not last block */
+   if (block_count == 1) 
+       end = block_size;
+   else
+       end =  (block_num == (block_count-1)) ?  (start + block_rem ) :  /* last block */
+                                                (start +block_size ) ; /* not last block */
 
    sumstr[0]=algo;
    sumstr[1]=',';
@@ -144,6 +148,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        if ( fd < 0 ) 
        { 
            fprintf( stderr, "unable to read file for checksumming\n" );
+           strcpy(sumstr+3,"deadbeef0");
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
@@ -159,13 +164,17 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
               start += bytes_read;
            } else {
               fprintf( stderr, "error reading %s for MD5\n", fn );
-              strcpy(sumstr+3,"deadbeef");
-              break;
+              strcpy(sumstr+3,"deadbeef1");
+              return(NULL);
            } 
        }
 
        // close fd, when end of file reached.
-       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
+       if ((block_count == 1)  || ( end >= ((block_count-1)*block_size+block_rem))) 
+       { 
+             close(fd);
+             fd=0;
+       }
 
        MD5_Final(hash, &md5ctx);
        sr_hash2sumstr(hash,MD5_DIGEST_LENGTH); 
@@ -212,7 +221,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        if ( fd < 0 ) 
        { 
            fprintf( stderr, "unable to read file for SHA checksumming\n" );
-           strcpy(sumstr+3,"deadbeef");
+           strcpy(sumstr+3,"deadbeef2");
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
@@ -232,14 +241,17 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
               start += bytes_read;
            } else {
               fprintf( stderr, "error reading %s for SHA\n", fn );
-              strcpy(sumstr+3,"deadbeef");
-              break;
+              strcpy(sumstr+3,"deadbeef3");
+              return(NULL);
            } 
        }
 
        // close fd, when end of file reached.
-       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
-
+       if ((block_count == 1)  || ( end >= ((block_count-1)*block_size+block_rem))) 
+       { 
+             close(fd);
+             fd=0;
+       }
        SHA512_Final(hash, &shactx);
        sr_hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
        break;
