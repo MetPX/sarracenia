@@ -616,7 +616,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
          continue; // blank line.
      }
      option   = strtok(token_line," \t\n");
-     argument = strtok(NULL,"\n");
+     argument = strtok(NULL," \t\n");
 
      sr_config_parse_option(sr_cfg, option,argument);
 
