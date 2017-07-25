@@ -27,6 +27,8 @@ So you need to git clone ... then
 export RABBIT_BUILD=*directory where rabbit has been built*
 
 
+STATUS:
+   -- checksums are wrong somehow... working on it.
 
 
 build dependencies:

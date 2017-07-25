@@ -39,6 +39,11 @@ status:
 #define AMQP_MAX_SS (255+1)
 #define PATH_MAXNUL (PATH_MAX+1)
 
+struct sr_path_t {
+   char path[PATH_MAX];
+   struct sr_path_t *next;
+};
+
 struct sr_topic_t {
   char topic[AMQP_MAX_SS]; 
   struct sr_topic_t *next;
@@ -72,10 +77,11 @@ struct sr_config_t {
   char*             action;
   long unsigned     blocksize; // if partitioned, how big are they?
   struct sr_broker_t *broker;
-  int               debug;
   char             *configname;
+  int               debug;
   char             *directory;
   char             *documentroot;
+  int               durable;
   sr_event_t       events;
   char             *exchange;
   int               follow_symlinks;
@@ -86,7 +92,9 @@ struct sr_config_t {
   char             *last_matched;  //have run isMatching.
   char             *queuename;
   char             *progname;
+  struct sr_path_t *paths;
   int               pipe;  // pipe mode, read file names from standard input
+  int               realpath;
   int               recursive;
   float             sleep;
   char              sumalgo; // checksum algorithm to use.
@@ -108,19 +116,25 @@ int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argu
     return the number of arguments consumed:  0, 1, or 2.
   */
 
-void add_topic( struct sr_config_t *sr_cfg, const char* sub );
+void sr_add_path( struct sr_config_t *sr_cfg, const char* path );
+ /* add a path to the list of paths to monitor.
+  */
+
+
+void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub );
  /* add a topic to the list of bindings, based on the current topic prefix
   */
 
 void sr_config_free( struct sr_config_t *sr_cfg );
 
-void sr_config_init( struct sr_config_t *sr_cfg, const char *progname );
+void sr_config_init( struct sr_config_t *sr_cfg, const char *progname); 
  /* Initialize an sr_config structure (setting defaults)
 
     progname sets where in the configuration file tree to look for defaults, as well
     as where the .cache files will be placed ( .(config|cache)/sarra/<progname>/<config>/ )
     config name is guessed later during read, and the cache directories are made
     when the config is finalized.
+
   */
 
 int sr_config_read( struct sr_config_t *sr_cfg, char *filename );

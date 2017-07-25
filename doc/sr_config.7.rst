@@ -478,6 +478,7 @@ These options set what files will be downloaded, where they will be placed,
 and under which name.
 
 - **attempts  <count>                 (default: 3)**
+- **batch     <count>                 (default: 100)**
 - **default_mode     <octalint>       (default: 0755)**
 - **default_dir_mode <octalint>       (default: 0755)**
 - **directory <path>                  (default: .)** 
@@ -492,6 +493,9 @@ and under which name.
 - **preserve_time** <boolean>         (default: true)**
 
 The **attempts** option sets how many times to try to download a product.
+
+The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
+ 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.)
 This assures that consuming  programs reading the directory ignore 

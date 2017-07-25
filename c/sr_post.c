@@ -63,7 +63,14 @@ amqp_table_entry_t headers[HDRMAX];
 int hdrcnt = 0 ;
 
 void header_reset() {
-    hdrcnt = 0 ;
+    hdrcnt--;
+    for(; (hdrcnt>=0) ; hdrcnt--)
+    {
+        headers[hdrcnt].key = amqp_cstring_bytes("");
+        headers[hdrcnt].value.kind = AMQP_FIELD_KIND_VOID;
+        headers[hdrcnt].value.value.bytes = amqp_cstring_bytes("");
+    }
+    hdrcnt=0;
 }
 
 void header_add( char *tag, const char * value ) {
@@ -84,7 +91,7 @@ void header_add( char *tag, const char * value ) {
  */
 #define SUMBUFSIZE (4096*1024)
 
-extern char sumstr[ SR_SUMSTRLEN ];
+extern char sumstr[];
 
 char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
           unsigned long block_size, unsigned long block_count, unsigned long block_rem, unsigned long block_num 
@@ -116,7 +123,9 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
    unsigned long start = block_size * block_num ;
    unsigned long end;
 
-   end =  (block_num == (block_count-1)) ? (start + block_rem) : (start +block_size );
+   end = start + ((block_num < (block_count -(block_rem!=0)))?block_size:block_rem) ;
+ 
+   //fprintf( stderr, "start: %ld, end: %ld\n", start, end );
 
    sumstr[0]=algo;
    sumstr[1]=',';
@@ -132,10 +141,13 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        MD5_Init(&md5ctx);
 
        // keep file open through repeated calls.
+       //fprintf( stderr, "opening %s to checksum\n", fn );
+
        if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
        if ( fd < 0 ) 
        { 
            fprintf( stderr, "unable to read file for checksumming\n" );
+           strcpy(sumstr+3,"deadbeef0");
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
@@ -145,21 +157,27 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
-           if ( bytes_read >= 0 ) 
+           if ( bytes_read > 0 ) 
            {
               MD5_Update(&md5ctx, buf, bytes_read );
               start += bytes_read;
            } else {
-              fprintf( stderr, "error reading %s\n", fn );
-              break;
+              fprintf( stderr, "error reading %s for MD5\n", fn );
+              strcpy(sumstr+3,"deadbeef1");
+              return(NULL);
            } 
        }
 
        // close fd, when end of file reached.
-       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
+       if ((block_count == 1)  || ( end >= ((block_count-1)*block_size+block_rem))) 
+       { 
+             close(fd);
+             fd=0;
+       }
 
        MD5_Final(hash, &md5ctx);
        sr_hash2sumstr(hash,MD5_DIGEST_LENGTH); 
+       //fprintf( stderr, "sumstr=%s\n", sumstr );
        break;
 
    case 'n' :
@@ -201,33 +219,38 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        if ( ! (fd > 0) ) fd = open( fn, O_RDONLY );
        if ( fd < 0 ) 
        { 
-           fprintf( stderr, "unable to read file for checksumming\n" );
+           fprintf( stderr, "unable to read file for SHA checksumming\n" );
+           strcpy(sumstr+3,"deadbeef2");
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
-       //fprintf( stderr, "checksumming start: %lu to %lu\n", start, end );
+       //fprintf( stderr, "DBG checksumming start: %lu to %lu\n", start, end );
        while ( start < end ) 
        {
            how_many_to_read= ( SUMBUFSIZE < (end-start) ) ? SUMBUFSIZE : (end-start) ;
 
            bytes_read=read(fd,buf, how_many_to_read );           
 
-           //fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
-           //    how_many_to_read, bytes_read );
+            //fprintf( stderr, "checksumming how_many_to_read: %lu bytes_read: %lu\n", 
+            //   how_many_to_read, bytes_read );
 
            if ( bytes_read >= 0 ) 
            {
               SHA512_Update(&shactx, buf, bytes_read );
               start += bytes_read;
            } else {
-              fprintf( stderr, "error reading %s\n", fn );
-              break;
+              fprintf( stderr, "error reading %s for SHA\n", fn );
+              strcpy(sumstr+3,"deadbeef3");
+              return(NULL);
            } 
        }
 
        // close fd, when end of file reached.
-       if ( end >= ((block_count-1)*block_size+block_rem)) close(fd);
-
+       if ((block_count == 1)  || ( end >= ((block_count-1)*block_size+block_rem))) 
+       { 
+             close(fd);
+             fd=0;
+       }
        SHA512_Final(hash, &shactx);
        sr_hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
        break;
@@ -296,16 +319,17 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
 
-  char routingkey[255];
-  char message_body[1024];
-  char partstr[255];
-  char modebuf[6];
-  char fn[PATH_MAXNUL];
-  char linkstr[PATH_MAXNUL];
-  int  linklen;
-  char atimestr[18];
-  char mtimestr[18];
-  char sumalgo;
+  char  routingkey[255];
+  char  message_body[1024];
+  char  partstr[255];
+  char  modebuf[6];
+  char  fn[PATH_MAXNUL];
+  char  linkstr[PATH_MAXNUL];
+  char *linkp;
+  int   linklen;
+  char  atimestr[18];
+  char  mtimestr[18];
+  char  sumalgo;
   signed int status;
   int commonhdridx;
   unsigned long block_size;
@@ -324,7 +348,10 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       strcat( fn, "/" );
       strcat( fn, pathspec);
   } else {
-      strcpy( fn, pathspec );
+      if ( sr_c->cfg->realpath ) 
+          realpath( pathspec, fn );
+      else
+          strcpy( fn, pathspec );
   }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
@@ -339,7 +366,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           fprintf( stderr, "rejecting: %s\n", fn );
       return;
   }
-  if ( sb && S_ISDIR(sb->st_mode) ) {
+  if ( sb && S_ISDIR(sb->st_mode) ) 
+  {
       if ( (sr_c->cfg) && sr_c->cfg->debug )
           fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
       return;
@@ -369,7 +397,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       strcat( message_body, fn);
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event:%x\n", 
+     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
           message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
@@ -382,17 +410,31 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   sumalgo = sr_c->cfg->sumalgo;
   block_count = 1;
 
-  if ( !sb ) {
+  if ( !sb ) 
+  {
       if ( ! ((sr_c->cfg->events)&SR_DELETE) ) return;
       sumalgo='R';
-  } else if ( S_ISLNK(sb->st_mode) ) {
+  } else if ( S_ISLNK(sb->st_mode) ) 
+  {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return;
+
       sumalgo='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
       linkstr[linklen]='\0';
+      if ( sr_c->cfg->realpath ) 
+      {
+          linkp = realpath( linkstr, NULL );
+          if (linkp) 
+          {
+               strcpy( linkstr, linkp );
+               free(linkp);
+          }
+      }
       header_add( "link", linkstr );
 
-  } else if (S_ISREG(sb->st_mode)) {  /* regular files, add mode and determine block parameters */
+  } else if (S_ISREG(sb->st_mode)) 
+  {   /* regular files, add mode and determine block parameters */
+
       if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return;
 
       if ( access( fn, R_OK ) ) return; // will not be able to checksum if we cannot read.
@@ -413,6 +455,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           block_rem = sb->st_size%block_size ;
           block_count = ( sb->st_size / block_size ) + ( block_rem?1:0 );
       }
+
   } 
   /* FIXME:  should we do these as well?
    else 
@@ -438,6 +481,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       } else
           strcpy(partstr,"");
 
+      /* fprintf( stderr, "sumaglo: %c, fn=+%s+, partstr=+%s+, linkstr=+%s+\n", sumalgo, fn, partstr, linkstr );
+      fprintf( stderr, " bsz=%ld, bc=%ld, brem=%ld, bnum=%ld\n", block_size, block_count, block_rem, block_num ) ;
+       */
       if (! set_sumstr( sumalgo, fn, partstr, linkstr, block_size, block_count, block_rem, block_num ) ) 
       {
          fprintf( stderr, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );
@@ -488,12 +534,14 @@ int sr_post_init( struct sr_context *sr_c )
     amqp_exchange_declare( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
           amqp_cstring_bytes("topic"), 0, 1, 0, 0, amqp_empty_table );
 
+ 
     reply = amqp_get_rpc_reply(sr_c->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
-        return(0);
+        //return(0);
     }
+
     return(1);
 }
 

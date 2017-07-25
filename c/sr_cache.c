@@ -149,10 +149,10 @@ struct sr_cache_t *sr_cache_load( const char *fn)
     while( fgets( buf, load_buflen, f ) )
     {
        line_count++;
-       fprintf( stderr, "strlen(buf)=%ld loadbuflen: %ld\n", strlen(buf), load_buflen );
+       fprintf( stderr, "strlen(buf)=%ld loadbuflen: %d\n", strlen(buf), load_buflen );
        if (strlen( buf ) <  load_buflen-3) 
        {
-          fprintf( stderr, "ERROR: cache file line %ld too short, corrupted, skipping!\n", line_count );
+          fprintf( stderr, "ERROR: cache file line %d too short, corrupted, skipping!\n", line_count );
           continue;
        }
        c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));

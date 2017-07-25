@@ -246,6 +246,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              fprintf( stderr, "failed to open directory: %s\n", fn );
              return;
          }
+
          while ( ( e = readdir(dir)) ) 
          {
              if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") ) 
@@ -369,7 +370,7 @@ int main(int argc, char **argv)
     struct sr_context *sr_c;
     struct sr_config_t sr_cfg;
     char inbuff[PATH_MAXNUL];
-    int consume,i,firstpath,pass;
+    int consume,i,pass;
     struct timespec tstart, tsleep, tend;
     float elapsed;
     
@@ -381,11 +382,17 @@ int main(int argc, char **argv)
     while( i < argc ) 
     {
         if (argv[i][0] == '-') 
-           consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
+           consume = sr_config_parse_option( &sr_cfg, 
+                  &(argv[i][ (argv[i][1] == '-' )?2:1 ]),  /* skip second hyphen if necessary */
+                    argv[i+1] );
         else
             break;
         if (!consume) break;
         i+=consume;
+    }
+    for (; i < argc; i++ )
+    {
+        sr_add_path(&sr_cfg, argv[i]);
     }
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
@@ -425,17 +432,16 @@ int main(int argc, char **argv)
     FIXME: wait until next version of sarra is released... not permitted on old ones.
     warn for now, error exit on future versions.
   */
-    if ( !sr_post_init( sr_c ) ) 
-    {
-        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
-    }
     if ( !strcmp( sr_cfg.action, "setup" ) )
     {
+        if ( !sr_post_init( sr_c ) ) 
+        {
+        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
+        }
         return(0);
     }
   
   
-    firstpath=i;     // i initialized by arg parsing above...
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     latest_min_mtim.tv_sec = 0;
     latest_min_mtim.tv_nsec = 0;
@@ -458,10 +464,10 @@ int main(int argc, char **argv)
        if (sr_cfg.force_polling || !pass ) 
        {
            // fprintf( stderr, "starting polling loop pass: %d\n", pass);
-           for(i=firstpath ; i < argc ; i++ ) 
+           for(struct sr_path_t *i=sr_cfg.paths ; i ; i=i->next ) 
            {
               first_call=1;
-              do1file(sr_c,argv[i]);
+              do1file(sr_c,i->path);
            }
            dir_stack_reset(); 
        } else {
