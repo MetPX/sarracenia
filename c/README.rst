@@ -1,25 +1,62 @@
 
-C functionality is embryonic, there is no intent to build a complete
-implementation, it is just a few fragments.
+---------------------------------------
+C-Implementation of a Sarracenia Client
+---------------------------------------
 
-rationale:
-  - in some environments getting python3 environment installed is hard
-    (example: cray linux environment is a software environment from circa 2009)
+This C functionality is embryonic, there is no intent to build a complete
+implementation, it is just a few pieces meant to provide interoperability for
+cases where either a python3 environment is either impractical, or where there
+are performance concerns that this implementation would help with..
 
-  - talking about working on an in-process invocation of sr_post on file closes.
+ - in some environments getting python3 environment installed is hard
+   (example: cray linux environment is a software environment from circa 2009)
 
-one can access from C directly using the sr_context.h routines.
-It uses sr_config(7) style config files, but a lot of options are 
-unimplemented.
+ - in-process invocation of sr_post on file closes (libsrshim.)
 
-So there is a command line binary, that can call the library:
+A library, libsarra is built, with external interfaces one can access from C 
+using the entry points and data structures documented in sr_context.h, sr_post.h, 
+and sr_consume.h files.  The library uses sr_config(7) style config files (see Limitations). 
+A sample usage of the libraries is a command line binary, that can call the library::
 
    sr_cpost
 
-There is also an LD_PRELOAD shim library example. (sr_srshim.c) that
-uses the posting api.
+This function takes the same options as sr_post, but the *sleep* argument, 
+when supplied causes it to loop, checking for new items every *sleep* seconds 
+(equivalent to sr_watch.) There is also a sample consumer::
 
-sample build instructions are in build.sh
+  sr_csub2json
+
+which obtains messages and prints them to standard output in json format identical
+the the format used by the python implementation for save/restore functionality.
+In order to have a complete downloader, one needs a script to parse the json output
+and invoke an appropriate binary downloader.  
+
+There is also an LD_PRELOAD shim library example. (libsrshim.c) that
+uses the posting api. sample usage::
+
+   export SR_POST_CONFIG="mypost"
+   export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
+
+   cp libsrshim.c ~/test/hoho_my_darling.txt
+   ln -s hoho haha
+   rm haha
+
+With the SR_POST_CONFIG set to "mypost", The libsrshim library will look in ~/.config/sarra/post/  for "mypost.conf."
+With the LD_PRELOAD set to use the library, processes that run will call functions like 'close' that are in 
+the shim library, and the shim library will apply the "mypost.conf" configuration to figure out whether it
+should post the file being closed, and if so, to what broker.
+
+Limitations of the C implementation
+-----------------------------------
+
+ - This library and tools do not work with any plugins from the python implementation.
+ - This library is a single process, the *instances* setting is completely ignored.
+ - The queue settings established by a consumer are not the same as those of the python
+   implementation, so queues cannot be shared between the two.
+
+
+Build Dependencies
+------------------
 
 The librabbitmq version needs to be > 0.8,  this is newer than what is in ubuntu 16.04.
 So you need to git clone ... then 
@@ -27,11 +64,7 @@ So you need to git clone ... then
 export RABBIT_BUILD=*directory where rabbit has been built*
 
 
-STATUS:
-   -- checksums are wrong somehow... working on it.
 
-
-build dependencies:
 liburiparser-dev - development files for uriparser
 librabbitmq-dev - AMQP client library written in C - Dev Files
 libssl-dev  - OpenSSL client library (used for hash algorithms.)
@@ -62,7 +95,8 @@ Plan:
   - if the local shim does not go well, step 2 is: sr_cwatch.
 
 
-Developer Notes:
+Developer Notes
+---------------
 
 whereami:
   - was looking at how to do partitioned (partflg='p') files, wrote footnote #1. 
@@ -78,8 +112,6 @@ whereami:
         but if a directory is added, mtime is already current, so only files that change in future
         will be posted... HMM...
 
-  - FIXME: did all this with *second* resolution, might want to go hi-res.
-
   - do we go to the whole (copy directories into a file for comparison schtick?
     that's more sr_poll.
 
@@ -92,7 +124,8 @@ worries/notes to self:
  
    Footnote 1: FIXME: posting partitioned parts Not yet implemented.
 
-   pseudo-code
+   pseudo-code::
+
       if (psc == 'p') 
       {
               If you find a file that ends in .p.4096.20.13.0.Part, which
