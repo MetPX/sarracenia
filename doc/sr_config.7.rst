@@ -484,6 +484,7 @@ and under which name.
 - **directory <path>                  (default: .)** 
 - **filename  <spec>                  (default: WHATFN, which means no modification)**
 - **flatten   <boolean>               (default: false)** 
+- **heartbeat <count>                 (default: 300 seconds)**
 - **inflight  <.string>               (default: .tmp)** 
 - **kbytes_ps** <count>               (default: 0)**
 - **mirror    <boolean>               (default: false)** 
@@ -496,6 +497,9 @@ The **attempts** option sets how many times to try to download a product.
 
 The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
  
+The **heartbeat** option sets how often to execute periodic processing as determined by the list of on_heartbeat plugins.
+By default, it prints a log message every heartbeat.
+
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.)
 This assures that consuming  programs reading the directory ignore 
@@ -727,6 +731,7 @@ is set by the 'logdays' parameter.  Log files older than **logdays** days are de
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
+
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux) 
 
 - **logdays** the number of days' log files to keep online, assuming a daily rotation.
@@ -918,10 +923,12 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
 
-- on_line -- In **sr_poll** a line from the ls on the remote host is read in.
+- on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
 
 - on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
   the files already published. The package provide a working example under plugins/html_page.py.
+
+- on_line -- In **sr_poll** a line from the ls on the remote host is read in.
 
 - on_message -- when an sr_post(7) message has been received.  For example, a message has been received 
   and additional criteria are being evaluated for download of the corresponding file.  if the on_msg 
