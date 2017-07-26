@@ -319,9 +319,9 @@ def self_test():
     cfg.option( opt2.split()  )
 
     optL = "heartbeat 1"
-    optP = "on_heartbeat heartbeat_log"
+    #optP = "on_heartbeat heartbeat_log"
     cfg.option( optL.split()  )
-    cfg.option( optP.split()  )
+    #cfg.option( optP.split()  )
 
     consumer = sr_consumer(cfg)
 

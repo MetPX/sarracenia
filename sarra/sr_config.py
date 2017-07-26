@@ -494,9 +494,10 @@ class sr_config:
         self.execfile("on_file",'file_log')
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
+        self.on_post_list = [ self.on_post ]
 
-        self.on_heartbeat         = None
-        self.on_heartbeat_list    = []
+        self.execfile("on_heartbeat",'heartbeat_log')
+        self.on_heartbeat_list    = [self.on_heartbeat]
 
         self.execfile("on_html_page",'html_page')
         self.on_html_page_list    = [self.on_html_page]
