@@ -1,3 +1,23 @@
+metpx-sarracenia (2.17.07a1) unstable; urgency=medium
+
+  * sr_sarra bug fix os_.exit
+  * All sarra programs have standard invoke : pgm [args] action config... old way still supported (MG)
+  * sr_util defines a function startup_args to parse sarra program arguments (MG)
+  * sr_audit --users : makes sure exchanges/queues configured on pump are setup (MG)
+  * all programs manage exchanges/queues through action 'cleanup','declare','setup' (MG)
+  * sr_poll nows supports http (MG)
+  * sr_poll start posting without parts when it has no clue for size (MG)
+  * on_html_page added in config and sr_poll with default http_page.py (MG)
+  * on_watch added in config and sr_watch (MG)
+  * sr_http.py now has a valid class sr_http (used in sr_poll) (MG)
+  * mode bits limited to the last four digits (upper digits non portable anyways.)
+  * C implementation of libsrshim, libsarra, sr_cpost, and sr_subjsondump  in C (not packaged yet.)
+  * fixed bogus error message from backward compatibility plugins.
+  * added mtime check to sarra and sr_subscribe so that if of new file is <= file_on_disk, then don't download.
+
+
+ -- peter <peter@blacklab.bsqt.homeip.net>  Tue, 25 Jul 2017 20:51:34 -0400
+
 metpx-sarracenia (2.17.06a3) unstable; urgency=medium
 
   * git repo url was wrong. Thanks Canadian Tire!
