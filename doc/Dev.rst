@@ -349,9 +349,22 @@ A convenience script has been created to automate the release process. Simply ru
 PyPi
 ~~~~
 
-Assuming pypi upload credentials are in place, uploading a new release is a one liner::
+Pypi Credentials go in ~/.pypirc.  Sample Content::
+
+  [pypi]
+  username: SupercomputingGCCA
+  password: <get this from someone>
+
+Assuming pypi upload credentials are in place, uploading a new release used to be a one liner::
 
     python3 setup.py bdist_wheel upload
+
+This still works with setuptools > 24, but ubuntu 16 only has version 20, so it can no longer be used there.
+Instead, one is supposed to use the twine package.  We have tried it once installing it vi pip3,
+next time, we should try the one provided with ubuntu 16.04 (via apt-get.)::
+
+   python3 setup.py bdist_wheel 
+   twine upload dist/metpx_sarracenia-2.17.7a2-py3-none-any.whl
 
 Note that the same version can never be uploaded twice.
 
