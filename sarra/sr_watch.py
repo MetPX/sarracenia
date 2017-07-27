@@ -81,6 +81,8 @@ class sr_watch(sr_instances):
         self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
 
+        self.last_heartbeat = time.time()
+
     def close(self):
         self.post.close()
         for ow in self.obs_watched:
@@ -117,6 +119,21 @@ class sr_watch(sr_instances):
            self.post.setup()
            self.post.poster.cache_reset()
 
+    def check_heartbeat(self):
+        now    = time.time()
+        elapse = now - self.last_heartbeat
+        if elapse > self.heartbeat :
+           self.__on_heartbeat__()
+           self.last_heartbeat = now
+
+    def __on_heartbeat__(self):
+        self.logger.debug("__on_heartbeat__")
+
+        # invoke on_hearbeat when provided
+        for plugin in self.on_heartbeat_list:
+           if not plugin(self): return False
+
+        return True
 
     # =============
     # __on_watch__
@@ -249,6 +266,7 @@ class sr_watch(sr_instances):
             # do periodic events (at most, once every 'sleep' seconds)
             while True:
                start_sleep_event = time.time()
+               self.check_heartbeat()
                ok = self.__on_watch__()
                if ok : self.myeventhandler.event_wakeup()
                end_sleep_event = time.time()
@@ -355,6 +373,8 @@ def main():
             #     these lists might need to be replaced with watchdog event queues.
             #     left for later work. PS-20170105
             #     more details: https://github.com/gorakhargosh/watchdog/issues/392
+            watch.check_heartbeat()
+
             nu = self.new_events.copy()
             self.new_events={}
 
