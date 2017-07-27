@@ -339,11 +339,16 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
+**[--on_heartbeat]**
+
+Every *heartbeat* seconds, the *on_heartbeat* is invoked.  For periodic operationsl that happen relatively rarely,
+scale of many minutes, usually.
+
 **[--on_watch]**
 
-When the gathering of sr_watch events starts, the *on_watch* plugin is envoked.
-It could be used to put a file in one of the watched directories... 
-and have it published.
+Every *sleep* seconds, file system changes occurred are processed in a batch.  Prior to this processing,
+the *on_watch* plugin is invoked.  It can be used to put a file in one of the watched directories... 
+and have it published.  sleep is usually a much shorter interval than the heartbeat.
 
 
 CAVEATS
