@@ -378,6 +378,15 @@ class http_transport():
                      if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                      os.rename(local_lock, parent.new_file)
 
+                h = parent.msg.headers
+                if parent.preserve_mode and 'mode' in h :
+                    os.chmod(parent.new_file, int(h['mode'], base=8) )
+                elif parent.chmod != 0:
+                    os.chmod(parent.new_file, parent.chmod )
+        
+                if parent.preserve_time and 'mtime' in h :
+                   os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+        
                 # fix message if no partflg (means file size unknown until now)
 
                 if msg.partflg == None:
@@ -452,14 +461,6 @@ class http_transport():
         fp.close()
 
         if chk : self.checksum = chk.get_value()
-
-        h = self.parent.msg.headers
-
-        if self.parent.preserve_mode and 'mode' in h :
-           os.chmod(local_file, int(h['mode'], base=8) )
-
-        if self.parent.preserve_time and 'mtime' in h :
-           os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
 
         return True

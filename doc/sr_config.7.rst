@@ -479,7 +479,7 @@ and under which name.
 
 - **attempts  <count>                 (default: 3)**
 - **batch     <count>                 (default: 100)**
-- **default_mode     <octalint>       (default: 0755)**
+- **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
 - **directory <path>                  (default: .)** 
 - **filename  <spec>                  (default: WHATFN, which means no modification)**
@@ -603,7 +603,10 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 Permission bits on the destination files written are controlled by the *mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
 If no source mode is available, the *default_mode* will be applied to files, and the
-*default_dir_mode* will be applied to directories.
+*default_dir_mode* will be applied to directories. If no default is specified,
+then the operating system  defaults (on linux, controlled by umask settings)
+will determine file permissions. (note that the *chmod* option is interpreted as a synonym 
+for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
 
 SUNDEW COMPATIBILITY OPTIONS
 ----------------------------

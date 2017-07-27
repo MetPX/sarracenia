@@ -281,6 +281,8 @@ class sr_sftp():
         h = self.parent.msg.headers
         if self.parent.preserve_mode and 'mode' in h :
            os.chmod(local_file, int( h['mode'], base=8) )
+        elif self.parent.chmod != 0:
+           os.chmod(local_file, self.parent.chmod )
 
         if self.parent.preserve_time and 'mtime' in h:
            os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
@@ -374,6 +376,8 @@ class sr_sftp():
         msg = self.parent.msg
         if self.parent.preserve_mode and 'mode' in msg.headers :
            rfp.chmod( int(msg.headers['mode'], base=8) )
+        elif self.parent.chmod !=0 : 
+           rfp.chmod( self.parent.chmod )
 
         if self.parent.preserve_time and 'mtime' in msg.headers :
            rfp.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
@@ -621,8 +625,11 @@ class sftp_transport():
                    sftp.rename(new_lock, parent.new_file)
     
                 try   : 
-                   if ( 'mode' in msg.headers ) and not parent.preserve_mode:
+                   if ( 'mode' in msg.headers ) and parent.preserve_mode:
+                      sftp.chmod( int( msg.headers['mode'], base=8),parent.new_file)
+                   elif parent.chmod != 0:
                       sftp.chmod(parent.chmod,parent.new_file)
+
                 except: pass
     
                 if parent.reportback :

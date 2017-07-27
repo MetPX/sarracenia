@@ -304,6 +304,17 @@ class sr_ftp():
            self.ftp.storlines ("STOR " + remote_file, fp, cb)
            fp.close()
 
+        try:
+           if ( 'mode' in self.msg.headers ) and self.preserve_mode :
+               self.ftp.chmod( int(self.msg.header['mode'], 8) , remote_file );
+           elif self.chmod > 0:
+               self.ftp.chmod( parent.chmod , remote_file );
+
+           # no support in ftp for utime.
+
+        except:
+            pass
+
     # rename
     def rename(self,remote_old,remote_new) :
         self.logger.debug("sr_ftp rename %s %s" % (remote_old,remote_new))
@@ -445,7 +456,16 @@ class ftp_transport():
                    ftp.get(remote_file,local_lock,msg.local_offset)
                    if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
                    os.rename(local_lock, msg.local_file)
-    
+
+                #restore mode and times.
+                if parent.preserve_mode and 'mode' in h :
+                    os.chmod(msg.local_file, int(h['mode'], base=8) )
+                elif parent.chmod != 0:
+                    os.chmod(msg.local_file, self.parent.chmod )
+       
+                if parent.preserve_time and 'mtime' in h :
+                  os.utime(msg.local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+
                 # fix message if no partflg (means file size unknown until now)
 
                 if msg.partflg == None :
@@ -552,7 +572,9 @@ class ftp_transport():
                    ftp.umask()
                    ftp.put(local_file, parent.new_file)
     
-                try   : ftp.chmod(parent.chmod,parent.new_file)
+                try   : 
+                   if parent.chmod != 0:
+                       ftp.chmod(parent.chmod,parent.new_file)
                 except: pass
     
                 msg.report_publish(201,'Delivered')
