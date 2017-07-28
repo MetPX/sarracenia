@@ -55,12 +55,17 @@ class sr_cache():
 
     def add(self, key, path, part):
         self.logger.debug("sr_cache add")
+
+        if key in cacheDict : return False
+
         now = time.time()
         self.cacheDict[key] = [now,path,part]
         self.fp.write("%s %f %s %s\n"%(key,now,path,part))
 
         # cache expire roll
         self.check_expire()
+
+        return True
 
     def clean(self):
         self.logger.debug("sr_cache clean")
@@ -76,6 +81,8 @@ class sr_cache():
             if ttl > self.expire : continue
             newDict[key] = lst
             self.fp.write("%s %f %s %s\n"%(key,lst[0],lst[1],lst[2]))
+
+        self.cacheDict = newDict
         
     def clear(self):
         self.logger.debug("sr_cache clear")
@@ -83,11 +90,12 @@ class sr_cache():
         os.unlink(self.cache_file)
         self.fp = open(self.cache_file,'w')
 
-    def close(self):
+    def close(self, unlink=False):
         self.logger.debug("sr_cache close")
         self.fp.flush()
         self.fp.close()
         self.fp = None
+        if unlink : os.unlink(self.cache_file)
 
     def find(self, key):
         self.logger.debug("sr_cache find")
@@ -134,13 +142,11 @@ class sr_cache():
 
         return True
 
+    # update time in cache entry
     def touch(self,key):
         self.logger.debug("sr_cache touch")
-        lst    = self.cacheDict[key]
-        lst[1] = time.time()
-
-        self.cacheDict[key] = lst
-
+        if not key in self.cacheDict : return
+        self.cacheDict[key][1] = time.time()
 
 # ===================================
 # self_test
