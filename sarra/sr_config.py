@@ -489,6 +489,9 @@ class sr_config:
 
         # Plugin defaults
 
+        self.on_cache             = None
+        self.on_cache_list        = []
+
         self.execfile("on_message",'msg_log')
         self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
@@ -861,10 +864,16 @@ class sr_config:
 
                 elif ( words0 == 'caching' ) or ( words0 == 'cache' ): # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        self.caching = True
+                        #self.caching = True
+                        self.caching = 300
                         n = 1
                      else :
-                        self.caching = self.isTrue(words[1])
+                        if words[1].isalpha():
+                               self.caching = self.isTrue(words[1])
+                               if self.caching : self.caching = 300
+                        else :
+                               self.caching = int(words[1])
+                               if self.caching <= 0 : self.caching = False
                         n = 2
 
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
@@ -1196,6 +1205,19 @@ class sr_config:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
+
+                elif words0 == 'on_cache': # See: sr_config.7
+                     self.execfile("on_cache",words1)
+                     if ( self.on_cache == None ):
+                        if self.isNone(words1):
+                           self.on_cache_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.on_cache_list.append(self.on_cache)
+
+                     n = 2
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.execfile("on_file",words1)
