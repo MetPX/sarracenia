@@ -56,7 +56,7 @@ class sr_cache():
     def add(self, key, path, part):
         self.logger.debug("sr_cache add")
 
-        if key in cacheDict : return False
+        if key in self.cacheDict : return False
 
         now = time.time()
         self.cacheDict[key] = [now,path,part]
