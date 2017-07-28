@@ -410,7 +410,7 @@ class sr_config:
 
         self.batch                = 100
 
-        self.chmod                = 0o775
+        self.chmod                = 0o0   # Peter changed this to 0, so umask can be used. July 2017.
         self.chmod_dir            = 0o775 # added by Murray Rennie May 17, 2016
         self.chmod_log            = 0o600 
         self.cluster              = None

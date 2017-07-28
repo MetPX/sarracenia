@@ -41,6 +41,10 @@ Parameters:
      - otherwise, no suffix will be added.
      - default: hash
 
+ msg_filter_wmo2msc_convert on|off
+
+     - if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
+       this involves \n as termination character, and other charater substitutions.
 
 NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
       including hints about debugging.
@@ -81,6 +85,10 @@ class Xwmo2msc(object):
         if hasattr(parent,'msg_filter_wmo2msc_tree'):
            parent.treeify=parent.isTrue(parent.msg_filter_wmo2msc_tree[0])
 
+        parent.convert2msc=False
+
+        if hasattr(parent,'msg_filter_wmo2msc_convert'):
+           parent.convert2msc=parent.isTrue(parent.msg_filter_convert[0])
 
         self.trimre=re.compile(b" +\n")
         parent.logger.info('msg_filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
@@ -219,7 +227,8 @@ class Xwmo2msc(object):
                 self.bintxt.replace( bytearray('\r','latin_1'), bytearray('','latin_1'), 2)
         else:
             fmt='wmo-alphanumeric'
-            self.doSpecificProcessing()        
+            if parent.convert2msc:
+                self.doSpecificProcessing()        
         
         # apply 'd' checksum (md5)
         import hashlib

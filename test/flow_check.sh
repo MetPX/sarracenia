@@ -144,7 +144,7 @@ function countall {
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_000*.log | wc -l`"
   totshortened="${tot}"
 
-  countthem "`grep Sends: "$LOGDIR"/sr_sender_tsource2send_000*.log | wc -l`"
+  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_000*.log | wc -l`"
   totsent="${tot}"
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_000*.log | wc -l`"

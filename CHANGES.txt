@@ -4,6 +4,11 @@
 
 **git repo(unreleased)**
 
+**2.17.07a4**
+
+* changed *chmod* interpretation. Was obsolete in favour of umask, now an option to override umask.
+* bug fixes for chmod not being done in a number of situations where it was required.
+
 **2.17.07a3**
 
 * on_heartbeat support added to sr_watch.

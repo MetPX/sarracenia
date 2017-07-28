@@ -19,7 +19,7 @@
 #include "sr_cache.h"
 
 
-int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen )
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen, char *path, char* partstr )
  /* 
    insert new item if it isn't in the cache.
    retun value:
@@ -30,6 +30,7 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeyl
 {
    struct sr_cache_t *c;
    char e[SR_CACHEKEYSZ];
+   struct sr_cache_path_t *e;
 
    if (ekeylen > (SR_CACHEKEYSZ-1)) 
    {
@@ -44,16 +45,29 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeyl
    HASH_FIND(hh,(*cachep),e,SR_CACHEKEYSZ,c);
 
    if (!c) 
-   { 
-       
+   {
        c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
        memcpy(c->key, e, SR_CACHEKEYSZ );
-       clock_gettime( CLOCK_REALTIME, &(c->created) );
-
+       c->paths=NULL;
        HASH_ADD_KEYPTR( hh, (*cachep), c->key, SR_CACHEKEYSZ, c );
-       return(1);
-   } 
-   return(0);
+   }
+
+   for ( e = c->paths; e ; e=e->next )
+   { 
+          /* compare path and partstr */
+           if ( !strcmp(e->path, path) && !strcmp(e->partstr,partstr) ) 
+               return(0); /* found in the cache already */
+   }
+
+   /* not found, so add path to cache entry */
+   e = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
+   clock_gettime( CLOCK_REALTIME, &(e->created) );
+   e->path = strdup(path);
+   e->partstr = strdup(partstr);
+   e->next = c->parts;
+   c->parts = e;
+
+   return(1);
 }
 
 void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since )
@@ -62,12 +76,36 @@ void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since )
  */
 {
     struct sr_cache_t *c, *tmpc;
+   struct sr_cache_path_t *e, *prev, *del;
 
     HASH_ITER(hh, *cachep, c, tmpc )
     {
-        if (c->created.tv_sec < since->tv_sec) {
-            HASH_DEL(*cachep,c);
-            free(c);
+        e = c->paths; 
+        while ( e )
+        {
+           if (e->created.tv_sec < since->tv_sec) 
+           {
+              del=e;
+
+              if (!prev) {
+                  c->paths = e->next;
+                  prev=e;
+              } else {
+                  prev->next = e->next; 
+              }
+              e=e->next;
+
+              free(del->path);
+              free(del->partstr);
+              free(del);
+           } else  {
+              e=e->next;
+           }
+              
+        }
+        if (! (c->paths) ) {
+           HASH_DEL(*cachep,c);
+           free(c);
         }
     }
 }
@@ -78,10 +116,20 @@ void sr_cache_free( struct sr_cache_t **cachep)
  */
 {
     struct sr_cache_t *c, *tmpc;
+   struct sr_cache_path_t *e, *del ;
 
     HASH_ITER(hh, (*cachep), c, tmpc )
     {
         HASH_DEL((*cachep),c);
+        e = c->paths; 
+        while( e )
+        {
+            del=e;
+            e=e->next; 
+            free(del->path);
+            free(del->partstr);
+            free(del);
+        }
         free(c);
     }
 }
@@ -89,6 +137,8 @@ void sr_cache_free( struct sr_cache_t **cachep)
 void sr_cache_save( struct sr_cache_t *cache, const char *fn)
  /* 
      remove entries in the cache older than since.
+
+FIXME: doesn't write paths yet...
  */
 {
     struct sr_cache_t *c, *tmpc;
@@ -116,6 +166,7 @@ void sr_cache_save( struct sr_cache_t *cache, const char *fn)
 int convert_hex_digit( char c )
  /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
     kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
+FIXME: doesn't read paths yet...
   */
 {
    if ( c < ':' ) return(c - '0');

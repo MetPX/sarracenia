@@ -16,14 +16,21 @@
 
 #define SR_CACHEKEYSZ (SHA512_DIGEST_LENGTH+1)
 
+struct sr_cache_path_t {
+  char *path;
+  char *partstr;
+  struct timespec created;
+  struct sr_cache_path_t *next;
+};
+
 struct sr_cache_t {
   unsigned char key[SR_CACHEKEYSZ]; // Assumed longest possible hash. first character is algorithm marker.
-  struct timespec created;
+  struct sr_cache_path_t *paths;
   UT_hash_handle hh;
 };
 
 
-int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen ); 
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen, char*path, char *partstr ); 
  /* 
    insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
    retun value:
