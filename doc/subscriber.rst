@@ -231,6 +231,33 @@ In any event, after a few minutes, Here is what the current directory looks like
   blacklab% 
 
 
+Server Side Resources Allocated for Subscribers
+-----------------------------------------------
+
+When changing *subtopic* or *queue* settings, or when one expects to not use a configuration for
+an extended period of time, it is best to::
+
+  sr_subscriber cleanup CMC.conf
+
+which will de-allocate the queue (and it's bindings) on the server.
+
+Why? Whenever a subscriber is started, a queue is created on the data pump, with the topic bindings
+set by the configuration file. If the subscriber is stopped, the queue keeps getting messages
+as defined by subtopic selection, and when the subscriber starts up again, the queued messages
+are forwarded to the client. So when the *subtopic* option is changed, since it is already 
+defined on the server, one ends up adding a binding rather than replacing it.  For example,
+if one has a subtopic that contains SATELLITE, and then stops the subscriber, edit the file
+and now the topic contains only RADAR, when the subscriber is restarted, not only will all the
+queued satellite files be sent to the consumer, but the RADAR is added to the bindings, rather
+than replacing them, so the subscriber will get bothe SATELLITE and RADAR data even though
+the configuration no longer contains the former.
+
+Also, if one is experimenting, and a queue is to be stopped for a very long time, it may accumulate
+a large number of messages. The total number of messages on a data pump has an effect on the
+pump performance for all users. It is therefore advisable to have the pump de-allocate resources
+when they will not be needed for an extended periods, or when experimenting with different settings.
+
+
 Working with Multiple Configurations
 -------------------------------------
 
@@ -259,7 +286,7 @@ from anywhere, and the configuration in the directory would be invoked.  Also, o
 the sr command to start/stop multiple configurations at once.  The sr command will go through the 
 default directories and start up all the configurations it finds::
 
-  peter@idefix:~/test$ sr_subscribe start CMC.conf 
+  peter@idefix:~/test$ sr start
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
@@ -315,7 +342,7 @@ for examples of this transformed path.
 
 This is a different language than what is used in the subtopics, because the simpler language
 in the subtopic directives comes from the AMQP specification.  We are not able to provide
-full
+full regular expressions for topic filtering.
 
 
 back to sample configuration files:
