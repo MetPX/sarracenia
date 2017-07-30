@@ -1,7 +1,7 @@
 
 #include "sr_context.h"
 
-/*
+ /*
   for use by sr_post to avoid duplicate postings, sr_winnow to suppress duplicated, perhaps other consumers as well.
 
   is the use of the hash enough of a key?  dunno.
@@ -11,12 +11,24 @@
 #include <time.h>
 #include "uthash.h"
 
-/*
+ /*
   get time string conversion routines.
  */
 #include "sr_config.h"
 
 #include "sr_cache.h"
+
+
+void sr_cache_entry_path_write( FILE *fp, struct sr_cache_entry_t *e, struct sr_cache_entry_path_t *p )
+{
+  static char sumstr[ SR_SUMSTRLEN ]; /* made static to avoid putting on stack every call. */
+
+  sumstr[0]=e->key[0];
+  sumstr[1]=',';
+  for (int i=1; i <= get_sumstrlen(e->key[0]); i++ )
+      sprintf( &(sumstr[i*2]), "%02x", (unsigned char)(e->key[i]));
+  fprintf(fp,"%s %s %s %s\n", sumstr, sr_time2str( &(p->created) ), p->path, p->partstr );
+}
 
 int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path, char* partstr )
  /* 
@@ -60,7 +72,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    p->partstr = strdup(partstr);
    p->next = c->paths;
    c->paths = p;
-
+   sr_cache_entry_path_write(cachep->fp,c,p);
    return(1);
 }
 
@@ -128,21 +140,27 @@ void sr_cache_free( struct sr_cache_t *cachep)
     }
 }
 
-void sr_cache_save( struct sr_cache_t *cachep)
+int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
  /* 
      write entries in the cache to disk.
+     returns a count of paths written to disk.
  */
 {
     struct sr_cache_entry_t *c, *tmpc;
     struct sr_cache_entry_path_t *e;
     FILE *f;
+    int count=0;
     char sumstr[ SR_SUMSTRLEN ];
 
-    f = fopen( cachep->fn, "w" );
-    if ( !f ) 
-    {
-        fprintf( stderr, "ERROR: failed to open cache file to save: %s\n", cachep->fn );
-        return;
+    if (to_stdout) {
+        f= stdout;
+    } else {
+        f = fopen( cachep->fn, "w" );
+        if ( !f ) 
+        {
+            fprintf( stderr, "ERROR: failed to open cache file to save: %s\n", cachep->fn );
+            return(0);
+        }
     }
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
@@ -153,9 +171,11 @@ void sr_cache_save( struct sr_cache_t *cachep)
        for ( e = c->paths; e ; e=e->next )
        {       
           fprintf(f,"%s %s %s %s\n", sumstr, sr_time2str( &(e->created) ), e->path, e->partstr );
+          count++;
        }
     }
-    fclose(f);
+    if (!to_stdout) fclose(f);
+    return(count);
 }
 
 int convert_hex_digit( char c )
@@ -275,7 +295,6 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
     return(cache);
 }
 
-
 struct sr_cache_t *sr_cache_open( const char *fn )
 {
     struct sr_cache_t *c;
@@ -289,8 +308,9 @@ struct sr_cache_t *sr_cache_open( const char *fn )
 
 void sr_cache_close( struct sr_cache_t *c )
 {
-   sr_cache_save( c ); 
+   //sr_cache_save( c ); - since continually appending, no need for save.
    sr_cache_free( c );
+   fclose(c->fp);
    free(c->fn);
    free(c);
 }

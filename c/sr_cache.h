@@ -69,9 +69,10 @@ void sr_cache_free( struct sr_cache_t *cachep );
     remove all entries in the cache  (cleanup to discard.)
  */
 
-void sr_cache_save( struct sr_cache_t *cachep);
+int sr_cache_save( struct sr_cache_t *cachep, int to_stdout);
  /* 
-    write entire cache data to the given file name.
+    write entire cache data to the given file name. (for debugging, set to stdout.)
+    returns number of entries written.
  */
 
 

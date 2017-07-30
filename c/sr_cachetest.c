@@ -39,11 +39,13 @@ int main( int argc, char *argv[] )
    hash[1]=',';
    hash[2]='\0';
 
+   unlink( "sr_cache_save.test" );
    cache = sr_cache_open( "sr_cache_save.test" );
    ret = sr_cache_check( cache, 's', sha512hash( "hoho" ), "hoho", "1,1,0,0" );
    if (ret > 0) {
        fprintf( stdout, "OK. added hoho to the cache\n" );
        success_count++;
+       population++;
    } else
        fprintf( stdout, "ERROR: failed to add hoho to the cache\n" );
    test_count++;
@@ -52,6 +54,7 @@ int main( int argc, char *argv[] )
    if (ret > 0) {
        fprintf( stdout, "OK. added haha to the cache\n" );
        success_count++;
+       population++;
    } else
        fprintf( stdout, "ERROR: failed to add haha to the cache\n" );
    test_count++;
@@ -70,6 +73,7 @@ int main( int argc, char *argv[] )
    if (ret > 0)  {
        fprintf( stdout, "OK: added haha to the cache with same sum as hoho\n" );
        success_count++;
+       population++;
    } else if ( ret == 0 )
    {
        fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
@@ -83,6 +87,7 @@ int main( int argc, char *argv[] )
    if (ret > 0)  {
        fprintf( stdout, "OK: added lolo to the cache with same an md5 sum\n" );
        success_count++;
+       population++;
    } else if ( ret == 0 )
    {
        fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
@@ -103,6 +108,7 @@ int main( int argc, char *argv[] )
    if (ret > 0)  {
        fprintf( stdout, "OK: added lily to the cache with same sum as lolo\n" );
        success_count++;
+       population++;
    } else if ( ret == 0 )
    {
        fprintf( stdout, "ERROR refused to add lily to the cache with same value as lolo\n" );
@@ -110,30 +116,37 @@ int main( int argc, char *argv[] )
    test_count++;
 
 
-   population=HASH_COUNT(cache->data);
    fprintf( stdout, "closing cache.\n" );
    sr_cache_close( cache );
+   cache = NULL;
 
-  /*
-   sr_cache_save( cache );
-   sr_cache_free( cache );
-   fprintf(stdout, "after free: cache=%p count=%d\n", cache, HASH_COUNT(cache->data) );
-   if (HASH_COUNT(cache->data) == 0)
-   {
-       fprintf( stdout, "OK emptied successfully by cache_free\n" );
-       success_count++;
-   }
-   test_count++;
-  */
-
+   /* 
+      There are only three hashes in the table, so that HASH_COUNT should be 3.
+      sha of haha, sha of hoho, then two items under md5 of lala
+   */ 
    cache = sr_cache_open( "sr_cache_save.test" );
    fprintf(stdout, "after load: cache=%p count=%d\n", cache, HASH_COUNT(cache->data) );
-   if (HASH_COUNT(cache->data) == population)
+   if (HASH_COUNT(cache->data) == 3)
    {
-       fprintf( stdout, "OK successfully restored by cache_load\n" );
+       fprintf( stdout, "OK restored by cache_load: same number of cache entries\n" );
        success_count++;
+   } else {
+       fprintf( stdout, "failed to restore by cache_load population is: %d, expected: %d\n",
+               HASH_COUNT(cache->data), 3 );
    }
    test_count++;
+
+   ret = sr_cache_save( cache, 1 );
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK restored by cache_load: same number of cache entry paths.\n" );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed to restore paths from cache population is: %d, expected: %d\n",
+                          ret, population );
+   }
+   test_count++;
+
 
    if (success_count == test_count )
    {
