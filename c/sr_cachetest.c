@@ -36,8 +36,10 @@ int main( int argc, char *argv[] )
 
    int test_count=0;
    int success_count=0;
-   struct timespec sts;
+   struct timespec sts,tsnow;
 
+   memset( &sts, 0, sizeof(struct timespec));
+   memset( &tsnow, 0, sizeof(struct timespec));
    hash[0]='s';
    hash[1]=',';
    hash[2]='\0';
@@ -170,6 +172,22 @@ int main( int argc, char *argv[] )
                           ret, population );
    }
    test_count++;
+
+   clock_gettime( CLOCK_REALTIME, &tsnow );
+   tsnow.tv_sec -= 2;
+   sr_cache_clean( cache, &tsnow );
+
+   ret = sr_cache_save( cache, 1 );
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK after clean? cache_load: same number of cache entry paths.\n" );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed after clean? from cache population is: %d, expected: %d\n",
+                          ret, population );
+   }
+   test_count++;
+
 
 
    if (success_count == test_count )

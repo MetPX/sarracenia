@@ -83,8 +83,10 @@ void sr_cache_clean( struct sr_cache_t *cachep, struct timespec *since )
      remove entries in the cache older than since. (resolution is in seconds.)
  */
 {
-    struct sr_cache_entry_t *c, *tmpc;
+   struct sr_cache_entry_t *c, *tmpc;
    struct sr_cache_entry_path_t *e, *prev, *del;
+
+    fprintf( stderr, "cleaning out entries older than: %s\n", sr_time2str( since ) );
 
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
