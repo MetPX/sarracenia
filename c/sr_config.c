@@ -22,6 +22,7 @@ status:
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 
 #include <time.h>
@@ -336,6 +337,16 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       free(brokerstr);
       return(2);
 
+  } else if ( !strcmp( option, "cache" ) || !strcmp( option, "no_duplicates" ) ) {
+      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      if isalpha(*argument) {
+          val = StringIsTrue(argument);
+          sr_cfg->cache = (val&2) ? 900 : 0;
+          return(1+(val&1));
+      }
+      sr_cfg->cache = atof(argument);
+      return(2);
+
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
       sr_config_read( sr_cfg, argument );
       return(2);
@@ -403,7 +414,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   } else if ( !strcmp( option, "realpath" ) ) {
       val = StringIsTrue(argument);
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
       sr_cfg->realpath = val&2;
       return(1+(val&1));
 

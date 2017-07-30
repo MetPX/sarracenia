@@ -30,7 +30,7 @@ struct sr_cache_t {
 };
 
 
-int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen, char*path, char *partstr ); 
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char*path, char *partstr ); 
  /* 
    insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
    retun value:

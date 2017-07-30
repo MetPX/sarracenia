@@ -77,6 +77,7 @@ struct sr_config_t {
   char*             action;
   long unsigned     blocksize; // if partitioned, how big are they?
   struct sr_broker_t *broker;
+  float             cache;
   char             *configname;
   int               debug;
   char             *directory;

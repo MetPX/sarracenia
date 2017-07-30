@@ -1,11 +1,22 @@
 
 #include <openssl/sha.h>
+#include <openssl/md5.h>
 
 #include "sr_cache.h"
 
 unsigned char hash[SHA512_DIGEST_LENGTH];
 
-unsigned char *hashstr( char *str )
+unsigned char *md5hash( char *str )
+{
+   MD5_CTX md5ctx;
+
+   MD5_Init( &md5ctx );
+   MD5_Update( &md5ctx, str, strlen(str) );
+   MD5_Final( hash, &md5ctx );
+   return(hash);
+}
+
+unsigned char *sha512hash( char *str )
 {
    SHA512_CTX shactx;
 
@@ -28,7 +39,7 @@ int main( int argc, char *argv[] )
    hash[1]=',';
    hash[2]='\0';
 
-   ret = sr_cache_check( &cache, 's', hashstr( "hoho" ), SHA512_DIGEST_LENGTH );
+   ret = sr_cache_check( &cache, 's', sha512hash( "hoho" ), "hoho", "1,1,0,0" );
    if (ret > 0) {
        fprintf( stdout, "OK. added hoho to the cache\n" );
        success_count++;
@@ -36,15 +47,15 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR: failed to add hoho to the cache\n" );
    test_count++;
 
-   ret = sr_cache_check( &cache, 's', hashstr( "haha" ), SHA512_DIGEST_LENGTH );
+   ret = sr_cache_check( &cache, 's', sha512hash( "haha" ), "haha", "1,1,0,0" );
    if (ret > 0) {
-       fprintf( stdout, "OK. added hoho to the cache\n" );
+       fprintf( stdout, "OK. added haha to the cache\n" );
        success_count++;
    } else
-       fprintf( stdout, "ERROR: failed to add hoho to the cache\n" );
+       fprintf( stdout, "ERROR: failed to add haha to the cache\n" );
    test_count++;
 
-   ret = sr_cache_check( &cache, 's', hashstr( "hoho" ), SHA512_DIGEST_LENGTH );
+   ret = sr_cache_check( &cache, 's', sha512hash( "hoho" ), "hoho", "1,1,0,0" );
    if (ret > 0) 
        fprintf( stdout, "ERROR: added hoho to the cache a second time\n" );
    else if ( ret == 0 )
@@ -53,6 +64,50 @@ int main( int argc, char *argv[] )
        success_count++;
    }
    test_count++;
+
+   ret = sr_cache_check( &cache, 's', sha512hash( "hoho" ), "haha2", "1,1,0,0" );
+   if (ret > 0)  {
+       fprintf( stdout, "OK: added haha to the cache with same sum as hoho\n" );
+       success_count++;
+   } else if ( ret == 0 )
+   {
+       fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
+   }
+   test_count++;
+
+   hash[0]='d';
+   hash[1]=',';
+   hash[2]='\0';
+   ret = sr_cache_check( &cache, 'd', md5hash( "lala" ), "lolo/lala", "1,1,0,0" );
+   if (ret > 0)  {
+       fprintf( stdout, "OK: added lolo to the cache with same an md5 sum\n" );
+       success_count++;
+   } else if ( ret == 0 )
+   {
+       fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
+   }
+   test_count++;
+
+   ret = sr_cache_check( &cache, 'd', md5hash( "lala" ), "lolo/lala", "1,1,0,0" );
+   if (ret > 0) 
+       fprintf( stdout, "ERROR: added lala to the cache a second time\n" );
+   else if ( ret == 0 )
+   {
+       fprintf( stdout, "OK refused to add lala to the cache a second time\n" );
+       success_count++;
+   }
+   test_count++;
+
+   ret = sr_cache_check( &cache, 'd', md5hash( "lala" ), "lolo/lily", "1,1,0,0" );
+   if (ret > 0)  {
+       fprintf( stdout, "OK: added lily to the cache with same sum as lolo\n" );
+       success_count++;
+   } else if ( ret == 0 )
+   {
+       fprintf( stdout, "ERROR refused to add lily to the cache with same value as lolo\n" );
+   }
+   test_count++;
+
 
    population=HASH_COUNT(cache);
    fprintf( stdout, "writing to cache to disk (save_cache)\n" );

@@ -19,7 +19,7 @@
 #include "sr_cache.h"
 
 
-int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeylen, char *path, char* partstr )
+int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char *path, char* partstr )
  /* 
    insert new item if it isn't in the cache.
    retun value:
@@ -30,17 +30,12 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeyl
 {
    struct sr_cache_t *c;
    char e[SR_CACHEKEYSZ];
-   struct sr_cache_path_t *e;
+   struct sr_cache_path_t *p;
 
-   if (ekeylen > (SR_CACHEKEYSZ-1)) 
-   {
-       fprintf( stderr, "ERROR: failed inserting sr_cache key because it is too long!" );
-       return(-1);
-   }
    e[0]=algo;
-   if (ekeylen < (SR_CACHEKEYSZ-1)) 
+   if (get_sumstrlen(algo) < (SR_CACHEKEYSZ-1)) 
        memset(e+1, 0, SR_CACHEKEYSZ-1);
-   memcpy(e+1, ekey, ekeylen );
+   memcpy(e+1, ekey, get_sumstrlen(algo) );
 
    HASH_FIND(hh,(*cachep),e,SR_CACHEKEYSZ,c);
 
@@ -52,20 +47,20 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, int ekeyl
        HASH_ADD_KEYPTR( hh, (*cachep), c->key, SR_CACHEKEYSZ, c );
    }
 
-   for ( e = c->paths; e ; e=e->next )
+   for ( p = c->paths; p ; p=p->next )
    { 
           /* compare path and partstr */
-           if ( !strcmp(e->path, path) && !strcmp(e->partstr,partstr) ) 
+           if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) 
                return(0); /* found in the cache already */
    }
 
    /* not found, so add path to cache entry */
-   e = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
-   clock_gettime( CLOCK_REALTIME, &(e->created) );
-   e->path = strdup(path);
-   e->partstr = strdup(partstr);
-   e->next = c->parts;
-   c->parts = e;
+   p = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
+   clock_gettime( CLOCK_REALTIME, &(p->created) );
+   p->path = strdup(path);
+   p->partstr = strdup(partstr);
+   p->next = c->paths;
+   c->paths = p;
 
    return(1);
 }
@@ -142,6 +137,7 @@ FIXME: doesn't write paths yet...
  */
 {
     struct sr_cache_t *c, *tmpc;
+    struct sr_cache_path_t *e;
     FILE *f;
     char sumstr[ SR_SUMSTRLEN ];
 
@@ -155,10 +151,12 @@ FIXME: doesn't write paths yet...
     {
        sumstr[0]=c->key[0];
        sumstr[1]=',';
-       for (int i=1; i < SR_CACHEKEYSZ; i++ )
+       for (int i=1; i <= get_sumstrlen(c->key[0]); i++ )
            sprintf( &(sumstr[i*2]), "%02x", (unsigned char)(c->key[i]));
-       
-       fprintf(f,"%s %s\n", sumstr, sr_time2str( &(c->created) ) );
+       for ( e = c->paths; e ; e=e->next )
+       {       
+          fprintf(f,"%s %s %s %s\n", sumstr, sr_time2str( &(e->created) ), e->path, e->partstr );
+       }
     }
     fclose(f);
 }
@@ -176,7 +174,7 @@ FIXME: doesn't read paths yet...
 }
 
 
-#define load_buflen (SR_CACHEKEYSZ*2 + SR_TIMESTRLEN + 4)
+#define load_buflen (SR_CACHEKEYSZ*2 + SR_TIMESTRLEN + PATH_MAX + 24)
 
 static char buf[ load_buflen ];
 
@@ -186,6 +184,9 @@ struct sr_cache_t *sr_cache_load( const char *fn)
  */
 {
     struct sr_cache_t *c, *cache;
+    struct sr_cache_path_t *p;
+    char *sum, *timestr, *path, *partstr;
+    char key_val[SR_CACHEKEYSZ]; 
     FILE *f;
     int line_count=0;
 
@@ -201,21 +202,78 @@ struct sr_cache_t *sr_cache_load( const char *fn)
     {
        line_count++;
        fprintf( stderr, "strlen(buf)=%ld loadbuflen: %d\n", strlen(buf), load_buflen );
-       if (strlen( buf ) <  load_buflen-3) 
+       sum = strtok( buf, " " );
+   
+       if (!sum) 
        {
-          fprintf( stderr, "ERROR: cache file line %d too short, corrupted, skipping!\n", line_count );
-          continue;
+           fprintf( stderr, "corrupt line in cache file %s: %s\n", fn, buf );
+           continue;
        }
-       c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
-       c->key[0] = buf[0];
-       int i=1;
-       for ( ; i < SR_CACHEKEYSZ; i++ ) 
-       {
-            c->key[i]= convert_hex_digit(buf[2*i]) * 16 + convert_hex_digit(buf[2*i+1])  ;
-       }
-       memcpy( &(c->created), sr_str2time( buf+(SR_CACHEKEYSZ*2) ), sizeof(struct timespec) );
 
-       HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
+       timestr = strtok( NULL, " " );
+   
+       if (!timestr) 
+       {
+           fprintf( stderr, "no timestring, corrupt line in cache file %s: %s\n", fn, buf );
+           continue;
+       }
+
+       path = strtok( NULL, " " );
+   
+       if (!path) 
+       {
+           fprintf( stderr, "no path, corrupt line in cache file %s: %s\n", fn, buf );
+           continue;
+       }
+
+       partstr = strtok( NULL, " \n" );
+   
+       if (!partstr) 
+       {
+           fprintf( stderr, "no partstr, corrupt line in cache file %s: %s\n", fn, buf );
+           continue;
+       }
+
+       fprintf( stderr, "fields: sum=+%s+, timestr=+%s+, path=+%s+, partstr=+%s+\n", 
+           sum, timestr, path, partstr );
+
+       memset( key_val, 0, SR_CACHEKEYSZ );
+       key_val[0] = buf[0];
+       for (int i=1; i <= get_sumstrlen(buf[0]) ; i++ ) 
+       {
+            key_val[i]= convert_hex_digit(sum[2*i]) * 16 + convert_hex_digit(sum[2*i+1])  ;
+       }
+
+       HASH_FIND(hh,cache, key_val,SR_CACHEKEYSZ,c);
+
+       if (!c) {
+           c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
+           if (!c) 
+           {
+               fprintf( stderr, "out of memory reading cache file: %s, stopping at line: %s\n", fn, buf  );
+               return(cache);
+           }
+
+           memcpy(c->key, key_val, SR_CACHEKEYSZ );
+           c->paths=NULL;
+           HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
+       }
+       /* assert, c != NULL */
+
+       /* add path to cache entry */
+       p = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
+       if (!c) 
+       {
+           fprintf( stderr, "out of memory 2, reading cache file: %s, stopping at line: %s\n", fn, buf  );
+           return(cache);
+       }
+
+       memcpy( &(p->created), sr_str2time( timestr ), sizeof(struct timespec) );
+       p->path = strdup(path);
+       p->partstr = strdup(partstr);
+       p->next = c->paths;
+       c->paths = p;
+
     }
     fclose(f);
     return(cache);
