@@ -37,7 +37,10 @@ status:
 // AMQP PROTOCOL LIMIT IMPOSED HERE... see definition of short strings.
 // 255 characters, + terminating nul
 #define AMQP_MAX_SS (255+1)
+
 #define PATH_MAXNUL (PATH_MAX+1)
+
+#include "sr_cache.h"
 
 struct sr_path_t {
    char path[PATH_MAX];
@@ -78,6 +81,7 @@ struct sr_config_t {
   long unsigned     blocksize; // if partitioned, how big are they?
   struct sr_broker_t *broker;
   float             cache;
+  struct sr_cache_t *cachep;
   char             *configname;
   int               debug;
   char             *directory;

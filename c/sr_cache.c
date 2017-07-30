@@ -18,8 +18,7 @@
 
 #include "sr_cache.h"
 
-
-int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char *path, char* partstr )
+int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path, char* partstr )
  /* 
    insert new item if it isn't in the cache.
    retun value:
@@ -28,23 +27,23 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char *pat
       -1 - key too long, could not be inserted anyways, so not present.
  */
 {
-   struct sr_cache_t *c;
+   struct sr_cache_entry_t *c;
    char e[SR_CACHEKEYSZ];
-   struct sr_cache_path_t *p;
+   struct sr_cache_entry_path_t *p;
 
    e[0]=algo;
    if (get_sumstrlen(algo) < (SR_CACHEKEYSZ-1)) 
        memset(e+1, 0, SR_CACHEKEYSZ-1);
    memcpy(e+1, ekey, get_sumstrlen(algo) );
 
-   HASH_FIND(hh,(*cachep),e,SR_CACHEKEYSZ,c);
+   HASH_FIND(hh,cachep->data,e,SR_CACHEKEYSZ,c);
 
    if (!c) 
    {
-       c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
+       c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
        memcpy(c->key, e, SR_CACHEKEYSZ );
        c->paths=NULL;
-       HASH_ADD_KEYPTR( hh, (*cachep), c->key, SR_CACHEKEYSZ, c );
+       HASH_ADD_KEYPTR( hh, cachep->data, c->key, SR_CACHEKEYSZ, c );
    }
 
    for ( p = c->paths; p ; p=p->next )
@@ -55,7 +54,7 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char *pat
    }
 
    /* not found, so add path to cache entry */
-   p = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
+   p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
    clock_gettime( CLOCK_REALTIME, &(p->created) );
    p->path = strdup(path);
    p->partstr = strdup(partstr);
@@ -65,15 +64,15 @@ int sr_cache_check( struct sr_cache_t **cachep, char algo, void *ekey, char *pat
    return(1);
 }
 
-void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since )
+void sr_cache_clean( struct sr_cache_t *cachep, struct timespec *since )
  /* 
      remove entries in the cache older than since. (resolution is in seconds.)
  */
 {
-    struct sr_cache_t *c, *tmpc;
-   struct sr_cache_path_t *e, *prev, *del;
+    struct sr_cache_entry_t *c, *tmpc;
+   struct sr_cache_entry_path_t *e, *prev, *del;
 
-    HASH_ITER(hh, *cachep, c, tmpc )
+    HASH_ITER(hh, cachep->data, c, tmpc )
     {
         e = c->paths; 
         while ( e )
@@ -99,23 +98,23 @@ void sr_cache_clean( struct sr_cache_t **cachep, struct timespec *since )
               
         }
         if (! (c->paths) ) {
-           HASH_DEL(*cachep,c);
+           HASH_DEL(cachep->data,c);
            free(c);
         }
     }
 }
 
-void sr_cache_free( struct sr_cache_t **cachep)
+void sr_cache_free( struct sr_cache_t *cachep)
  /* 
      remove all entries in the cache  (cleanup to discard.)
  */
 {
-    struct sr_cache_t *c, *tmpc;
-   struct sr_cache_path_t *e, *del ;
+    struct sr_cache_entry_t *c, *tmpc;
+   struct sr_cache_entry_path_t *e, *del ;
 
-    HASH_ITER(hh, (*cachep), c, tmpc )
+    HASH_ITER(hh, cachep->data, c, tmpc )
     {
-        HASH_DEL((*cachep),c);
+        HASH_DEL(cachep->data,c);
         e = c->paths; 
         while( e )
         {
@@ -129,25 +128,23 @@ void sr_cache_free( struct sr_cache_t **cachep)
     }
 }
 
-void sr_cache_save( struct sr_cache_t *cache, const char *fn)
+void sr_cache_save( struct sr_cache_t *cachep)
  /* 
-     remove entries in the cache older than since.
-
-FIXME: doesn't write paths yet...
+     write entries in the cache to disk.
  */
 {
-    struct sr_cache_t *c, *tmpc;
-    struct sr_cache_path_t *e;
+    struct sr_cache_entry_t *c, *tmpc;
+    struct sr_cache_entry_path_t *e;
     FILE *f;
     char sumstr[ SR_SUMSTRLEN ];
 
-    f = fopen( fn, "w" );
+    f = fopen( cachep->fn, "w" );
     if ( !f ) 
     {
-        fprintf( stderr, "ERROR: failed to open cache file to save: %s\n", fn );
+        fprintf( stderr, "ERROR: failed to open cache file to save: %s\n", cachep->fn );
         return;
     }
-    HASH_ITER(hh, cache, c, tmpc )
+    HASH_ITER(hh, cachep->data, c, tmpc )
     {
        sumstr[0]=c->key[0];
        sumstr[1]=',';
@@ -164,7 +161,6 @@ FIXME: doesn't write paths yet...
 int convert_hex_digit( char c )
  /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
     kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
-FIXME: doesn't read paths yet...
   */
 {
    if ( c < ':' ) return(c - '0');
@@ -178,13 +174,13 @@ FIXME: doesn't read paths yet...
 
 static char buf[ load_buflen ];
 
-struct sr_cache_t *sr_cache_load( const char *fn)
+struct sr_cache_entry_t *sr_cache_load( const char *fn)
  /* 
      create an sr_cache based on the content of the named file.     
  */
 {
-    struct sr_cache_t *c, *cache;
-    struct sr_cache_path_t *p;
+    struct sr_cache_entry_t *c, *cache;
+    struct sr_cache_entry_path_t *p;
     char *sum, *timestr, *path, *partstr;
     char key_val[SR_CACHEKEYSZ]; 
     FILE *f;
@@ -247,7 +243,7 @@ struct sr_cache_t *sr_cache_load( const char *fn)
        HASH_FIND(hh,cache, key_val,SR_CACHEKEYSZ,c);
 
        if (!c) {
-           c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
+           c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
            if (!c) 
            {
                fprintf( stderr, "out of memory reading cache file: %s, stopping at line: %s\n", fn, buf  );
@@ -261,7 +257,7 @@ struct sr_cache_t *sr_cache_load( const char *fn)
        /* assert, c != NULL */
 
        /* add path to cache entry */
-       p = (struct sr_cache_path_t *)malloc(sizeof(struct sr_cache_path_t));
+       p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
        if (!c) 
        {
            fprintf( stderr, "out of memory 2, reading cache file: %s, stopping at line: %s\n", fn, buf  );
@@ -278,4 +274,25 @@ struct sr_cache_t *sr_cache_load( const char *fn)
     fclose(f);
     return(cache);
 }
+
+
+struct sr_cache_t *sr_cache_open( const char *fn )
+{
+    struct sr_cache_t *c;
+
+    c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
+    c->data = sr_cache_load(fn);
+    c->fn =  strdup(fn);
+    c->fp = fopen(fn,"a");
+    return(c);
+}
+
+void sr_cache_close( struct sr_cache_t *c )
+{
+   sr_cache_save( c ); 
+   sr_cache_free( c );
+   free(c->fn);
+   free(c);
+}
+
 

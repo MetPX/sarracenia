@@ -501,6 +501,8 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->accept_unmatched=1;
   sr_cfg->blocksize=1;
   sr_cfg->broker=NULL;
+  sr_cfg->cache=0;
+  sr_cfg->cachep=NULL;
   sr_cfg->configname=NULL;
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
@@ -645,9 +647,6 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   int ret;
   struct stat sb;
 
-  /* FIXME: missing: build .config and .cache directories?
-   */
-
   if (! sr_cfg->configname )
      sr_cfg->configname=strdup("NONE");
 
@@ -672,7 +671,11 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   }
 
   if (! is_consumer ) 
+  {
+     // FIXME: open and read cache file if present. seek to end.
+     sprintf( p, "%s/.cache/sarra/%s/%s/recent_files.cache", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
      return(1);
+  }
 
   if (! sr_cfg->queuename ) { // was not specified, pick one.
 
