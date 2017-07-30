@@ -34,7 +34,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
  /* 
    insert new item if it isn't in the cache.
    retun value:
-       0 - present, so not added,
+       0 - present, so not added, but timestamp updated, so it doesn't age out so quickly.
        1 - was not present, so added to cache.
       -1 - key too long, could not be inserted anyways, so not present.
  */
@@ -61,8 +61,10 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    for ( p = c->paths; p ; p=p->next )
    { 
           /* compare path and partstr */
-           if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) 
+           if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
+               clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
                return(0); /* found in the cache already */
+           }
    }
 
    /* not found, so add path to cache entry */
@@ -217,7 +219,6 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
     while( fgets( buf, load_buflen, f ) )
     {
        line_count++;
-       fprintf( stderr, "strlen(buf)=%ld loadbuflen: %d\n", strlen(buf), load_buflen );
        sum = strtok( buf, " " );
    
        if (!sum) 
@@ -250,9 +251,11 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            continue;
        }
 
+       /*
        fprintf( stderr, "fields: sum=+%s+, timestr=+%s+, path=+%s+, partstr=+%s+\n", 
            sum, timestr, path, partstr );
-
+       */
+       
        memset( key_val, 0, SR_CACHEKEYSZ );
        key_val[0] = buf[0];
        for (int i=1; i <= get_sumstrlen(buf[0]) ; i++ ) 
@@ -278,12 +281,13 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
 
        /* add path to cache entry */
        p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
-       if (!c) 
+       if (!p) 
        {
            fprintf( stderr, "out of memory 2, reading cache file: %s, stopping at line: %s\n", fn, buf  );
            return(cache);
        }
 
+       memset( &(p->created), 0, sizeof(struct timespec) );
        memcpy( &(p->created), sr_str2time( timestr ), sizeof(struct timespec) );
        p->path = strdup(path);
        p->partstr = strdup(partstr);

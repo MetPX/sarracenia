@@ -1,6 +1,8 @@
 
 #include <openssl/sha.h>
 #include <openssl/md5.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "sr_cache.h"
 
@@ -34,6 +36,7 @@ int main( int argc, char *argv[] )
 
    int test_count=0;
    int success_count=0;
+   struct timespec sts;
 
    hash[0]='s';
    hash[1]=',';
@@ -50,6 +53,10 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR: failed to add hoho to the cache\n" );
    test_count++;
 
+   sts.tv_sec=1;
+   sts.tv_nsec=501000000;
+   nanosleep(&sts,NULL);
+
    ret = sr_cache_check( cache, 's', sha512hash( "haha" ), "haha", "1,1,0,0" );
    if (ret > 0) {
        fprintf( stdout, "OK. added haha to the cache\n" );
@@ -58,6 +65,7 @@ int main( int argc, char *argv[] )
    } else
        fprintf( stdout, "ERROR: failed to add haha to the cache\n" );
    test_count++;
+   nanosleep(&sts,NULL);
 
    ret = sr_cache_check( cache, 's', sha512hash( "hoho" ), "hoho", "1,1,0,0" );
    if (ret > 0) 
@@ -68,6 +76,7 @@ int main( int argc, char *argv[] )
        success_count++;
    }
    test_count++;
+   nanosleep(&sts,NULL);
 
    ret = sr_cache_check( cache, 's', sha512hash( "hoho" ), "haha2", "1,1,0,0" );
    if (ret > 0)  {
@@ -79,6 +88,7 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
    }
    test_count++;
+   nanosleep(&sts,NULL);
 
    hash[0]='d';
    hash[1]=',';
@@ -93,6 +103,7 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
    }
    test_count++;
+   nanosleep(&sts,NULL);
 
    ret = sr_cache_check( cache, 'd', md5hash( "lala" ), "lolo/lala", "1,1,0,0" );
    if (ret > 0) 
@@ -103,6 +114,7 @@ int main( int argc, char *argv[] )
        success_count++;
    }
    test_count++;
+   nanosleep(&sts,NULL);
 
    ret = sr_cache_check( cache, 'd', md5hash( "lala" ), "lolo/lily", "1,1,0,0" );
    if (ret > 0)  {
@@ -112,6 +124,18 @@ int main( int argc, char *argv[] )
    } else if ( ret == 0 )
    {
        fprintf( stdout, "ERROR refused to add lily to the cache with same value as lolo\n" );
+   }
+   test_count++;
+   nanosleep(&sts,NULL);
+
+   ret = sr_cache_save( cache, 1 );
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK before saving, good number of cache entry paths.\n" );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed paths from cache population is: %d, expected: %d\n",
+                          ret, population );
    }
    test_count++;
 

@@ -224,7 +224,8 @@ char *sr_hash2sumstr( unsigned char *h, int l )
 
 char time2str_result[19];
 
-char *sr_time2str( struct timespec *tin ) {
+char *sr_time2str( struct timespec *tin ) 
+{
    /* turn a timespec into an 18 character sr_post(7) conformant time stamp string.
       if argument is NULL, then the string should correspond to the current system time.
     */
@@ -247,6 +248,7 @@ char *sr_time2str( struct timespec *tin ) {
    sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
 
+   //fprintf( stderr, "time2str, input: %ld.%ld setting: %s\n", when, msec, time2str_result );
    return(time2str_result);
 }
 
