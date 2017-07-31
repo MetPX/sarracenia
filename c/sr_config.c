@@ -496,6 +496,11 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
 {
   char *c;
 
+  putenv("TZ=UTC");
+  tzset();
+  
+  printf( "tz=%s %s, timezone=%ld, dst=%d\n", tzname[0], tzname[1], timezone, daylight );
+
   sr_credentials_init();
   sr_cfg->action=strdup("foreground");
   sr_cfg->accept_unmatched=1;

@@ -52,16 +52,18 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char*path,
 
     insert new item with key value = ekey, and lenghth = ekeylen. if it isn't in the cache.
     return value:
-        0 - present, so not added,
+        0 - present, so not added, but access time updated to now.
         1 - was not present, so added to cache.
         <0 - something bad happenned
 
  */
 
 
-void sr_cache_clean( struct sr_cache_t *cachep, struct timespec *since );
+void sr_cache_clean( struct sr_cache_t *cachep, float more_than_seconds_old );
  /* 
-    remove entries in the cache older than since.
+    remove entries in the cache if their date stamps are older than the threshold.
+    this is LRU, as every check updates the age in the cache.
+
  */
 
 void sr_cache_free( struct sr_cache_t *cachep );

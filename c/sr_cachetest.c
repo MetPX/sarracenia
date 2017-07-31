@@ -38,6 +38,12 @@ int main( int argc, char *argv[] )
    int success_count=0;
    struct timespec sts,tsnow;
 
+   putenv("TZ=UTC");
+   tzset();
+
+   printf( "tz=%s %s, timezone=%ld, dst=%d\n", tzname[0], tzname[1], timezone, daylight );
+
+
    memset( &sts, 0, sizeof(struct timespec));
    memset( &tsnow, 0, sizeof(struct timespec));
    hash[0]='s';
@@ -151,6 +157,12 @@ int main( int argc, char *argv[] )
       sha of haha, sha of hoho, then two items under md5 of lala
    */ 
    cache = sr_cache_open( "sr_cache_save.test" );
+
+   /*
+      fprintf( stdout, "print right after reading in again\n");
+      ret = sr_cache_save( cache, 1 );
+   */
+
    fprintf(stdout, "after load: cache=%p count=%d\n", cache, HASH_COUNT(cache->data) );
    if (HASH_COUNT(cache->data) == 3)
    {
@@ -173,9 +185,11 @@ int main( int argc, char *argv[] )
    }
    test_count++;
 
-   clock_gettime( CLOCK_REALTIME, &tsnow );
-   tsnow.tv_sec -= 2;
-   sr_cache_clean( cache, &tsnow );
+   /* 
+      trying to get a timestamp that is 2 seconds old, not working.
+    */
+
+   sr_cache_clean( cache, 2.0 );
 
    ret = sr_cache_save( cache, 1 );
    if ( ret == population ) 

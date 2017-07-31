@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <openssl/md5.h>
 #include <string.h>
+#include <time.h>
 
 #include "sr_util.h"
 
@@ -234,16 +235,21 @@ char *sr_time2str( struct timespec *tin )
    struct timespec ts;
    long msec;
 
+   memset( &s, 0, sizeof(struct tm));
+   memset( &ts, 0, sizeof(struct timespec));
+
+   tzset();
+
    if ( tin ) {
      when = tin->tv_sec;
      msec = tin->tv_nsec/1000000 ;
    } else {
      clock_gettime( CLOCK_REALTIME , &ts);
      when = ts.tv_sec;
-     msec = ts.tv_nsec/1000000 ;
+     msec = ts.tv_nsec/1e6 ;
    }
 
-   gmtime_r(&when,&s);
+   localtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */
    sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
@@ -260,11 +266,13 @@ struct timespec *sr_str2time( char *s )
 {
   struct tm tm;
 
-  timezone=0; // FIXME: awfully hacky way to ensure UTC interpretation. better ideas?
-              // timezone is set in time.h
-  strptime( s, "%Y%m%d%H%M%%S", &tm);
+  tzset();
+  memset( &tm, 0, sizeof(struct tm));
+  memset( &ts, 0, sizeof(struct timespec));
+  strptime( s, "%Y%m%d%H%M%S", &tm);
   ts.tv_sec = mktime(&tm);
-  ts.tv_nsec = atoi(s+15)*1000000;
+  //fprintf( stderr, "str2time, decimal part: %s, %ld \n", s+15, (long int)(atof(s+14)*1.0e9) );
+  ts.tv_nsec = atof(s+14)*1.0e9;
   return(&ts);
 }
 

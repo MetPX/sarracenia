@@ -43,6 +43,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    char e[SR_CACHEKEYSZ];
    struct sr_cache_entry_path_t *p;
 
+   tzset();
    e[0]=algo;
    if (get_sumstrlen(algo) < (SR_CACHEKEYSZ-1)) 
        memset(e+1, 0, SR_CACHEKEYSZ-1);
@@ -78,23 +79,36 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    return(1);
 }
 
-void sr_cache_clean( struct sr_cache_t *cachep, struct timespec *since )
+void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
  /* 
-     remove entries in the cache older than since. (resolution is in seconds.)
+     remove entries in the cache not looked up in more than max_age seconds. 
  */
 {
-   struct sr_cache_entry_t *c, *tmpc;
-   struct sr_cache_entry_path_t *e, *prev, *del;
+    struct sr_cache_entry_t *c, *tmpc;
+    struct sr_cache_entry_path_t *e, *prev, *del;
+    struct timespec since;
 
-    fprintf( stderr, "cleaning out entries older than: %s\n", sr_time2str( since ) );
+    memset( &since, 0, sizeof(struct timespec) );
+    tzset();
+    clock_gettime( CLOCK_REALTIME, &since );
+    fprintf( stderr, "cleaning out entries. current time: %s\n", sr_time2str( &since ) );
+
+    since.tv_sec  -= (int)(max_age);
+    since.tv_nsec -=   (int) ((max_age-(int)(max_age))*1e9);
+    fprintf( stderr, "cleaning out entries older than: nsec=%g\n", (float)since.tv_nsec );
+
+    fprintf( stderr, "cleaning out entries older than: %s valu=%ld\n", sr_time2str( &since ), since.tv_sec );
 
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
         e = c->paths; 
         while ( e )
         {
-           if (e->created.tv_sec < since->tv_sec) 
+           fprintf( stderr, "checking %s, touched=%ld difference: %ld\n", e->path, e->created.tv_sec,
+                       e->created.tv_sec - since.tv_sec );
+           if (e->created.tv_sec <= since.tv_sec) 
            {
+              fprintf( stderr, "deleting %s\n", e->path );
               del=e;
 
               if (!prev) {
@@ -309,6 +323,18 @@ struct sr_cache_t *sr_cache_open( const char *fn )
     c->data = sr_cache_load(fn);
     c->fn =  strdup(fn);
     c->fp = fopen(fn,"a");
+
+    /*
+      FIXME:  Sarra needs to work exclusively in UTC.  Regardless of system TZ, all sarra dates
+              should be in UTC, for cache, for logs, etc...  This is apparently difficult to do
+              in Linux.
+
+              I'm totally confused by timezones and DST in conversion of between strings and structs in time.
+              I could not get this to work any other way.  This is BAD because it changes the TZ
+              for the calling program.
+    */
+    putenv("TZ=UTC0");
+    tzset();
     return(c);
 }
 
