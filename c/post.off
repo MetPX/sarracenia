@@ -1,9 +1,0 @@
-broker amqps://tsource@localhost
-events modify,link,delete
-exchange xs_tsource_cpost_watch
-url sftp://peter@localhost 
-reject .*Lauren_Southern.*
-accept .*DaveRubin.*
-reject .*SJW.*
-accept .*JordanPeterson.*
-accept .*
