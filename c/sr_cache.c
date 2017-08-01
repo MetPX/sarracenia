@@ -119,7 +119,8 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
                 ((e->created.tv_sec == since.tv_sec) && (e->created.tv_nsec < since.tv_nsec)) 
               )
            {
-              fprintf( stderr, "\tdeleting %s\n", e->path );
+              fprintf( stderr, "\tdeleting %s c->paths=%p, prev=%p, e=%p, e->next=%p\n", e->path,
+                       c->paths, prev, e, e->next );
               del=e;
 
               if (!prev) {
@@ -135,6 +136,7 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
               free(del);
            } else  
            {
+              prev=e;
               e=e->next;
            }
               

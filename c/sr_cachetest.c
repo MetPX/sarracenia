@@ -161,7 +161,7 @@ int main( int argc, char *argv[] )
    fprintf(stdout, "after load: cache=%p count=%d\n", cache, HASH_COUNT(cache->data) );
    if (HASH_COUNT(cache->data) == 3)
    {
-       fprintf( stdout, "OK restored by cache_load: same number of cache entries\n" );
+       fprintf( stdout, "OK restored by cache_load: 3 cache entries were expected.\n" );
        success_count++;
    } else {
        fprintf( stdout, "failed to restore by cache_load population is: %d, expected: %d\n",
@@ -173,77 +173,44 @@ int main( int argc, char *argv[] )
    ret = sr_cache_save( cache, 1 );
    if ( ret == population ) 
    {
-       fprintf( stdout, "OK restored by cache_load: same number of cache entry paths.\n" );
+       fprintf( stdout, "OK restored by cache_load: number of cache entry paths: %d.\n", ret );
        success_count++;
    } else {
        fprintf( stdout, "failed to restore paths from cache population is: %d, expected: %d\n",
                           ret, population );
    }
    test_count++;
-
-   age=222.5;
-   fprintf( stdout, "cleaning %g\n", age );
-   sr_cache_clean( cache, age );
-   ret = sr_cache_save( cache, 1 );
-   if ( ret == population ) 
+   population=ret;
+   
+   age=12.5;
+   while ( ( age > 0) && ( HASH_COUNT( cache->data ) > 0 ) )
    {
-       fprintf( stdout, "OK after clean %g? cache_load: same number of cache entry paths.\n", age );
-       success_count++;
-   } else {
-       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
+       fprintf( stdout, "cleaning %g\n", age );
+       sr_cache_clean( cache, age );
+       ret = sr_cache_save( cache, 1 );
+       if ( age == 6.25 ) population -= 2;
+       if ( age == 3.125 ) population -= 2;
+       if ( age == 0.78125 ) population = 0;
+       if ( ret == population ) 
+       {
+           fprintf( stdout, "OK after clean %g? cache_load: number of cache entry paths is: %d.\n", age, ret );
+           success_count++;
+       } else {
+           fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
                           age, ret, population );
+       }
+       population = ret;
+       test_count++;
+       age /=2;
+       fprintf( stdout, "after cleaning cycle: %d hashes remain.\n", HASH_COUNT( cache->data ) );
    }
-   test_count++;
-
-   age=7.5;
-   fprintf( stdout, "cleaning %g\n", age );
-   sr_cache_clean( cache, age );
-   ret = sr_cache_save( cache, 1 );
-   population -= 2;
-   if ( ret == population ) 
-   {
-       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
-       success_count++;
-   } else {
-       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
-                          age, ret, population );
-   }
-   test_count++;
-
-   age=4.1;
-   fprintf( stdout, "cleaning %g\n", age );
-   sr_cache_clean( cache, age );
-   ret = sr_cache_save( cache, 1 );
-   if ( ret == population ) 
-   {
-       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
-       success_count++;
-   } else {
-       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
-                          age, ret, population );
-   }
-
-   age=2.2;
-   fprintf( stdout, "cleaning %g\n", age );
-   sr_cache_clean( cache, age );
-   ret = sr_cache_save( cache, 1 );
-   if ( ret == population ) 
-   {
-       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
-       success_count++;
-   } else {
-       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
-                          age, ret, population );
-   }
-   test_count++;
-
 
 
    if (success_count == test_count )
    {
-       fprintf( stdout, "OK: %d of %d tests passed\n", success_count, test_count );
+       fprintf( stdout, "OK: sr_cachetest %d of %d tests passed\n", success_count, test_count );
        exit(0);
    }
-   fprintf( stdout, "FAILED: only %d of %d tests passed.\n", success_count, test_count );
+   fprintf( stdout, "FAILED: sr_cachetest only %d of %d tests passed.\n", success_count, test_count );
    exit(1); 
 }
