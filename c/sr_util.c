@@ -1,13 +1,5 @@
 
 
-/* need this define to get strptime
-   if I don't give a value, it takes me back to the 1980's.  
-   got values from feature_test_macros page... >700 seemed like the best one.
-
-#define _XOPEN_SOURCE (800)
- */
-#define _GNU_SOURCE
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -238,8 +230,6 @@ char *sr_time2str( struct timespec *tin )
    memset( &s, 0, sizeof(struct tm));
    memset( &ts, 0, sizeof(struct timespec));
 
-   tzset();
-
    if ( tin ) {
      when = tin->tv_sec;
      msec = tin->tv_nsec/1000000 ;
@@ -249,12 +239,10 @@ char *sr_time2str( struct timespec *tin )
      msec = ts.tv_nsec/1e6 ;
    }
 
-   localtime_r(&when,&s);
+   gmtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */
    sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
-
-   //fprintf( stderr, "time2str, input: %ld.%ld setting: %s\n", when, msec, time2str_result );
    return(time2str_result);
 }
 
@@ -265,13 +253,11 @@ struct timespec *sr_str2time( char *s )
    */
 {
   struct tm tm;
-
-  tzset();
   memset( &tm, 0, sizeof(struct tm));
   memset( &ts, 0, sizeof(struct timespec));
+
   strptime( s, "%Y%m%d%H%M%S", &tm);
-  ts.tv_sec = mktime(&tm);
-  //fprintf( stderr, "str2time, decimal part: %s, %ld \n", s+15, (long int)(atof(s+14)*1.0e9) );
+  ts.tv_sec = timegm(&tm);
   ts.tv_nsec = atof(s+14)*1.0e9;
   return(&ts);
 }

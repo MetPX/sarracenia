@@ -87,9 +87,9 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
     struct sr_cache_entry_t *c, *tmpc;
     struct sr_cache_entry_path_t *e, *prev, *del;
     struct timespec since;
+    int npaths;
 
     memset( &since, 0, sizeof(struct timespec) );
-    tzset();
     clock_gettime( CLOCK_REALTIME, &since );
     fprintf( stderr, "cleaning out entries. current time: %s\n", sr_time2str( &since ) );
 
@@ -101,14 +101,16 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
 
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
+        fprintf( stderr, "hash, start\n" );
         e = c->paths; 
+        prev=NULL;
         while ( e )
         {
-           fprintf( stderr, "checking %s, touched=%ld difference: %ld\n", e->path, e->created.tv_sec,
+           fprintf( stderr, "\tchecking %s, touched=%ld difference: %ld\n", e->path, e->created.tv_sec,
                        e->created.tv_sec - since.tv_sec );
            if (e->created.tv_sec <= since.tv_sec) 
            {
-              fprintf( stderr, "deleting %s\n", e->path );
+              fprintf( stderr, "\tdeleting %s\n", e->path );
               del=e;
 
               if (!prev) {
@@ -122,16 +124,24 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
               free(del->path);
               free(del->partstr);
               free(del);
-           } else  {
+           } else  
+           {
               e=e->next;
            }
               
-        }
-        if (! (c->paths) ) {
+       }
+   
+       if (! (c->paths) ) 
+       {
+           fprintf( stderr, "hash, deleting\n" );
            HASH_DEL(cachep->data,c);
            free(c);
-        }
-    }
+       } else  {
+           npaths=0; 
+           for ( e = c->paths; e ; e=e->next ) npaths++;
+           fprintf( stderr, "hash, done. pop=%d\n", npaths );
+       }
+   }
 }
 
 void sr_cache_free( struct sr_cache_t *cachep)
