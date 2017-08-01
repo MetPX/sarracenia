@@ -60,3 +60,7 @@ install:
 clean:
 	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_utiltest sr_csub2json sr_cachetest sr_cache_save.test
 	@rm -rf build
+
+test:
+	./sr_utiltest 
+	./sr_cachetest

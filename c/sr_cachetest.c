@@ -34,15 +34,10 @@ int main( int argc, char *argv[] )
    int ret;
    int population=0;
 
+   float age;
    int test_count=0;
    int success_count=0;
    struct timespec sts,tsnow;
-
-   putenv("TZ=UTC");
-   tzset();
-
-   printf( "tz=%s %s, timezone=%ld, dst=%d\n", tzname[0], tzname[1], timezone, daylight );
-
 
    memset( &sts, 0, sizeof(struct timespec));
    memset( &tsnow, 0, sizeof(struct timespec));
@@ -54,7 +49,7 @@ int main( int argc, char *argv[] )
    cache = sr_cache_open( "sr_cache_save.test" );
    ret = sr_cache_check( cache, 's', sha512hash( "hoho" ), "hoho", "1,1,0,0" );
    if (ret > 0) {
-       fprintf( stdout, "OK. added hoho to the cache\n" );
+       fprintf( stdout, "OK: added hoho to the cache\n" );
        success_count++;
        population++;
    } else
@@ -67,7 +62,7 @@ int main( int argc, char *argv[] )
 
    ret = sr_cache_check( cache, 's', sha512hash( "haha" ), "haha", "1,1,0,0" );
    if (ret > 0) {
-       fprintf( stdout, "OK. added haha to the cache\n" );
+       fprintf( stdout, "OK: added haha to the cache\n" );
        success_count++;
        population++;
    } else
@@ -80,7 +75,7 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR: added hoho to the cache a second time\n" );
    else if ( ret == 0 )
    {
-       fprintf( stdout, "OK refused to add hoho to the cache a second time\n" );
+       fprintf( stdout, "OK: refused to add hoho to the cache a second time\n" );
        success_count++;
    }
    test_count++;
@@ -93,7 +88,7 @@ int main( int argc, char *argv[] )
        population++;
    } else if ( ret == 0 )
    {
-       fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
+       fprintf( stdout, "ERROR: refused to add haha to the cache with same value as hoho\n" );
    }
    test_count++;
    nanosleep(&sts,NULL);
@@ -108,7 +103,7 @@ int main( int argc, char *argv[] )
        population++;
    } else if ( ret == 0 )
    {
-       fprintf( stdout, "ERROR refused to add haha to the cache with same value as hoho\n" );
+       fprintf( stdout, "ERROR: refused to add haha to the cache with same value as hoho\n" );
    }
    test_count++;
    nanosleep(&sts,NULL);
@@ -118,7 +113,7 @@ int main( int argc, char *argv[] )
        fprintf( stdout, "ERROR: added lala to the cache a second time\n" );
    else if ( ret == 0 )
    {
-       fprintf( stdout, "OK refused to add lala to the cache a second time\n" );
+       fprintf( stdout, "OK: refused to add lala to the cache a second time\n" );
        success_count++;
    }
    test_count++;
@@ -131,7 +126,7 @@ int main( int argc, char *argv[] )
        population++;
    } else if ( ret == 0 )
    {
-       fprintf( stdout, "ERROR refused to add lily to the cache with same value as lolo\n" );
+       fprintf( stdout, "ERROR: refused to add lily to the cache with same value as lolo\n" );
    }
    test_count++;
    nanosleep(&sts,NULL);
@@ -174,6 +169,7 @@ int main( int argc, char *argv[] )
    }
    test_count++;
 
+   fprintf( stdout, "Before cleaning, initialized cache is:\n" );
    ret = sr_cache_save( cache, 1 );
    if ( ret == population ) 
    {
@@ -185,20 +181,59 @@ int main( int argc, char *argv[] )
    }
    test_count++;
 
-   /* 
-      trying to get a timestamp that is 2 seconds old, not working.
-    */
-
-   sr_cache_clean( cache, 2.0 );
-
+   age=222.5;
+   fprintf( stdout, "cleaning %g\n", age );
+   sr_cache_clean( cache, age );
    ret = sr_cache_save( cache, 1 );
    if ( ret == population ) 
    {
-       fprintf( stdout, "OK after clean? cache_load: same number of cache entry paths.\n" );
+       fprintf( stdout, "OK after clean %g? cache_load: same number of cache entry paths.\n", age );
        success_count++;
    } else {
-       fprintf( stdout, "failed after clean? from cache population is: %d, expected: %d\n",
-                          ret, population );
+       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
+                          age, ret, population );
+   }
+   test_count++;
+
+   age=7.5;
+   fprintf( stdout, "cleaning %g\n", age );
+   sr_cache_clean( cache, age );
+   ret = sr_cache_save( cache, 1 );
+   population -= 2;
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
+                          age, ret, population );
+   }
+   test_count++;
+
+   age=4.1;
+   fprintf( stdout, "cleaning %g\n", age );
+   sr_cache_clean( cache, age );
+   ret = sr_cache_save( cache, 1 );
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
+                          age, ret, population );
+   }
+
+   age=2.2;
+   fprintf( stdout, "cleaning %g\n", age );
+   sr_cache_clean( cache, age );
+   ret = sr_cache_save( cache, 1 );
+   if ( ret == population ) 
+   {
+       fprintf( stdout, "OK after clean %g? cache_load: population is %d, as expected.\n", age, population );
+       success_count++;
+   } else {
+       fprintf( stdout, "failed after clean %g? from cache population is: %d, expected: %d\n",
+                          age, ret, population );
    }
    test_count++;
 

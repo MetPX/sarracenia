@@ -87,15 +87,22 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
     struct sr_cache_entry_t *c, *tmpc;
     struct sr_cache_entry_path_t *e, *prev, *del;
     struct timespec since;
+    signed long int diff;
     int npaths;
 
     memset( &since, 0, sizeof(struct timespec) );
     clock_gettime( CLOCK_REALTIME, &since );
     fprintf( stderr, "cleaning out entries. current time: %s\n", sr_time2str( &since ) );
 
+    // subtracting max_age from now.
     since.tv_sec  -= (int)(max_age);
-    since.tv_nsec -=   (int) ((max_age-(int)(max_age))*1e9);
-    fprintf( stderr, "cleaning out entries older than: nsec=%g\n", (float)since.tv_nsec );
+    diff =  (int) ((max_age-(int)(max_age))*1e9);
+    if (diff > since.tv_nsec)
+    {   // carry the one...
+        since.tv_sec--;
+        since.tv_nsec += 1e9;
+    }
+    since.tv_nsec -= diff;
 
     fprintf( stderr, "cleaning out entries older than: %s valu=%ld\n", sr_time2str( &since ), since.tv_sec );
 
@@ -106,9 +113,11 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
         prev=NULL;
         while ( e )
         {
-           fprintf( stderr, "\tchecking %s, touched=%ld difference: %ld\n", e->path, e->created.tv_sec,
+           fprintf( stderr, "\tchecking %s, touched=%s difference: %ld\n", e->path, sr_time2str(&(e->created)) ,
                        e->created.tv_sec - since.tv_sec );
-           if (e->created.tv_sec <= since.tv_sec) 
+           if ( (e->created.tv_sec < since.tv_sec)  || 
+                ((e->created.tv_sec == since.tv_sec) && (e->created.tv_nsec < since.tv_nsec)) 
+              )
            {
               fprintf( stderr, "\tdeleting %s\n", e->path );
               del=e;
