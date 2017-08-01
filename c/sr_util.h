@@ -5,6 +5,18 @@
 #include <time.h>
 #include <openssl/sha.h>
 
+#define LOG_DEBUG     (1)
+#define LOG_INFO      (2)
+#define LOG_NOTICE    (4)
+#define LOG_WARNING   (8)
+#define LOG_ERROR    (16)
+
+void log_msg(const int prio, const char *format, ...);
+
+void log_setup(const char *logfname);
+
+void log_cleanup();
+
 #define SR_TIMESTRLEN (19)
 #define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
 

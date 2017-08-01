@@ -10,9 +10,53 @@
 #include <openssl/md5.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include "sr_util.h"
 
+int logfd=2;
+
+#define LOG_DEBUG     (1)
+#define LOG_INFO      (2)
+#define LOG_NOTICE    (4)
+#define LOG_WARNING   (8)
+#define LOG_ERROR    (16)
+void log_msg(int prio, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    struct timespec ts;
+    struct tm s;
+    char *p;
+
+    clock_gettime( CLOCK_REALTIME , &ts);
+    gmtime_r(&(ts.tv_sec),&s);
+
+    switch (prio)
+    {
+        case LOG_DEBUG   : p="DEBUG"; break;
+        case LOG_INFO    : p="INFO"; break;
+        case LOG_NOTICE  : p="NOTICE"; break;
+        case LOG_WARNING : p="WARNING"; break;
+        case LOG_ERROR   : p="ERROR"; break;
+        default: p="UNKNOWN";
+    }
+    dprintf( logfd, "%04d-%02d-%02d %02d:%02d:%02d,%03d [%s] ", s.tm_year+1900, s.tm_mon+1,
+        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, (int)(ts.tv_nsec/1e6), p );
+
+    vdprintf(logfd, format, ap);
+}
+
+
+void log_setup(const char *f) 
+{
+   logfd = open(f, O_CREAT|O_APPEND );
+}
+
+void log_cleanup() 
+{
+   close( logfd );
+}
 
 /* size of buffer used to read the file content in calculating checksums.
  */

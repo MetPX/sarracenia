@@ -45,32 +45,32 @@ int main( int argc, char *argv[] )
     int  success=0;
 
     t = time(NULL);
-    printf( "              It is now: %s\n", ctime(&t) );
+    log_msg( LOG_INFO, "              It is now: %s\n", ctime(&t) );
 
     clock_gettime( CLOCK_REALTIME, &tsnow );
 
-    printf( "       starting time is: %ld\n", tsnow.tv_sec );
+    log_msg( LOG_INFO, "       starting time is: %ld\n", tsnow.tv_sec );
     tscp = sr_time2str( &tsnow );
     memset( timestring, 0, 60 );
     memcpy( timestring, tscp, strlen(tscp) );
-    printf( "text version ot time is: %s\n", timestring );
+    log_msg( LOG_DEBUG, "text version ot time is: %s\n", timestring );
 
     memcpy( &tsrt, sr_str2time( timestring ), sizeof(struct timespec) ); 
-    printf( " round tripped, time is: %ld\n", tsrt.tv_sec );
-    printf( "          difference is: %ld\n", tsrt.tv_sec - tsnow.tv_sec );
+    log_msg( LOG_DEBUG, " round tripped, time is: %ld\n", tsrt.tv_sec );
+    log_msg( LOG_DEBUG, "          difference is: %ld\n", tsrt.tv_sec - tsnow.tv_sec );
     tscp = sr_time2str( &tsrt );
     memcpy( timestring, tscp, strlen(tscp) );
 
-    printf( "text version ot time is: %s\n", timestring );
+    log_msg( LOG_DEBUG, "text version ot time is: %s\n", timestring );
    
     if ( tsrt.tv_sec - tsnow.tv_sec ) 
     { 
-        fprintf( stderr, "Failed to roundtrip time through conversion routines, see difference above, should be 0\n" );
+        log_msg( LOG_ERROR, "Failed to roundtrip time through conversion routines, see difference above, should be 0\n" );
     } else
         success++;
 
     testcnt++;
 
-    fprintf( stderr, "%s %d/%d tests passed\n", (success>=testcnt)?"OK":"FAILED", success, testcnt );
+    printf( "%s %d/%d tests passed\n", (success>=testcnt)?"OK":"FAILED", success, testcnt );
     exit( !(success>=testcnt) );
 }
