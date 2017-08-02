@@ -501,6 +501,8 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   }
 
   log_cleanup();
+  sr_cache_close( sr_cfg->cachep );
+
 }
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname ) 
 {
@@ -684,7 +686,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
   sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_0001.log", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
 
-  if ( strcmp(sr_cfg->action,"foreground") )
+  if ( sr_cfg->log )
   {
       log_setup( p , sr_cfg->chmod_log );
       log_msg( LOG_INFO, "opening log file." );
@@ -694,6 +696,12 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   {
      // FIXME: open and read cache file if present. seek to end.
      sprintf( p, "%s/.cache/sarra/%s/%s/recent_files.cache", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
+     if (sr_cfg->cache > 0) 
+     {
+         sr_cfg->cachep = sr_cache_open( p );
+     } else {
+         unlink(p);
+     }
      return(1);
   }
 

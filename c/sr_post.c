@@ -197,6 +197,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           log_msg( LOG_DEBUG, "sr_cpost cannot post directories: %s\n", fn );
       return;
   }
+  
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
 
@@ -317,7 +318,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
          return;
       }
       header_add( "sum", sumstr );
-
+      
       table.num_entries = hdrcnt;
       table.entries=headers;
 
@@ -326,11 +327,20 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       props.delivery_mode = 2; /* persistent delivery mode */
       props.headers = table;
 
-      status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
-          amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
+      if ( sr_c->cfg->cache > 0 ) { 
+           status =   sr_cache_check( sr_c->cfg->cachep, sumalgo, get_last_hash(), fn, partstr ) ; 
+           log_msg( LOG_DEBUG, "cache_check result=%d\n", status );
+      } else {
+           status = 1;
+      }
 
+      if ( status != 0 )
+      {
+          status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
+              amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
+      }
       block_num++;
-
+ 
       if ( status < 0 ) 
           log_msg( LOG_ERROR, "sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
       else if ( (sr_c->cfg) && sr_c->cfg->debug )

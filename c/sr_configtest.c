@@ -14,6 +14,7 @@ status:
  */
 
 #include <stdio.h>
+#include "sr_util.h"
 #include "sr_config.h"
 
 #define FNAME   "/home/peter/.config/sarra/post/test2.conf" 

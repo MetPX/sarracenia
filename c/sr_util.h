@@ -2,6 +2,11 @@
 #ifndef SR_UTIL_H
 #define SR_UTIL_H
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
 #include <time.h>
 #include <openssl/sha.h>
 
@@ -36,6 +41,8 @@ void log_cleanup();
    same storage is re-used on repeated calls, so best to strdup soon after return.
 
   */
+
+unsigned char *get_last_hash();
 
 int get_sumstrlen( char algo );
 

@@ -66,6 +66,13 @@ void log_cleanup()
 // SHA512 being the longest digest...
 char sumstr[ SR_SUMSTRLEN ];
 
+unsigned char sumhash[SHA512_DIGEST_LENGTH]; // Assumed longest possible hash.
+
+unsigned char *get_last_hash() 
+{
+   return(sumhash);
+}
+
 int get_sumstrlen( char algo )
 {
   switch(algo) {
@@ -100,7 +107,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 {
    MD5_CTX md5ctx;
    SHA512_CTX shactx;
-   unsigned char hash[SHA512_DIGEST_LENGTH]; // Assumed longest possible hash.
 
    static int fd;
    static char buf[SUMBUFSIZE];
@@ -163,8 +169,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
              fd=0;
        }
 
-       MD5_Final(hash, &md5ctx);
-       sr_hash2sumstr(hash,MD5_DIGEST_LENGTH); 
+       MD5_Final(sumhash, &md5ctx);
+       sr_hash2sumstr(sumhash,MD5_DIGEST_LENGTH); 
        //fprintf( stderr, "sumstr=%s\n", sumstr );
        break;
 
@@ -173,8 +179,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        just_the_name = rindex(fn,'/')+1;
        if (!just_the_name) just_the_name=fn;
        MD5_Update(&md5ctx, just_the_name, strlen(just_the_name) );
-       MD5_Final(hash, &md5ctx);
-       sr_hash2sumstr(hash,MD5_DIGEST_LENGTH); 
+       MD5_Final(sumhash, &md5ctx);
+       sr_hash2sumstr(sumhash,MD5_DIGEST_LENGTH); 
        break;
        
    
@@ -196,8 +202,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            just_the_name=buf;
        }
        SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
-       SHA512_Final(hash, &shactx);
-       sr_hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
+       SHA512_Final(sumhash, &shactx);
+       sr_hash2sumstr(sumhash,SHA512_DIGEST_LENGTH); 
        break;
 
    case 's' :
@@ -239,8 +245,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
              close(fd);
              fd=0;
        }
-       SHA512_Final(hash, &shactx);
-       sr_hash2sumstr(hash,SHA512_DIGEST_LENGTH); 
+       SHA512_Final(sumhash, &shactx);
+       sr_hash2sumstr(sumhash,SHA512_DIGEST_LENGTH); 
        break;
 
    default:

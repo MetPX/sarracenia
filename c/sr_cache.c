@@ -18,6 +18,7 @@
 
 #include "sr_cache.h"
 
+extern char sumstr[];
 
 void sr_cache_entry_path_write( FILE *fp, struct sr_cache_entry_t *e, struct sr_cache_entry_path_t *p )
 {
@@ -43,7 +44,6 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    char e[SR_CACHEKEYSZ];
    struct sr_cache_entry_path_t *p;
 
-   tzset();
    e[0]=algo;
    if (get_sumstrlen(algo) < (SR_CACHEKEYSZ-1)) 
        memset(e+1, 0, SR_CACHEKEYSZ-1);
@@ -53,6 +53,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
 
    if (!c) 
    {
+       log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path, sumstr );
        c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
        memcpy(c->key, e, SR_CACHEKEYSZ );
        c->paths=NULL;
@@ -62,6 +63,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
    for ( p = c->paths; p ; p=p->next )
    { 
           /* compare path and partstr */
+          log_msg( LOG_DEBUG, "sum was found in cache, looking at other attributes\n", path );
            if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
                clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
                return(0); /* found in the cache already */
@@ -354,13 +356,13 @@ struct sr_cache_t *sr_cache_open( const char *fn )
               I could not get this to work any other way.  This is BAD because it changes the TZ
               for the calling program.
     */
-    putenv("TZ=UTC0");
-    tzset();
     return(c);
 }
 
 void sr_cache_close( struct sr_cache_t *c )
 {
+   if (!c) return;
+
    //sr_cache_save( c ); - since continually appending, no need for save.
    sr_cache_free( c );
    fclose(c->fp);
