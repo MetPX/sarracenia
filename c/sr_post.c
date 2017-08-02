@@ -77,14 +77,14 @@ void header_add( char *tag, const char * value ) {
 
   if ( hdrcnt >= HDRMAX ) 
   {
-     fprintf( stderr, "ERROR too many headers! ignoring %s=%s\n", tag, value );
+     log_msg( LOG_ERROR, "ERROR too many headers! ignoring %s=%s\n", tag, value );
      return;
   }
   headers[hdrcnt].key = amqp_cstring_bytes(tag);
   headers[hdrcnt].value.kind = AMQP_FIELD_KIND_UTF8;
   headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
   hdrcnt++;
-  //fprintf( stderr, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
+  //log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
 }
 
 void set_url( char* m, char* spec ) 
@@ -95,17 +95,17 @@ void set_url( char* m, char* spec )
   char *sp;
 
   if ( strchr(spec,',') ) {
-     //fprintf( stderr, "1 picking url, set=%s, cu=%s\n", spec, cu_url );
+     //log_msg( LOG_DEBUG, "1 picking url, set=%s, cu=%s\n", spec, cu_url );
      if (cu_url) {
          cu_url = strchr(cu_url,','); // if there is a previous one, pick the next one.
-         //fprintf( stderr, "2 picking url, set=%s, cu=%s\n", spec, cu_url );
+         //log_msg( LOG_DEBUG, "2 picking url, set=%s, cu=%s\n", spec, cu_url );
      }
      if (cu_url) {
          cu_url++;                    // skip to after the comma.
-         //fprintf( stderr, "3 picking url, set=%s, cu=%s\n", spec, cu_url );
+         //log_msg( LOG_DEBUG, "3 picking url, set=%s, cu=%s\n", spec, cu_url );
      } else {
          cu_url = spec ;                // start from the beginning.
-         //fprintf( stderr, "4 picking url, set=%s, cu=%s\n", spec, cu_url );
+         //log_msg( LOG_DEBUG, "4 picking url, set=%s, cu=%s\n", spec, cu_url );
      }
      sp=strchr(cu_url,',');
      if (sp) strncat( m, cu_url, sp-cu_url );
@@ -180,7 +180,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost called with: %s sb=%p\n", fn, sb );
+     log_msg( LOG_DEBUG, "sr_cpost called with: %s sb=%p\n", fn, sb );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
@@ -188,17 +188,17 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) )
   {
       if ( (sr_c->cfg) && sr_c->cfg->debug ) 
-          fprintf( stderr, "rejecting: %s\n", fn );
+          log_msg( LOG_DEBUG, "rejecting: %s\n", fn );
       return;
   }
   if ( sb && S_ISDIR(sb->st_mode) ) 
   {
       if ( (sr_c->cfg) && sr_c->cfg->debug )
-          fprintf( stderr, "sr_cpost cannot post directories: %s\n", fn );
+          log_msg( LOG_DEBUG, "sr_cpost cannot post directories: %s\n", fn );
       return;
   }
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
+     log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
 
   strcpy( routingkey, sr_c->cfg->topic_prefix );
 
@@ -207,7 +207,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       if ( routingkey[i] == '/' ) routingkey[i]='.';
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "posting, routingkey: %s\n", routingkey );
+     log_msg( LOG_DEBUG, "posting, routingkey: %s\n", routingkey );
 
   strcpy( message_body, sr_time2str(NULL));
   strcat( message_body, " " );
@@ -222,7 +222,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       strcat( message_body, fn);
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     fprintf( stderr, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
+     log_msg( LOG_DEBUG, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
           message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
@@ -306,14 +306,14 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       } else
           strcpy(partstr,"");
 
-      /* fprintf( stderr, "sumaglo: %c, fn=+%s+, partstr=+%s+, linkstr=+%s+\n", sumalgo, fn, partstr, linkstr );
-      fprintf( stderr, " bsz=%ld, bc=%ld, brem=%ld, bnum=%ld\n", block_size, block_count, block_rem, block_num ) ;
+      /* log_msg( LOG_DEBUG, "sumaglo: %c, fn=+%s+, partstr=+%s+, linkstr=+%s+\n", sumalgo, fn, partstr, linkstr );
+      log_msg( LOG_DEBUG, " bsz=%ld, bc=%ld, brem=%ld, bnum=%ld\n", block_size, block_count, block_rem, block_num ) ;
        */
       sumstr = set_sumstr( sumalgo, fn, partstr, linkstr, block_size, block_count, block_rem, block_num ); 
 
       if ( !sumstr ) 
       {
-         fprintf( stderr, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );
+         log_msg( LOG_ERROR, "sr_cpost unable to generate %c checksum for: %s\n", sumalgo, fn );
          return;
       }
       header_add( "sum", sumstr );
@@ -332,9 +332,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       block_num++;
 
       if ( status < 0 ) 
-          fprintf( stderr, "ERROR: sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
+          log_msg( LOG_ERROR, "sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
       else if ( (sr_c->cfg) && sr_c->cfg->debug )
-          fprintf( stderr, "posting, publish block %lu of %lu.\n", block_num, block_count );
+          log_msg( LOG_DEBUG, "posting, publish block %lu of %lu.\n", block_num, block_count );
 
   }
 }
@@ -384,7 +384,7 @@ void connect_and_post(const char *fn,const char* progname)
 
   if ( !fn ) 
   {
-     fprintf( stderr, "post null\n" );
+     log_msg( LOG_ERROR, "post null\n" );
      return;
   }
 
@@ -406,16 +406,16 @@ void connect_and_post(const char *fn,const char* progname)
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
-      fprintf( stderr, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
+      log_msg( LOG_INFO, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
             mask, mask->accepting, sr_cfg.accept_unmatched );
-      if (sr_cfg.debug) fprintf( stderr, "sr_cpost rejected 2: %s\n", fn );
+      if (sr_cfg.debug) log_msg( LOG_DEBUG, "sr_cpost rejected 2: %s\n", fn );
       return;
   }
 
   sr_c = sr_context_connect(sr_c);
   if (sr_c == NULL ) 
   {
-    fprintf( stderr, "failed to parse AMQP broker settings\n");
+    log_msg( LOG_ERROR, "failed to parse AMQP broker settings\n");
     return;
   }
   if ( lstat( fn, &sb ) ) sr_post( sr_c, fn, NULL );

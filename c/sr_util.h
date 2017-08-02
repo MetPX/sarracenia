@@ -13,7 +13,7 @@
 
 void log_msg(const int prio, const char *format, ...);
 
-void log_setup(const char *logfname);
+void log_setup(const char *logfname, mode_t mode);
 
 void log_cleanup();
 

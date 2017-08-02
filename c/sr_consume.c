@@ -116,12 +116,12 @@ int sr_consume_setup(struct sr_context *sr_c)
   {
       sr_add_topic(sr_c->cfg, "#" );
   }
-  //fprintf( stderr, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
+  //log_msg( LOG_DEBUG, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
 
   for( t = sr_c->cfg->topics; t ; t=t->next )
   {
       if (sr_c->cfg->debug) 
-          fprintf( stderr, " binding queue: %s to exchange: %s topic: %s\n",
+          log_msg( LOG_INFO, " binding queue: %s to exchange: %s topic: %s\n",
               sr_c->cfg->queuename, sr_c->cfg->exchange, t->topic );
       amqp_queue_bind(sr_c->conn, 1, 
             amqp_cstring_bytes(sr_c->cfg->queuename), 
@@ -147,7 +147,7 @@ void assign_field( const char* key, char *value )
      char *s;
      struct sr_header_t *h;
 
-     //fprintf( stderr, "parsing: \"%s\" : \"%s\"\n", key, value );
+     //log_msg( LOG_DEBUG, "parsing: \"%s\" : \"%s\"\n", key, value );
      if ( !strcmp(key,"parts") ) {
          //FIXME: no error checking, invalid parts header will cause a bobo.
          msg.parts_s=value[0];
@@ -264,21 +264,21 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     amqp_maybe_release_buffers(sr_c->conn);
     result = amqp_simple_wait_frame(sr_c->conn, &frame);
 
-    //fprintf( stderr, "Result %d\n", result);
+    //log_msg( LOG_DEBUG, "Result %d\n", result);
     if (result < 0) return(NULL);
   
-    //fprintf( stderr, "Frame type %d, channel %d\n", frame.frame_type, frame.channel);
+    //log_msg( LOG_DEBUG, "Frame type %d, channel %d\n", frame.frame_type, frame.channel);
 
     if (frame.frame_type != AMQP_FRAME_METHOD) return(NULL);
   
-    //fprintf( stderr, "Method %s\n", amqp_method_name(frame.payload.method.id));
+    //log_msg( LOG_DEBUG, "Method %s\n", amqp_method_name(frame.payload.method.id));
 
     if (frame.payload.method.id != AMQP_BASIC_DELIVER_METHOD) return(NULL);
   
     d = (amqp_basic_deliver_t *) frame.payload.method.decoded;
 
     /*
-    fprintf( stdout, " {\n\t\"exchange\": \"%.*s\",\n\t\"routingkey\": \"%.*s\",\n",
+    log_msg( stdout, " {\n\t\"exchange\": \"%.*s\",\n\t\"routingkey\": \"%.*s\",\n",
                (int) d->exchange.len, (char *) d->exchange.bytes,
                (int) d->routing_key.len, (char *) d->routing_key.bytes);
      */
@@ -294,7 +294,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
   
     if (frame.frame_type != AMQP_FRAME_HEADER) 
     {
-            fprintf(stderr, "Expected header!");
+            log_msg( LOG_ERROR, "Expected header!");
             abort();
     }
 
@@ -315,7 +315,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
                 assign_field( tag, value );
 
               /*
-                fprintf( stdout, "\t\"%.*s\": \"%.*s\",\n",
+                log_msg( stdout, "\t\"%.*s\": \"%.*s\",\n",
                      (int) p->headers.entries[i].key.len, 
                      (char *) p->headers.entries[i].key.bytes,
                      (int) p->headers.entries[i].value.value.bytes.len,
@@ -323,7 +323,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
                  );
                */
             } else
-                fprintf( stderr, "header not UTF8\n");
+                log_msg( LOG_ERROR, "header not UTF8\n");
     }
 
     body_target = frame.payload.properties.body_size;
@@ -337,7 +337,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     
             if (frame.frame_type != AMQP_FRAME_BODY) 
             {
-                fprintf(stderr, "Expected body!");
+                log_msg( LOG_ERROR, "Expected body!");
                 abort();
             }
     
@@ -376,7 +376,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
             msg.duration=0.0;
        
         }
-        fprintf( stdout, " }\n");
+        //fprintf( stdout, " }\n");
     /*
     fprintf( stdout, "\t\"body\" : \"%.*s\"\n }\n",
                  (int) frame.payload.body_fragment.len, 

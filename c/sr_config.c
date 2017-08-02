@@ -43,7 +43,7 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
    if (p == NULL)
    {
-       fprintf(stderr, "malloc of path failed!\n" );
+       log_msg(LOG_ERROR, "malloc of path failed!\n" );
        return;
    }
    p->next = NULL;
@@ -69,7 +69,7 @@ void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub )
    t = (struct sr_topic_t *)malloc(sizeof (struct sr_topic_t));
    if (t == NULL) 
    {
-       fprintf(stderr, "malloc of topic failed!\n" );
+       log_msg( LOG_ERROR,  "malloc of topic failed!\n" );
        return;
    }
    t->next = NULL;
@@ -105,7 +105,7 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    while( entry ) 
    {
        if ( (sr_cfg) && sr_cfg->debug )
-           fprintf( stderr, "isMatchingPattern, testing mask: %s %-30s next=%p\n", 
+           log_msg( LOG_DEBUG,  "isMatchingPattern, testing mask: %s %-30s next=%p\n", 
                 (entry->accepting)?"accept":"reject", entry->clause, (entry->next) );
 
        if ( !regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) ) {
@@ -116,10 +116,10 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    if ( (sr_cfg) && sr_cfg->debug )
    {
        if (entry) 
-           fprintf( stderr, "isMatchingPattern: %s matched mask: %s %s\n",  chaine,
+           log_msg( LOG_DEBUG, "isMatchingPattern: %s matched mask: %s %s\n",  chaine,
                (entry->accepting)?"accept":"reject", entry->clause );
        else
-           fprintf( stderr, "isMatchingPattern: %s did not match any masks\n",  chaine );
+           log_msg( LOG_DEBUG, "isMatchingPattern: %s did not match any masks\n",  chaine );
    }
    sr_cfg->match = entry;
    return(entry);
@@ -299,7 +299,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
   if (sr_cfg->debug)
-     fprintf( stderr, "option: %s,  argument: %s \n", option, argument );
+     log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
 
   if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
@@ -317,7 +317,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   } else if ( !strcmp( option, "blocksize" ) || !strcmp( option, "parts") ) {
       if (!argument) {
-         fprintf( stderr, "parts (partition strategy) argument missing\n");  
+         log_msg( LOG_ERROR, "parts (partition strategy) argument missing\n");  
          return(1);
       }
       sr_cfg->blocksize = chunksize_from_str( argument );
@@ -329,7 +329,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
       {
-          fprintf( stderr,"notice: no stored credential: %s.\n", argument );
+          log_msg( LOG_ERROR,"notice: no stored credential: %s.\n", argument );
           sr_cfg->broker = broker_uri_parse( argument );
       } else {
           sr_cfg->broker = broker_uri_parse( brokerstr );
@@ -338,7 +338,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(2);
 
   } else if ( !strcmp( option, "cache" ) || !strcmp( option, "no_duplicates" ) ) {
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      log_msg( LOG_ERROR, "info: %s option not implemented, ignored.\n", option );
       if isalpha(*argument) {
           val = StringIsTrue(argument);
           sr_cfg->cache = (val&2) ? 900 : 0;
@@ -446,7 +446,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(2);
 
   } else {
-      fprintf( stderr, "info: %s option not implemented, ignored.\n", option );
+      log_msg( LOG_INFO, "info: %s option not implemented, ignored.\n", option );
   } 
   return(0);
 }
@@ -491,15 +491,11 @@ void sr_config_free( struct sr_config_t *sr_cfg )
        free(tmph);
   }
 
+  log_cleanup();
 }
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname ) 
 {
   char *c;
-
-  putenv("TZ=UTC");
-  tzset();
-  
-  printf( "tz=%s %s, timezone=%ld, dst=%d\n", tzname[0], tzname[1], timezone, daylight );
 
   sr_credentials_init();
   sr_cfg->action=strdup("foreground");
@@ -587,7 +583,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   // absolute paths in the normal places...
   if (sr_cfg->debug) 
-        fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+        log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
 
   f = fopen( p, "r" );
   if ( f == NULL )  // drop the suffix
@@ -603,7 +599,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
      { 
          strcpy( p, filename );
          if (sr_cfg->debug) 
-             fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+             log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
          f = fopen( p, "r" );
      }
      if ( f == NULL ) 
@@ -612,7 +608,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
          {
              strcat(p,".conf");
              if (sr_cfg->debug) 
-                 fprintf( stderr, "sr_config_read trying to open: %s\n", p );
+                 log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
              f = fopen( p, "r" );
          }
      }
@@ -620,7 +616,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   if ( f==NULL ) 
   {
-          fprintf( stderr, "error: failed to find configuration: %s\n", filename );
+          log_msg( LOG_ERROR, "error: failed to find configuration: %s\n", filename );
           return(0);
   }
 
@@ -675,6 +671,14 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      mkdir( p, 0700 );
   }
 
+  sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_0001.log", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
+
+  if ( strcmp(sr_cfg->action,"foreground") )
+  {
+      log_setup( p , 0644 );
+      log_msg( LOG_INFO, "opening log file." );
+  }
+
   if (! is_consumer ) 
   {
      // FIXME: open and read cache file if present. seek to end.
@@ -686,7 +690,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
      if (!sr_cfg->progname || !sr_cfg->configname || !sr_cfg->broker || !sr_cfg->broker->user ) 
      {
-          fprintf( stderr, "incomplete configuration, cannot guess queue\n"  );
+          log_msg( LOG_ERROR, "incomplete configuration, cannot guess queue\n"  );
           return(0);
      }
      sprintf( p, "%s/.cache/sarra/%s/%s/sr_%s.%s.%s", getenv("HOME"),
@@ -707,7 +711,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
          if (f) 
          {
              if (sr_cfg->debug)
-                fprintf( stderr, "writing %s to %s\n", q, p );
+                log_msg( LOG_DEBUG, "writing %s to %s\n", q, p );
              fputs( q, f );
              fclose(f);
          }

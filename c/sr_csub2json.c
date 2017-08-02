@@ -59,18 +59,18 @@ int main(int argc, char **argv)
   }
   if (!sr_config_finalize( &sr_cfg, 1))
   {
-     fprintf( stderr, "failed to finalize configuration\n");
+     log_msg( LOG_ERROR, "failed to finalize configuration\n");
      return(1); 
   }
 
   sr_c = sr_context_init_config( &sr_cfg );
   if (!sr_c) {
-     fprintf( stderr, "failed to read configuration\n");
+     log_msg( LOG_ERROR, "failed to read configuration\n");
      return(1);
   }
   sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
-     fprintf( stderr, "failed to establish sr context\n");
+     log_msg( LOG_ERROR, "failed to establish sr context\n");
      return(1);
   }
   if ( !strcmp( sr_cfg.action, "cleanup" ) )

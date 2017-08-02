@@ -110,7 +110,7 @@ int dir_stack_push( char *fn, int wd, dev_t dev, ino_t ino )
        t= (struct dir_stack *)(malloc(sizeof(struct dir_stack)));
        if (!t)
        {
-           fprintf( stderr, "ERROR: failed to malloc adding to dir_stack for: %s\n", fn );
+           log_msg( LOG_ERROR, "ERROR: failed to malloc adding to dir_stack for: %s\n", fn );
            return(0);
        }
 
@@ -176,11 +176,11 @@ void do1file( struct sr_context *sr_c, char *fn )
 
   /*
     if (sr_c->cfg->debug)
-        fprintf( stderr, "debug: do1file starting on: %s\n", fn );
+        log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
    */
 
     if ( lstat(fn, &sb) < 0 ) {
-         fprintf( stderr, "failed to lstat: %s\n", fn );
+         log_msg( LOG_ERROR, "failed to lstat: %s\n", fn );
          return;
     }
 
@@ -188,7 +188,7 @@ void do1file( struct sr_context *sr_c, char *fn )
     if (S_ISLNK(sb.st_mode)) 
     {   // process a symbolic link.
         if (sr_c->cfg->debug)
-           fprintf( stderr, "debug: %s is a symbolic link. (follow=%s) posting\n", 
+           log_msg( LOG_DEBUG, "debug: %s is a symbolic link. (follow=%s) posting\n", 
                fn, ( sr_c->cfg->follow_symlinks )?"on":"off" );
 
         if (ts_newer( sb.st_mtim, latest_min_mtim ))
@@ -200,7 +200,7 @@ void do1file( struct sr_context *sr_c, char *fn )
         if ( ! ( sr_c->cfg->follow_symlinks ) )  return;
 
         if ( stat(fn, &sb) < 0 ) {  // repeat the stat, but for the destination.
-             fprintf( stderr, "ERROR: failed to stat: %s\n", fn );
+             log_msg( LOG_ERROR, "failed to stat: %s\n", fn );
              return;
         }
 
@@ -211,7 +211,7 @@ void do1file( struct sr_context *sr_c, char *fn )
     if (S_ISDIR(sb.st_mode))   // process a directory.
     {
          if (sr_c->cfg->debug)
-             fprintf( stderr, 
+             log_msg( LOG_DEBUG, 
                  "info: opening directory: %s, first_call=%s, recursive=%s, follow_symlinks=%s latest_min_mtim=%ld.%09ld\n", 
                  fn, first_call?"on":"off", (sr_c->cfg->recursive)?"on":"off", 
                  (sr_c->cfg->follow_symlinks)?"on":"off", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );
@@ -227,7 +227,7 @@ void do1file( struct sr_context *sr_c, char *fn )
             w = inotify_add_watch( inot_fd, fn, inotify_event_mask);
             if (w < 0)
             {
-               fprintf( stderr, "failed to add_watch: %s\n", fn );
+               log_msg( LOG_ERROR, "failed to add_watch: %s\n", fn );
                return;
             }
          } else w=0;
@@ -235,15 +235,15 @@ void do1file( struct sr_context *sr_c, char *fn )
          if ( !dir_stack_push( fn, w, sb.st_dev, sb.st_ino ) )
          {
              close(inot_fd);
-             fprintf( stderr, "info: loop detected, skipping: %s\n", fn );
+             log_msg( LOG_ERROR, "info: loop detected, skipping: %s\n", fn );
              return;
          } //else 
-           //fprintf( stderr, "FIXME: pushed on stack: %s\n", fn );
+           //log_msg( LOG_DEBUG, "pushed on stack: %s\n", fn );
                       
          dir=opendir(fn);
          if (!dir) 
          {
-             fprintf( stderr, "failed to open directory: %s\n", fn );
+             log_msg( LOG_ERROR, "failed to open directory: %s\n", fn );
              return;
          }
 
@@ -260,7 +260,7 @@ void do1file( struct sr_context *sr_c, char *fn )
          closedir(dir); 
 
          if (sr_c->cfg->debug)
-             fprintf( stderr, "info: closing directory: %s\n", fn );
+             log_msg( LOG_DEBUG, "info: closing directory: %s\n", fn );
 
     } else 
         if (ts_newer( sb.st_mtim, latest_min_mtim )) 
@@ -304,7 +304,7 @@ void dir_stack_check4events( struct sr_context *sr_c )
             for ( d = dir_stack_top; d && ( e->wd != d->wd ) ; d=d->next );
             if (!d) 
             {
-                 fprintf( stderr, "ERROR: cannot find path for event %s\n",
+                 log_msg( LOG_ERROR, "cannot find path for event %s\n",
                      e->name );
                  continue;
             } 
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
     }
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
-        fprintf( stderr, "something missing, failed to finalize config\n");
+        log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
     
@@ -404,7 +404,7 @@ int main(int argc, char **argv)
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
     {
-        fprintf( stderr, "failed to read config\n");
+        log_msg( LOG_ERROR, "failed to read config\n");
         return(1);
     }
     
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
   
     if (!sr_c) 
     {
-        fprintf( stderr, "failed to establish sr_context\n");
+        log_msg( LOG_ERROR, "failed to establish sr_context\n");
         return(1);
     }
 
@@ -420,11 +420,11 @@ int main(int argc, char **argv)
     {
         if ( !sr_post_cleanup( sr_c ) ) 
         {
-            fprintf( stderr, "failed to delete exchange: %s\n", 
+            log_msg( LOG_ERROR, "failed to delete exchange: %s\n", 
                  sr_cfg.exchange );
             return(1);
         }
-        fprintf( stderr, "exchange: %s deleted\n", sr_cfg.exchange );
+        log_msg( LOG_INFO, "exchange: %s deleted\n", sr_cfg.exchange );
         return(0);
     }
   
@@ -436,7 +436,7 @@ int main(int argc, char **argv)
     {
         if ( !sr_post_init( sr_c ) ) 
         {
-        fprintf( stderr, "warning: failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
+        log_msg( LOG_WARNING, "failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
         }
         return(0);
     }
@@ -454,7 +454,7 @@ int main(int argc, char **argv)
   
         inot_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
         if ( inot_fd < 0) 
-            fprintf( stderr, "error: inot init failed: error: %d\n", errno );
+            log_msg( LOG_ERROR, "inot init failed: error: %d\n", errno );
     }
   
     while (1) 
@@ -463,7 +463,7 @@ int main(int argc, char **argv)
       
        if (sr_cfg.force_polling || !pass ) 
        {
-           // fprintf( stderr, "starting polling loop pass: %d\n", pass);
+           // log_msg( LOG_DEBUG, "starting polling loop pass: %d\n", pass);
            for(struct sr_path_t *i=sr_cfg.paths ; i ; i=i->next ) 
            {
               first_call=1;
@@ -483,10 +483,10 @@ int main(int argc, char **argv)
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
             tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-            // fprintf( stderr, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+            // log_msg( LOG_DEBUG, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
             nanosleep( &tsleep, NULL );
        } else 
-            fprintf( stderr, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
+            log_msg( LOG_INFO, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
   
        latest_min_mtim = tstart;
        pass++; 
@@ -495,7 +495,7 @@ int main(int argc, char **argv)
     if ( sr_cfg.pipe ) 
     {
         if (sr_cfg.sleep > 0.0 ) {
-           fprintf( stderr, "ERROR: sleep conflicts with pipe. pipe ignored.\n");
+           log_msg( LOG_ERROR, "sleep conflicts with pipe. pipe ignored.\n");
        } else
             while( fgets(inbuff,PATH_MAX,stdin) > 0 ) 
             {

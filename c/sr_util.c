@@ -44,13 +44,14 @@ void log_msg(int prio, const char *format, ...)
     dprintf( logfd, "%04d-%02d-%02d %02d:%02d:%02d,%03d [%s] ", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, (int)(ts.tv_nsec/1e6), p );
 
-    vdprintf(logfd, format, ap);
+    vdprintf( logfd, format, ap);
 }
 
 
-void log_setup(const char *f) 
+void log_setup(const char *f, mode_t mode ) 
 {
-   logfd = open(f, O_CREAT|O_APPEND );
+   logfd = open(f, O_WRONLY|O_CREAT|O_APPEND, mode );
+   fprintf( stderr, "logfile=%s, fd=%d\n", f, logfd );
 }
 
 void log_cleanup() 
