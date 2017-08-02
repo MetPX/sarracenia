@@ -347,6 +347,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->cache = atof(argument);
       return(2);
 
+  } else if ( !strcmp( option, "chmod_log" ) ) {
+      sscanf( argument, "%04o", &(sr_cfg->chmod_log) ); 
+      return(2);
+
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
       sr_config_read( sr_cfg, argument );
       return(2);
@@ -394,6 +398,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
 
   } else if ( !strcmp( option, "header" ) ) {
       val = sr_add_header(sr_cfg, argument);
+      return(1+(val&1));
+
+  } else if ( !strcmp( option, "log" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->log = val&2;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
@@ -504,6 +513,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->broker=NULL;
   sr_cfg->cache=0;
   sr_cfg->cachep=NULL;
+  sr_cfg->chmod_log=0600;
   sr_cfg->configname=NULL;
   sr_cfg->debug=0;
   sr_cfg->directory=NULL;
@@ -513,6 +523,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
   sr_cfg->last_matched=NULL;
+  sr_cfg->log=0;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
@@ -675,7 +686,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
   if ( strcmp(sr_cfg->action,"foreground") )
   {
-      log_setup( p , 0644 );
+      log_setup( p , sr_cfg->chmod_log );
       log_msg( LOG_INFO, "opening log file." );
   }
 
