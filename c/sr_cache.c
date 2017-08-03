@@ -20,15 +20,11 @@
 
 extern char sumstr[];
 
-void sr_cache_entry_path_write( FILE *fp, struct sr_cache_entry_t *e, struct sr_cache_entry_path_t *p )
-{
-  static char sumstr[ SR_SUMSTRLEN ]; /* made static to avoid putting on stack every call. */
+void hash_print(unsigned char *hash) {
+    for ( int i=0; i<SR_SUMHASHLEN ; i++ )
+        fprintf( stderr, "%02x", hash[i] );
+    fprintf( stderr, "\n" );
 
-  sumstr[0]=e->key[0];
-  sumstr[1]=',';
-  for (int i=1; i <= get_sumstrlen(e->key[0]); i++ )
-      sprintf( &(sumstr[i*2]), "%02x", (unsigned char)(e->key[i]));
-  fprintf(fp,"%s %s %s %s\n", sumstr, sr_time2str( &(p->created) ), p->path, p->partstr );
 }
 
 int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path, char* partstr )
@@ -40,45 +36,56 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
       -1 - key too long, could not be inserted anyways, so not present.
  */
 {
-   struct sr_cache_entry_t *c;
-   char e[SR_CACHEKEYSZ];
-   struct sr_cache_entry_path_t *p;
+     struct sr_cache_entry_t *c = NULL;
+     struct sr_cache_entry_path_t *p;
+  
+     log_msg( LOG_DEBUG, "looking for: %s \nlooking for sum of: %s\n algo: %c, ekey: ", path, sumstr, algo );
+     hash_print((unsigned char *)ekey);
+     fprintf( stderr, "\n");
+  
+     fprintf( stderr, "e ready for HASH_FIND:");
+     hash_print(ekey);
+     fprintf( stderr, "hoho content is:\n");
+  
+     sr_cache_save( cachep, 1 );
+  
+     fprintf( stderr, "ok FIND: ");
+     HASH_FIND( hh, cachep->data, ekey, SR_CACHEKEYSZ, c );
+     fprintf( stderr, "cachep->data=%p, c=%p \n", cachep->data, c );
+  
+     if (!c) 
+     {
+         log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path, sumstr );
+         c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
+         memset(c, 0, sizeof(struct sr_cache_entry_t) );
 
-   e[0]=algo;
-   if (get_sumstrlen(algo) < (SR_CACHEKEYSZ-1)) 
-       memset(e+1, 0, SR_CACHEKEYSZ-1);
-   memcpy(e+1, ekey, get_sumstrlen(algo) );
+         memcpy(c->key, ekey, SR_CACHEKEYSZ );
+         c->paths=NULL;
+         HASH_ADD_KEYPTR( hh, cachep->data, c->key, SR_CACHEKEYSZ, c );
+     }
+  
+     for ( p = c->paths; p ; p=p->next )
+     { 
+         /* compare path and partstr */
+         log_msg( LOG_DEBUG, "sum was found in cache, looking at other attributes\n", path );
+         if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
+             log_msg( LOG_DEBUG, "same path already there\n" );
+             clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
+             return(0); /* found in the cache already */
+         }
+     }
+  
+     /* not found, so add path to cache entry */
+     p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
+     memset(p, 0, sizeof(struct sr_cache_entry_path_t) );
 
-   HASH_FIND(hh,cachep->data,e,SR_CACHEKEYSZ,c);
-
-   if (!c) 
-   {
-       log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path, sumstr );
-       c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
-       memcpy(c->key, e, SR_CACHEKEYSZ );
-       c->paths=NULL;
-       HASH_ADD_KEYPTR( hh, cachep->data, c->key, SR_CACHEKEYSZ, c );
-   }
-
-   for ( p = c->paths; p ; p=p->next )
-   { 
-          /* compare path and partstr */
-          log_msg( LOG_DEBUG, "sum was found in cache, looking at other attributes\n", path );
-           if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
-               clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
-               return(0); /* found in the cache already */
-           }
-   }
-
-   /* not found, so add path to cache entry */
-   p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
-   clock_gettime( CLOCK_REALTIME, &(p->created) );
-   p->path = strdup(path);
-   p->partstr = strdup(partstr);
-   p->next = c->paths;
-   c->paths = p;
-   sr_cache_entry_path_write(cachep->fp,c,p);
-   return(1);
+     clock_gettime( CLOCK_REALTIME, &(p->created) );
+     p->path = strdup(path);
+     p->partstr = strdup(partstr);
+     p->next = c->paths;
+     c->paths = p;
+     fprintf(cachep->fp,"%s %s %s %s\n", sr_hash2sumstr(c->key), sr_time2str( &(p->created) ), p->path, p->partstr );
+     return(1);
 }
 
 void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
@@ -191,7 +198,6 @@ int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
     struct sr_cache_entry_path_t *e;
     FILE *f;
     int count=0;
-    char sumstr[ SR_SUMSTRLEN ];
 
     if (to_stdout) {
         f= stdout;
@@ -205,29 +211,14 @@ int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
     }
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
-       sumstr[0]=c->key[0];
-       sumstr[1]=',';
-       for (int i=1; i <= get_sumstrlen(c->key[0]); i++ )
-           sprintf( &(sumstr[i*2]), "%02x", (unsigned char)(c->key[i]));
        for ( e = c->paths; e ; e=e->next )
        {       
-          fprintf(f,"%s %s %s %s\n", sumstr, sr_time2str( &(e->created) ), e->path, e->partstr );
+          fprintf(f,"%s %s %s %s\n", sr_hash2sumstr(c->key), sr_time2str( &(e->created) ), e->path, e->partstr );
           count++;
        }
     }
     if (!to_stdout) fclose(f);
     return(count);
-}
-
-int convert_hex_digit( char c )
- /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
-    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
-  */
-{
-   if ( c < ':' ) return(c - '0');
-   if ( c < 'F' ) return(c - 'A' + 10);
-   if ( c < 'f' ) return(c - 'a' + 10);
-   return(-1);
 }
 
 
@@ -241,9 +232,9 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
  */
 {
     struct sr_cache_entry_t *c, *cache;
-    struct sr_cache_entry_path_t *p;
+    struct sr_cache_entry_path_t *p ;
     char *sum, *timestr, *path, *partstr;
-    char key_val[SR_CACHEKEYSZ]; 
+    unsigned char key_val[SR_CACHEKEYSZ]; 
     FILE *f;
     int line_count=0;
 
@@ -295,15 +286,13 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            sum, timestr, path, partstr );
        */
        
-       memset( key_val, 0, SR_CACHEKEYSZ );
-       key_val[0] = buf[0];
-       for (int i=1; i <= get_sumstrlen(buf[0]) ; i++ ) 
-       {
-            key_val[i]= convert_hex_digit(sum[2*i]) * 16 + convert_hex_digit(sum[2*i+1])  ;
-       }
+       memcpy( key_val, sr_sumstr2hash(sum), SR_CACHEKEYSZ );
 
-       HASH_FIND(hh,cache, key_val,SR_CACHEKEYSZ,c);
+       fprintf(stderr, "looking for: %s in cache\n", sr_hash2sumstr(key_val) );
 
+       HASH_FIND( hh, cache, key_val, SR_CACHEKEYSZ, c);
+
+       fprintf(stderr, "found it? c=%p\n", c );
        if (!c) {
            c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
            if (!c) 
@@ -311,13 +300,28 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
                log_msg( LOG_ERROR, "out of memory reading cache file: %s, stopping at line: %s\n", fn, buf  );
                return(cache);
            }
+           memset( c, 0, sizeof(struct sr_cache_entry_t));
 
            memcpy(c->key, key_val, SR_CACHEKEYSZ );
+           fprintf( stderr, "key in the cache: " );
+           hash_print(c->key);
+
            c->paths=NULL;
            HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
+           
        }
        /* assert, c != NULL */
+       fprintf( stderr, "passed C optional malloc.\n" );
 
+       /* skip if path already present */
+       for( p=c->paths; p; p=p->next )
+           if ( !strcmp(p->path,path) && !strcmp(p->partstr,partstr) )
+               break;
+       if (p) 
+       {
+           fprintf( stderr, "path already there.\n" );
+           continue;
+       }
        /* add path to cache entry */
        p = (struct sr_cache_entry_path_t *)malloc(sizeof(struct sr_cache_entry_path_t));
        if (!p) 
@@ -325,6 +329,8 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            log_msg( LOG_ERROR, "out of memory 2, reading cache file: %s, stopping at line: %s\n", fn, buf  );
            return(cache);
        }
+       fprintf( stderr, "passed P malloc.\n" );
+       memset( p, 0, sizeof(struct sr_cache_entry_path_t) );
 
        memset( &(p->created), 0, sizeof(struct timespec) );
        memcpy( &(p->created), sr_str2time( timestr ), sizeof(struct timespec) );
@@ -333,8 +339,10 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
        p->next = c->paths;
        c->paths = p;
 
+       fprintf( stderr, "Next!.\n" );
     }
     fclose(f);
+    fprintf( stderr, " _load done!.\n" );
     return(cache);
 }
 
@@ -343,19 +351,14 @@ struct sr_cache_t *sr_cache_open( const char *fn )
     struct sr_cache_t *c;
 
     c = (struct sr_cache_t *)malloc(sizeof(struct sr_cache_t));
+    memset(c,0,sizeof(struct sr_cache_t));
     c->data = sr_cache_load(fn);
     c->fn =  strdup(fn);
     c->fp = fopen(fn,"a");
 
-    /*
-      FIXME:  Sarra needs to work exclusively in UTC.  Regardless of system TZ, all sarra dates
-              should be in UTC, for cache, for logs, etc...  This is apparently difficult to do
-              in Linux.
-
-              I'm totally confused by timezones and DST in conversion of between strings and structs in time.
-              I could not get this to work any other way.  This is BAD because it changes the TZ
-              for the calling program.
-    */
+    fprintf( stderr, "sr_cache_open loaded:\n" );
+    sr_cache_save( c, 1 ); // FIXME, debug
+    fprintf( stderr, "sr_cache_open done.\n" );
     return(c);
 }
 
@@ -363,7 +366,6 @@ void sr_cache_close( struct sr_cache_t *c )
 {
    if (!c) return;
 
-   //sr_cache_save( c ); - since continually appending, no need for save.
    sr_cache_free( c );
    fclose(c->fp);
    free(c->fn);

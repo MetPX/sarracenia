@@ -21,6 +21,7 @@ int logfd=2;
 #define LOG_NOTICE    (4)
 #define LOG_WARNING   (8)
 #define LOG_ERROR    (16)
+
 void log_msg(int prio, const char *format, ...)
 {
     va_list ap;
@@ -66,22 +67,29 @@ void log_cleanup()
 // SHA512 being the longest digest...
 char sumstr[ SR_SUMSTRLEN ];
 
-unsigned char sumhash[SHA512_DIGEST_LENGTH]; // Assumed longest possible hash.
+unsigned char sumhash[SR_SUMHASHLEN]; 
 
-unsigned char *get_last_hash() 
+int convert_hex_digit( char c )
+ /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
+    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
+  */
 {
-   return(sumhash);
+    if ( c < ':' ) return(c - '0');
+    if ( c < 'F' ) return(c - 'A' + 10);
+    if ( c < 'f' ) return(c - 'a' + 10);
+    return(-1);
 }
 
-int get_sumstrlen( char algo )
+int get_sumhashlen( char algo )
 {
   switch(algo) {
     case 'd' : case 'n' : 
-        return(MD5_DIGEST_LENGTH);
+        return(MD5_DIGEST_LENGTH+1);
 
-    case '0' : case 'N' : case 'R' : case 's' : 
-        return(SHA512_DIGEST_LENGTH);
+    case 'N' : case 'R' : case 's' : 
+        return(SHA512_DIGEST_LENGTH+1);
 
+    case '0':
     default: 
         return(0);
   }
@@ -116,19 +124,19 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
    unsigned long start = block_size * block_num ;
    unsigned long end;
-
+  
    end = start + ((block_num < (block_count -(block_rem!=0)))?block_size:block_rem) ;
  
    //fprintf( stderr, "start: %ld, end: %ld\n", start, end );
 
-   sumstr[0]=algo;
-   sumstr[1]=',';
-   sumstr[2]='\0'; 
+   memset( sumhash, 0, SR_SUMHASHLEN );
+   sumhash[0]=algo;
 
    switch (algo) {
 
    case '0' : 
-       sprintf( sumstr+2, "%ld", random()%1000 );
+       sprintf( sumstr, "0,%ld", random()%1000 );
+       return(sumstr);
        break;
 
    case 'd' :
@@ -157,7 +165,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
               start += bytes_read;
            } else {
               fprintf( stderr, "error reading %s for MD5\n", fn );
-              strcpy(sumstr+3,"deadbeef1");
               return(NULL);
            } 
        }
@@ -169,9 +176,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
              fd=0;
        }
 
-       MD5_Final(sumhash, &md5ctx);
-       sr_hash2sumstr(sumhash,MD5_DIGEST_LENGTH); 
-       //fprintf( stderr, "sumstr=%s\n", sumstr );
+       MD5_Final(sumhash+1, &md5ctx);
+       return(sr_hash2sumstr(sumhash)); 
        break;
 
    case 'n' :
@@ -179,8 +185,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        just_the_name = rindex(fn,'/')+1;
        if (!just_the_name) just_the_name=fn;
        MD5_Update(&md5ctx, just_the_name, strlen(just_the_name) );
-       MD5_Final(sumhash, &md5ctx);
-       sr_hash2sumstr(sumhash,MD5_DIGEST_LENGTH); 
+       MD5_Final(sumhash+1, &md5ctx);
+       return(sr_hash2sumstr(sumhash)); 
        break;
        
    
@@ -202,9 +208,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
            just_the_name=buf;
        }
        SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
-       SHA512_Final(sumhash, &shactx);
-       sr_hash2sumstr(sumhash,SHA512_DIGEST_LENGTH); 
-       break;
+       SHA512_Final(sumhash+1, &shactx);
+       return(sr_hash2sumstr(sumhash)); 
 
    case 's' :
        SHA512_Init(&shactx);
@@ -214,7 +219,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        if ( fd < 0 ) 
        { 
            fprintf( stderr, "unable to read file for SHA checksumming\n" );
-           strcpy(sumstr+3,"deadbeef2");
            return(NULL);
        } 
        lseek( fd, start, SEEK_SET );
@@ -234,7 +238,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
               start += bytes_read;
            } else {
               fprintf( stderr, "error reading %s for SHA\n", fn );
-              strcpy(sumstr+3,"deadbeef3");
               return(NULL);
            } 
        }
@@ -245,23 +248,38 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
              close(fd);
              fd=0;
        }
-       SHA512_Final(sumhash, &shactx);
-       sr_hash2sumstr(sumhash,SHA512_DIGEST_LENGTH); 
-       break;
+       SHA512_Final(sumhash+1, &shactx);
+       return(sr_hash2sumstr(sumhash)); 
 
    default:
        fprintf( stderr, "sum algorithm %c unimplemented\n", algo );
        return(NULL);
    }
-   return(sumstr);
 
 }
 
-char *sr_hash2sumstr( unsigned char *h, int l )
+unsigned char *sr_sumstr2hash( char *s )
+{
+    int i;
+    if (!s) return(NULL);
+    memset( sumhash, 0, SR_SUMHASHLEN );
+    sumhash[0]=s[0];
+    for ( i=1; ( i < get_sumhashlen(s[0]) ) ; i++ )
+    {
+        sumhash[i] = convert_hex_digit(s[2*i]) * 16 + convert_hex_digit(s[2*i+1]) ;
+    }
+    return(sumhash);
+}
+
+
+char *sr_hash2sumstr( unsigned char *h )
 {
   int i;
-  for(i=1; i < l+1; i++ )
-     sprintf( &(sumstr[i*2]), "%02x", (unsigned char)h[i-1]);
+  memset( sumstr, 0, SR_SUMSTRLEN );
+  sumstr[0] = h[0];
+  sumstr[1] = ',';
+  for(i=1; i < get_sumhashlen(h[0]); i++ )
+     sprintf( &(sumstr[i*2]), "%02x", (unsigned char)h[i]);
   sumstr[2*i]='\0';
   return(sumstr);
 }

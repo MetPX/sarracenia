@@ -92,6 +92,7 @@ struct sr_config_t {
   char              *exchange;
   int                follow_symlinks;
   int                force_polling;
+  int                instance;
   int                log;
   struct sr_mask_t  *masks;
   struct sr_mask_t  *match;

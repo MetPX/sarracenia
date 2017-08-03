@@ -23,7 +23,13 @@ void log_setup(const char *logfname, mode_t mode);
 void log_cleanup();
 
 #define SR_TIMESTRLEN (19)
+
+// Assumed longest possible hash. typeprefix + SHA512_DIGEST 
+#define SR_SUMHASHLEN (SHA512_DIGEST_LENGTH+1)
+
+// SUMSTR is the printable-string representation of the hash, each digit decodes to two characters for hexadecimal digits.
 #define SR_SUMSTRLEN  (2 * SHA512_DIGEST_LENGTH + 3 )
+
 
  /* 
    return a correct sumstring (assume it is big enough)  as per sr_post(7)
@@ -42,15 +48,22 @@ void log_cleanup();
 
   */
 
-unsigned char *get_last_hash();
-
-int get_sumstrlen( char algo );
+int get_sumhashlen( char algo );
+ /* return the length of the hash buffer (which includes the 1 char prefix for the type.
+  */
 
 char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
           unsigned long block_size, unsigned long block_count, unsigned long block_rem, unsigned long block_num
      );
 
-char *sr_hash2sumstr( unsigned char *h, int l );
+int convert_hex_digit( char c );
+ /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
+    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
+  */
+ 
+unsigned char *sr_sumstr2hash( char *s );
+
+char *sr_hash2sumstr( unsigned char *h );
 
 char *sr_time2str( struct timespec *tin );
 struct timespec *sr_str2time( char *s ); 

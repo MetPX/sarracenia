@@ -6,7 +6,7 @@
 
 #include "sr_cache.h"
 
-unsigned char hash[SHA512_DIGEST_LENGTH];
+unsigned char hash[SHA512_DIGEST_LENGTH+1];
 
 unsigned char *md5hash( char *str )
 {
@@ -14,7 +14,8 @@ unsigned char *md5hash( char *str )
 
    MD5_Init( &md5ctx );
    MD5_Update( &md5ctx, str, strlen(str) );
-   MD5_Final( hash, &md5ctx );
+   MD5_Final( hash+1, &md5ctx );
+   hash[0]='d';
    return(hash);
 }
 
@@ -24,7 +25,8 @@ unsigned char *sha512hash( char *str )
 
    SHA512_Init( &shactx );
    SHA512_Update( &shactx, str, strlen(str) );
-   SHA512_Final( hash, &shactx );
+   SHA512_Final( hash+1, &shactx );
+   hash[0]='s';
    return(hash);
 }
 
@@ -93,9 +95,6 @@ int main( int argc, char *argv[] )
    test_count++;
    nanosleep(&sts,NULL);
 
-   hash[0]='d';
-   hash[1]=',';
-   hash[2]='\0';
    ret = sr_cache_check( cache, 'd', md5hash( "lala" ), "lolo/lala", "1,1,0,0" );
    if (ret > 0)  {
        fprintf( stdout, "OK: added lolo to the cache with same an md5 sum\n" );

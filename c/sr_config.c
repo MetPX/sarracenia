@@ -524,6 +524,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
+  sr_cfg->instance=1;
   sr_cfg->last_matched=NULL;
   sr_cfg->log=0;
   sr_cfg->masks=NULL;
@@ -684,7 +685,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      mkdir( p, 0700 );
   }
 
-  sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_0001.log", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
+  sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+      sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
 
   if ( sr_cfg->log )
   {
@@ -695,7 +697,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   if (! is_consumer ) 
   {
      // FIXME: open and read cache file if present. seek to end.
-     sprintf( p, "%s/.cache/sarra/%s/%s/recent_files.cache", getenv("HOME"), sr_cfg->progname, sr_cfg->configname );
+     sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
+           sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
      if (sr_cfg->cache > 0) 
      {
          sr_cfg->cachep = sr_cache_open( p );

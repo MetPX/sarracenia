@@ -62,5 +62,6 @@ clean:
 	@rm -rf build
 
 test:
+	./sr_configtest test_post.conf 
 	./sr_utiltest 
 	./sr_cachetest
