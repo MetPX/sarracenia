@@ -1,0 +1,3 @@
+build/include  usr/local/include
+build/bin      usr/local/bin
+build/lib      usr/local/lib
