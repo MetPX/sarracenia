@@ -22,7 +22,7 @@ SARRA_LINK = -Wl,-rpath,${SARRA_LIBDIR} -L${SARRA_LIBDIR}
 # if neither variable is set, then it is assumed to be available from default environment.
 
 CC = gcc
-CFLAGS = -fPIC -g -std=gnu99 -Wall -D_GNU_SOURCE $(RABBIT_INC)
+CFLAGS = -fPIC -g -std=gnu99 -Wall -D_GNU_SOURCE $(RABBIT_INCDIR)
 
 SARRA_OBJECT = sr_post.o sr_consume.o sr_context.o sr_config.o sr_event.o sr_credentials.o sr_cache.o sr_util.o
 SARRA_LIB = libsarra.so.1.0.0 
