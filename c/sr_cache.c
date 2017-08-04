@@ -18,16 +18,14 @@
 
 #include "sr_cache.h"
 
-extern char sumstr[];
-
 void hash_print(unsigned char *hash) {
-    for ( int i=0; i<SR_SUMHASHLEN ; i++ )
+    for ( int i=0; i < get_sumhashlen(hash[0]) ; i++ )
         fprintf( stderr, "%02x", hash[i] );
     fprintf( stderr, "\n" );
 
 }
 
-int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path, char* partstr )
+int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, char *path, char* partstr )
  /* 
    insert new item if it isn't in the cache.
    retun value:
@@ -38,8 +36,13 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
 {
      struct sr_cache_entry_t *c = NULL;
      struct sr_cache_entry_path_t *p;
+     unsigned char keyhash[SR_SUMHASHLEN];
   
-     log_msg( LOG_DEBUG, "looking for: %s \nlooking for sum of: %s\n algo: %c, ekey: ", path, sumstr, algo );
+     memset( keyhash, 0, SR_SUMHASHLEN);
+
+     memcpy( keyhash, (unsigned char *)ekey, get_sumhashlen(ekey[0]) );
+
+     log_msg( LOG_DEBUG, "looking for: %s \n        algo: %c, key_hash:%s        ekey:\n", path, algo, sr_hash2sumstr(keyhash) );
      hash_print((unsigned char *)ekey);
      fprintf( stderr, "\n");
   
@@ -50,16 +53,16 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, void *ekey, char *path
      sr_cache_save( cachep, 1 );
   
      fprintf( stderr, "ok FIND: ");
-     HASH_FIND( hh, cachep->data, ekey, SR_CACHEKEYSZ, c );
+     HASH_FIND( hh, cachep->data, keyhash, SR_CACHEKEYSZ, c );
      fprintf( stderr, "cachep->data=%p, c=%p \n", cachep->data, c );
   
      if (!c) 
      {
-         log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path, sumstr );
+         log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path,  sr_hash2sumstr(keyhash) );
          c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
          memset(c, 0, sizeof(struct sr_cache_entry_t) );
 
-         memcpy(c->key, ekey, SR_CACHEKEYSZ );
+         memcpy(c->key, keyhash, SR_CACHEKEYSZ );
          c->paths=NULL;
          HASH_ADD_KEYPTR( hh, cachep->data, c->key, SR_CACHEKEYSZ, c );
      }

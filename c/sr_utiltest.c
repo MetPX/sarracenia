@@ -11,28 +11,28 @@
 
 #include "sr_util.h"
 
-unsigned char hash[SHA512_DIGEST_LENGTH+1];
+unsigned char myhash[SHA512_DIGEST_LENGTH+1];
 
 unsigned char *md5hash( char *str )
 {
    MD5_CTX md5ctx;
 
-   hash[0]='d';
+   myhash[0]='d';
    MD5_Init( &md5ctx );
    MD5_Update( &md5ctx, str, strlen(str) );
-   MD5_Final( hash+1, &md5ctx );
-   return(hash);
+   MD5_Final( myhash+1, &md5ctx );
+   return(myhash);
 }
 
 unsigned char *sha512hash( char *str )
 {
    SHA512_CTX shactx;
 
-   hash[0]='s';
+   myhash[0]='s';
    SHA512_Init( &shactx );
    SHA512_Update( &shactx, str, strlen(str) );
-   SHA512_Final( hash+1, &shactx );
-   return(hash);
+   SHA512_Final( myhash+1, &shactx );
+   return(myhash);
 }
 
 int main( int argc, char *argv[] )
@@ -45,6 +45,7 @@ int main( int argc, char *argv[] )
     char *tscp;
     int  testcnt=0;
     int  success=0;
+    int  i = 0;
 
     unsigned char original_hash[SHA512_DIGEST_LENGTH+1];
     unsigned char rt_hash[SHA512_DIGEST_LENGTH+1];
@@ -52,33 +53,46 @@ int main( int argc, char *argv[] )
     char osumstr[SR_SUMSTRLEN];
     char rtsumstr[SR_SUMSTRLEN];
 
+    fprintf( stderr, "SHA512_DIGEST_LENGTH=%d\n", SHA512_DIGEST_LENGTH );
+    fprintf( stderr, "SR_SUMSTRLEN=%d\n", SR_SUMSTRLEN );
+
     memcpy( original_hash, sha512hash( "hoho" ), SHA512_DIGEST_LENGTH + 1 );
-    strcpy( osumstr, sr_hash2sumstr( original_hash ) );
-    fprintf( stderr, "     original hash is: %s\n" , osumstr );
 
-    memcpy( rt_hash, sr_sumstr2hash(osumstr), SHA512_DIGEST_LENGTH + 1 );
-    strcpy( rtsumstr, sr_hash2sumstr( rt_hash ) );
-    fprintf( stderr, "round-tripped hash is: %s\n" , rtsumstr );
-
-    if ( !strcmp( osumstr, rtsumstr ) ) 
+    for( i=0; i < 9; i++ )
     {
-        fprintf( stderr, "OK: sum string <-> hash strings are the same.\n" );
-        success++;
-    } else {
-        fprintf( stderr, "FAIL: original sum strings and roundtripped ones are different\n" );
+        for(i=1; i < get_sumhashlen(osumstr[0]); i++ )
+            fprintf( stderr, " %02d", i );
+        fprintf(stderr, "\n" );
+
+        strcpy( osumstr, sr_hash2sumstr( original_hash ) );
+        memcpy( rt_hash, sr_sumstr2hash(osumstr), SHA512_DIGEST_LENGTH + 1 );
+        strcpy( rtsumstr, sr_hash2sumstr( rt_hash ) );
+
+
+        fprintf( stderr, "     original hash is: +%s+ length: %ld\n" , osumstr, strlen(osumstr) );
+        fprintf( stderr, "round-tripped hash is: +%s+ length: %ld\n" , rtsumstr, strlen(rtsumstr) );
+
+        if ( !strcmp( osumstr, rtsumstr ) ) 
+        {
+            fprintf( stderr, "OK: sum string <-> hash strings are the same.\n" );
+            success++;
+        } else {
+            fprintf( stderr, "FAIL: original sum strings and roundtripped ones are different\n" );
+        }
+        testcnt++;
+
+
+        if ( !memcmp( original_hash, rt_hash, SHA512_DIGEST_LENGTH +1 ) )
+        {     
+            fprintf( stderr, "OK: original and round-tripped hashes are the same.\n" );
+            success++;
+        } else {
+            fprintf( stderr, "FAIL: original sum hashes and roundtripped ones are different\n" );
+        }
+        testcnt++;
+
+        memcpy( original_hash, sr_sumstr2hash(rtsumstr), SHA512_DIGEST_LENGTH + 1 );
     }
-    testcnt++;
-
-
-    if ( !memcmp( original_hash, rt_hash, SHA512_DIGEST_LENGTH +1 ) )
-    {     
-        fprintf( stderr, "OK: original and round-tripped hashes are the same.\n" );
-        success++;
-    } else {
-        fprintf( stderr, "FAIL: original sum hashes and roundtripped ones are different\n" );
-    }
-    testcnt++;
-
     t = time(NULL);
     log_msg( LOG_INFO, "              It is now: %s\n", ctime(&t) );
 
@@ -86,7 +100,7 @@ int main( int argc, char *argv[] )
     
     clock_gettime( CLOCK_REALTIME, &tsnow );
 
-    log_msg( LOG_INFO, "       starting time is: %ld\n", tsnow.tv_sec );
+    log_msg( LOG_INFO, "        starting time is: %ld\n", tsnow.tv_sec );
     tscp = sr_time2str( &tsnow );
     memset( timestring, 0, 60 );
     memcpy( timestring, tscp, strlen(tscp) );

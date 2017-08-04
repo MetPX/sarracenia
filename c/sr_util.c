@@ -52,7 +52,6 @@ void log_msg(int prio, const char *format, ...)
 void log_setup(const char *f, mode_t mode ) 
 {
    logfd = open(f, O_WRONLY|O_CREAT|O_APPEND, mode );
-   fprintf( stderr, "logfile=%s, fd=%d\n", f, logfd );
 }
 
 void log_cleanup() 
@@ -69,16 +68,6 @@ char sumstr[ SR_SUMSTRLEN ];
 
 unsigned char sumhash[SR_SUMHASHLEN]; 
 
-int convert_hex_digit( char c )
- /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
-    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
-  */
-{
-    if ( c < ':' ) return(c - '0');
-    if ( c < 'F' ) return(c - 'A' + 10);
-    if ( c < 'f' ) return(c - 'a' + 10);
-    return(-1);
-}
 
 int get_sumhashlen( char algo )
 {
@@ -127,7 +116,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
   
    end = start + ((block_num < (block_count -(block_rem!=0)))?block_size:block_rem) ;
  
-   //fprintf( stderr, "start: %ld, end: %ld\n", start, end );
 
    memset( sumhash, 0, SR_SUMHASHLEN );
    sumhash[0]=algo;
@@ -258,28 +246,51 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
 }
 
-unsigned char *sr_sumstr2hash( char *s )
+char nibble2hexchr( int i )
+
+{
+   unsigned char c =  i & 0xf;
+   return( (c < 10) ? ( c + '0' ) : ( c -10 + 'a' ) );
+}
+
+int hexchr2nibble( char c )
+ /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
+    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
+  */
+{
+    if ( c < ':' ) return(c - '0');
+    if ( c < 'G' ) return(c - 'A' + 10);
+    if ( c < 'g' ) return(c - 'a' + 10);
+    return(-1);
+}
+
+unsigned char *sr_sumstr2hash( const char *s )
 {
     int i;
     if (!s) return(NULL);
     memset( sumhash, 0, SR_SUMHASHLEN );
     sumhash[0]=s[0];
+    
     for ( i=1; ( i < get_sumhashlen(s[0]) ) ; i++ )
     {
-        sumhash[i] = convert_hex_digit(s[2*i]) * 16 + convert_hex_digit(s[2*i+1]) ;
+        sumhash[i] = (hexchr2nibble(s[i<<1]) << 4) + hexchr2nibble(s[(i<<1)+1]) ;
     }
     return(sumhash);
 }
 
 
-char *sr_hash2sumstr( unsigned char *h )
+char *sr_hash2sumstr( const unsigned char *h )
 {
   int i;
   memset( sumstr, 0, SR_SUMSTRLEN );
   sumstr[0] = h[0];
   sumstr[1] = ',';
+
   for(i=1; i < get_sumhashlen(h[0]); i++ )
-     sprintf( &(sumstr[i*2]), "%02x", (unsigned char)h[i]);
+  {
+     sumstr[ i*2   ] = nibble2hexchr( h[i]>>4 );
+     sumstr[ i*2+1 ] = nibble2hexchr( h[i] );
+  }
   sumstr[2*i]='\0';
   return(sumstr);
 }

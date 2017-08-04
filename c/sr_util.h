@@ -56,14 +56,9 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
           unsigned long block_size, unsigned long block_count, unsigned long block_rem, unsigned long block_num
      );
 
-int convert_hex_digit( char c );
- /* return ordinal value of digit assuming a character set that has a-f sequential in both lower and upper case.
-    kind of based on ASCII, because numbers are assumed to be lower in collation than upper and lower case letters.
-  */
- 
-unsigned char *sr_sumstr2hash( char *s );
+unsigned char *sr_sumstr2hash( const char *s );
 
-char *sr_hash2sumstr( unsigned char *h );
+char *sr_hash2sumstr( const unsigned char *h );
 
 char *sr_time2str( struct timespec *tin );
 struct timespec *sr_str2time( char *s ); 
