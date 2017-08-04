@@ -1,0 +1,30 @@
+Source: libsarra-c
+Priority: optional
+Maintainer: Shared Services Canada Supercomputing <ssc.hpc-chp.spc@canada.ca>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Section: libs
+Homepage: http://metpx.sf.net
+Vcs-Git: http://git.code.sf.net/p/metpx/git
+
+Package: libsarra-c-dev
+Section: libdevel
+Architecture: any
+Depends: libsarra-c (= ${binary:Version}), ${misc:Depends}
+Description: C-Implementation of a Sarracenia Client
+ This C functionality is embryonic, there is no intent to build a
+ complete implementation, it is just a few pieces meant to provide
+ interoperability for cases where either a python3 environment
+ is either impractical, or where there are performance concerns
+ that this implementation would help with..
+
+Package: libsarra-c
+Section: libs
+Architecture: any
+Depends: librabbitmq4 (>=0.8)
+Description: C-Implementation of a Sarracenia Client
+ This C functionality is embryonic, there is no intent to build a
+ complete implementation, it is just a few pieces meant to provide
+ interoperability for cases where either a python3 environment
+ is either impractical, or where there are performance concerns
+ that this implementation would help with..
