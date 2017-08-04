@@ -396,8 +396,17 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       sr_cfg->force_polling = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "heartbeat" ) ) {
+      sr_cfg->heartbeat = atof(argument);
+      return(2);
+
   } else if ( !strcmp( option, "header" ) ) {
       val = sr_add_header(sr_cfg, argument);
+      return(1+(val&1));
+
+  } else if ( !strcmp( option, "loglevel" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->log = val&2;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "log" ) ) {
@@ -527,6 +536,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->instance=1;
   sr_cfg->last_matched=NULL;
   sr_cfg->log=0;
+  sr_cfg->logseverity=LOG_INFO;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
@@ -542,6 +552,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->realpath=0;
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
+  sr_cfg->heartbeat=300.0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   sr_cfg->user_headers=NULL; 
@@ -690,7 +701,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
   if ( sr_cfg->log )
   {
-      log_setup( p , sr_cfg->chmod_log );
+      log_setup( p , sr_cfg->chmod_log, sr_cfg->debug?LOG_DEBUG:(sr_cfg->logseverity) );
       log_msg( LOG_INFO, "opening log file." );
   }
 

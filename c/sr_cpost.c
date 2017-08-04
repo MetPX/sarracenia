@@ -364,7 +364,13 @@ void usage()
      exit(1);
 }
 
+void heartbeat(struct sr_context *sr_c) 
+/* run this every heartbeat interval 
+ */
+{
+   log_msg( LOG_CRITICAL, "heartbeat" );
 
+}
 int main(int argc, char **argv)
 {
     struct sr_context *sr_c;
@@ -373,6 +379,7 @@ int main(int argc, char **argv)
     int consume,i,pass;
     struct timespec tstart, tsleep, tend;
     float elapsed;
+    float since_last_heartbeat;
     
     if ( argc < 3 ) usage();
    
@@ -399,12 +406,13 @@ int main(int argc, char **argv)
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
-    
+    log_msg( LOG_INFO, "sr_post settings: recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
+          sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
     {
-        log_msg( LOG_ERROR, "failed to read config\n");
+        log_msg( LOG_CRITICAL, "failed to read config\n");
         return(1);
     }
     
@@ -412,7 +420,7 @@ int main(int argc, char **argv)
   
     if (!sr_c) 
     {
-        log_msg( LOG_ERROR, "failed to establish sr_context\n");
+        log_msg( LOG_CRITICAL, "failed to establish sr_context\n");
         return(1);
     }
 
@@ -420,7 +428,7 @@ int main(int argc, char **argv)
     {
         if ( !sr_post_cleanup( sr_c ) ) 
         {
-            log_msg( LOG_ERROR, "failed to delete exchange: %s\n", 
+            log_msg( LOG_WARNING, "failed to delete exchange: %s\n", 
                  sr_cfg.exchange );
             return(1);
         }
@@ -440,7 +448,7 @@ int main(int argc, char **argv)
         }
         return(0);
     }
-  
+     
   
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     latest_min_mtim.tv_sec = 0;
@@ -457,6 +465,7 @@ int main(int argc, char **argv)
             log_msg( LOG_ERROR, "inot init failed: error: %d\n", errno );
     }
   
+    since_last_heartbeat = 0.0;
     while (1) 
     {
        clock_gettime( CLOCK_REALTIME, &tstart );  
@@ -470,15 +479,27 @@ int main(int argc, char **argv)
               do1file(sr_c,i->path);
            }
            dir_stack_reset(); 
+
        } else {
+
            dir_stack_check4events(sr_c); // inotify. process accumulated events.
+
        }
+
        if  (sr_cfg.sleep <= 0.0) break; // one shot.
   
        clock_gettime( CLOCK_REALTIME, &tend );  
        elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - 
                  ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
   
+       since_last_heartbeat += elapsed ;
+
+       if (since_last_heartbeat >= sr_cfg.heartbeat )
+       {
+           heartbeat(sr_c);
+           since_last_heartbeat = 0.0;
+       } 
+
        if ( elapsed < sr_cfg.sleep ) 
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);

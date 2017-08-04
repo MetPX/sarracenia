@@ -15,12 +15,7 @@
 #include "sr_util.h"
 
 int logfd=2;
-
-#define LOG_DEBUG     (1)
-#define LOG_INFO      (2)
-#define LOG_NOTICE    (4)
-#define LOG_WARNING   (8)
-#define LOG_ERROR    (16)
+int log_level=LOG_INFO;
 
 void log_msg(int prio, const char *format, ...)
 {
@@ -33,13 +28,15 @@ void log_msg(int prio, const char *format, ...)
     clock_gettime( CLOCK_REALTIME , &ts);
     gmtime_r(&(ts.tv_sec),&s);
 
+    if (prio < log_level) return;
+
     switch (prio)
     {
         case LOG_DEBUG   : p="DEBUG"; break;
         case LOG_INFO    : p="INFO"; break;
-        case LOG_NOTICE  : p="NOTICE"; break;
         case LOG_WARNING : p="WARNING"; break;
         case LOG_ERROR   : p="ERROR"; break;
+        case LOG_CRITICAL  : p="CRITICAL"; break;
         default: p="UNKNOWN";
     }
     dprintf( logfd, "%04d-%02d-%02d %02d:%02d:%02d,%03d [%s] ", s.tm_year+1900, s.tm_mon+1,
@@ -49,9 +46,17 @@ void log_msg(int prio, const char *format, ...)
 }
 
 
-void log_setup(const char *f, mode_t mode ) 
+void log_setup(const char *f, mode_t mode, int severity ) 
 {
    logfd = open(f, O_WRONLY|O_CREAT|O_APPEND, mode );
+   log_level = severity;
+   return;
+
+   /* redirect all stdout & stderr to the log file */
+   close(1);
+   dup(logfd);
+   close(2);
+   dup(logfd);
 }
 
 void log_cleanup() 

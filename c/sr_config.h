@@ -92,8 +92,10 @@ struct sr_config_t {
   char              *exchange;
   int                follow_symlinks;
   int                force_polling;
+  float              heartbeat;
   int                instance;
-  int                log;
+  int                log;           // use a log file, rather than standard files.
+  int                logseverity;      // severity of messages to log (regardless of where.)
   struct sr_mask_t  *masks;
   struct sr_mask_t  *match;
   char              *last_matched;  //have run isMatching.

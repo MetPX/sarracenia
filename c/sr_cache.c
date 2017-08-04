@@ -43,6 +43,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      memcpy( keyhash, (unsigned char *)ekey, get_sumhashlen(ekey[0]) );
 
      log_msg( LOG_DEBUG, "looking for: %s \n        algo: %c, key_hash:%s        ekey:\n", path, algo, sr_hash2sumstr(keyhash) );
+   /*
      hash_print((unsigned char *)ekey);
      fprintf( stderr, "\n");
   
@@ -53,8 +54,8 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      sr_cache_save( cachep, 1 );
   
      fprintf( stderr, "ok FIND: ");
+   */
      HASH_FIND( hh, cachep->data, keyhash, SR_CACHEKEYSZ, c );
-     fprintf( stderr, "cachep->data=%p, c=%p \n", cachep->data, c );
   
      if (!c) 
      {
@@ -87,6 +88,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      p->partstr = strdup(partstr);
      p->next = c->paths;
      c->paths = p;
+     /* and append to cache file */
      fprintf(cachep->fp,"%s %s %s %s\n", sr_hash2sumstr(c->key), sr_time2str( &(p->created) ), p->path, p->partstr );
      return(1);
 }
@@ -291,11 +293,8 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
        
        memcpy( key_val, sr_sumstr2hash(sum), SR_CACHEKEYSZ );
 
-       fprintf(stderr, "looking for: %s in cache\n", sr_hash2sumstr(key_val) );
-
        HASH_FIND( hh, cache, key_val, SR_CACHEKEYSZ, c);
 
-       fprintf(stderr, "found it? c=%p\n", c );
        if (!c) {
            c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
            if (!c) 
@@ -306,15 +305,12 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            memset( c, 0, sizeof(struct sr_cache_entry_t));
 
            memcpy(c->key, key_val, SR_CACHEKEYSZ );
-           fprintf( stderr, "key in the cache: " );
-           hash_print(c->key);
 
            c->paths=NULL;
            HASH_ADD_KEYPTR( hh, cache, c->key, SR_CACHEKEYSZ, c );
            
        }
        /* assert, c != NULL */
-       fprintf( stderr, "passed C optional malloc.\n" );
 
        /* skip if path already present */
        for( p=c->paths; p; p=p->next )
@@ -322,7 +318,6 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
                break;
        if (p) 
        {
-           fprintf( stderr, "path already there.\n" );
            continue;
        }
        /* add path to cache entry */
@@ -332,7 +327,6 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            log_msg( LOG_ERROR, "out of memory 2, reading cache file: %s, stopping at line: %s\n", fn, buf  );
            return(cache);
        }
-       fprintf( stderr, "passed P malloc.\n" );
        memset( p, 0, sizeof(struct sr_cache_entry_path_t) );
 
        memset( &(p->created), 0, sizeof(struct timespec) );
@@ -342,10 +336,8 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
        p->next = c->paths;
        c->paths = p;
 
-       fprintf( stderr, "Next!.\n" );
     }
     fclose(f);
-    fprintf( stderr, " _load done!.\n" );
     return(cache);
 }
 
@@ -359,9 +351,11 @@ struct sr_cache_t *sr_cache_open( const char *fn )
     c->fn =  strdup(fn);
     c->fp = fopen(fn,"a");
 
+  /*
     fprintf( stderr, "sr_cache_open loaded:\n" );
     sr_cache_save( c, 1 ); // FIXME, debug
     fprintf( stderr, "sr_cache_open done.\n" );
+   */
     return(c);
 }
 

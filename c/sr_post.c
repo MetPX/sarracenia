@@ -318,7 +318,6 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
          return;
       }
       header_add( "sum", sumstr );
-      fprintf( stderr, "sr_post header added with sumstr=%s\n", sumstr);
       
       table.num_entries = hdrcnt;
       table.entries=headers;
@@ -331,7 +330,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       if ( sr_c->cfg->cache > 0 ) { 
            status = sr_cache_check( sr_c->cfg->cachep, sumalgo, sr_sumstr2hash(sumstr), fn, partstr ) ; 
            log_msg( LOG_DEBUG, "cache_check result=%d\n", status );
-           sr_cache_save( sr_c->cfg->cachep, 1 );
+           // sr_cache_save( sr_c->cfg->cachep, 1 );
       } else {
            status = 1;
       }
