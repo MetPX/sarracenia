@@ -448,6 +448,21 @@ class sr_sender(sr_instances):
                   self.msg.exchange = 'save'
                   self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
                   self.msg.from_amqplib()
+                  # make use of accept/reject
+                  if self.use_pattern :
+          
+                     # Adjust url to account for sundew extension if present, and files do not already include the names.
+                     if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
+                        urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
+                     else:
+                        urlstr=self.msg.urlstr
+          
+                     self.logger.debug("sr_sender restore, path being matched: %s " % ( urlstr )  )
+          
+                     if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
+                        self.logger.debug("Rejected by accept/reject options")
+                        return False,self.msg
+          
                   self.logger.info("sr_sender restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
                   ok = self.process_message()
 
