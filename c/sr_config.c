@@ -44,6 +44,18 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *p;
    struct sr_path_t *n;
 
+   if ( !strcmp( option, "start" ) 
+        || !strcmp( option, "status" )
+        || !strcmp( option, "stop" ) 
+        || !strcmp( option, "foreground" ) 
+        || !strcmp( option, "setup" ) 
+        || !strcmp( option, "cleanup" ) 
+      )
+   {
+      if (sr_cfg->action) free(sr_cfg->action);
+      sr_cfg->action = strdup(option);
+      return;
+   }
    p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
    if (p == NULL)
    {

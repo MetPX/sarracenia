@@ -477,7 +477,7 @@ int main(int argc, char **argv)
             } else {
                 log_msg( LOG_INFO, "old instance stopped (pid: %d)\n", sr_cfg.pid );
             }
-        } else  // not permitted to send signals, either access, it it ain't there.
+        } else  // not permitted to send signals, either access, or it ain't there.
         {
             if (errno != ESRCH)
             {
@@ -489,10 +489,12 @@ int main(int argc, char **argv)
                 fprintf( stdout, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
 
                 if ( !strcmp( sr_cfg.action, "stop" ) ) {
+                    fprintf( stdout, "already stopped config %s (pid %d): deleting pidfile.\n", 
+                            sr_cfg.configname, sr_cfg.pid );
                     unlink( sr_cfg.pidfile );
-                    return(0);
+                    return(1);
                 }
-
+                
             }
         }
         if ( !strcmp( sr_cfg.action, "stop" ) )
@@ -504,9 +506,10 @@ int main(int argc, char **argv)
         }
     } else {
         fprintf( stdout, "config %s not running.\n", sr_cfg.configname );
-        if ( !strcmp( sr_cfg.action, "stop" )   ) return(1);
-        if ( !strcmp( sr_cfg.action, "status" ) ) return(0);
+        if ( !strcmp( sr_cfg.action, "stop" )   ) return(2);
     }
+
+    if ( !strcmp( sr_cfg.action, "status" ) ) return(0);
 
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
