@@ -95,6 +95,7 @@ struct sr_config_t {
   float              heartbeat;
   int                instance;
   int                log;           // use a log file, rather than standard files.
+  char              *logfn;           // use a log file, rather than standard files.
   int                logseverity;      // severity of messages to log (regardless of where.)
   struct sr_mask_t  *masks;
   struct sr_mask_t  *match;

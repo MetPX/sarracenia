@@ -319,7 +319,6 @@ char *local_fqdn()
     
     for(p = info; p != NULL; p = p->ai_next) 
     {
-        printf("hostname: %s\n", p->ai_canonname);
         found=p->ai_canonname;
     }
     strcpy(hostname, found );
@@ -665,6 +664,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->instance=1;
   sr_cfg->last_matched=NULL;
   sr_cfg->log=0;
+  sr_cfg->logfn=NULL;
   sr_cfg->logseverity=LOG_INFO;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
@@ -830,13 +830,14 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
       sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
 
+  sr_cfg->logfn = strdup(p);
+
   if ( strcmp( sr_cfg->action, "foreground" )) 
       sr_cfg->log=1;
 
   if ( sr_cfg->log )
   {
-      log_setup( p , sr_cfg->chmod_log, sr_cfg->debug?LOG_DEBUG:(sr_cfg->logseverity) );
-      fprintf( stdout, "logging to %s\n", p );
+      log_setup( sr_cfg->logfn , sr_cfg->chmod_log, sr_cfg->debug?LOG_DEBUG:(sr_cfg->logseverity) );
   }
 
   sprintf( p, "%s/.cache/sarra/%s/%s/i%03d.pid", getenv("HOME"), 

@@ -434,10 +434,10 @@ int main(int argc, char **argv)
     {
         ret=kill(sr_cfg.pid,0);
         if (!ret) 
-        {
+        {   // is running.
             if ( !strcmp(sr_cfg.action, "status") )
             {
-               fprintf( stdout, "sr_cpost configuration %s is running with pid %d.\n", sr_cfg.configname, sr_cfg.pid );
+               fprintf( stdout, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg.configname, sr_cfg.pid, sr_cfg.logfn );
                return(0);
             }
 
@@ -476,19 +476,35 @@ int main(int argc, char **argv)
             } else {
                 log_msg( LOG_INFO, "old instance stopped (pid: %d)\n", sr_cfg.pid );
             }
-        } else  // not permitted to send signals.
+        } else  // not permitted to send signals, either access, it it ain't there.
         {
             if (errno != ESRCH)
             {
                 log_msg( LOG_INFO, "running instance (pid %d) found, but is not stoppable.\n", sr_cfg.pid );
                 return(1);
+            } else { // just not running.
+
+                log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
+                fprintf( stdout, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
+
+                if ( !strcmp( sr_cfg.action, "stop" ) ) {
+                    unlink( sr_cfg.pidfile );
+                    return(0);
+                }
             }
         }
     }
 
     if ( !strcmp( sr_cfg.action, "stop" ) )
     {
-        log_msg( LOG_INFO, "stopped.\n");
+        if (sr_cfg.pid > 0)
+        {
+            unlink( sr_cfg.pidfile );
+            log_msg( LOG_INFO, "stopped.\n");
+            fprintf( stdout, "running instance for config %s (pid %d) stopped.\n", sr_cfg.configname, sr_cfg.pid );
+            return(0);
+        }
+        fprintf( stdout, "already stoped. No instance for config %s found.\n", sr_cfg.configname );
         return(0);
     }
 
