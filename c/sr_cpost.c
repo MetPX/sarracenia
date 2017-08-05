@@ -430,7 +430,8 @@ int main(int argc, char **argv)
           log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
     // Check if already running. (conflict in use of state files.)
-    if (sr_cfg.pid > 0) 
+
+    if (sr_cfg.pid > 0) // there should be one running already.
     {
         ret=kill(sr_cfg.pid,0);
         if (!ret) 
@@ -491,21 +492,20 @@ int main(int argc, char **argv)
                     unlink( sr_cfg.pidfile );
                     return(0);
                 }
+
             }
         }
-    }
-
-    if ( !strcmp( sr_cfg.action, "stop" ) )
-    {
-        if (sr_cfg.pid > 0)
+        if ( !strcmp( sr_cfg.action, "stop" ) )
         {
             unlink( sr_cfg.pidfile );
             log_msg( LOG_INFO, "stopped.\n");
             fprintf( stdout, "running instance for config %s (pid %d) stopped.\n", sr_cfg.configname, sr_cfg.pid );
             return(0);
         }
-        fprintf( stdout, "already stoped. No instance for config %s found.\n", sr_cfg.configname );
-        return(0);
+    } else {
+        fprintf( stdout, "config %s not running.\n", sr_cfg.configname );
+        if ( !strcmp( sr_cfg.action, "stop" )   ) return(1);
+        if ( !strcmp( sr_cfg.action, "status" ) ) return(0);
     }
 
     sr_c = sr_context_init_config( &sr_cfg );
