@@ -391,9 +391,9 @@ char *subarg( struct sr_config_t *sr_cfg, char *arg )
      } else {
           val=getenv(var);
           if ( !val) {
-              log_msg( LOG_WARNING, 
-                  "malformed argument, Environment variable not set: %s. returning unmodified argument: %s.\n", 
-                  var, arg );
+              log_msg( LOG_WARNING, "malformed argument, Environment variable not set: %s\n", var );
+              *e='}';
+              log_msg( LOG_WARNING, "returning unmodified argument: %s.\n",  arg );
               return(arg);
           }
      }
