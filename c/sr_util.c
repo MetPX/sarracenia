@@ -82,7 +82,7 @@ int get_sumhashlen( char algo )
     case 'd' : case 'n' : 
         return(MD5_DIGEST_LENGTH+1);
 
-    case 'N' : case 'R' : case 's' : 
+    case 'L' : case 'N' : case 'R' : case 's' : 
         return(SHA512_DIGEST_LENGTH+1);
 
     case '0':
