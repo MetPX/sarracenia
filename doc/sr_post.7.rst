@@ -298,11 +298,11 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
  |     d     | checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +-----------+---------------------------------------------------------------------+
- |     L     | Linked: file is symbolic link, no checksum applies.                 |
+ |     L     | Linked: SHA512 sum of link value                                    |
  +-----------+---------------------------------------------------------------------+
  |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
  +-----------+---------------------------------------------------------------------+
- |     R     | Removed: file was removed, rather than updated, no checksum applies.|
+ |     R     | Removed: SHA512 of file name.                                       |
  +-----------+---------------------------------------------------------------------+
  |     s     | checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +-----------+---------------------------------------------------------------------+
