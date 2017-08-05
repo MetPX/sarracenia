@@ -23,6 +23,9 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 
+// for kill(2)
+#include <sys/types.h>
+#include <signal.h>
 
 /*
    https://troydhanson.github.io/uthash/userguide.html
@@ -390,6 +393,7 @@ int main(int argc, char **argv)
     struct sr_config_t sr_cfg;
     char inbuff[PATH_MAXNUL];
     int consume,i,pass;
+    int ret;
     struct timespec tstart, tsleep, tend;
     float elapsed;
     float since_last_heartbeat;
@@ -421,9 +425,73 @@ int main(int argc, char **argv)
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
-    log_msg( LOG_INFO, "sr_post settings: log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
+    log_msg( LOG_INFO, "sr_post settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
+          sr_cfg.action, 
           log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
+    // Check if already running. (conflict in use of state files.)
+    if (sr_cfg.pid > 0) 
+    {
+        ret=kill(sr_cfg.pid,0);
+        if (!ret) 
+        {
+            if ( !strcmp(sr_cfg.action, "status") )
+            {
+               fprintf( stdout, "sr_cpost configuration %s is running with pid %d.\n", sr_cfg.configname, sr_cfg.pid );
+               return(0);
+            }
+
+            // pid is running and have permission to signal, this is a problem for start & foreground.
+            if ( !strcmp(sr_cfg.action, "start" ) || ( !strcmp(sr_cfg.action, "foreground" ) ) ) 
+            {
+               log_msg( LOG_ERROR, "sr_cpost configuration %s already running using pid %d.\n", sr_cfg.configname, sr_cfg.pid );
+               return(1);
+            }
+ 
+            // but otherwise it's normal, so kill the running one. 
+
+            log_msg( LOG_INFO, "sr_cpost killing running instance pid=%d\n", sr_cfg.pid );
+
+            //  just kill it a little at first...
+            kill(sr_cfg.pid,SIGTERM);
+
+            // give it time to clean itself up.
+            tsleep.tv_sec = 2L;
+            tsleep.tv_nsec =  0L;
+            nanosleep( &tsleep, NULL );
+
+
+            ret=kill(sr_cfg.pid,0);
+            if (!ret) 
+            {   // pid still running, and have permission to signal, so it didn't die... 
+                log_msg( LOG_INFO, "After 2 seconds, instance pid=%d did not respond to SIGTERM, sending SIGKILL\n", sr_cfg.pid );
+                kill(sr_cfg.pid,SIGKILL);
+                nanosleep( &tsleep, NULL );
+                ret=kill(sr_cfg.pid,0);
+                if (!ret) 
+                {
+                    log_msg( LOG_CRITICAL, "SIGKILL didn't work either. System not usable, Giving up!\n", sr_cfg.pid );
+                    return(1);
+                } 
+            } else {
+                log_msg( LOG_INFO, "old instance stopped (pid: %d)\n", sr_cfg.pid );
+            }
+        } else  // not permitted to send signals.
+        {
+            if (errno != ESRCH)
+            {
+                log_msg( LOG_INFO, "running instance (pid %d) found, but is not stoppable.\n", sr_cfg.pid );
+                return(1);
+            }
+        }
+    }
+
+    if ( !strcmp( sr_cfg.action, "stop" ) )
+    {
+        log_msg( LOG_INFO, "stopped.\n");
+        return(0);
+    }
+
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
     {
@@ -463,8 +531,19 @@ int main(int argc, char **argv)
         }
         return(0);
     }
+
+    if ( strcmp( sr_cfg.action, "foreground" ) )
+    {
+        daemonize();
+    }
      
-  
+    // Assert: this is a working instance, not a launcher...
+    if ( sr_config_save_pid( &sr_cfg ) ) 
+    {
+        log_msg( LOG_WARNING, "could not save pidfile %s: possible to run conflicting instances  \n", sr_cfg.pidfile );
+    } 
+    log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
+
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     latest_min_mtim.tv_sec = 0;
     latest_min_mtim.tv_nsec = 0;

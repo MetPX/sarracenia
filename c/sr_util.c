@@ -2,8 +2,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+#include <linux/limits.h>
 
 #include "sr_util.h"
 
@@ -65,6 +66,51 @@ void log_cleanup()
 {
    close( logfd );
 }
+
+void daemonize()
+/* 
+   fork child,  parent then exits.  child returns with proper daemon prep done.
+ */
+{
+     pid_t pid;
+     pid_t sid;
+
+     pid = fork();
+
+     if ( pid < 0 )
+     {
+        log_msg( LOG_CRITICAL, "fork failed, cannot launch as daemon\n" );
+        exit(1);
+     }
+     if ( pid > 0 )
+     {
+        fprintf( stderr, "parent exiting normally, rest is upto the child pid: %d\n", pid );
+        exit(0);
+     }
+     // child processing.
+
+     log_msg( LOG_INFO, "child daemonizing start\n" );
+     sid = setsid();
+     if (sid < 0)
+     {  
+        log_msg( LOG_WARNING, "daemonizing, setsid errord, failed to completely dissociate from login process\n" );
+     } 
+
+     if (logfd == 2)
+     {
+        log_msg( LOG_CRITICAL, "to run as daemon log option must be set.\n" );
+        exit(1);
+     }
+
+     close(0); 
+     close(1);
+     close(2);
+     dup2(logfd, STDOUT_FILENO);
+     dup2(logfd, STDERR_FILENO);
+     log_msg( LOG_INFO, "child daemonizing complete.\n" );
+}
+
+
 
 /* size of buffer used to read the file content in calculating checksums.
  */

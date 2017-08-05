@@ -100,6 +100,8 @@ struct sr_config_t {
   struct sr_mask_t  *match;
   char              *last_matched;  //have run isMatching.
   char              *queuename;
+  int               pid;
+  char              *pidfile;
   char              *progname;
   struct sr_path_t  *paths;
   int                pipe;  // pipe mode, read file names from standard input
@@ -164,5 +166,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer );
 
    return 1 on success, 0 on failure.
   */
+
+int sr_config_save_pid( struct sr_config_t *sr_cfg );
 
 #endif

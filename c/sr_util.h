@@ -27,6 +27,9 @@ void log_setup(const char *logfname, mode_t mode, int severity);
 
 void log_cleanup();
 
+void daemonize();
+// executed to go from a management instance to a daemon working instance.
+
 #define SR_TIMESTRLEN (19)
 
 // Assumed longest possible hash. typeprefix + SHA512_DIGEST 

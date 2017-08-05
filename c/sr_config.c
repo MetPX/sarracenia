@@ -607,6 +607,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
+  if (sr_cfg->pidfile) free(sr_cfg->pidfile);
   if (sr_cfg->progname) free(sr_cfg->progname);
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->url) free(sr_cfg->url);
@@ -669,6 +670,8 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->match=NULL;
   sr_cfg->queuename=NULL;
   sr_cfg->paths=NULL;
+  sr_cfg->pid=-1;
+  sr_cfg->pidfile=NULL;
   sr_cfg->pipe=0;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
@@ -827,13 +830,28 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
       sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
 
+  if ( strcmp( sr_cfg->action, "foreground" )) 
+      sr_cfg->log=1;
+
   if ( sr_cfg->log )
   {
       log_setup( p , sr_cfg->chmod_log, sr_cfg->debug?LOG_DEBUG:(sr_cfg->logseverity) );
-      log_msg( LOG_INFO, "opening log file." );
+      fprintf( stdout, "logging to %s\n", p );
   }
 
-  if (! is_consumer ) 
+  sprintf( p, "%s/.cache/sarra/%s/%s/i%03d.pid", getenv("HOME"), 
+      sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+
+  sr_cfg->pidfile = strdup(p);
+  f = fopen(p,"r");
+  if ( f ) // read the pid from the file.
+  {
+         fgets(p,PATH_MAX,f);
+         sr_cfg->pid=atoi(p);
+         fclose(f);
+  } 
+
+  if (1) // why not? was gated on not being a consumer, but suspect consumers should use this also.
   {
      // FIXME: open and read cache file if present. seek to end.
      sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
@@ -894,3 +912,19 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   */
   return(1);
 }
+
+int sr_config_save_pid( struct sr_config_t *sr_cfg )
+{
+  FILE *f;
+
+  sr_cfg->pid=getpid();
+  f = fopen(sr_cfg->pidfile,"w");
+  if ( f ) // read the pid from the file.
+  {
+         fprintf(f,"%d\n", sr_cfg->pid );
+         fclose(f);
+         return(0);
+  } 
+  return(-1);
+}
+
