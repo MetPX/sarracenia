@@ -327,7 +327,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       props.delivery_mode = 2; /* persistent delivery mode */
       props.headers = table;
 
-      if ( ( sr_c->cfg->cache > 0 ) && ( !strchr("LR0", sumalgo)  ) )
+      if ( sr_c->cfg->cache > 0 ) 
       { 
            status = sr_cache_check( sr_c->cfg->cachep, sumalgo, sr_sumstr2hash(sumstr), fn, partstr ) ; 
            log_msg( LOG_DEBUG, "cache_check result=%d\n", status );

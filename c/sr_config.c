@@ -283,20 +283,29 @@ long int chunksize_from_str(char *s)
    return( value<<power);
    
 }
+
+char *subarg( char *arg )
+{
+  return(arg);
+}
+
+
 #define TOKMAX (1024)
 
 char token_line[TOKMAX];
 
 // OPTIS - Option Is ... the option string matches x.
 
-int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argument) 
+int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg) 
 {
 
-  char *brokerstr;
+  char *brokerstr, *argument;
   int val;
   char p[PATH_MAX];
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
+
+  argument = subarg(arg);
 
   if (sr_cfg->debug)
      log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );

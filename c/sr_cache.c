@@ -57,7 +57,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      for ( p = c->paths; p ; p=p->next )
      { 
          /* compare path and partstr */
-         if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
+         if ( !strcmp(p->path, path) && (!(p->partstr) || !strcmp(p->partstr,partstr) ) ) {
              clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
              return(0); /* found in the cache already */
          }
@@ -263,7 +263,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            continue;
        }
 
-       path = strtok( NULL, " " );
+       path = strtok( NULL, " \n" );
    
        if (!path) 
        {
@@ -271,14 +271,19 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
            continue;
        }
 
-       partstr = strtok( NULL, " \n" );
-   
-       if (!partstr) 
+       if ((sum[0] == 'L') || ( sum[0]=='R'))
        {
-           log_msg( LOG_ERROR, "no partstr, corrupt line in cache file %s: %s\n", fn, buf );
-           continue;
+           partstr = NULL;
+       } else 
+       {
+           partstr = strtok( NULL, " \n" );
+   
+           if (!partstr) 
+           {
+               log_msg( LOG_ERROR, "no partstr, corrupt line in cache file %s: %s\n", fn, buf );
+               continue;
+           }
        }
-
        /*
        log_msg( LOG_DEBUG, "fields: sum=+%s+, timestr=+%s+, path=+%s+, partstr=+%s+\n", 
            sum, timestr, path, partstr );
@@ -325,7 +330,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
        memset( &(p->created), 0, sizeof(struct timespec) );
        memcpy( &(p->created), sr_str2time( timestr ), sizeof(struct timespec) );
        p->path = strdup(path);
-       p->partstr = strdup(partstr);
+       p->partstr = partstr?strdup(partstr):NULL;
        p->next = c->paths;
        c->paths = p;
 
