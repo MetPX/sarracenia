@@ -115,7 +115,6 @@ class sr_post(sr_config):
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")
-        print("-l   <logpath>         default:stdout")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
         print("-tp  <topic_prefix>    default:v02.post")
@@ -235,8 +234,10 @@ class sr_post(sr_config):
         # ==============
 
         if self.event == 'delete' :
+           hash = sha512()
+           hash.update(bytes(filename, encoding='utf-8'))
            ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
-                    'R,%03d' % random.randint(0,999), rename, filename)
+                    'R,%s' % hash.hexdigest(), rename, filename)
 
            if not ok : sys.exit(1)
            return
@@ -257,8 +258,11 @@ class sr_post(sr_config):
 
         if os.path.islink(filepath):
            if 'link' in self.events: 
-               ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
-                    'L,%03d' % random.randint(0,999), rename, filename, link=os.readlink(filepath))
+               linkdest = os.readlink(filepath)
+               hash = sha512()
+               hash.update( bytes( linkdest, encoding='utf-8' ) )
+               ok = self.poster.post( self.exchange,self.url,self.to_clusters,None, \
+                    'L,%s' % hash.hexdigest(), rename, filename, link=linkdest )
 
                if not ok : sys.exit(1)
 
