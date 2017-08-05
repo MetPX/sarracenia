@@ -43,18 +43,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      memcpy( keyhash, (unsigned char *)ekey, get_sumhashlen(ekey[0]) );
 
      log_msg( LOG_DEBUG, "looking for: %s \n        algo: %c, key_hash:%s        ekey:\n", path, algo, sr_hash2sumstr(keyhash) );
-   /*
-     hash_print((unsigned char *)ekey);
-     fprintf( stderr, "\n");
-  
-     fprintf( stderr, "e ready for HASH_FIND:");
-     hash_print(ekey);
-     fprintf( stderr, "hoho content is:\n");
-  
-     sr_cache_save( cachep, 1 );
-  
-     fprintf( stderr, "ok FIND: ");
-   */
+
      HASH_FIND( hh, cachep->data, keyhash, SR_CACHEKEYSZ, c );
   
      if (!c) 
@@ -148,6 +137,7 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
               free(del->path);
               free(del->partstr);
               free(del);
+              del=NULL;
            } else  
            {
               prev=e;
@@ -158,14 +148,17 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
    
        if (! (c->paths) ) 
        {
-           log_msg( LOG_DEBUG, "hash, deleting\n" );
            HASH_DEL(cachep->data,c);
            free(c);
+           log_msg( LOG_DEBUG, "hash, after deleting, data=%p pop=%d\n", cachep->data, HASH_COUNT(cachep->data) );
+            
        } else  {
            npaths=0; 
            for ( e = c->paths; e ; e=e->next ) npaths++;
-           log_msg( LOG_DEBUG, "hash, done. pop=%d\n", npaths );
+           log_msg( LOG_DEBUG, "hash, done. pop=%d \n", npaths );
+           //log_msg( LOG_DEBUG, "hash, done. pop=%d HASH_CONT=%d\n", npaths, HASH_COUNT(cachep->data) );
        }
+       sr_cache_save( cachep, 1 );
    }
 }
 
@@ -188,8 +181,10 @@ void sr_cache_free( struct sr_cache_t *cachep)
             free(del->path);
             free(del->partstr);
             free(del);
+            del=NULL;
         }
         free(c);
+        c=NULL;
     }
 }
 
@@ -207,6 +202,7 @@ int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
     if (to_stdout) {
         f= stdout;
     } else {
+        fclose(cachep->fp);
         f = fopen( cachep->fn, "w" );
         if ( !f ) 
         {
@@ -214,20 +210,27 @@ int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
             return(0);
         }
     }
-    HASH_ITER(hh, cachep->data, c, tmpc )
+    if (cachep->data) 
     {
-       for ( e = c->paths; e ; e=e->next )
-       {       
-          fprintf(f,"%s %s %s %s\n", sr_hash2sumstr(c->key), sr_time2str( &(e->created) ), e->path, e->partstr );
-          count++;
+       HASH_ITER(hh, cachep->data, c, tmpc )
+       {
+           for ( e = c->paths; e ; e=e->next )
+           {       
+              fprintf(f,"%s %s %s %s\n", sr_hash2sumstr(c->key), sr_time2str( &(e->created) ), e->path, e->partstr );
+              count++;
+           }
        }
     }
-    if (!to_stdout) fclose(f);
+    if (!to_stdout) 
+    {
+        fclose(f);
+        cachep->fp = fopen(cachep->fn,"a");
+    }
     return(count);
 }
 
 
-#define load_buflen (SR_CACHEKEYSZ*2 + SR_TIMESTRLEN + PATH_MAX + 24)
+#define load_buflen (SR_CACHEKEYSZ*2 + 1 + SR_TIMESTRLEN + 1 + PATH_MAX + 64)
 
 static char buf[ load_buflen ];
 

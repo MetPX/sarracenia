@@ -368,8 +368,22 @@ void heartbeat(struct sr_context *sr_c)
 /* run this every heartbeat interval 
  */
 {
-   log_msg( LOG_CRITICAL, "heartbeat" );
-
+   int cached_count;
+   log_msg( LOG_INFO, "heartbeat processing start\n" );
+   
+   if (sr_c->cfg->cachep)
+   {
+       log_msg( LOG_INFO, "heartbeat starting to clean cache\n" );
+       sr_cache_clean(sr_c->cfg->cachep, sr_c->cfg->cache );
+       log_msg( LOG_INFO, "heartbeat cleaned, hashes left: %ld\n", HASH_COUNT(sr_c->cfg->cachep->data) );
+       if (HASH_COUNT(sr_c->cfg->cachep->data) == 0) 
+       {
+          sr_c->cfg->cachep->data=NULL;
+       }
+       cached_count = sr_cache_save(sr_c->cfg->cachep, 0 );
+       log_msg( LOG_INFO, "heartbeat after cleaning, cache stores %d entries.\n", cached_count );
+       sr_cache_save(sr_c->cfg->cachep, 1 );
+   }
 }
 int main(int argc, char **argv)
 {
@@ -397,17 +411,19 @@ int main(int argc, char **argv)
         if (!consume) break;
         i+=consume;
     }
+
     for (; i < argc; i++ )
     {
         sr_add_path(&sr_cfg, argv[i]);
     }
+
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
-    log_msg( LOG_INFO, "sr_post settings: recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
-          sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
+    log_msg( LOG_INFO, "sr_post settings: log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
+          log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
@@ -466,13 +482,15 @@ int main(int argc, char **argv)
     }
   
     since_last_heartbeat = 0.0;
+    clock_gettime( CLOCK_REALTIME, &tstart );  
+
     while (1) 
     {
-       clock_gettime( CLOCK_REALTIME, &tstart );  
       
+
        if (sr_cfg.force_polling || !pass ) 
        {
-           // log_msg( LOG_DEBUG, "starting polling loop pass: %d\n", pass);
+           log_msg( LOG_DEBUG, "starting polling loop pass: %d\n", pass);
            for(struct sr_path_t *i=sr_cfg.paths ; i ; i=i->next ) 
            {
               first_call=1;
@@ -489,10 +507,15 @@ int main(int argc, char **argv)
        if  (sr_cfg.sleep <= 0.0) break; // one shot.
   
        clock_gettime( CLOCK_REALTIME, &tend );  
-       elapsed = ( tend.tv_sec + tend.tv_nsec/1000000000 ) - 
-                 ( tstart.tv_sec + tstart.tv_nsec/1000000000 )  ;
+       elapsed = ( tend.tv_sec + (tend.tv_nsec/1e9) ) - 
+                 ( tstart.tv_sec + (tstart.tv_nsec/1e9) )  ;
   
-       since_last_heartbeat += elapsed ;
+       since_last_heartbeat = since_last_heartbeat + elapsed ;
+
+       log_msg( LOG_DEBUG, "tend.tv_sec=%ld, tstart.tv_sec=%ld sr_cpost:  elapsed: %g since_last_heartbeat: %g hb: %g\n", 
+             tend.tv_sec, tstart.tv_sec, elapsed, since_last_heartbeat, sr_cfg.heartbeat );
+
+       clock_gettime( CLOCK_REALTIME, &tstart );  
 
        if (since_last_heartbeat >= sr_cfg.heartbeat )
        {
@@ -504,7 +527,7 @@ int main(int argc, char **argv)
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
             tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-            // log_msg( LOG_DEBUG, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+            log_msg( LOG_DEBUG, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
             nanosleep( &tsleep, NULL );
        } else 
             log_msg( LOG_INFO, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");

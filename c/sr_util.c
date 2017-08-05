@@ -50,13 +50,15 @@ void log_setup(const char *f, mode_t mode, int severity )
 {
    logfd = open(f, O_WRONLY|O_CREAT|O_APPEND, mode );
    log_level = severity;
+
    return;
 
    /* redirect all stdout & stderr to the log file */
-   close(1);
+/*   close(1);
    dup(logfd);
    close(2);
    dup(logfd);
+ */
 }
 
 void log_cleanup() 

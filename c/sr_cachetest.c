@@ -203,6 +203,14 @@ int main( int argc, char *argv[] )
        age /=2;
        fprintf( stdout, "after cleaning cycle: %d hashes remain.\n", HASH_COUNT( cache->data ) );
    }
+   sr_cache_clean( cache, age );
+   fprintf( stdout, "OK cleaned empty cache: %d \n", HASH_COUNT( cache->data ) );
+   success_count++;
+   test_count++;
+   sr_cache_save( cache, 1 );
+   fprintf( stdout, "OK, dumped empty cache: %d \n", HASH_COUNT( cache->data ) );
+   success_count++;
+   test_count++;
 
 
    if (success_count == test_count )

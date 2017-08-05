@@ -337,8 +337,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       free(brokerstr);
       return(2);
 
-  } else if ( !strcmp( option, "cache" ) || !strcmp( option, "no_duplicates" ) ) {
-      log_msg( LOG_ERROR, "info: %s option not implemented, ignored.\n", option );
+  } else if ( !strcmp( option, "cache" ) || !strcmp( option, "caching" ) || !strcmp( option, "suppress_duplicates" ) ) {
       if isalpha(*argument) {
           val = StringIsTrue(argument);
           sr_cfg->cache = (val&2) ? 900 : 0;
@@ -358,6 +357,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
   } else if ( !strcmp( option, "debug" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->debug = val&2;
+      sr_cfg->logseverity=1;
+      log_level=1;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "directory" ) ) {
@@ -405,9 +406,9 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* argum
       return(1+(val&1));
 
   } else if ( !strcmp( option, "loglevel" ) ) {
-      val = StringIsTrue(argument);
-      sr_cfg->log = val&2;
-      return(1+(val&1));
+      sr_cfg->logseverity = atoi(argument);
+      log_level = sr_cfg->logseverity;
+      return(2);
 
   } else if ( !strcmp( option, "log" ) ) {
       val = StringIsTrue(argument);
