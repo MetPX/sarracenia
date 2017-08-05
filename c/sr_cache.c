@@ -128,7 +128,6 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
 
               if (!prev) {
                   c->paths = e->next;
-                  prev=e;
               } else {
                   prev->next = e->next; 
               }
