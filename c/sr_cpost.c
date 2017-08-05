@@ -382,7 +382,6 @@ void heartbeat(struct sr_context *sr_c)
        }
        cached_count = sr_cache_save(sr_c->cfg->cachep, 0 );
        log_msg( LOG_INFO, "heartbeat after cleaning, cache stores %d entries.\n", cached_count );
-       sr_cache_save(sr_c->cfg->cachep, 1 );
    }
 }
 int main(int argc, char **argv)
@@ -512,8 +511,8 @@ int main(int argc, char **argv)
   
        since_last_heartbeat = since_last_heartbeat + elapsed ;
 
-       log_msg( LOG_DEBUG, "tend.tv_sec=%ld, tstart.tv_sec=%ld sr_cpost:  elapsed: %g since_last_heartbeat: %g hb: %g\n", 
-             tend.tv_sec, tstart.tv_sec, elapsed, since_last_heartbeat, sr_cfg.heartbeat );
+       //log_msg( LOG_DEBUG, "tend.tv_sec=%ld, tstart.tv_sec=%ld sr_cpost:  elapsed: %g since_last_heartbeat: %g hb: %g\n", 
+       //      tend.tv_sec, tstart.tv_sec, elapsed, since_last_heartbeat, sr_cfg.heartbeat );
 
        clock_gettime( CLOCK_REALTIME, &tstart );  
 

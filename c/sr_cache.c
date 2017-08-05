@@ -42,13 +42,10 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
 
      memcpy( keyhash, (unsigned char *)ekey, get_sumhashlen(ekey[0]) );
 
-     log_msg( LOG_DEBUG, "looking for: %s \n        algo: %c, key_hash:%s        ekey:\n", path, algo, sr_hash2sumstr(keyhash) );
-
      HASH_FIND( hh, cachep->data, keyhash, SR_CACHEKEYSZ, c );
   
      if (!c) 
      {
-         log_msg( LOG_DEBUG, "%s sum: %s was not in cache, adding\n", path,  sr_hash2sumstr(keyhash) );
          c = (struct sr_cache_entry_t *)malloc(sizeof(struct sr_cache_entry_t));
          memset(c, 0, sizeof(struct sr_cache_entry_t) );
 
@@ -60,9 +57,7 @@ int sr_cache_check( struct sr_cache_t *cachep, char algo, unsigned char *ekey, c
      for ( p = c->paths; p ; p=p->next )
      { 
          /* compare path and partstr */
-         log_msg( LOG_DEBUG, "sum was found in cache, looking at other attributes\n", path );
          if ( !strcmp(p->path, path) && !strcmp(p->partstr,partstr) ) {
-             log_msg( LOG_DEBUG, "same path already there\n" );
              clock_gettime( CLOCK_REALTIME, &(p->created) ); /* refresh cache timestamp */
              return(0); /* found in the cache already */
          }
@@ -95,7 +90,7 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
 
     memset( &since, 0, sizeof(struct timespec) );
     clock_gettime( CLOCK_REALTIME, &since );
-    log_msg( LOG_DEBUG, "cleaning out entries. current time: %s\n", sr_time2str( &since ) );
+    //log_msg( LOG_DEBUG, "cleaning out entries. current time: %s\n", sr_time2str( &since ) );
 
     // subtracting max_age from now.
     since.tv_sec  -= (int)(max_age);
@@ -107,23 +102,23 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
     }
     since.tv_nsec -= diff;
 
-    log_msg( LOG_DEBUG, "cleaning out entries older than: %s valu=%ld\n", sr_time2str( &since ), since.tv_sec );
+    log_msg( LOG_DEBUG, "cleaning out entries older than: %s value=%ld\n", sr_time2str( &since ), since.tv_sec );
 
     HASH_ITER(hh, cachep->data, c, tmpc )
     {
-        log_msg( LOG_DEBUG, "hash, start\n" );
+        //log_msg( LOG_DEBUG, "hash, start\n" );
         e = c->paths; 
         prev=NULL;
         while ( e )
         {
-           log_msg( LOG_DEBUG, "\tchecking %s, touched=%s difference: %ld\n", e->path, sr_time2str(&(e->created)) ,
-                       e->created.tv_sec - since.tv_sec );
+           //log_msg( LOG_DEBUG, "\tchecking %s, touched=%s difference: %ld\n", e->path, sr_time2str(&(e->created)) ,
+           //            e->created.tv_sec - since.tv_sec );
            if ( (e->created.tv_sec < since.tv_sec)  || 
                 ((e->created.tv_sec == since.tv_sec) && (e->created.tv_nsec < since.tv_nsec)) 
               )
            {
-              log_msg( LOG_DEBUG, "\tdeleting %s c->paths=%p, prev=%p, e=%p, e->next=%p\n", e->path,
-                       c->paths, prev, e, e->next );
+              //log_msg( LOG_DEBUG, "\tdeleting %s c->paths=%p, prev=%p, e=%p, e->next=%p\n", e->path,
+              //         c->paths, prev, e, e->next );
               del=e;
 
               if (!prev) {
@@ -136,7 +131,6 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
               free(del->path);
               free(del->partstr);
               free(del);
-              del=NULL;
            } else  
            {
               prev=e;
@@ -149,15 +143,14 @@ void sr_cache_clean( struct sr_cache_t *cachep, float max_age )
        {
            HASH_DEL(cachep->data,c);
            free(c);
-           log_msg( LOG_DEBUG, "hash, after deleting, data=%p pop=%d\n", cachep->data, HASH_COUNT(cachep->data) );
+           //log_msg( LOG_DEBUG, "hash, after deleting, data=%p pop=%d\n", cachep->data, HASH_COUNT(cachep->data) );
             
        } else  {
            npaths=0; 
            for ( e = c->paths; e ; e=e->next ) npaths++;
-           log_msg( LOG_DEBUG, "hash, done. pop=%d \n", npaths );
+           //log_msg( LOG_DEBUG, "hash, done. pop=%d \n", npaths );
            //log_msg( LOG_DEBUG, "hash, done. pop=%d HASH_CONT=%d\n", npaths, HASH_COUNT(cachep->data) );
        }
-       sr_cache_save( cachep, 1 );
    }
 }
 
@@ -180,10 +173,8 @@ void sr_cache_free( struct sr_cache_t *cachep)
             free(del->path);
             free(del->partstr);
             free(del);
-            del=NULL;
         }
         free(c);
-        c=NULL;
     }
 }
 
