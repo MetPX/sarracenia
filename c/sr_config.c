@@ -24,6 +24,10 @@ status:
 #include <fcntl.h>
 #include <ctype.h>
 
+// for local_fqdn()
+#include <sys/socket.h>
+#include <netdb.h>
+
 
 #include <time.h>
 
@@ -284,13 +288,127 @@ long int chunksize_from_str(char *s)
    
 }
 
-char *subarg( char *arg )
+#define TOKMAX (1024)
+
+char *local_fqdn() 
+/* 
+   return the fully qualified hostname of the current machine
+   mostly just a copy/paste from: 
+      https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
+ */
 {
-  return(arg);
+    
+    struct addrinfo hints, *info, *p;
+    int gai_result;
+    
+    char *found=NULL;
+    static char hostname[1024];
+    hostname[1023] = '\0';
+    gethostname(hostname, 1023);
+    
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; /*either IPV4 or IPV6*/
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+    
+    if ((gai_result = getaddrinfo(hostname, "http", &hints, &info)) != 0) 
+    {
+        log_msg( LOG_CRITICAL, "cannot get hostname.  Getaddrinfo returned: %s\n", gai_strerror(gai_result));
+        return(NULL);
+    }
+    
+    for(p = info; p != NULL; p = p->ai_next) 
+    {
+        printf("hostname: %s\n", p->ai_canonname);
+        found=p->ai_canonname;
+    }
+    strcpy(hostname, found );
+    freeaddrinfo(info);    
+    return(hostname);
+}
+
+char *subarg( struct sr_config_t *sr_cfg, char *arg )
+/* 
+   do variable substitution in arguments to options.  There are some pre-defined ones, 
+   if not found, punt to getenv.
+
+   note, arg does get modified ( *e='\0' to terminate variable names, then returned to '}' after )
+   should leave identical to during entry.
+ */
+{
+  static char subargbuf[TOKMAX];
+  char *c,*d, *var, *val, *e;
+
+  if (!arg) return(NULL);
+  c=arg;
+  d=subargbuf;
+  while( *c != '\0' ) 
+  {
+     if ( *c != '$' ) 
+     {
+         *d=*c;
+         d++;
+         c++;
+         continue;
+     }
+     c++;
+     if ( *c != '{' )
+     {
+        *d='$';
+        d++;
+        continue;
+     }
+     c++;
+     var=c;
+     e=var;
+     while ( ( *e != '\0' ) && ( *e != '}' ) )
+     {
+        e++; 
+     }
+     if ( *e == '\0' ) 
+     {
+        log_msg( LOG_WARNING, "malformed argument: %s. returning unmodified.\n", arg );
+        return(arg);
+     }
+     *e='\0';
+     *d='\0'; // ready for catenation.
+     if (!strcmp( var, "HOSTNAME" )) 
+     {
+          val = local_fqdn(); 
+
+     } else if ( !strcmp( var, "PROGRAM" ) ) 
+     {
+          val = sr_cfg->progname;
+
+     } else if ( !strcmp( var, "CONFIG" ) ) 
+     {
+          val = sr_cfg->configname;
+
+     } else if ( !strcmp( var, "BROKER_USER" ) ) 
+     {
+          val=sr_cfg->broker->user;
+
+     } else {
+          val=getenv(var);
+          if ( !val) {
+              log_msg( LOG_WARNING, 
+                  "malformed argument, Environment variable not set: %s. returning unmodified argument: %s.\n", 
+                  var, arg );
+              return(arg);
+          }
+     }
+     strcat(d,val);
+     d += strlen(val);
+     *e='}';
+     c=e+1; 
+  }
+  *d='\0';
+  log_msg( LOG_DEBUG, "argument after substitutions: %s\n", subargbuf );
+  return(subargbuf);
+  
 }
 
 
-#define TOKMAX (1024)
 
 char token_line[TOKMAX];
 
@@ -305,7 +423,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
-  argument = subarg(arg);
+  argument = subarg(sr_cfg, arg);
 
   if (sr_cfg->debug)
      log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
