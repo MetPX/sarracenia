@@ -236,7 +236,7 @@ class sr_post(sr_config):
 
         if self.event == 'delete' :
            ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
-                    'R,%d' % random.randint(0,100), rename, filename)
+                    'R,%03d' % random.randint(0,999), rename, filename)
 
            if not ok : sys.exit(1)
            return
@@ -258,7 +258,7 @@ class sr_post(sr_config):
         if os.path.islink(filepath):
            if 'link' in self.events: 
                ok = self.poster.post(self.exchange,self.url,self.to_clusters,None, \
-                    'L,%d' % random.randint(0,100), rename, filename, link=os.readlink(filepath))
+                    'L,%03d' % random.randint(0,999), rename, filename, link=os.readlink(filepath))
 
                if not ok : sys.exit(1)
 

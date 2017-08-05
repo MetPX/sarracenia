@@ -1636,7 +1636,7 @@ class sr_config:
            self.sumalgo = checksum_n()
            return
 
-        if flgs == 's' :
+        if flgs in [ 's' ]:
            self.sumalgo = checksum_s()
            return
 

@@ -82,10 +82,12 @@ int get_sumhashlen( char algo )
     case 'd' : case 'n' : 
         return(MD5_DIGEST_LENGTH+1);
 
-    case 'L' : case 'N' : case 'R' : case 's' : 
+    case '0': case 'L' : case 'R' : 
+        return(4+1);
+
+    case 'N' : case 's' : 
         return(SHA512_DIGEST_LENGTH+1);
 
-    case '0':
     default: 
         return(0);
   }
@@ -129,8 +131,8 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
    switch (algo) {
 
-   case '0' : 
-       sprintf( sumstr, "0,%ld", random()%1000 );
+   case '0' : case 'L' : case 'R' :
+       sprintf( sumstr, "%c,%03ld", algo, random()%1000 );
        return(sumstr);
        break;
 
@@ -184,12 +186,13 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        return(sr_hash2sumstr(sumhash)); 
        break;
        
-   
+/*  future! 
    case 'L' : // symlink case
         just_the_name=linkstr;       
 
    case 'R' : // null, or removal.
 
+ */
    case 'N' :
        SHA512_Init(&shactx);
        if (!just_the_name) {
