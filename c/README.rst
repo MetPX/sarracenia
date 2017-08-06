@@ -65,13 +65,10 @@ So you need to git clone ... then
 export RABBIT_BUILD=*directory where rabbit has been built*
 
 
-
-liburiparser-dev - development files for uriparser
 librabbitmq-dev - AMQP client library written in C - Dev Files
 libssl-dev  - OpenSSL client library (used for hash algorithms.)
 
 run dependencies:
-liburiparser1 - URI parsing library compliant with RFC 3986
 librabbitmq4 - AMQP client library written in C
 libssl - OpenSSL client library.
 
@@ -112,6 +109,10 @@ whereami:
         whereas when you post a directory initially, is posts with mtime=0 first pass, so whole thing.
         but if a directory is added, mtime is already current, so only files that change in future
         will be posted... HMM...
+
+  - FIXME: when 'start' if sleep <= 0 , should exit (not an error, compatibility with sr start all configs)
+
+  - FIXME: require a configuration file (log & state files) ?  sr_subscribe does work without it, but...
 
   - do we go to the whole (copy directories into a file for comparison schtick?
     that's more sr_poll.... try the cache first.

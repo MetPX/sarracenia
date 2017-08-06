@@ -26,7 +26,7 @@ CFLAGS = -fPIC -g -std=gnu99 -Wall -D_GNU_SOURCE $(RABBIT_INCDIR)
 
 SARRA_OBJECT = sr_post.o sr_consume.o sr_context.o sr_config.o sr_event.o sr_credentials.o sr_cache.o sr_util.o
 SARRA_LIB = libsarra.so.1.0.0 
-EXT_LIB = -lrabbitmq -luriparser -lcrypto -lc
+EXT_LIB = -lrabbitmq -lcrypto -lc
 SHARED_LIB = libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0
 
 .c.o: 
@@ -43,11 +43,11 @@ all: $(SARRA_OBJECT)
 	then \
 		ln -s libsarra.so.1.0.0 libsarra.so.1 ; \
 	fi;
-	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_utiltest sr_utiltest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_cachetest sr_cachetest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
-	$(CC) $(CFLAGS) -o sr_csub2json sr_csub2json.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -luriparser -lcrypto
+	$(CC) $(CFLAGS) -o sr_configtest sr_configtest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
+	$(CC) $(CFLAGS) -o sr_utiltest sr_utiltest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
+	$(CC) $(CFLAGS) -o sr_cachetest sr_cachetest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
+	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
+	$(CC) $(CFLAGS) -o sr_csub2json sr_csub2json.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 
 
 install:
