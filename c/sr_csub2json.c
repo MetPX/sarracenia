@@ -41,36 +41,56 @@ int main(int argc, char **argv)
   struct sr_message_t *m;
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
-  int consume,i;
+  int consume,i,ret;
   
   if ( argc < 3 ) usage();
  
-  sr_config_init( &sr_cfg, argv[0] );
+  sr_config_init( &sr_cfg, "csub" );
 
   i=1;
   while( i < argc ) 
   {
       if (argv[i][0] == '-') 
-         consume = sr_config_parse_option( &sr_cfg, &(argv[i][1]), argv[i+1] );
+         consume = sr_config_parse_option( &sr_cfg, 
+              &(argv[i][ (argv[i][1] == '-' )?2:1 ]),  /* skip second hyphen if necessary */
+              argv[i+1] );
       else
           break;
       if (!consume) break;
       i+=consume;
+  }
+
+  for (; i < argc; i++ )
+  {
+        sr_add_path(&sr_cfg, argv[i]);
+  }
+  if ( sr_cfg.paths )
+  {
+        sr_config_read(&sr_cfg, sr_cfg.paths->path );
   }
   if (!sr_config_finalize( &sr_cfg, 1))
   {
      log_msg( LOG_ERROR, "failed to finalize configuration\n");
      return(1); 
   }
+  
+    // Check if already running. (conflict in use of state files.)
+
+    ret = sr_config_startstop( &sr_cfg );
+    if ( ret < 1 )
+    {
+        exit(abs(ret));
+    }
+
 
   sr_c = sr_context_init_config( &sr_cfg );
   if (!sr_c) {
-     log_msg( LOG_ERROR, "failed to read configuration\n");
+     log_msg( LOG_ERROR, "failed to build context from configuration\n");
      return(1);
   }
   sr_c = sr_context_connect( sr_c );
   if (!sr_c) {
-     log_msg( LOG_ERROR, "failed to establish sr context\n");
+     log_msg( LOG_ERROR, "failed to connect context.\n");
      return(1);
   }
   if ( !strcmp( sr_cfg.action, "cleanup" ) )
@@ -85,6 +105,16 @@ int main(int argc, char **argv)
       return(0);
   }
 
+  if ( strcmp( sr_cfg.action, "foreground" ) )
+  {
+      if (! sr_cfg.output) 
+      {
+           log_msg( LOG_CRITICAL, "must specify output file when running as daemon.\n");
+           return(1);
+      }
+      daemonize(0);
+  }
+
   while(1)
   {
       m=sr_consume(sr_c);
@@ -94,5 +124,5 @@ int main(int argc, char **argv)
   free(sr_c);
   sr_config_free(&sr_cfg);
 
-  return 0;
+  return(0);
 }

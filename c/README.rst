@@ -53,6 +53,7 @@ Limitations of the C implementation
  - This library is a single process, the *instances* setting is completely ignored.
  - The queue settings established by a consumer are not the same as those of the python
    implementation, so queues cannot be shared between the two.
+ - The C is infected by python taste... 4 character indent, with spaces, all the time.
 
 
 Build Dependencies

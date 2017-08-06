@@ -54,12 +54,6 @@ void log_setup(const char *f, mode_t mode, int severity )
 
    return;
 
-   /* redirect all stdout & stderr to the log file */
-/*   close(1);
-   dup(logfd);
-   close(2);
-   dup(logfd);
- */
 }
 
 void log_cleanup() 
@@ -67,7 +61,7 @@ void log_cleanup()
    close( logfd );
 }
 
-void daemonize()
+void daemonize(int close_stdout)
 /* 
    fork child,  parent then exits.  child returns with proper daemon prep done.
  */
@@ -103,10 +97,14 @@ void daemonize()
      }
 
      close(0); 
-     close(1);
+     if (close_stdout) 
+     {
+         close(1);
+         dup2(logfd, STDOUT_FILENO);
+     }
      close(2);
-     dup2(logfd, STDOUT_FILENO);
      dup2(logfd, STDERR_FILENO);
+
      log_msg( LOG_INFO, "child daemonizing complete.\n" );
 }
 

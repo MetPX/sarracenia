@@ -23,10 +23,6 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 
-// for kill(2)
-#include <sys/types.h>
-#include <signal.h>
-
 /*
    https://troydhanson.github.io/uthash/userguide.html
 
@@ -429,8 +425,16 @@ int main(int argc, char **argv)
           sr_cfg.action, 
           log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
+
     // Check if already running. (conflict in use of state files.)
 
+    ret = sr_config_startstop( &sr_cfg );
+    if ( ret < 1 ) 
+    {
+        exit(abs(ret));
+    }
+
+  /*
     if (sr_cfg.pid > 0) // there should be one running already.
     {
         ret=kill(sr_cfg.pid,0);
@@ -511,6 +515,8 @@ int main(int argc, char **argv)
 
     if ( !strcmp( sr_cfg.action, "status" ) ) return(0);
 
+   */
+
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
     {
@@ -553,7 +559,7 @@ int main(int argc, char **argv)
 
     if ( strcmp( sr_cfg.action, "foreground" ) )
     {
-        daemonize();
+        daemonize(1);
     }
      
     // Assert: this is a working instance, not a launcher...

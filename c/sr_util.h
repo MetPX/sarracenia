@@ -27,7 +27,7 @@ void log_setup(const char *logfname, mode_t mode, int severity);
 
 void log_cleanup();
 
-void daemonize();
+void daemonize(int close_stdout);
 // executed to go from a management instance to a daemon working instance.
 
 #define SR_TIMESTRLEN (19)

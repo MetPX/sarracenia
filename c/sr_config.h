@@ -31,6 +31,11 @@ status:
 #include <time.h>
 #include <openssl/sha.h>
 
+// for kill(2)
+#include <sys/types.h>
+#include <signal.h>
+
+
 #include "sr_util.h"
 #include "sr_event.h"
 
@@ -100,12 +105,13 @@ struct sr_config_t {
   struct sr_mask_t  *masks;
   struct sr_mask_t  *match;
   char              *last_matched;  //have run isMatching.
-  char              *queuename;
+  char              *output;
   int               pid;
   char              *pidfile;
   char              *progname;
   struct sr_path_t  *paths;
   int                pipe;  // pipe mode, read file names from standard input
+  char              *queuename;
   int                realpath;
   int                recursive;
   float              sleep;
@@ -119,29 +125,34 @@ struct sr_config_t {
 };
 
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
- /* return pointer to matched pattern, if there is one, NULL otherwise.
+ /* 
+    return pointer to matched pattern, if there is one, NULL otherwise.
     if called multiple times, it returns a cached response from the previous call.
   */
 
 
 int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument );
- /* update sr_cfg with the option setting (and it's argument) given
+ /* 
+    update sr_cfg with the option setting (and it's argument) given
     return the number of arguments consumed:  0, 1, or 2.
   */
 
 void sr_add_path( struct sr_config_t *sr_cfg, const char* path );
- /* add a path to the list of paths to monitor.
+ /* 
+    add a path to the list of paths to monitor.
   */
 
 
 void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub );
- /* add a topic to the list of bindings, based on the current topic prefix
+ /* 
+    add a topic to the list of bindings, based on the current topic prefix
   */
 
 void sr_config_free( struct sr_config_t *sr_cfg );
 
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname); 
- /* Initialize an sr_config structure (setting defaults)
+ /* 
+    Initialize an sr_config structure (setting defaults)
 
     progname sets where in the configuration file tree to look for defaults, as well
     as where the .cache files will be placed ( .(config|cache)/sarra/<progname>/<config>/ )
@@ -152,7 +163,8 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname);
 
 int sr_config_read( struct sr_config_t *sr_cfg, char *filename );
 
-/* sr_config_read:
+/* 
+   sr_config_read:
    read an sr configuration file, initialize the struct sr_config_t 
    return 1 on success, 0 on failure.
  */
@@ -165,9 +177,27 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer );
 
     if is_consumer, then a queue will be needed, so perform queue guessing logic.
 
-   return 1 on success, 0 on failure.
+    return 1 on success, 0 on failure.
   */
 
 int sr_config_save_pid( struct sr_config_t *sr_cfg );
+
+int sr_config_startstop( struct sr_config_t *sr_cfg);
+/*
+   process common actions: start|stop|status 
+
+   killing existing instance, etc...
+
+   return code:
+
+   0 - operation is complete, should exit.
+  <0 - operation errored, should exit. 
+  >0 - operation succeeded, should continue.
+
+   the action == 'status' then 
+      return config_is_running?0:-1
+
+ */
+
 
 #endif

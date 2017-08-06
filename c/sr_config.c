@@ -28,6 +28,10 @@ status:
 #include <sys/socket.h>
 #include <netdb.h>
 
+// for kill
+#include <signal.h>
+
+#include <errno.h>
 
 #include <time.h>
 
@@ -535,7 +539,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->force_polling = val&2;
       return(1+(val&1));
 
-  } else if ( !strcmp( option, "heartbeat" ) ) {
+  } else if ( !strcmp( option, "heartbeat" ) || !strcmp( option, "hb" ) ) {
       sr_cfg->heartbeat = atof(argument);
       return(2);
 
@@ -553,9 +557,15 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->log = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "output" ) ) {
+      sr_cfg->output = strdup(argument);
+      log_level = sr_cfg->logseverity;
+      return(2);
+
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
       sr_cfg->queuename = strdup(argument);
       return(2);
+
   } else if ( !strcmp( option, "reject" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 0 );
       return(2);
@@ -680,7 +690,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->logseverity=LOG_INFO;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
-  sr_cfg->queuename=NULL;
+  sr_cfg->output=NULL;
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;
@@ -692,6 +702,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   } else 
      sr_cfg->progname=NULL;
 
+  sr_cfg->queuename=NULL;
   sr_cfg->realpath=0;
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
@@ -750,12 +761,11 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
      strcat(p,".conf");
 
   // absolute paths in the normal places...
-  if (sr_cfg->debug) 
-        log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
 
   f = fopen( p, "r" );
   if ( f == NULL )  // drop the suffix
   {
+      log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
       plen=strlen(p);
       p[plen-5]='\0';
       plen -= 5; 
@@ -763,20 +773,21 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   }
   if ( f == NULL ) 
   {
+     log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
+
      if (*filename != '/')  /* relative path, with or without suffix */
      { 
          strcpy( p, filename );
-         if (sr_cfg->debug) 
-             log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
+         log_msg( LOG_DEBUG, "sr_config_read trying to open: %s\n", p );
          f = fopen( p, "r" );
      }
      if ( f == NULL ) 
      {
+         log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
          if ( strcmp(&(p[plen-5]), ".conf") ) 
          {
              strcat(p,".conf");
-             if (sr_cfg->debug) 
-                 log_msg( LOG_ERROR, "sr_config_read trying to open: %s\n", p );
+             log_msg( LOG_DEBUG, "sr_config_read trying to open: %s\n", p );
              f = fopen( p, "r" );
          }
      }
@@ -864,19 +875,16 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
          fclose(f);
   } 
 
-  if (1) // why not? was gated on not being a consumer, but suspect consumers should use this also.
-  {
-     // FIXME: open and read cache file if present. seek to end.
-     sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
+  // FIXME: open and read cache file if present. seek to end.
+  sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
            sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
-     if (sr_cfg->cache > 0) 
-     {
+  if (sr_cfg->cache > 0) 
+  {
          sr_cfg->cachep = sr_cache_open( p );
-     } else {
+  } else {
          unlink(p);
-     }
-     return(1);
   }
+  if (!is_consumer) return(1);
 
   if (! sr_cfg->queuename ) { // was not specified, pick one.
 
@@ -910,19 +918,6 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      }
   }
 
-  /*
-  if (configname) {
-     c= strrchr(configname,'.');
-     if (!strcmp(c,".conf")) {
-        strncpy(p,configname,(c-configname) );
-        p[ (c-configname) ] = '\0';
-        fprintf(stderr, "configname is: %s\n", p );
-        cfg->configname=strdup(p);
-     } else
-        cfg->configname=strdup(configname);
-  } else
-     sr_cfg->configname=NULL;
-  */
   return(1);
 }
 
@@ -941,3 +936,108 @@ int sr_config_save_pid( struct sr_config_t *sr_cfg )
   return(-1);
 }
 
+int sr_config_startstop( struct sr_config_t *sr_cfg)
+/*
+   process common actions: start|stop|status 
+
+   killing existing instance, etc...
+
+   return code:
+
+   0 - operation is complete, should exit.
+  <0 - operation errored, should exit. 
+  >0 - operation succeeded, should continue.
+
+   the action == 'status' then 
+      return config_is_running?0:-1
+
+ */
+{
+    struct timespec tsleep;
+    int ret;
+
+    // Check if already running. (conflict in use of state files.)
+
+    if (sr_cfg->pid > 0) // there should be one running already.
+    {
+        ret=kill(sr_cfg->pid,0);
+        if (!ret) 
+        {   // is running.
+            if ( !strcmp(sr_cfg->action, "status") )
+            {
+               fprintf( stdout, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg->configname, sr_cfg->pid, sr_cfg->logfn );
+               return(0);
+            }
+
+            // pid is running and have permission to signal, this is a problem for start & foreground.
+            if ( !strcmp(sr_cfg->action, "start" ) || ( !strcmp(sr_cfg->action, "foreground" ) ) ) 
+            {
+               log_msg( LOG_ERROR, "sr_cpost configuration %s already running using pid %d.\n", sr_cfg->configname, sr_cfg->pid );
+               return(-1);
+            }
+ 
+            // but otherwise it's normal, so kill the running one. 
+
+            log_msg( LOG_INFO, "sr_cpost killing running instance pid=%d\n", sr_cfg->pid );
+
+            //  just kill it a little at first...
+            kill(sr_cfg->pid,SIGTERM);
+
+            // give it time to clean itself up.
+            tsleep.tv_sec = 2L;
+            tsleep.tv_nsec =  0L;
+            nanosleep( &tsleep, NULL );
+
+
+            ret=kill(sr_cfg->pid,0);
+            if (!ret) 
+            {   // pid still running, and have permission to signal, so it didn't die... 
+                log_msg( LOG_INFO, "After 2 seconds, instance pid=%d did not respond to SIGTERM, sending SIGKILL\n", sr_cfg->pid );
+                kill(sr_cfg->pid,SIGKILL);
+                nanosleep( &tsleep, NULL );
+                ret=kill(sr_cfg->pid,0);
+                if (!ret) 
+                {
+                    log_msg( LOG_CRITICAL, "SIGKILL didn't work either. System not usable, Giving up!\n", sr_cfg->pid );
+                    return(-1);
+                } 
+            } else {
+                log_msg( LOG_INFO, "old instance stopped (pid: %d)\n", sr_cfg->pid );
+            }
+        } else  // not permitted to send signals, either access, or it ain't there.
+        {
+            if (errno != ESRCH)
+            {
+                log_msg( LOG_INFO, "running instance (pid %d) found, but is not stoppable.\n", sr_cfg->pid );
+                return(-1);
+            } else { // just not running.
+
+                log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
+                //fprintf( stdout, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
+
+                if ( !strcmp( sr_cfg->action, "stop" ) ) {
+                    fprintf( stdout, "already stopped config %s (pid %d): deleting pidfile.\n", 
+                            sr_cfg->configname, sr_cfg->pid );
+                    unlink( sr_cfg->pidfile );
+                    return(-1);
+                }
+                
+            }
+        }
+        if ( !strcmp( sr_cfg->action, "stop" ) )
+        {
+            unlink( sr_cfg->pidfile );
+            log_msg( LOG_INFO, "stopped.\n");
+            fprintf( stdout, "running instance for config %s (pid %d) stopped.\n", sr_cfg->configname, sr_cfg->pid );
+            return(0);
+        }
+    } else {
+        fprintf( stdout, "config %s not running.\n", sr_cfg->configname );
+        if ( !strcmp( sr_cfg->action, "stop" )   ) return(-1);
+    }
+
+    if ( !strcmp( sr_cfg->action, "status" ) ) return(-1);
+
+    return(1); // Success! ready to continue!
+
+}
