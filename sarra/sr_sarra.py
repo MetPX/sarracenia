@@ -91,6 +91,7 @@ try :
          from sr_instances      import *
          from sr_message        import *
          from sr_util           import *
+         print( "Using local module definitions, not system ones")
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_consumer  import *
@@ -127,10 +128,17 @@ class sr_sarra(sr_instances):
 
         # make a single list for clusters that we accept message for
 
-        self.accept_msg_for_clusters      = [ self.cluster ]
-        self.accept_msg_for_clusters.extend ( self.cluster_aliases )
-        self.accept_msg_for_clusters.extend ( self.gateway_for  )
-        self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
+        self.accept_msg_for_clusters = [ ]
+        if self.cluster:
+            self.accept_msg_for_clusters.extend ( self.cluster )
+
+        if self.cluster_aliases:
+            self.accept_msg_for_clusters.extend ( self.cluster_aliases )
+
+        if self.gateway_for:
+            self.accept_msg_for_clusters.extend ( self.gateway_for  )
+
+        self.logger.info("accept_msg_for_clusters %s len=%s" % ( self.accept_msg_for_clusters, len(self.accept_msg_for_clusters) ) )
 
         # default queue name if not given
 
@@ -301,14 +309,16 @@ class sr_sarra(sr_instances):
         # will be present in self.accept_msg_for_clusters
 
         ok = False
-        for target in self.msg.to_clusters :
-           if  not target in self.accept_msg_for_clusters :  continue
-           ok = True
-           break
 
-        if not ok :
-           self.logger.warning("skipped : not for this cluster...")
-           return False
+        if len(self.accept_msg_for_clusters) > 0:
+            for target in self.msg.to_clusters :
+                if  not target in self.accept_msg_for_clusters :  continue
+                ok = True
+                break
+
+            if not ok :
+                self.logger.info("skipped message not addressed to this cluster.  Accepting messages for: %s, but this message is addressed to: %s" % ( self.accept_msg_for_clusters, self.msg.to_clusters ) )
+                return False
 
         self.local_file = self.new_dir + '/' + self.new_file # FIXME, remove in 2018
         self.msg.local_file = self.local_file

@@ -239,8 +239,8 @@ class sr_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.to_clusters = ['ALL']
-        self.headers['to_clusters'] = 'ALL'
+        self.to_clusters = []
+        self.headers['to_clusters'] = None
 
         self.suffix  = ''
         

@@ -426,7 +426,7 @@ class sr_config:
         self.follow_symlinks      = False
         self.force_polling        = False
 
-        self.gateway_for          = ['ALL']
+        self.gateway_for          = []
         self.mirror               = False
 
         self.partflg              = '0'

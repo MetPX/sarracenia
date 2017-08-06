@@ -393,7 +393,7 @@ void usage()
      fprintf( stderr, "\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
      fprintf( stderr, "\t\t(a comma separated list of urls will result in alternation among multiple file postings.)\n" );
 
-     fprintf( stderr, "\t<files> - list of files to post (same as *path* argument above.)\n\n" );
+     fprintf( stderr, "\t<paths> - list of files and/or directories to post (same as *path* option.)\n\n" );
      fprintf( stderr, "This is a C implementation of sr_post(1), see man page for details\n\n" );
      exit(1);
 }
