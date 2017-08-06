@@ -87,7 +87,7 @@ a compatible version of rabbitmq-c can be obtained
 . ssmuse-sh -d /fs/ssm/main/opt/rabbitmqc/rabbitmqc-0.8.0
  
 To load sr_cpost
-. ssmuse-sh -d /fs/ssm/hpco/exp/sarrac-0.1
+. ssmuse-sh -d /fs/ssm/hpco/exp/sarrac-0.5
  
 
 
@@ -103,7 +103,7 @@ whereami:
   - was looking at how to do partitioned (partflg='p') files, wrote footnote #1. 
 
   - result is that the cache is probably required before doing partition support.
-    so thinking about doing the cache.
+    so thinking about doing the cache. DONE!
 
   - when sleep > 0, cpost now walks trees by keeping track of the start mtime of the last pass.
     algorithm based on *mtime* > start of previous pass... that's not necessarily good.
@@ -114,7 +114,7 @@ whereami:
         will be posted... HMM...
 
   - do we go to the whole (copy directories into a file for comparison schtick?
-    that's more sr_poll.
+    that's more sr_poll.... try the cache first.
 
 worries/notes to self:
 
@@ -143,7 +143,6 @@ worries/notes to self:
                  end up repeatedly posting many of the parts that way.
                - likely only want to post each part once, so then would need
                  a way to specify a particular part to post?
-               - perhaps require cache to suppress repeats?
 
           sprintf( suffixstr, ".%c.%lu.%lu.%lu.%lu.Part", psc, sr_c->cfg->blocksize, 
               block_count, block_rem, block_num );

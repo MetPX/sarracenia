@@ -344,22 +344,51 @@ void dir_stack_check4events( struct sr_context *sr_c )
 
 void usage() 
 {
-     fprintf( stderr, "usage: sr_cpost <options> <files>\n\n" );
-     fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
-     fprintf( stderr, "\t\taccept/reject <regex> - to filter files to post.\n" );
-     fprintf( stderr, "\t\taction [setup|cleanup|foreground] \n" );
-     fprintf( stderr, "\t\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
-     fprintf( stderr, "\t\tdebug <on|off> - more verbose output.\n" );
-     fprintf( stderr, "\t\texchange <exchange> - required - name of exchange to publish to\n" );
-     fprintf( stderr, "\t\tto <destination> - clusters pump network should forward to.\n" );
-     fprintf( stderr, "\t\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
-     fprintf( stderr, "\t\t    (a comma separated list of urls will result in alternation.)" );
+     fprintf( stderr, "usage: sr_cpost <options> <paths>\n\n" );
+     fprintf( stderr, "\taccept/reject <regex> - to filter files to post.\n" );
+     fprintf( stderr, "\taccept_unmatch <boolean> - if not matched, accept? (default: true).\n" );
+     fprintf( stderr, "\taction [start|stop|setup|cleanup|foreground] default: foreground\n" );
+     fprintf( stderr, "\t\tstart - start a daemon running (will detach) and write to log.\n" );
+     fprintf( stderr, "\t\tstop - stop a running daemon.\n" );
+     fprintf( stderr, "\t\tsetup - declare broker resources (to be ready for subscribers to bind to.)\n" );
+     fprintf( stderr, "\t\tcleanup - delete any declared broker resources.\n" );
+     fprintf( stderr, "\t\tforeground - run as a foreground process logging to stderr (ideal for debugging.)\n" );
+     fprintf( stderr, "\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
+     fprintf( stderr, "\tchmod_log <mode> - permissions to set on log files (default: 0600)\n" );
+     fprintf( stderr, "\tconfig|c <name> - Configuration file (to store options)\n" );
+     fprintf( stderr, "\tdebug <on|off> - more verbose output.\n" );
+     fprintf( stderr, "\tdocument_root <path> - part of tree to subtract from advertised URL's.\n" );
+     fprintf( stderr, "\tdurable <boolean> - AMQP parameter, exchange declared persist across broker restarts (default: true)\n" );
+     fprintf( stderr, "\texchange <exchange> - required - name of exchange to publish to\n" );
+     fprintf( stderr, "\tfollow_symlinks <boolean> - traverse_symlinks and post the other side (default: off)\n" );
+     fprintf( stderr, "\tforce_polling <boolean> - walk the tree every time, instead of INOTIFY (default: off)\n\t\tturn on when using distributed cluster files systems with multiple writers, like GPFS & lustre, or run on all nodes.\n" );
+     fprintf( stderr, "\theader <key>=<value> - post an arbitrary key=value attribute with file.\n" );
+     fprintf( stderr, "\theartbeat <on|off|integer> - clean cache interval.\n" );
+     fprintf( stderr, "\tloglevel <integer> - print >= n:\n\t\t1-DEBUG, 2-info, 3-Warn, 4-ERROR, 5-CRITICAL.\n" );
+     fprintf( stderr, "\tparts|blocksize <integer> - partition strategy (size of chunks): \n" );
+     fprintf( stderr, "\t\t1- always send files in one chunk, \n" );
+     fprintf( stderr, "\t\t0-guess chunk size\n" );
+     fprintf( stderr, "\t\t>1 explicit chunk size  (can use (M/K/G[B] suffixes: eg. 50M -> 50 megabytes (base 2) ).\n" );
+     fprintf( stderr, "\t\tdefault: 1 .\n" );
+     fprintf( stderr, "\tpath <path> - a file/directory to post. (also on end of command line.)\n" );
+     fprintf( stderr, "\tpipe <boolean> - accept file names to post from stdin.\n" );
+     fprintf( stderr, "\trealpath <boolean> - resolve paths before posting (default: off)\n" );
+     fprintf( stderr, "\trecursive <boolean> - walk subdirectories (default: off)\n" );
+     fprintf( stderr, "\tsum <algo> - how to set fingerprint for posts:\n" );
+     fprintf( stderr, "\t\td-MD5 sum of entire file.\n" );
+     fprintf( stderr, "\t\tn-MD5 sum of file name.\n" );
+     fprintf( stderr, "\t\ts-SHA512 sum of entire file.\n" );
+     fprintf( stderr, "\t\tN-SHA512 sum of file name.\n" );
+     fprintf( stderr, "\t\tdefault: s\n" );
+     fprintf( stderr, "\tsleep <integer> - watch paths every *sleep* seconds (rather than once).\n" );
+     fprintf( stderr, "\tsuppress_duplicates|sd|cache|caching <on|off|integer> - suppress duplicate announcements < *cache* seconds apart (on=900).\n" );
+     fprintf( stderr, "\ttopic_prefix <string> - AMQP topic prefix (default: v02.post )\n" );
+     fprintf( stderr, "\tto <destination> - clusters pump network should forward to (default: broker).\n" );
+     fprintf( stderr, "\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
+     fprintf( stderr, "\t    (a comma separated list of urls will result in alternation.)" );
 
      fprintf( stderr, "\t<files> - list of files to post\n\n" );
-     fprintf( stderr, "This is a stripped down C implementation of sr_post(1), see man page for details\n\n" );
-     fprintf( stderr, "examples of missing features: \n\n" );
-     fprintf( stderr, "\t\tno cache.\n" );
-     fprintf( stderr, "\t\tcan only post files (not directories.)\n" );
+     fprintf( stderr, "This is a C implementation of sr_post(1), see man page for details\n\n" );
      exit(1);
 }
 
