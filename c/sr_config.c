@@ -917,6 +917,19 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
          }
      }
   }
+ 
+  //if ( sr_cfg->output ) 
+  if (0)
+  {
+     close(1);
+     ret = open( sr_cfg->output, O_WRONLY|O_CREAT|O_APPEND, 0644 ); // save the queue name for next time.
+     if (ret < 0)
+     {
+         log_msg( LOG_CRITICAL, "failed to open output file: %s\n", sr_cfg->output );
+         free(sr_cfg->output);
+         sr_cfg->output=NULL;
+     }
+  }
 
   return(1);
 }
@@ -965,7 +978,7 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         {   // is running.
             if ( !strcmp(sr_cfg->action, "status") )
             {
-               fprintf( stdout, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg->configname, sr_cfg->pid, sr_cfg->logfn );
+               fprintf( stderr, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg->configname, sr_cfg->pid, sr_cfg->logfn );
                return(0);
             }
 
@@ -1013,10 +1026,10 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
             } else { // just not running.
 
                 log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
-                //fprintf( stdout, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
+                //fprintf( stderr, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
 
                 if ( !strcmp( sr_cfg->action, "stop" ) ) {
-                    fprintf( stdout, "already stopped config %s (pid %d): deleting pidfile.\n", 
+                    fprintf( stderr, "already stopped config %s (pid %d): deleting pidfile.\n", 
                             sr_cfg->configname, sr_cfg->pid );
                     unlink( sr_cfg->pidfile );
                     return(-1);
@@ -1028,11 +1041,11 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         {
             unlink( sr_cfg->pidfile );
             log_msg( LOG_INFO, "stopped.\n");
-            fprintf( stdout, "running instance for config %s (pid %d) stopped.\n", sr_cfg->configname, sr_cfg->pid );
+            fprintf( stderr, "running instance for config %s (pid %d) stopped.\n", sr_cfg->configname, sr_cfg->pid );
             return(0);
         }
     } else {
-        fprintf( stdout, "config %s not running.\n", sr_cfg->configname );
+        fprintf( stderr, "config %s not running.\n", sr_cfg->configname );
         if ( !strcmp( sr_cfg->action, "stop" )   ) return(-1);
     }
 

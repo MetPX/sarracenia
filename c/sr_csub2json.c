@@ -114,6 +114,17 @@ int main(int argc, char **argv)
       }
       daemonize(0);
   }
+ 
+  // Assert: this is a working instance, not a launcher...
+  if ( sr_config_save_pid( &sr_cfg ) )
+  {
+        log_msg( LOG_WARNING, 
+            "could not save pidfile %s: possible to run conflicting instances  \n", 
+            sr_cfg.pidfile );
+  }
+  log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", 
+            sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
+
 
   while(1)
   {

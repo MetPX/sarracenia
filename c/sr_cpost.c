@@ -442,7 +442,7 @@ int main(int argc, char **argv)
         {   // is running.
             if ( !strcmp(sr_cfg.action, "status") )
             {
-               fprintf( stdout, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg.configname, sr_cfg.pid, sr_cfg.logfn );
+               fprintf( stderr, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg.configname, sr_cfg.pid, sr_cfg.logfn );
                return(0);
             }
 
@@ -490,10 +490,10 @@ int main(int argc, char **argv)
             } else { // just not running.
 
                 log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
-                fprintf( stdout, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
+                fprintf( stderr, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
 
                 if ( !strcmp( sr_cfg.action, "stop" ) ) {
-                    fprintf( stdout, "already stopped config %s (pid %d): deleting pidfile.\n", 
+                    fprintf( stderr, "already stopped config %s (pid %d): deleting pidfile.\n", 
                             sr_cfg.configname, sr_cfg.pid );
                     unlink( sr_cfg.pidfile );
                     return(1);
@@ -505,11 +505,11 @@ int main(int argc, char **argv)
         {
             unlink( sr_cfg.pidfile );
             log_msg( LOG_INFO, "stopped.\n");
-            fprintf( stdout, "running instance for config %s (pid %d) stopped.\n", sr_cfg.configname, sr_cfg.pid );
+            fprintf( stderr, "running instance for config %s (pid %d) stopped.\n", sr_cfg.configname, sr_cfg.pid );
             return(0);
         }
     } else {
-        fprintf( stdout, "config %s not running.\n", sr_cfg.configname );
+        fprintf( stderr, "config %s not running.\n", sr_cfg.configname );
         if ( !strcmp( sr_cfg.action, "stop" )   ) return(2);
     }
 
