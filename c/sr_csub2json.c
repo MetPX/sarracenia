@@ -105,6 +105,12 @@ int main(int argc, char **argv)
       return(0);
   }
 
+  if ( !strcmp( sr_cfg.action, "start" ) )
+  {
+      log_msg( LOG_CRITICAL, "FIXME output file when running as daemon is broken, aborting.\n");
+      return(0);
+  }
+
   if ( strcmp( sr_cfg.action, "foreground" ) )
   {
       if (! sr_cfg.output) 
@@ -124,7 +130,6 @@ int main(int argc, char **argv)
   }
   log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", 
             sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
-
 
   while(1)
   {

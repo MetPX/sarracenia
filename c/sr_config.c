@@ -559,7 +559,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   } else if ( !strcmp( option, "output" ) ) {
       sr_cfg->output = strdup(argument);
-      log_level = sr_cfg->logseverity;
       return(2);
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
@@ -921,14 +920,16 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   //if ( sr_cfg->output ) 
   if (0)
   {
-     close(1);
-     ret = open( sr_cfg->output, O_WRONLY|O_CREAT|O_APPEND, 0644 ); // save the queue name for next time.
-     if (ret < 0)
+     f = freopen( sr_cfg->output, "w", stdout );  
+     if (!f)
      {
          log_msg( LOG_CRITICAL, "failed to open output file: %s\n", sr_cfg->output );
          free(sr_cfg->output);
          sr_cfg->output=NULL;
+         return(0);
      }
+     log_msg( LOG_INFO, "writing output to: %s\n", sr_cfg->output );
+     setlinebuf( f );
   }
 
   return(1);
