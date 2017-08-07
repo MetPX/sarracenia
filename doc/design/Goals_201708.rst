@@ -1,0 +1,53 @@
+
+Goals for Next Release August 2017
+----------------------------------
+
+Date just indicates start of work.  Release date likely in September.
+General target: make it easier for users to deploy their own flows.
+
+
+Target Use Cases
+----------------
+
+*Drop Box* - bi-directional directory synchronization betwen Science and EC using HPFX as a broker. On science an sr_watches to sci2ec exchange, an sr_subscribe to pull data from Science.  An sr_watch posting to ec2sci, and have a sender pushing the data back. 
+
+*Dissemination* - same pattern on science, but a sarra on EC, instead of the subscribe, and a sender to send it further, perhaps via collab.
+
+
+Specific Small Changes
+----------------------
+
+Feedback from a few small attempts to implement user based flows:
+
+ - remove the file names from topic.
+
+ - add *events* to consumers.  Sr_subscribe *-events modify*.  will not consume/reflect symlinks, or file deletions. In message processing code, will reject before applying accept/reject.
+
+ - also support events in post... (figure out how to post a file that doesn't exist as a remove?)
+
+ - make multi-switch broker stuff default to *working* without settings (*gateway for*, *cluster*, etc...)
+
+ - *to* should default to the broker hostname, at  least. ( like sr_cpost. )
+
+ - SFTP should work using openSSH's credential files (already in paramiko.) just need to suppress the validation in sarra.
+
+ - sarra post_document_root/directory stuff.  (will only find files if you specify a post_documentroot, 
+   but then it refuses to post the whole path, because of post_documentroot.)
+   sarra - posting file: url's.  standard use case for mortals.
+   (get around it by sr_sender using *directory*, but relatively ugly.)
+
+ - review all usage strings, to make them accurate (all are out of date.)
+
+ - bring cache in everywhere, so it works in an understandable manner.
+   subscribers also, see C implementation as reference.  have
+   python work with C cache files.
+
+ - require configuration to be named?
+
+ - sr_x status --> show all known configs of x ?
+
+ - have sr_post work like cpost, with *sleep* to become a *watch*
+
+ - have heartbeat default print some stats: bytes downloads, msg. downloaded, rates during interval between hearbeats: bytes & messages per second.
+
+
