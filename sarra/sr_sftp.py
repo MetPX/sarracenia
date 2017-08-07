@@ -137,9 +137,11 @@ class sr_sftp():
                 self.port        = url.port
                 self.user        = url.username
                 self.password    = url.password
-
                 self.ssh_keyfile = details.ssh_keyfile
-                if self.ssh_keyfile : self.password = None
+
+                if url.username == '' : self.user     = None
+                if url.password == '' : self.password = None
+                if self.ssh_keyfile   : self.password = None
 
                 self.kbytes_ps = 0
                 self.bufsize   = 8192
