@@ -193,19 +193,20 @@ class sr_subscribe(sr_instances):
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
           "\t\t\t* single directory wildcard (matches one directory)\n" +
           "\t\t\t# wildcard (matches rest)\n" +
-          "\nAMQP Queue settings:\n" +
-          "\tdurable       <boolean>      (default: False)\n" +
-          "\texpire        <minutes>      (default: None)\n" +
-          "\tmessage-ttl   <minutes>      (default: None)\n" +
+          "\nAMQP Queue settings: (usually do not need to set any of these.)\n" +
+          "\tdurable       <boolean>      persist across broker restarts (default: False)\n" +
+          "\texpire        <minutes>      how long unused queues stay defined (default: None)\n" +
+          "\tmessage-ttl   <minutes>      how long messages stay in queue without being consumed (default: None)\n" +
           "\tqueue_name    <name>         (default: program set it for you)\n" +
           "\nHTTP Settings:\n" +
           "\nLocal File Delivery settings:\n" +
-          "\taccept    <regexp pattern> (MANDATORY)\n" +
-          "\tdirectory <path>           (default: .)\n" +
-          "\tflatten   <string>        (default: '/' )\n" +
-          "\tinflight  <.string>        (default: .tmp)\n" +
-          "\tmirror    <boolean>        (default: false)\n" +
-          "\treject    <regexp pattern> (optional)\n" +
+          "\taccept    <regexp pattern> regular expressions of files to download.\n" +
+          "\taccept_unmatch    <boolean> if no accept or reject clauses match, download? (default: no).\n" +
+          "\tdirectory <path>           where to place files (place ABOVE accept in configuration) (default: .)\n" +
+          "\tflatten   <string>         keep directories in filename replaced by *flatten* character (default: '/' )\n" +
+          "\tinflight  <.string>        suffix (or prefix) to name for files while they are downloaded (default: .tmp)\n" +
+          "\tmirror    <boolean>        same directory tree as on source, or flat. (default: false)\n" +
+          "\treject    <regexp pattern> regular expression of files to ignore (optional)\n" +
           "\tstrip    <count> (number of directories to remove from beginning.)\n" +
 	  "" )
 
