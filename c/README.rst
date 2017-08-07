@@ -60,7 +60,8 @@ Build Dependencies
 ------------------
 
 The librabbitmq version needs to be > 0.8,  this is newer than what is in ubuntu 16.04.
-So you need to git clone ... then 
+So you need to git clone from https://github.com/alanxz/rabbitmq-c  ... then built it there.
+
 
 export RABBIT_BUILD=*directory where rabbit has been built*
 
