@@ -37,7 +37,10 @@ def main():
             notice="%s %s %s" % ( timestamp, newurl, path )
     
             headers=' '.join(f[6:])[8:].replace("'","\"")
-            topic='v02.post' + path.replace('/','.')
+
+            thepath = path.strip('/')
+            words   = thepath.split('/')
+            topic='v02.post.' + '.'.join(words[:-1])
     
             print ( "[ \"%s\", %s, \"%s\" ] " % ( topic, headers, notice ))
     

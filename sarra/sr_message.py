@@ -168,7 +168,10 @@ class sr_message():
            if hasattr(self.headers,'exchange') :
               self.exchange = self.headers['exchange']
               del self.headers['exchange']
-           self.topic    = 'v02.post.' + token[2].replace('/','.')
+
+           path  = token[2].strip('/')
+           words = path.split('/')
+           self.topic    = 'v02.post.' + '.'.join(words[:-1])
            self.logger.debug(" modified for topic = %s" % self.topic)
 
         token        = self.topic.split('.')
@@ -369,7 +372,11 @@ class sr_message():
         # Modify message for posting.
         self.urlstr = 'file:/' + new_file
         self.url = urllib.parse.urlparse(self.urlstr)
-        self.topic = 'v02.post' + new_file.replace('/','.')
+
+        path  = new_file.strip('/')
+        words = path.split('/')
+        self.topic = 'v02.post.' + '.'.join(words[:-1])
+
         self.headers[ 'sum' ] = sumstr
         self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
         self.headers[ 'filename' ] = os.path.basename(new_file)
@@ -634,7 +641,8 @@ class sr_message():
         self.topic_prefix = topic_prefix
         self.url          = url
         path              = url.path.strip('/')
-        self.subtopic     = path.replace('/','.')
+        words             = path.split('/')
+        self.subtopic     = '.'.join(words[:-1])
         self.topic        = '%s.%s' % (topic_prefix,self.subtopic)
         self.topic        = self.topic.replace('..','.')
 
