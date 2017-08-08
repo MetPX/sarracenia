@@ -138,7 +138,7 @@ class sr_sarra(sr_instances):
         if self.gateway_for:
             self.accept_msg_for_clusters.extend ( self.gateway_for  )
 
-        self.logger.info("accept_msg_for_clusters %s len=%s" % ( self.accept_msg_for_clusters, len(self.accept_msg_for_clusters) ) )
+        #self.logger.info("accept_msg_for_clusters %s len=%s" % ( self.accept_msg_for_clusters, len(self.accept_msg_for_clusters) ) )
 
         # default queue name if not given
 

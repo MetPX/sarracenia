@@ -422,10 +422,10 @@ class sr_post(sr_config):
             watch_path = os.path.realpath(watch_path)
  
         if os.path.isfile(watch_path):
-           self.logger.info("file %s " % watch_path )
+           self.logger.debug("file %s " % watch_path )
  
         if os.path.isdir(watch_path):
-           self.logger.info("directory %s " % watch_path )
+           self.logger.debug("directory %s " % watch_path )
            if self.rename != None and self.rename[-1] != '/' and 'modify' in self.events:
               self.logger.warning("renaming all modified files to %s " % self.rename )
 

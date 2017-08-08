@@ -35,8 +35,6 @@ class Msg_Total(object):
         else:
             parent.msg_total_maxlag=60
 
-        logger.debug("msg_total init: 2 " )
-
         if hasattr(parent,'msg_total_interval'):
             if type(parent.msg_total_interval) is list:
                 parent.msg_total_interval=int(parent.msg_total_interval[0])
@@ -52,7 +50,8 @@ class Msg_Total(object):
         parent.msg_total_msgcount=0
         parent.msg_total_bytecount=0
         parent.msg_total_lag=0
-        logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
+        logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
+            ( parent.msg_total_interval, parent.msg_total_maxlag ) )
 
           
     def perform(self,parent):
@@ -62,6 +61,9 @@ class Msg_Total(object):
         import calendar
         import humanize
         import datetime
+
+        if (parent.msg_total_msgcount == 0): 
+            logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
         mt=msg.time
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])

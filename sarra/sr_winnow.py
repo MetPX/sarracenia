@@ -120,7 +120,7 @@ class sr_winnow(sr_instances):
 
         # no vip given... so should not matter ?
         if self.vip == None and self.interface == None :
-           self.logger.info("both vip and interface missing... standalone mode")
+           self.logger.debug("both vip and interface missing... standalone mode")
 
         # bindings should be defined 
 

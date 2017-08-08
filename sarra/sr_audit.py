@@ -748,9 +748,9 @@ def main():
        audit.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
     if hasattr( audit.admin, 'username') :
-        audit.logger.info("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
+        audit.logger.debug("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
     else:
-        audit.logger.info("As no admin is set, shutting down sr_audit")
+        audit.logger.critical("As no admin is set, shutting down sr_audit")
         sys.exit(0)
 
     if   action == 'foreground' : audit.foreground_parent()

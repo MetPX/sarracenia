@@ -142,23 +142,29 @@ class sr_credentials:
         # we have everything
         if both : return True
 
-        # we have no user and no pasw
+        # we have no user and no pasw (http normal, sftp hope for .ssh/config)
         if not user and not pasw :
-           if url.scheme == 'http'  : return True
+           if url.scheme in ['http','sftp'] : return True
            return False
 
-        #  we have a pasw no user ?
-        if pasw : return False
+        #  we have a pasw no user 
+        if pasw :
+           # not sure... sftp hope to get user from .ssh/config 
+           if url.scheme == 'sftp' : return True
+           return False
 
-        #  we have a user (no pasw)
+        #  we only have a user ... permitted only for sftp
+
         if url.scheme != 'sftp' : return False
-        if details    == None   : return False
 
-        ssh_keyfile = details.ssh_keyfile
+        #  sftp and an ssh_keyfile was provided... check that it exists
 
-        if ssh_keyfile == None        : return False
-        if os.path.exists(ssh_keyfile): return True
-        return False
+        if details and details.ssh_keyfile :
+           if not os.path.exists(details.ssh_keyfile): return False
+
+        #  sftp with a user (and perhaps a valid ssh_keyfile)
+
+        return True
 
     def parse(self,line):
         self.logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
@@ -370,6 +376,21 @@ def test_sr_credentials():
            print("test sr_credentials FAILED")
            print("isValid %s returned True" % urlstr)
            status = 1
+
+    # covers Valid sftp
+    ok_urls = ["sftp://host","sftp://aaa/","sftp://user@host","sftp://user:@host","sftp://:pass@host"]
+    for urlstr in ok_urls :
+        if not credentials.isValid(urllib.parse.urlparse(urlstr)) :
+           print("test sr_credentials FAILED")
+           print("not isValid %s returned True" % urlstr)
+           status = 1
+        # - when testing -
+        #credentials.add(urlstr)
+        #ok,details = credentials.get(urlstr)
+        #print("urlstr   = %s" %urlstr)
+        #print("ok       = %s" %ok)
+        #print("username = %s" %details.url.username)
+        #print("password = %s" %details.url.password)
 
     if status < 1 : print("test sr_credentials OK")
 
