@@ -31,10 +31,16 @@ Feedback from a few small attempts to implement user based flows:
 
  - SFTP should work using openSSH's credential files (already in paramiko.) just need to suppress the validation in sarra.
 
- - sarra post_document_root/directory stuff.  (will only find files if you specify a post_documentroot, 
+ - Sarra should work exactly like subscribe, but just add posting at the end.
+   so *directory* should do the right thing.  Currently, it seems to ignore that.
+   sarra post_document_root/directory stuff.  (will only find files if you specify a post_documentroot, 
    but then it refuses to post the whole path, because of post_documentroot.)
    sarra - posting file: url's.  standard use case for mortals.
    (get around it by sr_sender using *directory*, but relatively ugly.)
+
+   sr_subscribe could accept post_document_root to set the directory initially...
+   post_document_root provides default if no directory specified (so old sarra configs need no mod.)
+   or say 
 
  - review all usage strings, to make them accurate (all are out of date.)
 
@@ -49,5 +55,34 @@ Feedback from a few small attempts to implement user based flows:
  - have sr_post work like cpost, with *sleep* to become a *watch*
 
  - have heartbeat default print some stats: bytes downloads, msg. downloaded, rates during interval between hearbeats: bytes & messages per second.
+
+ - Add user defined headers '-headers printer=cidulas '
+
+ - headers received and not understood should pass through unmodified (upward compatibility.)
+
+ - sr start --> should look at post/ subdir for confiugurations where sleep > 0, and start those.
+
+
+ - on the combination thing... what if kept same file, but add a *meta* config:
+
+      in ~/.config/sarra/x.conf
+
+      cat >>x.conf <<EOT
+ 
+      consume  patente.conf
+
+      post  poster.conf
+
+      report report.conf
+
+      EOT
+
+      sr_subscribe start x
+   
+      looks for patente.conf in consume/ subdir, poster.conf in post/ subdir, report.conf in report/ subdir.
+      
+      finds x, then each file has broker/exchange/accept/reject etc... for 'consume' or 'post' or 'report'
+
+      hmm.
 
 

@@ -524,6 +524,15 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->exchange = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "expire" ) ) {
+      if isalpha(*argument) {
+          val = StringIsTrue(argument);
+          sr_cfg->expire = (val&2) ? 30*60*1000 : 0;
+          return(1+(val&1));
+      }
+      sr_cfg->expire = atoi(argument)*60*1000;
+      return(2);
+
   } else if ( !strcmp( option, "flow" ) ) {
       sprintf(p,"flow=%s", argument );
       val = sr_add_header(sr_cfg, p);
@@ -557,6 +566,16 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->log = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "message-ttl" ) || !strcmp( option, "msgttl" ) || !strcmp( option, "mttl") ) {
+      if isalpha(*argument) {
+          val = StringIsTrue(argument);
+          sr_cfg->message_ttl = (val&2) ? 30*60*1000 : 0;
+          return(1+(val&1));
+      }
+      sr_cfg->message_ttl = atoi(argument)*60*1000;
+      return(2);
+
+  } else if ( !strcmp( option, "flow" ) ) {
   } else if ( !strcmp( option, "output" ) ) {
       sr_cfg->output = strdup(argument);
       return(2);
@@ -680,6 +699,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->documentroot=NULL;
   sr_cfg->durable=1;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
+  sr_cfg->expire=0;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
   sr_cfg->instance=1;
@@ -689,6 +709,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->logseverity=LOG_INFO;
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
+  sr_cfg->message_ttl=0;
   sr_cfg->output=NULL;
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
