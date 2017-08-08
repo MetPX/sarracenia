@@ -21,7 +21,7 @@ Description: C-Implementation of a Sarracenia Client
 Package: libsarra-c
 Section: libs
 Architecture: any
-Depends: librabbitmq4 (>=0.8)
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: C-Implementation of a Sarracenia Client
  This C functionality is embryonic, there is no intent to build a
  complete implementation, it is just a few pieces meant to provide

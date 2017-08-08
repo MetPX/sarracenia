@@ -55,6 +55,7 @@ install:
 	@mv *.so build/lib
 	@mv *.so.* build/lib
 	@mv sr_cpost build/bin
+	@mv sr_csub2json build/bin
 	@cp *.h build/include/
 
 clean:

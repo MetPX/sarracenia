@@ -1,3 +1,2 @@
-build/include  usr/local/include
-build/bin      usr/local/bin
-build/lib      usr/local/lib
+build/include/*  usr/include/
+build/lib/*.so      usr/lib/
