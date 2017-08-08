@@ -98,8 +98,20 @@ Feedback from a few small attempts to implement user based flows:
  - can we clean up sr output, so there are far fewer lines to read?
    change the unknown variable warning to debug?
 
- 
 
+ - option... wistful... make debug logging output a bitmask...  (only put certain bits in debug. requires changing logger 
+   interface to add 'whereami' to every log message.  travail de moine.)::
+
+       plugins  01
+       sender   02
+       config   04 
+       consume  08
+       localio  10
+       creds    20
+       post     40
+       report   80
+
+   so loglevel becomes (  debug:plugins, warn:sender,  ??) dunno. not baked.
 
 
 
