@@ -52,8 +52,8 @@ class Msg_Total(object):
         parent.file_total_msgcount=0
         parent.file_total_bytecount=0
         parent.file_total_lag=0
-        logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
-
+        logger.debug("file_total: initialized, interval=%d, maxlag=%d" % \
+            ( parent.file_total_interval, parent.file_total_maxlag ) )
           
     def perform(self,parent):
         logger = parent.logger
@@ -62,6 +62,9 @@ class Msg_Total(object):
         import calendar
         import humanize
         import datetime
+
+        if ( parent.file_total_bytecount==0 ) :
+            logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
         mt=msg.time
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])

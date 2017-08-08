@@ -18,7 +18,7 @@ class Transformer():
            parent.logger.error("msg_replace_new_dir setting mandatory")
            return
 
-        parent.logger.info("msg_replace_new_dir is %s " % parent.msg_replace_new_dir )
+        parent.logger.debug("msg_replace_new_dir is %s " % parent.msg_replace_new_dir )
 
       def perform(self,parent):
           for p in parent.msg_replace_new_dir :
