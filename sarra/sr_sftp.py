@@ -64,6 +64,7 @@ class sr_sftp():
         self.parent      = parent 
         self.connected   = False 
         self.sftp        = None
+        self.ssh         = None
 
         self.sumalgo     = None
         self.checksum    = None
@@ -140,6 +141,8 @@ class sr_sftp():
     def connect(self):
         self.logger.debug("sr_sftp connect %s" % self.parent.destination)
 
+        if self.connected: self.close()
+
         self.connected   = False
         self.destination = self.parent.destination
         self.timeout     = self.parent.timeout
@@ -175,9 +178,8 @@ class sr_sftp():
                 self.originalDir = sftp.getcwd()
                 self.pwd         = self.originalDir
 
-                self.connected = True
-
-                self.sftp = sftp
+                self.connected   = True
+                self.sftp        = sftp
 
                 return True
 
@@ -208,6 +210,8 @@ class sr_sftp():
                 if self.port == None  : self.port     = 22
 
                 self.logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
+
+                if self.ssh_config  == None : return
 
                 if self.user        == None or \
                  ( self.ssh_keyfile == None and self.password == None):
@@ -580,9 +584,9 @@ class sftp_transport():
                 return True
                 
         except:
-                #closing after batch or when destination is changing
-                #try    : sftp.close()
-                #except : pass
+                #closing on problem
+                try    : self.close()
+                except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
@@ -590,6 +594,10 @@ class sftp_transport():
                 if os.path.isfile(new_lock) : os.remove(new_lock)
  
                 return False
+
+        #closing on problem
+        try    : self.close()
+        except : pass
     
         msg.report_publish(498,'sftp download failed')
     
@@ -683,9 +691,9 @@ class sftp_transport():
                 return True
                 
         except:
-                #closing after batch or when destination is changing
-                #try    : sftp.close()
-                #except : pass
+                #closing on problem
+                try    : self.close()
+                except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
@@ -693,6 +701,10 @@ class sftp_transport():
     
                 return False
     
+        #closing on problem
+        try    : self.close()
+        except : pass
+
         msg.report_publish(496,'sftp delivery failed')
     
         return False
@@ -735,6 +747,7 @@ def self_test():
     msg.onfly_checksum = False
     cfg.msg = msg
     #cfg.debug  = True
+    if not cfg.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
     opt1 = "destination sftp://localhost"
     cfg.option( opt1.split()  )
     cfg.logger = logger
