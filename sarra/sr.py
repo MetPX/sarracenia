@@ -38,8 +38,10 @@ import sys, os, os.path, time, subprocess
 
 try :    
          from sr_config         import *
+         from sr_post           import *
 except : 
-         from sarra.sr_config    import *
+         from sarra.sr_config   import *
+         from sarra.sr_post     import *
 
 cfg    = sr_config()
 action = sys.argv[-1]
@@ -53,12 +55,27 @@ def invoke(dirconf,pgm,confname,action):
     config  = re.sub(r'(\.conf)','',confname)
 
     try :
-             #cfg.logger.info("%s %s %s" % (program,action,config))
+             # anything but sr_post
              if program != 'sr_post' :
                 subprocess.check_call([program,action,config])
-             else :
-                confpath = dirconf + os.sep + pgm + os.sep + confname
+                return
+
+             # sr_post cases
+
+             confpath = dirconf + os.sep + pgm + os.sep + confname
+
+             # sr_post general actions
+             if action in ['cleanup','declare','setup'] :
                 subprocess.check_call([program,'-c',confpath,action])
+                return
+
+             # Not ready yet... sr_post should support all actions
+             # sr_post behaving like sr_watch only
+             #post = sr_post(confpath)
+             #if post.sleep > 0 :
+             #   subprocess.check_call([program,'-c',confpath,action])
+             #   return
+
     except :
              (stype, svalue, tb) = sys.exc_info()
              print("Type: %s, Value: %s" % (stype, svalue))
@@ -130,7 +147,6 @@ def main():
 
     for d in SR_PROGRAMS:
         pgm = d
-        if pgm == 'post' and not action in ['cleanup','declare','setup'] : continue
         scandir(cfg.user_config_dir,pgm,action)
 
     sys.exit(0)
