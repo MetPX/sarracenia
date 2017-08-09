@@ -413,7 +413,8 @@ class ftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        new_lock = ''
+        local_lock  = ''
+        new_lock    = ''
     
         try :
                 parent.destination = msg.urlcred
@@ -458,6 +459,7 @@ class ftp_transport():
                    os.rename(local_lock, msg.local_file)
 
                 #restore mode and times.
+                h = parent.msg.headers
                 if parent.preserve_mode and 'mode' in h :
                     os.chmod(msg.local_file, int(h['mode'], base=8) )
                 elif parent.chmod != 0:
@@ -487,9 +489,9 @@ class ftp_transport():
                 return True
                 
         except:
-                #closing after batch or when destination is changing
-                #try    : ftp.close()
-                #except : pass
+                #closing on error
+                try    : self.close()
+                except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
@@ -498,6 +500,10 @@ class ftp_transport():
     
                 return False
     
+        #closing on error
+        try    : self.close()
+        except : pass
+
         msg.report_publish(499,'ftp download failed')
     
         return False
@@ -585,9 +591,9 @@ class ftp_transport():
                 return True
                 
         except:
-                #closing after batch or when destination is changing
-                #try    : ftp.close()
-                #except : pass
+                #closing on error
+                try    : self.close()
+                except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
@@ -595,6 +601,10 @@ class ftp_transport():
     
                 return False
     
+        #closing on error
+        try    : self.close()
+        except : pass
+
         msg.report_publish(499,'ftp delivery failed')
     
         return False
@@ -617,8 +627,8 @@ class test_logger:
           pass
       def __init__(self):
           self.debug   = self.silence
-          self.error   = print
-          self.info    = self.silence
+          self.error   = self.silence
+          self.info    = print
           self.warning = print
 
 def self_test():
@@ -638,7 +648,7 @@ def self_test():
            ftp = sr_ftp(cfg)
            ftp.connect()
            ftp.mkdir("tztz")
-           ftp.chmod(775,"tztz")
+           ftp.chmod(0o775,"tztz")
            ftp.cd("tztz")
        
            ftp.umask()
@@ -650,15 +660,15 @@ def self_test():
        
            ftp.put("aaa", "bbb")
            ls = ftp.ls()
-           logger.info("ls = %s" % ls )
+           logger.debug("ls = %s" % ls )
        
-           ftp.chmod(775,"bbb")
+           ftp.chmod(0o775,"bbb")
            ls = ftp.ls()
-           logger.info("ls = %s" % ls )
+           logger.debug("ls = %s" % ls )
        
            ftp.rename("bbb", "ccc")
            ls = ftp.ls()
-           logger.info("ls = %s" % ls )
+           logger.debug("ls = %s" % ls )
        
            ftp.get("ccc", "bbb")
            f = open("bbb","rb")
@@ -720,11 +730,14 @@ def self_test():
            dldr = ftp_transport()
            cfg.local_file    = "bbb"
            cfg.local_path    = "./bbb"
+           cfg.new_file      = "ddd"
+           cfg.new_dir       = "tztz"
+           cfg.new_path      = "tztz/ddd"
            cfg.remote_file   = "ddd"
            cfg.remote_path   = "tztz/ddd"
            cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
            cfg.remote_dir    = "tztz"
-           cfg.chmod       = 775
+           cfg.chmod       = 0o775
            cfg.inflight      = None
            dldr.send(cfg)
            dldr.ftp.delete("ddd")
@@ -753,9 +766,9 @@ def self_test():
            ftp.cd("tztz")
            ftp.delete("ccc")
            ftp.delete("ddd")
-           logger.info("%s" % ftp.originalDir)
+           logger.debug("%s" % ftp.originalDir)
            ftp.cd("")
-           logger.info("%s" % ftp.ftp.pwd())
+           logger.debug("%s" % ftp.ftp.pwd())
            ftp.rmdir("tztz")
        
            ftp.close()
