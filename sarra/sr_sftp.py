@@ -886,11 +886,11 @@ def self_test():
        
            sftp.close()
 
-           opt1 = "destination sftp://mgtest"
-           cfg.option( opt1.split()  )
-           sftp.connect()
-           sftp.ls()
-           sftp.close()
+           #opt1 = "destination sftp://mgtest"
+           #cfg.option( opt1.split()  )
+           #sftp.connect()
+           #sftp.ls()
+           #sftp.close()
 
     except:
            (stype, svalue, tb) = sys.exc_info()
