@@ -13,7 +13,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Dec 29 07:52:45 EST 2015
+#  Last Changed   : Aug  9 12:34:52 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -68,6 +68,21 @@ class sr_sftp():
         self.sumalgo     = None
         self.checksum    = None
         self.fpos        = 0
+
+        self.ssh_config  = None
+
+        try :
+                self.ssh_config = paramiko.SSHConfig()
+                ssh_config      = os.path.expanduser('~/.ssh/config')
+                if os.path.isfile(ssh_config) :
+                   fp = open(ssh_config,'r')
+                   self.ssh_config.parse(fp)
+                   fp.close()
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Unable to load ssh config %s" % ssh_config)
+                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+
 
     # cd
     def cd(self, path):
@@ -129,41 +144,21 @@ class sr_sftp():
         self.destination = self.parent.destination
         self.timeout     = self.parent.timeout
 
-        try:
-                ok, details = self.parent.credentials.get(self.destination)
-                if details  : url = details.url
+        self.credentials()
 
-                self.host        = url.hostname
-                self.port        = url.port
-                self.user        = url.username
-                self.password    = url.password
-                self.ssh_keyfile = details.ssh_keyfile
+        self.kbytes_ps = 0
+        self.bufsize   = 8192
 
-                if url.username == '' : self.user     = None
-                if url.password == '' : self.password = None
-                if self.ssh_keyfile   : self.password = None
-
-                self.kbytes_ps = 0
-                self.bufsize   = 8192
-
-                if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
-                if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
-
-        except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
+        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
 
         try:
-                port = self.port
-                if self.port == '' or self.port == None : port = 22
 
-                #if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
-
+                if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh.connect(self.host,port,self.user,self.password, \
+                self.ssh.connect(self.host,self.port,self.user,self.password, \
                                  pkey=None,key_filename=self.ssh_keyfile,\
                                  timeout=self.timeout)
 
@@ -191,6 +186,52 @@ class sr_sftp():
             self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (self.host,self.user, stype,svalue))
         return False
 
+    # credentials...
+    def credentials(self):
+        self.logger.debug("sr_sftp credentials %s" % self.destination)
+
+        try:
+                ok, details = self.parent.credentials.get(self.destination)
+                if details  : url = details.url
+
+                self.host        = url.hostname
+                self.port        = url.port
+                self.user        = url.username
+                self.password    = url.password
+                self.ssh_keyfile = details.ssh_keyfile
+
+                if url.username == '' : self.user     = None
+                if url.password == '' : self.password = None
+                if url.port     == '' : self.port     = None
+                if self.ssh_keyfile   : self.password = None
+
+                if self.port == None  : self.port     = 22
+
+                self.logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
+
+                if self.user        == None or \
+                 ( self.ssh_keyfile == None and self.password == None):
+                   self.logger.debug("check in ssh_config")
+                   for key,value in self.ssh_config.lookup(self.host).items() :
+                       if   key == "hostname":
+                            self.host = value
+                       elif key == "user":
+                            self.user = value
+                       elif key == "port":
+                            self.port = int(value)
+                       elif key == "identityfile":
+                            self.ssh_keyfile = os.path.expanduser(value[0])
+
+                self.logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Unable to get credentials for %s" % self.destination)
+                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+
+
+
+
     # delete
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
@@ -212,14 +253,12 @@ class sr_sftp():
 
         # throttle 
 
-        cb        = None
-
+        cb = None
         if self.kbytes_ps > 0.0 :
-           cb = self.throttle
-           d1,d2,d3,d4,now = os.times()
-           self.tbytes     = 0.0
-           self.tbegin     = now + 0.0
-           self.bytes_ps   = self.kbytes_ps * 1024.0
+           cb            = self.throttle
+           self.tbytes   = 0.0
+           self.tbegin   = time.time()
+           self.bytes_ps = self.kbytes_ps * 1024.0
 
         # needed ... to open r+b file need to exist
         if not os.path.isfile(local_file) :
@@ -270,9 +309,10 @@ class sr_sftp():
                  if chk : chk.update(chunk)
                  if cb  : cb(chunk)
 
-        
         self.fpos = fp.tell()
-        if self.fpos >= filesize :
+
+        # MG FIXME... this makes no sense
+        if filesize != None and self.fpos >= filesize :
            fp.truncate(filesize) 
 
         rfp.close()
@@ -337,8 +377,8 @@ class sr_sftp():
         cb        = None
 
         if self.kbytes_ps > 0.0 :
-           cb = self.throttle
-           d1,d2,d3,d4,now = os.times()
+           cb  = self.throttle
+           now = time.time()
            self.tbytes     = 0.0
            self.tbegin     = now + 0.0
            self.bytes_ps   = self.kbytes_ps * 1024.0
@@ -372,7 +412,8 @@ class sr_sftp():
 
         fp.close()
 
-        if rfp.tell() >= filesize:
+        # MG FIXME... this makes no sense
+        if filesize != None and rfp.tell() >= filesize:
            rfp.truncate(filesize)
 
         msg = self.parent.msg
@@ -407,9 +448,8 @@ class sr_sftp():
     def throttle(self,buf) :
         self.logger.debug("sr_sftp throttle")
         self.tbytes = self.tbytes + len(buf)
-        span = self.tbytes / self.bytes_ps
-        d1,d2,d3,d4,now = os.times()
-        rspan = now - self.tbegin
+        span  = self.tbytes / self.bytes_ps
+        rspan = time.time() - self.tbegin
         if span > rspan :
            time.sleep(span-rspan)
 
@@ -465,7 +505,7 @@ class sftp_transport():
         token       = msg.url.path[1:].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        local_lock = ''
+        new_lock    = ''
     
         if os.getcwd() != parent.new_dir:
             os.chdir(parent.new_dir)
@@ -689,6 +729,11 @@ def self_test():
 
     cfg.defaults()
     cfg.general()
+    cfg.set_sumalgo('d')
+    msg = sr_message(cfg)
+    msg.filesize = None
+    msg.onfly_checksum = False
+    cfg.msg = msg
     #cfg.debug  = True
     opt1 = "destination sftp://localhost"
     cfg.option( opt1.split()  )
@@ -702,7 +747,7 @@ def self_test():
            sftp = sr_sftp(cfg)
            sftp.connect()
            sftp.mkdir("tztz")
-           sftp.chmod(775,"tztz")
+           sftp.chmod(0o775,"tztz")
            sftp.cd("tztz")
        
            f = open("aaa","wb")
@@ -715,7 +760,7 @@ def self_test():
            ls = sftp.ls()
            logger.info("ls = %s" % ls )
        
-           sftp.chmod(775,"bbb")
+           sftp.chmod(0o775,"bbb")
            ls = sftp.ls()
            logger.info("ls = %s" % ls )
        
@@ -734,7 +779,6 @@ def self_test():
 
            os.unlink("bbb")
 
-           msg         = sr_message(cfg)
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
@@ -748,6 +792,9 @@ def self_test():
            msg.local_file   = "bbb"
            msg.local_offset = 0
            msg.sumalgo      = None
+
+           cfg.new_file     = "bbb"
+           cfg.new_dir      = "."
 
            cfg.msg     = msg
            cfg.batch   = 5
@@ -776,12 +823,14 @@ def self_test():
            dldr = sftp_transport()
            cfg.local_file    = "bbb"
            cfg.local_path    = "./bbb"
+           cfg.new_dir       = "tztz"
+           cfg.new_file      = "ddd"
            cfg.remote_file   = "ddd"
            cfg.remote_path   = "tztz/ddd"
            cfg.remote_urlstr = "sftp://localhost/tztz/ddd"
            cfg.remote_dir    = "tztz"
-           cfg.chmod       = 775
-           cfg.inflight        = None
+           cfg.chmod         = 0o775
+           cfg.inflight      = None
            dldr.send(cfg)
            dldr.sftp.delete("ddd")
            cfg.inflight        = '.'
@@ -801,6 +850,7 @@ def self_test():
            sftp = sr_sftp(cfg)
            sftp.connect()
            sftp.cd("tztz")
+           sftp.ls()
            sftp.delete("ccc")
            sftp.delete("ddd")
            logger.info("%s" % sftp.originalDir)
@@ -822,6 +872,13 @@ def self_test():
               sys.exit(1)
        
            sftp.close()
+
+           opt1 = "destination sftp://mgtest"
+           cfg.option( opt1.split()  )
+           sftp.connect()
+           sftp.ls()
+           sftp.close()
+
     except:
            (stype, svalue, tb) = sys.exc_info()
            logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
