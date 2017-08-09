@@ -154,7 +154,7 @@ class sr_sftp():
 
         try:
 
-                if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
+                #if not self.parent.debug : paramiko.util.logging.getLogger().setLevel(logging.WARN)
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
