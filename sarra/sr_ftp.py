@@ -221,10 +221,9 @@ class sr_ftp():
 
         if self.kbytes_ps > 0.0 :
            self.cb = self.throttle
-           d1,d2,d3,d4,now = os.times()
-           self.tbytes     = 0.0
-           self.tbegin     = now + 0.0
-           self.bytes_ps   = self.kbytes_ps * 1024.0
+           self.tbytes   = 0.0
+           self.tbegin   = time.time()
+           self.bytes_ps = self.kbytes_ps * 1024.0
 
         if not os.path.isfile(local_file) :
            fp = open(local_file,'w')
@@ -288,10 +287,9 @@ class sr_ftp():
 
         if self.kbytes_ps > 0.0 :
            cb = self.throttle
-           d1,d2,d3,d4,now = os.times()
-           self.tbytes     = 0.0
-           self.tbegin     = now + 0.0
-           self.bytes_ps   = self.kbytes_ps * 1024.0
+           self.tbytes   = 0.0
+           self.tbegin   = time.time()
+           self.bytes_ps = self.kbytes_ps * 1024.0
 
         if self.binary :
            fp = open(local_file, 'rb')
@@ -334,9 +332,8 @@ class sr_ftp():
     def throttle(self,buf) :
         self.logger.debug("sr_ftp throttle")
         self.tbytes = self.tbytes + len(buf)
-        span = self.tbytes / self.bytes_ps
-        d1,d2,d3,d4,now = os.times()
-        rspan = now - self.tbegin
+        span  = self.tbytes / self.bytes_ps
+        rspan = time.time() - self.tbegin
         if span > rspan :
            time.sleep(span-rspan)
 
