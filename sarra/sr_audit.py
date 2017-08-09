@@ -594,40 +594,40 @@ class sr_audit(sr_instances):
            error += 1
 
         # verify if the pump have a cluster name set
-        if self.cluster :
-           self.logger.info("**** cluster (pump name) defined *****")
-           self.logger.info("cluster %s"   % self.cluster)
-        else :
-           self.logger.error("**** cluster (pump name) undefined *****")
-           self.logger.error("cluster clustername")
-           self.logger.error("The cluster name must be set in default.conf")
-           self.logger.error("AMQP message headers target one or a list of clusters")
-           self.logger.error("If not set, no message can be processed.")
-           error += 1
+        #if self.cluster :
+        #   self.logger.info("**** cluster (pump name) defined *****")
+        #   self.logger.info("cluster %s"   % self.cluster)
+        #else :
+        #   self.logger.error("**** cluster (pump name) undefined *****")
+        #   self.logger.error("cluster clustername")
+        #   self.logger.error("The cluster name must be set in default.conf")
+        #   self.logger.error("AMQP message headers target one or a list of clusters")
+        #   self.logger.error("If not set, no message can be processed.")
+        #   error += 1
 
-        if self.cluster_aliases != [] :
-           self.logger.info("**** cluster_aliases declared *****")
-           self.logger.info("cluster_aliases %s"   % self.cluster_aliases)
-        else :
-           self.logger.warning("**** cluster_aliases undefined but not mandatory *****")
-           self.logger.warning("cluster_aliases clusteralias1,clusteralias2,...")
-           self.logger.warning("It can be set in default.conf")
-           self.logger.warning("It should be used when the cluster can be named in different ways. Ex.:")
-           self.logger.warning("   cluster ddi")
-           self.logger.warning("   cluster_aliases DDIDOR,ddi1.cmc,ddi2.cmc")
-           warning += 1
+        #if self.cluster_aliases != [] :
+        #   self.logger.info("**** cluster_aliases declared *****")
+        #   self.logger.info("cluster_aliases %s"   % self.cluster_aliases)
+        #else :
+        #   self.logger.warning("**** cluster_aliases undefined but not mandatory *****")
+        #   self.logger.warning("cluster_aliases clusteralias1,clusteralias2,...")
+        #   self.logger.warning("It can be set in default.conf")
+        #   self.logger.warning("It should be used when the cluster can be named in different ways. Ex.:")
+        #   self.logger.warning("   cluster ddi")
+        #   self.logger.warning("   cluster_aliases DDIDOR,ddi1.cmc,ddi2.cmc")
+        #   warning += 1
 
-        if self.gateway_for != [] :
-           self.logger.info("**** gateway_for declared *****")
-           self.logger.info("gateway_for %s" % self.gateway_for)
-        else :
-           self.logger.warning("**** gateway_for undeclared but not mandatory *****")
-           self.logger.warning("gateway_for clustername1,clustername2,...")
-           self.logger.warning("It can be set in default.conf")
-           self.logger.warning("Use this option if this pump is a hop to other pumps for messages")
-           self.logger.warning("Declare the pumps using their cluster names like this:")
-           self.logger.warning("   gateway_for ddi.edm,ddi1.edm,ddi2.edm")
-           warning += 1
+        #if self.gateway_for != [] :
+        #   self.logger.info("**** gateway_for declared *****")
+        #   self.logger.info("gateway_for %s" % self.gateway_for)
+        #else :
+        #   self.logger.warning("**** gateway_for undeclared but not mandatory *****")
+        #   self.logger.warning("gateway_for clustername1,clustername2,...")
+        #   self.logger.warning("It can be set in default.conf")
+        #   self.logger.warning("Use this option if this pump is a hop to other pumps for messages")
+        #   self.logger.warning("Declare the pumps using their cluster names like this:")
+        #   self.logger.warning("   gateway_for ddi.edm,ddi1.edm,ddi2.edm")
+        #   warning += 1
 
         #if self.report_clusters != {} :
         #   self.logger.info("**** log2clusters.conf file present *****")

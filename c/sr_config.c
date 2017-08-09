@@ -524,10 +524,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->exchange = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "expire" ) ) {
+  } else if ( !strcmp( option, "expire" ) || !strcmp( "expiry" ) ) {
       if isalpha(*argument) {
           val = StringIsTrue(argument);
-          sr_cfg->expire = (val&2) ? 30*60*1000 : 0;
+          sr_cfg->expire = (val&2) ? 3*60*1000 : 0;
           return(1+(val&1));
       }
       sr_cfg->expire = atoi(argument)*60*1000;

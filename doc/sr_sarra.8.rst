@@ -129,8 +129,6 @@ The program will not process message that :
 1- has no source      (message.headers['source'])
 2- has no origin      (message.headers['from_cluster'])
 3- has no destination (message.headers['to_clusters'])
-4- the to_clusters destination list has no match with
-this pump's **cluster,cluster_aliases,gateway_for**  options
 
 
 Important note 1:
