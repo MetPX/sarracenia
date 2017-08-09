@@ -232,12 +232,12 @@ class sr_instances(sr_config):
 
     def status_instance(self):
         if self.pid == None :
-           self.logger.info("%s stopped" % self.instance_str)
+           self.logger.info("%s is stopped" % self.instance_str)
            return
 
         try    : 
                  p = psutil.Process(self.pid)
-                 status = p.status()
+                 status = p.status().replace('sleeping','running')
                  self.logger.info("%s is %s" % (self.instance_str,status))
                  return
         except : pass

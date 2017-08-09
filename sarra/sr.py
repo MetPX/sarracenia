@@ -53,7 +53,7 @@ def invoke(dirconf,pgm,confname,action):
     config  = re.sub(r'(\.conf)','',confname)
 
     try :
-             cfg.logger.info("%s %s %s" % (program,action,config))
+             #cfg.logger.info("%s %s %s" % (program,action,config))
              if program != 'sr_post' :
                 subprocess.check_call([program,action,config])
              else :

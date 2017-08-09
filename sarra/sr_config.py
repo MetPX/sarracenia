@@ -520,7 +520,7 @@ class sr_config:
         setattr(self,opname,None)
 
         if path == 'None' or path == 'none' or path == 'off':
-             self.logger.info("Reset plugin %s to None" % opname ) 
+             self.logger.debug("Reset plugin %s to None" % opname ) 
              return
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
@@ -877,9 +877,6 @@ class sr_config:
                         n = 2
 
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
-                     if self.preserve_mode: 
-                         self.logger.warning("preserve_mode True means chmod will only be used when no remote mode is available")
-
                      self.chmod = int(words[1],8)
                      n = 2
 
@@ -1593,14 +1590,14 @@ class sr_config:
                      #        see post_override plugin.
                      #
                      value = ' '.join(words[1:])
-                     self.logger.warning("unrecognized option %s %s" % (words[0],value))
+                     self.logger.debug("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
                          setattr(self, words[0],[ value ])
                      else:
                          value2=getattr(self,words[0])
                          value2.append(value)
                          setattr(self,words[0],value2)
-                     self.logger.info("extend self.%s = '%s'" % (words[0],getattr(self,words[0])))
+                     self.logger.debug("extend self.%s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
                 (stype, svalue, tb) = sys.exc_info()

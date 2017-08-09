@@ -423,6 +423,28 @@ class sr_sender(sr_instances):
 
         return True
 
+    """
+      FIXME: isMatchingPattern is a copy of the routine in sr_config.
+         this is put here by Jun to get sr_sender restore to work...
+         we should probably fix this at some point, and remove the duplicate.
+ 
+    """
+
+    def isMatchingPattern(self, chaine, accept_unmatch = False):
+
+        for mask in self.masks:
+            self.logger.debug(mask)
+            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            if mask_regexp.match(chaine) :
+               if not accepting : return False
+               self.currentPattern    = pattern
+               self.currentDir        = maskDir
+               self.currentFileOption = maskFileOption
+               self.currentRegexp     = mask_regexp
+               return True
+
+        return accept_unmatch
+
     def run(self):
 
         # present basic config
@@ -459,7 +481,7 @@ class sr_sender(sr_instances):
           
                      self.logger.debug("sr_sender restore, path being matched: %s " % ( urlstr )  )
           
-                     if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
+                     if not self.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
                         self.logger.debug("Rejected by accept/reject options")
                         return False,self.msg
           

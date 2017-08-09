@@ -87,6 +87,39 @@ int sr_consume_setup(struct sr_context *sr_c)
   amqp_boolean_t  exclusive = 0;
   amqp_boolean_t  auto_delete = 0;
   struct sr_topic_t *t;
+  amqp_basic_properties_t props;
+  amqp_table_t table;
+  amqp_table_entry_t table_entries[2];
+
+
+  int tecnt = 0;
+
+  props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG ;
+  props.content_type = amqp_cstring_bytes("text/plain");
+  if ( sr_c->cfg->expire > 0 ) 
+  {
+      table_entries[tecnt].key = amqp_cstring_bytes("x-expiry");
+      table_entries[tecnt].value.kind = AMQP_FIELD_KIND_I64;
+      table_entries[tecnt].value.value.i64 = sr_c->cfg->expire ;
+      tecnt++;
+      props._flags |= AMQP_BASIC_EXPIRATION_FLAG ;
+  } 
+  
+  if ( sr_c->cfg->message_ttl > 0 ) 
+  {
+      table_entries[tecnt].key = amqp_cstring_bytes("x-message-ttl");
+      table_entries[tecnt].value.kind = AMQP_FIELD_KIND_I64;
+      table_entries[tecnt].value.value.i64 = sr_c->cfg->message_ttl ;
+      tecnt++;
+      props._flags |= AMQP_BASIC_TIMESTAMP_FLAG ;
+  } 
+  table.num_entries = tecnt;
+  table.entries = table_entries;
+  
+  props.delivery_mode = 2; /* persistent delivery mode */
+  props.headers = table;
+
+
 
   msg.user_headers=NULL;
 
@@ -99,7 +132,7 @@ int sr_consume_setup(struct sr_context *sr_c)
              sr_c->cfg->durable, 
              exclusive, 
              auto_delete, 
-             amqp_empty_table 
+             table 
   );
   /* FIXME how to parse r for error? */
 

@@ -156,6 +156,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   char  sumalgo;
   char *sumstr;
   signed int status;
+  int lasti;
   int commonhdridx;
   unsigned long block_size;
   unsigned long block_count;
@@ -204,8 +205,17 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   strcpy( routingkey, sr_c->cfg->topic_prefix );
 
   strcat( routingkey, fn );
+  lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(routingkey) ; i++ )
-      if ( routingkey[i] == '/' ) routingkey[i]='.';
+      if ( routingkey[i] == '/' ) 
+      {
+           routingkey[i]='\0';
+           if ( lasti > 0 ) 
+           {
+              routingkey[lasti]='.';
+           }
+           lasti=i;
+      }
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "posting, routingkey: %s\n", routingkey );
@@ -371,7 +381,7 @@ int sr_post_init( struct sr_context *sr_c )
     amqp_rpc_reply_t reply;
 
     amqp_exchange_declare( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
-          amqp_cstring_bytes("topic"), 0, 1, 0, 0, amqp_empty_table );
+          amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
 
  
     reply = amqp_get_rpc_reply(sr_c->conn);

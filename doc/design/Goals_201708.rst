@@ -21,20 +21,28 @@ Feedback from a few small attempts to implement user based flows:
 
  - remove the file names from topic.
 
- - add *events* to consumers.  Sr_subscribe *-events modify*.  will not consume/reflect symlinks, or file deletions. In message processing code, will reject before applying accept/reject.
+ - add *events* to consumers. Sr_subscribe *-events modify*.  will not consume/reflect symlinks, or file deletions. In message processing code, will reject before applying accept/reject.
 
  - also support events in post... (figure out how to post a file that doesn't exist as a remove?)
 
  - make multi-switch broker stuff default to *working* without settings (*gateway for*, *cluster*, etc...)
 
- - *to* should default to the broker hostname, at  least. ( like sr_cpost. )
+ - *to* should default to the broker hostname, at least. ( like sr_cpost. )
 
  - SFTP should work using openSSH's credential files (already in paramiko.) just need to suppress the validation in sarra.
 
- - sarra post_document_root/directory stuff.  (will only find files if you specify a post_documentroot, 
+ - Sarra should work exactly like subscribe, but just add posting at the end.
+   so *directory* should do the right thing.  Currently, it seems to ignore that.
+   sarra post_document_root/directory stuff.  (will only find files if you specify a post_documentroot, 
    but then it refuses to post the whole path, because of post_documentroot.)
    sarra - posting file: url's.  standard use case for mortals.
    (get around it by sr_sender using *directory*, but relatively ugly.)
+
+   one approach::
+
+      sr_subscribe could accept post_document_root to set the directory initially...
+      post_document_root provides default if no directory specified (so old sarra configs need no mod.)
+      or say 
 
  - review all usage strings, to make them accurate (all are out of date.)
 
@@ -49,5 +57,62 @@ Feedback from a few small attempts to implement user based flows:
  - have sr_post work like cpost, with *sleep* to become a *watch*
 
  - have heartbeat default print some stats: bytes downloads, msg. downloaded, rates during interval between hearbeats: bytes & messages per second.
+
+ - Add user defined headers '-headers printer=cidulas '
+
+ - headers received and not understood should pass through unmodified (upward compatibility.)
+
+ - sr start --> should look at post/ subdir for confiugurations where sleep > 0, and start those.
+
+
+ - after talking with michel, talking about init style [ consumer ] [ post ] [ report ] sections.
+   another possibility ... what if kept same file, but add a *meta* config:
+
+      in ~/.config/sarra/x.conf
+
+      cat >>x.conf <<EOT
+ 
+      consume  patente.conf
+
+      post  poster.conf
+
+      report report.conf
+
+      EOT
+
+      sr_subscribe start x
+   
+      looks for patente.conf in consume/ subdir, poster.conf in post/ subdir, report.conf in report/ subdir.
+      
+      finds x, then each file has broker/exchange/accept/reject etc... for 'consume' or 'post' or 'report'
+
+      hmm.
+
+   dunno.
+
+ - change default 'expiry' to ... something that will auto delete unused queues before they become a problem.
+   5 minutes? that way it becomes really obvious... if not explicit expire set, add a log message:
+   'WARNING: messages on server will only be queued until expire (%d minutes) when disconnected"
+   so that users know. 
+
+ - can we clean up sr output, so there are far fewer lines to read?
+   change the unknown variable warning to debug?
+
+
+ - option... wistful... make debug logging output a bitmask...  (only put certain bits in debug. requires changing logger 
+   interface to add 'whereami' to every log message.  travail de moine.)::
+
+       plugins  01
+       sender   02
+       config   04 
+       consume  08
+       localio  10
+       creds    20
+       post     40
+       report   80
+
+   so loglevel becomes (  debug:plugins, warn:sender,  ??) dunno. not baked.
+
+
 
 

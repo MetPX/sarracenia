@@ -4,8 +4,11 @@
 
 **git repo(unreleased)**
 
+
+* getting rid of cluster routing logice, gateway_for/, to be implemented with plugins.
 * debian packaging for C coming.
-* C cache is complete.
+* C posting library, including sr_cpost that replicates post and watch is complete.
+* C libc shim that calls C posting library complete.
 * getting rid of random checksums (L & R -> SHA512 digest.)
 
 **2.17.07a4**

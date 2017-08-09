@@ -106,10 +106,10 @@ class sr_shovel(sr_instances):
 
         # make a single list for clusters that we accept message for
 
-        self.accept_msg_for_clusters      = [ self.cluster ]
-        self.accept_msg_for_clusters.extend ( self.cluster_aliases )
-        self.accept_msg_for_clusters.extend ( self.gateway_for  )
-        self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
+        #self.accept_msg_for_clusters      = [ self.cluster ]
+        #self.accept_msg_for_clusters.extend ( self.cluster_aliases )
+        #self.accept_msg_for_clusters.extend ( self.gateway_for  )
+        #self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
 
         # default queue name if not given
 
