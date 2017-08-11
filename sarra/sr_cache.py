@@ -33,6 +33,18 @@
 
 import os,sys,time
 
+
+#============================================================
+# sr_cache supports/uses :
+#
+# cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
+#              each line in file is
+#              sum time path part
+#
+# cache_dict : {}  
+#              cache_dict[sum] = [ (time1,[path1,part1]),(time2,[path2,part2])...]
+#
+
 class sr_cache():
 
     def __init__(self, parent ):
@@ -42,64 +54,176 @@ class sr_cache():
         self.logger        = parent.logger
 
         self.expire        = parent.caching
-        self.cache_file    = parent.user_cache_dir + os.sep + 'cache'
+
+        self.cache_dict    = {}
+        self.cache_file    = None
         self.fp            = None
 
         self.on_cache_list = self.parent.on_cache_list
         self.last_expire   = time.time()
 
-        parent.logger.debug("sr_cache file %s" % self.cache_file)
-        self.load()
+    def check(self, key, path, part):
+        self.logger.debug("sr_cache check")
 
-        #if parent.nbr_instances > 1 :
+        # set time and value
+        now   = time.time()
+        value = [path,part]
 
-    def add(self, key, path, part):
-        self.logger.debug("sr_cache add")
+        # new... add
+        if not key in self.cache_dict :
+           self.logger.debug("new")
+           self.cache_dict[key] = [(now,value)]
+           self.fp.write("%s %f %s %s\n"%(key,now,path,part))
+           return False
 
-        if key in self.cacheDict : return False
+        # key (sum) in cache
+        for i,tup in enumerate(self.cache_dict[key]) :
+            t,v = tup
+            # same path/part update time
+            self.logger.debug("compare %s %s" %(v,value))
+            if v == value :
+               self.cache_dict[key][i] = (now,value)
+               return True
 
-        now = time.time()
-        self.cacheDict[key] = [now,path,part]
+        self.logger.debug("differ")
+        # key (sum) in cache...
+        # but not same path or not same part ...
+        # MG --- does this make sense ? ---
+
+        self.cache_dict[key].append( (now,value) )
         self.fp.write("%s %f %s %s\n"%(key,now,path,part))
-
-        # cache expire roll
-        self.check_expire()
-
-        return True
-
+        return False
+           
     def clean(self):
         self.logger.debug("sr_cache clean")
-        self.fp.close()
-        os.unlink(self.cache_file)
 
-        self.fp = open(self.cache_file,'w')
-        newDict = {}
-        now     = time.time()
-        for key in self.cacheDict.keys() :
-            lst = self.cacheDict[key]
-            ttl = now - lst[0]
-            if ttl > self.expire : continue
-            newDict[key] = lst
-            self.fp.write("%s %f %s %s\n"%(key,lst[0],lst[1],lst[2]))
+        # create refreshed dict
 
-        self.cacheDict = newDict
-        
-    def clear(self):
-        self.logger.debug("sr_cache clear")
-        self.cacheDict = {}
-        os.unlink(self.cache_file)
-        self.fp = open(self.cache_file,'w')
+        new_dict = {}
+        now      = time.time()
+
+        # from  cache[sum] = [(time,[path,part]), ... ]
+        for key in self.cache_dict.keys() :
+            new_dict[key] = []
+            for t,v in self.cache_dict[key] :
+                # expired or keep
+                ttl = now - t
+                if ttl > self.expire : continue
+                new_dict[key].append( (t,v) )
+
+            if len(new_dict[key]) == 0 :
+               del new_dict[key]
+
+        # set cleaned cache_dict
+        self.cache_dict = new_dict
 
     def close(self, unlink=False):
         self.logger.debug("sr_cache close")
         self.fp.flush()
         self.fp.close()
         self.fp = None
+
         if unlink : os.unlink(self.cache_file)
 
-    def find(self, key):
-        self.logger.debug("sr_cache find")
-        return key in self.cacheDict
+        self.cache_dict = {}
+
+    def free(self):
+        self.logger.debug("sr_cache free")
+        self.cache_dict = {}
+        os.unlink(self.cache_file)
+        self.fp = open(self.cache_file,'w')
+
+    def load(self):
+        self.logger.debug("sr_cache load")
+        self.cache_dict  = {}
+
+        # create file if not existing
+        if not os.path.isfile(self.cache_file) :
+           self.fp = open(self.cache_file,'w')
+           self.fp.close()
+
+        # set time 
+        now = time.time()
+
+        # open file (read/append)... 
+        # read through
+        # keep open to append entries
+
+        self.fp = open(self.cache_file,'r+')
+        while True :
+              # read line, parse words
+              line  = self.fp.readline()
+              if not line : break
+
+              # words  = [ sum, time, path, part ]
+              words    = line.split()
+              pathpart = words[2:]
+
+              # skip expired entry
+              ctime = float(words[1])
+              ttl   = now - ctime
+              if ttl > self.expire : continue
+
+              # key = sum and value = ( time, [ path, part ])
+              key      = words[0]
+              value    = (ctime,pathpart)
+
+              #  key already in cache
+              if key in self.cache_dict :
+                 v = None
+                 for t,v in self.cache_dict[key] :
+                     if v == pathpart : break
+                 if v == pathpart : continue
+                 # key already in cache
+                 self.cache_dict[key].append(value)
+                 continue
+
+              #  add key
+              self.cache_dict[key] = [ value ]
+
+    def open(self, cache_file = None):
+
+        self.cache_file = cache_file
+
+        if cache_file == None :
+           self.cache_file  = self.parent.user_cache_dir + os.sep 
+           self.cache_file += 'recent_files_%.3d.cache' % self.parent.instance
+
+        self.load()
+
+    def save(self):
+        self.logger.debug("sr_cache save")
+
+        # close,remove file, open new empty file
+        self.fp.close()
+        os.unlink(self.cache_file)
+        self.fp = open(self.cache_file,'w')
+
+        # write unexpired entries, create refreshed dict
+        new_dict = {}
+        now      = time.time()
+
+        # from  cache[sum] = [(time,[path,part]),...]
+        for key in self.cache_dict.keys():
+            new_dict[key] = []
+            for t,v in self.cache_dict[key]:
+
+                # expired are skipped
+                ttl = now - t
+                if ttl > self.expire : continue
+
+                # save
+                new_dict[key].append( (t,v) )
+                self.fp.write("%s %f %s %s\n"%(key,t,v[0],v[1]))
+
+            # all expired
+            if len(new_dict[key]) == 0 :
+               del new_dict[key]
+
+        # set cleaned cache_dict and
+        # keep file open for append
+
+        self.cache_dict = new_dict
 
     def check_expire(self):
         self.logger.debug("sr_cache check_expire")
@@ -108,28 +232,6 @@ class sr_cache():
         if elapse > self.expire :
            self.__on_cache__()
            self.last_expire = now
-
-    def load(self):
-        self.logger.debug("sr_cache load")
-        self.cacheDict  = {}
-
-        # create file if not existing
-        if not os.path.isfile(self.cache_file) :
-           self.fp = open(self.cache_file,'w')
-           self.fp.close()
-
-        # open file for append... keep file open for add
-        now = time.time()
-        self.fp = open(self.cache_file,'r+')
-        while True :
-              line  = self.fp.readline()
-              if not line : break
-              words = line.split()
-              ctime = float(words[1])
-              ttl   = now - ctime
-              if ttl > self.expire : continue
-              words[1] = ctime
-              self.cacheDict[words[0]] = words[1:]
 
     def __on_cache__(self):
         self.logger.debug("__on_cache__")
@@ -141,12 +243,6 @@ class sr_cache():
         self.clean()
 
         return True
-
-    # update time in cache entry
-    def touch(self,key):
-        self.logger.debug("sr_cache touch")
-        if not key in self.cacheDict : return
-        self.cacheDict[key][1] = time.time()
 
 # ===================================
 # self_test
@@ -180,37 +276,79 @@ def self_test():
 
     cfg.general()
 
-    optH = "caching 10"
+    optH = "caching 7"
     cfg.option( optH.split()  )
 
     # check creation addition close
     cache = sr_cache(cfg)
-    cache.add('key1','file1','part1')
-    cache.add('key2','file2','part2')
-    logger.debug(cache.cacheDict)
+    cache.open()
+    cache.check('key1','file1','part1')
+    cache.check('key2','file2','part2')
+    cache.check('key1','file1','part1')
+    logger.debug(cache.cache_dict)
     cache.close()
 
     cache = sr_cache(cfg)
-    print(cache.cacheDict)
+    cache.open()
+    cache.load()
+    logger.debug(cache.cache_dict)
+    time.sleep(10)
+    cache.check('key3','file3','part3')
+    cache.check_expire()
+    cache.check('key4','file4','part4')
+    logger.debug(cache.cache_dict)
+    cache.close()
 
     time.sleep(10)
-    cache.add('key3','file3','part3')
-    cache.close()
-
-    time.sleep(5)
     cache = sr_cache(cfg)
-    print(cache.cacheDict)
+    cache.open()
+    cache.load()
+    logger.debug(cache.cache_dict)
     cache.close()
 
     #add 10000 entries
     cache = sr_cache(cfg)
+    cache.open()
+    cache.load()
     i = 0
     now = time.time()
     while i<10000 :
-          cache.add('key%d'%i,'file%d'%i,'part%d'%i)
+          cache.check('key%d'%i,'file%d'%i,'part%d'%i)
           i = i + 1
+
+    logger.debug(len(cache.cache_dict))
+    cache.free()
+    logger.debug(cache.cache_dict)
     cache.close()
-    print("elapse %f"%(time.time()-now))
+
+    #add 10000 entries
+    cache = sr_cache(cfg)
+    cache.open()
+    cache.load()
+    i = 0
+    now = time.time()
+    while i<100 :
+          time.sleep(0.1)
+          cache.check('key%d'%i,'file%d'%i,'part%d'%i)
+          time.sleep(0.1)
+          cache.check('key%d'%i,'file%d'%i,'part0%d'%i)
+          time.sleep(0.1)
+          cache.check('key%d'%i,'file%d'%i,'part1%d'%i)
+          time.sleep(0.1)
+          cache.check('key%d'%i,'file%d'%i,'part2%d'%i)
+          i = i + 1
+    logger.debug(len(cache.cache_dict))
+    time.sleep(3)
+    cache.clean()
+    logger.debug(len(cache.cache_dict))
+    time.sleep(3)
+    cache.check_expire()
+    logger.debug(len(cache.cache_dict))
+    time.sleep(3)
+    cache.save()
+    logger.debug(len(cache.cache_dict))
+    cache.close()
+    logger.debug("elapse %f"%(time.time()-now))
 
 
 # ===================================
