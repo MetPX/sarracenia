@@ -49,7 +49,7 @@ class PartCheck(object):
           lag= now-then
 
           if msg.onfly_checksum != msg.checksum :
-             msg = "checksum differ - %s - %s  msg %s" % (msg.new_file, parent.ongly_checksum,msg.checksum)
+             msg = "checksum differ - %s - %s  msg %s" % (msg.new_file, parent.onfly_checksum,msg.checksum)
              if lag > parent.part_check_lag_threshold :
                  logger.warning("part_check might just be referring to an older version of file, but " + msg)
                  return True
