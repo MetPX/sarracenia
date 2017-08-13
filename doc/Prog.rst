@@ -138,7 +138,9 @@ Another useful attribute available in parent, is 'msg', which has all the attrib
 of the message being processed.  All of the headers from the message, as defined
 in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the plugin,
 such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
-section for an exhaustive list.
+section for an exhaustive list.  Generally, it is best to output only debug log
+messages in the __init__ routine for a plugin, because it is executed every time an
+*sr status* command is run, which can rapidly become unwieldy. 
 
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.

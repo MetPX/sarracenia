@@ -250,7 +250,11 @@ class sr_http():
                    self.req.headers['Range'] = str_range
 
                 # open... we are connected
-                self.http = urllib.request.urlopen(self.req)
+                if self.timeout == None :
+                   self.http = urllib.request.urlopen(self.req)
+                else :
+                   self.http = urllib.request.urlopen(self.req, timeout=self.timeout)
+
                 self.connected = True
 
         except:
@@ -494,33 +498,39 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
-          self.info    = print
+          self.info    = self.silence
           self.warning = print
 
 def self_test():
 
     logger = test_logger()
 
-    # config setup
+
+    #setup consumer to catch first post
     cfg = sr_config()
     cfg.defaults()
     cfg.general()
-    cfg.debug  = True
-    cfg.logger = logger
-    cfg.kbytes_ps = 10.0
-
-    #setup consumer to catch first post
-    #dd.weather has strange permissions, so queue declare fails. 'unknown method'
-    #ok, cfg.broker     = cfg.validate_urlstr("amqp://anonymous@dd.weather.gc.ca/")
-
-    ok, cfg.broker     = cfg.validate_urlstr("amqp://tsub@localhost/")
+    cfg.logger         = logger
+    cfg.debug          = True
+    cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
+    cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
+    cfg.durable        = False
+    cfg.expire         = 30
+    cfg.message_ttl    = 30
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None
-    cfg.reset          = True
+    cfg.kbytes_ps      = 100.0
+    cfg.reset          = False
+    cfg.timeout        = 10.0
+
+    opt1 = 'accept .*'
+    cfg.option( opt1.split()  )
+    opt2 = "heartbeat 1"
+    cfg.option( opt2.split()  )
 
     consumer = sr_consumer(cfg)
 
@@ -530,8 +540,10 @@ def self_test():
           if ok: break
 
     cfg.msg = msg
-    cfg.msg.sumalgo = None
-    cfg.msg.new_file = "toto"
+    cfg.set_sumalgo('d')
+    cfg.new_dir  = "."
+    cfg.new_file = "toto"
+
     cfg.msg.local_offset = 0
 
     try:
@@ -551,6 +563,10 @@ def self_test():
           tr.download(cfg)
           logger.debug("checksum = %s" % cfg.msg.onfly_checksum)
           logger.debug("checksum = %s" % cfg.msg.checksum)
+
+          cfg.timeout = 12
+          cfg.inflight = None
+          tr.download(cfg)
 
     except:
           logger.error("sr_http TEST FAILED")

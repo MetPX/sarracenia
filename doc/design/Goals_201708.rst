@@ -116,3 +116,111 @@ Feedback from a few small attempts to implement user based flows:
 
 
 
+Thneed
+------
+
+This is for discussion, not execution...
+
+So Michel has been talking for a while about coalescing everything into one component.
+so we can have a new config file format that is init-like with sections. The
+different common requirements have the same names in the different sections.
+We have one binary... sarracenia?  and it´s config looks like::
+  
+  [ list ]
+  
+  method=queue|poll|file
+  
+  broker amqps:...
+  subtopic  h.b.c.#
+  
+  sum 
+  parts 
+  
+  etc...
+  
+  [ filter ]
+  
+  reject .*grib.*
+  accept .*
+  cache on
+  
+  [ process ]
+  
+  method=download|sender|off
+  
+  [ post ]
+  
+  broker
+  
+  on_post
+  
+  [ report ]
+  method=off
+  broker
+  topic_prefix
+  
+  
++----------------+-----------------------------------------------------+
+|                |                                                     |
+| old component  | Corresponding configuration.                        |
+|                |                                                     |
++----------------+-----------------------------------------------------+
+|                |                                                     |
+| sr_subscribe   | [list]                                              |
+|                | method queue                                        |  
+|                | broker ...                                          |
+|                |                                                     |
+|                | [process]                                           |
+|                | method download                                     |
+|                |                                                     |
++----------------+-----------------------------------------------------+
+|                |                                                     |
+| sr_winnow      | [list]                                              |
+| sr_shovel      | method queue                                        |
+| sr_sarra       | broker xxx                                          |
+| sr_sender      | exchange fsadggds                                   |
+|                |                                                     |
+|                | [filter]                                            |
+|                | accept <pattern> DESTFN=xyz                         |
+|                | cache on                                            |
+|                |                                                     |
+|                | [process]                                           |
+|                |   on_message runs here?                             |
+|                |                                                     |
+|                |   method off                                        |
+|                |                                                     |
+|                |   (download for sr_sarra) -> do_download            |
+|                |   (sender for sr_sender) -> do_sender               |
+|                |   (forward for download&send?)                      |
+|                |                                                     |
+|                |   on_part, on_file                                  |
+|                |                                                     |
+|                | [post]                                              |
+|                | broker yyy                                          |
+|                | exchange fuddygds                                   |
+|                |                                                     |
+|                | [report]                                            |
+|                | broker yyy                                          |
+|                | exchange fuddygds                                   |
+|                |                                                     |
++----------------+-----------------------------------------------------+
+|                |                                                     |
+| sr_watch       | [list]                                              |
+|                | method file                                         |
+|                | sleep    5                                          |
+|                |                                                     |
+|                |                                                     |
++----------------+-----------------------------------------------------+
+
+unresolved questions:
+   - syntax changes considerably, likely need a converter, that ingests old config and *updates* to new.
+   - one very long man page at the end of this!
+   - how does command line usage reflect change of *section*, use each *section* name as a keyword?
+   - sr_subscribe becomes:  sarracenia -get -method subscribe -process -method download 
+   - just place these files in ~/.config/sarra/<config> (not component location.)
+   
+Advantages:
+   - single component for whole application (except start|stop?) 
+   - could all be packed into one big script (like dd_subscribe was.)
+   - less concepts, less repetition, less code. just one algorithm with settings.
+

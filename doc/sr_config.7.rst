@@ -428,16 +428,26 @@ is set, or if all plugins provided returned True, the message is processed by th
 ROUTING
 =======
 
+NOTE::
+   The routing logic hasn't been used so far.  Mostly, Pump administrators are doing it manually
+   and this logic is overridden or given useless values, so the code has been withdrawn, 
+   will revisit at a later date.  The one thing that remains is 'to'/'to_cluster' for injector
+   to specify intent.  how it gets interpreted by pumps is subject to a new implementation.
+
 Sources of data need to indicate the clusters to which they would like data to be delivered.
 Data Pumps need to identify themselves, and their neighbors in order to pass data to them.
 
-- **cluster** The name of the local cluster (where data is injected.)
-
-- **cluster_aliases** <alias>,<alias>,...  Alternate names for the cluster.
-
-- **gateway_for** <cluster>,<cluster>,... additional clusters reachable from local pump.
-
 - **to** <cluster>,<cluster>,<cluster>... destination pumps targetted by injectors.
+
+Rest of these are under review, have been removed from implementation::
+
+  - **cluster** The name of the local cluster (where data is injected.)
+
+  - **cluster_aliases** <alias>,<alias>,...  Alternate names for the cluster.
+
+  - **gateway_for** <cluster>,<cluster>,... additional clusters reachable from local pump.
+
+This logic will be re-implemented using plugins added to ingestors later.
 
 Components which inject data into a network (sr_post, sr_poll, sr_watch) need to set 'to' addresses
 for all data injected.  Components which transfer data between pumps, such as sr_sarra and sr_sender, 
