@@ -218,9 +218,52 @@ unresolved questions:
    - how does command line usage reflect change of *section*, use each *section* name as a keyword?
    - sr_subscribe becomes:  sarracenia -get -method subscribe -process -method download 
    - just place these files in ~/.config/sarra/<config> (not component location.)
-   
+   - because the syntax to access options will change. All of the plugins also need to be updated.
+     (API change.) + and make the old work with the new during transition.
+
 Advantages:
    - single component for whole application (except start|stop?) 
    - could all be packed into one big script (like dd_subscribe was.)
    - less concepts, less repetition, less code. just one algorithm with settings.
+
+If we undertake such a change, one thing is clear:  Need something that read the old files and spits out the new ones (mass converter.)
+
+
+ConfigParser
+------------
+
+I imagine one goal of changing config file format is to reduce less code by using python's configparser modules.
+But it builds a dict, rather than a list, which means multiple accept/reject don't work, and throw an error.
+
+One can try to get around it like so::
+  
+    
+    filter= 
+      reject .*GIF.*
+      reject .*GRIB.*
+      accept .*
+
+Placing all the reject/accept clauses in a single value, but then the question is what to do
+with *include*.  One can make [include] a separate section? (what about nested?) need to get ordering
+right.  so would put *filter9* in the main file, and then *filter0* in an include file, and
+then the parsing logic would use them in order?  
+
+What if *include* sets something other than accept/reject... hmm.. 
+so each include file has [list] ... [filter] ... [post] ... [report] and then are included to 
+each section...
+
+
+
+Thneed II
+---------
+
+We take all of the above stuff, and we forget about trying to adopt ConfigParser.
+we just add to the existing module [list], [filter], [process], [post] and just use
+that as a textual substition in config settings. ie.  [list]  broker -> self.list_broker
+so you just need a few aliases, and everything still works, but it is clearer in the 
+the config files.
+
+probably a lot less effort to do this, than the above.
+
+
 
