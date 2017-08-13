@@ -158,7 +158,9 @@ reference: http://www.imatix.com/articles:whats-wrong-with-amqp/
  *Well, no. What we have is a smelly mess looking like Godzilla's regurgitated breakfast. You can recognize pieces of Tokyo, but it's not a place you'd want to live in anymore. In communications, reliability comes mainly from making servers that don't crash. And this comes from making pieces that are simpler. And this comes from lowering the bar on the demands for perfection. Ironically, the ambitions of AMQP to be perfect have the opposite effect.*
 
 Even very good people get this stuff wrong, and regardless of the amount of effort and expense thrown at the problem,
-There is no perfect solution possible.  Often one is in the realm of diminishing returns, and the complexity imposes a cost of people not understanding what it does, what the failure modes are, and how to deal with them in practice.   There is true value in simplicity.
+There is no perfect solution possible.  Often one is in the realm of diminishing returns, and the complexity imposes 
+a cost of people not understanding what it does, what the failure modes are, and how to deal with them in practice.   
+There is true value in simplicity.
 
 
 
