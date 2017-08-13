@@ -524,7 +524,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->exchange = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "expire" ) || !strcmp( "expiry" ) ) {
+  } else if ( !strcmp( option, "expire" ) || !strcmp( option, "expiry" ) ) {
       if isalpha(*argument) {
           val = StringIsTrue(argument);
           sr_cfg->expire = (val&2) ? 3*60*1000 : 0;
