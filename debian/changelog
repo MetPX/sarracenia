@@ -1,3 +1,22 @@
+metpx-sarracenia (2.17.08a1) unstable; urgency=medium
+
+  * sr now starts|stops sr_cpost when appropriate.
+  * tools now use ~/.ssh credentials, without need for a credentials.conf entry.
+  * throttle use better time function
+  * sr_message  topic without filename
+  * sr_http  timeout + self test
+  * sr_sftp self test works
+  * sr_sftp/sr_ftp call self.close on download or send problems (attempted bugfix.)
+  * sr_sender sftp/ftp bugfix now honours *mirror true* default. was ignored before.
+  * sr_cache same algorithm as the C implementation
+  * getting rid of cluster routing logic, gateway_for/, to be implemented with plugins.
+  * debian packaging for C. 
+  * C posting library, including sr_cpost that replicates post and watch is complete.
+* * C libc shim that calls C posting library complete.
+* * getting rid of random checksums (L & R -> SHA512 digest.)
+
+ -- Peter Silva <peter@idefix>  Mon, 14 Aug 2017 17:54:33 -0400
+
 metpx-sarracenia (2.17.07a4) unstable; urgency=medium
 
   * changed *chmod* interpretation. Was obsolete in favour of umask, now an option to override umask.
