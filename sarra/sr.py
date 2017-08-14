@@ -34,7 +34,7 @@
 #
 #
 
-import sys, os, os.path, time, subprocess
+import os, os.path, shutil, subprocess, sys, time
 
 try :    
          from sr_config         import *
@@ -60,20 +60,21 @@ def invoke(dirconf,pgm,confname,action):
                 subprocess.check_call([program,action,config])
                 return
 
-             # sr_post cases
+             # sr_post/sr_cpost cases  
 
              confpath = dirconf + os.sep + pgm + os.sep + confname
-
-             # sr_post general actions
-             if action in ['cleanup','declare','setup'] :
-                subprocess.check_call([program,'-c',confpath,action])
-                return
-
-             # sr_post behaving like sr_watch only (sleep > 0)
              post = sr_post(confpath)
+
+             # if sleep... use sr_cpost
              if post.sleep > 0 :
-                subprocess.check_call([program,'-c',confpath,action])
-                return
+                try :
+                        sr_cpost = shutil.which('sr_cpost')
+                        if sr_cpost == None : post.logger.error("sr_cpost not found but option sleep > 0")
+                        if sr_cpost != None : program = sr_cpost
+                except: pass
+
+             subprocess.check_call([program,'-c',confpath,action])
+             return
 
     except :
              (stype, svalue, tb) = sys.exc_info()

@@ -433,6 +433,10 @@ class sr_post(sr_config):
  
         return watch_path
 
+    # ===================== 
+    # sarra program actions 
+    # ===================== 
+
     def cleanup(self):
 
         # on posting host
@@ -476,13 +480,10 @@ class sr_post(sr_config):
             host.exchange_declare(x)
 
 
+    # setup: declare posting exchanges
+
     def setup(self):
-
-        # declare posting exchanges
-
         self.declare()
-       
-
 
 # ===================================
 # MAIN
@@ -508,14 +509,25 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    if action in ['cleanup','declare','setup' ] :
-       post = sr_post(config,args)
-    else :
-       post = sr_post(config=None,args=sys.argv[1:])
+    # unsupported action in python (but supported in sr_cpost)
+    if action in ['start', 'stop', 'status', 'restart', 'reload' ]:
+         post = sr_post(config,args)
+         post.logger.info("%s %s %s (unimplemented in python)" % (post.program_name,os.path.basename(config),action))
+         sys.exit(0)
+
+    # supported actions in both
+    elif action in ['cleanup','declare','setup' ] :
+         post = sr_post(config,args)
+
+    # default case in python
+    else:
+         post = sr_post(config=None,args=sys.argv[1:])
 
     if post.in_error : sys.exit(1)
 
     try :
+
+
         post.connect()
 
         if   action == 'cleanup'    :
