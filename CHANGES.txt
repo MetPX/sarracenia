@@ -4,7 +4,16 @@
 
 **git repo(unreleased)**
 
-
+* sr_pika tested with flow stuff...
+* sr uses .config/sarra/post directory ... check for option sleep to call sr_cpost
+* throttle use better time function
+* sr_message  topic without filename
+* sr_http  timeout + self test
+* sr_sftp self test works
+* sr_sftp/sr_ftp call self.close on download or send problems
+* sr_sftp minimal credentials based on SSH configs being ok
+* sr_sftp read/uses ~/.ssh/config if needed/provided
+* sr_cache as the C implementation
 * getting rid of cluster routing logice, gateway_for/, to be implemented with plugins.
 * debian packaging for C coming.
 * C posting library, including sr_cpost that replicates post and watch is complete.
