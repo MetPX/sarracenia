@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+**2.17.08a1**
+
 * sr_pika tested with flow stuff...
 * sr uses .config/sarra/post directory ... check for option sleep to call sr_cpost
 * throttle use better time function
