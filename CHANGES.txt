@@ -13,9 +13,10 @@
 * sr_sftp/sr_ftp call self.close on download or send problems
 * sr_sftp minimal credentials based on SSH configs being ok
 * sr_sftp read/uses ~/.ssh/config if needed/provided
-* sr_cache as the C implementation
-* getting rid of cluster routing logice, gateway_for/, to be implemented with plugins.
-* debian packaging for C coming.
+* sr_sender sftp/ftp bugfix now honours *mirror true* default. was ignored before.
+* sr_cache same algorithm as the C implementation
+* getting rid of cluster routing logic, gateway_for/, to be implemented with plugins.
+* debian packaging for C. 
 * C posting library, including sr_cpost that replicates post and watch is complete.
 * C libc shim that calls C posting library complete.
 * getting rid of random checksums (L & R -> SHA512 digest.)

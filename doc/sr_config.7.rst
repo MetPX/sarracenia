@@ -197,11 +197,15 @@ passwords and settings needed by components.  The format is one entry per line. 
 - **ftps://user7:De%3Aize@host  passive,binary,tls**
 - **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
 
+
 In other configuration files or on the command line, the url simply lacks the
 password or key specification.  The url given in the other files is looked
 up in credentials.conf. 
 
 Note::
+ SFTP credentials are optional, in that sarracenia will look in the .ssh directory
+ and use the normal SSH credentials found there.
+
  These strings are URL encoded, so if an account has a password with a special 
  character, its URL encoded equivalent can be supplied.  In the last example above, 
  **%2f** means that the actual password isi: **/dot8**
