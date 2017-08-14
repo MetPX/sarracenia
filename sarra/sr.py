@@ -69,12 +69,11 @@ def invoke(dirconf,pgm,confname,action):
                 subprocess.check_call([program,'-c',confpath,action])
                 return
 
-             # Not ready yet... sr_post should support all actions
-             # sr_post behaving like sr_watch only
-             #post = sr_post(confpath)
-             #if post.sleep > 0 :
-             #   subprocess.check_call([program,'-c',confpath,action])
-             #   return
+             # sr_post behaving like sr_watch only (sleep > 0)
+             post = sr_post(confpath)
+             if post.sleep > 0 :
+                subprocess.check_call([program,'-c',confpath,action])
+                return
 
     except :
              (stype, svalue, tb) = sys.exc_info()
