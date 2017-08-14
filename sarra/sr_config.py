@@ -489,9 +489,6 @@ class sr_config:
 
         # Plugin defaults
 
-        self.on_cache             = None
-        self.on_cache_list        = []
-
         self.execfile("on_message",'msg_log')
         self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
@@ -1202,19 +1199,6 @@ class sr_config:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
-
-                elif words0 == 'on_cache': # See: sr_config.7
-                     self.execfile("on_cache",words1)
-                     if ( self.on_cache == None ):
-                        if self.isNone(words1):
-                           self.on_cache_list = []
-                        else:
-                           ok = False
-                           needexit = True
-                     else:
-                        self.on_cache_list.append(self.on_cache)
-
-                     n = 2
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.execfile("on_file",words1)

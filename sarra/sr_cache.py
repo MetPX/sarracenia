@@ -59,7 +59,6 @@ class sr_cache():
         self.cache_file    = None
         self.fp            = None
 
-        self.on_cache_list = self.parent.on_cache_list
         self.last_expire   = time.time()
 
     def check(self, key, path, part):
@@ -230,19 +229,8 @@ class sr_cache():
         now    = time.time()
         elapse = now - self.last_expire
         if elapse > self.expire :
-           self.__on_cache__()
            self.last_expire = now
-
-    def __on_cache__(self):
-        self.logger.debug("__on_cache__")
-
-        # invoke on_cache when provided
-        for plugin in self.on_cache_list:
-           if not plugin(self): return False
-
-        self.clean()
-
-        return True
+           self.clean()
 
 # ===================================
 # self_test
@@ -257,9 +245,9 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
-          self.info    = print
+          self.info    = self.silence
           self.warning = print
 
 def self_test():
