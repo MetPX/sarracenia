@@ -60,6 +60,7 @@ class sr_cache():
         self.fp            = None
 
         self.last_expire   = time.time()
+        self.count         = 0
 
     def check(self, key, path, part):
         self.logger.debug("sr_cache check")
@@ -73,7 +74,8 @@ class sr_cache():
            self.logger.debug("new")
            self.cache_dict[key] = [(now,value)]
            self.fp.write("%s %f %s %s\n"%(key,now,path,part))
-           return False
+           self.count += 1
+           return True
 
         # key (sum) in cache
         for i,tup in enumerate(self.cache_dict[key]) :
@@ -82,24 +84,27 @@ class sr_cache():
             self.logger.debug("compare %s %s" %(v,value))
             if v == value :
                self.cache_dict[key][i] = (now,value)
-               return True
+               return False
 
         self.logger.debug("differ")
+
         # key (sum) in cache...
-        # but not same path or not same part ...
+        # same path but not same part ...
         # MG --- does this make sense ? ---
 
         self.cache_dict[key].append( (now,value) )
         self.fp.write("%s %f %s %s\n"%(key,now,path,part))
-        return False
+        self.count += 1
+        return True
            
     def clean(self):
         self.logger.debug("sr_cache clean")
 
         # create refreshed dict
 
-        new_dict = {}
-        now      = time.time()
+        now        = time.time()
+        new_dict   = {}
+        self.count = 0
 
         # from  cache[sum] = [(time,[path,part]), ... ]
         for key in self.cache_dict.keys() :
@@ -109,6 +114,7 @@ class sr_cache():
                 ttl = now - t
                 if ttl > self.expire : continue
                 new_dict[key].append( (t,v) )
+                self.count += 1
 
             if len(new_dict[key]) == 0 :
                del new_dict[key]
@@ -125,16 +131,19 @@ class sr_cache():
         if unlink : os.unlink(self.cache_file)
 
         self.cache_dict = {}
+        self.count      = 0
 
     def free(self):
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
+        self.count      = 0
         os.unlink(self.cache_file)
         self.fp = open(self.cache_file,'w')
 
     def load(self):
         self.logger.debug("sr_cache load")
-        self.cache_dict  = {}
+        self.cache_dict = {}
+        self.count      = 0
 
         # create file if not existing
         if not os.path.isfile(self.cache_file) :
@@ -175,10 +184,12 @@ class sr_cache():
                  if v == pathpart : continue
                  # key already in cache
                  self.cache_dict[key].append(value)
+                 self.count += 1
                  continue
 
               #  add key
               self.cache_dict[key] = [ value ]
+              self.count += 1
 
     def open(self, cache_file = None):
 
@@ -199,8 +210,9 @@ class sr_cache():
         self.fp = open(self.cache_file,'w')
 
         # write unexpired entries, create refreshed dict
-        new_dict = {}
-        now      = time.time()
+        new_dict   = {}
+        now        = time.time()
+        self.count = 0
 
         # from  cache[sum] = [(time,[path,part]),...]
         for key in self.cache_dict.keys():
@@ -214,6 +226,7 @@ class sr_cache():
                 # save
                 new_dict[key].append( (t,v) )
                 self.fp.write("%s %f %s %s\n"%(key,t,v[0],v[1]))
+                self.count += 1
 
             # all expired
             if len(new_dict[key]) == 0 :
