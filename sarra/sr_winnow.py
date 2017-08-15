@@ -40,6 +40,7 @@ import os,sys,time
 
 try :    
          from sr_amqp           import *
+         from sr_cache          import *
          from sr_consumer       import *
          from sr_instances      import *
          from sr_message        import *
@@ -47,6 +48,7 @@ try :
          from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
+         from sarra.sr_cache     import *
          from sarra.sr_consumer  import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
@@ -60,34 +62,6 @@ class sr_winnow(sr_instances):
            return
 
         sr_instances.__init__(self,config,args)
-
-        self.cache          = {}
-        self.maxEntries     = 12000
-
-    def cache_add(self, key):
-        if len(self.cache) >= self.maxEntries: 
-            self.cache_clean()
-        self.cache[key] = time.time()
-        self.logger.debug("Size of cache: %d  new_key: %s" % (len(self.cache),key))
-            
-
-    def cache_clean(self):
-        temp = [ (item[1],item[0]) for item in self.cache.items() ]
-        temp.sort()
-        half,md5 = temp[self.maxEntries//2]
-        for item  in self.cache.items():
-            if item[1] <= half: 
-#               self.logger.info("In cache_clean: delete {0}" .format(item)) 
-                r=dict(self.cache)
-                del r[item[0]]
-                #del self.cache[item[0]]
-                self.cache=r
-
-    def cache_clear(self):
-        self.cache = {}
-
-    def cache_find(self, key):
-        return key in self.cache
 
     def check(self):
 
@@ -136,6 +110,9 @@ class sr_winnow(sr_instances):
     def close(self):
         self.consumer.close()
         if self.poster : self.poster.close()
+        if self.cache  : 
+           self.cache.save()
+           self.cache.close()
 
     def connect(self):
 
@@ -193,8 +170,13 @@ class sr_winnow(sr_instances):
 
         self.declare_exchanges()
 
- 
+        # =============
+        # cache
+        # =============
 
+        self.cache = sr_cache(self)
+        self.cache.open()
+        self.cache.load()
 
     def overwrite_defaults(self):
 
@@ -206,6 +188,18 @@ class sr_winnow(sr_instances):
            self.broker   = self.manager
 
         self.poster      = None
+        self.cache       = None
+
+        # caching by default (20 mins)
+
+        self.caching     = 1200
+        self.cache_stat  = True
+
+        # heartbeat to clean/save cache
+
+        self.execfile("on_heartbeat",'heartbeat_cache')
+        self.on_heartbeat_list.append(self.on_heartbeat)
+        
 
     def help(self):
         print("Usage: sr_winnow [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" )
@@ -267,15 +261,12 @@ class sr_winnow(sr_instances):
         # cache testing/adding
         # ========================================
 
-        key= self.msg.url.path + "|" + str(self.msg.block_count) + "|" +str(self.msg.checksum)
-
-        if self.cache_find(key) :
+        if not self.cache.check(str(self.msg.checksum),self.msg.url.path,self.msg.partstr):
             self.msg.report_publish(304,'Not modified')
             self.logger.debug("Ignored %s" % (self.msg.notice))
             return True
 
         self.logger.debug("Added %s" % (self.msg.notice))
-        self.cache_add(key)
 
         # announcing the first and unique message
 
@@ -304,6 +295,9 @@ class sr_winnow(sr_instances):
                          continue
                       else:
                          self.logger.debug("sr_winnow is active on vip=%s", self.vip)
+
+                      #  heartbeat
+                      ok = self.heartbeat_check()
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
