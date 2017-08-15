@@ -151,6 +151,9 @@ class sr_report(sr_instances):
                  else:
                      self.logger.debug("sr_report is active on vip=%s", self.vip)
 
+                 #  heartbeat
+                 ok = self.heartbeat_check()
+
                  ok, self.msg = self.consumer.consume()
                  if not ok : continue
 

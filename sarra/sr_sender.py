@@ -521,6 +521,9 @@ class sr_sender(sr_instances):
                          self.logger.debug("sr_sender is active on vip=%s" % self.vip)
                          active=True
 
+                  #  heartbeat
+                  ok = self.heartbeat_check()
+
                   #  consume message
                   ok, self.msg = self.consumer.consume()
                   if not ok : continue
