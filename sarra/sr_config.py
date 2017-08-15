@@ -341,6 +341,8 @@ class sr_config:
         self.remote_config_url    = []
 
         self.heartbeat            = 300
+        self.last_heartbeat       = time.time()
+
         self.loglevel             = logging.INFO
         self.logrotate            = 5
         self.report_daemons          = False
@@ -385,8 +387,11 @@ class sr_config:
         self.report_exchange         = 'xreport'
         # 
 
-        # publish
+        # cache
         self.caching              = False
+        self.cache_stat           = False
+
+        # publish
         self.document_root        = None
         self.post_document_root   = None
         self.url                  = None
@@ -536,6 +541,22 @@ class sr_config:
         if getattr(self,opname) is None:
             self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
 
+
+    def heartbeat_check(self):
+        now    = time.time()
+        elapse = now - self.last_heartbeat
+        if elapse > self.heartbeat :
+           self.__on_heartbeat__()
+           self.last_heartbeat = now
+
+    def __on_heartbeat__(self):
+        self.logger.debug("__on_heartbeat__")
+
+        # invoke on_hearbeat when provided
+        for plugin in self.on_heartbeat_list:
+           if not plugin(self): return False
+
+        return True
 
 
 
@@ -872,6 +893,15 @@ class sr_config:
                                self.caching = int(words[1])
                                if self.caching <= 0 : self.caching = False
                         n = 2
+
+                elif words0 == 'cache_stat'   : # See sr_config.7 ++
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.cache_stat = True
+                        n = 1
+                     else :
+                        self.cache_stat = self.isTrue(words[1])
+                        n = 2
+
 
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
                      self.chmod = int(words[1],8)
@@ -1944,7 +1974,7 @@ def self_test():
     opt1 = "surplus_opt surplus_value"
     cfg.option(opt1.split())
 
-    if cfg.surplus_opt != "surplus_value" :
+    if cfg.surplus_opt != [ "surplus_value" ] :
        cfg.logger.error(" extended option:  did not work")
 
     opt1 = "prefetch 10"
