@@ -176,7 +176,6 @@ class sr_winnow(sr_instances):
 
         self.cache = sr_cache(self)
         self.cache.open()
-        self.cache.load()
 
     def overwrite_defaults(self):
 
