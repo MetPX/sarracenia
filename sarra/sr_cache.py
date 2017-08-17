@@ -133,6 +133,43 @@ class sr_cache():
         self.cache_dict = {}
         self.count      = 0
 
+    def delete_path(self, path):
+        self.logger.debug("sr_cache delete_path")
+
+        # close,remove file, open new empty file
+        self.fp.close()
+        os.unlink(self.cache_file)
+        self.fp = open(self.cache_file,'w')
+
+        # write unexpired entries, create refreshed dict
+        new_dict   = {}
+        now        = time.time()
+        self.count = 0
+
+        # from  cache[sum] = [(time,[path,part]),...]
+        for key in self.cache_dict.keys():
+            new_dict[key] = []
+            for t,v in self.cache_dict[key]:
+
+                # expired are skipped
+                ttl = now - t
+                if ttl > self.expire : continue
+                if v[0] == path      : continue
+
+                # save
+                new_dict[key].append( (t,v) )
+                self.fp.write("%s %f %s %s\n"%(key,t,v[0],v[1]))
+                self.count += 1
+
+            # all expired
+            if len(new_dict[key]) == 0 :
+               del new_dict[key]
+
+        # set cleaned cache_dict and
+        # keep file open for append
+
+        self.cache_dict = new_dict
+
     def free(self):
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
@@ -338,6 +375,9 @@ def self_test():
           time.sleep(0.1)
           cache.check('key%d'%i,'file%d'%i,'part2%d'%i)
           i = i + 1
+
+    cache.delete_path('file12')
+
     logger.debug(len(cache.cache_dict))
     time.sleep(3)
     cache.clean()
