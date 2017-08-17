@@ -339,6 +339,18 @@ class sr_subscribe(sr_instances):
         self.document_root = self.currentDir
 
         #=================================
+        # setting source and cluster if required
+        #=================================
+
+        if self.source_from_exchange :
+           ok = self.set_source()
+           if not ok : return False
+
+        if not 'from_cluster' in self.msg.headers :
+           ok = self.set_cluster()
+           if not ok : return False
+
+        #=================================
         # setting up message with sr_subscribe config options
         # self.set_local     : how/where sr_subscribe is configured for that product
         # self.msg.set_local : how message settings (like parts) applies in this case
@@ -391,6 +403,13 @@ class sr_subscribe(sr_instances):
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.do_report: self.msg.report_publish(500, 'symlink failed')
 		
+
+           if ok and self.post_broker :
+              self.msg.set_topic_url('v02.post',self.new_url)
+              self.msg.set_notice(self.new_url,self.msg.time)
+              self.__on_post__()
+              self.msg.report_publish(205,'Reset Content : linked')
+
            return True
 
         #=================================
@@ -612,6 +631,26 @@ class sr_subscribe(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
+
+    def set_cluster(self):
+        if self.cluster == None :
+           self.msg.report_publish(403,"Forbidden : message without cluster")
+           self.logger.error("Forbidden : message without cluster")
+           return False
+
+        self.msg.headers['from_cluster'] = self.cluster
+        return True
+
+    def set_source(self):
+        if self.msg.exchange[:3] != 'xs_' :
+           self.logger.error("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
+           self.msg.report_publish(403,"Forbidden : message without source")
+           self.logger.error("Forbidden : message without source")
+           return False
+
+        source = self.msg.exchange[3:]
+        self.msg.set_source(source)
+        return True
 
     # ==============================================
     # how will the download file land on this server
