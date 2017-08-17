@@ -4,6 +4,9 @@
 
 **git repo(unreleased)**
 
+* sr_config  post_url option equivalent to url
+* sr_subscribe support posting if post_broker is set (and other post options)
+* plugin heartbeat_cache : cache clean/save + stats if cache_stat = True
 * all program consuming... calls heartbeat_check themselves
 * sr_config add heartbeat code
 * sr_consumer withdraw heartbeat code
