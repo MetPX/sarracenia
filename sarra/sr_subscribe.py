@@ -39,6 +39,9 @@
 #
 # sr_subscribe [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
+# CAREFULL USING          sr_subscribe         sr_sarra 
+#       accept_unmatch    self.masks == []     True
+#       mirror            False                True
 #============================================================
 
 import os,sys,time
@@ -49,6 +52,7 @@ try :
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
+         from sr_message        import *
          from sr_util           import *
 except : 
          from sarra.sr_consumer  import *
@@ -56,21 +60,17 @@ except :
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
+         from sarra.sr_message   import *
          from sarra.sr_util      import *
 
 class sr_subscribe(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
+        self.do_report = False
 
     def check(self):
-        self.logger.debug("sr_subscribe check")
-
-        # setting impacting other settings
-
-        if self.discard:
-           self.inplace    = False
-           self.overwrite  = True
+        self.logger.debug("%s check" % self.program_name)
 
         # if no subtopic given... make it #  for all
         if self.bindings == []  :
@@ -84,23 +84,28 @@ class sr_subscribe(sr_instances):
         self.use_pattern          = True
         self.accept_unmatch       = self.masks == []
 
+        # report ?
+
+        self.do_report = self.reportback
+
+        # posting... discard not permitted
+
+        if self.post_broker :
+           self.do_report = True
+           self.post_document_root = self.document_root
+
+        # impacting other settings
+
+        if self.discard:
+           self.inplace    = False
+           self.overwrite  = True
+
     def close(self):
         self.consumer.close()
+        if self.post_broker:          self.hc_pst.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
-
-    def overwrite_defaults(self):
-        self.logger.debug("sr_subscribe overwrite_defaults")
-
-        # special settings for sr_subscribe
-
-        self.accept_unmatch = False
-        self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
-        self.exchange       = 'xpublic'
-        self.inplace        = True
-        self.inflight       = '.tmp'
-        self.mirror         = False
 
     def connect(self):
 
@@ -117,17 +122,48 @@ class sr_subscribe(sr_instances):
         self.consumer = sr_consumer(self)
 
         # =============
-        # publisher... (publish back to consumer)  
+        # report_publisher
         # =============
 
-        if self.reportback :
-           self.publisher         = self.consumer.publish_back()
-           self.msg.report_publisher = self.publisher
-           self.msg.report_exchange  = 'xs_' + self.broker.username
+        if self.do_report :
+
+           report_exchange = 'xs_' + self.broker.username
+
+           self.report_publisher     = self.consumer.publish_back()
+           self.msg.report_publisher = self.report_publisher
+           self.msg.report_exchange  = report_exchange
            self.logger.info("report_back to %s@%s, exchange: %s" % 
                ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
         else:
            self.logger.warning("report_back suppressed")
+
+
+        # =============
+        # publisher : if self.post_broker exists
+        # =============
+
+        if self.post_broker :
+
+           # publisher host
+
+           self.hc_pst = HostConnect( logger = self.logger )
+           self.hc_pst.set_url( self.post_broker )
+           if self.to_clusters == None:
+                self.to_clusters = self.post_broker.hostname
+
+           self.hc_pst.connect()
+
+           # publisher
+
+           self.publisher = Publisher(self.hc_pst)
+           self.publisher.build()
+           self.msg.publisher    = self.publisher
+           self.msg.pub_exchange = self.post_exchange
+           self.msg.post_exchange_split = self.post_exchange_split
+
+           # amqp resources
+           self.declare_exchanges()
+
 
     def __do_download__(self):
 
@@ -163,11 +199,11 @@ class sr_subscribe(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                if self.reportback: 
+                if self.do_report: 
                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("sr_subscribe: Could not download")
+                self.logger.error("%s: Could not download" % self.program_name)
 
-        if self.reportback: 
+        if self.do_report: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
 
@@ -252,6 +288,44 @@ class sr_subscribe(sr_instances):
 
         return True
 
+
+    # =============
+    # __on_post__ posting of message
+    # =============
+
+    def __on_post__(self):
+
+        self.msg.local_file = self.new_file # FIXME, remove in 2018
+
+        # invoke on_post when provided
+
+        for plugin in self.on_post_list:
+           if not plugin(self): return False
+           if ( self.msg.local_file != self.new_file ): # FIXME, remove in 2018
+                self.logger.warning("on_post plugins should replace self.msg.local_file, by self.new_file" )
+                self.new_file = self.msg.local_file
+
+        ok = self.msg.publish( )
+
+        return ok
+
+
+    def overwrite_defaults(self):
+        self.logger.debug("%s overwrite_defaults" % self.program_name)
+
+        # special settings for sr_subscribe
+
+        self.accept_unmatch = False
+        self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
+        self.exchange       = 'xpublic'
+        self.inplace        = True
+        self.inflight       = '.tmp'
+        self.mirror         = False
+
+        self.post_broker    = None
+        self.post_exchange  = None
+
+
     # =============
     # process message  
     # =============
@@ -297,10 +371,10 @@ class sr_subscribe(sr_instances):
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
                self.logger.debug("%s removed" % self.new_file)
-               if self.reportback: self.msg.report_publish(201, 'removed')
+               if self.do_report: self.msg.report_publish(201, 'removed')
            except:
                self.logger.error("remove %s failed." % self.new_file )
-               if self.reportback: self.msg.report_publish(500, 'remove failed')
+               if self.do_report: self.msg.report_publish(500, 'remove failed')
            return True
 
         #=================================
@@ -312,10 +386,10 @@ class sr_subscribe(sr_instances):
            try : 
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
                self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
-               if self.reportback: self.msg.report_publish(201, 'linked')
+               if self.do_report: self.msg.report_publish(201, 'linked')
            except:
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
-               if self.reportback: self.msg.report_publish(500, 'symlink failed')
+               if self.do_report: self.msg.report_publish(500, 'symlink failed')
 		
            return True
 
@@ -345,7 +419,7 @@ class sr_subscribe(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
-           if self.reportback:
+           if self.do_report:
               self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.new_file)
 
@@ -367,10 +441,29 @@ class sr_subscribe(sr_instances):
            # could not download
            if not ok : return False
 
+           # after download : setting of sum for 'z' flag ...
+
+           if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
+              self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
+              self.msg.report_publish(205,'Reset Content : checksum')
+
+           # onfly checksum is different from the message ???
+           if not self.msg.onfly_checksum == self.msg.checksum :
+              self.logger.warning("onfly_checksum %s differ from message %s" %
+                                 (self.msg.onfly_checksum, self.msg.checksum))
+
+              # force onfly checksum  in message
+
+              if self.recompute_chksum :
+                 #self.msg.compute_local_checksum()
+                 self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
+                 self.msg.report_publish(205,'Reset Content : checksum')
+
+
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              if self.reportback:
+              if self.do_report:
                  self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
@@ -440,6 +533,20 @@ class sr_subscribe(sr_instances):
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
               return False
 
+
+        #=================================
+        # publish our download
+        #=================================
+
+        if self.msg.partflg != '1' :
+           if self.inplace : self.msg.change_partflg('i')
+           else            : self.msg.change_partflg('p')
+
+        self.msg.set_topic_url('v02.post',self.new_url)
+        self.msg.set_notice(self.new_url,self.msg.time)
+        self.__on_post__()
+        self.msg.report_publish(201,'Published')
+
         #=================================
         # if we processed a file we are done
         #=================================
@@ -451,7 +558,7 @@ class sr_subscribe(sr_instances):
         # it can make a difference for parts that wait reassembly
         #=================================
    
-        file_reassemble(self)
+        if self.inplace : file_reassemble(self)
 
         """
         FIXME: 2016/10 - PAS: suspect a bug: pretty sure on_file plugin should run after reassembly complete.
@@ -466,14 +573,14 @@ class sr_subscribe(sr_instances):
 
     def run(self):
 
-        self.logger.info("sr_subscribe run")
+        self.logger.info("%s run" % self.program_name)
 
         # loop/process messages
 
         self.connect()
 
-        if not self.has_vip() : self.logger.debug("sr_subscribe does not have vip=%s, is sleeping", self.vip)
-        else: self.logger.debug("sr_subscribe is active on vip=%s", self.vip)
+        if not self.has_vip() : self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
+        else: self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
 
         active=self.has_vip()
 
@@ -483,12 +590,12 @@ class sr_subscribe(sr_instances):
                       if not self.has_vip() :
                          time.sleep(5)
                          if active:
-                             self.logger.debug("sr_subscribe does not have vip=%s, is sleeping", self.vip)
+                             self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
                              active=False
                          continue
                       else:
                          if not active:
-                             self.logger.debug("sr_subscribe is active on vip=%s", self.vip)
+                             self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
                              active=True
 
                       #  heartbeat
@@ -566,6 +673,10 @@ class sr_subscribe(sr_instances):
         self.new_url  = 'file:' + self.new_dir + '/' + filename
         self.new_url  = urllib.parse.urlparse(self.new_url)
 
+        if self.post_broker :
+           rel_path     = new_dir.replace(self.post_document_root,'')  + '/' + filename
+           self.new_url = urllib.parse.urlparse(self.url.geturl() + '/' + rel_path)
+
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
@@ -587,6 +698,31 @@ class sr_subscribe(sr_instances):
 
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.cleanup()
+
+        # if posting
+
+        if self.post_broker :
+
+           self.hc_pst = HostConnect( logger = self.logger )
+           self.hc_pst.set_url( self.post_broker )
+           self.hc_pst.connect()
+
+           # define post exchange (splitted ?)
+
+           exchanges = []
+
+           if self.post_exchange_split != 0 :
+              for n in list(range(self.post_exchange_split)) :
+                  exchanges.append(self.post_exchange + "%02d" % n )
+           else :
+                  exchanges.append(self.post_exchange)
+
+           # do exchange cleanup
+
+           for x in exchanges :
+               self.hc_pst.exchange_delete(x)
+
+
         self.close()
         os._exit(0)
 
@@ -595,14 +731,48 @@ class sr_subscribe(sr_instances):
 
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
+
+        # on posting host
+        if self.post_broker :
+           self.hc_pst = HostConnect( logger = self.logger )
+           self.hc_pst.set_url( self.post_broker )
+           self.hc_pst.connect()
+           self.declare_exchanges()
+
         self.close()
         os._exit(0)
+
+    def declare_exchanges(self):
+
+        # define post exchange (splitted ?)
+
+        exchanges = []
+
+        if self.post_exchange_split != 0 :
+           for n in list(range(self.post_exchange_split)) :
+               exchanges.append(self.post_exchange + "%02d" % n )
+        else :
+               exchanges.append(self.post_exchange)
+
+        # do exchange cleanup
+
+        for x in exchanges :
+            self.hc_pst.exchange_declare(x)
+
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
 
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
+
+        # on posting host
+        if self.post_broker :
+           self.hc_pst = HostConnect( logger = self.logger )
+           self.hc_pst.set_url( self.post_broker )
+           self.hc_pst.connect()
+           self.declare_exchanges()
+
         self.close()
         os._exit(0)
                  
