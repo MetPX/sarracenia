@@ -67,7 +67,6 @@ class sr_subscribe(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-        self.do_report = False
 
     def check(self):
         self.logger.debug("%s check" % self.program_name)
@@ -84,14 +83,9 @@ class sr_subscribe(sr_instances):
         self.use_pattern          = True
         self.accept_unmatch       = self.masks == []
 
-        # report ?
-
-        self.do_report = self.reportback
-
         # posting... discard not permitted
 
         if self.post_broker :
-           self.do_report = True
            self.post_document_root = self.document_root
 
         # impacting other settings
@@ -125,7 +119,7 @@ class sr_subscribe(sr_instances):
         # report_publisher
         # =============
 
-        if self.do_report :
+        if self.reportback :
 
            report_exchange = 'xs_' + self.broker.username
 
@@ -199,11 +193,11 @@ class sr_subscribe(sr_instances):
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                if self.do_report: 
+                if self.reportback: 
                    self.msg.report_publish(503,"Unable to process")
                 self.logger.error("%s: Could not download" % self.program_name)
 
-        if self.do_report: 
+        if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
 
@@ -383,10 +377,10 @@ class sr_subscribe(sr_instances):
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
                self.logger.debug("%s removed" % self.new_file)
-               if self.do_report: self.msg.report_publish(201, 'removed')
+               if self.reportback: self.msg.report_publish(201, 'removed')
            except:
                self.logger.error("remove %s failed." % self.new_file )
-               if self.do_report: self.msg.report_publish(500, 'remove failed')
+               if self.reportback: self.msg.report_publish(500, 'remove failed')
            return True
 
         #=================================
@@ -398,10 +392,10 @@ class sr_subscribe(sr_instances):
            try : 
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
                self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
-               if self.do_report: self.msg.report_publish(201, 'linked')
+               if self.reportback: self.msg.report_publish(201, 'linked')
            except:
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
-               if self.do_report: self.msg.report_publish(500, 'symlink failed')
+               if self.reportback: self.msg.report_publish(500, 'symlink failed')
 		
 
            if ok and self.post_broker :
@@ -438,7 +432,7 @@ class sr_subscribe(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
-           if self.do_report:
+           if self.reportback:
               self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.new_file)
 
@@ -482,7 +476,7 @@ class sr_subscribe(sr_instances):
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              if self.do_report:
+              if self.reportback:
                  self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
