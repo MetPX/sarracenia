@@ -1581,7 +1581,7 @@ class sr_config:
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
 
-                elif words0 in ['url','u']: # See: sr_config.7 
+                elif words0 in ['url','u','post_url']: # See: sr_config.7 
                      self.url = urllib.parse.urlparse(words1)
                      n = 2
 
