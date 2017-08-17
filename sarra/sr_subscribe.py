@@ -39,22 +39,21 @@
 #
 # sr_subscribe [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
 #
-# CAREFULL USING          sr_subscribe         sr_sarra 
-#       accept_unmatch    self.masks == []     True
-#       mirror            False                True
 #============================================================
 
 import os,sys,time
 
 try :    
-         from sr_consumer       import *
-         from sr_file           import *
-         from sr_ftp            import *
-         from sr_http           import *
-         from sr_instances      import *
-         from sr_message        import *
-         from sr_util           import *
+         from sr_cache           import *
+         from sr_consumer        import *
+         from sr_file            import *
+         from sr_ftp             import *
+         from sr_http            import *
+         from sr_instances       import *
+         from sr_message         import *
+         from sr_util            import *
 except : 
+         from sarra.sr_cache     import *
          from sarra.sr_consumer  import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
@@ -94,12 +93,25 @@ class sr_subscribe(sr_instances):
            self.inplace    = False
            self.overwrite  = True
 
+        # caching
+
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           self.cache.open()
+           self.execfile("on_heartbeat",'heartbeat_cache')
+           self.on_heartbeat_list.append(self.on_heartbeat)
+
+
     def close(self):
         self.consumer.close()
         if self.post_broker:          self.hc_pst.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
+        if self.caching :
+           self.cache.save()
+           self.cache.close()
 
     def connect(self):
 
@@ -277,9 +289,6 @@ class sr_subscribe(sr_instances):
                self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
                self.new_dir = self.msg.local_dir
 
-        # notify only : we are done with this message
-        if self.notify_only : return False
-
         return True
 
 
@@ -318,7 +327,6 @@ class sr_subscribe(sr_instances):
 
         self.post_broker    = None
         self.post_exchange  = None
-
 
     # =============
     # process message  
@@ -359,6 +367,26 @@ class sr_subscribe(sr_instances):
 
         ok = self.__on_message__()
         if not ok : return ok
+
+        #=================================
+        # if caching is set
+        #=================================
+
+        if self.caching :
+           if not self.cache.check(str(self.msg.checksum),self.msg.url.path,self.msg.partstr):
+              if self.reportback : self.msg.report_publish(304,'Not modified')
+              self.logger.debug("Ignored %s" % (self.msg.notice))
+              return True
+
+        #=================================
+        # if notify_only... just post here
+        #=================================
+
+        if self.notify_only :
+           self.__on_post__()
+           if self.reportback : self.msg.report_publish(201,'Published')
+           return True
+
 
         """
         FIXME: 201612-PAS There is perhaps several bug here:
@@ -592,24 +620,22 @@ class sr_subscribe(sr_instances):
 
         self.connect()
 
-        if not self.has_vip() : self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
-        else: self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
-
-        active=self.has_vip()
-
         while True :
               try  :
-                      #  is it sleeping ?
-                      if not self.has_vip() :
-                         time.sleep(5)
-                         if active:
-                             self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
-                             active=False
-                         continue
-                      else:
-                         if not active:
-                             self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
-                             active=True
+                      # if vip provided, check if has vip
+
+                      if self.vip :
+                         active = self.has_vip()
+
+                         #  it is sleeping !
+                         if not active :
+                            time.sleep(5)
+                            self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
+                            active=False
+                            continue
+
+                         #  it is alive
+                         self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
 
                       #  heartbeat
                       ok = self.heartbeat_check()
@@ -698,7 +724,6 @@ class sr_subscribe(sr_instances):
         self.new_dir  = new_dir
 
         if 'sundew_extension' in self.msg.headers.keys() :
-         
             tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
             self.new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
@@ -707,8 +732,11 @@ class sr_subscribe(sr_instances):
         self.new_url  = urllib.parse.urlparse(self.new_url)
 
         if self.post_broker :
-           rel_path     = new_dir.replace(self.post_document_root,'')  + '/' + filename
-           self.new_url = urllib.parse.urlparse(self.url.geturl() + '/' + rel_path)
+           if  self.post_document_root : rel_dir = new_dir.replace(self.post_document_root,'')
+           else                        : rel_dir = new_dir
+           rel_path     = rel_dir  + '/' + filename
+
+           if self.url : self.new_url = urllib.parse.urlparse(self.url.geturl() + '/' + rel_path)
 
 
     def reload(self):
@@ -731,6 +759,11 @@ class sr_subscribe(sr_instances):
 
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.cleanup()
+
+        # if caching
+
+        if self.caching :
+           self.cache.free()
 
         # if posting
 
@@ -805,6 +838,10 @@ class sr_subscribe(sr_instances):
            self.hc_pst.set_url( self.post_broker )
            self.hc_pst.connect()
            self.declare_exchanges()
+
+        if self.caching :
+           self.cache = sr_cache(self)
+           self.cache.open()
 
         self.close()
         os._exit(0)
