@@ -432,11 +432,12 @@ and as the 1.0 standard is relatively controversial, this protocol assumes a pre
 as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
 0.9 brokers are also likely to inter-operate well.
 
-In AMQP, many different actors can define communication parameters. To create a clearer
-security model, sarracenia constrains AMQP: sr_post clients are not permitted to declare 
-Exchanges.  All clients are expected to use existing exchanges which have been declared by 
-broker administrators.  Client permissions are limited to creating queues for their own use,
-using agreed upon naming schemes.  Queue for client: qc_<user>.????
+In AMQP, many different actors can define communication parameters.  in RabbitMQ
+(the initial broker used), permissions are assigned using regular expressions. So
+a permission model where AMQP users can define and use *their* exchanges and queues
+is enforced by a naming convention easily mapped to regular expressions (all such
+resources include the username near the beginning.) Exchanges begin with: xs_<user>_.
+Queue names begin with: q_<user>_.
 
 .. NOTE::
    FIXME: other connection parameters: persistence, etc..
@@ -448,9 +449,9 @@ straight-forward server-side filtering, to be augmented by client-side filtering
 message reception.
 
 The root of the topic tree is the version of the message payload.  This allows single brokers 
-to easily support multiple versions of the protocol at the same time during transitions.  v02
-is the third iteration of the protocol and existing servers routinely support previous versions 
-simultaneously in this way.  The second topic in the topic tree defines the type of message.
+to easily support multiple versions of the protocol at the same time during transitions.  *v02*,
+created in 2015, is the third iteration of the protocol and existing servers routinely support previous 
+versions simultaneously in this way.  The second sub-topic defines the type of message.
 at the time of writing:  v02.post is the topic prefix for current post messages.
 
 The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes 
@@ -498,4 +499,4 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+tree `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
