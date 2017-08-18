@@ -119,7 +119,7 @@ class sr_shovel(sr_instances):
 
     def close(self):
         self.consumer.close()
-        self.hc_pst.close()
+        self.post_hc.close()
 
     def connect(self):
 
@@ -158,23 +158,23 @@ class sr_shovel(sr_instances):
 
         # publisher host
 
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
 
         if self.restore_queue is not None:
             # create temporary exchange to publish only to restore_queue.
             self.post_exchange = 'xs_' + self.broker.username + '.' + \
                 self.program_name + '.' + self.config_name + '.restore'
             self.msg.pub_exchange = self.post_exchange
-            self.hc_pst.channel.exchange_declare( self.post_exchange, \
+            self.post_hc.channel.exchange_declare( self.post_exchange, \
                 'topic', auto_delete=True, durable=False)
-            self.hc_pst.channel.queue_bind( self.restore_queue, \
+            self.post_hc.channel.queue_bind( self.restore_queue, \
                 self.post_exchange, '#' )
 
         # publisher
 
-        self.publisher = Publisher(self.hc_pst)
+        self.publisher = Publisher(self.post_hc)
         self.publisher.build()
         self.msg.publisher    = self.publisher
 
@@ -398,7 +398,7 @@ class sr_shovel(sr_instances):
                self.logger.error("sr_shovel only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
  
            # should have effect of deleting restore exchange as auto_delete is True.
-           self.hc_pst.channel.queue_unbind( self.restore_queue, self.post_exchange, '#' )
+           self.post_hc.channel.queue_unbind( self.restore_queue, self.post_exchange, '#' )
 
            # clean exit
            sys.exit(0)
@@ -479,9 +479,9 @@ class sr_shovel(sr_instances):
 
         # posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
 
         self.declare_exchanges(cleanup=True)
 
@@ -498,9 +498,9 @@ class sr_shovel(sr_instances):
 
         # posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
 
         self.declare_exchanges()
        
@@ -536,9 +536,9 @@ class sr_shovel(sr_instances):
 
         # posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
 
         self.declare_exchanges()
        
