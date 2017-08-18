@@ -528,6 +528,19 @@ class sr_message():
 
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
+    def set_notice_str(self,srcpath,relpath,time=None):
+
+        self.time    = time
+        self.srcpath = srcpath
+        self.relpath = relpath
+        self.url     = urllib.parse.urlparse(srcpath+relpath)
+
+        if time == None : self.set_time()
+
+
+        self.notice = '%s %s %s' % (self.time,srcpath,relpath)
+
+
     def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
         self.partflg          = partflg 
         self.chunksize        = chunksize
@@ -636,6 +649,14 @@ class sr_message():
         elif 'to_clusters' in self.headers :
            del self.headers['to_clusters']
            self.to_clusters = []
+
+    def set_topic_relpath(self,topic_prefix,relpath):
+        self.topic_prefix = topic_prefix
+        strpath           = relpath.strip('/')
+        words             = strpath.split('/')
+        self.subtopic     = '.'.join(words[:-1])
+        self.topic        = '%s.%s' % (topic_prefix,self.subtopic)
+        self.topic        = self.topic.replace('..','.')
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
