@@ -105,7 +105,7 @@ class sr_subscribe(sr_instances):
 
     def close(self):
         self.consumer.close()
-        if self.post_broker:          self.hc_pst.close()
+        if self.post_broker:          self.post_hc.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
@@ -152,16 +152,16 @@ class sr_subscribe(sr_instances):
 
            # publisher host
 
-           self.hc_pst = HostConnect( logger = self.logger )
-           self.hc_pst.set_url( self.post_broker )
+           self.post_hc = HostConnect( logger = self.logger )
+           self.post_hc.set_url( self.post_broker )
            if self.to_clusters == None:
                 self.to_clusters = self.post_broker.hostname
 
-           self.hc_pst.connect()
+           self.post_hc.connect()
 
            # publisher
 
-           self.publisher = Publisher(self.hc_pst)
+           self.publisher = Publisher(self.post_hc)
            self.publisher.build()
            self.msg.publisher    = self.publisher
            self.msg.pub_exchange = self.post_exchange
@@ -768,9 +768,9 @@ class sr_subscribe(sr_instances):
         # if posting
 
         if self.post_broker :
-           self.hc_pst = HostConnect( logger = self.logger )
-           self.hc_pst.set_url( self.post_broker )
-           self.hc_pst.connect()
+           self.post_hc = HostConnect( logger = self.logger )
+           self.post_hc.set_url( self.post_broker )
+           self.post_hc.connect()
            self.declare_exchanges(cleanup=True)
 
         self.close()
@@ -784,9 +784,9 @@ class sr_subscribe(sr_instances):
 
         # on posting host
         if self.post_broker :
-           self.hc_pst = HostConnect( logger = self.logger )
-           self.hc_pst.set_url( self.post_broker )
-           self.hc_pst.connect()
+           self.post_hc = HostConnect( logger = self.logger )
+           self.post_hc.set_url( self.post_broker )
+           self.post_hc.connect()
            self.declare_exchanges()
 
         self.close()
@@ -819,9 +819,9 @@ class sr_subscribe(sr_instances):
 
         # on posting host
         if self.post_broker :
-           self.hc_pst = HostConnect( logger = self.logger )
-           self.hc_pst.set_url( self.post_broker )
-           self.hc_pst.connect()
+           self.post_hc = HostConnect( logger = self.logger )
+           self.post_hc.set_url( self.post_broker )
+           self.post_hc.connect()
            self.declare_exchanges()
 
         if self.caching :
