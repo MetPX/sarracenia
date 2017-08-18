@@ -76,7 +76,6 @@ try :
          from sr_ftp            import *
          from sr_instances      import *
          from sr_message        import *
-         from sr_poster         import *
          from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
@@ -84,7 +83,6 @@ except :
          from sarra.sr_ftp       import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-         from sarra.sr_poster    import *
          from sarra.sr_util      import *
 
 class sr_sender(sr_instances):
@@ -136,12 +134,14 @@ class sr_sender(sr_instances):
 
 
     def close(self):
+
         self.consumer.close()
-        if self.post_broker :
-           self.poster.close()
-        self.connected = False 
+        if self.post_broker : self.post_hc.close()
+
         if hasattr(self,'sftp_link'): self.sftp_link.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
+
+        self.connected = False 
 
     def connect(self):
 
@@ -178,23 +178,35 @@ class sr_sender(sr_instances):
                        self.msg.report_exchange = 'xs_' + self.broker.username
         else:
            self.msg.report_exchange = 'xs_' + self.broker.username
+
         self.logger.debug("self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
         self.msg.user          = self.details.url.username
         self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
+
+        if not self.post_broker :
+           self.connected = True
+           return
+
+        # =============
+        # if post_broker
+        # =============
+
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+
+        self.publisher = Publisher(self.post_hc)
+        self.publisher.build()
+
+        self.declare_exchanges()
+
+        self.msg.user                = self.post_broker.username
+        self.msg.publisher           = self.publisher
+        self.msg.pub_exchange        = self.post_exchange
         self.msg.post_exchange_split = self.post_exchange_split
 
-        # =============
-        # poster
-        # =============
-
-        if self.post_broker :
-           self.poster           = sr_poster(self)
-
-           self.msg.publisher    = self.poster.publisher
-           self.msg.pub_exchange = self.post_exchange
-           self.msg.user         = self.post_broker.username
-           # amqp resources
-           self.declare_exchanges()
+        self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
+                        (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
 
         self.connected = True 
 
@@ -655,31 +667,18 @@ class sr_sender(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.cleanup()
 
-        # no posting ?
-       
-        if self.post_broker == None :
+        if not self.post_broker :
            self.close()
            os._exit(0)
 
-        # on posting host
+        # posting 
+       
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
 
-        self.poster = sr_poster(self)
-        host        = self.poster.hc
+        self.declare_exchanges(cleanup=True)
 
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange cleanup
-              
-        for x in exchanges :
-            host.exchange_delete(x)
 
         self.close()
         os._exit(0)
@@ -692,17 +691,22 @@ class sr_sender(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
-        # on posting host ?
-       
-        if self.post_broker == None : return
+        if not self.post_broker :
+           self.close()
+           os._exit(0)
 
-        self.poster = sr_poster(self)
-        self.declare_exchanges()
+        # posting too
        
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+       
+        self.declare_exchanges()
+
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -717,7 +721,8 @@ class sr_sender(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            self.poster.hc.exchange_declare(x)
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
 
     def setup(self):
@@ -728,11 +733,16 @@ class sr_sender(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
-        # on posting host ?
-       
-        if self.post_broker == None : return
+        if not self.post_broker :
+           self.close()
+           os._exit(0)
 
-        self.poster = sr_poster(self)
+        # posting too
+       
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+       
         self.declare_exchanges()
        
         self.close()
