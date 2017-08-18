@@ -483,20 +483,7 @@ class sr_shovel(sr_instances):
         self.hc_pst.set_url( self.post_broker )
         self.hc_pst.connect()
 
-        # post exchange(s)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # cleanup (exchange)
-              
-        for x in exchanges :
-            self.hc_pst.exchange_delete(x)
+        self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -520,9 +507,9 @@ class sr_shovel(sr_instances):
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
-        # post exchange(s)
+        # define post exchange (splitted ?)
 
         exchanges = []
 
@@ -532,10 +519,12 @@ class sr_shovel(sr_instances):
         else :
                exchanges.append(self.post_exchange)
 
-        # setup (exchange)
+        # do exchanges setup
               
         for x in exchanges :
-            self.hc_pst.exchange_declare(x)
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
+
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
