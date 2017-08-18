@@ -768,26 +768,10 @@ class sr_subscribe(sr_instances):
         # if posting
 
         if self.post_broker :
-
            self.hc_pst = HostConnect( logger = self.logger )
            self.hc_pst.set_url( self.post_broker )
            self.hc_pst.connect()
-
-           # define post exchange (splitted ?)
-
-           exchanges = []
-
-           if self.post_exchange_split != 0 :
-              for n in list(range(self.post_exchange_split)) :
-                  exchanges.append(self.post_exchange + "%02d" % n )
-           else :
-                  exchanges.append(self.post_exchange)
-
-           # do exchange cleanup
-
-           for x in exchanges :
-               self.hc_pst.exchange_delete(x)
-
+           self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -808,7 +792,7 @@ class sr_subscribe(sr_instances):
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -820,10 +804,11 @@ class sr_subscribe(sr_instances):
         else :
                exchanges.append(self.post_exchange)
 
-        # do exchange cleanup
-
+        # do exchanges
+              
         for x in exchanges :
-            self.hc_pst.exchange_declare(x)
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
 
     def setup(self):

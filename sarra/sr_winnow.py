@@ -346,20 +346,7 @@ class sr_winnow(sr_instances):
            self.post_hc.set_url(self.post_broker)
            self.post_hc.connect()
 
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange cleanup
-              
-        for x in exchanges :
-            self.post_hc.exchange_delete(x)
+        self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -385,7 +372,7 @@ class sr_winnow(sr_instances):
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -400,8 +387,8 @@ class sr_winnow(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            self.post_hc.exchange_declare(x)
-
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
