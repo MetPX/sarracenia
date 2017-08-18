@@ -75,7 +75,6 @@ try :
          from sr_http           import *
          from sr_instances      import *
          from sr_message        import *
-         from sr_poster         import *
          from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
@@ -83,7 +82,6 @@ except :
          from sarra.sr_http      import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-         from sarra.sr_poster    import *
          from sarra.sr_util      import *
 
 class sr_poll(sr_instances):
@@ -155,7 +153,7 @@ class sr_poll(sr_instances):
             self.pulls[maskDir].append(mask)
 
     def close(self):
-        self.poster.close()
+        self.post_hc.close()
         self.connected = False 
 
     def connect(self):
@@ -166,17 +164,42 @@ class sr_poll(sr_instances):
 
         self.msg = sr_message(self)
 
+        self.msg.exchange = self.exchange
+        self.msg.headers  = {}
+        self.msg.headers['to_clusters'] = self.to_clusters
+
+        if self.cluster  != None : self.msg.headers['from_cluster'] = self.cluster
+        if self.source   != None : self.msg.headers['source']       = self.source
+        if self.flow     != None : self.msg.headers['flow']         = self.flow
+
+        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+
         # =============
         # poster
         # =============
 
-        self.post_broker      = self.broker
-        self.post_exchange    = self.exchange
-        self.poster           = sr_poster(self)
+        self.post_broker   = self.broker
+        self.post_exchange = self.exchange
 
-        self.msg.publisher    = self.poster.publisher
-        self.msg.pub_exchange = self.post_exchange
-        self.msg.post_exchange_split = self.post_exchange_split
+        self.post_hc   = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+        self.publisher = Publisher(self.post_hc)
+        self.publisher.build()
+
+        self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
+                        (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
+
+        # =============
+        # setup message publish
+        # =============
+
+        self.msg.user                 = self.post_broker.username
+        self.msg.publisher            = self.publisher
+        self.msg.pub_exchange         = self.post_exchange
+        self.msg.post_exchange_split  = self.post_exchange_split
+
+        self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
 
         self.connected        = True 
 
@@ -472,6 +495,24 @@ class sr_poll(sr_instances):
 
         self.sumflg         = 'z,d'
 
+
+    def post_message(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None):
+
+        if 'rename' in self.msg.headers: del self.msg.headers['rename']
+        
+        self.msg.set_topic_relpath(self.topic_prefix,relpath)
+
+        if not self.subtopic    : self.msg.set_notice_str(srcpath,relpath)
+
+        if partstr      != None : self.msg.headers['parts']        = partstr
+        if sumstr       != None : self.msg.headers['sum']          = sumstr
+        if rename       != None : self.msg.headers['rename']       = rename
+        if filename     != None : self.msg.headers['filename']     = filename
+
+        ok = self.__on_post__()
+
+        return ok
+
     # =============
     # for all directories, get urls to post
     # if True is returned it means : no sleep, retry on return
@@ -566,8 +607,10 @@ class sr_poll(sr_instances):
 
                 desc         = desclst[remote_file]
                 ssiz         = desc.split()[4]
-                self.urlstr  = self.destination + self.destDir + '/'+ remote_file
-                self.url     = urllib.parse.urlparse(self.urlstr)
+
+                self.srcpath = self.destination
+                self.relpath = self.destDir + '/'+ remote_file
+
                 self.sumstr  = self.sumflg
                 self.partstr = None
 
@@ -588,8 +631,8 @@ class sr_poll(sr_instances):
                 if this_rename != None and this_rename[-1] == '/' :
                    this_rename += remote_file
                 
-                ok = self.poster.post(self.exchange,self.url,self.to_clusters, \
-                                      self.partstr,self.sumstr,this_rename,remote_file)
+                ok = self.post_message(self.exchange,self.srcpath,self.relpath,self.to_clusters, \
+                               self.partstr,self.sumstr,this_rename,remote_file)
 
                 if ok : npost += 1
 
@@ -708,25 +751,14 @@ class sr_poll(sr_instances):
         self.logger.info("%s cleanup" % self.program_name)
 
         # on posting host
-       
-        self.post_broker = self.broker
-        self.poster      = sr_poster(self)
-        host             = self.poster.hc
 
-        # define post exchange (splitted ?)
+        self.post_broker   = self.broker
+        self.post_exchange = self.exchange
 
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange cleanup
-              
-        for x in exchanges :
-            host.exchange_delete(x)
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+        self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -735,9 +767,13 @@ class sr_poll(sr_instances):
         self.logger.info("%s declare" % self.program_name)
 
         # on posting host
-       
-        self.post_broker = self.broker
-        self.poster      = sr_poster(self)
+
+        self.post_broker   = self.broker
+        self.post_exchange = self.exchange
+
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
 
         # declare posting exchange(s)
        
@@ -746,9 +782,7 @@ class sr_poll(sr_instances):
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
-
-        host = self.poster.hc
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -763,17 +797,21 @@ class sr_poll(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            host.exchange_declare(x)
-
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
 
         # on posting host
-       
-        self.post_broker = self.broker
-        self.poster      = sr_poster(self)
 
+        self.post_broker   = self.broker
+        self.post_exchange = self.exchange
+
+        self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_url(self.post_broker)
+        self.post_hc.connect()
+       
         # declare posting exchange(s)
        
         self.declare_exchanges()

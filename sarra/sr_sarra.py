@@ -152,7 +152,7 @@ class sr_sarra(sr_instances):
 
     def close(self):
         self.consumer.close()
-        self.hc_pst.close()
+        self.post_hc.close()
 
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
@@ -182,16 +182,16 @@ class sr_sarra(sr_instances):
 
         # publisher host
 
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
         if self.to_clusters == None:
              self.to_clusters = self.post_broker.hostname
 
-        self.hc_pst.connect()
+        self.post_hc.connect()
 
         # publisher
 
-        self.publisher = Publisher(self.hc_pst)
+        self.publisher = Publisher(self.post_hc)
         self.publisher.build()
         self.msg.publisher    = self.publisher
         self.msg.pub_exchange = self.post_exchange
@@ -710,24 +710,10 @@ class sr_sarra(sr_instances):
 
         # on posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
-
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange cleanup
-              
-        for x in exchanges :
-            self.hc_pst.exchange_delete(x)
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
+        self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -742,16 +728,15 @@ class sr_sarra(sr_instances):
 
         # on posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
-       
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
         self.declare_exchanges()
 
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -763,10 +748,11 @@ class sr_sarra(sr_instances):
         else :
                exchanges.append(self.post_exchange)
 
-        # do exchange cleanup
+        # do exchange setup
               
         for x in exchanges :
-            self.hc_pst.exchange_declare(x)
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
 
     def setup(self):
@@ -779,10 +765,9 @@ class sr_sarra(sr_instances):
 
         # on posting host
        
-        self.hc_pst = HostConnect( logger = self.logger )
-        self.hc_pst.set_url( self.post_broker )
-        self.hc_pst.connect()
-       
+        self.post_hc = HostConnect( logger = self.logger )
+        self.post_hc.set_url( self.post_broker )
+        self.post_hc.connect()
         self.declare_exchanges()
 
         self.close()

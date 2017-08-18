@@ -44,7 +44,6 @@ try :
          from sr_consumer       import *
          from sr_instances      import *
          from sr_message        import *
-         from sr_poster         import *
          from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
@@ -83,12 +82,13 @@ class sr_winnow(sr_instances):
            self.logger.error("exchange (input) unset... exitting")
            sys.exit(1)
 
-        # by default, post_broker  is the broker
-        if self.post_broker == None :
-           self.post_broker = self.broker
+        # post_exchange must be provided
+        if self.post_exchange == None :
+           self.logger.error("post_exchange (output) not properly set...exitting")
+           sys.exit(1)
 
-        # post_exchange must be provided and must be different from exchange
-        if self.post_exchange == None or self.post_exchange == self.exchange :
+        # post_exchange must be different from exchange if on same broker
+        if not self.post_broker and self.post_exchange == self.exchange :
            self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
 
@@ -109,7 +109,10 @@ class sr_winnow(sr_instances):
 
     def close(self):
         self.consumer.close()
-        if self.poster : self.poster.close()
+
+        if self.post_broker :
+           self.post_hc.close()
+
         if self.cache  : 
            self.cache.save()
            self.cache.close()
@@ -126,39 +129,42 @@ class sr_winnow(sr_instances):
         # consumer
         # =============
 
-        self.consumer          = sr_consumer(self)
+        self.consumer             = sr_consumer(self)
         self.msg.report_publisher = self.consumer.publish_back()
         self.msg.report_exchange  = self.report_exchange
-        self.msg.user          = self.broker.username
+        self.msg.user             = self.broker.username
 
         self.logger.info("reading from to %s@%s, exchange: %s" %
                ( self.broker.username, self.broker.hostname, self.msg.exchange ) )
         self.logger.info("report_back is %s to %s@%s, exchange: %s" %
                ( self.reportback, self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
 
-
+        self.post_hc = self.consumer.hc
 
         # =============
-        # poster if post_broker different from broker
+        # if post_broker different from broker
         # =============
 
-        self.poster = None
-        if self.post_broker.geturl() != self.broker.geturl() :
-           self.poster            = sr_poster(self)
-           self.msg.publisher     = self.poster.publisher
-           self.post_hc           = self.poster.hc
+        if self.post_broker :
+           self.post_hc  = HostConnect( self.logger )
+           self.post_hc.set_url(self.post_broker)
+           self.post_hc.connect()
+
+           self.msg.user = self.post_broker.username
+
+           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
+                           (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
+        else:
+           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
+                           (self.broker.hostname,self.broker.username,self.broker.path) )
 
         # =============
         # publisher if post_broker is same as broker
         # =============
 
-        else :
-           self.post_hc   = self.consumer.hc
-           self.publisher = Publisher(self.post_hc)
-           self.publisher.build()
-           self.msg.publisher = self.publisher
-           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
-                           (self.broker.hostname,self.broker.username,self.broker.path) )
+        self.publisher = Publisher(self.post_hc)
+        self.publisher.build()
+        self.msg.publisher = self.publisher
 
         self.msg.pub_exchange  = self.post_exchange
         self.msg.post_exchange_split  = self.post_exchange_split
@@ -186,7 +192,6 @@ class sr_winnow(sr_instances):
         if hasattr(self,'manager'):
            self.broker   = self.manager
 
-        self.poster      = None
         self.cache       = None
 
         # caching by default (20 mins)
@@ -335,25 +340,13 @@ class sr_winnow(sr_instances):
 
         # on posting host
        
-        host = self.consumer.hc
-        if self.post_broker.geturl() != self.broker.geturl() :
-           self.poster = sr_poster(self)
-           host        = self.poster.hc
+        self.post_hc = self.consumer.hc
+        if self.post_broker :
+           self.post_hc = HostConnect( self.logger )
+           self.post_hc.set_url(self.post_broker)
+           self.post_hc.connect()
 
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange cleanup
-              
-        for x in exchanges :
-            host.exchange_delete(x)
+        self.declare_exchanges(cleanup=True)
 
         self.close()
         os._exit(0)
@@ -369,16 +362,17 @@ class sr_winnow(sr_instances):
         # on posting host
        
         self.post_hc = self.consumer.hc
-        if self.post_broker.geturl() != self.broker.geturl() :
-           self.poster  = sr_poster(self)
-           self.post_hc = self.poster.hc
+        if self.post_broker :
+           self.post_hc = HostConnect( self.logger )
+           self.post_hc.set_url(self.post_broker)
+           self.post_hc.connect()
 
         self.declare_exchanges()
 
         self.close()
         os._exit(0)
 
-    def declare_exchanges(self):
+    def declare_exchanges(self, cleanup=False):
 
         # define post exchange (splitted ?)
 
@@ -393,8 +387,8 @@ class sr_winnow(sr_instances):
         # do exchange setup
               
         for x in exchanges :
-            self.post_hc.exchange_declare(x)
-
+            if cleanup: self.post_hc.exchange_delete(x)
+            else      : self.post_hc.exchange_declare(x)
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
@@ -407,9 +401,10 @@ class sr_winnow(sr_instances):
         # on posting host
        
         self.post_hc = self.consumer.hc
-        if self.post_broker.geturl() != self.broker.geturl() :
-           self.poster  = sr_poster(self)
-           self.post_hc = self.poster.hc
+        if self.post_broker :
+           self.post_hc = HostConnect( self.logger )
+           self.post_hc.set_url(self.post_broker)
+           self.post_hc.connect()
 
         self.declare_exchanges()
 
