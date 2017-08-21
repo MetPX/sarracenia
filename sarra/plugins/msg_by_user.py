@@ -27,6 +27,12 @@ class Transformer(object):
 
           
     def perform(self,parent):
+
+        # MG  FIX ME  checking for report user I guess
+        if parent.topic_prefix == 'v02.report' :
+           return ( parent.msg.report_user in parent.msg_by_user ) 
+
+        # checking for regular user
         return ( parent.msg.headers[ 'user' ] in parent.msg_by_user ) 
 
 
