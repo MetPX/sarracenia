@@ -297,6 +297,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __on_post__(self):
+        self.logger.debug("%s __on_post_" % self.program_name)
 
         self.msg.local_file = self.new_file # FIXME, remove in 2018
 
@@ -383,6 +384,7 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.notify_only :
+           self.logger.debug("notify_only post")
            self.__on_post__()
            if self.reportback : self.msg.report_publish(201,'Published')
            return True
@@ -427,6 +429,7 @@ class sr_subscribe(sr_instances):
 		
 
            if ok and self.post_broker :
+              self.logger.debug("ERROR self.post_broker = %s" % self.post_broker)
               self.msg.set_topic_url('v02.post',self.new_url)
               self.msg.set_notice(self.new_url,self.msg.time)
               self.__on_post__()
@@ -583,10 +586,11 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.new_url)
-        self.msg.set_notice(self.new_url,self.msg.time)
-        self.__on_post__()
-        self.msg.report_publish(201,'Published')
+        if self.post_broker :
+           self.msg.set_topic_url('v02.post',self.new_url)
+           self.msg.set_notice(self.new_url,self.msg.time)
+           self.__on_post__()
+           self.msg.report_publish(201,'Published')
 
         #=================================
         # if we processed a file we are done
