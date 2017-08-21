@@ -638,9 +638,11 @@ class sr_message():
         self.suffix = self.part_suffix()
 
     def set_time(self):
-        msec = '.%d' % (int(round(time.time() * 1000)) %1000)
-        now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
-        self.time = now
+        now  = time.time()
+        msec = '.%d' % (int(round(now * 1000)) %1000)
+        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
+        self.time = nows
+        if not hasattr(self,'tbegin') : self.tbegin = now
 
     def set_to_clusters(self,to_clusters=None):
         if to_clusters != None :
