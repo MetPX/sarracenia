@@ -71,6 +71,7 @@ import os,sys,time
 
 try :    
          from sr_amqp           import *
+         from sr_cache          import *
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
@@ -78,6 +79,7 @@ try :
          from sr_util           import *
 except : 
          from sarra.sr_amqp      import *
+         from sarra.sr_cache     import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
@@ -154,6 +156,11 @@ class sr_poll(sr_instances):
 
     def close(self):
         self.post_hc.close()
+
+        if self.cache  :
+           self.cache.save()
+           self.cache.close()
+
         self.connected = False 
 
     def connect(self):
@@ -201,6 +208,13 @@ class sr_poll(sr_instances):
         # =============
        
         self.declare_exchanges()
+
+        # =============
+        # cache
+        # =============
+
+        self.cache = sr_cache(self)
+        self.cache.open()
            
 
     # =============
@@ -473,6 +487,17 @@ class sr_poll(sr_instances):
         # Set minimum permissions to something that might work most of the time.
         self.chmod = 0o400
 
+        # cache initialisation
+
+        self.cache       = None
+        self.caching     = 1200
+        self.cache_stat  = True
+
+        # heartbeat to clean/save cache
+
+        self.execfile("on_heartbeat",'heartbeat_cache')
+        self.on_heartbeat_list.append(self.on_heartbeat)
+
         #chmod sets a mask used by line_mode plugin to determine the permission 
         # bits which must be set in order for a file to be posted.
 
@@ -516,6 +541,18 @@ class sr_poll(sr_instances):
         if filename     != None : self.msg.headers['filename']     = filename
 
         if self.flow    != None : self.msg.headers['flow']         = selfflow
+
+        # ========================================
+        # cache testing
+        # ========================================
+
+        if not self.cache.check(sumstr,relpath,partstr):
+            self.msg.report_publish(304,'Not modified')
+            self.logger.debug("Ignored %s" % (self.msg.notice))
+            return False
+
+        self.logger.debug("Added %s" % (self.msg.notice))
+
 
         ok = self.__on_post__()
 
