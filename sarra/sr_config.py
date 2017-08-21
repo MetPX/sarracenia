@@ -438,7 +438,7 @@ class sr_config:
         self.pipe                 = False
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
         self.post_exchange        = None
-        self.post_exchange_split = 0
+        self.post_exchange_split  = 0
         self.preserve_mode        = True
         self.preserve_time        = True
         self.pump_flag            = False
