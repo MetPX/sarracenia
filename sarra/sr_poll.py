@@ -166,16 +166,9 @@ class sr_poll(sr_instances):
 
         self.msg.exchange = self.exchange
         self.msg.headers  = {}
-        self.msg.headers['to_clusters'] = self.to_clusters
-
-        if self.cluster  != None : self.msg.headers['from_cluster'] = self.cluster
-        if self.source   != None : self.msg.headers['source']       = self.source
-        if self.flow     != None : self.msg.headers['flow']         = self.flow
-
-        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # =============
-        # poster
+        # posting
         # =============
 
         self.post_broker   = self.broker
@@ -496,18 +489,33 @@ class sr_poll(sr_instances):
         self.sumflg         = 'z,d'
 
 
-    def post_message(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None):
+    def post(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
 
-        if 'rename' in self.msg.headers: del self.msg.headers['rename']
+        self.msg.exchange = exchange
         
         self.msg.set_topic_relpath(self.topic_prefix,relpath)
+        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
-        if not self.subtopic    : self.msg.set_notice_str(srcpath,relpath)
+        self.msg.set_notice_str(srcpath,relpath)
 
-        if partstr      != None : self.msg.headers['parts']        = partstr
-        if sumstr       != None : self.msg.headers['sum']          = sumstr
-        if rename       != None : self.msg.headers['rename']       = rename
+        # set message headers
+        self.msg.headers = {}
+
+        self.msg.headers['to_clusters'] = to_clusters
+
+        if partstr  != None : self.msg.headers['parts']        = partstr
+        if sumstr   != None : self.msg.headers['sum']          = sumstr
+        if rename   != None : self.msg.headers['rename']       = rename
+        if mtime    != None : self.msg.headers['mtime']        = mtime
+        if atime    != None : self.msg.headers['atime']        = atime
+        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+        if link     != None : self.msg.headers['link']         = link
+
+        if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
+        if self.source  != None : self.msg.headers['source']       = self.source
         if filename     != None : self.msg.headers['filename']     = filename
+
+        if self.flow    != None : self.msg.headers['flow']         = selfflow
 
         ok = self.__on_post__()
 
@@ -631,7 +639,7 @@ class sr_poll(sr_instances):
                 if this_rename != None and this_rename[-1] == '/' :
                    this_rename += remote_file
                 
-                ok = self.post_message(self.exchange,self.srcpath,self.relpath,self.to_clusters, \
+                ok = self.post(self.exchange,self.srcpath,self.relpath,self.to_clusters, \
                                self.partstr,self.sumstr,this_rename,remote_file)
 
                 if ok : npost += 1
