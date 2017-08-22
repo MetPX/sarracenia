@@ -521,7 +521,7 @@ class sr_poll(sr_instances):
         self.msg.set_topic_relpath(self.topic_prefix,relpath)
         if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
-        self.msg.set_notice_str(srcpath,relpath)
+        self.msg.set_notice(srcpath,relpath)
 
         # set message headers
         self.msg.headers = {}

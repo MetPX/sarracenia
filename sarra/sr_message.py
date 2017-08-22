@@ -530,15 +530,15 @@ class sr_message():
 
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
-    def set_notice_str(self,srcpath,relpath,time=None):
+    def set_notice(self,srcpath,relpath,time=None):
 
         self.time    = time
         self.srcpath = srcpath
         self.relpath = relpath
-        self.url     = urllib.parse.urlparse(srcpath+relpath)
+        self.urlstr  = srcpath+relpath
+        self.url     = urllib.parse.urlparse(self.urlstr)
 
-        if time == None : self.set_time()
-
+        if not time  : self.set_time()
 
         self.notice = '%s %s %s' % (self.time,srcpath,relpath)
 
