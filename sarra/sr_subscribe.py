@@ -669,12 +669,14 @@ class sr_subscribe(sr_instances):
 
                  # =====
                  # MG COMMENTED THIS OUT 
-                 # self.consumer.consume already passed through filtering before the save
-                 # anyway, if it was not the case and a message would be filtered, the count would 
-                 # never match the total and the save_path would never get unlinked ...
-                 # that would lead into eventual bugs (like old save_file to which we append new messages...)
-                 # FURTHER MORE, should there be a need to filter in any program, note that
-                 # isMatchingPattern is inherited ... so already available in all programs
+                 # there are several problems with this code part.
+                 # 1- builds urlstr and match against msg.urlstr
+                 # 2- self.consumer.consume already passed through filtering before the save
+                 # 3- anyway, if it was not the case and a message would be filtered, the count would 
+                 #    never match the total and the save_path would never get unlinked ...
+                 #    that would lead into eventual bugs (like old save_file to which we append new messages...)
+                 # 4- the one instance of isMatchingPattern in sr_config is available everywhere
+                 #    because it is inherited ... so already available in all programs
                  # =====
 
                  # make use of accept/reject
