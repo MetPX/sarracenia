@@ -313,7 +313,7 @@ class http_transport():
         token        = msg.url.path[1:].split('/')
         remote_file  = token[-1]
 
-        ok, details  = parent.credentials.get(msg.urlcred)
+        ok, details  = parent.credentials.get(msg.srcpath)
         if details   : url = details.url 
 
         user         = url.username
