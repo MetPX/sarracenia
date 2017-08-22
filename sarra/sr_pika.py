@@ -355,10 +355,8 @@ class Queue:
 
        # queue arguments
        args = {}
-       if self.expire > 0 :
-          args   = {'x-expires' : self.expire }
-       if self.message_ttl > 0 :
-          args   = {'x-message-ttl' : self.message_ttl }
+       if self.expire      > 0 : args['x-expires']     = self.expire
+       if self.message_ttl > 0 : args['x-message-ttl'] = self.message_ttl
 
        # reset 
        if self.reset :
