@@ -435,7 +435,7 @@ class sr_sarra(sr_instances):
                   if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
            except:pass
            self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice(self.new_url,self.msg.time)
+           self.msg.set_notice_url(self.new_url,self.msg.time)
            self.__on_post__()
            self.msg.report_publish(205,'Reset Content : deleted')
            return True
@@ -455,7 +455,7 @@ class sr_sarra(sr_instances):
 
            if ok:
               self.msg.set_topic_url('v02.post',self.new_url)
-              self.msg.set_notice(self.new_url,self.msg.time)
+              self.msg.set_notice_url(self.new_url,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -566,7 +566,7 @@ class sr_sarra(sr_instances):
            else            : self.msg.change_partflg('p')
 
         self.msg.set_topic_url('v02.post',self.new_url)
-        self.msg.set_notice(self.new_url,self.msg.time)
+        self.msg.set_notice_url(self.new_url,self.msg.time)
         self.__on_post__()
         self.msg.report_publish(201,'Published')
 

@@ -238,7 +238,7 @@ class sr_poster:
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # set message notice
-        self.msg.set_notice(url)
+        self.msg.set_notice_url(url)
 
         # set message headers
         self.msg.headers = {}

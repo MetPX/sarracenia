@@ -452,7 +452,7 @@ class sr_subscribe(sr_instances):
            if ok and self.post_broker :
               self.logger.debug("ERROR self.post_broker = %s" % self.post_broker)
               self.msg.set_topic_url('v02.post',self.new_url)
-              self.msg.set_notice(self.new_url,self.msg.time)
+              self.msg.set_notice_url(self.new_url,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -609,7 +609,7 @@ class sr_subscribe(sr_instances):
 
         if self.post_broker :
            self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice(self.new_url,self.msg.time)
+           self.msg.set_notice_url(self.new_url,self.msg.time)
            self.__on_post__()
            self.msg.report_publish(201,'Published')
 

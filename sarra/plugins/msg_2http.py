@@ -29,7 +29,7 @@ class Http2Local(object):
 
         m.urlstr = parent.hurlre.sub( m.savedurl, m.urlstr )
         m.url = urllib.parse.urlparse( m.urlstr )
-        m.set_notice(m.url)
+        m.set_notice_url(m.url)
         l.debug( "msg_2http doc_root=%s " % ( parent.document_root ) )
         l.info( "msg_2http output: urlstr: %s"  % m.urlstr )
         return True

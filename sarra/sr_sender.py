@@ -428,7 +428,7 @@ class sr_sender(sr_instances):
 
         if self.post_broker :
            self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice(self.new_url,self.msg.time)
+           self.msg.set_notice_url(self.new_url,self.msg.time)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')

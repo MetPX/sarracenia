@@ -228,7 +228,7 @@ class sr_message():
         self.srcpath = token[2]
         self.relpath = token[3]
         url          = urllib.parse.urlparse(token[2]+token[3])
-        self.set_notice(url)
+        self.set_notice_url(url)
         
         self.checksum = token[0]
         self.filesize = int(token[1])
@@ -384,7 +384,7 @@ class sr_message():
         self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
-        self.set_notice(self.url)
+        self.set_notice_url(self.url)
 
     def set_hdrstr(self):
         self.hdrstr  = ''
@@ -508,7 +508,7 @@ class sr_message():
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
-    def set_notice(self,url,time=None):
+    def set_notice_url(self,url,time=None):
         self.url    = url
         self.time   = time
         if time    == None : self.set_time()
