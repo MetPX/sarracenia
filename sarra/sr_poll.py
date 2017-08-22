@@ -110,12 +110,7 @@ class sr_poll(sr_instances):
         # to clusters required
 
         if self.to_clusters == None:
-            self.to_clusters = self.broker.hostname
-
-        if self.to_clusters == None :
-           self.logger.error("-to option is mandatory\n")
-           self.help()
-           sys.exit(1)
+           self.to_clusters = self.broker.hostname
 
         # check destination
 
@@ -153,6 +148,13 @@ class sr_poll(sr_instances):
             if not maskDir in self.pulls :
                self.pulls[maskDir] = []
             self.pulls[maskDir].append(mask)
+
+        # =============
+        # cache
+        # =============
+
+        self.cache = sr_cache(self)
+        self.cache.open()
 
     def close(self):
         self.post_hc.close()
@@ -208,13 +210,6 @@ class sr_poll(sr_instances):
         # =============
        
         self.declare_exchanges()
-
-        # =============
-        # cache
-        # =============
-
-        self.cache = sr_cache(self)
-        self.cache.open()
            
 
     # =============
@@ -804,6 +799,8 @@ class sr_poll(sr_instances):
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
         self.declare_exchanges(cleanup=True)
+
+        self.cache.close(unlink=True)
 
         self.close()
         os._exit(0)

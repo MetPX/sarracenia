@@ -242,8 +242,9 @@ class sr_cache():
         self.logger.debug("sr_cache save")
 
         # close,remove file, open new empty file
-        self.fp.close()
-        os.unlink(self.cache_file)
+        if self.fp : self.fp.close()
+        try   : os.unlink(self.cache_file)
+        except: pass
         self.fp = open(self.cache_file,'w')
 
         # write unexpired entries, create refreshed dict
