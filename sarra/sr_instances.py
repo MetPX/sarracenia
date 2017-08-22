@@ -72,7 +72,7 @@ class sr_instances(sr_config):
         self.instance_name = self.basic_name + '_%.4d' % i
 
         #self.instance_str = 'sr_' + self.instance_name[3:].replace('_',' ')
-        self.instance_str  = 'sr_' + self.program_name
+        self.instance_str  = self.program_name
         if self.config_name: self.instance_str += ' ' + self.config_name + ' %.4d' % i
 
         self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
