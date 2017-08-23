@@ -874,7 +874,7 @@ class sr_subscribe(sr_instances):
         # if caching
 
         if self.caching :
-           self.cache.free()
+           self.cache.close(unlink=True)
 
         # if posting
 
