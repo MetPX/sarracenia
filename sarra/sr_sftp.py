@@ -515,7 +515,7 @@ class sftp_transport():
             os.chdir(parent.new_dir)
 
         try :
-                parent.destination = msg.urlcred
+                parent.destination = msg.srcpath
 
                 sftp = self.sftp
                 if not self.check_is_connected() :
@@ -795,9 +795,9 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.urlcred = "sftp://localhost/"
+           msg.srcpath = "sftp://localhost/"
            msg.urlstr  = "sftp://localhost/tztz/ccc"
-           msg.url     = urllib.parse.urlparse(msg.urlcred+"tztz/ccc")
+           msg.url     = urllib.parse.urlparse(msg.srcpath+"tztz/ccc")
            msg.partflg = '1'
            msg.offset  = 0
            msg.length  = 0

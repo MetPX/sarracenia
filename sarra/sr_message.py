@@ -225,9 +225,10 @@ class sr_message():
         self.topic        = self.topic_prefix + '.' + self.subtopic
 
         token        = self.notice.split(' ')
-        self.urlcred = token[2]
+        self.srcpath = token[2]
+        self.relpath = token[3]
         url          = urllib.parse.urlparse(token[2]+token[3])
-        self.set_notice(url)
+        self.set_notice_url(url)
         
         self.checksum = token[0]
         self.filesize = int(token[1])
@@ -262,7 +263,8 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.time    = token[0]
-        self.urlcred = token[1]
+        self.srcpath = token[1]
+        self.relpath = token[2]
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
         self.path    = token[2]
@@ -382,7 +384,7 @@ class sr_message():
         self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
-        self.set_notice(self.url)
+        self.set_notice_url(self.url)
 
     def set_hdrstr(self):
         self.hdrstr  = ''
@@ -506,7 +508,7 @@ class sr_message():
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
-    def set_notice(self,url,time=None):
+    def set_notice_url(self,url,time=None):
         self.url    = url
         self.time   = time
         if time    == None : self.set_time()
@@ -528,15 +530,15 @@ class sr_message():
 
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
-    def set_notice_str(self,srcpath,relpath,time=None):
+    def set_notice(self,srcpath,relpath,time=None):
 
         self.time    = time
         self.srcpath = srcpath
         self.relpath = relpath
-        self.url     = urllib.parse.urlparse(srcpath+relpath)
+        self.urlstr  = srcpath+relpath
+        self.url     = urllib.parse.urlparse(self.urlstr)
 
-        if time == None : self.set_time()
-
+        if not time  : self.set_time()
 
         self.notice = '%s %s %s' % (self.time,srcpath,relpath)
 
@@ -638,9 +640,11 @@ class sr_message():
         self.suffix = self.part_suffix()
 
     def set_time(self):
-        msec = '.%d' % (int(round(time.time() * 1000)) %1000)
-        now  = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
-        self.time = now
+        now  = time.time()
+        msec = '.%d' % (int(round(now * 1000)) %1000)
+        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
+        self.time = nows
+        if not hasattr(self,'tbegin') : self.tbegin = now
 
     def set_to_clusters(self,to_clusters=None):
         if to_clusters != None :
@@ -652,6 +656,7 @@ class sr_message():
 
     def set_topic_relpath(self,topic_prefix,relpath):
         self.topic_prefix = topic_prefix
+        self.relpath      = relpath
         strpath           = relpath.strip('/')
         words             = strpath.split('/')
         self.subtopic     = '.'.join(words[:-1])

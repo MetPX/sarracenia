@@ -41,7 +41,7 @@
 #
 #============================================================
 
-import os,sys,time
+import json,os,sys,time
 
 try :    
          from sr_cache           import *
@@ -105,6 +105,7 @@ class sr_subscribe(sr_instances):
 
     def close(self):
         self.consumer.close()
+        if self.save_fp:              self.save_fp.close()
         if self.post_broker:          self.post_hc.close()
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
@@ -143,6 +144,22 @@ class sr_subscribe(sr_instances):
         else:
            self.logger.warning("report_back suppressed")
 
+
+        # =============
+        # in save mode...
+        # =============
+
+        if self.save :
+           self.logger.warning("running in save mode")
+           self.post_broker   = None
+
+           self.consumer.save = True
+           if self.save_file  : self.save_path = self.save_file + self.save_path[-10:]
+           self.consumer.save_path = self.save_path
+
+           self.save_fp       = open(self.save_path,"a")
+           self.save_count    = 1
+           return
 
         # =============
         # publisher : if self.post_broker exists
@@ -297,6 +314,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __on_post__(self):
+        self.logger.debug("%s __on_post_" % self.program_name)
 
         self.msg.local_file = self.new_file # FIXME, remove in 2018
 
@@ -327,6 +345,9 @@ class sr_subscribe(sr_instances):
 
         self.post_broker    = None
         self.post_exchange  = None
+
+        self.save_fp        = None
+        self.save_count     = 1
 
     # =============
     # process message  
@@ -383,8 +404,10 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.notify_only :
-           self.__on_post__()
-           if self.reportback : self.msg.report_publish(201,'Published')
+           if self.post_broker:
+              self.logger.debug("notify_only post")
+              self.__on_post__()
+              if self.reportback : self.msg.report_publish(201,'Published')
            return True
 
 
@@ -427,8 +450,9 @@ class sr_subscribe(sr_instances):
 		
 
            if ok and self.post_broker :
+              self.logger.debug("ERROR self.post_broker = %s" % self.post_broker)
               self.msg.set_topic_url('v02.post',self.new_url)
-              self.msg.set_notice(self.new_url,self.msg.time)
+              self.msg.set_notice_url(self.new_url,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -583,10 +607,11 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.new_url)
-        self.msg.set_notice(self.new_url,self.msg.time)
-        self.__on_post__()
-        self.msg.report_publish(201,'Published')
+        if self.post_broker :
+           self.msg.set_topic_url('v02.post',self.new_url)
+           self.msg.set_notice_url(self.new_url,self.msg.time)
+           self.__on_post__()
+           self.msg.report_publish(201,'Published')
 
         #=================================
         # if we processed a file we are done
@@ -612,6 +637,74 @@ class sr_subscribe(sr_instances):
         return True
 
 
+    def restore_messages(self):
+        self.logger.info("%s restore_messages" % self.program_name)
+
+        # no file to restore
+        if not os.path.exists(self.save_path): return
+
+        # not active
+
+        if self.vip  and  not self.has_vip() : return
+
+        # display restore message count
+
+        total = 0
+        with open(self.save_path,"r") as fp :
+             for json_line in fp:
+                 total += 1
+
+        self.logger.info("%s restoring %d messages from save %s " % (self.program_name,total,self.save_path) )
+
+        # restore each message
+
+        count = 0
+        with open(self.save_path,"r") as fp :
+             for json_line in fp:
+
+                 count += 1
+                 self.msg.exchange = 'save'
+                 self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
+                 self.msg.from_amqplib()
+
+                 # =====
+                 # MG COMMENTED THIS OUT 
+                 # there are several problems with this code part.
+                 # 1- builds urlstr and match against msg.urlstr
+                 # 2- self.consumer.consume already passed through filtering before the save
+                 # 3- anyway, if it was not the case and a message would be filtered, the count would 
+                 #    never match the total and the save_path would never get unlinked ...
+                 #    that would lead into eventual bugs (like old save_file to which we append new messages...)
+                 # 4- the one instance of isMatchingPattern in sr_config is available everywhere
+                 #    because it is inherited ... so already available in all programs
+                 # =====
+
+                 # make use of accept/reject
+                 #if self.use_pattern :
+                     # Adjust url to account for sundew extension if present, and files do not already include the names.
+                     #if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
+                     #   urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
+                     #else:
+                     #   urlstr=self.msg.urlstr
+
+                     #self.logger.debug("sr_sender restore, path being matched: %s " % ( urlstr )  )
+
+                     #if not self.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
+                     #   self.logger.debug("Rejected by accept/reject options")
+                     #   return False,self.msg
+
+                 self.logger.info("%s restoring message %d of %d: topic: %s" %
+                                 (self.program_name,  count,total, self.msg.topic) )
+                 ok = self.process_message()
+
+        if count >= total:
+           self.logger.info("%s restore complete deleting save file: %s " % ( self.program_name, self.save_path ) )
+           os.unlink(self.save_path)
+        else:
+           self.logger.error("%s only restored %d of %d messages from save file: %s " %
+                            (self.program_name, count, total, self.save_path ) )
+
+
     def run(self):
 
         self.logger.info("%s run" % self.program_name)
@@ -619,6 +712,12 @@ class sr_subscribe(sr_instances):
         # loop/process messages
 
         self.connect()
+
+        # restoring messages
+
+        if self.restore : self.restore_messages()
+
+        # processing messages
 
         while True :
               try  :
@@ -644,6 +743,12 @@ class sr_subscribe(sr_instances):
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
 
+                      #  in save mode
+
+                      if self.save :
+                         self.save_message()
+                         continue
+
                       #  process message (ok or not... go to the next)
                       ok = self.process_message()
 
@@ -651,6 +756,12 @@ class sr_subscribe(sr_instances):
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
+
+    def save_message(self):
+        self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
+        self.save_count += 1
+        self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
+        self.save_fp.flush()
 
     def set_cluster(self):
         if self.cluster == None :
@@ -763,7 +874,7 @@ class sr_subscribe(sr_instances):
         # if caching
 
         if self.caching :
-           self.cache.free()
+           self.cache.close(unlink=True)
 
         # if posting
 

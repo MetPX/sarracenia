@@ -4,6 +4,12 @@
 
 **git repo(unreleased)**
 
+* sr_poll and plugin/poll_script.py post with parent.post  (srcpath,relpath instead of url)
+* flow_templates under poll|post|watch modified not to generate errors in flow logs
+* flow_templates shovel t_dd[12].conf  reject .*citypage.*  to avoid errors in flow logs
+* plugin/msg_by_user.py now considers msg.report_user for v02.report messages (correct error in flow logs)
+* flow_check.sh shows classified cound of errors in log or report No error found
+* sr_poster unused in sr_poll, sr_winnow, sr_sender, sr_shovel
 * sr_subscribe supports caching on messages
 * sr_config  post_url option equivalent to url
 * sr_subscribe support posting if post_broker is set (and other post options)

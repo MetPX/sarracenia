@@ -414,7 +414,7 @@ class ftp_transport():
         new_lock    = ''
     
         try :
-                parent.destination = msg.urlcred
+                parent.destination = msg.srcpath
 
                 ftp = self.ftp
                 if not self.check_is_connected() :
@@ -683,9 +683,9 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.urlcred = "ftp://localhost/"
+           msg.srcpath = "ftp://localhost/"
            msg.urlstr  = "ftp://localhost/tztz/ccc"
-           msg.url     = urllib.parse.urlparse(msg.urlcred+"tztz/ccc")
+           msg.url     = urllib.parse.urlparse(msg.srcpath+"tztz/ccc")
            msg.partflg = '1'
            msg.offset  = 0
            msg.length  = 0

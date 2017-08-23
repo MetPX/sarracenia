@@ -289,9 +289,9 @@ def self_test():
     cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
-    cfg.durable        = True
-    cfg.expire         = 30
-    cfg.message_ttl    = 30
+    cfg.durable        = False
+    cfg.expire         = 60 * 1000 # 60 secs
+    cfg.message_ttl    = 10 * 1000 # 10 secs
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None

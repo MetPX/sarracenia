@@ -82,7 +82,7 @@ class POLL_SCRIPT(object):
           logger.debug(\
               "poll_script exchange: %s url: %s to_cluster: %s partstr: %s " \
               % (parent.exchange, msg.url, parent.to_clusters, msg.partstr) )
-          ok = parent.poster.post(parent.exchange,msg.url,parent.to_clusters, msg.partstr,msg.sumstr, \
+          ok = parent.post(parent.exchange,parent.destination,fname,parent.to_clusters, msg.partstr,msg.sumstr, \
                mtime=mtimestr, atime=atimestr)
 
 

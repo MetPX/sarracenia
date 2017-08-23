@@ -305,5 +305,19 @@ calcres ${totpost1} ${totsubu} "post test2 ${totpost1} and subscribe u ${totsubu
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
+# MG shows errors in logs if any
+
+echo
+NERROR=`grep ERROR "$LOGDIR"/*.log | wc -l`
+if ((NERROR>0)); then
+   echo TYPE OF ERRORS IN LOG :
+   echo
+   grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c
+   exit 1
+fi
+if ((NERROR==0)); then
+   echo NO ERROR IN LOGS
+   exit 0
+fi
 exit $?
 

@@ -150,7 +150,7 @@ def file_insert_part(parent,msg,part_file):
 
     if msg.publisher : 
        msg.set_topic_url('v02.post',msg.target_url)
-       msg.set_notice(msg.target_url,msg.time)
+       msg.set_notice_url(msg.target_url,msg.time)
        if chk :
           if    msg.sumflg == 'z' :
                 msg.set_sum(msg.checksum,msg.onfly_checksum)
@@ -374,7 +374,7 @@ def file_truncate(parent,msg):
                 fp.close()
 
                 msg.set_topic_url('v02.post',msg.target_url)
-                msg.set_notice(msg.target_url,msg.time)
+                msg.set_notice_url(msg.target_url,msg.time)
                 msg.report_publish(205, 'Reset Content :truncated')
 
     except : pass
