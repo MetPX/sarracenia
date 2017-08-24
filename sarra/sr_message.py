@@ -535,12 +535,16 @@ class sr_message():
         self.time    = time
         self.srcpath = srcpath
         self.relpath = relpath
-        self.urlstr  = srcpath+relpath
-        self.url     = urllib.parse.urlparse(self.urlstr)
-
         if not time  : self.set_time()
 
         self.notice = '%s %s %s' % (self.time,srcpath,relpath)
+
+        #========================================
+        # COMPATIBILITY TRICK  for the moment
+
+        self.urlstr  = srcpath+relpath
+        self.url     = urllib.parse.urlparse(self.urlstr)
+        #========================================
 
 
     def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
@@ -655,28 +659,43 @@ class sr_message():
            self.to_clusters = []
 
     def set_topic_relpath(self,topic_prefix,relpath):
+        self.logger.debug("set_topic_relpath %s %s" %(topic_prefix,relpath))
         self.topic_prefix = topic_prefix
-        self.relpath      = relpath
+        self.topic        = topic_prefix
+        self.subtopic     = ''
+
         strpath           = relpath.strip('/')
         words             = strpath.split('/')
-        self.subtopic     = '.'.join(words[:-1])
-        self.topic        = '%s.%s' % (topic_prefix,self.subtopic)
+        if len(words) > 1 :
+           self.subtopic = '.'.join(words[:-1])
+           self.topic   += '.' + self.subtopic
+
         self.topic        = self.topic.replace('..','.')
 
     def set_topic_url(self,topic_prefix,url):
+        self.logger.debug("set_topic_url %s %s" %(topic_prefix,url))
         self.topic_prefix = topic_prefix
-        self.url          = url
-        path              = url.path.strip('/')
-        words             = path.split('/')
-        self.subtopic     = '.'.join(words[:-1])
-        self.topic        = '%s.%s' % (topic_prefix,self.subtopic)
+        self.topic        = topic_prefix
+        self.subtopic     = ''
+        relpath           = url.path
+
+        strpath           = relpath.strip('/')
+        words             = strpath.split('/')
+        if len(words) > 1 :
+           self.subtopic = '.'.join(words[:-1])
+           self.topic   += '.' + self.subtopic
+
         self.topic        = self.topic.replace('..','.')
+        self.logger.debug("set_topic_url topic %s" % self.topic )
+       
 
     def set_topic_usr(self,topic_prefix,subtopic):
+        self.logger.debug("set_topic_usr %s %s" %(topic_prefix,subtopic))
         self.topic_prefix = topic_prefix
         self.subtopic     = subtopic
-        self.topic        = '%s.%s' % (topic_prefix,self.subtopic)
+        self.topic        = topic_prefix + '.' + self.subtopic
         self.topic        = self.topic.replace('..','.')
+
 
     def start_timer(self):
         self.tbegin = time.time()
