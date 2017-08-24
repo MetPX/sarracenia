@@ -69,6 +69,13 @@
 
 import os,sys,time
 
+#============================================================
+# DECLARE TRICK for false self.poster
+
+from collections import *
+
+#============================================================
+
 try :    
          from sr_amqp           import *
          from sr_cache          import *
@@ -123,6 +130,9 @@ class sr_poll(sr_instances):
            self.help()
            sys.exit(1)
 
+        self.srcpath = self.details.url.geturl()
+        if self.srcpath[-1] != '/' : self.srcpath += '/'
+
         # check destination
 
         if self.exchange  == None :
@@ -155,6 +165,30 @@ class sr_poll(sr_instances):
 
         self.cache = sr_cache(self)
         self.cache.open()
+
+        # ========================================
+        # BEGIN TRICK for false self.poster
+
+        addmodule = namedtuple('AddModule', ['post'])
+        self.poster = addmodule(self.post_url)
+
+        if self.poster.post == self.post_url :
+           self.logger.debug("MY POSTER TRICK DID WORK !!!")
+
+    def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,srcpath,relpath...")
+
+        urlstr  = url.geturl()
+        relpath = url.path
+        srcpath = urlstr.replace(relpath,'')
+
+        if srcpath[-1] != '/' : srcpath += '/'
+
+        return self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
+
+    # ENDOF TRICK for false self.poster
+    # ========================================
+
 
     def close(self):
         self.post_hc.close()
@@ -548,7 +582,6 @@ class sr_poll(sr_instances):
 
         self.logger.debug("Added %s" % (self.msg.notice))
 
-
         ok = self.__on_post__()
 
         return ok
@@ -648,7 +681,6 @@ class sr_poll(sr_instances):
                 desc         = desclst[remote_file]
                 ssiz         = desc.split()[4]
 
-                self.srcpath = self.destination
                 self.relpath = self.destDir + '/'+ remote_file
 
                 self.sumstr  = self.sumflg
