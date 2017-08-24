@@ -224,26 +224,20 @@ class sr_shovel(sr_instances):
 
     def __on_message__(self):
 
-        # the message has not specified a source.
+        # set message source if not specified
         if not 'source' in self.msg.headers :
-           if self.reportback:
-               self.msg.report_publish(403,"Forbidden : message without a source amqp header['source']")
-           self.logger.error("message without a source amqp header['source']")
-           return False
+           self.msg.headers['source'] = self.broker.username
+           self.logger.warning("corrected message with headers['source'] = %s" % self.msg.headers['source'])
 
-        # the message has not specified a from_cluster.
+        # set message from_cluster if not specified
         if not 'from_cluster' in self.msg.headers :
-           if self.reportback:
-               self.msg.report_publish(403,"Forbidden : message without a cluster amqp header['from_cluster']")
-           self.logger.error("message without a cluster amqp header['from_cluster']")
-           return False
+           self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+           self.logger.warning("corrected message with headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
 
         # the message has not specified a destination.
         if not 'to_clusters' in self.msg.headers :
-           if self.reportback:
-               self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
-           self.logger.error("message without destination amqp header['to_clusters']")
-           return False
+           self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1]
+           self.logger.warning("corrected message with headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
 
         # this instances of sr_shovel runs,
         # for cluster               : self.cluster
