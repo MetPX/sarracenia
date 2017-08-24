@@ -224,20 +224,26 @@ class sr_shovel(sr_instances):
 
     def __on_message__(self):
 
-        # set message source if not specified
+        # correct a message without a source
+        ex = self.msg.exchange
         if not 'source' in self.msg.headers :
-           self.msg.headers['source'] = self.broker.username
+           if len(ex) > 3 and ex[:3] == 'xs_' : self.msg.headers['source'] = ex[3:].split('_')[0]
+           elif self.source                   : self.msg.headers['source'] = self.source
+           else                               : self.msg.headers['source'] = self.broker.username
            self.logger.warning("corrected message with headers['source'] = %s" % self.msg.headers['source'])
 
-        # set message from_cluster if not specified
+        # correct a message without an origin cluster
         if not 'from_cluster' in self.msg.headers :
-           self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
            self.logger.warning("corrected message with headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
 
-        # the message has not specified a destination.
+        # correct a message without routing clusters
         if not 'to_clusters' in self.msg.headers :
-           self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1]
+           if self.to_clusters: self.msg.headers['to_clusters'] = self.to_clusters
+           else               : self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
            self.logger.warning("corrected message with headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
+
 
         # this instances of sr_shovel runs,
         # for cluster               : self.cluster
