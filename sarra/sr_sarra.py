@@ -45,8 +45,6 @@
 # condition 1: from a source
 # broker                  = where sarra is running (manager)
 # exchange                = xs_source_user
-# message                 = message.headers['to_clusters'] verified...
-#                           is this message for this cluster
 # product                 = downloaded under directory (option document_root)
 #                         = subdirectory from mirror option  OR
 #                           message.headers['rename'] ...
@@ -63,8 +61,6 @@
 # condition 2: from another broker/pump
 # broker                  = the remote broker...
 # exchange                = xpublic
-# message                 = message.headers['to_clusters'] verified...
-#                           is this message for this cluster
 # product                 = usually the product placement is mirrored 
 #                           option document_root needs to be set
 # post_broker             = where sarra is running (manager)
@@ -184,9 +180,6 @@ class sr_sarra(sr_instances):
 
         self.post_hc = HostConnect( logger = self.logger )
         self.post_hc.set_url( self.post_broker )
-        if self.to_clusters == None:
-             self.to_clusters = self.post_broker.hostname
-
         self.post_hc.connect()
 
         # publisher
@@ -291,11 +284,26 @@ class sr_sarra(sr_instances):
     def __on_message__(self):
         self.logger.debug("sr_sarra __on_message__")
 
-        # the message has not specified a destination.
+        # correct a message without a source
+        ex = self.msg.exchange
+        if not 'source' in self.msg.headers :
+           if len(ex) > 3 and ex[:3] == 'xs_' : self.msg.headers['source'] = ex[3:].split('_')[0]
+           elif self.source                   : self.msg.headers['source'] = self.source
+           else                               : self.msg.headers['source'] = self.broker.username
+           self.logger.warning("corrected message with headers['source'] = %s" % self.msg.headers['source'])
+
+        # correct a message without an origin cluster
+        if not 'from_cluster' in self.msg.headers :
+           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+           self.logger.warning("corrected message with headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
+
+        # correct a message without routing clusters
         if not 'to_clusters' in self.msg.headers :
-           self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
-           self.logger.warning("message dropped, no destination given in amqp header['to_clusters']")
-           return False
+           if self.to_clusters: self.msg.headers['to_clusters'] = self.to_clusters
+           else               : self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
+           self.logger.warning("corrected message with headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
+
 
         # this instances of sr_sarra runs,
         # for cluster               : self.cluster
@@ -396,17 +404,6 @@ class sr_sarra(sr_instances):
 
         self.logger.debug("Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
-        #=================================
-        # setting source and cluster if required
-        #=================================
-
-        if self.source_from_exchange :
-           ok = self.set_source()
-           if not ok : return False
-
-        if not 'from_cluster' in self.msg.headers :
-           ok = self.set_cluster()
-           if not ok : return False
 
         #=================================
         # setting up message with sr_sarra config options
@@ -664,26 +661,6 @@ class sr_sarra(sr_instances):
 
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']
-
-    def set_cluster(self):
-        if self.cluster == None :
-           self.msg.report_publish(403,"Forbidden : message without cluster")
-           self.logger.error("Forbidden : message without cluster")
-           return False
-
-        self.msg.headers['from_cluster'] = self.cluster
-        return True
-
-    def set_source(self):
-        if self.msg.exchange[:3] != 'xs_' :
-           self.logger.error("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
-           self.msg.report_publish(403,"Forbidden : message without source")
-           self.logger.error("Forbidden : message without source")
-           return False
-
-        source = self.msg.exchange[3:]
-        self.msg.set_source(source)
-        return True
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
