@@ -171,9 +171,6 @@ class sr_subscribe(sr_instances):
 
            self.post_hc = HostConnect( logger = self.logger )
            self.post_hc.set_url( self.post_broker )
-           if self.to_clusters == None:
-                self.to_clusters = self.post_broker.hostname
-
            self.post_hc.connect()
 
            # publisher
@@ -282,6 +279,29 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
+        # correct a message without a source
+        ex = self.msg.exchange
+        if not 'source' in self.msg.headers :
+           if len(ex) > 3 and ex[:3] == 'xs_' : self.msg.headers['source'] = ex[3:].split('_')[0]
+           elif self.source                   : self.msg.headers['source'] = self.source
+           else                               : self.msg.headers['source'] = self.broker.username
+           self.logger.warning("corrected message with headers['source'] = %s" % self.msg.headers['source'])
+
+        # correct a message without an origin cluster
+        if not 'from_cluster' in self.msg.headers :
+           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+           self.logger.warning("corrected message with headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
+
+        # correct a message without routing clusters
+        if not 'to_clusters' in self.msg.headers :
+           if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
+           elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
+           if 'to_clusters' in self.msg.headers :
+              self.logger.warning("corrected message with headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
+           else:
+              self.logger.warning("message without headers['to_clusters']")
+
         # invoke user defined on_message when provided
 
         self.local_file = self.new_dir + '/' + self.new_file     # FIXME: remove in 2018, once all plugins are converted.
@@ -360,18 +380,6 @@ class sr_subscribe(sr_instances):
         # selected directory from accept/reject resolved in consumer
 
         self.document_root = self.currentDir
-
-        #=================================
-        # setting source and cluster if required
-        #=================================
-
-        if self.source_from_exchange :
-           ok = self.set_source()
-           if not ok : return False
-
-        if not 'from_cluster' in self.msg.headers :
-           ok = self.set_cluster()
-           if not ok : return False
 
         #=================================
         # setting up message with sr_subscribe config options
@@ -762,26 +770,6 @@ class sr_subscribe(sr_instances):
         self.save_count += 1
         self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
-
-    def set_cluster(self):
-        if self.cluster == None :
-           self.msg.report_publish(403,"Forbidden : message without cluster")
-           self.logger.error("Forbidden : message without cluster")
-           return False
-
-        self.msg.headers['from_cluster'] = self.cluster
-        return True
-
-    def set_source(self):
-        if self.msg.exchange[:3] != 'xs_' :
-           self.logger.error("Forbidden? %s %s '%s' %s" % (self.msg.exchange,self.msg.topic,self.msg.notice,self.msg.hdrstr))
-           self.msg.report_publish(403,"Forbidden : message without source")
-           self.logger.error("Forbidden : message without source")
-           return False
-
-        source = self.msg.exchange[3:]
-        self.msg.set_source(source)
-        return True
 
     # ==============================================
     # how will the download file land on this server
