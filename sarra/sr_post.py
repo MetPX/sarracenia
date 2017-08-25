@@ -96,6 +96,11 @@ class sr_post(sr_config):
            self.cache = sr_cache(self)
            self.cache.open()
 
+           # heartbeat to clean/save cache
+
+           self.execfile("on_heartbeat",'heartbeat_cache')
+           self.on_heartbeat_list.append(self.on_heartbeat)
+
         # ========================================
         # BEGIN TRICK for false self.poster
 

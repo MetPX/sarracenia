@@ -659,7 +659,6 @@ class sr_message():
            self.to_clusters = []
 
     def set_topic_relpath(self,topic_prefix,relpath):
-        self.logger.debug("set_topic_relpath %s %s" %(topic_prefix,relpath))
         self.topic_prefix = topic_prefix
         self.topic        = topic_prefix
         self.subtopic     = ''
@@ -673,11 +672,13 @@ class sr_message():
         self.topic        = self.topic.replace('..','.')
 
     def set_topic_url(self,topic_prefix,url):
-        self.logger.debug("set_topic_url %s %s" %(topic_prefix,url))
         self.topic_prefix = topic_prefix
         self.topic        = topic_prefix
         self.subtopic     = ''
         relpath           = url.path
+
+        # MG compat ?
+        self.url          = url
 
         strpath           = relpath.strip('/')
         words             = strpath.split('/')
@@ -690,7 +691,6 @@ class sr_message():
        
 
     def set_topic_usr(self,topic_prefix,subtopic):
-        self.logger.debug("set_topic_usr %s %s" %(topic_prefix,subtopic))
         self.topic_prefix = topic_prefix
         self.subtopic     = subtopic
         self.topic        = topic_prefix + '.' + self.subtopic

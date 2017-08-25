@@ -92,6 +92,8 @@ class sr_winnow(sr_instances):
            self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
 
+        if not self.post_broker : self.post_broker = self.broker
+
         # no vip given... so should not matter ?
         if self.vip == None and self.interface == None :
            self.logger.debug("both vip and interface missing... standalone mode")
