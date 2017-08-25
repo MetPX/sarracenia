@@ -3,3 +3,4 @@ libsarra-c
 libsarra-c.substvars
 libsarra-c-dev
 libsarra-c-dev.substvars
+debhelper-build-stamp
