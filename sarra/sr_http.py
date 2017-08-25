@@ -164,6 +164,8 @@ class sr_http():
               if chk : chk.update(chunk)
               if cb  : cb(chunk)
 
+        fp.flush()
+        os.fsync(fp)
         self.fpos = fp.tell()
         # if new version of file replaces longer previous version.
         # FIXME  this truncate code makes no sense...  
@@ -458,6 +460,8 @@ class http_transport():
               if cb  : cb(chunk)
 
         # if new version of file replaces longer previous version.
+        fp.flush()
+        os.fsync(fp)
         self.fpos = fp.tell()
         if self.fpos >= msg.filesize:
            fp.truncate()

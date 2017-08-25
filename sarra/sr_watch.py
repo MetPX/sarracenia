@@ -114,10 +114,11 @@ class sr_watch(sr_instances):
         self.post.realpath     = self.realpath
         self.post.follow_symlinks = self.follow_symlinks
         self.post.force_polling   = self.force_polling
+        self.post.check()
         if self.reset :
            self.post.connect()
+           self.post.cache.close(unlink=True)
            self.post.setup()
-           self.post.poster.cache_reset()
 
     def check_heartbeat(self):
         now    = time.time()
@@ -241,7 +242,7 @@ class sr_watch(sr_instances):
             self.post.connect()
 
             # amqp resources
-            self.post.setup()
+            self.post.declare_exchanges()
 
             if self.post.realpath: 
                sld = os.path.realpath( self.watch_path )
@@ -300,20 +301,18 @@ class sr_watch(sr_instances):
         self.logger.info("%s cleanup" % self.program_name)
 
         # on posting host
-        self.post.check()
+        self.check()
         self.post.connect()
 
         self.post.cleanup()
 
-        self.post.close()
-        self.post.poster.cache_reset()
         os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
         # on posting host
-        self.post.check()
+        self.check()
         self.post.connect()
 
         self.post.declare()
@@ -325,7 +324,7 @@ class sr_watch(sr_instances):
         self.logger.info("%s setup" % self.program_name)
 
         # on posting host
-        self.post.check()
+        self.check()
         self.post.connect()
 
         self.post.declare()
