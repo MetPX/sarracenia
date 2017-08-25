@@ -325,7 +325,7 @@ Operations
 
 To operate a pump, there needs to be a user designated as the pump administrator.
 The administrator is different from the others mostly in the permission granted
-to create exchanges, and the ability to run processes that address the common
+to create arbitrary exchanges, and the ability to run processes that address the common
 exchanges (xpublic, xreport, etc...) All other users are limited to being able to
 access only their own resources (exchange and queues).
 
@@ -747,7 +747,7 @@ Sample run::
   2016-03-28 00:41:25,673 [INFO] adding user feeder
   2016-03-28 00:41:25,787 [INFO] permission user 'feeder' role feeder  configure='.*' write='.*' read='.*'
   2016-03-28 00:41:25,897 [INFO] adding user peter
-  2016-03-28 00:41:26,018 [INFO] permission user 'peter' role source  configure='^q_peter.*' write='^q_peter.*|^xs_peter$' read='^q_peter.*|^xl_peter$|^xpublic$'
+  2016-03-28 00:41:26,018 [INFO] permission user 'peter' role source  configure='^q_peter.*' write='^q_peter.*|^xs_peter_.*|^xs_peter_.*' read='^q_peter_.*|^xl_peter$|^.*xpublic$'
   2016-03-28 00:41:26,136 [INFO] adding user anonymous
   2016-03-28 00:41:26,247 [INFO] permission user 'anonymous' role source  configure='^q_anonymous.*' write='^q_anonymous.*|^xs_anonymous$' read='^q_anonymous.*|^xpublic$'
   2016-03-28 00:41:26,497 [INFO] adding exchange 'xreport'
