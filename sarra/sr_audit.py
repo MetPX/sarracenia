@@ -363,7 +363,8 @@ class sr_audit(sr_instances):
         try    : os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
         except : pass
 
-        for u in self.sources :
+        if self.report_daemons: 
+           for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
              self.logger.info("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
@@ -385,7 +386,7 @@ class sr_audit(sr_instances):
                 cf.write( 'post_exchange xr_%s\n' % u )
                 cf.close()
 
-        for u in self.sources+self.subscribes:
+           for u in self.sources+self.subscribes:
              cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
              self.logger.info("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):

@@ -360,10 +360,13 @@ class sr_shovel(sr_instances):
 
         self.logger.info("sr_shovel run")
 
-        if not self.report_daemons and self.config_name[0:3] == 'rr_' :
+        if not self.report_daemons and ( self.config_name[0:3] == 'rr_' ) :
             self.logger.info("report_daemons is False, skipping %s config." % self.config_name )
             self.stop_instance()
+            # clean exit
+            sys.exit(0)
 
+            
         # loop/process messages
 
         self.connect()
@@ -489,22 +492,26 @@ class sr_shovel(sr_instances):
         os._exit(0)
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
+        self.logger.info("%s declare +%s+ " % ( self.program_name, self.config_name ) )
 
-        # consuming host, do setup (queue)
+        if self.report_daemons or ( self.config_name[0:3] != 'rr_' ) :
 
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.declare()
+            # consuming host, do setup (queue)
 
-        # posting host
+            self.consumer = sr_consumer(self,admin=True)
+            self.consumer.declare()
+
+            # posting host
        
-        self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_url( self.post_broker )
-        self.post_hc.connect()
+            self.post_hc = HostConnect( logger = self.logger )
+            self.post_hc.set_url( self.post_broker )
+            self.post_hc.connect()
 
-        self.declare_exchanges()
+            self.declare_exchanges()
+            self.close()
+        else:
+             self.logger.info("skipping declarations for %s" % self.config_name)
        
-        self.close()
         os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
@@ -531,18 +538,21 @@ class sr_shovel(sr_instances):
 
         # consuming host, do setup (queue)
 
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.setup()
+        if self.report_daemons or ( self.config_name[0:3] != 'rr_' ) :
+            self.consumer = sr_consumer(self,admin=True)
+            self.consumer.setup()
 
-        # posting host
+            # posting host
        
-        self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_url( self.post_broker )
-        self.post_hc.connect()
+            self.post_hc = HostConnect( logger = self.logger )
+            self.post_hc.set_url( self.post_broker )
+            self.post_hc.connect()
 
-        self.declare_exchanges()
-       
-        self.close()
+            self.declare_exchanges()
+            self.close()
+        else:
+            self.logger.info("skipping setup for %s" % self.config_name)
+
         os._exit(0)
 
 # ===================================
