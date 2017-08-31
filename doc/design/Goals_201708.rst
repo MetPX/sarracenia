@@ -128,34 +128,52 @@ We have one binary... sarracenia?  and it´s config looks like::
   
   [ list ]
   
-  method=queue|poll|file
-  
+  do consume_queue|poll_server|scan_path 
+
+  """
+    do arguments? self for the options, return value?
+       path name, and stat=None, or msg=None,  (None meaning not available.)
+       or just a partial message is always constructed?
+  """
   broker amqps:...
   subtopic  h.b.c.#
   
   sum 
   parts 
   
+  """
+    I don't know where these go, do they get used here, or only in filter?
+
+  """
   etc...
   
   [ filter ]
   
   reject .*grib.*
   accept .*
+
   cache on
+
+  """
+    applies filtering based on path name (perhaps extend to other attributes.)
+
+  """
+  do == on_message
   
   [ process ]
   
-  method=download|sender|off
+  do download|send|off
   
+  on_part, on_file hmm...
+
   [ post ]
   
+  do == on_post
   broker
   
-  on_post
   
   [ report ]
-  method=off
+  do == on_post
   broker
   topic_prefix
   
@@ -167,7 +185,7 @@ We have one binary... sarracenia?  and it´s config looks like::
 +----------------+-----------------------------------------------------+
 |                |                                                     |
 | sr_subscribe   | [list]                                              |
-|                | method queue                                        |  
+|                | do consume_queue                                    |  
 |                | broker ...                                          |
 |                |                                                     |
 |                | [process]                                           |
@@ -176,7 +194,7 @@ We have one binary... sarracenia?  and it´s config looks like::
 +----------------+-----------------------------------------------------+
 |                |                                                     |
 | sr_winnow      | [list]                                              |
-| sr_shovel      | method queue                                        |
+| sr_shovel      | do consume_queue                                    |
 | sr_sarra       | broker xxx                                          |
 | sr_sender      | exchange fsadggds                                   |
 |                |                                                     |
@@ -187,7 +205,7 @@ We have one binary... sarracenia?  and it´s config looks like::
 |                | [process]                                           |
 |                |   on_message runs here?                             |
 |                |                                                     |
-|                |   method off                                        |
+|                |   do     off                                        |
 |                |                                                     |
 |                |   (download for sr_sarra) -> do_download            |
 |                |   (sender for sr_sender) -> do_sender               |
@@ -206,13 +224,15 @@ We have one binary... sarracenia?  and it´s config looks like::
 +----------------+-----------------------------------------------------+
 |                |                                                     |
 | sr_watch       | [list]                                              |
-|                | method file                                         |
+|                | do scan_path                                        |
 |                | sleep    5                                          |
 |                |                                                     |
 |                |                                                     |
 +----------------+-----------------------------------------------------+
 
 unresolved questions:
+   - what is the API of the *do* plugins?
+     for list, every call to *do* returns a path name & optional statbuf and or message? (None if NA)
    - syntax changes considerably, likely need a converter, that ingests old config and *updates* to new.
    - one very long man page at the end of this!
    - how does command line usage reflect change of *section*, use each *section* name as a keyword?
@@ -266,4 +286,14 @@ the config files.
 probably a lot less effort to do this, than the above.
 
 
+Another Version
+---------------
+
+
+do consume_q,filter,download,report
+
+[consume_q]
+broker
+exchange
+....
 

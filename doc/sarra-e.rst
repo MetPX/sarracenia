@@ -66,6 +66,17 @@ platform (Linux, Windows, Mac)
 
 For more information about Sarra, Please proceed to the `documentation <sarra-docs-e.html>`_
 
+Implementations
+---------------
+
+Sarracenia's has multiple implementations:
+
+- Sarracenia itself ( http://metpx.sf.net ) a complete reference implementation in Python >= 3.4.  It runs on Linux, Mac, and Windows.
+
+- csarra (c subdirectory in the main git repo) is a C implementation of data insertion (post & watch.)  It is Linux only.  There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly.  There is consumer code as well (to read queues) but no downloading so far.  This subset is meant to be used where python3 environments are impractical (some HPC environments.) 
+
+- node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation  for node.js.
+
 
 Why Not Just Use Rsync?
 -----------------------
@@ -111,11 +122,12 @@ AMQP
 
 AMQP is the Advanced Message Queuing Protocol, which emerged from the financial trading industry and has gradually
 matured.  Implementations first appeared in 2007, and there are now several open source ones.  AMQP implementations
-are not JMS plumbing.  JMS standardizes the API programmers use, but not the on the wire protocol.  So typically, one cannot
-exchange messages between people using different JMS providers.  AMQP standardizes for interoperability, and functions
-effectively as an interoperability shim for JMS, without being limited to Java.  AMQP is language neutral, and message
-neutral.  there are many deployments using python, C++, and ruby.  One could adapt WMO-GTS protocols very easily to
-function over AMQP.  JMS providers are very Java oriented.
+are not JMS plumbing.  JMS standardizes the API programmers use, but not the on the wire protocol.  So 
+typically, one cannot exchange messages between people using different JMS providers.  AMQP standardizes 
+for interoperability, and functions effectively as an interoperability shim for JMS, without being 
+limited to Java.  AMQP is language neutral, and message neutral.  there are many deployments using 
+python, C++, and ruby.  One could adapt WMO-GTS protocols very easily to function over AMQP.  JMS 
+providers are very Java oriented.
 
 
 * `www.amqp.org <http://www.amqp.org>`_  - Defining AMQP.
