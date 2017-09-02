@@ -41,15 +41,10 @@ broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
 declare source tsource
+declare source tsource2
 declare subscriber tsub
 declare subscriber anonymous
-declare exchange xhoho
-declare exchange xs_tsource_output
-declare exchange xs_tsource_src
-declare exchange xs_tsource_dest
-declare exchange xs_tsource_poll
-declare exchange xs_tsource_post
- 
+
 and "$CONFDIR"/credentials.conf will need to contain something like:
 
 amqp://bunnymaster:PickAPassword@localhost
@@ -60,7 +55,6 @@ amqp://anonymous:PickAPassword5@localhost
 amqp://anonymous:anonymous@dd.weather.gc.ca
 amqp://anonymous:anonymous@dd1.weather.gc.ca
 amqp://anonymous:anonymous@dd2.weather.gc.ca
-sftp://`id`@localhost ssh_keyfile=/home/`id`/.ssh/nopassphrasekey 
 
 EOT
  exit 1
@@ -116,14 +110,77 @@ for cf in ${templates}; do
     sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <flow_templates/${cf} >"$CONFDIR"/${cf}
 done
 
+passed_checks=0
+count_of_checks=0
+
+queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv $query |awk '(NR == 2) { print $3; };'`"
+
+function qchk {
+#
+# qchk verify correct number of queues present.
+#
+# 1 - number of queues to expect.
+# 2 - Description string.
+# 3 - query
+#
+queue_cnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv $3 |awk '(NR == 2) { print $4 };'`"
+
+if [ "$queue_cnt" = $1 ]; then
+    echo "OK, as expected $1 $2" 
+    passed_checks=$((${passed_checks}+1))
+else
+    echo "FAILED, expected $1, but there are $queue_cnt $2"
+fi
+
+count_of_checks=$((${count_of_checks}+1))
+
+}
+
+function xchk {
+#
+# qchk verify correct number of exchanges present.
+#
+# 1 - number of exchanges to expect.
+# 2 - Description string.
+#
+x_cnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges |wc -l`"
+# remove column header...
+x_cnt=$((${x_cnt}-1))
+
+if [ "$x_cnt" = $1 ]; then
+    echo "OK, as expected $1 $2" 
+    passed_checks=$((${passed_checks}+1))
+else
+    echo "FAILED, expected $1, but there are $x_cnt $2"
+fi
+
+count_of_checks=$((${count_of_checks}+1))
+
+}
+
+#xchk 8 "only rabbitmq default systems exchanges should be present."
+
 # ensure users have exchanges:
 sr_audit --users foreground
-
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-for exchange in xsarra xwinnow xwinnow00 xwinnow01 xs_tfeed xcopy xs_tsource_output xs_tsource_src xs_tsource_dest xs_tsource_poll xs_tsource_post ; do 
-   echo "declaring $exchange"
-   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv declare exchange name=${exchange} type=topic auto_delete=false durable=true
-done
+qchk 12 "queues existing after 1st audit" "show overview" 
 
-sr restart
+xchk 28 "exchanges for flow test created."
+
+sr start
+ret=$?
+
+count_of_checks=$((${count_of_checks}+1))
+if [ $ret -ne 0 ]; then
+   echo "FAILED: sr start returned error status"
+else
+   echo "OK: sr start was successful"
+   passed_checks=$((${passed_checks}+1))
+fi
+
+if [ $passed_checks = $count_of_checks ]; then
+   echo "Overall PASSED All checks passed!"
+else
+    echo "Overall: FAILED $passed_checks/$count_of_checks passed."
+fi

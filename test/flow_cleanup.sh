@@ -49,6 +49,13 @@ queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f ts
 for q in $queues_to_delete; do
     rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q
 done
+
+exchanges_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | awk ' ( $1 ~ /x.*/ ) { print $1; }; '`"
+for exchange in $exchanges_to_delete ; do 
+   echo "deleting $exchange"
+   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} 
+done
+
  
 templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
 for cf in ${templates}; do

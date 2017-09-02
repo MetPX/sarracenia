@@ -21,6 +21,8 @@ EOF
 
 eval `application_dirs`
 
+adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
+
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
 
@@ -227,9 +229,16 @@ printf  "\nSufficient!\n"
 
 if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
-   sr_shovel t_dd2 stop &
-   sr_shovel t_dd1 stop
-   sleep 30
+   sr_shovel stop t_dd2 &
+   sr_shovel stop t_dd1 
+
+   queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
+   while [ $queued_msgcnt -gt 0 ]; do
+        echo "Still $queued_msgcnt messages flowing, waiting..."
+        sleep 10
+        queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
+   done
+   sleep 10
 fi
 
 countall
@@ -316,7 +325,7 @@ if ((NERROR>0)); then
    exit 1
 fi
 if ((NERROR==0)); then
-   echo NO ERROR IN LOGS
+   echo NO ERRORS IN LOGS
    exit 0
 fi
 exit $?
