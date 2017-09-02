@@ -79,21 +79,24 @@ while [ ${lo} -gt 0 ]; do
    sleep 5 
 done
 
-echo "Starting trivial server on: $testdocroot, saving pid in .httpserverpid"
 testrundir="`pwd`"
+
+echo "Starting trivial http server on: $testdocroot, saving pid in .httpserverpid"
 cd $testdocroot
-$testrundir/trivialserver.py >trivialserver.log 2>&1 &
+$testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
 httpserverpid=$!
+
+# note, defaults to port 2121 so devs can start it.
+python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+ftpserverpid=$!
+
+
 cd $testrundir
 
+echo $ftpserverpid >.ftpserverpid
 echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 
-#for d in .config .config/sarra ; do
-#   if [ ! -d $HOME/$d ]; then
-#      mkdir $HOME/$d
-#   fi
-#done
 mkdir -p "$CONFDIR" 2> /dev/null
 
 

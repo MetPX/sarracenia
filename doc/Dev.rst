@@ -19,11 +19,10 @@ To hack on the sarracenia source, you need:
 - a bunch of other modules indicated in the dependencies (setup.py or debian/control)
 - paramiko. For SSH/SFTP support you need to install the python-paramiko package (which
   works with python3 even though the documentation says it is for python2.)
-- (soon?) watchdog ( https://pypi.python.org/pypi/watchdog ) not available as a .deb yet.
-  used to encapsulate directory watching for sr_watch.
+- python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
 - git. in order to download the source from the sf.net repository.
-- a running rabbitmq broker (if you want to actually run any code.)
-
+- a dedicated rabbitmq broker, with administrative access, to run the flow_test.
+  The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
 
 after you have cloned the source code::
 
@@ -195,6 +194,7 @@ can start a browser.
      sr_audit --users foreground
 
 .. Note::
+
     Please use other passwords in credentials for your configuration, just in case.
     Passwords are not to be hard coded in self test suite.
     The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
@@ -204,28 +204,47 @@ can start a browser.
     No passwords or key files should be stored in the source tree, as part of a self-test
     suite.
 
-Perhaps in a separate window if you want to see output separately, a report message is
-printed for each GET the server answers. the setup script starts a trivial web server,
-and defines some fixed test clients that will be used during self-tests::
 
-    cd sarracenia/test
-    . ./flow_setup.sh
+2 - Setup the flow test environment.
 
-The working test flow setup script (``flow_setup.sh``) will install configuration files for:
+   One part of the flow test runs an ftp server.  Need the following package for that::
 
-- two sr_shovel configurations to copy messages from from dd.weather.gc.ca
-- an sr_winnow to remove duplicates from the shovelled sources.
-- an sr_sarra to read the winnow output, and post fills mirrored on the trivial web server.
-- an sr_subscribe to down load the files from the local server.
+    sudo apt-get install python3-pyftpdlib 
 
-and starts this network of configurations running.  if the flow_check.sh passes, then
-one has a reasonable confidence in the overall functionality of the application,
-but the test coverage is not exhaustive.  It is more qualitative sampling of the most
-common use cases rather than a thorough examination of all functionality.  While not
-thorough, it is good to know wtf is working.
+   The setup script starts a trivial web server, and ftp server, 
+   and defines some fixed test clients that will be used during self-tests::
+
+     cd sarracenia/test
+     . ./flow_setup.sh
+
+   The working test flow setup script (``flow_setup.sh``) will install configuration files for
+   the network of configurations running.  
 
 
-2 - Rerun basic self test
+3 - Run Working Test Flow Check
+   The flow_check.sh script reads the log files of all the components started, and compares the number
+   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
+   configuration to run before there is enough data to do the proper measurements::
+
+     ./flow_check.sh
+
+   sample output::
+
+     blacklab% ./flow_check.sh
+     initial sample building sample size 3421 need at least 1000
+     test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
+     test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
+     test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
+     test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
+     blacklab%
+
+   if the flow_check.sh passes, then
+   one has a reasonable confidence in the overall functionality of the application,
+   but the test coverage is not exhaustive.  It is more qualitative sampling of the most
+   common use cases rather than a thorough examination of all functionality.  While not
+   thorough, it is good to know the flows are working.
+
+4 - Rerun basic self test
    The following script runs some unit self tests of individual .py files in the source code::
 
    ./some_self_tests.sh
@@ -239,25 +258,8 @@ thorough, it is good to know wtf is working.
   **FIXME**: many tests refer to sites only accessible within EC zone.
 
 
-3 - Run Working Test Flow Check
-   The flow_check.sh script reads the log files of all the components started, and compares the number
-   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
-   configuration to run before there is enough data to do the proper measurements::
 
-   ./flow_check.sh
-
-   sample output::
-
-     blacklab% ./flow_check.sh
-     initial sample building sample size 3421 need at least 1000
-     test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
-     test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
-     test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
-     test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
-     blacklab%
-
-
-4 - Run and check results
+5 - Run and check results
    The following tests are self descriptive, but there is no obvious check of success.
    One must examine the output of the command and determine if the result is as intended::
 

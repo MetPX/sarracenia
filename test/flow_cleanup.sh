@@ -25,7 +25,7 @@ eval `application_dirs`
 sr stop
 
 
-echo "cleanup"
+echo "cleanup trivial http server... "
 if [ -f .httpserverpid ]; then
    httpserverpid="`cat .httpserverpid`"
    if [ "`ps ax | awk ' $1 == '${httpserverpid}' { print $1; }; '`" ]; then
@@ -36,7 +36,18 @@ if [ -f .httpserverpid ]; then
    fi
 fi
 
-remove_if_present=".httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous"
+echo "cleanup trivial ftp server... "
+if [ -f .ftpserverpid ]; then
+   ftpserverpid="`cat .ftpserverpid`"
+   if [ "`ps ax | awk ' $1 == '${ftpserverpid}' { print $1; }; '`" ]; then
+       kill $ftpserverpid
+       echo "ftp server stopped."
+   else
+       echo "no ftp server found running"
+   fi
+fi
+
+remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous"
 
 rm -f ${remove_if_present}
 
