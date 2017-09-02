@@ -6,6 +6,7 @@
 
 * flow_test now uses sr_audit, queues and exchanges extant now tested.
 * flow_test now waits for queues to drain (so it works 
+* fix for sr_audit creating report queues with no consumers.
 * sr_poll and plugin/poll_script.py post with parent.post  (srcpath,relpath instead of url)
 * flow_templates under poll|post|watch modified not to generate errors in flow logs
 * flow_templates shovel t_dd[12].conf  reject .*citypage.*  to avoid errors in flow logs
