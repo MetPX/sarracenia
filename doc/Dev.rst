@@ -126,7 +126,7 @@ This process builds a local .deb in the parent directory using standard debian m
 Testing
 ~~~~~~~
 
-Before releasing, as a Quality Assurance measure one should run all available self-tests.
+Before commiting code to the master branch, as a Quality Assurance measure one should run all available self-tests.
 It is assumed that the specific changes in the code have already been unit
 tested.  Please add self-tests as appropriate to this process to reflect the new ones.
 

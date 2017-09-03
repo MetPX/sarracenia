@@ -48,6 +48,7 @@ declare subscriber anonymous
 and "$CONFDIR"/credentials.conf will need to contain something like:
 
 amqp://bunnymaster:PickAPassword@localhost
+ftp://anonymous:anonymous@localhost:2121/
 amqp://tsource:PickAPassword2@localhost
 amqp://tfeed:PickAPassword3@localhost
 amqp://tsub:PickAPassword4@localhost

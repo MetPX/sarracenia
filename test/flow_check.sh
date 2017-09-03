@@ -154,10 +154,10 @@ function countall {
   countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_test1_f62_000*.log | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_r_f70_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_r_ftp_f70_000*.log | wc -l`"
   totsubr="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_f60_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
 
@@ -309,8 +309,8 @@ tallyres $good_files $all_files "files sent with identical content to those down
 
 tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
-calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_f70 ${totsubr} run together. Should be about the same."
-calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_f60 ${totsubu} run together. Should be about the same."
+calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
+calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
