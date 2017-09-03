@@ -174,7 +174,7 @@ srpostlstfile_old=$httpdocroot/srpostlstfile.old
 srpostlogfile=$httpdocroot/srpostlogfile.log
 
 touch ${srpostlogfile}
-touch ${srpostlstfile_old}
+echo > ${srpostlstfile_old}
 # sr_post initial end
 
 countall
