@@ -195,7 +195,7 @@ class sr_watch(sr_instances):
 
         if os.access( d , os.R_OK|os.X_OK ): 
            try:
-               ow = self.observer.schedule(self.myeventhandler, d, recursive=False)
+               ow = self.observer.schedule(self.myeventhandler, d, recursive=self.recursive )
                self.obs_watched.append(ow)
                inl.append(dir_dev_id)
                self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
@@ -209,19 +209,19 @@ class sr_watch(sr_instances):
             self.myeventhandler.event_post(p,'create') # get it done later.
             return True
 
-        if not self.recursive:
-           return True
+        #if not self.recursive:
+        #   return True
 
-        l=[]
-        for i in os.listdir(d):
+        #l=[]
+        #for i in os.listdir(d):
 
-           if self.realpath:
-               f = d + os.sep + i
-           else:
-               f = p + os.sep + i
+        #   if self.realpath:
+        #       f = d + os.sep + i
+        #   else:
+        #       f = p + os.sep + i
 
-           if os.path.isdir(f):
-               self.priming_walk(f)
+        #   if os.path.isdir(f):
+        #       self.priming_walk(f)
 
          
         return True
