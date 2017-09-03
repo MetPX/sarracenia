@@ -129,10 +129,10 @@ function countall {
   fi
 
   countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
-  totsub="${tot}"
+  totmsgt="${tot}"
 
   countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
-  totsubr="${tot}"
+  totfilet="${tot}"
 
   countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel1="${tot}"
@@ -263,21 +263,21 @@ t2=$(( ${totsarra}*2 ))
 
 calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
 
-calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t_f30 (${totsub}) should have about the same number of items" 
+calcres  ${totsarra} ${totfilet} "tsarra (${totsarra}) and sub t_f30 (${totfilet}) should have about the same number of items" 
 
 # this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
 # there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
 #calcres ${totwinnow00} ${totwinnow01} \
 #   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
 
-calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t_f30 (${totsub}) should have about the same number of items" 
+calcres ${maxshovel} ${totfilet} "max shovel (${maxshovel}) and subscriber t_f30 (${totfilet}) should have about the same number of items" 
 
-calcres ${totshortened} ${totsub} \
-   "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
+calcres ${totshortened} ${totfilet} \
+   "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
 
-calcres ${totsubr} ${totsub} "count of downloads by subscribe (${totsubr}) and messages received (${totsub}) should be about the same" 
+calcres ${totfilet} ${totmsgt} "count of downloads by subscribe t_f30 (${totfilet}) and messages received (${totmsgt}) should be about the same" 
 
-while ! calcres ${totsubr} ${totwatch}  "downloads by subscribe (${totsubr}) and files posted by sr_watch (${totwatch}) should be about the same" retry ; do
+while ! calcres ${totfilet} ${totwatch}  "downloads by subscribe t_f30 (${totfilet}) and files posted by sr_watch (${totwatch}) should be about the same" retry ; do
     printf "info: retrying... waiting for totwatch to catchup\n"
     sleep 30
     oldtotwatch=${totwatch}
