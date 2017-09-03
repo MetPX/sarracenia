@@ -4,6 +4,8 @@
 
 **git repo(unreleased)**
 
+* expire DEFAULT CHANGED:  7 days -> 5 minutes.  Avoiding pump overloading turns out to be critical.
+* sr_watch, returned to recursive formulation of sr_watch, reduces overhead substantially.
 * flow_test now includes ftp download test.
 * flow_test now uses sr_audit, queues and exchanges extant now tested.
 * flow_test now waits for queues to drain (so it works more often.)

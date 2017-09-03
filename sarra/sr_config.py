@@ -369,7 +369,7 @@ class sr_config:
         self.queue_name           = None
         self.queue_suffix         = None
         self.durable              = False
-        self.expire               = 1000 *60 *60 *24 *7    # 1 week= 1000millisec * 60s * 60m *24hr * 7d
+        self.expire               = 1000 *60 * 5  # 1 week= 1000millisec * 60s * 5m 
         self.reset                = False
         self.message_ttl          = None
         self.prefetch             = 1
