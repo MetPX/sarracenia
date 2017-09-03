@@ -128,36 +128,36 @@ function countall {
        totwinnow=$(( ${totwinnow01} *2 ))
   fi
 
-  countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
   totsub="${tot}"
 
-  countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
   totsubr="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel1="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel2="${tot}"
 
-  countthem "`grep post_total "$LOGDIR"/sr_watch_sub_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep post_total "$LOGDIR"/sr_watch_sub_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwatch="${tot}"
 
-  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_000*.log | wc -l`"
+  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log | wc -l`"
   totshortened="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_000*.log | wc -l`"
+  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_000*.log | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log | wc -l`"
   totsubq="${tot}"
-  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_test1_000*.log | wc -l`"
+  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_test1_f62_000*.log | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_r_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_r_f70_000*.log | wc -l`"
   totsubr="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
 
@@ -199,10 +199,10 @@ done
 cd $srpostdir
 
 while [ $totsarra -lt $smin ]; do
-   if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+   if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
       echo "starting shovels and waiting..."
-      sr_shovel t_dd1 start &
-      sr_shovel t_dd2 start
+      sr_shovel t_dd1_f00 start &
+      sr_shovel t_dd2_f00 start
    fi
    sleep 10
 
@@ -214,7 +214,7 @@ while [ $totsarra -lt $smin ]; do
 
    if ! [ "$srpostdelta" == "" ]; then
      #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-     sr_post -c "$CONFDIR"/post/test2.conf  $srpostdelta >> $srpostlogfile 2>&1
+     sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
    fi
 
    cp -p $srpostlstfile_new $srpostlstfile_old
@@ -227,10 +227,10 @@ while [ $totsarra -lt $smin ]; do
 done
 printf  "\nSufficient!\n" 
 
-if [ "`sr_shovel t_dd1 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
+if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
-   sr_shovel stop t_dd2 &
-   sr_shovel stop t_dd1 
+   sr_shovel stop t_dd2_f00 &
+   sr_shovel stop t_dd1_f00 
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
@@ -255,7 +255,7 @@ fi
 printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
 
 
-calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1 ( ${totshovel1} ) and t_dd2 ( ${totshovel2} ) should have about the same number of items read"  
+calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1_f00 ( ${totshovel1} ) and t_dd2_f00 ( ${totshovel2} ) should have about the same number of items read"  
 
 
 
@@ -263,14 +263,14 @@ t2=$(( ${totsarra}*2 ))
 
 calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
 
-calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t (${totsub}) should have about the same number of items" 
+calcres  ${totsarra} ${totsub} "tsarra (${totsarra}) and sub t_f30 (${totsub}) should have about the same number of items" 
 
 # this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
 # there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
 #calcres ${totwinnow00} ${totwinnow01} \
 #   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
 
-calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t (${totsub}) should have about the same number of items" 
+calcres ${maxshovel} ${totsub} "max shovel (${maxshovel}) and subscriber t_f30 (${totsub}) should have about the same number of items" 
 
 calcres ${totshortened} ${totsub} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totsub}) should have about the same number of items"
@@ -307,10 +307,10 @@ done
 
 tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
-tallyres ${totpoll1} ${totsubq} "poll test1 and subscribe q run together. Should have equal results."
+tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
-calcres ${totpost1} ${totsubr} "post test2 ${totpost1} and subscribe r ${totsubr} run together. Should be about the same."
-calcres ${totpost1} ${totsubu} "post test2 ${totpost1} and subscribe u ${totsubu} run together. Should be about the same."
+calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_f70 ${totsubr} run together. Should be about the same."
+calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_f60 ${totsubu} run together. Should be about the same."
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
