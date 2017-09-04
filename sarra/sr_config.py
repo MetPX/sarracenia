@@ -880,7 +880,7 @@ class sr_config:
                      self.bufsize = int(words[1])
                      n = 2
 
-                elif ( words0 == 'caching' ) or ( words0 == 'cache' ): # See: sr_post.1 sr_watch.1
+                elif words0 in [ 'caching', 'cache', 'no_duplicates', 'noduplicates', 'nd', 'suppress_duplicates', 'sd' ] : # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         #self.caching = True
                         self.caching = 300
@@ -894,7 +894,7 @@ class sr_config:
                                if self.caching <= 0 : self.caching = False
                         n = 2
 
-                elif words0 == 'cache_stat'   : # See sr_config.7 ++
+                elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.cache_stat = True
                         n = 1
@@ -903,11 +903,11 @@ class sr_config:
                         n = 2
 
 
-                elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: sr_config.7.rst
                      self.chmod = int(words[1],8)
                      n = 2
 
-                elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: function not actually implemented, stub of ftp support.
+                elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: sr_config.7.rst
                      self.chmod_dir = int(words[1],8)
                      n = 2
 

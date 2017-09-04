@@ -479,7 +479,9 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       free(brokerstr);
       return(2);
 
-  } else if ( !strcmp( option, "cache" ) || !strcmp( option, "caching" ) || !strcmp( option, "suppress_duplicates" ) || !strcmp( option, "sd")  ) {
+  } else if ( !strcmp( option, "cache" ) || !strcmp( option, "caching" ) || 
+              !strcmp( option, "no_duplicates" ) || !strcmp( option, "noduplicates" ) || !strcmp( option, "nd")  ||
+              !strcmp( option, "suppress_duplicates" ) || !strcmp( option, "sd")  ) {
       if isalpha(*argument) {
           val = StringIsTrue(argument);
           sr_cfg->cache = (val&2) ? 900 : 0;

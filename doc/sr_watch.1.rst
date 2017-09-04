@@ -261,10 +261,6 @@ If the concatenation of the two last fields of the announcement that defines
 what the subscribers will use to download the product. 
 
 
-FIXME :  Daluma :  **cache** **blocksize** **reset**   how will Daluma
-         deals/uses these to have an sr_watch that uses caching... etc.
-
-
 **[--blocksize <value>]**
 
 the value should be one of::
