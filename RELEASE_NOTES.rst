@@ -1,50 +1,67 @@
 
-This file documents changes in behaviour that will impact users upgrading from a previous version.
-Configuration language stability is an important goal, but on occasion changes cannot be avoided.  This file
-does not, in generally document any new features, but only changes that will adversely affect upgrades.
-Also, one time migration activities are mentioned here.
+This file documents changes in behaviour to provide guidance to those upgrading from a previous version.
+Configuration language stability is an important goal, but on occasion changes cannot be avoided.  This 
+file does not document new features, but only changes that cause concern during upgrades.
+The notices take the form:
+
+**CHANGE**
+   indicates where configurations files must be changed to get the same behviour as prior to release.
+
+**ACTION** 
+   Indicates a maintenance activity required as part of an upgrade process.
+
+**BUG**
+  indicates a bug serious to indicate that deployment of this version is not recommended.
+
+*NOTICE*
+  a behaviour change that will be noticeable during upgrade, but is no cause for concern.
+
+*SHOULD*
+  indicate recommended interventions that are recommended, but not mandatory. If prescribed activity is not done,
+  the consequence is either a configuration line that has no effect (wasteful) or the application
+  may generate messages.  
+   
 
 
 2.17.09
 -------
 
-  - BEHAVIOUR CHANGE:  default *expire* setting was 0 (infinite) which means never expire.  Now it is 5 minutes.
-    for compatibility with previous version, to restore previous default behaviour::
+**CHANGE**:  default *expire* setting was 0 (infinite) which means never expire.  Now it is 5 minutes.
+for compatibility with previous version, to restore previous default behaviour::
 
        *expire 0*
 
-    failure to do so may result in warning messages about mismatched properties when starting up an existing client.
+failure to do so may result in warning messages about mismatched properties when starting up an existing client.
+FIXME.
 
-  - implementation of *cache* entirely replaced, should not have any effect, but prudence adviseable.
-
-  - old and new cache state files are incompatible.  *FIXME* describe effect? files have same names?
+**ACTION**: Cold and new cache state files are incompatible.  *FIXME* describe effect? files have same names?
     no? What is
+    failure to do so... FIXME.
 
-  - INTERVENTION: must run sr_audit --users foreground to correct permissions, since it was broken in previous release.   
+**ACTION**: must run sr_audit --users foreground to correct permissions, since it was broken in previous release.   
 
 
 
 2.17.08
 -------
 
-  - BUG: avoid this version because of bug 88: sr_audit creates report routing queues even when report_daemons is off
+**BUG**: avoid this version because of bug 88: sr_audit creates report routing queues even when report_daemons is off
 
-  - INTERVENTION: (must run sr_audit --users foreground to correct permissions.)
-    users now have permission to create exchanges.  
-    if corrections not updated on broker, warning messages about exchange declaration failures will occur.
+**ACTION**: (must run sr_audit --users foreground to correct permissions.)
+users now have permission to create exchanges.  
+if corrections not updated on broker, warning messages about exchange declaration failures will occur.
 
-  - configurations declare broker side resources (exchanges and queues) by *setup* action.  The resources can be freed 
-    with the *cleanup* action.  Formerly creation and deletion of exchanges was an administrator activity.
-  
-  - should remove all *declare exchange* statements in configuration files though they are harmless.
+*SHOULD*: remove all *declare exchange* statements in configuration files, though they are harmless.
+configurations declare broker side resources (exchanges and queues) by *setup* action.  The resources can be freed 
+with the *cleanup* action.  Formerly creation and deletion of exchanges was an administrator activity.
 
-  - cluster routing logic removed ( *cluster*, *gateway_for*, and *cluster_aliases* ) these options are now ignored.
-    if relying on these options to restrict distribution (no known cases), that will stop working.
-    cluster propagation restriction to be implemented by plugins at a future release.
-    should remove all these options from configuration files.
+*SHOULD*: cluster routing logic removed ( *cluster*, *gateway_for*, and *cluster_aliases* ) these options are now ignored.
+If relying on these options to restrict distribution (no known cases), that will stop working.
+cluster propagation restriction to be implemented by plugins at a future release.
+should remove all these options from configuration files.
 
-  - should remove all 'sftp' lines from credentials.conf files. Configuration of sftp should be done
-    via openssh configuration, and credential file only used as a last resort.
+*SHOULD*: should remove all *sftp://*  url lines from credentials.conf files. Configuration of sftp should be done
+via openssh configuration, and credential file only used as a last resort.  Harmless if they remain, however.
 
 
 
@@ -52,56 +69,56 @@ Also, one time migration activities are mentioned here.
 -------
 
 
- - BEHAVIOUR CHANGE: sr_sender *mirror* has been repaired.  if no setting present, then it will now mirror.
-   to preserve previous behavior, add to configuration::
+**CHANGE**: sr_sender *mirror* has been repaired.  if no setting present, then it will now mirror.
+to preserve previous behavior, add to configuration::
 
        mirror off
 
- - BEHAVIOUR CHANGE: switch from traditional init-style ordering to systemd style -->  action comes before configuration.
-   was::
+*NOTICE*: switch from traditional init-style ordering to systemd style -->  action comes before configuration.
+was::
 
       sr_subscriber myconfig start --> sr_subscriber start myconfig 
 
-   software issues warning message about the change, but old callup still supported.
+software issues warning message about the change, but old callup still supported.
 
 
- - LOG CHANGE: heartbeat log messages will appear every five minutes in logs, by default, to differentiate no activity
-   from a hung process.
+*NOTICE*: heartbeat log messages will appear every five minutes in logs, by default, to differentiate no activity
+from a hung process.
 
  
 2.17.06
 -------
 
- - on_msg plugin variable for file naming for subscribers (sr_subscribe,sarra,shovel,winnow) changed.  Replace::
+**CHANGE**: Review/Modify all plugins, as file variables of sender and subscriber converged.
+   on_msg plugin variable for file naming for subscribers (sr_subscribe,sarra,shovel,winnow) changed.  Replace::
 
       self.msg.local_file --> self.msg.new_dir and self.msg.new_file
 
- - on_msg plugin variable for file naming for senders now same as for subscribers.  Replace::
+   on_msg plugin variable for file naming for senders now same as for subscribers.  Replace::
 
       self.remote_file --> self.msg.new_dir and self.msg.new_file
 
- - plugin api for senders   
-  
- - by default, the modification time of files is now restored on delivery.  To restore previous behaviour::
+**CHANGE**: by default, the modification time of files is now restored on delivery.  To restore previous behaviour::
 
       preserve_time off
 
- - If preserve_time is on (now default) and a message is received, then it will be rejected if the mtime of
-   the new file is not newer than the one of the existing file.
+If preserve_time is on (now default) and a message is received, then it will be rejected if the mtime of
+the new file is not newer than the one of the existing file.
 
- - by default, the permission bits of files is now restored on delivery.  To restore previous behaviour::
+**CHANGE**: by default, the permission bits of files is now restored on delivery.  To restore previous behaviour::
 
       preserve_mode off
+
 
 
 2.17.02
 -------
 
-  - sr_watch re-implementation. now supports symlinks, multiple traversal methods, etc...
-    many behaviour changes. 
+*NOTICE*: sr_watch re-implementation. now supports symlinks, multiple traversal methods, etc...
+many behaviour improvements. FIXME: ?
 
-  - CHANGE: plugins are now stackable. formerly, when two plugin specifications were given, the newer one
-    would replace the previous one.  Now both plugins will be executed in the order encountered.
+**CHANGE**: plugins are now stackable. formerly, when two plugin specifications were given, the newer one
+would replace the previous one.  Now both plugins will be executed in the order encountered.
  
 
 
