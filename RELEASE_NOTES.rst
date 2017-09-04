@@ -1,7 +1,11 @@
 
+-------------
+RELEASE NOTES
+-------------
+
 This file documents changes in behaviour to provide guidance to those upgrading from a previous version.
-Configuration language stability is an important goal, but on occasion changes cannot be avoided.  This 
-file does not document new features, but only changes that cause concern during upgrades.
+While configuration language stability is an important goal, on occasion changes cannot be avoided.  
+This file does not document new features, but only changes that cause concern during upgrades.
 The notices take the form:
 
 **CHANGE**
@@ -23,8 +27,8 @@ The notices take the form:
    
 
 
-2.17.09
--------
+git origin/master branch
+------------------------
 
 **CHANGE**:  default *expire* setting was 0 (infinite) which means never expire.  Now it is 5 minutes.
 for compatibility with previous version, to restore previous default behaviour::

@@ -8,13 +8,13 @@
 * FIXME: do we just make a massive sr_subscribe man page, folding in everything from sr_config?
 * FIXME: do old cache files need to be deleted during upgrade? update RELEASE_NOTES
 
-* new plugin msg_to_clusters, replaces old inter-cluster routing logic.
+* new plugin msg_to_clusters, simplified replacement of inter-cluster routing logic.
 * expire DEFAULT CHANGED:  7 days -> 5 minutes.  Avoiding pump overloading turns out to be critical.
 * sr_watch, returned to recursive formulation of sr_watch, reduces overhead substantially.
 * flow_test now includes ftp download test.
 * flow_test now uses sr_audit, queues and exchanges extant now tested.
 * flow_test now waits for queues to drain (so it works more often.)
-* fix for sr_audit creating report queues with no consumers.
+* fix (bug# 88) for sr_audit creating report queues with no consumers. 
 * sr_poll and plugin/poll_script.py post with parent.post  (srcpath,relpath instead of url)
 * flow_templates under poll|post|watch modified not to generate errors in flow logs
 * flow_templates shovel t_dd[12].conf  reject .*citypage.*  to avoid errors in flow logs
