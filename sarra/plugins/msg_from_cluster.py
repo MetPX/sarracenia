@@ -4,8 +4,8 @@
   This is used inter-pump report routing.
   Select messages whose cluster is the same as the 'msg_by_cluster' setting.
 
-  msg_by_cluster DDI
-  msg_by_cluster DD
+  msg_from_cluster DDI
+  msg_from_cluster DD
 
   on_message msg_from_cluster
 

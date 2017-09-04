@@ -432,58 +432,55 @@ is set, or if all plugins provided returned True, the message is processed by th
 ROUTING
 =======
 
-NOTE::
-   The routing logic hasn't been used so far.  Mostly, Pump administrators are doing it manually
-   and this logic is overridden or given useless values, so the code has been withdrawn, 
-   will revisit at a later date.  The one thing that remains is 'to'/'to_cluster' for injector
-   to specify intent.  how it gets interpreted by pumps is subject to a new implementation.
-
 Sources of data need to indicate the clusters to which they would like data to be delivered.
-Data Pumps need to identify themselves, and their neighbors in order to pass data to them.
+Routing is implemented by administrators, and refers copying data between pumps. Routing is
+accomplished using on_message plugins which are provided with the package.  
+ 
+when messages are posted, if not destination is specified, the delivery is assumed to be only the pump itself.
+To specify the further destination pumps for a file, sources use the *to* option on the post.
+This option sets the to_clusters field for interpretation by administrators.
 
-- **to** <cluster>,<cluster>,<cluster>... destination pumps targetted by injectors.
+Data pumps, when ingesting data from other pumps (using shovel, subscribe or sarra components)
+should include the *msg_to_clusters* plugin and specify the clusters which are reachable from
+the local pump, which should have the data copied to the local pump, for further dissemination.
+sample settings::
 
-Rest of these are under review, have been removed from implementation::
+  msg_to_clusters DDI
+  msg_to_clusters DD
 
-  - **cluster** The name of the local cluster (where data is injected.)
+  on_message msg_to_clusters
 
-  - **cluster_aliases** <alias>,<alias>,...  Alternate names for the cluster.
+Given this example, the local pump (called DDI) would select messages destined for the DD or DDI clusters, 
+and reject those for DDSR, which isn't in the list.  This implies that there DD pump may flow
+messages to the DD pump.
 
-  - **gateway_for** <cluster>,<cluster>,... additional clusters reachable from local pump.
+The above takes care of forward routing of messages and data to data consumers.  Once consumers
+obtain data, they generate reports, and those reports need to propagate in the opposite direction,
+not necessarily by the same route, back to the sources.  report routing is done using the *from_cluster*
+header.  Again, this defaults to the pump where the data is injected, but may be overridden by
+administrator action.
 
-This logic will be re-implemented using plugins added to ingestors later.
+Administrators configure report routing shovels using the msg_from_cluster plugin. Example::
 
-Components which inject data into a network (sr_post, sr_poll, sr_watch) need to set 'to' addresses
-for all data injected.  Components which transfer data between pumps, such as sr_sarra and sr_sender, 
-interpret *cluster, cluster_aliases*, and *gateway_for*, such that products which are not 
-meant for the destination cluster are not transferred.  
+  msg_from_cluster DDI
+  msg_from_cluster DD
 
-The network will not process a message that ::
+  on_message msg_from_cluster
 
- 1- has no source     (message.headers['source'])
- 2- has no origin      (message.headers['from_cluster'])
- 3- has no destination (message.headers['to_clusters']) (**to** option on post/watch/poll)
- 4- the to_clusters destination list has no match with
-    this pump's **cluster,cluster_aliases,gateway_for**  options
-
-.. Important note 1::
-
-  If messages are posted directly from a source,
-  the exchange used is 'xs_<brokerSourceUsername>'.
-  Such message may not contain a source nor an origin cluster.
-  Initial validation of these messages the **source_from_exchange**
-
-  Upon reception, a component will set these values
-  in the parent class (here cluster is the value of
-  option **cluster** taken from default.conf):
-
-    self.msg.headers['source']       = <brokerUser>
-    self.msg.headers['from_cluster'] = cluster
+so that report routing shovels will obtain messages from downstream consumers and make
+them available to upstream sources. 
 
 
-.. note::
-   FIXME: all of the above, I'm a bit confused about, explanation seems complicated
-   need to rephrase...
+NOTES::
+   The routing logic hasn't been used so far.  Mostly, Pump administrators are doing it manually.
+   overriding any message headers.
+
+   What are these names?  They aren't really defined yet. need a table or something.
+   should they be hostnames? default to pump fqdn names, which is OK for some uses.
+   It isn't clear what the naming scheme should be, and some sort of table for users
+   is needed.
+
+
 
 DELIVERY 
 ========
