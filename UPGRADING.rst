@@ -1,6 +1,6 @@
 
 -------------
-RELEASE NOTES
+UPGRADE GUIDE
 -------------
 
 This file documents changes in behaviour to provide guidance to those upgrading from a previous version.
@@ -36,11 +36,13 @@ for compatibility with previous version, to restore previous default behaviour::
        *expire 0*
 
 failure to do so may result in warning messages about mismatched properties when starting up an existing client.
-FIXME.
+FIXME: sample messages?
+**It will also result data loss**, by dropping messages should the default be used in cases where the old value
+was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.
 
-**ACTION**: Cold and new cache state files are incompatible.  *FIXME* describe effect? files have same names?
-    no? What is
-    failure to do so... FIXME.
+**ACTION**: cache state file format changed and are mutually unintelligible between versions.  
+*FIXME* describe effect? files have same names?
+failure to do so... FIXME:
 
 **ACTION**: must run sr_audit --users foreground to correct permissions, since it was broken in previous release.   
 
