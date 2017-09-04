@@ -1,7 +1,7 @@
 
--------------
-UPGRADE GUIDE
--------------
+---------------
+ UPGRADE GUIDE
+---------------
 
 This file documents changes in behaviour to provide guidance to those upgrading from a previous version.
 While configuration language stability is an important goal, on occasion changes cannot be avoided.  
