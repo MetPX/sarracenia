@@ -57,7 +57,7 @@ Development
 -----------
 
 Development occurs on the master branch, which may be in any state at any given
-time, and should note be relied upon.  From time to time releases are tagged, and
+time, and should not be relied upon.  From time to time releases are tagged, and
 maintenance results in a branch.  Releases are classified as follows:
 
 Alpha
@@ -121,21 +121,26 @@ This process builds a local .deb in the parent directory using standard debian m
     sudo dpkg -i ../<the package just built>
 
 
+Committing Code
+~~~~~~~~~~~~~~~
+
+What should be done prior to committing to the master branch?
+Checklist:
+
+- **flow_test works** (See Testing) The master branch should always be functional, do not commit code if the flow_test is not working.
+- Natural consequence: if the code changes means tests need to change, include the test change in the commit.
+- **update doc/** manual pages should get their updates ideally at the same time as the code.
+- Update CHANGES.txt to assist in the release process.  Describe changes in code.
+- If the code has an impact (different configuration, change in behaviour) Update doc/UPGRADING.rst
+
 
 
 Testing
-~~~~~~~
+-------
 
 Before commiting code to the master branch, as a Quality Assurance measure one should run all available self-tests.
 It is assumed that the specific changes in the code have already been unit
 tested.  Please add self-tests as appropriate to this process to reflect the new ones.
-
-.. note::
-
-  **FIXME**: 'Testing' section extracted from design/releasing_process.rst... it needs testing ;-)
-  It was built with internal services in mind and specific development support configuration.
-
-  Work is in progress to have a self-contained localhost self-test environment.
 
 The configuration one is trying to replicate:
 
@@ -144,28 +149,54 @@ The configuration one is trying to replicate:
 Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
 can start a browser.
 
-0 - Make a local wheel and installing on your workstation
-   In the git clone tree ...    metpx-sarracenia
-   create a wheel by running either::
+A typical development workflow will be::
+
+   cd sarra ; *make coding changes*
+   cd ..
+   debuild -uc -us
+   sudo dpkg -i ../pkg.deb
+   cd test
+   ./flow_cleanup.sh
+   rm directories with state (indicated by flow_cleanup.sh)
+   ./flow_setup.sh  ; *starts the flows*
+   ./flow_check.sh  ; *checks the flows*
+   
+One can then study the results, and determing the next cycle of modifications to make.
+The rest of this section documents these steps in much more detail.  
+Before one can run the flow_test, some pre-requisites must be taken care of.
+
+   
+
+local installation on Workstation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The flow_test invokes the version of metpx-sarracenia that is installed on the system,
+and not what is in the development tree.  It is necessary to install the package on 
+the system in order to have it run the flow_test.
+
+In your development tree ...    
+One can either create a wheel by running either::
 
        python3 setup.py bdist_wheel
 
-   it creates a wheel package under  dist/metpx*.whl
-   then as root  install that new package::
+whitch creates a wheel package under  dist/metpx*.whl
+then as root  install that new package::
 
        pip3 install --upgrade ...<path>/dist/metpx*.whl
 
-   or::
+or one can use debian packaging::
 
        debuild -us -uc
        sudo dpkg -i ../python3-metpx-...
 
-   which accomplishes the same thing using debian packaging.
+which accomplishes the same thing using debian packaging.
 
 
-1- Install servers on localhost
-   Install a minimal localhost broker, configure test users.
-   with credentials stored for localhost::
+Install servers on Workstation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install a minimal localhost broker, configure test users.
+with credentials stored for localhost::
 
      sudo apt-get install rabbitmq-server
      sudo rabbitmq-plugins enable rabbitmq_management
@@ -205,30 +236,33 @@ can start a browser.
     suite.
 
 
-2 - Setup the flow test environment.
+Setup the flow_test Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   One part of the flow test runs an ftp server.  Need the following package for that::
+One part of the flow test runs an ftp server.  Need the following package for that::
 
     sudo apt-get install python3-pyftpdlib 
 
-   The setup script starts a trivial web server, and ftp server, 
-   and defines some fixed test clients that will be used during self-tests::
+The setup script starts a trivial web server, and ftp server, 
+and defines some fixed test clients that will be used during self-tests::
 
      cd sarracenia/test
      . ./flow_setup.sh
 
-   The working test flow setup script (``flow_setup.sh``) will install configuration files for
-   the network of configurations running.  
+The working test flow setup script (``flow_setup.sh``) will install configuration files for
+the network of configurations running.  
 
 
-3 - Run Working Test Flow Check
-   The flow_check.sh script reads the log files of all the components started, and compares the number
-   of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
-   configuration to run before there is enough data to do the proper measurements::
+Run Flow Test
+~~~~~~~~~~~~~
+
+The flow_check.sh script reads the log files of all the components started, and compares the number
+of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
+configuration to run before there is enough data to do the proper measurements::
 
      ./flow_check.sh
 
-   sample output::
+sample output::
 
      blacklab% ./flow_check.sh
      initial sample building sample size 3421 need at least 1000
@@ -238,14 +272,16 @@ can start a browser.
      test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
      blacklab%
 
-   if the flow_check.sh passes, then
-   one has a reasonable confidence in the overall functionality of the application,
-   but the test coverage is not exhaustive.  It is more qualitative sampling of the most
-   common use cases rather than a thorough examination of all functionality.  While not
-   thorough, it is good to know the flows are working.
+if the flow_check.sh passes, then
+one has a reasonable confidence in the overall functionality of the application,
+but the test coverage is not exhaustive.  It is more qualitative sampling of the most
+common use cases rather than a thorough examination of all functionality.  While not
+thorough, it is good to know the flows are working.
 
-4 - Rerun basic self test
-   The following script runs some unit self tests of individual .py files in the source code::
+Rerun basic self test
+~~~~~~~~~~~~~~~~~~~~~
+
+The following script runs some unit self tests of individual .py files in the source code::
 
    ./some_self_tests.sh
 
@@ -258,10 +294,11 @@ can start a browser.
   **FIXME**: many tests refer to sites only accessible within EC zone.
 
 
+Run Unit Tests 
+~~~~~~~~~~~~~~
 
-5 - Run and check results
-   The following tests are self descriptive, but there is no obvious check of success.
-   One must examine the output of the command and determine if the result is as intended::
+The following tests are self descriptive, but there is no obvious check of success.
+One must examine the output of the command and determine if the result is as intended::
 
      test_sr_post.sh
      test_sr_watch.sh
@@ -276,14 +313,30 @@ can start a browser.
   so some config settings like ``sshd_config`` (``MaxStartups 500``) might
   might be required to have successful tests.
 
+Flow Cleanup
+~~~~~~~~~~~~
 
 When done testing, run::
 
   . ./flow_cleanup.sh
 
 Which will kill the running web server, and delete all local queues.
+This also needs to be done between each run of the flow test.
 
 
+Flow Test Length
+~~~~~~~~~~~~~~~~
+
+The flow_test length defaults to 1000 files being flowed through the test cases.  when in rapid
+development, one can supply an argument to shorten that::
+
+  ./flow_test 200
+
+Towards the end of a development cycle, longer flow_tests are adviseable::
+
+  ./flow_test 20000 
+
+to identify more issues.
 
 
 Building a Release
@@ -429,6 +482,8 @@ However, the steps below are a summary of what the script does:
     dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
 
 **Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
+
+
 
 
 
