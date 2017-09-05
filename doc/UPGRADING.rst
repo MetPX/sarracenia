@@ -31,18 +31,19 @@ git origin/master branch
 ------------------------
 
 **CHANGE**:  default *expire* setting was 0 (infinite) which means never expire.  Now it is 5 minutes.
-for compatibility with previous version, to restore previous default behaviour::
+**It will also result data loss**, by dropping messages should the default be used in cases where the old value
+was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 
+the default behaviour, use setting::
 
        *expire 0*
 
-failure to do so may result in warning messages about mismatched properties when starting up an existing client.
-FIXME: sample messages?
-**It will also result data loss**, by dropping messages should the default be used in cases where the old value
-was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.
+failure to do so, when connecting to configurations with older pumps versions  may result in warning messages about 
+mismatched properties when starting up an existing client. 
+FIXME: more specific?
 
-**ACTION**: cache state file format changed and are mutually unintelligible between versions.  
-*FIXME* describe effect? files have same names?
-failure to do so... FIXME:
+**NOTICE**: cache state file format changed and are mutually unintelligible between versions.  
+During upgrade, old cache file will be ignored.  This may cause some files to be accepted a second time.
+*FIXME*  work-arounds? 
 
 **ACTION**: must run sr_audit --users foreground to correct permissions, since it was broken in previous release.   
 
@@ -51,7 +52,9 @@ failure to do so... FIXME:
 2.17.08
 -------
 
-**BUG**: avoid this version because of bug 88: sr_audit creates report routing queues even when report_daemons is off
+**BUG**: avoid this version to administer pumps because of bug 88: sr_audit creates report routing queues 
+even when report_daemons is off, they fill up with messages (since they are never emptied.) This can cause havoc.
+If report_daemons is true, then there is no issue.  Also no problem for clients. 
 
 **ACTION**: (must run sr_audit --users foreground to correct permissions.)
 users now have permission to create exchanges.  
