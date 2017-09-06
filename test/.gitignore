@@ -2,4 +2,4 @@
 .httpserverpid
 .ftpserverpid
 on_*.py
-sender/
+^sender/
