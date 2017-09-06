@@ -76,9 +76,10 @@ Finding Option Files
 --------------------
 
 Metpx Sarracenia is configured using a tree of text files using a common
-syntax.  The location of config dir is platform dependent (see python appdirs)::
+syntax.  The location of config dir ( as per `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) is platform dependent (see python appdirs)::
 
- - linux: ~/.config/sarra ( as per `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ )
+ - linux: ~/.config/sarra 
+
  - Windows: %AppDir%/science.gc.ca/sarra, this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra
 
@@ -103,7 +104,6 @@ be interpreted and executed within sarracenia components.  Components will first
 look in the *plugins* directory in the users config tree, then in the site 
 directory, then in the sarracenia package itself, and finally it will look remotely.
 
-.. note::
 
 
 
@@ -754,7 +754,7 @@ is set by the 'logdays' parameter.  Log files older than **logdays** days are de
 
 - **chmod_log** the permission bits to set on log files (default 0600 )
 
-- placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) setting the XDG_CACHE_HOME environment variable.
+placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) setting the XDG_CACHE_HOME environment variable.
 
 
 
