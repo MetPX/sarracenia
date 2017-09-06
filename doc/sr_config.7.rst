@@ -78,13 +78,14 @@ Finding Option Files
 Metpx Sarracenia is configured using a tree of text files using a common
 syntax.  The location of config dir is platform dependent (see python appdirs)::
 
- - linux: ~/.config/sarra
+ - linux: ~/.config/sarra ( as per `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ )
  - Windows: %AppDir%/science.gc.ca/sarra, this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra
 
 The top of the tree contains a file 'default.conf' which contains settings that
-are read as defaults for any component on start up.   Individual configuration 
-files can be placed anywhere and invoked with the complete path.   When components
+are read as defaults for any component on start up. One can also use the XDG_CONFIG_HOME 
+environment variable to override default placement, or individual configuration 
+files can be placed in any directory and invoked with the complete path.   When components
 are invoked, the provided file is interpreted as a file path (with a .conf
 suffix assumed.)  If it is not found as file path, then the component will
 look in the component's config directory ( **config_dir** / **component** )
@@ -103,8 +104,6 @@ look in the *plugins* directory in the users config tree, then in the site
 directory, then in the sarracenia package itself, and finally it will look remotely.
 
 .. note::
-   FIXME provide some sample file locations
-   FIXME network search path... 
 
 
 
@@ -755,14 +754,9 @@ is set by the 'logdays' parameter.  Log files older than **logdays** days are de
 
 - **chmod_log** the permission bits to set on log files (default 0600 )
 
-Note: for **sr-post** only,  option **log** should be a logfile
+- placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) setting the XDG_CACHE_HOME environment variable.
 
-.. note::
-   FIXME:  I don't understand the point of logging a post... it seems like it should always be 'foreground'
-   and that it would just write to stderr... it is a one-time thing... confused. what would it log?
 
-   FIXME: We need a verbosity setting. should probably be documented here.  on INFO, the logs are way over the top
-   verbose.  Probably need to trim that down. log_level?
 
 
 INSTANCES

@@ -56,13 +56,62 @@ CONFIGURATION
 
 In general, the options for this component are described by the
 `sr_config(7) <sr_config.7.html>`_  page which should be read first.
-It fully explains the option configuration language, and how to find
-the option settings.
+That page fully explains the option configuration language, and how to find
+the option settings. briefly:
+
+
+CONFIGURATION FILES
+-------------------
+
+Place settings, one per line with a keyword first, and the setting value afterward
+example configuration line::
+
+ broker amqp://anonymous@dd.weather.gc.ca
+
+In the above example, *broker* is the option keyword, and the rest of the line is the value assigned to the setting.
+
+The configuration file for an sr_subscribe configuration called *myflow*
+
+ - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) 
+
+
+ - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
+
+It is just a sequence of settings, one per line. Note that the files are read in order, most importantly for
+*directory* and *accept* clauses.  Example::
+
+    directory A
+    accept X
+
+Places files matching X in directory A.
+
+vs::
+    accept X
+    directory A
+
+Places files matching X in the current working directory, and the *directory A* setting does nothing.
+
+    
+LOG FILES
+---------
+
+As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) one normally examines its log
+file to find out how processing is going.  The log files are placed, as per the  XDG Open Directory Specification,
+There will be a log file for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
+
+   linux in linux: ~/.cache/sarra/log/sr_subscribe_myflow_0001.log
+   Windows: FIXME? dunno.
+
+One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+
 
 
 CREDENTIAL OPTIONS
 ------------------
 
+One normally does not specify passwords in configuration files.  Rather they are placed in the credentials file.
+so for every url specified, that requires a password, one places a matching entry in credentials.conf.
 The broker option sets all the credential information to connect to the  **RabbitMQ** server 
 
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
@@ -73,7 +122,10 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
 All sr\_ tools store all sensitive authentication info in the credentials.conf file.
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to thins such as private keys, or FTP modes.
+to things such as private keys, or FTP modes.  SFTP is a special case, in that if the .ssh config files
+are configured for use by OpenSSH, the tools will try to interpret them such that likel no sftp entry 
+is required as long as one can sftp onto the host without a challenge (the configuration specifies which keys
+to present, and no passphrase is needed.) 
 
 For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_  
 
@@ -232,9 +284,6 @@ for more details, see: `sr_config(7) <sr_config.7.html>`_
 
 
 
-
-
-
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
@@ -264,16 +313,66 @@ and that download stream can be multi-streamed as well.
   loss of notifications.
 
 
-RABBITMQ LOGGING
-----------------
+REPORTING
+---------
 
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
 - **report_back <boolean>        (default: True)** 
+- **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
+
+When a report is generated, it is sent to the configured *report_exchange*. Administrive
+components post directly to *xreport*, whereas user components post to their own 
+exchanges (xs_*username*.) The report daemons then copy the messages to *xreport* after validation.
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports for this usage.
+
+
+OUTPUT POSTING OPTIONS
+----------------------
+
+When advertising files downloaded for downstream consumers, one must set 
+the rabbitmq configuration for an output broker.
+
+The post_broker option sets all the credential information to connect to the
+  output **RabbitMQ** server
+
+**post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+
+Once connected to the source AMQP broker, the program builds notifications after
+the download of a file has occured. To build the notification and send it to
+the next hop broker, the user sets these options :
+
+ - **post_url          <url>          (MANDATORY)**
+ - **post_exchange     <name>         (default: xpublic)**
+ - **post_exchange_split   <number>   (default: 0) **
+ - **on_post           <script>       (default: None)**
+
+The **url** option sets how to get the file... it defines the protocol,
+host, port, and optionally, the credentials. It is a good practice not to
+notify the credentials and separately inform the consumers about it.
+
+The **post_exchange** option set under which exchange the new notification
+will be posted.  Im most cases it is 'xpublic'.
+
+Whenever a publish happens for a product, a user can set to trigger a script.
+The option **on_post** would be used to do such a setup.
+
+The **post_exchange_split** option appends a two digit suffix resulting from 
+hashing the last character of the checksum to the post_exchange name,
+in order to divide the output amongst a number of exchanges.  This is currently used
+in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
+instanced in the normal way.  example::
+
+    post_exchange_split 5
+    post_exchange xwinnow
+
+will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
+of the total flow.
+
 
 
 ADVANCED FEATURES
@@ -312,20 +411,6 @@ will stop there and another message will be consumed from the broker.
 for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 
-DEPRECATED SETTINGS
--------------------
-
-These settings pertain to previous versions of the client, and have been superceded.
-
-- **host          <broker host>  (unsupported)** 
-- **amqp-user     <broker user>  (unsupported)** 
-- **amqp-password <broker pass>  (unsupported)** 
-- **http-user     <url    user>  (now in credentials.conf)** 
-- **http-password <url    pass>  (now in credentials.conf)** 
-- **topic         <amqp pattern> (deprecated)** 
-- **exchange_type <type>         (default: topic)** 
-- **exchange_key  <amqp pattern> (deprecated)** 
-- **lock      <locktext>         (renamed to inflight)** 
 
 
 SEE ALSO
@@ -437,6 +522,22 @@ named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would h
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
+DEPRECATED SETTINGS
+-------------------
+
+These settings pertain to previous versions of the client, and have been superceded.
+
+- **host          <broker host>  (unsupported)** 
+- **amqp-user     <broker user>  (unsupported)** 
+- **amqp-password <broker pass>  (unsupported)** 
+- **http-user     <url    user>  (now in credentials.conf)** 
+- **http-password <url    pass>  (now in credentials.conf)** 
+- **topic         <amqp pattern> (deprecated)** 
+- **exchange_type <type>         (default: topic)** 
+- **exchange_key  <amqp pattern> (deprecated)** 
+- **lock      <locktext>         (renamed to inflight)** 
+
+
 HISTORY
 -------
 
@@ -444,7 +545,9 @@ Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment C
 where a wide variety of meteorological products are made available to the public. It is from
 the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02.
+was added, and in the fall of 2015, the feeds were updated to v02.  dd_subscribe still works,
+but it uses the deprecated settings described above.  It is implemented python2, whereas
+the sarracenia toolkit is in python3.
 
 In 2007, when the MetPX was originally open sourced, the staff responsible were part of
 Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
