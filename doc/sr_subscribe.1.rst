@@ -24,14 +24,14 @@ DESCRIPTION
 ===========
 
 
-sr_subscribe is a program to efficiently download files from websites or file servers 
+Sr_subscribe is a program to efficiently download files from websites or file servers 
 that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
 publish a message for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications.  sr_subscriber can be used to post messages after they are downloaded,
-to make them available to consumers for further transfers.
+notifications. Sr_subscribe can be configured to post messages after they are downloaded,
+to make them available to consumers for further processing or transfers.
 
 **sr_subscribe** can also be used for purposes other than downloading, (such as for 
 supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
