@@ -1,3 +1,29 @@
+metpx-sarracenia (2.17.09a1) unstable; urgency=medium
+
+  * FIXME: do old cache files need to be deleted during upgrade? update RELEASE_NOTES
+  * expire DEFAULT CHANGED:  7 days -> 5 minutes.  Avoiding pump overloading turns out to be critical.
+  * new plugin msg_to_clusters, simplified replacement of inter-cluster routing logic.
+  * sr_watch, returned to recursive formulation of sr_watch, reduces overhead substantially.
+  * flow_test now includes ftp download test.
+  * flow_test now uses sr_audit, queues and exchanges extant now tested.
+  * flow_test now waits for queues to drain (so it works more often.)
+  * fix (bug# 88) for sr_audit creating report queues with no consumers.
+  * sr_poll and plugin/poll_script.py post with parent.post  (srcpath,relpath instead of url)
+  * flow_templates under poll|post|watch modified not to generate errors in flow logs
+  * flow_templates shovel t_dd[12].conf  reject .*citypage.*  to avoid errors in flow logs
+  * plugin/msg_by_user.py now considers msg.report_user for v02.report messages (correct error in flow logs)
+  * flow_check.sh shows classified list of errors in log or report No error found
+  * sr_poster unused in sr_poll, sr_winnow, sr_sender, sr_shovel
+  * sr_winnow, sr_subscribe supports caching on messages
+  * sr_config  post_url option equivalent to url
+  * sr_subscribe support posting if post_broker is set (and other post options)
+  * plugin heartbeat_cache : cache clean/save + stats if cache_stat = True
+  * all program consuming... calls heartbeat_check themselves
+  * move hearbeat code from sr_consumer to sr_config
+  * cache is cleaned every heartbeat.
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Sep 2017 18:26:31 -0400
+
 metpx-sarracenia (2.17.08a1) unstable; urgency=medium
 
   * sr now starts|stops sr_cpost when appropriate.
