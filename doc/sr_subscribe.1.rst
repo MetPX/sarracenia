@@ -30,12 +30,13 @@ publish a message for each file as soon as it is available.  Clients connect to 
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications.
+notifications.  sr_subscriber can be used to post messages after they are downloaded,
+to make them available to consumers for further transfers.
 
 **sr_subscribe** can also be used for purposes other than downloading, (such as for 
 supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
 suppress the download behaviour and only post the URL on standard output.  The standard
-output can be piped to other processes in classic UNIX text filter style.
+output can be piped to other processes in classic UNIX text filter style.  
 
 The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
 followed by an a configuration file described below.
@@ -487,7 +488,7 @@ keyword can be added to the **accept** option. The keyword is any one of the **f
 tion.  A message that matched against the accept regexp pattern, will have its remote_file
 plied this keyword option.  This keyword has priority over the preceeding **filename** one.
 
-e **regexp pattern** can be use to set directory parts if part of the message is put
+The **regexp pattern** can be use to set directory parts if part of the message is put
 to parenthesis. **sr_sender** can use these parts to build the directory name. The
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
@@ -513,11 +514,14 @@ example of use::
 
 
 A selected message by the first accept would be delivered unchanged to the first directory.
-A selected message by the second accept would be delivered unchanged to the second directory.
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
-A selected message by the forth accept would be delivered unchanged to a directory
 
-named  /this/20160123/pattern/RAW_MERGER_GRIB/directory   if the message would have a notice like :
+A selected message by the second accept would be delivered unchanged to the second directory.
+
+A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+
+A selected message by the forth accept would be delivered unchanged to a directory.
+
+named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
