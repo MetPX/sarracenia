@@ -175,6 +175,7 @@ and under which name.
 - **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
+- **suppress_duplicates   <off|on|999>     (default: off) 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>          (default: 0)**
 
@@ -257,6 +258,24 @@ The default is True (overwrite without checking).
 
 The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
 usefull when debugging or testing a configuration.
+
+When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
+is compared against previous ones received, to see if it is a duplicate.  If the message is considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including parts header)
+and checksum.  every *hearbeat* interval, a cleanup process looks for files in the cache that
+have not been referenced in **cache** seconds, and deletes them, in order to keep the cache size
+limited.  Different settings are appropriate for different use cases.
+
+Note:: 
+
+  Use of the cache is incompatible with the default *parts 0* strategy, one must specify an 
+  alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
+  One must avoid the dynamic algorithm that will change the partition size used as a file grows.
+
+  The cache is local to each instance.  When using N instances, the first time a posting is 
+  received, it could be picked by one instance, and the second potentially by another one.
+  So one should generally use a winnowing configuration (sr_winnow) ahead of a download with
+  multiple parallel instances.  
+
 
 
 EXAMPLES
@@ -345,13 +364,37 @@ Once connected to the source AMQP broker, the program builds notifications after
 the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
+ - **[--blocksize <value>]**
+ - **[-dr|--document_root <path>]**
  - **post_url          <url>          (MANDATORY)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0) **
  - **on_post           <script>       (default: None)**
 
+
+This **blocksize** option controls the partitioning strategy used to post files.
+the value should be one of::
+
+   0 - autocompute an appropriate partitioning strategy (default)
+   1 - always send entire files in a single part.
+   <blocksize> - used a fixed partition size (example size: 1M )
+
+Files can be announced as multiple parts.  Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in paralllel.  When files change, transfers are
+optimized by only sending parts which have changed.
+
+
+The *document_root* option supplies the directory path that, when combined (or found) 
+in the given *path*, gives the local absolute path to the data file to be posted.
+The document root part of the local path will be removed from the posted announcement.
+for sftp: url's it can be appropriate to specify a path relative to a user account.
+Example of that usage would be:  -dr ~user  -url sftp:user@host
+for file: url's, document_root is usually not appropriate.  To post an absolute path,
+omit the -dr setting, and just specify the complete path as an argument.
+
 The **url** option sets how to get the file... it defines the protocol,
-host, port, and optionally, the credentials. It is a good practice not to
+host, port, and optionally, the user.  It is a good practice not to
 notify the credentials and separately inform the consumers about it.
 
 The **post_exchange** option set under which exchange the new notification
@@ -372,6 +415,7 @@ instanced in the normal way.  example::
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
+
 
 
 
