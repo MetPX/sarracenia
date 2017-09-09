@@ -7,9 +7,9 @@ Sarracenia
 **MetPX-Sarracenia** is a data duplication or distribution engine that leverages existing
 standard technologies (web servers and the AMQP_ brokers) to achieve real-time message
 delivery and end to end transparency in file transfers.  Whereas in Sundew, each switch
-is a standalone configuration which transforms data in complex ways, in sarracenia, the
-data sources establish a structure which is carried through any number of intervening pumps
-until they arrive at a client.  The client can provide explicit acknowledgement that
+is a standalone configuration which transforms data in complex ways, in Sarracenia, the
+data sources establish a file tree hierarchy which is carried through any number of intervening 
+pumps until they arrive at a client.  The client can provide explicit acknowledgement that
 propagates back through the network to the source.  Whereas traditional file switching
 is a point-to-point affair where knowledge is only between each segment, in Sarracenia,
 information flows from end to end in both directions.
@@ -18,14 +18,14 @@ Overview
 --------
 
 At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using any
-standard HTTP server (tested with apache).  Weather applications are soft real-time,
-where data should be delivered as quickly as possible to the next hop, and minutes,
-perhaps seconds, count.  The standard web push technologies, ATOM, RSS, etc... are
-actually polling technologies that when used in low latency applications consume a
-great deal of bandwidth an overhead.  For exactly these reasons, those standards
-stipulate a minimum polling interval of five minutes.   Advanced Message Queueing
-Protocol (AMQP) messaging brings true push to notifications, and makes real-time
-sending far more efficient.
+standard HTTP server (tested with apache) or SFTP server, with other types of servers as
+a pluggable option.  Weather applications are soft real-time, where data should be delivered 
+as quickly as possible to the next hop, and minutes, perhaps seconds, count.  The 
+standard web push technologies, ATOM, RSS, etc... are actually polling technologies 
+that when used in low latency applications consume a great deal of bandwidth and overhead.  
+For exactly these reasons, those standards stipulate a minimum polling interval of five 
+minutes.   Advanced Message Queueing Protocol (AMQP) messaging brings true push 
+to notifications, and makes real-time sending far more efficient.
 
 .. image:: e-ddsr-components.jpg
 
@@ -50,13 +50,12 @@ and network usage without explicit user intervention.  As intervening pumps
 do not store and forward entire files, the maximum file size which can traverse
 the network is maximized.
 
-Where sundew supports a wide variety of file formats, protocols, and conventions
+Where Sundew supports a wide variety of file formats, protocols, and conventions
 specific to the real-time meteorology, sarracenia takes a step further away from
 specific applications and is a ruthlessly generic tree replication engine, which
-should allow it to be used in other domains.  The prototype client, dd_subscribe,
-in use since 2013, implements the consumer end of the switch's functions, and is
-the only component present in current packages.  The rest of MetPX-Sarracenia should
-be included in packages by the Spring of 2016.
+should allow it to be used in other domains.  The initial prototype client, dd_subscribe,
+in use since 2013, was replaced in 2016 by the full blown sarracenia package,
+with all components necessary for production as well as consumption of file trees.
 
 Sarracenia is expected to be a far simpler application than sundew from every
 point of view: Operator, Developer, Analyst, Data Sources, Data consumers.
@@ -69,6 +68,7 @@ For more information about Sarra, Please proceed to the `documentation <sarra-do
 Implementations
 ---------------
 
+Part of Sarracenia defines an application layer message over AMQP as a transport.  
 Sarracenia's has multiple implementations:
 
 - Sarracenia itself ( http://metpx.sf.net ) a complete reference implementation in Python >= 3.4.  It runs on Linux, Mac, and Windows.
@@ -76,6 +76,115 @@ Sarracenia's has multiple implementations:
 - csarra (c subdirectory in the main git repo) is a C implementation of data insertion (post & watch.)  It is Linux only.  There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly.  There is consumer code as well (to read queues) but no downloading so far.  This subset is meant to be used where python3 environments are impractical (some HPC environments.) 
 
 - node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation  for node.js.
+
+More implementations are welcome.
+
+
+The Python Implementation
+-------------------------
+
+Another part of Sarracenia is the python version which is where prototyping of features
+and all deployments have occurred so far.
+
+.. table:: **Table 1: The Algorithm for All Components**
+ :align: center
+
+ +----------+-------------------------------------------------------------+
+ |          |                                                             |
+ |  PHASE   |                 DESCRIPTION                                 |
+ |          |                                                             |
+ +----------+-------------------------------------------------------------+
+ | *List*   | Get information about an initial list of files              |
+ |          |                                                             |
+ |          | from: a queue, a directory, a polling script.               |
+ +----------+-------------------------------------------------------------+
+ | *Filter* | Reduce the list of files to act on.                         |
+ |          |                                                             |
+ |          | Apply accept/reject clauses                                 |
+ |          |                                                             |
+ |          | Check duplicate receipt cache                               |
+ |          |                                                             |
+ |          | run on_msg scripts                                          |
+ +----------+-------------------------------------------------------------+
+ | *Do*     | process the message by downloading or sending               |
+ |          |                                                             |
+ |          | run do_send,do_download                                     |
+ |          |                                                             |
+ |          | run on_part,on_file (download only)                         |
+ +----------+-------------------------------------------------------------+
+ | *Post*   | run on_post scripts                                         |
+ |          |                                                             |
+ |          | Post announcement of file downloads/sent to post_broker     |
+ +----------+-------------------------------------------------------------+
+ | *Report* | Post report of action to origin (to inform source)          |
+ +----------+-------------------------------------------------------------+
+
+The main components of the python implementation of Sarracenia all implement the same 
+algorithm described above.  The algorithm has various points where custom processing
+can be inserted using small python scripts called on_*, do_*.
+
+The components just have different default settings:
+
+.. table:: **Table 2: How Each Component Uses the Common Algorithm**  
+ :align: center
+
+ +------------------------+--------------------------+
+ | Component              | Use of the algorithm     |
+ +------------------------+--------------------------+
+ | *sr_subscribe*         | List=read from queue     |
+ |                        |                          |
+ |   Download file from a | Filter                   |
+ |   pump. If the local   |                          |
+ |   host is a pump,      | Do=Download              |
+ |   post the downloaded  |                          |
+ |   file.                | Post=optional            |
+ |                        |                          |
+ |                        | Report=optional          |
+ |                        |                          |
+ +------------------------+--------------------------+
+ | *sr_poll*              | List=run do_poll script  |
+ |                        |                          |
+ |   Find files on other  | Filter                   |
+ |   servers to post to   |                          |
+ |   a pump.              | Do=nil                   |
+ |                        |                          |
+ |                        | Post=yes                 |
+ |                        |                          |
+ |                        | Report=no                |
+ +------------------------+--------------------------+
+ | *sr_shovel/sr_winnow*  | List=read from queue     |
+ |                        |                          |
+ |   Move posts or        | Filter (shovel cache=off)|
+ |   reports around.      |                          |
+ |                        | Do=nil                   |
+ |                        |                          |
+ |                        | Post=yes                 |
+ |                        |                          |
+ |                        | Report=optional          |
+ +------------------------+--------------------------+
+ | *sr_post/watch*        | List=read file system    |
+ |                        |                          |
+ |   Find file on a       | Filter                   |
+ |   local server to      |                          |
+ |   post                 | Do=nil                   |
+ |                        |                          |
+ |                        | Post=yes                 |
+ |                        |                          |
+ |                        | Report=no                |
+ +------------------------+--------------------------+
+ | *sr_sender*            | List=read queue          |
+ |                        |                          |
+ |   Send files from a    | Filter                   |
+ |   pump. If remote is   |                          |
+ |   also a pump, post    | Do=sendfile              |
+ |   the sent file there. |                          |
+ |                        | Post=optional            |
+ |                        |                          |
+ |                        | Report=optional          |
+ +------------------------+--------------------------+
+
+Components are easily composed using AMQP brokers, which create elegant networks
+of communicating sequential processes. (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense)
 
 
 Why Not Just Use Rsync?
@@ -97,12 +206,20 @@ One of the design goals of sarracenia is to be end-to-end.  Rsync is point-to-po
 meaning it does not support the &quot;transitivity&quot; of transfers across multiple data pumps that
 is desired.  On the other hand, the first use case for Sarracenia is the distribution of
 new files.  Updates to files are not common, and so file deltas are not yet dealt with
-efficiently.  ZSync is much closer in spirit to this use case, and Sarracenia may
-adopt zsync as a means of handling deltas, but it would likely place the signatures in
-the announcements.  Using an announcement per checksummed block allows transfers to be
+efficiently.  ZSync is much closer in spirit to this use case.  Sarracenia has a similar
+approach based on file partitions, but user settable to much larger than Zsync blocks, more
+amenable to accelleration.  Using an announcement per checksummed block allows transfers to be
 parallelized easily.   The use of the AMQP message bus also allows for system-wide
 monitoring to be straight-forward, and to integrate other features such as security
 scanning within the flow transparently.
+
+Another consideration is that Sarracenia doesn't actually implement any transport.  It is completely agnostic 
+to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
+with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
+The download_scp plugin, included with the package, shows the use of the built-in python transfer mechanisms, 
+but the simple use of a binary to accellerate downloads when the file exceeds a threshold size, making that 
+method more efficient. Use of another compatible binary, such as BBCP, is also straightforward.
+
 
 
 Why No FTP?
@@ -114,8 +231,9 @@ being relatively simple programmatic access, but that advantage is obviated by t
 Further, these days, with increased security concerns, and with cpu power becoming extremely available, it
 no longer makes much sense not to encrypt traffic.   Additionally, to support multi-streaming, sarracenia
 makes use of byte-ranges, which are provided by SFTP and HTTP servers, but not FTP.  So we cannot support
-file partitioning on FTP.  So while FTP sort-of-works, it is not now and never will be fully supported,
-and the partial support that is there is not recommended.
+file partitioning on FTP.  So while FTP sort-of-works, it is not now, nor ever will be, fully supported.
+
+
 
 AMQP
 ----
