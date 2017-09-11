@@ -365,8 +365,8 @@ Once connected to the source AMQP broker, the program builds notifications after
 the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
- - **[--blocksize <value>]**
- - **[-dr|--document_root <path>]**
+ - **[--blocksize <value>]            (default: 0 (auto))**
+ - **[-dr|--document_root <path>]     (optional)**
  - **post_url          <url>          (MANDATORY)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0) **
