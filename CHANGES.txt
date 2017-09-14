@@ -6,12 +6,12 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* FIXME: document *cache* behaviour change, in sr_config?
-* FIXME: do we just make a massive sr_subscribe man page, folding in everything from sr_config?
-* FIXME: do old cache files need to be deleted during upgrade? update RELEASE_NOTES
 
-* new plugin msg_to_clusters, simplified replacement of inter-cluster routing logic.
+**2.17.09a1**
+
+* FIXME: do old cache files need to be deleted during upgrade? update RELEASE_NOTES
 * expire DEFAULT CHANGED:  7 days -> 5 minutes.  Avoiding pump overloading turns out to be critical.
+* new plugin msg_to_clusters, simplified replacement of inter-cluster routing logic.
 * sr_watch, returned to recursive formulation of sr_watch, reduces overhead substantially.
 * flow_test now includes ftp download test.
 * flow_test now uses sr_audit, queues and exchanges extant now tested.
