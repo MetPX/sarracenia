@@ -167,9 +167,9 @@ count_of_checks=$((${count_of_checks}+1))
 sr_audit --users foreground
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-qchk 12 "queues existing after 1st audit" "show overview" 
+qchk 11 "queues existing after 1st audit" "show overview" 
 
-xchk 28 "exchanges for flow test created."
+xchk 27 "exchanges for flow test created."
 
 sr start
 ret=$?
