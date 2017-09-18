@@ -41,7 +41,6 @@ broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
 declare source tsource
-declare source tsource2
 declare subscriber tsub
 declare subscriber anonymous
 

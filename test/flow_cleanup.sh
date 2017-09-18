@@ -68,7 +68,7 @@ for exchange in $exchanges_to_delete ; do
 done
 
  
-templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
+templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
 for cf in ${templates}; do
     echo "removing $cf"
     rm "$CONFDIR"/${cf}
