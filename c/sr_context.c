@@ -112,45 +112,45 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
   amqp_rpc_reply_t reply;
   amqp_channel_open_ok_t *open_status;
 
-  sr_c->conn = amqp_new_connection();
+  sr_c->cfg->broker->conn = amqp_new_connection();
 
   if ( sr_c->cfg->broker->ssl ) {
-     sr_c->socket = amqp_ssl_socket_new(sr_c->conn);
-     if (!(sr_c->socket)) {
+     sr_c->cfg->broker->socket = amqp_ssl_socket_new(sr_c->cfg->broker->conn);
+     if (!(sr_c->cfg->broker->socket)) {
         log_msg(  LOG_ERROR, "failed to create SSL amqp client socket.\n" );
         return(NULL);
      }
 
-     amqp_ssl_socket_set_verify_peer(sr_c->socket, 0);
-     amqp_ssl_socket_set_verify_hostname(sr_c->socket, 0);
+     amqp_ssl_socket_set_verify_peer(sr_c->cfg->broker->socket, 0);
+     amqp_ssl_socket_set_verify_hostname(sr_c->cfg->broker->socket, 0);
 
   } else {
-     sr_c->socket = amqp_tcp_socket_new(sr_c->conn);
-     if (!(sr_c->socket)) {
+     sr_c->cfg->broker->socket = amqp_tcp_socket_new(sr_c->cfg->broker->conn);
+     if (!(sr_c->cfg->broker->socket)) {
         log_msg(  LOG_ERROR, "failed to create AMQP client socket. \n" );
         return(NULL);
      }
   }
 
-  status = amqp_socket_open(sr_c->socket, sr_c->cfg->broker->hostname, sr_c->cfg->broker->port);
+  status = amqp_socket_open(sr_c->cfg->broker->socket, sr_c->cfg->broker->hostname, sr_c->cfg->broker->port);
   if (status < 0) {
     sr_amqp_error_print(status, "failed opening AMQP socket");
     return(NULL);
   }
 
-  reply = amqp_login(sr_c->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->cfg->broker->user, sr_c->cfg->broker->password);
+  reply = amqp_login(sr_c->cfg->broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->cfg->broker->user, sr_c->cfg->broker->password);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
     sr_amqp_reply_print(reply, "failed AMQP login");
     return(NULL);
   }
 
-  open_status = amqp_channel_open(sr_c->conn, 1);
+  open_status = amqp_channel_open(sr_c->cfg->broker->conn, 1);
   if (open_status == NULL ) {
     log_msg( LOG_ERROR, "failed AMQP amqp_channel_open\n");
     return(NULL);
   }
 
-  reply = amqp_get_rpc_reply(sr_c->conn);
+  reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
     sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
     return(NULL);
@@ -176,7 +176,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
 
   sr_c->cfg = sr_cfg;
-  sr_c->conn = NULL;
+  sr_c->cfg->broker->conn = NULL;
 
   if (!(sr_cfg->broker)) 
   {
@@ -195,7 +195,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c->url = sr_cfg->url;
 
   sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker->hostname : sr_cfg->to;
-  sr_c->socket = NULL;
+  sr_c->cfg->broker->socket = NULL;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
@@ -213,19 +213,19 @@ void sr_context_close(struct sr_context *sr_c)
   amqp_rpc_reply_t reply;
   signed int status;
 
-  reply = amqp_channel_close(sr_c->conn, 1, AMQP_REPLY_SUCCESS);
+  reply = amqp_channel_close(sr_c->cfg->broker->conn, 1, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       log_msg( LOG_ERROR, "sr_cpost: amqp channel close failed.\n");
       return;
   }
 
-  reply = amqp_connection_close(sr_c->conn, AMQP_REPLY_SUCCESS);
+  reply = amqp_connection_close(sr_c->cfg->broker->conn, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       log_msg( LOG_ERROR, "sr_cpost: amqp connection close failed.\n");
       return;
   }
 
-  status = amqp_destroy_connection(sr_c->conn);
+  status = amqp_destroy_connection(sr_c->cfg->broker->conn);
   if (status < 0 ) 
   {
       log_msg( LOG_ERROR, "sr_cpost: amqp context close failed.\n");

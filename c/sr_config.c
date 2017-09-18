@@ -224,6 +224,10 @@ struct sr_broker_t *broker_uri_parse( char *src )
     if (d) *d='\0';
     b->hostname=strdup(save); 
 
+    b->socket=NULL;
+    b->conn=NULL;
+    b->next=NULL;
+
     //fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 
     //   b->ssl, b->hostname, b->port, b->user, b->password );
     return(b);

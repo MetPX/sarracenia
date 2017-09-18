@@ -35,6 +35,13 @@ status:
 #include <sys/types.h>
 #include <signal.h>
 
+// AMQP stuff.
+#include <stdint.h>
+#include <amqp_ssl_socket.h>
+#include <amqp_tcp_socket.h>
+#include <amqp.h>
+#include <amqp_framing.h>
+
 
 #include "sr_util.h"
 #include "sr_event.h"
@@ -77,6 +84,9 @@ struct sr_broker_t {
   char *password;
   char *hostname;
   int   port;
+  amqp_socket_t *socket;
+  amqp_connection_state_t conn;
+  struct sr_broket_t *next; 
 };
 
 

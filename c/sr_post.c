@@ -348,7 +348,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
       if ( status != 0 )
       {
-          status = amqp_basic_publish(sr_c->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
+          status = amqp_basic_publish(sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
               amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
       }
       block_num++;
@@ -365,9 +365,9 @@ int sr_post_cleanup( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_delete( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
+    amqp_exchange_delete( sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
 
-    reply = amqp_get_rpc_reply(sr_c->conn);
+    reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
@@ -380,11 +380,11 @@ int sr_post_init( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_declare( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
+    amqp_exchange_declare( sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
           amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
 
  
-    reply = amqp_get_rpc_reply(sr_c->conn);
+    reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");

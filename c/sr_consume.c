@@ -59,9 +59,9 @@ int sr_consume_cleanup(struct sr_context *sr_c)
   amqp_rpc_reply_t reply;
   char p[PATH_MAX];
 
-  amqp_queue_delete( sr_c->conn, 1, amqp_cstring_bytes(sr_c->cfg->queuename), 0, 0 );
+  amqp_queue_delete( sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->queuename), 0, 0 );
 
-  reply = amqp_get_rpc_reply(sr_c->conn);
+  reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
       sr_amqp_reply_print(reply, "queue delete failed");
       return(0);
@@ -125,7 +125,7 @@ int sr_consume_setup(struct sr_context *sr_c)
 
   //amqp_queue_declare_ok_t *r = 
   amqp_queue_declare( 
-             sr_c->conn, 
+             sr_c->cfg->broker->conn, 
              1, 
              amqp_cstring_bytes(sr_c->cfg->queuename), 
              passive,
@@ -136,7 +136,7 @@ int sr_consume_setup(struct sr_context *sr_c)
   );
   /* FIXME how to parse r for error? */
 
-  reply = amqp_get_rpc_reply(sr_c->conn);
+  reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
       sr_amqp_reply_print(reply, "queue declare failed");
       return(0);
@@ -156,13 +156,13 @@ int sr_consume_setup(struct sr_context *sr_c)
       if (sr_c->cfg->debug) 
           log_msg( LOG_INFO, " binding queue: %s to exchange: %s topic: %s\n",
               sr_c->cfg->queuename, sr_c->cfg->exchange, t->topic );
-      amqp_queue_bind(sr_c->conn, 1, 
+      amqp_queue_bind(sr_c->cfg->broker->conn, 1, 
             amqp_cstring_bytes(sr_c->cfg->queuename), 
             amqp_cstring_bytes(sr_c->cfg->exchange), 
             amqp_cstring_bytes(t->topic),
             amqp_empty_table);
 
-      reply = amqp_get_rpc_reply(sr_c->conn);
+      reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
           sr_amqp_reply_print(reply, "binding failed");
           return(0);
@@ -279,7 +279,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
         free(tmph);
     }
 
-    amqp_basic_consume(sr_c->conn, 1, 
+    amqp_basic_consume(sr_c->cfg->broker->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 
           amqp_empty_bytes, // consumer_tag
           0,  // no_local
@@ -287,15 +287,15 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
           0,  // not_exclusive
           amqp_empty_table);
 
-    reply = amqp_get_rpc_reply(sr_c->conn);
+    reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "consume failed");
         return(NULL);
     }
 
-    amqp_maybe_release_buffers(sr_c->conn);
-    result = amqp_simple_wait_frame(sr_c->conn, &frame);
+    amqp_maybe_release_buffers(sr_c->cfg->broker->conn);
+    result = amqp_simple_wait_frame(sr_c->cfg->broker->conn, &frame);
 
     //log_msg( LOG_DEBUG, "Result %d\n", result);
     if (result < 0) return(NULL);
@@ -321,7 +321,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
 
     is_report = ( ! strncmp( d->routing_key.bytes, "v02.report", 10 )  );
    
-    result = amqp_simple_wait_frame(sr_c->conn, &frame);
+    result = amqp_simple_wait_frame(sr_c->cfg->broker->conn, &frame);
 
     if (result < 0) return(NULL);
   
@@ -364,7 +364,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
   
     while (body_received < body_target) 
     {
-            result = amqp_simple_wait_frame(sr_c->conn, &frame);
+            result = amqp_simple_wait_frame(sr_c->cfg->broker->conn, &frame);
 
             if (result < 0) return(NULL);
     
