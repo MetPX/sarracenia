@@ -74,7 +74,7 @@ posttest() {
 let tnum++
 printf "\nSR_POST TEST ${tnum}: start ($1)\n"
 
-cmd="$POSTBIN -dr ${DR} $2 \\\">&post.out\\\""
+cmd="$POSTBIN -dr ${DR} $2 >&post.out"
 echo $cmd
 
 eval $cmd

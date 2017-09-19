@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* sr_post using srcpath,relpath instead of url in posting modules
+* flow_cleanup fix config path to remove
+* flow_setup  fix number of exchanges and queues expected
+* sr_audit fix permissions for source and subscribe users
+
 
 **2.17.09a1**
 

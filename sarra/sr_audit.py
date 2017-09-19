@@ -90,9 +90,9 @@ class sr_audit(sr_instances):
         # source
 
         if role == 'source':
-           c="configure='^q_%s_.*|^xs_%s_.*'" % ( u, u )
-           w="write='^q_%s_.*|^xs_%s_.*'" % ( u, u )
-           r="read='^q_%s_.*|^x[lrs]_%s_.*|^x.*public$'" % ( u, u )
+           c="configure='^q_%s.*|^xs_%s.*'" % ( u, u )
+           w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            # setting up default exchanges for a source
@@ -119,9 +119,9 @@ class sr_audit(sr_instances):
         # subscribe
 
         if role == 'subscribe':
-           c="configure='^q_%s_.*'"%u
-           w="write='^q_%s_.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s_.*|^x[lrs]_%s_.*|^x.*public$'" % (u,u)
+           c="configure='^q_%s.*'"%u
+           w="write='^q_%s.*|^xs_%s$'"%(u,u)
+           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            # setting up default exchanges for a subscriber

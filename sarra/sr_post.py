@@ -72,6 +72,9 @@ class sr_post(sr_config):
            self.help()
            return
 
+        self.srcpath = self.url.geturl()
+        if self.url.scheme == 'file' : self.srcpath = 'file:'
+
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
            self.in_error = True
@@ -82,7 +85,8 @@ class sr_post(sr_config):
         if self.exchange == None :
            self.exchange = 'xs_%s' % self.broker.username
 
-        self.post_exchange  = self.exchange
+        self.post_exchange = self.exchange
+
         self.accept_unmatch = self.masks == []
 
         # resetting logs if needed
@@ -90,7 +94,7 @@ class sr_post(sr_config):
         if self.program_name != 'sr_watch' and self.logpath != self.lpath : self.setlog()
 
         # check for caching
-
+      
         if self.caching == True : self.caching = 300
         if self.caching :
            self.cache = sr_cache(self)
@@ -105,10 +109,19 @@ class sr_post(sr_config):
         # BEGIN TRICK for false self.poster
 
         addmodule = namedtuple('AddModule', ['post'])
-        self.poster = addmodule(self.post)
+        self.poster = addmodule(self.post_url)
 
-        if self.poster.post == self.post:
+        if self.poster.post == self.post_url :
            self.logger.debug("MY POSTER TRICK DID WORK !!!")
+
+    def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,srcpath,relpath...")
+
+        urlstr  = url.geturl()
+        relpath = url.path
+        srcpath = urlstr.replace(relpath,'')
+
+        return self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -116,12 +129,13 @@ class sr_post(sr_config):
     def close(self):
         self.logger.debug("sr_post close")
         self.post_hc.close()
-
+        
         if self.cache :
            self.cache.save()
            self.cache.close()
 
         self.connected = False
+
 
     def connect(self):
         self.logger.debug("sr_post connect")
@@ -166,13 +180,13 @@ class sr_post(sr_config):
 
         self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
 
+        self.connected        = True
+
         # =============
         # amqp resources
         # =============
 
         self.declare_exchanges()
-
-        self.connected        = True
 
     def help(self):
         print("\nUsage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
@@ -204,7 +218,7 @@ class sr_post(sr_config):
     def lock_set(self):
         #self.logger.debug("sr_post lock_set")
 
-        if self.reset   :
+        if self.reset :
            self.cache.close(unlink=True)
            self.logger.info("posting cache was reset...")
            os._exit(0)
@@ -254,48 +268,55 @@ class sr_post(sr_config):
             self.to_clusters = self.broker.hostname
 
         self.cache = None
-           
+
         self.logger.debug("sr_post overwrite_defaults Done")
 
-    def post(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.debug("sr_post post %s caching(%s) exchange(%s)" % \
-            ( url.geturl(), self.caching, exchange ) )
+
+    def post(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+
+        urlstr = srcpath + '/' + relpath
+
+        self.logger.debug("sr_post post %s caching(%s) exchange(%s)" % (urlstr,self.caching,exchange) )
 
         # apply accept/reject
-        if not self.isMatchingPattern(url.geturl(),self.accept_unmatch) :
-           self.logger.debug("post of %s Rejected by accept/reject options" % url.geturl() )
+        if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
+           self.logger.debug("post of %s Rejected by accept/reject options" % urlstr )
            return True  # need to return true because this isn´t a failure.
 
         # if caching is enabled make sure it was not already posted
+
         if self.caching :
 
-           new_post = self.cache.check(str(sumstr),url.path,partstr)
+           new_post = self.cache.check(str(sumstr),relpath,partstr)
 
            if new_post :
 
               # delete
               if sumstr.startswith('R,'):
-                 self.cache.delete_path(url.path)
+                 self.cache.delete_path(relpath)
 
               # link - never store them, message contains whole payload.
               elif sumstr.startswith('L,'):
-                 self.cache.delete_path(url.path)
+                 self.cache.delete_path(relpath)
+
+              else:
+                 self.logger.info("caching %s"% relpath )
 
            # modified, or repost
            else:
-                self.logger.debug("skipped already posted %s %s %s" % (url.path,partstr,sumstr))
+                self.logger.debug("skipped already posted %s %s %s" % (relpath,partstr,sumstr))
                 return True
-
+                 
         # set message exchange
         self.msg.exchange = exchange
         
         # set message topic
-        self.msg.set_topic_url(self.topic_prefix,url)
+        self.msg.set_topic_relpath(self.topic_prefix,relpath)
         if self.subtopic != None :
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # set message notice
-        self.msg.set_notice_url(url)
+        self.msg.set_notice(srcpath,relpath)
 
         # set message headers
         self.msg.headers = {}
@@ -310,18 +331,18 @@ class sr_post(sr_config):
         if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
         if link     != None : self.msg.headers['link']         = link
 
-        if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
-        if self.source  != None : self.msg.headers['source']       = self.source
-        if filename     != None : self.msg.headers['filename']     = filename
+        if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
+        if self.source  != None : self.msg.headers['source']          = self.source
+        if filename            != None : self.msg.headers['filename'] = filename
 
-        if self.flow    != None : self.msg.headers['flow']         = self.flow
+        if self.flow    != None : self.msg.headers['flow']            = self.flow
 
         ok = self.__on_post__()
 
         return ok
 
-    def post_local_file(self,path,exchange,url,to_clusters,sumflg='d',rename=None):
-        self.logger.debug("sr_post post_local_file exchange(%s) " % exchange )
+    def post_local_file(self,path,exchange,srcpath,relpath,to_clusters,sumflg='d',rename=None):
+        self.logger.debug("sr_post post_local_file %s exchange(%s) " % (path,exchange) )
     
         # set partstr
 
@@ -338,6 +359,9 @@ class sr_post(sr_config):
 
         self.set_sumalgo(sumflg)
         sumalgo = self.sumalgo
+
+        # bad flag provided
+        if self.lastflg != sumflg : sumflg = self.lastflg
 
         if   sumflg == '0' :
              sumstr = '0,%d' % random.randint(0,100)
@@ -368,13 +392,13 @@ class sr_post(sr_config):
 
         filename = os.path.basename(path)
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
-        self.logger.debug("sr_post post_local_file exchange(%s)" % exchange )
+        self.logger.debug("sr_post post_local_file %s exchange(%s)" % (path,exchange ))
 
         return ok
 
-    def post_local_inplace(self,path,exchange,url,to_clusters,chunksize=0,sumflg='d',rename=None):
+    def post_local_inplace(self,path,exchange,srcpath,relpath,to_clusters,chunksize=0,sumflg='d',rename=None):
         self.logger.debug("sr_post post_local_inplace")
 
         ok       = False
@@ -383,12 +407,12 @@ class sr_post(sr_config):
 
         mtime = timeflt2str(lstat.st_mtime)
         atime = timeflt2str(lstat.st_atime)
-        mode = lstat[stat.ST_MODE]
+        mode  = lstat[stat.ST_MODE]
 
         # file too small for chunksize
 
         if chunksize <= 0 or chunksize >= fsiz : 
-           ok = self.post_local_file(path,exchange,url,to_clusters,sumflg,rename)
+           ok = self.post_local_file(path,exchange,srcpath,relpath,to_clusters,sumflg,rename)
            return ok
 
         # count blocks and remainder
@@ -401,6 +425,10 @@ class sr_post(sr_config):
 
         self.set_sumalgo(sumflg)
         sumalgo  = self.sumalgo
+
+        # bad flag provided
+        if self.lastflg != sumflg : sumflg = self.lastflg
+
         filename = os.path.basename(path)
         blocks   = list(range(0,block_count))
 
@@ -459,7 +487,7 @@ class sr_post(sr_config):
 
               # post
 
-              ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+              ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
               if not ok : return ok
 
               # reconnect ?
@@ -474,7 +502,7 @@ class sr_post(sr_config):
         return ok
 
 
-    def post_local_part(self,path,exchange,url,to_clusters,rename=None):
+    def post_local_part(self,path,exchange,srcpath,relpath,to_clusters,rename=None):
         self.logger.debug("sr_post post_local_part")
 
         # verify part suffix is ok
@@ -494,7 +522,6 @@ class sr_post(sr_config):
         partstr = 'p,%d,%d,%d,%d' %\
                    (self.msg.chunksize,self.msg.block_count,self.msg.remainder,self.msg.current_block)
 
-
         # set sumstr
 
         sumstr   = '%s,%s' % (self.msg.sumflg,self.msg.checksum)
@@ -506,29 +533,14 @@ class sr_post(sr_config):
         atime = timeflt2str(lstat.st_atime)
         mode  = lstat[stat.ST_MODE]
 
-        ok = self.post(exchange,url,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
         return ok
 
     def posting(self):
-        self.logger.debug("sr_post posting %s" % ( self.url.path ) )
+        self.logger.debug("sr_post posting %s" % ( self.fpath ) )
 
-        filepath = '/' + self.url.path.strip('/')
-
-        # urllib keeps useless repetitive '/' so rebuild url smartly
-        if filepath != self.url.path :
-           if self.document_root == None and 'ftp' in self.url.scheme :
-              filepath = '/' + filepath
-           urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
-           self.url = urllib.parse.urlparse(urlstr)
-
-        # check abspath for filename
-
-        filepath = self.url.path
-        if self.document_root != None :
-           if str.find(filepath,self.document_root) != 0 :
-              filepath = self.document_root + os.sep + filepath
-              filepath = filepath.replace('//','/')
+        filepath = self.fpath
 
         # verify that file exists
 
@@ -540,19 +552,19 @@ class sr_post(sr_config):
 
         rename = self.rename
         if self.rename != None and self.rename[-1] == os.sep :
-           rename += os.path.basename(self.url.path)
+           rename += os.path.basename(self.fpath)
 
         # strip option when no rename option
-        # strip 'N' heading directories from url.path
+        # strip 'N' heading directories from relpath
 
         if self.strip != 0:
            if rename != None :
               self.logger.error("option strip used with option rename conflicts")
               sys.exit(1)
            strip  = self.strip
-           token  = self.url.path.split(os.sep)
-           if self.url.path[0] == os.sep : strip += 1
-           if len(token) <= self.strip   : strip = len(token)-1
+           token  = self.relpath.split(os.sep)
+           if self.relpath[0] == os.sep  : strip += 1
+           if len(token) <= self.strip : strip = len(token)-1
            rename = os.sep+os.sep.join(token[strip:])
               
         filename = os.path.basename(filepath)
@@ -564,7 +576,7 @@ class sr_post(sr_config):
         if self.event == 'delete' :
            hash = sha512()
            hash.update(bytes(filename, encoding='utf-8'))
-           ok = self.post(self.exchange,self.url,self.to_clusters,None, \
+           ok = self.post(self.exchange,self.srcpath,self.relpath,self.to_clusters,None, \
                     'R,%s' % hash.hexdigest(), rename, filename)
 
            if not ok : sys.exit(1)
@@ -589,16 +601,16 @@ class sr_post(sr_config):
                linkdest = os.readlink(filepath)
                hash = sha512()
                hash.update( bytes( linkdest, encoding='utf-8' ) )
-               ok = self.post( self.exchange,self.url,self.to_clusters,None, \
+               ok = self.post( self.exchange,self.srcpath,self.relpath,self.to_clusters,None, \
                     'L,%s' % hash.hexdigest(), rename, filename, link=linkdest )
 
                if not ok : sys.exit(1)
 
                filepath = os.path.realpath(filepath)
-               urlstr   = self.url.scheme + '://' + self.url.netloc + filepath
-               self.url = urllib.parse.urlparse(urlstr)
 
-           if not self.follow_symlinks : return True
+               if self.follow_symlinks : self.watching(filepath,self.event)
+
+               return True
 
           # Note: if (not link) and follow -> path is unchanged, so file is created through linked name.
 
@@ -607,7 +619,7 @@ class sr_post(sr_config):
         # ==============
 
         if self.partflg == 'p' :
-           ok = self.post_local_part(filepath,self.exchange,self.url,self.to_clusters,rename)
+           ok = self.post_local_part(filepath,self.exchange,self.srcpath,self.relpath,self.to_clusters,rename)
            if not ok : sys.exit(1)
            return
 
@@ -654,13 +666,12 @@ class sr_post(sr_config):
               self.logger.error("parts %s without blocksize" % self.parts)
               sys.exit(1)
 
-
         # ===================
         # post file in blocks (inplace)
         # ===================
 
         if self.blocksize > 0 :
-           ok = self.post_local_inplace(filepath,self.exchange,self.url, \
+           ok = self.post_local_inplace(filepath,self.exchange,self.srcpath,self.relpath, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)
            return
@@ -669,7 +680,7 @@ class sr_post(sr_config):
         # whole file
         # ==============
 
-        ok = self.post_local_file(filepath,self.exchange,self.url,self.to_clusters,self.sumflg,rename)
+        ok = self.post_local_file(filepath,self.exchange,self.srcpath,self.relpath,self.to_clusters,self.sumflg,rename)
         if not ok: sys.exit(1)
         return
 
@@ -704,29 +715,27 @@ class sr_post(sr_config):
     def watching(self, fpath, event ):
         self.logger.debug("sr_post watching %s, ev=%s" % ( fpath, event ) )
 
-        self.event = event
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
            fpath = fpath.replace('\\','/')
 
+        self.event   = event
+        self.relpath = fpath
+        self.fpath   = fpath
+
         if self.document_root != None :
            dr = self.document_root
-           rpath = fpath.replace(dr,'',1)
-           if rpath == fpath :
-              if fpath[0] != os.sep :
-                 rpath = dr + os.sep + fpath
-              else :
-                 self.logger.error("document_root %s not present in %s" % (dr,fpath))
-                 self.logger.error("no posting")
-                 return False
-           fpath = rpath
-           if fpath[0] == '/' : fpath = fpath[1:]
+           if dr in fpath :
+              self.relpath = fpath.replace(dr,'',1)
+           elif fpath[0] != os.sep :
+              self.fpath = dr + os.sep + fpath
+           else :
+              self.logger.error("document_root %s not present in %s" % (dr,fpath))
+              self.logger.error("no posting")
+              return False
 
-        url = self.url
-        self.url = urllib.parse.urlparse('%s://%s/%s'%(url.scheme,url.netloc,fpath))
-
-        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, url.geturl() ) )
+        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.srcpath+self.relpath ) )
         self.posting()
-        self.url = url
+
         return True
 
     def watchpath(self ):
@@ -787,7 +796,6 @@ class sr_post(sr_config):
         self.close()
         os._exit(0)
 
-
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
@@ -801,7 +809,7 @@ class sr_post(sr_config):
         self.post_hc.connect()
 
         # declare posting exchange(s)
-
+       
         self.declare_exchanges()
 
         self.close()
@@ -820,11 +828,10 @@ class sr_post(sr_config):
                exchanges.append(self.post_exchange)
 
         # do exchange setup
-
+              
         for x in exchanges :
             if cleanup: self.post_hc.exchange_delete(x)
             else      : self.post_hc.exchange_declare(x)
-
 
 
     # setup: declare posting exchanges
@@ -869,6 +876,8 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
+    if config and config[0] == '-' : config = None
+
     # unsupported action in python (but supported in sr_cpost)
     if action in ['start', 'stop', 'status', 'restart', 'reload' ]:
          post = sr_post(config,args)
@@ -887,7 +896,6 @@ def main():
          post      = sr_post(config=None,args=sys.argv[1:])
          post.loop = False
 
-
     if post.in_error : sys.exit(1)
 
     try :
@@ -896,15 +904,12 @@ def main():
         post.connect()
 
         if   action == 'cleanup'    :
-             post.logger.info("%s %s" % (post.program_name,action))
              post.cleanup()
              os._exit(0)
         elif action == 'declare'    :
-             post.logger.info("%s %s" % (post.program_name,action))
              post.declare()
              os._exit(0)
         elif action == 'setup'      :
-             post.logger.info("%s %s" % (post.program_name,action))
              post.setup()
              os._exit(0)
 
