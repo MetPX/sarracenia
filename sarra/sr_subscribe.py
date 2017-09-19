@@ -778,15 +778,15 @@ class sr_subscribe(sr_instances):
 
     def set_new(self):
 
-        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.path=%s" %  \
-             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.path ) ) 
+        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.relpath=%s" %  \
+             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.relpath ) ) 
         # default the file is dropped in document_root directly
 
         new_dir  = self.document_root
 
         # relative path and filename from message
 
-        rel_path = '%s' % self.msg.path
+        rel_path = '%s' % self.msg.relpath
         token    = rel_path.split('/')
         filename = token[-1]
 

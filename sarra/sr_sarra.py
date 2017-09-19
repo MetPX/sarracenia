@@ -623,7 +623,7 @@ class sr_sarra(sr_instances):
 
         # relative path by default mirror 
 
-        self.rel_path = '%s' % self.msg.path
+        self.rel_path = '%s' % self.msg.relpath
 
         if 'rename' in self.msg.headers :
            self.rel_path = '%s' % self.msg.headers['rename']
@@ -632,7 +632,7 @@ class sr_sarra(sr_instances):
 
         if not self.mirror :
            yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.path)
+           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.relpath)
 
            if 'rename' in self.msg.headers :
               self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.headers['rename'])

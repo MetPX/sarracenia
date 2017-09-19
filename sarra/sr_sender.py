@@ -561,7 +561,7 @@ class sr_sender(sr_instances):
         self.local_root  = ''
         self.local_rpath = ''
 
-        path  = '%s' % self.msg.path
+        path  = '%s' % self.msg.relpath
         token = path.split('/')
 
         if self.document_root != None : self.local_root  = self.document_root

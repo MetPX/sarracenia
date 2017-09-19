@@ -254,7 +254,8 @@ class sr_winnow(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received %s '%s' %s  filesize: %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr,self.msg.filesize))
+        self.logger.debug("Received %s %s %s" % 
+                         (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -267,10 +268,14 @@ class sr_winnow(sr_instances):
         # cache testing/adding
         # ========================================
 
-        if not self.cache.check(str(self.msg.checksum),self.msg.url.path,self.msg.partstr):
-            self.msg.report_publish(304,'Not modified')
-            self.logger.debug("Ignored %s" % (self.msg.notice))
-            return True
+        sumstr  = self.msg.headers['sum']
+        partstr = self.msg.headers['parts']
+        new_msg = self.cache.check(sumstr,self.msg.relpath,partstr)
+
+        if not new_msg :
+           self.msg.report_publish(304,'Not modified')
+           self.logger.debug("Ignored %s" % (self.msg.notice))
+           return True
 
         self.logger.debug("Added %s" % (self.msg.notice))
 

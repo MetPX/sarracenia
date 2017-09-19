@@ -267,7 +267,6 @@ class sr_message():
         self.relpath = token[2]
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
-        self.path    = token[2]
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
            self.report_code   = int(token[3])
@@ -706,7 +705,8 @@ class sr_message():
 
         try :  
                  self.suffix = '.' + '.'.join(token[-6:])
-                 if token[-1] != self.part_ext : return False,'not right extension'
+                 if token[-1] != self.part_ext :
+                    return False,'not right extension',None,None,None
 
                  self.chunksize     = int(token[-6])
                  self.block_count   = int(token[-5])
@@ -714,8 +714,10 @@ class sr_message():
                  self.current_block = int(token[-3])
                  self.sumflg        = token[-2]
 
-                 if self.current_block >= self.block_count : return False,'current block wrong'
-                 if self.remainder     >= self.chunksize   : return False,'remainder too big'
+                 if self.current_block >= self.block_count :
+                    return False,'current block wrong',None,None,None
+                 if self.remainder     >= self.chunksize   :
+                    return False,'remainder too big',None,None,None
 
                  self.length    = self.chunksize
                  self.lastchunk = self.current_block == self.block_count-1
@@ -727,7 +729,8 @@ class sr_message():
                  lstat     = os.stat(filepath)
                  fsiz      = lstat[stat.ST_SIZE] 
 
-                 if fsiz  != self.length : return False,'wrong file size'
+                 if fsiz  != self.length :
+                    return False,'wrong file size',None,None,None
 
                  # compute chksum
                  self.parent.set_sumalgo(self.sumflg)
@@ -745,14 +748,22 @@ class sr_message():
 
                  if i != fsiz :
                     self.logger.warning("sr_message verify_part_suffix incomplete reading %d %d" % (i,fsiz))
-                    return False,'missing data from file'
+                    return False,'missing data from file', None,None,None
 
                  # set chksum
                  self.checksum  = self.sumalgo.get_value()
 
+
+                 # set partstr
+                 self.partstr = 'p,%d,%d,%d,%d' %\
+                   (self.chunksize,self.block_count,self.remainder,self.current_block)
+
+                 # set sumstr
+                 self.sumstr  = '%s,%s' % (self.sumflg,self.checksum)
+
         except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-                 return False,'incorrect extension'
+                 return False,'incorrect extension',None,None,None
 
-        return True,'ok'
+        return True,'ok',self.suffix,self.partstr,self.sumstr
