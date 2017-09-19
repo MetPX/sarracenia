@@ -569,7 +569,7 @@ class sr_poll(sr_instances):
         if self.source  != None : self.msg.headers['source']       = self.source
         if filename     != None : self.msg.headers['filename']     = filename
 
-        if self.flow    != None : self.msg.headers['flow']         = selfflow
+        if self.flow    != None : self.msg.headers['flow']         = self.flow
 
         # ========================================
         # cache testing
