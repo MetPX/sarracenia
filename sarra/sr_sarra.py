@@ -625,18 +625,14 @@ class sr_sarra(sr_instances):
 
         self.rel_path = '%s' % self.msg.relpath
 
-        if 'rename' in self.msg.headers :
-           self.rel_path = '%s' % self.msg.headers['rename']
+        if 'rename' in self.msg.headers : self.rel_path = '%s' % self.msg.headers['rename']
 
         # if we dont mirror force  yyyymmdd/source in front
 
         if not self.mirror :
            yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.relpath)
-
-           if 'rename' in self.msg.headers :
-              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.headers['rename'])
-              self.rel_path = self.rel_path.replace('//','/')
+           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.rel_path)
+           self.rel_path = self.rel_path.replace('//','/')
 
         token = self.rel_path.split('/')
         self.filename = token[-1]
@@ -644,20 +640,24 @@ class sr_sarra(sr_instances):
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           self.rel_path = '/'.join(token[self.strip:])
+           token         = token[self.strip:]
+           self.rel_path = '/'.join(token)
 
         self.new_dir  = ''
         if self.document_root != None :
            self.new_dir = self.document_root 
 
         if len(token) > 1 :
-           self.new_dir = self.new_dir + '/' + '/'.join(token[self.strip:-1])
+           self.new_dir = self.new_dir + '/' + '/'.join(token[:-1])
 
         # Local directory (directory created if needed)
 
         self.new_dir  = self.new_dir.replace('//','/')
         self.new_file = self.filename
-        self.new_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
+
+        self.new_srcpath = self.url.geturl()
+        self.new_relpath = self.rel_path
+        self.new_url     = urllib.parse.urlparse(self.new_srcpath + '/' + self.new_relpath)
 
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']

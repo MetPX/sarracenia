@@ -787,28 +787,26 @@ class sr_subscribe(sr_instances):
         # relative path and filename from message
 
         rel_path = '%s' % self.msg.relpath
-        token    = rel_path.split('/')
-        filename = token[-1]
 
         # case S=0  sr_post -> sr_suscribe... rename in headers
-
         # FIXME: 255 char limit on headers, rename will break!
-        if 'rename' in self.msg.headers :
-           rel_path = self.msg.headers['rename']
-           token    = rel_path.split('/')
-           filename = token[-1]
 
+        if 'rename' in self.msg.headers : rel_path = '%s' % self.msg.headers['rename']
+
+        token    = rel_path.split('/')
+        filename = token[-1]
 
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           rel_path = '/'.join(token[self.strip:])
+           token    = token[self.strip:]
+           rel_path = '/'.join(token)
 
         # if mirror... we need to add to document_root the relative path
         # strip taken into account
 
         if self.mirror :
-           rel_dir    = '/'.join(token[self.strip:-1])
+           rel_dir    = '/'.join(token[:-1])
            new_dir  = self.document_root + '/' + rel_dir
            
         # if flatten... we flatten relative path
@@ -820,22 +818,26 @@ class sr_subscribe(sr_instances):
         if self.currentFileOption != None :
            filename = self.sundew_getDestInfos(filename)
 
-        self.new_dir  = new_dir
-
         if 'sundew_extension' in self.msg.headers.keys() :
             tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
-            self.new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
+            new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
-        self.new_file = filename
-        self.new_url  = 'file:' + self.new_dir + '/' + filename
-        self.new_url  = urllib.parse.urlparse(self.new_url)
+        self.new_dir     = new_dir
+        self.new_file    = filename
+
+        self.new_srcpath = 'file:'
+        self.new_relpath = self.new_dir + '/' + filename
+        self.new_url     = urllib.parse.urlparse(self.new_srcpath + self.new_relpath)
 
         if self.post_broker :
            if  self.post_document_root : rel_dir = new_dir.replace(self.post_document_root,'')
            else                        : rel_dir = new_dir
-           rel_path     = rel_dir  + '/' + filename
 
-           if self.url : self.new_url = urllib.parse.urlparse(self.url.geturl() + '/' + rel_path)
+           self.new_relpath = rel_dir  + '/' + filename
+
+           if self.url : self.new_srcpath = self.url.geturl()
+
+           self.new_url = urllib.parse.urlparse(self.new_srcpath + self.new_relpath)
 
 
     def reload(self):

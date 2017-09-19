@@ -657,7 +657,7 @@ class sr_message():
            del self.headers['to_clusters']
            self.to_clusters = []
 
-    def set_topic_relpath(self,topic_prefix,relpath):
+    def set_topic(self,topic_prefix,relpath):
         self.topic_prefix = topic_prefix
         self.topic        = topic_prefix
         self.subtopic     = ''

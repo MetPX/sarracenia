@@ -311,7 +311,7 @@ class sr_post(sr_config):
         self.msg.exchange = exchange
         
         # set message topic
-        self.msg.set_topic_relpath(self.topic_prefix,relpath)
+        self.msg.set_topic(self.topic_prefix,relpath)
         if self.subtopic != None :
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
