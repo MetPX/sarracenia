@@ -218,8 +218,9 @@ struct sr_broker_t *broker_uri_parse( char *src )
         b->port = atoi(d);
         *d='\0';
     } else if (b->ssl) {
-      b->port=5671;
+        b->port=5671;
     } else b->port=5672;
+
     if (!d) d = strchr(save,'/');
     if (d) *d='\0';
     b->hostname=strdup(save); 
