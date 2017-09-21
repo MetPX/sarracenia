@@ -427,8 +427,8 @@ class sr_sender(sr_instances):
         #=================================
 
         if self.post_broker :
-           self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice_url(self.new_url,self.msg.time)
+           self.msg.set_topic('v02.post',self.new_relpath)
+           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')
@@ -630,19 +630,17 @@ class sr_sender(sr_instances):
 
     def set_new_url(self):
 
-        self.new_urlstr    = self.destination
-        if self.url != None :
-           self.new_urlstr = self.url.geturl()
+        self.new_srcpath = self.destination
+        if self.url      : self.new_srcpath = self.url.geturl()
+        self.new_srcpath = self.new_srcpath.strip('/')
 
-        if self.new_urlstr[-1] != '/' : self.new_urlstr += '/'
+        self.new_relpath = self.new_rpath + '/' + self.new_file
+        self.new_relpath = self.new_relpath.replace('//','/')
+        self.new_relpath = self.new_relpath.strip('/')
+        self.new_relpath = '/' + self.new_relpath
 
-        if self.new_rpath != '' and self.new_rpath[0] == '/':
-           self.pnew_rpath = self.new_rpath[1:]
-
-        if not self.post_document_root and 'ftp' in self.new_urlstr[:4] : self.new_urlstr += '/'
-
-        self.new_urlstr += self.new_rpath + '/' + self.new_file
-        self.new_url     = urllib.parse.urlparse(self.new_urlstr)
+        if not self.post_document_root and 'ftp' in self.new_srcpath[:4] :
+           self.new_relpath = '/' + self.new_relpath
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
