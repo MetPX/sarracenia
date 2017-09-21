@@ -57,17 +57,12 @@ import ftplib,os,sys,time
 
 class sr_ftp():
     def __init__(self, parent) :
+        parent.logger.debug("sr_ftp __init__")
+
         self.logger = parent.logger
-        self.logger.debug("sr_ftp __init__")
+        self.parent = parent 
 
-        self.parent      = parent 
-        self.connected   = False 
-        self.ftp         = None
-        self.details     = None
-
-        self.sumalgo     = None
-        self.checksum    = None
-        self.fpos        = 0
+        self.init()
  
     # cd
     def cd(self, path):
@@ -105,6 +100,25 @@ class sr_ftp():
             self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
             self.ftp.cwd(d)
 
+    # check_is_connected
+
+    def check_is_connected(self):
+        self.logger.debug("sr_ftp check_is_connected")
+
+        if self.ftp == None  : return False
+        if not self.connected : return False
+
+        if self.destination != self.parent.destination :
+           self.close()
+           return False
+
+        self.batch = self.batch + 1
+        if self.batch > self.parent.batch :
+           self.close()
+           return False
+
+        return True
+
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
@@ -113,9 +127,9 @@ class sr_ftp():
     # close
     def close(self):
         self.logger.debug("sr_ftp close")
-        self.connected = False
-        if self.ftp == None : return
-        self.ftp.quit()
+        try:    self.ftp.quit()
+        except: pass
+        self.init()
 
     # connect...
     def connect(self):
@@ -124,44 +138,26 @@ class sr_ftp():
         self.connected   = False
         self.destination = self.parent.destination
 
-        try:
-                ok, details = self.parent.credentials.get(self.destination)
-                if details  : url = details.url
+        if not self.credentials() : return False
 
-                host        = url.hostname
-                port        = url.port
-                user        = url.username
-                password    = url.password
+        self.bufsize   = 8192
+        self.kbytes_ps = 0
 
-                self.passive = details.passive
-                self.binary  = details.binary
-                self.tls     = details.tls
-                self.prot_p  = details.prot_p
-
-                self.bufsize   = 8192
-                self.kbytes_ps = 0
-
-                if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
-                if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
-
-        except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
-                return False
+        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
+        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
 
         try:
                 expire  = -999
                 if self.parent.timeout : expire = self.parent.timeout
-                if port == '' or port == None : port = 21
+                if self.port == '' or self.port == None : self.port = 21
 
                 if not self.tls :
                    ftp = ftplib.FTP()
-                   ftp.connect(host,port,timeout=expire)
-                   ftp.login(user, password)
+                   ftp.connect(self.host,self.port,timeout=expire)
+                   ftp.login(self.user, self.password)
                 else :
                    # ftplib supports FTPS with TLS 
-                   ftp = ftplib.FTP_TLS(host,user,password,timeout=expire)
+                   ftp = ftplib.FTP_TLS(self.host,self.user,self.password,timeout=expire)
                    if self.prot_p : ftp.prot_p()
                    # needed only if prot_p then set back to prot_c
                    #else          : ftp.prot_c()
@@ -185,7 +181,34 @@ class sr_ftp():
 
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (host,user, stype,svalue))
+            self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (self.host,self.user, stype,svalue))
+        return False
+
+    # credentials...
+    def credentials(self):
+        self.logger.debug("sr_ftp credentials %s" % self.destination)
+
+        try:
+                ok, details = self.parent.credentials.get(self.destination)
+                if details  : url = details.url
+
+                self.host     = url.hostname
+                self.port     = url.port
+                self.user     = url.username
+                self.password = url.password
+
+                self.passive  = details.passive
+                self.binary   = details.binary
+                self.tls      = details.tls
+                self.prot_p   = details.prot_p
+
+                return True
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Unable to get credentials for %s" % self.destination)
+                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+
         return False
 
     # delete
@@ -206,7 +229,7 @@ class sr_ftp():
         if self.cb  : self.cb(chunk)
  
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
 
         # on fly checksum 
@@ -245,6 +268,27 @@ class sr_ftp():
 
         if self.chk : self.checksum = self.chk.get_value()
 
+    # getcwd
+    def getcwd(self):
+        return self.ftp.pwd()
+
+    # init
+    def init(self):
+        self.logger.debug("sr_ftp init")
+        self.connected   = False 
+        self.ftp         = None
+        self.details     = None
+
+        self.batch       = 0
+        self.sumalgo     = None
+        self.checksum    = None
+        self.fpos        = 0
+
+        self.support_delete   = True
+        self.support_download = True
+        self.support_inplace  = False
+        self.support_send     = True
+
     # ls
     def ls(self):
         self.logger.debug("sr_ftp ls")
@@ -281,7 +325,7 @@ class sr_ftp():
 #        self.ftp.chmod(self.parent.chmod_dir,remote_dir)
 
     # put
-    def put(self, local_file, remote_file, local_offset = 0, remote_offset = 0, length = 0):
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
         self.logger.debug("sr_ftp put %s %s" % (local_file,remote_file))
         cb        = None
 
@@ -351,157 +395,134 @@ class sr_ftp():
 
 class ftp_transport():
     def __init__(self) :
-        self.batch = 0
         self.ftp   = None
         self.cdir  = None
-
-    def check_is_connected(self):
-        self.logger.debug("ftp_transport check_connection")
-
-        if self.ftp == None       : return False
-        if not self.ftp.connected : return False
-
-        if self.ftp.destination != self.parent.destination :
-           self.close()
-           return False
-
-        self.batch = self.batch + 1
-        if self.batch > self.parent.batch :
-           self.close()
-           return False
-
-        ok, details = self.parent.credentials.get(self.parent.destination)
-
-        if self.ftp.passive != details.passive or \
-           self.ftp.binary  != details.binary  or \
-           self.ftp.tls     != details.tls     or \
-           self.ftp.prot_p  != details.prot_p :
-           self.close()
-           return False
-
-        return True
 
     def close(self) :
         self.logger.debug("ftp_transport close")
 
-        self.batch = 0
-        self.cdir  = None
-
-        if self.ftp == None : return
         try    : self.ftp.close()
         except : pass
-        self.ftp = None
+
+        self.ftp  = None
+        self.cdir = None
 
     def download( self, parent ):
         self.logger = parent.logger
-        self.logger.debug("ftp_transport download")
-    
         self.parent = parent
+        self.logger.debug("ftp_transport download")
+
         msg         = parent.msg
-    
-        # seek not supported
-        if msg.partflg == 'i' :
-           self.logger.error("ftp, inplace part file not supported")
-           msg.report_publish(499,'ftp does not support partitioned file transfers')
-           return False
-    
-        url         = msg.url
-        urlstr      = msg.urlstr
-        token       = msg.url.path[1:].split('/')
+        token       = msg.relpath.split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        local_lock  = ''
+        urlstr      = msg.srcpath + '/' + msg.relpath
         new_lock    = ''
-    
+
+        if os.getcwd() != parent.new_dir:
+            os.chdir(parent.new_dir)
+
         try :
                 parent.destination = msg.srcpath
 
                 ftp = self.ftp
-                if not self.check_is_connected() :
+                if ftp == None or not ftp.check_is_connected() :
                    self.logger.debug("ftp_transport download connects")
                    ftp = sr_ftp(parent)
-                   ftp.connect()
+                   ok = ftp.connect()
+                   if not ok : return False
                    self.ftp = ftp
+
+                # for generalization purpose
+                if not ftp.support_inplace and msg.partflg == 'i':
+                   self.logger.error("ftp, inplace part file not supported")
+                   msg.report_publish(499,'ftp does not support partitioned file transfers')
+                   return False
                 
                 if self.cdir != cdir :
                    self.logger.debug("ftp_transport download cd to %s" %cdir)
                    ftp.cd(cdir)
                    self.cdir  = cdir
     
-                #download file
-                self.logger.debug('Download: %s into %s %d-%d' % 
-                           (urlstr,msg.local_file,msg.local_offset,msg.local_offset+msg.length-1))
+                remote_offset = 0
+                if  msg.partflg == 'i': remote_offset = msg.offset
     
+                str_range = ''
+                if msg.partflg == 'i' :
+                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+msg.length-1)
+    
+                #download file
+    
+                msg.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
+                    (urlstr,str_range,parent.new_file,msg.local_offset,msg.local_offset+msg.length-1))
     
                 # FIXME  locking for i parts in temporary file ... should stay lock
                 # and file_reassemble... take into account the locking
 
                 ftp.set_sumalgo(msg.sumalgo)
 
-                if parent.inflight == None :
-                   ftp.get(remote_file,msg.local_file,msg.local_offset)
+                if parent.inflight == None or msg.partflg == 'i' :
+                   ftp.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
 
                 elif parent.inflight == '.' :
-                   local_dir  = os.path.dirname (msg.local_file)
-                   if local_dir != '' : local_lock = local_dir + os.sep
-                   local_lock += '.' + os.path.basename(msg.local_file)
-                   ftp.get(remote_file,local_lock,msg.local_offset)
-                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                   os.rename(local_lock, msg.local_file)
-            
+                   new_lock = '.' + parent.new_file
+                   ftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                   os.rename(new_lock, parent.new_file)
+                      
                 elif parent.inflight[0] == '.' :
-                   local_lock  = msg.local_file + parent.inflight
-                   ftp.get(remote_file,local_lock,msg.local_offset)
-                   if os.path.isfile(msg.local_file) : os.remove(msg.local_file)
-                   os.rename(local_lock, msg.local_file)
+                   new_lock  = parent.new_file + parent.inflight
+                   ftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
+                   os.rename(new_lock, parent.new_file)
 
-                #restore mode and times.
-                h = parent.msg.headers
-                if parent.preserve_mode and 'mode' in h :
-                    os.chmod(msg.local_file, int(h['mode'], base=8) )
-                elif parent.chmod != 0:
-                    os.chmod(msg.local_file, self.parent.chmod )
-       
-                if parent.preserve_time and 'mtime' in h :
-                  os.utime(msg.local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+                # fix permission 
+
+                h = msg.headers
+                if self.parent.preserve_mode and 'mode' in h :
+                   os.chmod(parent.new_file, int( h['mode'], base=8) )
+                elif self.parent.chmod != 0:
+                   os.chmod(parent.new_file, self.parent.chmod )
+
+                # fix time 
+
+                if self.parent.preserve_time and 'mtime' in h:
+                   os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
 
                 # fix message if no partflg (means file size unknown until now)
 
-                if msg.partflg == None :
+                if msg.partflg == None:
                    msg.set_parts(partflg='1',chunksize=ftp.fpos)
     
                 msg.report_publish(201,'Downloaded')
 
                 msg.onfly_checksum = ftp.checksum
     
-                if parent.delete :
+                if parent.delete and ftp.support_delete :
                    try   :
                            ftp.delete(remote_file)
-                           msg.logger.debug('file deleted on remote site %s' % remote_file)
+                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
                    except: msg.logger.error('unable to delete remote file %s' % remote_file)
-    
-                #closing after batch or when destination is changing
-                #ftp.close()
     
                 return True
                 
         except:
-                #closing on error
+                #closing on problem
                 try    : self.close()
                 except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
                 msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
                 msg.report_publish(499,'ftp download failed')
-                if os.path.isfile(local_lock) : os.remove(local_lock)
-    
+                if os.path.isfile(new_lock) : os.remove(new_lock)
+ 
                 return False
-    
-        #closing on error
+
+        #closing on problem
         try    : self.close()
         except : pass
-
-        msg.report_publish(499,'ftp download failed')
+    
+        msg.report_publish(498,'ftp download failed')
     
         return False
 
@@ -528,10 +549,11 @@ class ftp_transport():
     
         try :
                 ftp = self.ftp
-                if not self.check_is_connected() :
+                if ftp == None or not ftp.check_is_connected() :
                    self.logger.debug("ftp_transport send connects")
                    ftp = sr_ftp(parent)
-                   ftp.connect()
+                   ok  = ftp.connect()
+                   if not ok : return False
                    self.ftp = ftp
                 
                 if self.cdir != new_dir :
@@ -582,9 +604,6 @@ class ftp_transport():
     
                 msg.report_publish(201,'Delivered')
     
-                #closing after batch or when destination is changing
-                #ftp.close()
-    
                 return True
                 
         except:
@@ -593,7 +612,7 @@ class ftp_transport():
                 except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_urlstr, stype ,svalue))
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_scrpath+parent.new_relpath, stype ,svalue))
                 msg.report_publish(499,'ftp delivery failed')
     
                 return False
@@ -623,153 +642,191 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
-          self.error   = self.silence
+          self.debug   = print
+          self.error   = print
           self.info    = print
           self.warning = print
+          self.debug   = self.silence
+          self.info    = self.silence
+
 
 def self_test():
 
     logger = test_logger()
 
+
     # config setup
     cfg = sr_config()
+
     cfg.defaults()
     cfg.general()
-    cfg.debug  = True
+    cfg.set_sumalgo('d')
+    msg = sr_message(cfg)
+    msg.filesize = None
+    msg.onfly_checksum = False
+    cfg.msg = msg
+    #cfg.debug  = True
     opt1 = "destination ftp://localhost"
     cfg.option( opt1.split()  )
-    cfg.logger  = logger
-    cfg.timeout = 5
+    cfg.logger = logger
+    cfg.timeout = 5.0
+    # 1 bytes par 5 secs
+    #cfg.kbytes_ps = 0.0001
+    cfg.kbytes_ps = 0.01
+
+    support_inplace = True
+
     try:
            ftp = sr_ftp(cfg)
+           support_download = ftp.support_download
+           support_inplace  = ftp.support_inplace
+           support_send     = ftp.support_send
+           support_delete   = ftp.support_delete
            ftp.connect()
            ftp.mkdir("tztz")
            ftp.chmod(0o775,"tztz")
            ftp.cd("tztz")
        
-           ftp.umask()
            f = open("aaa","wb")
            f.write(b"1\n")
            f.write(b"2\n")
            f.write(b"3\n")
            f.close()
        
-           ftp.put("aaa", "bbb")
-           ls = ftp.ls()
-           logger.debug("ls = %s" % ls )
+           if support_send :
+              ftp.put("aaa", "bbb")
+              ls = ftp.ls()
+              logger.info("ls = %s" % ls )
        
-           ftp.chmod(0o775,"bbb")
-           ls = ftp.ls()
-           logger.debug("ls = %s" % ls )
+              ftp.chmod(0o775,"bbb")
+              ls = ftp.ls()
+              logger.info("ls = %s" % ls )
        
-           ftp.rename("bbb", "ccc")
-           ls = ftp.ls()
-           logger.debug("ls = %s" % ls )
+              ftp.rename("bbb", "ccc")
+              ls = ftp.ls()
+              logger.info("ls = %s" % ls )
        
-           ftp.get("ccc", "bbb")
-           f = open("bbb","rb")
-           data = f.read()
-           f.close()
-           ftp.close()
+           if support_inplace :
+              ftp.get("ccc", "bbb",0,0,6)
+              f = open("bbb","rb")
+              data = f.read()
+              f.close()
        
-           if data != b"1\n2\n3\n" :
-              logger.error("sr_ftp TEST FAILED")
-              sys.exit(1)
+              if data != b"1\n2\n3\n" :
+                 logger.error("sr_ftp1 TEST FAILED")
+                 sys.exit(1)
 
-           os.unlink("bbb")
+              os.unlink("bbb")
 
-           msg         = sr_message(cfg)
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.srcpath = "ftp://localhost/"
-           msg.urlstr  = "ftp://localhost/tztz/ccc"
-           msg.url     = urllib.parse.urlparse(msg.srcpath+"tztz/ccc")
+           msg.srcpath = "ftp://localhost"
+           msg.relpath = "tztz/ccc"
            msg.partflg = '1'
            msg.offset  = 0
            msg.length  = 0
-           msg.sumalgo = None
 
            msg.local_file   = "bbb"
            msg.local_offset = 0
+           msg.sumalgo      = None
+
+           cfg.new_file     = "bbb"
+           cfg.new_dir      = "."
 
            cfg.msg     = msg
            cfg.batch   = 5
-           cfg.kbytes_ps= 0.05
+           cfg.inflight    = None
        
-           dldr = ftp_transport()
-           cfg.inflight        = None
-           dldr.download(cfg)
-           dldr.download(cfg)
-           cfg.inflight        = '.'
-           dldr.download(cfg)
-           dldr.download(cfg)
-           logger.debug("checksum = %s" % msg.onfly_checksum)
-           dldr.download(cfg)
-           cfg.inflight        = '.tmp'
-           dldr.download(cfg)
-           dldr.download(cfg)
-           msg.sumalgo = cfg.sumalgo
-           dldr.download(cfg)
-           logger.debug("checksum = %s" % msg.onfly_checksum)
-           
-           logger.debug("change context")
-           ok, details = cfg.credentials.get(cfg.destination)
-           details.binary = False
-           cfg.credentials.credentials[cfg.destination] = details
-           dldr.download(cfg)
-           logger.debug("checksum = %s" % msg.onfly_checksum)
-           dldr.close()
-           dldr.close()
-           dldr.close()
 
-           dldr = ftp_transport()
-           cfg.local_file    = "bbb"
-           cfg.local_path    = "./bbb"
-           cfg.new_file      = "ddd"
-           cfg.new_dir       = "tztz"
-           cfg.new_path      = "tztz/ddd"
-           cfg.remote_file   = "ddd"
-           cfg.remote_path   = "tztz/ddd"
-           cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
-           cfg.remote_dir    = "tztz"
-           cfg.chmod       = 0o775
-           cfg.inflight      = None
-           dldr.send(cfg)
-           dldr.ftp.delete("ddd")
-           cfg.inflight      = '.'
-           dldr.send(cfg)
-           dldr.ftp.delete("ddd")
-           cfg.inflight      = '.tmp'
-           dldr.send(cfg)
-           dldr.send(cfg)
-           dldr.send(cfg)
+           if support_download :
+              dldr = ftp_transport()
+              dldr.download(cfg)
+              logger.debug("checksum = %s" % msg.onfly_checksum)
+              dldr.download(cfg)
+              dldr.download(cfg)
+              cfg.logger.info("lock .")
+              cfg.inflight    = '.'
+              dldr.download(cfg)
+              dldr.download(cfg)
+              msg.sumalgo = cfg.sumalgo
+              dldr.download(cfg)
+              logger.debug("checksum = %s" % msg.onfly_checksum)
+              cfg.logger.info("lock .tmp")
+              cfg.inflight    = '.tmp'
+              dldr.download(cfg)
+              dldr.download(cfg)
+              dldr.close()
+              dldr.close()
+              dldr.close()
+    
+           if support_send :
+              dldr = ftp_transport()
+              cfg.local_file    = "bbb"
+              cfg.local_path    = "./bbb"
+              cfg.new_dir       = "tztz"
+              cfg.new_file      = "ddd"
+              cfg.remote_file   = "ddd"
+              cfg.remote_path   = "tztz/ddd"
+              cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
+              cfg.remote_dir    = "tztz"
+              cfg.chmod         = 0o775
+              cfg.inflight      = None
+              dldr.send(cfg)
+              if support_delete : dldr.ftp.delete("ddd")
+              cfg.inflight        = '.'
+              dldr.send(cfg)
+              if support_delete : dldr.ftp.delete("ddd")
+              cfg.inflight        = '.tmp'
+              dldr.send(cfg)
+              dldr.send(cfg)
+              dldr.send(cfg)
+              dldr.send(cfg)
+              dldr.send(cfg)
+              dldr.send(cfg)
+              dldr.close()
+              dldr.close()
+              dldr.close()
 
-           logger.debug("change context back")
-           ok, details = cfg.credentials.get(cfg.destination)
-           details.binary = True
-           cfg.credentials.credentials[cfg.destination] = details
+              ftp = sr_ftp(cfg)
+              ftp.connect()
+              ftp.cd("tztz")
+              ftp.ls()
+              ftp.delete("ccc")
+              ftp.delete("ddd")
+              logger.info("%s" % ftp.originalDir)
+              ftp.cd("")
+              logger.info("%s" % ftp.getcwd())
+              ftp.rmdir("tztz")
+              ftp.close()
 
-           dldr.send(cfg)
-           dldr.send(cfg)
-           dldr.send(cfg)
-           dldr.close()
-           dldr.close()
-           dldr.close()
-
-           ftp = sr_ftp(cfg)
-           ftp.connect()
-           ftp.cd("tztz")
-           ftp.delete("ccc")
-           ftp.delete("ddd")
-           logger.debug("%s" % ftp.originalDir)
-           ftp.cd("")
-           logger.debug("%s" % ftp.ftp.pwd())
-           ftp.rmdir("tztz")
+           if support_inplace :
+              ftp = sr_ftp(cfg)
+              ftp.connect()
+              ftp.put("aaa","bbb",0,0,2)
+              ftp.put("aaa","bbb",2,4,2)
+              ftp.put("aaa","bbb",4,2,2)
+              ftp.get("bbb","bbb",2,2,2)
+              ftp.delete("bbb")
+              f = open("bbb","rb")
+              data = f.read()
+              f.close()
        
-           ftp.close()
+              if data != b"1\n3\n3\n" :
+                 logger.error("sr_ftp TEST FAILED ")
+                 sys.exit(1)
+       
+              ftp.close()
+
+           #opt1 = "destination ftp://mgtest"
+           #cfg.option( opt1.split()  )
+           #ftp.connect()
+           #ftp.ls()
+           #ftp.close()
+
     except:
+           (stype, svalue, tb) = sys.exc_info()
+           logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
            logger.error("sr_ftp TEST FAILED")
            sys.exit(2)
 
