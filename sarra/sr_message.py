@@ -227,8 +227,10 @@ class sr_message():
         token        = self.notice.split(' ')
         self.srcpath = token[2]
         self.relpath = token[3]
+
+        self.set_notice(token[2],token[3])
+
         url          = urllib.parse.urlparse(token[2]+token[3])
-        self.set_notice_url(url)
         
         self.checksum = token[0]
         self.filesize = int(token[1])
@@ -371,6 +373,10 @@ class sr_message():
         fstat = os.stat(new_file)
 
         # Modify message for posting.
+
+        self.srcpath = 'file:'
+        self.relpath = new_file
+
         self.urlstr = 'file:/' + new_file
         self.url = urllib.parse.urlparse(self.urlstr)
 
@@ -383,7 +389,7 @@ class sr_message():
         self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
-        self.set_notice_url(self.url)
+        self.set_notice(self.srcpath,self.relpath)
 
     def set_hdrstr(self):
         self.hdrstr  = ''
@@ -393,21 +399,24 @@ class sr_message():
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses sr_subscribe
-        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0][0:200]
+        self.headers['filename'] = os.path.basename(self.relpath).split(':')[0][0:200]
 
 
     # Once we know the local file we want to use
     # we can have a few flavor of it
 
-    def set_new(self,inplace,new_file,new_url):
+    def set_new(self):
 
-        self.inplace       = inplace
-
-        self.new_file    = new_file
-        self.new_url     = new_url
         self.local_offset  = 0
         self.in_partfile   = False
         self.local_checksum= None
+       
+        self.inplace       = self.parent.inplace
+        self.new_srcpath   = self.parent.new_srcpath
+
+        self.new_dir       = self.parent.new_dir
+        self.new_file      = self.parent.new_file
+        self.new_relpath   = self.parent.new_relpath
 
         # file to file
 
@@ -427,8 +436,8 @@ class sr_message():
            # file inserts to part file
 
            if self.partflg == 'i' :
-              self.new_file = new_file + self.suffix
-              self.new_url  = urllib.parse.urlparse( new_url.geturl() + self.suffix )
+              self.new_file    += self.suffix
+              self.new_relpath += self.suffix
               return
 
         
@@ -439,40 +448,42 @@ class sr_message():
            # part file inserts to file (maybe in file, maybe in part file)
 
            if self.partflg == 'p' :
-              self.target_file  = new_file.replace(self.suffix,'')
-              self.target_url   = urllib.parse.urlparse( new_url.geturl().replace(self.suffix,''))
-              part_file    = new_file
-              part_url     = new_url
+              self.target_file    = self.new_file.replace(self.suffix,'')
+              self.target_path    = self.new_dir + os.sep + self.target_file
+              self.target_relpath = self.new_relpath.replace(self.suffix,'')
+              part_file    = self.new_file
+              part_relpath = self.new_relpath
 
         
            # file insert inserts into file (maybe in file, maybe in part file)
 
            if self.partflg == 'i' :
-              self.target_file  = new_file
-              self.target_url   = new_url
-              part_file    = new_file + self.suffix
-              part_url     = urllib.parse.urlparse( new_url.geturl() + self.suffix )
+              self.target_file    = self.new_file
+              self.target_path    = self.new_dir + os.sep + self.target_file
+              self.target_relpath = self.new_relpath
+              part_file           = self.new_file + self.suffix
+              part_relpath        = self.new_relpath + self.suffix
 
            # default setting : redirect to temporary part file
 
-           self.new_file  = part_file
-           self.new_url   = part_url
+           self.new_file    = part_file
+           self.new_relpath = part_relpath
            self.in_partfile = True
         
            # try to make this message a file insert
 
            # file exists
-           if os.path.isfile(self.target_file) :
+           if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
-              lstat   = os.stat(self.target_file)
+              lstat   = os.stat(self.target_path)
               fsiz    = lstat[stat.ST_SIZE] 
 
               self.logger.debug("offset vs fsiz %d %d" % (self.offset,fsiz ))
               # part/insert can be inserted 
               if self.offset <= fsiz :
                  self.logger.debug("insert")
-                 self.new_file   = self.target_file
-                 self.new_url    = self.target_url
+                 self.new_file     = self.target_file
+                 self.new_relpath  = self.target_relpath
                  self.local_offset = self.offset
                  self.in_partfile  = False
                  return
@@ -485,8 +496,8 @@ class sr_message():
            # file does not exists but first part/insert ... write directly to new_file
            elif self.current_block == 0 :
               self.logger.debug("not exist but first block")
-              self.new_file  = self.target_file
-              self.new_url   = self.target_url
+              self.new_file    = self.target_file
+              self.new_relpath = self.target_relpath
               self.in_partfile = False
               return
 
