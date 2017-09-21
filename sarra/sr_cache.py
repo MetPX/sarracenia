@@ -96,7 +96,19 @@ class sr_cache():
         self.fp.write("%s %f %s %s\n"%(key,now,path,part))
         self.count += 1
         return True
-           
+
+    def check_msg(self, msg):
+        self.logger.debug("sr_cache check_msg")
+
+        relpath = msg.relpath
+        sumstr  = msg.headers['sum']
+        partstr = relpath
+
+        if sumstr[0] not in ['R','L'] :
+           partstr = msg.headers['parts']
+
+        return self.check(sumstr,relpath,partstr)
+
     def clean(self):
         self.logger.debug("sr_cache clean")
 
