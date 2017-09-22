@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* ftp,sftp,http standardisation + http exception changes
+* sr_message not using srcpath,relpath instead of url affects all components
+* cache.check_msg ... check for sum L and R which does not have parts
 * sr_post using srcpath,relpath instead of url in posting modules
 * flow_cleanup fix config path to remove
 * flow_setup  fix number of exchanges and queues expected

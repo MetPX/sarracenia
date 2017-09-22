@@ -547,7 +547,7 @@ class sr_poll(sr_instances):
 
         self.msg.exchange = exchange
         
-        self.msg.set_topic_relpath(self.topic_prefix,relpath)
+        self.msg.set_topic(self.topic_prefix,relpath)
         if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         self.msg.set_notice(srcpath,relpath)
@@ -569,7 +569,7 @@ class sr_poll(sr_instances):
         if self.source  != None : self.msg.headers['source']       = self.source
         if filename     != None : self.msg.headers['filename']     = filename
 
-        if self.flow    != None : self.msg.headers['flow']         = selfflow
+        if self.flow    != None : self.msg.headers['flow']         = self.flow
 
         # ========================================
         # cache testing

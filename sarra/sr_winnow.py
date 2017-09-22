@@ -109,6 +109,13 @@ class sr_winnow(sr_instances):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = True
 
+        # =============
+        # cache
+        # =============
+
+        self.cache = sr_cache(self)
+        self.cache.open()
+
     def close(self):
         self.consumer.close()
 
@@ -177,13 +184,6 @@ class sr_winnow(sr_instances):
         # =============
 
         self.declare_exchanges()
-
-        # =============
-        # cache
-        # =============
-
-        self.cache = sr_cache(self)
-        self.cache.open()
 
     def overwrite_defaults(self):
 
@@ -254,7 +254,8 @@ class sr_winnow(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received %s '%s' %s  filesize: %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr,self.msg.filesize))
+        self.logger.debug("Received %s %s %s" % 
+                         (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -267,10 +268,11 @@ class sr_winnow(sr_instances):
         # cache testing/adding
         # ========================================
 
-        if not self.cache.check(str(self.msg.checksum),self.msg.url.path,self.msg.partstr):
-            self.msg.report_publish(304,'Not modified')
-            self.logger.debug("Ignored %s" % (self.msg.notice))
-            return True
+        new_msg = self.cache.check_msg(self.msg)
+        if not new_msg :
+           self.msg.report_publish(304,'Not modified')
+           self.logger.debug("Ignored %s" % (self.msg.notice))
+           return True
 
         self.logger.debug("Added %s" % (self.msg.notice))
 
@@ -349,6 +351,9 @@ class sr_winnow(sr_instances):
            self.post_hc.connect()
 
         self.declare_exchanges(cleanup=True)
+
+        self.cache.close(unlink=True)
+        self.cache = None
 
         self.close()
         os._exit(0)

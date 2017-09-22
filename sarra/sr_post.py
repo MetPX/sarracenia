@@ -311,7 +311,7 @@ class sr_post(sr_config):
         self.msg.exchange = exchange
         
         # set message topic
-        self.msg.set_topic_relpath(self.topic_prefix,relpath)
+        self.msg.set_topic(self.topic_prefix,relpath)
         if self.subtopic != None :
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
@@ -507,24 +507,15 @@ class sr_post(sr_config):
 
         # verify part suffix is ok
 
-        ok,message = self.msg.verify_part_suffix(path)
+        ok,message,suffix,partstr,sumstr = self.msg.verify_part_suffix(path)
+
         if not ok:
            self.logger.error("partflg set to p but %s for file  %s " % (message,path))
            return ok
 
         # make sure suffix is also in rename
 
-        if rename != None and not self.msg.suffix in rename :
-           rename += self.msg.suffix
-
-        # set partstr
-
-        partstr = 'p,%d,%d,%d,%d' %\
-                   (self.msg.chunksize,self.msg.block_count,self.msg.remainder,self.msg.current_block)
-
-        # set sumstr
-
-        sumstr   = '%s,%s' % (self.msg.sumflg,self.msg.checksum)
+        if rename != None and not suffix in rename : rename += suffix
 
         filename = os.path.basename(path)
         lstat   = os.stat(path)

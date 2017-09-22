@@ -227,8 +227,10 @@ class sr_message():
         token        = self.notice.split(' ')
         self.srcpath = token[2]
         self.relpath = token[3]
+
+        self.set_notice(token[2],token[3])
+
         url          = urllib.parse.urlparse(token[2]+token[3])
-        self.set_notice_url(url)
         
         self.checksum = token[0]
         self.filesize = int(token[1])
@@ -267,7 +269,6 @@ class sr_message():
         self.relpath = token[2]
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
-        self.path    = token[2]
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
            self.report_code   = int(token[3])
@@ -372,6 +373,10 @@ class sr_message():
         fstat = os.stat(new_file)
 
         # Modify message for posting.
+
+        self.srcpath = 'file:'
+        self.relpath = new_file
+
         self.urlstr = 'file:/' + new_file
         self.url = urllib.parse.urlparse(self.urlstr)
 
@@ -384,7 +389,7 @@ class sr_message():
         self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
-        self.set_notice_url(self.url)
+        self.set_notice(self.srcpath,self.relpath)
 
     def set_hdrstr(self):
         self.hdrstr  = ''
@@ -394,21 +399,24 @@ class sr_message():
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses sr_subscribe
-        self.headers['filename'] = os.path.basename(self.url.path).split(':')[0][0:200]
+        self.headers['filename'] = os.path.basename(self.relpath).split(':')[0][0:200]
 
 
     # Once we know the local file we want to use
     # we can have a few flavor of it
 
-    def set_new(self,inplace,new_file,new_url):
+    def set_new(self):
 
-        self.inplace       = inplace
-
-        self.new_file    = new_file
-        self.new_url     = new_url
         self.local_offset  = 0
         self.in_partfile   = False
         self.local_checksum= None
+       
+        self.inplace       = self.parent.inplace
+        self.new_srcpath   = self.parent.new_srcpath
+
+        self.new_dir       = self.parent.new_dir
+        self.new_file      = self.parent.new_file
+        self.new_relpath   = self.parent.new_relpath
 
         # file to file
 
@@ -428,8 +436,8 @@ class sr_message():
            # file inserts to part file
 
            if self.partflg == 'i' :
-              self.new_file = new_file + self.suffix
-              self.new_url  = urllib.parse.urlparse( new_url.geturl() + self.suffix )
+              self.new_file    += self.suffix
+              self.new_relpath += self.suffix
               return
 
         
@@ -440,40 +448,42 @@ class sr_message():
            # part file inserts to file (maybe in file, maybe in part file)
 
            if self.partflg == 'p' :
-              self.target_file  = new_file.replace(self.suffix,'')
-              self.target_url   = urllib.parse.urlparse( new_url.geturl().replace(self.suffix,''))
-              part_file    = new_file
-              part_url     = new_url
+              self.target_file    = self.new_file.replace(self.suffix,'')
+              self.target_path    = self.new_dir + os.sep + self.target_file
+              self.target_relpath = self.new_relpath.replace(self.suffix,'')
+              part_file    = self.new_file
+              part_relpath = self.new_relpath
 
         
            # file insert inserts into file (maybe in file, maybe in part file)
 
            if self.partflg == 'i' :
-              self.target_file  = new_file
-              self.target_url   = new_url
-              part_file    = new_file + self.suffix
-              part_url     = urllib.parse.urlparse( new_url.geturl() + self.suffix )
+              self.target_file    = self.new_file
+              self.target_path    = self.new_dir + os.sep + self.target_file
+              self.target_relpath = self.new_relpath
+              part_file           = self.new_file + self.suffix
+              part_relpath        = self.new_relpath + self.suffix
 
            # default setting : redirect to temporary part file
 
-           self.new_file  = part_file
-           self.new_url   = part_url
+           self.new_file    = part_file
+           self.new_relpath = part_relpath
            self.in_partfile = True
         
            # try to make this message a file insert
 
            # file exists
-           if os.path.isfile(self.target_file) :
+           if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
-              lstat   = os.stat(self.target_file)
+              lstat   = os.stat(self.target_path)
               fsiz    = lstat[stat.ST_SIZE] 
 
               self.logger.debug("offset vs fsiz %d %d" % (self.offset,fsiz ))
               # part/insert can be inserted 
               if self.offset <= fsiz :
                  self.logger.debug("insert")
-                 self.new_file   = self.target_file
-                 self.new_url    = self.target_url
+                 self.new_file     = self.target_file
+                 self.new_relpath  = self.target_relpath
                  self.local_offset = self.offset
                  self.in_partfile  = False
                  return
@@ -486,8 +496,8 @@ class sr_message():
            # file does not exists but first part/insert ... write directly to new_file
            elif self.current_block == 0 :
               self.logger.debug("not exist but first block")
-              self.new_file  = self.target_file
-              self.new_url   = self.target_url
+              self.new_file    = self.target_file
+              self.new_relpath = self.target_relpath
               self.in_partfile = False
               return
 
@@ -658,7 +668,7 @@ class sr_message():
            del self.headers['to_clusters']
            self.to_clusters = []
 
-    def set_topic_relpath(self,topic_prefix,relpath):
+    def set_topic(self,topic_prefix,relpath):
         self.topic_prefix = topic_prefix
         self.topic        = topic_prefix
         self.subtopic     = ''
@@ -706,7 +716,8 @@ class sr_message():
 
         try :  
                  self.suffix = '.' + '.'.join(token[-6:])
-                 if token[-1] != self.part_ext : return False,'not right extension'
+                 if token[-1] != self.part_ext :
+                    return False,'not right extension',None,None,None
 
                  self.chunksize     = int(token[-6])
                  self.block_count   = int(token[-5])
@@ -714,8 +725,10 @@ class sr_message():
                  self.current_block = int(token[-3])
                  self.sumflg        = token[-2]
 
-                 if self.current_block >= self.block_count : return False,'current block wrong'
-                 if self.remainder     >= self.chunksize   : return False,'remainder too big'
+                 if self.current_block >= self.block_count :
+                    return False,'current block wrong',None,None,None
+                 if self.remainder     >= self.chunksize   :
+                    return False,'remainder too big',None,None,None
 
                  self.length    = self.chunksize
                  self.lastchunk = self.current_block == self.block_count-1
@@ -727,7 +740,8 @@ class sr_message():
                  lstat     = os.stat(filepath)
                  fsiz      = lstat[stat.ST_SIZE] 
 
-                 if fsiz  != self.length : return False,'wrong file size'
+                 if fsiz  != self.length :
+                    return False,'wrong file size',None,None,None
 
                  # compute chksum
                  self.parent.set_sumalgo(self.sumflg)
@@ -745,14 +759,22 @@ class sr_message():
 
                  if i != fsiz :
                     self.logger.warning("sr_message verify_part_suffix incomplete reading %d %d" % (i,fsiz))
-                    return False,'missing data from file'
+                    return False,'missing data from file', None,None,None
 
                  # set chksum
                  self.checksum  = self.sumalgo.get_value()
 
+
+                 # set partstr
+                 self.partstr = 'p,%d,%d,%d,%d' %\
+                   (self.chunksize,self.block_count,self.remainder,self.current_block)
+
+                 # set sumstr
+                 self.sumstr  = '%s,%s' % (self.sumflg,self.checksum)
+
         except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s" % (stype, svalue))
-                 return False,'incorrect extension'
+                 return False,'incorrect extension',None,None,None
 
-        return True,'ok'
+        return True,'ok',self.suffix,self.partstr,self.sumstr

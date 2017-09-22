@@ -377,10 +377,6 @@ class sr_subscribe(sr_instances):
 
         self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
 
-        # selected directory from accept/reject resolved in consumer
-
-        self.document_root = self.currentDir
-
         #=================================
         # setting up message with sr_subscribe config options
         # self.set_local     : how/where sr_subscribe is configured for that product
@@ -388,7 +384,7 @@ class sr_subscribe(sr_instances):
         #=================================
 
         self.set_new()
-        self.msg.set_new(self.inplace, self.new_dir + '/' + self.new_file, self.new_url)
+        self.msg.set_new()
 
         #=================================
         # now invoke __on_message__
@@ -402,7 +398,9 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.caching :
-           if not self.cache.check(str(self.msg.checksum),self.msg.url.path,self.msg.partstr):
+           new_msg = self.cache.check_msg(self.msg)
+
+           if not new_msg :
               if self.reportback : self.msg.report_publish(304,'Not modified')
               self.logger.debug("Ignored %s" % (self.msg.notice))
               return True
@@ -458,9 +456,9 @@ class sr_subscribe(sr_instances):
 		
 
            if ok and self.post_broker :
-              self.logger.debug("ERROR self.post_broker = %s" % self.post_broker)
-              self.msg.set_topic_url('v02.post',self.new_url)
-              self.msg.set_notice_url(self.new_url,self.msg.time)
+              self.logger.debug("self.post_broker = %s" % self.post_broker)
+              self.msg.set_topic('v02.post',self.new_relpath)
+              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -476,7 +474,7 @@ class sr_subscribe(sr_instances):
         # FIXME: should we remove the substitutions and check the root of the root?
         #=================================
 
-        if not '{' in self.document_root :
+        if self.document_root and not '{' in self.document_root :
            if not os.path.isdir(self.document_root) :
               self.logger.error("directory %s does not exist" % self.document_root)
               return False
@@ -616,8 +614,8 @@ class sr_subscribe(sr_instances):
            else            : self.msg.change_partflg('p')
 
         if self.post_broker :
-           self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice_url(self.new_url,self.msg.time)
+           self.msg.set_topic('v02.post',self.new_relpath)
+           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
            self.__on_post__()
            self.msg.report_publish(201,'Published')
 
@@ -778,39 +776,30 @@ class sr_subscribe(sr_instances):
 
     def set_new(self):
 
-        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.path=%s" %  \
-             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.path ) ) 
-        # default the file is dropped in document_root directly
+        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.relpath=%s" %  \
+             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.relpath ) ) 
 
-        new_dir  = self.document_root
+        # relative path by default mirror 
 
-        # relative path and filename from message
-
-        rel_path = '%s' % self.msg.path
-        token    = rel_path.split('/')
-        filename = token[-1]
+        relpath = '%s' % self.msg.relpath
 
         # case S=0  sr_post -> sr_suscribe... rename in headers
-
         # FIXME: 255 char limit on headers, rename will break!
-        if 'rename' in self.msg.headers :
-           rel_path = self.msg.headers['rename']
-           token    = rel_path.split('/')
-           filename = token[-1]
+        if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
 
+        token    = relpath.split('/')
+        filename = token[-1]
 
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           rel_path = '/'.join(token[self.strip:])
+           try :
+                   token   = token[self.strip:]
+                   relpath = '/'.join(token)
+           except:
+                   token   = [filename]
+                   relpath =  filename
 
-        # if mirror... we need to add to document_root the relative path
-        # strip taken into account
-
-        if self.mirror :
-           rel_dir    = '/'.join(token[self.strip:-1])
-           new_dir  = self.document_root + '/' + rel_dir
-           
         # if flatten... we flatten relative path
         # strip taken into account
 
@@ -820,23 +809,57 @@ class sr_subscribe(sr_instances):
         if self.currentFileOption != None :
            filename = self.sundew_getDestInfos(filename)
 
-        self.new_dir  = new_dir
+        # not mirroring
+
+        if not self.mirror :
+           token   = [filename]
+           relpath =  filename
+
+        # uses current dir
+
+        dr = self.document_root
+
+        if self.currentDir :
+           relpath = self.currentDir + '/' + relpath
+           relpath = relpath.replace('//','/')
+
+           if dr and dr in relpath :
+              relpath = '/' + relpath.replace(dr,'',1)
+
+           relpath = relpath.replace('//','/')
+           token   = relpath.split('/')
+
+        # not mirroring
+
+        new_dir = ''
+        if dr : new_dir = dr
+
+        if len(token) > 1 :
+           new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         if 'sundew_extension' in self.msg.headers.keys() :
-            tfname=filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
-            self.new_dir  = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
+            tfname  = filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
+            new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
+            relpath = new_dir + '/' + filename
 
-        self.new_file = filename
-        self.new_url  = 'file:' + self.new_dir + '/' + filename
-        self.new_url  = urllib.parse.urlparse(self.new_url)
+        self.new_dir     = new_dir
+        self.new_file    = filename
+        self.new_srcpath = 'file:'
+        self.new_relpath = relpath
 
         if self.post_broker :
-           if  self.post_document_root : rel_dir = new_dir.replace(self.post_document_root,'')
-           else                        : rel_dir = new_dir
-           rel_path     = rel_dir  + '/' + filename
+           if self.url :
+              self.new_srcpath = self.url.geturl()
+           if self.post_document_root :
+              self.new_relpath = self.new_relpath.replace(self.post_document_root,'',1)
 
-           if self.url : self.new_url = urllib.parse.urlparse(self.url.geturl() + '/' + rel_path)
+        #self.logger.debug("new_dir     = %s" % self.new_dir)
+        #self.logger.debug("new_file    = %s" % self.new_file)
+        #self.logger.debug("new_srcpath = %s" % self.new_srcpath)
+        #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
+        # we dont propagate renaming... once used get rid of it
+        if 'rename' in self.msg.headers : del self.msg.headers['rename']
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

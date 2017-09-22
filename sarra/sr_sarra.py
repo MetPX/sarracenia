@@ -396,6 +396,10 @@ class sr_sarra(sr_instances):
 
         self.mirror         = True
 
+        # no directory if not provided
+
+        self.currentDir     = None
+
     # =============
     # process message  
     # =============
@@ -412,7 +416,7 @@ class sr_sarra(sr_instances):
         #=================================
 
         self.set_new()
-        self.msg.set_new(self.inplace,  self.new_dir   + '/' + self.filename, self.new_url)
+        self.msg.set_new()
 
         #=================================
         # now message is complete : invoke __on_message__
@@ -431,8 +435,9 @@ class sr_sarra(sr_instances):
                   if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                   if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
            except:pass
-           self.msg.set_topic_url('v02.post',self.new_url)
-           self.msg.set_notice_url(self.new_url,self.msg.time)
+           self.msg.set_topic('v02.post',self.new_relpath)
+           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+
            self.__on_post__()
            self.msg.report_publish(205,'Reset Content : deleted')
            return True
@@ -451,8 +456,8 @@ class sr_sarra(sr_instances):
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
 
            if ok:
-              self.msg.set_topic_url('v02.post',self.new_url)
-              self.msg.set_notice_url(self.new_url,self.msg.time)
+              self.msg.set_topic('v02.post',self.new_relpath)
+              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
               self.__on_post__()
               self.msg.report_publish(205,'Reset Content : linked')
 
@@ -562,8 +567,8 @@ class sr_sarra(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic_url('v02.post',self.new_url)
-        self.msg.set_notice_url(self.new_url,self.msg.time)
+        self.msg.set_topic('v02.post',self.new_relpath)
+        self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
         self.__on_post__()
         self.msg.report_publish(201,'Published')
 
@@ -609,7 +614,7 @@ class sr_sarra(sr_instances):
                       ok = self.heartbeat_check()
 
                       #  consume message
-                      ok, self.msg = self.consumer.consume()
+                      ok, self.msg    = self.consumer.consume()
                       if not ok : continue
 
                       #  process message (ok or not... go to the next)
@@ -623,41 +628,62 @@ class sr_sarra(sr_instances):
 
         # relative path by default mirror 
 
-        self.rel_path = '%s' % self.msg.path
+        relpath = '%s' % self.msg.relpath
 
-        if 'rename' in self.msg.headers :
-           self.rel_path = '%s' % self.msg.headers['rename']
+        if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
 
         # if we dont mirror force  yyyymmdd/source in front
 
         if not self.mirror :
            yyyymmdd = time.strftime("%Y%m%d",time.gmtime())
-           self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.path)
+           relpath = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],relpath)
+           relpath = relpath.replace('//','/')
 
-           if 'rename' in self.msg.headers :
-              self.rel_path = '%s/%s/%s' % (yyyymmdd,self.msg.headers['source'],self.msg.headers['rename'])
-              self.rel_path = self.rel_path.replace('//','/')
-
-        token = self.rel_path.split('/')
+        token = relpath.split('/')
         self.filename = token[-1]
 
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
-           self.rel_path = '/'.join(token[self.strip:])
+           try :
+                   token   = token[self.strip:]
+                   relpath = '/'.join(token)
+           except:
+                   token   = [self.filename]
+                   relpath = self.filename
 
-        self.new_dir  = ''
-        if self.document_root != None :
-           self.new_dir = self.document_root 
+        # a directory was determined
+
+        dr = self.document_root
+
+        if self.currentDir :
+           relpath = self.currentDir + '/' + relpath
+           relpath = relpath.replace('//','/')
+
+           if dr and dr in relpath :
+              relpath = '/' + relpath.replace(dr,'',1)
+
+           relpath = relpath.replace('//','/')
+           token   = relpath.split('/')
+
+        new_dir = ''
+        if dr : new_dir = dr
 
         if len(token) > 1 :
-           self.new_dir = self.new_dir + '/' + '/'.join(token[self.strip:-1])
+           new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         # Local directory (directory created if needed)
 
-        self.new_dir  = self.new_dir.replace('//','/')
+        self.new_dir  = new_dir.replace('//','/')
         self.new_file = self.filename
-        self.new_url  = urllib.parse.urlparse(self.url.geturl() + '/' + self.rel_path)
+
+        self.new_srcpath = self.url.geturl()
+        self.new_relpath = relpath
+
+        #self.logger.debug("new_dir     = %s" % self.new_dir)
+        #self.logger.debug("new_file    = %s" % self.new_file)
+        #self.logger.debug("new_srcpath = %s" % self.new_srcpath)
+        #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
         # we dont propagate renaming... once used get rid of it
         if 'rename' in self.msg.headers : del self.msg.headers['rename']
