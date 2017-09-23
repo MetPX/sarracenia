@@ -150,17 +150,21 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
 {
     struct sr_mask_t *new_entry;
     struct sr_mask_t *next_entry;
+    int status;
 
-    // if ( (sr_cfg) && sr_cfg->debug )
-    //    fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
+    if ( (sr_cfg) && sr_cfg->debug )
+        fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
 
     new_entry = (struct sr_mask_t *)malloc( sizeof(struct sr_mask_t) );
     new_entry->next=NULL;
     new_entry->directory = (directory?strdup(directory):NULL);
     new_entry->accepting = accept;
     new_entry->clause = strdup(option);
-    regcomp( &(new_entry->regexp), option, REG_EXTENDED|REG_NOSUB );
-
+    status = regcomp( &(new_entry->regexp), option, REG_EXTENDED|REG_NOSUB );
+    if (status) {
+        log_msg( LOG_ERROR, "invalid regular expression: %s. Ignored\n", option );
+        return;
+    }
     // append new entry to existing masks.
     if ( sr_cfg->masks == NULL ) 
     {
@@ -604,6 +608,23 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->pipe = val&2;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "post_broker" ) || !strcmp( option, "pb") ) 
+  {
+      brokerstr = sr_credentials_fetch(argument); 
+      if ( brokerstr == NULL ) 
+      {
+          log_msg( LOG_ERROR,"notice: no stored credential for post_broker: %s.\n", argument );
+          sr_cfg->post_broker = broker_uri_parse( argument );
+      } else {
+          sr_cfg->post_broker = broker_uri_parse( brokerstr );
+      }
+      free(brokerstr);
+      return(2);
+
+  } else if ( !strcmp( option, "post_exchange" ) || !strcmp( option, "px") ) {
+      sr_cfg->exchange = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "realpath" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->realpath = val&2;
@@ -707,6 +728,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->durable=1;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->expire=0;
+  sr_cfg->exchange=NULL;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
   sr_cfg->instance=1;
@@ -722,6 +744,8 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;
   sr_cfg->pipe=0;
+  sr_cfg->post_broker=NULL;
+  sr_cfg->post_exchange=NULL;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);

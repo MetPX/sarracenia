@@ -559,6 +559,13 @@ int main(int argc, char **argv)
         return(1);
     }
     
+    if ( ! sr_c->cfg->post_broker ) {
+         sr_c->cfg->post_broker  = sr_c->cfg->broker ;
+         sr_c->cfg->broker  =  NULL ;
+         sr_c->cfg->post_exchange  = sr_c->cfg->exchange ;
+         sr_c->cfg->exchange = NULL ;
+    }
+
     sr_c = sr_context_connect( sr_c );
   
     if (!sr_c) 
