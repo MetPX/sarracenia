@@ -238,7 +238,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
   header_reset();
 
-  header_add( "to_clusters", sr_c->to );
+  header_add( "to_clusters", sr_c->cfg->to );
 
   for(  uh=sr_c->cfg->user_headers; uh ; uh=uh->next )
      header_add(uh->key, uh->value);
@@ -419,7 +419,7 @@ void connect_and_post(const char *fn,const char* progname)
        config_read = sr_config_read(&sr_cfg,setstr);
        if (!config_read) return;
      }
-     sr_config_finalize( &sr_cfg, 0 );
+     if ( !sr_config_finalize( &sr_cfg, 0 )) return;
 
      sr_c = sr_context_init_config(&sr_cfg);
   } 

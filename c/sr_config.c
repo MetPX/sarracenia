@@ -417,7 +417,7 @@ char *subarg( struct sr_config_t *sr_cfg, char *arg )
           if ( !val) {
               log_msg( LOG_WARNING, "malformed argument, Environment variable not set: %s\n", var );
               *e='}';
-              log_msg( LOG_WARNING, "returning unmodified argument: %s.\n",  arg );
+              log_msg( LOG_ERROR, "returning unmodified argument: %s.\n",  arg );
               return(arg);
           }
      }
@@ -745,7 +745,6 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->pidfile=NULL;
   sr_cfg->pipe=0;
   sr_cfg->post_broker=NULL;
-  sr_cfg->post_exchange=NULL;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);
@@ -871,6 +870,13 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
 
 int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
+/*
+ Do all processing that can only happen once the entire set of settings has been read.
+ Infer defaults, etc...
+
+ return 0 if the configuration is not valid.
+
+ */
 {
   char p[PATH_MAX];
   char q[AMQP_MAX_SS];
@@ -935,9 +941,56 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   } else {
          unlink(p);
   }
-  if (!is_consumer) return(1);
 
-  if (! sr_cfg->queuename ) { // was not specified, pick one.
+  // FIXME: if prog is post, then only post_broker is OK.
+  fprintf( stderr, "progname=%s\n", sr_cfg->progname );
+
+  if (!is_consumer) 
+  {
+      if ( !strcmp(sr_cfg->progname,"post") ) 
+      {
+          if ( !(sr_cfg->post_broker) ) 
+          {
+              sr_cfg->post_broker  = sr_cfg->broker ;
+              sr_cfg->broker  =  NULL ;
+          }
+       }
+
+       if ( !(sr_cfg->post_broker) ) 
+       {
+             log_msg( LOG_ERROR, "no post_broker given\n" );
+             return( 0 );
+       }
+       if ( sr_cfg->to == NULL ) 
+       {
+             log_msg( LOG_ERROR, "setting to: %s\n", sr_cfg->post_broker->hostname );
+             sr_cfg->to = sr_cfg->post_broker->hostname ;
+       }
+
+       if ( ! (sr_cfg->post_exchange) ) 
+       {
+          if ( sr_cfg->exchange ) 
+          {
+              sr_cfg->post_broker->exchange = sr_cfg->exchange ; 
+          } else {
+             log_msg( LOG_ERROR, "no exchange to post to given\n" );
+             return( 0 );
+          }
+       } else {
+          sr_cfg->post_broker->exchange= sr_cfg->post_exchange ;
+       }
+
+       return(1);
+
+  } else if ( !(sr_cfg->broker) )
+  {
+    log_msg( LOG_ERROR, "no broker given\n" );
+    return( 0 );
+  }
+
+
+  if (! sr_cfg->queuename ) 
+  { // was not specified, pick one.
 
      if (!sr_cfg->progname || !sr_cfg->configname || !sr_cfg->broker || !sr_cfg->broker->user ) 
      {

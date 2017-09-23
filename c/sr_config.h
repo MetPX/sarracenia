@@ -84,6 +84,7 @@ struct sr_broker_t {
   char *password;
   char *hostname;
   int   port;
+  char *exchange;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
   struct sr_broker_t *next; 
@@ -104,7 +105,7 @@ struct sr_config_t {
   char               *documentroot;
   int                 durable;
   sr_event_t          events;
-  char               *exchange;
+  char                *exchange;
   int                 expire;
   int                 follow_symlinks;
   int                 force_polling;

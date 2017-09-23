@@ -456,8 +456,8 @@ int main(int argc, char **argv)
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
-    log_msg( LOG_INFO, "sr_post settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
-          sr_cfg.action, 
+    log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
+          sr_cfg.progname, sr_cfg.action, 
           log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
     
 
@@ -559,12 +559,14 @@ int main(int argc, char **argv)
         return(1);
     }
     
+    /*
     if ( ! sr_c->cfg->post_broker ) {
          sr_c->cfg->post_broker  = sr_c->cfg->broker ;
          sr_c->cfg->broker  =  NULL ;
          sr_c->cfg->post_exchange  = sr_c->cfg->exchange ;
          sr_c->cfg->exchange = NULL ;
     }
+     */
 
     sr_c = sr_context_connect( sr_c );
   

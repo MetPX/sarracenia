@@ -192,25 +192,9 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c->cfg = sr_cfg;
 
   // FIXME: if prog is post, then only post_broker is OK.
-  if (!(sr_cfg->broker)) 
-  {
-    log_msg( LOG_ERROR, "no broker given\n" );
-    return( NULL );
-  }
-  sr_c->cfg->broker->conn = NULL;
-
-  if (sr_cfg->exchange==NULL) 
-  {
-    log_msg( LOG_ERROR, "no exchange given\n" );
-    return( NULL );
-  }
-
   sr_c->exchange = sr_cfg->exchange ;
   
   sr_c->url = sr_cfg->url;
-
-  sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker->hostname : sr_cfg->to;
-  sr_c->cfg->broker->socket = NULL;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
