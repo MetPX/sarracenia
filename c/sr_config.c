@@ -152,8 +152,8 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
     struct sr_mask_t *next_entry;
     int status;
 
-    if ( (sr_cfg) && sr_cfg->debug )
-        fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
+    //if ( (sr_cfg) && sr_cfg->debug )
+    //    fprintf( stderr, "adding mask: %s %s\n", accept?"accept":"reject", option );
 
     new_entry = (struct sr_mask_t *)malloc( sizeof(struct sr_mask_t) );
     new_entry->next=NULL;
@@ -229,9 +229,10 @@ struct sr_broker_t *broker_uri_parse( char *src )
     if (d) *d='\0';
     b->hostname=strdup(save); 
 
-    b->socket=NULL;
     b->conn=NULL;
+    b->exchange=NULL;
     b->next=NULL;
+    b->socket=NULL;
 
     //fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 
     //   b->ssl, b->hostname, b->port, b->user, b->password );
@@ -415,10 +416,9 @@ char *subarg( struct sr_config_t *sr_cfg, char *arg )
      } else {
           val=getenv(var);
           if ( !val) {
-              log_msg( LOG_WARNING, "malformed argument, Environment variable not set: %s\n", var );
+              log_msg( LOG_ERROR, "Environment variable not set: %s\n", var );
               *e='}';
-              log_msg( LOG_ERROR, "returning unmodified argument: %s.\n",  arg );
-              return(arg);
+              return(NULL);
           }
      }
      strcat(d,val);
@@ -439,6 +439,13 @@ char token_line[TOKMAX];
 // OPTIS - Option Is ... the option string matches x.
 
 int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg) 
+/*
+   
+   returns 
+      value > 0 : number of arguments to advance
+      value 0   : end of options.
+      return <0 : error.
+ */
 {
 
   char *brokerstr, *argument;
@@ -448,6 +455,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
   argument = subarg(sr_cfg, arg);
+  if (!argument) 
+  {
+      return(-1);
+  }
 
   if (sr_cfg->debug)
      log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
@@ -504,7 +515,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
-      sr_config_read( sr_cfg, argument );
+      val = sr_config_read( sr_cfg, argument );
+      if (val < 0 ) return(-1);
       return(2);
 
   } else if ( !strcmp( option, "debug" ) ) {
@@ -661,8 +673,19 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
   } else {
       log_msg( LOG_INFO, "info: %s option not implemented, ignored.\n", option );
   } 
-  return(0);
+  return(1);
 }
+
+void broker_free( struct sr_broker_t *b ) 
+{
+     if (!b) return;
+     if (b->hostname) free(b->hostname);
+     if (b->user) free(b->user);
+     if (b->password) free(b->password);
+     if (b->exchange) free(b->exchange);
+     free(b);
+}
+
 
 void sr_config_free( struct sr_config_t *sr_cfg )
 {
@@ -675,17 +698,14 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
   if (sr_cfg->pidfile) free(sr_cfg->pidfile);
+  if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
   if (sr_cfg->progname) free(sr_cfg->progname);
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->url) free(sr_cfg->url);
 
-  if (sr_cfg->broker)
-  {
-     if (sr_cfg->broker->hostname) free(sr_cfg->broker->hostname);
-     if (sr_cfg->broker->user) free(sr_cfg->broker->user);
-     if (sr_cfg->broker->password) free(sr_cfg->broker->password);
-     free(sr_cfg->broker);
-  }
+  //broker_free(sr_cfg->broker);
+  broker_free(sr_cfg->post_broker);
+
   while (sr_cfg->masks)
   {
        e=sr_cfg->masks;
@@ -705,7 +725,18 @@ void sr_config_free( struct sr_config_t *sr_cfg )
        free(tmph);
   }
 
+  struct sr_path_t *p = sr_cfg->paths ;
+  while (p) 
+  {
+       struct sr_path_t *tmpp;
+       tmpp=p;
+       p=p->next;
+       free(tmpp);
+  }
+
   log_cleanup();
+  free(sr_cfg->logfn);
+
   sr_cache_close( sr_cfg->cachep );
 
 }
@@ -745,6 +776,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->pidfile=NULL;
   sr_cfg->pipe=0;
   sr_cfg->post_broker=NULL;
+  sr_cfg->post_exchange=NULL;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);
@@ -784,6 +816,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   char *c,*d;
   int plen;
   char p[PATH_MAX];
+  int ret;
 
   /* set config name */
   if (! config_depth ) 
@@ -853,14 +886,16 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
    {
      //printf( "line: %s", token_line );
 
-     if (strspn(token_line," \t\n") == strlen(token_line) ) 
+     ret = strspn(token_line," \t\n"); 
+     if ( (ret == strlen(token_line)) || ( token_line[ret] == '#' ) )
      {
-         continue; // blank line.
+         continue; // blank or comment line.
      }
      option   = strtok(token_line," \t\n");
      argument = strtok(NULL," \t\n");
 
-     sr_config_parse_option(sr_cfg, option,argument);
+     ret = sr_config_parse_option(sr_cfg, option,argument);
+     if (ret < 0) return(0);
 
   };
   fclose( f );
@@ -943,7 +978,10 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   }
 
   // FIXME: if prog is post, then only post_broker is OK.
-  fprintf( stderr, "progname=%s\n", sr_cfg->progname );
+  log_msg( LOG_DEBUG, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n",
+          sr_cfg->progname, sr_cfg->action,
+          log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", sr_cfg->sleep, sr_cfg->heartbeat );
+
 
   if (!is_consumer) 
   {
@@ -963,21 +1001,23 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
        }
        if ( sr_cfg->to == NULL ) 
        {
-             log_msg( LOG_ERROR, "setting to: %s\n", sr_cfg->post_broker->hostname );
-             sr_cfg->to = sr_cfg->post_broker->hostname ;
+             log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
+             sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
        }
 
        if ( ! (sr_cfg->post_exchange) ) 
        {
           if ( sr_cfg->exchange ) 
           {
-              sr_cfg->post_broker->exchange = sr_cfg->exchange ; 
+              sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+              sr_cfg->post_exchange = sr_cfg->exchange ; 
+              sr_cfg->exchange=NULL;
           } else {
-             log_msg( LOG_ERROR, "no exchange to post to given\n" );
-             return( 0 );
+              sprintf( q, "xs_%s", sr_cfg->post_broker->user );
+              sr_cfg->post_broker->exchange= strdup(q);
           }
        } else {
-          sr_cfg->post_broker->exchange= sr_cfg->post_exchange ;
+          sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
        }
 
        return(1);
@@ -1129,10 +1169,10 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
             {
                 log_msg( LOG_INFO, "running instance (pid %d) found, but is not stoppable.\n", sr_cfg->pid );
                 return(-1);
+
             } else { // just not running.
 
                 log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
-                //fprintf( stderr, "instance for config %s (pid %d) is not running.\n", sr_cfg->configname, sr_cfg->pid );
 
                 if ( !strcmp( sr_cfg->action, "stop" ) ) {
                     fprintf( stderr, "already stopped config %s (pid %d): deleting pidfile.\n", 
@@ -1140,7 +1180,6 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
                     unlink( sr_cfg->pidfile );
                     return(-1);
                 }
-                
             }
         }
         if ( !strcmp( sr_cfg->action, "stop" ) )

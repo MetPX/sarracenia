@@ -200,7 +200,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   }
   
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
+     log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->cfg->post_broker->exchange );
 
   strcpy( routingkey, sr_c->cfg->topic_prefix );
 
@@ -348,7 +348,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
       if ( status != 0 )
       {
-          status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
+          status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 
               amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
       }
       block_num++;

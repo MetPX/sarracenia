@@ -17,8 +17,6 @@ status:
 #include "sr_util.h"
 #include "sr_config.h"
 
-#define FNAME   "/home/peter/.config/sarra/post/test2.conf" 
-
 int main( int argc, char *const *argv ) {
 
   int ret;

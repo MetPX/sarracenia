@@ -442,6 +442,8 @@ int main(int argc, char **argv)
                     argv[i+1] );
         else
             break;
+        if (consume < 0) return(1);
+
         if (!consume) break;
         i+=consume;
     }
@@ -456,101 +458,15 @@ int main(int argc, char **argv)
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         return(1);
     }
-    log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n", 
-          sr_cfg.progname, sr_cfg.action, 
-          log_level, sr_cfg.recursive?"on":"off", sr_cfg.follow_symlinks?"yes":"no", sr_cfg.sleep, sr_cfg.heartbeat ); 
-    
 
     // Check if already running. (conflict in use of state files.)
 
     ret = sr_config_startstop( &sr_cfg );
+
     if ( ret < 1 ) 
     {
         exit(abs(ret));
     }
-
-  /*
-    if (sr_cfg.pid > 0) // there should be one running already.
-    {
-        ret=kill(sr_cfg.pid,0);
-        if (!ret) 
-        {   // is running.
-            if ( !strcmp(sr_cfg.action, "status") )
-            {
-               fprintf( stderr, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg.configname, sr_cfg.pid, sr_cfg.logfn );
-               return(0);
-            }
-
-            // pid is running and have permission to signal, this is a problem for start & foreground.
-            if ( !strcmp(sr_cfg.action, "start" ) || ( !strcmp(sr_cfg.action, "foreground" ) ) ) 
-            {
-               log_msg( LOG_ERROR, "sr_cpost configuration %s already running using pid %d.\n", sr_cfg.configname, sr_cfg.pid );
-               return(1);
-            }
- 
-            // but otherwise it's normal, so kill the running one. 
-
-            log_msg( LOG_INFO, "sr_cpost killing running instance pid=%d\n", sr_cfg.pid );
-
-            //  just kill it a little at first...
-            kill(sr_cfg.pid,SIGTERM);
-
-            // give it time to clean itself up.
-            tsleep.tv_sec = 2L;
-            tsleep.tv_nsec =  0L;
-            nanosleep( &tsleep, NULL );
-
-
-            ret=kill(sr_cfg.pid,0);
-            if (!ret) 
-            {   // pid still running, and have permission to signal, so it didn't die... 
-                log_msg( LOG_INFO, "After 2 seconds, instance pid=%d did not respond to SIGTERM, sending SIGKILL\n", sr_cfg.pid );
-                kill(sr_cfg.pid,SIGKILL);
-                nanosleep( &tsleep, NULL );
-                ret=kill(sr_cfg.pid,0);
-                if (!ret) 
-                {
-                    log_msg( LOG_CRITICAL, "SIGKILL didn't work either. System not usable, Giving up!\n", sr_cfg.pid );
-                    return(1);
-                } 
-            } else {
-                log_msg( LOG_INFO, "old instance stopped (pid: %d)\n", sr_cfg.pid );
-            }
-        } else  // not permitted to send signals, either access, or it ain't there.
-        {
-            if (errno != ESRCH)
-            {
-                log_msg( LOG_INFO, "running instance (pid %d) found, but is not stoppable.\n", sr_cfg.pid );
-                return(1);
-            } else { // just not running.
-
-                log_msg( LOG_INFO, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
-                fprintf( stderr, "instance for config %s (pid %d) is not running.\n", sr_cfg.configname, sr_cfg.pid );
-
-                if ( !strcmp( sr_cfg.action, "stop" ) ) {
-                    fprintf( stderr, "already stopped config %s (pid %d): deleting pidfile.\n", 
-                            sr_cfg.configname, sr_cfg.pid );
-                    unlink( sr_cfg.pidfile );
-                    return(1);
-                }
-                
-            }
-        }
-        if ( !strcmp( sr_cfg.action, "stop" ) )
-        {
-            unlink( sr_cfg.pidfile );
-            log_msg( LOG_INFO, "stopped.\n");
-            fprintf( stderr, "running instance for config %s (pid %d) stopped.\n", sr_cfg.configname, sr_cfg.pid );
-            return(0);
-        }
-    } else {
-        fprintf( stderr, "config %s not running.\n", sr_cfg.configname );
-        if ( !strcmp( sr_cfg.action, "stop" )   ) return(2);
-    }
-
-    if ( !strcmp( sr_cfg.action, "status" ) ) return(0);
-
-   */
 
     sr_c = sr_context_init_config( &sr_cfg );
     if (!sr_c) 
@@ -558,15 +474,6 @@ int main(int argc, char **argv)
         log_msg( LOG_CRITICAL, "failed to read config\n");
         return(1);
     }
-    
-    /*
-    if ( ! sr_c->cfg->post_broker ) {
-         sr_c->cfg->post_broker  = sr_c->cfg->broker ;
-         sr_c->cfg->broker  =  NULL ;
-         sr_c->cfg->post_exchange  = sr_c->cfg->exchange ;
-         sr_c->cfg->exchange = NULL ;
-    }
-     */
 
     sr_c = sr_context_connect( sr_c );
   

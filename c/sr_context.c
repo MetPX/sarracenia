@@ -192,14 +192,19 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c->cfg = sr_cfg;
 
   // FIXME: if prog is post, then only post_broker is OK.
-  sr_c->exchange = sr_cfg->exchange ;
+  // sr_c->exchange = sr_cfg->exchange ;
   
   sr_c->url = sr_cfg->url;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
-     log_msg( LOG_DEBUG, "broker: amqp%s://%s:%s@%s:%d\n", 
-       sr_cfg->broker->ssl?"s":"", sr_cfg->broker->user, (sr_cfg->broker->password)?"<pw>":"<null>", sr_cfg->broker->hostname, sr_cfg->broker->port );
+     if (sr_c->cfg->broker) 
+        log_msg( LOG_DEBUG, "broker: amqp%s://%s:%s@%s:%d\n", sr_cfg->broker->ssl?"s":"", sr_cfg->broker->user, 
+                 (sr_cfg->broker->password)?"<pw>":"<null>", sr_cfg->broker->hostname, sr_cfg->broker->port );
+
+     if (sr_c->cfg->post_broker) 
+        log_msg( LOG_DEBUG, "post_broker: amqp%s://%s:%s@%s:%d\n", sr_cfg->post_broker->ssl?"s":"", sr_cfg->post_broker->user, 
+                 (sr_cfg->post_broker->password)?"<pw>":"<null>", sr_cfg->post_broker->hostname, sr_cfg->post_broker->port );
   }
   
   return( sr_c );
@@ -235,7 +240,11 @@ void sr_broker_close(struct sr_broker_t *broker)
 
 void sr_context_close(struct sr_context *sr_c)  {
 
-  if (sr_c->cfg->broker) sr_broker_close( sr_c->cfg->broker );
+  if (sr_c->cfg->broker) 
+  {
+      sr_broker_close( sr_c->cfg->broker );
+      log_msg( LOG_INFO, "sr_cpost: subscription broker closed.\n");
+  } 
   if (sr_c->cfg->post_broker) sr_broker_close( sr_c->cfg->post_broker );
 
 }
