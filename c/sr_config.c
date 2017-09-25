@@ -598,7 +598,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->message_ttl = atoi(argument)*60*1000;
       return(2);
 
-  } else if ( !strcmp( option, "flow" ) ) {
   } else if ( !strcmp( option, "output" ) ) {
       sr_cfg->output = strdup(argument);
       return(2);
@@ -770,7 +769,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->message_ttl=0;
-  sr_cfg->output=NULL;
+  sr_cfg->output="json";
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;

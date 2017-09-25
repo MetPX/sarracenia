@@ -112,6 +112,7 @@ struct sr_config_t {
   float               heartbeat;
   int                 instance;
   char               *last_matched;  //have run isMatching.
+  char               *list;          //method to generate initial input list:  file or queue
   int                 log;           // use a log file, rather than standard files.
   char               *logfn;           // use a log file, rather than standard files.
   int                 logseverity;      // severity of messages to log (regardless of where.)

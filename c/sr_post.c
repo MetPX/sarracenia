@@ -50,6 +50,9 @@
 
 #include "sr_context.h"
 
+// needed for sr_post_message.
+#include "sr_consume.h"
+
 /*
  Statically assign the maximum number of headers that can be included in a message.
  just picked a number.  I remember picking a larger one before, and it bombed, don't know why.
@@ -140,6 +143,57 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
 }
 
 
+void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
+{
+    char message_body[1024];
+    char smallbuf[256];
+    amqp_table_t table;
+    amqp_basic_properties_t props;
+    signed int status;
+    struct sr_header_t *uh;
+
+    strcpy( message_body, m->datestamp);
+    strcat( message_body, " " );
+    strcat( message_body, m->url );
+    strcat( message_body, " " );
+    strcat( message_body, m->path );
+    strcat( message_body, " \n" );
+ 
+    header_reset();
+    header_add( "atime", m->atime );
+    header_add( "from_clusters", m->from_clusters );
+
+    sprintf( smallbuf, "%04o", m->mode );
+    header_add( "mode", smallbuf );
+    header_add( "mtime", m->mtime );
+
+    sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+    header_add( "parts", smallbuf );
+
+    header_add( "sum", sr_hash2sumstr(m->sum));
+    header_add( "to_clusters", m->to_clusters );
+
+    for(  uh=m->user_headers; uh ; uh=uh->next )
+        header_add(uh->key, uh->value);
+
+    table.num_entries = hdrcnt;
+    table.entries=headers;
+
+    props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+    props.content_type = amqp_cstring_bytes("text/plain");
+    props.delivery_mode = 2; /* persistent delivery mode */
+    props.headers = table;
+
+    status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 
+              amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
+
+    if ( status < 0 ) 
+        log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
+    else if ( (sr_c->cfg) && sr_c->cfg->debug )
+        log_msg( LOG_DEBUG, "posting, publish message for %s%s \n", m->url, m->path );
+
+}
+
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
 
@@ -148,6 +202,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   char  partstr[255];
   char  modebuf[6];
   char  fn[PATH_MAXNUL];
+  char  postfn[PATH_MAXNUL];
+  char  *drfound;
   char  linkstr[PATH_MAXNUL];
   char *linkp;
   int   linklen;
@@ -180,6 +236,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           strcpy( fn, pathspec );
   }
 
+
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "sr_cpost called with: %s sb=%p\n", fn, sb );
 
@@ -202,20 +259,34 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->cfg->post_broker->exchange );
 
+
+  strcpy( postfn, fn );
+  if (sr_c->cfg->documentroot) 
+  {
+      drfound = strstr(fn, sr_c->cfg->documentroot ); 
+   
+      if (drfound) 
+      {
+          drfound += strlen(sr_c->cfg->documentroot) ; 
+          strcpy( postfn, drfound );
+      } 
+  } 
   strcpy( routingkey, sr_c->cfg->topic_prefix );
 
-  strcat( routingkey, fn );
+  strcat( routingkey, postfn );
   lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(routingkey) ; i++ )
+  {
       if ( routingkey[i] == '/' ) 
       {
-           routingkey[i]='\0';
            if ( lasti > 0 ) 
            {
               routingkey[lasti]='.';
            }
            lasti=i;
       }
+  }
+  routingkey[lasti]='\0';
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "posting, routingkey: %s\n", routingkey );
@@ -224,13 +295,16 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   strcat( message_body, " " );
   set_url( message_body, sr_c->cfg->url );
   strcat( message_body, " " );
+  strcat( message_body, postfn );
 
+/*
   if ( sr_c->cfg->documentroot ) 
   {
       if ( !strncmp( sr_c->cfg->documentroot, fn, strlen(sr_c->cfg->documentroot) ) ) 
           strcat( message_body, fn+strlen(sr_c->cfg->documentroot) );
   } else 
-      strcat( message_body, fn);
+     strcat( message_body, fn);
+ */
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
      log_msg( LOG_DEBUG, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
@@ -354,7 +428,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       block_num++;
  
       if ( status < 0 ) 
-          log_msg( LOG_ERROR, "sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
+          log_msg( LOG_ERROR, "sr_%s: publish of block %lu of %lu failed.\n", sr_c->cfg->progname, block_num, block_count );
       else if ( (sr_c->cfg) && sr_c->cfg->debug )
           log_msg( LOG_DEBUG, "posting, publish block %lu of %lu.\n", block_num, block_count );
 

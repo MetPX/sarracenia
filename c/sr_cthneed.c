@@ -134,7 +134,11 @@ int main(int argc, char **argv)
   while(1)
   {
       m=sr_consume(sr_c);
-      if (m) sr_message_2json(m);      
+      if (m) {
+        if ( !strcmp( sr_cfg.output, "json" ) ) sr_message_2json(m);      
+        else if ( !strcmp( sr_cfg.output, "path" ) ) sr_message_2path(m);      
+        //else if ( !strcmp( sr_cfg.output, "post" ) ) sr_message_2post(m);      
+      }
   }
   sr_context_close(sr_c);
   free(sr_c);

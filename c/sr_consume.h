@@ -73,11 +73,24 @@ int sr_consume_cleanup(struct sr_context *sr_c);
  */
 
 
-
 void sr_message_2json(struct sr_message_t *m);
 /* 
-   print a message to stdout
+   print a message to stdout, the entire thing, in json save/restore format.
  */
+
+void sr_message_2path(struct sr_message_t *m);
+/* 
+   print a message to stdout, just the pathname to stdout.
+
+ */
+
+void sr_message_2post(struct sr_context *src, struct sr_message_t *m);
+/*
+  post a pessage to post the given message. 
+
+ */
+
+
 struct sr_message_t *sr_consume(struct sr_context *sr_c);
 
 #endif 

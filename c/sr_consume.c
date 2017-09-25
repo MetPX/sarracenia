@@ -248,6 +248,11 @@ void sr_message_2json(struct sr_message_t *m)
      printf( "]\n" );
 }
 
+void sr_message_2path(struct sr_message_t *m)
+{
+     printf( "%s/%s\n", m->url, m->path );
+}
+
 
 struct sr_message_t *sr_consume(struct sr_context *sr_c) 
  /*
