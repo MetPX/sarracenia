@@ -624,7 +624,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
       {
-          log_msg( LOG_ERROR,"notice: no stored credential for post_broker: %s.\n", argument );
+          log_msg( LOG_ERROR, "notice: no stored credential for post_broker: %s.\n", argument );
           sr_cfg->post_broker = broker_uri_parse( argument );
       } else {
           sr_cfg->post_broker = broker_uri_parse( brokerstr );
@@ -633,7 +633,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "post_exchange" ) || !strcmp( option, "px") ) {
-      sr_cfg->exchange = strdup(argument);
+      sr_cfg->post_exchange = strdup(argument);
       return(2);
 
   } else if ( !strcmp( option, "realpath" ) ) {
@@ -878,7 +878,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   if ( f==NULL ) 
   {
           log_msg( LOG_ERROR, "error: failed to find configuration: %s\n", filename );
-          return(0);
+          exit(0);
   }
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 
@@ -981,52 +981,53 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
           sr_cfg->progname, sr_cfg->action,
           log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", sr_cfg->sleep, sr_cfg->heartbeat );
 
-
-  if (!is_consumer) 
+  if ( !(sr_cfg->post_broker) ) 
   {
-      if ( !strcmp(sr_cfg->progname,"post") ) 
-      {
-          if ( !(sr_cfg->post_broker) ) 
-          {
-              sr_cfg->post_broker  = sr_cfg->broker ;
-              sr_cfg->broker  =  NULL ;
-          }
-       }
+      sr_cfg->post_broker  = sr_cfg->broker ;
+      sr_cfg->broker  =  NULL ;
+  }
 
-       if ( !(sr_cfg->post_broker) ) 
-       {
+  if ( !strcmp(sr_cfg->progname,"post") ) 
+  {
+      if ( !(sr_cfg->post_broker) ) 
+      {
              log_msg( LOG_ERROR, "no post_broker given\n" );
              return( 0 );
-       }
-       if ( sr_cfg->to == NULL ) 
-       {
+      }
+  }
+
+  if ( ! (sr_cfg->post_exchange) ) 
+  {
+      if ( sr_cfg->exchange ) 
+      {
+          sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+      } else {
+          sprintf( q, "xs_%s", sr_cfg->post_broker->user );
+          sr_cfg->post_broker->exchange= strdup(q);
+      }
+  } else {
+          sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
+  }
+
+  if ( sr_cfg->to == NULL ) 
+  {
              log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
              sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
-       }
+  }
 
-       if ( ! (sr_cfg->post_exchange) ) 
-       {
-          if ( sr_cfg->exchange ) 
-          {
-              sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
-              sr_cfg->post_exchange = sr_cfg->exchange ; 
-              sr_cfg->exchange=NULL;
-          } else {
-              sprintf( q, "xs_%s", sr_cfg->post_broker->user );
-              sr_cfg->post_broker->exchange= strdup(q);
-          }
-       } else {
-          sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
-       }
-
-       return(1);
-
-  } else if ( !(sr_cfg->broker) )
+  if (!is_consumer) return(1);
+  else if ( !(sr_cfg->broker) )
   {
     log_msg( LOG_ERROR, "no broker given\n" );
     return( 0 );
   }
 
+  if ( sr_cfg->exchange )  
+  {
+     sr_cfg->broker->exchange = strdup(sr_cfg->exchange) ; 
+  } else {
+     sr_cfg->broker->exchange = strdup("xpublic") ; 
+  }
 
   if (! sr_cfg->queuename ) 
   { // was not specified, pick one.

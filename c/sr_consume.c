@@ -149,16 +149,15 @@ int sr_consume_setup(struct sr_context *sr_c)
   {
       sr_add_topic(sr_c->cfg, "#" );
   }
-  //log_msg( LOG_DEBUG, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
+  log_msg( LOG_DEBUG, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
 
   for( t = sr_c->cfg->topics; t ; t=t->next )
   {
-      if (sr_c->cfg->debug) 
-          log_msg( LOG_INFO, " binding queue: %s to exchange: %s topic: %s\n",
-              sr_c->cfg->queuename, sr_c->cfg->exchange, t->topic );
+      log_msg( LOG_INFO, " binding queue: %s to exchange: %s topic: %s\n",
+              sr_c->cfg->queuename, sr_c->cfg->broker->exchange, t->topic );
       amqp_queue_bind(sr_c->cfg->broker->conn, 1, 
             amqp_cstring_bytes(sr_c->cfg->queuename), 
-            amqp_cstring_bytes(sr_c->cfg->exchange), 
+            amqp_cstring_bytes(sr_c->cfg->broker->exchange), 
             amqp_cstring_bytes(t->topic),
             amqp_empty_table);
 

@@ -162,13 +162,15 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
 struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
   if (sr_c->cfg->broker)  {
-       if ( ! sr_broker_connect( sr_c->cfg->broker ) ) return(NULL);
+       sr_c->cfg->broker = sr_broker_connect( sr_c->cfg->broker ) ; 
+       if ( ! (sr_c->cfg->broker)  ) return(NULL);
        if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
             log_msg(  LOG_DEBUG, "sr_context_connect to subscription broker succeeded!\n" );
   }
      
   if (sr_c->cfg->post_broker) {
-       if ( ! sr_broker_connect( sr_c->cfg->post_broker ) ) return(NULL);
+       sr_c->cfg->post_broker = sr_broker_connect( sr_c->cfg->post_broker ) ; 
+       if ( ! (sr_c->cfg->post_broker)  ) return(NULL);
        if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
             log_msg(  LOG_DEBUG, "sr_context_connect to post broker succeeded!\n" );
   }

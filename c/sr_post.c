@@ -189,8 +189,8 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 
     if ( status < 0 ) 
         log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
-    else if ( (sr_c->cfg) && sr_c->cfg->debug )
-        log_msg( LOG_DEBUG, "posting, publish message for %s%s \n", m->url, m->path );
+    else 
+        log_msg( LOG_INFO, "posting, publish message for %s%s \n", m->url, m->path );
 
 }
 
