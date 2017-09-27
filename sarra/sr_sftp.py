@@ -332,7 +332,9 @@ class sr_sftp():
                  fp.write(chunk)
                  if chk : chk.update(chunk)
                  if cb  : cb(chunk)
-
+ 
+        fp.flush()
+        os.fsync(fp)
         self.fpos = fp.tell()
 
         # MG FIXME... this makes no sense
@@ -524,7 +526,10 @@ class sftp_transport():
         urlstr      = msg.srcpath + '/' + msg.relpath
         new_lock    = ''
 
-        if os.getcwd() != parent.new_dir:
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != parent.new_dir:
             os.chdir(parent.new_dir)
 
         try :
