@@ -425,10 +425,13 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       block_num++;
  
       if ( status < 0 ) 
+      {
           log_msg( LOG_ERROR, "sr_%s: publish of block %lu of %lu failed.\n", sr_c->cfg->progname, block_num, block_count );
-      else if ( (sr_c->cfg) && sr_c->cfg->debug )
-          log_msg( LOG_DEBUG, "posting, publish block %lu of %lu.\n", block_num, block_count );
-
+      } else {
+          log_msg( LOG_INFO, "published: %s topic=%s sum=%s \n" , message_body, 
+              routingkey, sumstr );
+              // parts, modebuf, atimestr, mtimestr );
+      }
   }
 }
 

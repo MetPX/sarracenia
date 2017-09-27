@@ -1,0 +1,7 @@
+
+f=open("hoho", "w+" )
+
+f.write("hello")
+
+f.close()
+

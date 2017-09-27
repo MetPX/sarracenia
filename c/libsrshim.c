@@ -46,8 +46,6 @@ int symlink(const char *target, const char* linkpath)
 {
     int status;
 
-fprintf( stderr, "symlink\n");
-
     if (!symlink_init_done) {
         symlink_fn_ptr = (symlink_fn) dlsym(RTLD_NEXT, "symlink");
         symlink_init_done = 1;
@@ -67,7 +65,6 @@ int link(const char *target, const char* linkpath)
 {
     int status;
 
-fprintf( stderr, "link\n");
     if (!link_init_done) {
         link_fn_ptr = (link_fn) dlsym(RTLD_NEXT, "link");
         link_init_done = 1;
@@ -89,7 +86,6 @@ int unlinkat(int dirfd, const char *path, int flags)
     char real_path[PATH_MAX];
     char *real_return;
 
-fprintf( stderr, "unlinkat\n");
     if (!unlinkat_init_done) {
         unlinkat_fn_ptr = (unlinkat_fn) dlsym(RTLD_NEXT, "unlinkat");
         unlinkat_init_done = 1;
@@ -116,7 +112,6 @@ int unlink(const char *path)
 {
     int status;
 
-fprintf( stderr, "unlink\n");
     if (!unlink_init_done) 
     {
         unlink_fn_ptr = (unlink_fn) dlsym(RTLD_NEXT, "unlink");
@@ -136,7 +131,6 @@ int rename(const char *oldpath, const char *newpath)
 {
     int status;
 
-fprintf( stderr, "rename\n");
     if (!rename_init_done) 
     {
         rename_fn_ptr = (rename_fn) dlsym(RTLD_NEXT, "rename");
@@ -144,6 +138,10 @@ fprintf( stderr, "rename\n");
     }
     status = rename_fn_ptr(oldpath,newpath);
     if ( !strncmp(newpath,"/dev/", 5) ) return(status);
+
+    // delete old if necessary...
+    if (!status) shimpost(oldpath,0);
+
     return(shimpost(newpath,status));
 }
 
@@ -157,8 +155,10 @@ int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpat
     char fdpath[32];
     char real_path[PATH_MAX];
     char *real_return;
+    char oreal_path[PATH_MAX];
+    char *oreal_return;
+    
 
-fprintf( stderr, "renameat\n");
     if (!renameat_init_done) 
     {
         renameat_fn_ptr = (renameat_fn) dlsym(RTLD_NEXT, "renameat");
@@ -168,12 +168,25 @@ fprintf( stderr, "renameat\n");
 
     snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
     real_return = realpath(fdpath, real_path);
+
     if (!real_return) return(status);
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,newpath);
 
+    if (!status) 
+    {
+        snprintf( fdpath, 32, "/proc/self/fd/%d", olddirfd );
+        oreal_return = realpath(fdpath, oreal_path);
+        if (oreal_return) 
+        {
+            strcat(oreal_path,"/");
+            strcat(oreal_path,oldpath);
+            shimpost( oreal_path, 0 );
+        }
+        
+    }
     return(shimpost(real_path,status));
 }
 
@@ -187,8 +200,9 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
     char fdpath[32];
     char real_path[PATH_MAX];
     char *real_return;
+    char oreal_path[PATH_MAX];
+    char *oreal_return;
 
-fprintf( stderr, "renameat2\n");
     if (!renameat2_init_done) 
     {
         renameat2_fn_ptr = (renameat2_fn) dlsym(RTLD_NEXT, "renameat2");
@@ -205,6 +219,18 @@ fprintf( stderr, "renameat2\n");
     strcat(real_path,"/");
     strcat(real_path,newpath);
 
+    if (!status) 
+    {
+        snprintf( fdpath, 32, "/proc/self/fd/%d", olddirfd );
+        oreal_return = realpath(fdpath, oreal_path);
+        if (oreal_return) 
+        {
+            strcat(oreal_path,"/");
+            strcat(oreal_path,oldpath);
+            shimpost( oreal_path, 0 );
+        }
+        
+    }
     return(shimpost(real_path,status));
 }
 
