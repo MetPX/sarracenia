@@ -74,9 +74,10 @@ class Msg_Total(object):
         lag=now-msgtime
         parent.msg_total_lag = parent.msg_total_lag + lag
 
-        (method,psize,ptot,prem,pno) = msg.partstr.split(',')
-
-        parent.msg_total_bytecount = parent.msg_total_bytecount + int(psize)
+        # message with sum 'R' and 'L' have no partstr
+        if msg.partstr :
+          (method,psize,ptot,prem,pno) = msg.partstr.split(',')
+          parent.msg_total_bytecount   = parent.msg_total_bytecount + int(psize)
         
         #not time to report yet.
         if parent.msg_total_interval > now-parent.msg_total_last :
