@@ -542,6 +542,7 @@ class sftp_transport():
                    ok = sftp.connect()
                    if not ok : return False
                    self.sftp = sftp
+                   self.cdir = None
 
                 # for generalization purpose
                 if not sftp.support_inplace and msg.partflg == 'i':
@@ -655,6 +656,7 @@ class sftp_transport():
                    ok   = sftp.connect()
                    if not ok : return False
                    self.sftp = sftp
+                   self.cdir = None
                 
                 if self.cdir != new_dir :
                    self.logger.debug("sftp_transport send cd to %s" % new_dir)
