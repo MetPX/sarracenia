@@ -384,12 +384,16 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.report_exchange         = 'xreport'
+        self.report_exchange      = 'xreport'
         # 
 
         # cache
         self.caching              = False
         self.cache_stat           = False
+
+        # save/restore
+        self.save_fp              = None
+        self.save_count           = 1
 
         # publish
         self.document_root        = None
