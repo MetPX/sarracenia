@@ -14,7 +14,8 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Feb  8 16:14:12 EST 2016
+#  Last Changed   : Mon Sep 25 18:05 UTC 2017
+#                   code rewritten : sr_shovel is an instantiation of sr_subscribe
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -56,25 +57,16 @@
 #============================================================
 #
 
-import os,sys,time,json
-
 try :    
-         from sr_amqp           import *
-         from sr_consumer       import *
-         from sr_instances      import *
-         from sr_message        import *
-         from sr_util           import *
+         from sr_subscribe      import *
 except : 
-         from sarra.sr_amqp      import *
-         from sarra.sr_consumer  import *
-         from sarra.sr_instances import *
-         from sarra.sr_message   import *
-         from sarra.sr_util      import *
+         from sarra.sr_subscribe import *
 
-class sr_shovel(sr_instances):
+class sr_shovel(sr_subscribe):
 
     def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+        sr_subscribe.__init__(self,config,args)
+
 
     def check(self):
 
@@ -117,73 +109,24 @@ class sr_shovel(sr_instances):
            self.queue_name  = 'q_' + self.broker.username + '.'
            self.queue_name += self.program_name + '.' + self.config_name 
 
-    def close(self):
-        self.consumer.close()
-        self.post_hc.close()
+        # ===========================================================
+        # some sr_subscribe options reset to match sr_shovel behavior
+        # ===========================================================
 
-    def connect(self):
+        # the message is consumed and posted
 
-        # =============
-        # create message if needed
-        # =============
+        self.notify_only = True
+        
+        # no caching
 
-        self.msg = sr_message(self)
+        self.caching = False
 
-        # =============
-        # consumer
-        # =============
+        # default reportback if unset
 
-        self.consumer          = sr_consumer(self)
+        if self.reportback == None : self.reportback = True
 
-        if self.save_file :
-            self.consumer.save_path = self.save_file + self.save_path[-10:] 
-            self.save_path = self.consumer.save_path
-        else:
-            self.consumer.save_path = self.save_path
-            
-        if self.save: self.consumer.save = True
-
-        if self.reportback :
-            self.msg.report_publisher = self.consumer.publish_back()
-            self.msg.report_exchange  = self.report_exchange
-
-            self.logger.info("report_back to %s@%s, exchange: %s" %
-                  ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
-        else:
-            self.logger.info( "report_back suppressed" )
-
-        # =============
-        # publisher
-        # =============
-
-        # publisher host
-
-        self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_url( self.post_broker )
-        self.post_hc.connect()
-
-        if self.restore_queue is not None:
-            # create temporary exchange to publish only to restore_queue.
-            self.post_exchange = 'xs_' + self.broker.username + '.' + \
-                self.program_name + '.' + self.config_name + '.restore'
-            self.msg.pub_exchange = self.post_exchange
-            self.post_hc.channel.exchange_declare( self.post_exchange, \
-                'topic', auto_delete=True, durable=False)
-            self.post_hc.channel.queue_bind( self.restore_queue, \
-                self.post_exchange, '#' )
-
-        # publisher
-
-        self.publisher = Publisher(self.post_hc)
-        self.publisher.build()
-        self.msg.publisher    = self.publisher
-
-        self.msg.post_exchange_split = self.post_exchange_split
-
-        # amqp resources
-
-        self.declare_exchanges()
-
+        # MG FIXME : I dont think I forgot anything but if some options need
+        #            to be specifically set for sr_shovel put them HERE
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
@@ -218,82 +161,6 @@ class sr_shovel(sr_instances):
         print("DEBUG:")
         print("-debug")
 
-    # =============
-    # __on_message__
-    # =============
-
-    def __on_message__(self):
-
-        # apply default to a message without a source
-        ex = self.msg.exchange
-        if not 'source' in self.msg.headers :
-           if len(ex) > 3 and ex[:3] == 'xs_' : self.msg.headers['source'] = ex[3:].split('_')[0]
-           elif self.source                   : self.msg.headers['source'] = self.source
-           else                               : self.msg.headers['source'] = self.broker.username
-           self.logger.debug("message missing header, set default: headers['source'] = %s" % self.msg.headers['source'])
-
-        # apply default to a message without an origin cluster
-        if not 'from_cluster' in self.msg.headers :
-           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
-           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
-           self.logger.debug("message missing header, set default  headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
-
-        # correct a message without routing clusters
-        if not 'to_clusters' in self.msg.headers :
-           if self.to_clusters: self.msg.headers['to_clusters'] = self.to_clusters
-           else               : self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
-           self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
-
-
-        # this instances of sr_shovel runs,
-        # for cluster               : self.cluster
-        # alias for the cluster are : self.cluster_aliases
-        # it is a gateway for       : self.gateway_for 
-        # all these cluster names were put in list self.accept_msg_for_clusters
-        # The message's target clusters  self.msg.to_clusters should be in
-        # the self.accept_msg_for_clusters list
-
-        # if this cluster is a valid destination than one of the "to_clusters" pump
-        # will be present in self.accept_msg_for_clusters
-
-        # PSilva: I don't think the gatway logic is ever useful for shovel.
-        # so commented out.
-        #ok = False
-        #for target in self.msg.to_clusters :
-        #   if  not target in self.accept_msg_for_clusters :  continue
-        #   ok = True
-        #   break
-
-        #if not ok :
-        #   self.logger.warning("skipped : not for this cluster...")
-        #   return False
-
-        # invoke user defined on_message when provided
-
-        for plugin in self.on_message_list:
-           if not plugin(self): return False
-
-        return True
-
-    # =============
-    # __on_post__ posting of message
-    # =============
-
-    def __on_post__(self):
-
-        # same exchange or overwrite with config one ?
-
-        if self.post_exchange : self.msg.exchange = self.post_exchange
-
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-           if not plugin(self): return False
-
-        ok = self.msg.publish( )
-
-        return ok
-
     def overwrite_defaults(self):
 
         # overwrite defaults
@@ -325,235 +192,44 @@ class sr_shovel(sr_instances):
 
         self.accept_unmatch = True
 
+        # ===========================================================
+        # some sr_subscribe options reset to understand user sr_shovel setup
+        # ===========================================================
 
-    # =============
-    # process message  
-    # =============
+        self.reportback = None
 
-    def process_message(self):
-
-        self.logger.debug( "Received %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr) )
-
-        #=================================
-        # now message is complete : invoke __on_message__
-        #=================================
-
-        ok = self.__on_message__()
-        if not ok : return ok
-
-        #=================================
-        # publish the message
-        #=================================
-
-        self.__on_post__()
-
-        if self.reportback:
-            self.msg.report_publish(201,'Published')
-
-
-        return True
-
-
-    def run(self):
-
-        # present basic config
-
-        self.logger.info("sr_shovel run")
-
-        if not self.report_daemons and ( self.config_name[0:3] == 'rr_' ) :
-            self.logger.info("report_daemons is False, skipping %s config." % self.config_name )
-            self.stop_instance()
-            # clean exit
-            sys.exit(0)
-
-            
-        # loop/process messages
-
-        self.connect()
-
-        if ( self.restore_queue is not None ) and os.path.exists(self.save_path):
-           self.restore_exchange_name  = 'xs_' + self.broker.username + '.' + \
-                self.program_name + '.' + self.config_name + '.restore'
-
-           rtot=0
-           with open(self.save_path,"r") as rf:
-               for ml in rf:
-                   rtot += 1
-
-           self.logger.info("sr_shovel restoring %d messages from save %s " % ( rtot, self.save_path ) )
-           rnow=0
-
-           with open(self.save_path,"r") as rf:
-               for ml in rf:
-                  rnow += 1
-                  self.msg.exchange = 'save'
-                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
-                  self.msg.from_amqplib()
-                  self.logger.info("sr_shovel restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
-                  ok = self.process_message()
-
-           if self.save_file :
-               self.logger.info("sr_shovel restore: %s complete." % ( self.save_path ) )
-           elif rnow >= rtot:
-               self.logger.info("sr_shovel restore complete deleting save file: %s " % ( self.save_path ) )
-               os.unlink(self.save_path)
-           else:
-               self.logger.error("sr_shovel only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
- 
-           # should have effect of deleting restore exchange as auto_delete is True.
-           self.post_hc.channel.queue_unbind( self.restore_queue, self.post_exchange, '#' )
-
-           # clean exit
-           sys.exit(0)
-
-
-        if self.save :
-            self.logger.info("sr_shovel saving to %s for future restore" % self.save_path )
-            sf = open(self.save_path,"a")
-            stot=0
-
-
-        active = self.has_vip()
-        if not active :
-            self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
-        else:
-            self.logger.debug("sr_shovel is active on vip=%s", self.vip)
-
-        while True :
-              try :
-                  #  is it sleeping ?
-                  if not self.has_vip() :
-                          if active:
-                              self.logger.debug("sr_shovel does not have vip=%s, is sleeping", self.vip)
-                              active=False
-
-                          time.sleep(5)
-                          continue
-                  else:
-                          if not active:
-                              self.logger.debug("sr_shovel is active on vip=%s", self.vip)
-                              active=True
-
-                  #  heartbeat
-                  ok = self.heartbeat_check()
-
-                  #  consume message
-                  ok, self.msg = self.consumer.consume()
-                  if not ok : continue
-                  if self.save :
-                      stot += 1
-                      self.logger.info("sr_shovel saving %d message topic: %s" % ( stot, self.msg.topic ) )
-                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True) + '\n')
-                      sf.flush()
-                  else:
-                      #  process message (ok or not... go to the next)
-                      ok = self.process_message()
-
-              except:
-                      (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-    
-        if self.save:
-            sf.close()
-
-
-    def reload(self):
-        self.logger.info("%s reload" % self.program_name)
-        self.close()
-        self.configure()
-        self.run()
-
-    def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
-        self.run()
-
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
-        self.close()
-        os._exit(0)
-
-    def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
-
-        # consuming host, do cleanup (queue)
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.cleanup()
-
-        # posting host
-       
-        self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_url( self.post_broker )
-        self.post_hc.connect()
-
-        self.declare_exchanges(cleanup=True)
-
-        self.close()
-        os._exit(0)
-
-    def declare(self):
-        self.logger.info("%s declare +%s+ " % ( self.program_name, self.config_name ) )
-
-        if self.report_daemons or ( self.config_name[0:3] != 'rr_' ) :
-
-            # consuming host, do setup (queue)
-
-            self.consumer = sr_consumer(self,admin=True)
-            self.consumer.declare()
-
-            # posting host
-       
-            self.post_hc = HostConnect( logger = self.logger )
-            self.post_hc.set_url( self.post_broker )
-            self.post_hc.connect()
-
-            self.declare_exchanges()
-            self.close()
-        else:
-             self.logger.info("skipping declarations for %s" % self.config_name)
-       
-        os._exit(0)
-
-    def declare_exchanges(self, cleanup=False):
-
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchanges setup
-              
-        for x in exchanges :
-            if cleanup: self.post_hc.exchange_delete(x)
-            else      : self.post_hc.exchange_declare(x)
-
-
-    def setup(self):
-        self.logger.info("%s setup" % self.program_name)
-
-        # consuming host, do setup (queue)
-
-        if self.report_daemons or ( self.config_name[0:3] != 'rr_' ) :
-            self.consumer = sr_consumer(self,admin=True)
-            self.consumer.setup()
-
-            # posting host
-       
-            self.post_hc = HostConnect( logger = self.logger )
-            self.post_hc.set_url( self.post_broker )
-            self.post_hc.connect()
-
-            self.declare_exchanges()
-            self.close()
-        else:
-            self.logger.info("skipping setup for %s" % self.config_name)
-
-        os._exit(0)
+    def help(self):
+        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("version: %s \n" % sarra.__version__ )
+        print("read messages from exchange, apply on_message if provided, reannounce/post them to post_broker & post_exchange\n")
+        print("OPTIONS:")
+        print("instances <nb_of_instances>      default 1")
+        print("\nAMQP consumer broker settings:")
+        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(MANDATORY)")
+        print("\nAMQP Queue bindings:")
+        print("\texchange             <name>          (MANDATORY)")
+        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
+        print("\tsubtopic             <amqp pattern>  (default: #)")
+        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
+        print("\t\t\t* single directory wildcard (matches one directory)")
+        print("\t\t\t# wildcard (matches rest)")
+        print("\treport_exchange         <name>          (default: xreport)")
+        print("\nAMQP Queue settings:")
+        print("\tdurable              <boolean>       (default: False)")
+        print("\texpire               <minutes>       (default: None)")
+        print("\tmessage-ttl          <minutes>       (default: None)")
+        print("\nMessage settings:")
+        print("\taccept    <regexp pattern>           (default: None)")
+        print("\treject    <regexp pattern>           (default: None)")
+        print("\ton_message           <script>        (default None)")
+        print("\nAMQP posting broker settings:")
+        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+        print("\t\t(default: manager amqp broker in default.conf)")
+        print("\tpost_exchange        <name>          (default xpublic)")
+        print("\ton_post              <script>        (default None)")
+        print("DEBUG:")
+        print("-debug")
 
 # ===================================
 # MAIN
