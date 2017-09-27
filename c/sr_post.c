@@ -152,6 +152,19 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     signed int status;
     struct sr_header_t *uh;
 
+    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+    else 
+       sprintf( smallbuf, "" );
+
+    fprintf( stderr, "parts=%s\n", smallbuf);
+
+    if ( sr_c->cfg->cache > 0 ) 
+    { 
+           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], m->sum, m->path, smallbuf ) ; 
+           log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
+           if (!status) return; // cache hit.
+    }
     strcpy( message_body, m->datestamp);
     strcat( message_body, " " );
     strcat( message_body, m->url );
@@ -160,6 +173,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     strcat( message_body, " \n" );
  
     header_reset();
+
     header_add( "atime", m->atime );
     header_add( "from_cluster", m->from_cluster );
 
@@ -167,8 +181,11 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     header_add( "mode", smallbuf );
     header_add( "mtime", m->mtime );
 
-    sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
-    header_add( "parts", smallbuf );
+    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+    {
+       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+       header_add( "parts", smallbuf );
+    }
 
     header_add( "sum", sr_hash2sumstr(m->sum));
     header_add( "to_clusters", m->to_clusters );
@@ -193,6 +210,23 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
         log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
 
 }
+int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct stat *sb, struct sr_message_t *m ) 
+/*
+  reading a file, initialize the message that corresponds to it. Return the number of parts that will be needed.
+ */
+{
+   return(0);
+}
+
+struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct sr_message_t *m ) 
+/*
+  Given a message from a "started" file, the prototype message, and a sequence number ( sequence is number of blocks of partsze )
+  return the adjusted prototype message.  (requires reading part of the file to checksum it.)
+ */
+{
+  return(NULL);
+}
+
 
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {

@@ -33,16 +33,13 @@ and invoke an appropriate binary downloader.  One can use the 'output' switch
 to choose other formats:
  
 json:
-
   the default format, json compatible with python save/restore.
 
 post:
-
   turns sr_cthneed into an sr_shovel, if cache is on, then it is a winnow.
 
 url: 
- 
-  just print out the retrival urls, rather than the entire message
+  just print out the retrieval urls, rather than the entire message
 
 
 

@@ -225,13 +225,18 @@ void json_dump_strheader(char *tag, char*value)
 
 char *sr_message_2log(struct sr_message_t *m)
 {
-     static char b[10240];
+     static char b[10240]; // FIXME!  need more than 10K for a log message? check?
      
      sprintf( b, "%s %s %s topic=%s", m->datestamp, m->url, m->path, m->routing_key );
      sprintf( strchr( b, '\0' ), " sum=%s", m->sum  );
      sprintf( strchr( b, '\0' ), " source=%s mtime=%s atime=%s", m->source, m->mtime, m->atime  );
-     sprintf( strchr( b, '\0' ), " to_clusters=%s from_cluster=%s mode=%04o", m->to_clusters, m->from_cluster, m->mode );
-     printf(  strchr( b, '\0' ), " parts=%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+     sprintf( strchr( b, '\0' ), " to_clusters=%s from_cluster=%s", m->to_clusters, m->from_cluster );
+
+     if (m->mode)
+        sprintf( strchr( b, '\0' ), " mode=%04o", m->mode );
+
+     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+        sprintf(  strchr( b, '\0' ), " parts=%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
 
      for( struct sr_header_t *h = msg.user_headers ; h ; h=h->next ) 
           sprintf( strchr( b, '\0' ), " %s=%s", h->key, h->value );
