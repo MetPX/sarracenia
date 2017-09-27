@@ -198,8 +198,11 @@ def file_process( parent ) :
 
     msg = parent.msg
 
-    if os.getcwd() != parent.new_dir:
-        os.chdir(parent.new_dir)
+    try:    curdir = os.getcwd()
+    except: curdir = None
+
+    if curdir != parent.new_dir:
+       os.chdir(parent.new_dir)
 
     # try link if no inserts
 
