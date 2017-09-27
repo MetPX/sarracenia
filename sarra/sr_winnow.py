@@ -14,10 +14,8 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Murray Rennie  - Shared Services Canada
-#  Last Changed   : Dec  8 15:22:58 GMT 2015
-#  Last Revision  : Jan  8 15:03:11 EST 2016
-#  Last Revision  : Apr  11 09:00:00 CDT 2016
+#  Last Changed   : Mon Sep 25 20:00 UTC 2017
+#                   code rewritten : sr_winnow is an instantiation of sr_subscribe
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -36,31 +34,19 @@
 #
 #
 
-import os,sys,time
-
 try :    
-         from sr_amqp           import *
-         from sr_cache          import *
-         from sr_consumer       import *
-         from sr_instances      import *
-         from sr_message        import *
-         from sr_util           import *
+         from sr_subscribe       import *
 except : 
-         from sarra.sr_amqp      import *
-         from sarra.sr_cache     import *
-         from sarra.sr_consumer  import *
-         from sarra.sr_instances import *
-         from sarra.sr_message   import *
-         from sarra.sr_util      import *
+         from sarra.sr_subscribe import *
 
-class sr_winnow(sr_instances):
+class sr_winnow(sr_subscribe):
 
     def __init__(self,config=None,args=None):
         if config == None:
            self.help()
            return
 
-        sr_instances.__init__(self,config,args)
+        sr_subscribe.__init__(self,config,args)
 
     def check(self):
 
@@ -109,81 +95,35 @@ class sr_winnow(sr_instances):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = True
 
-        # =============
-        # cache
-        # =============
+        # caching must be "on" ( entry cleanup default to 20 mins old )
 
-        self.cache = sr_cache(self)
+        if not self.caching : self.caching = 1200
+
+        self.cache      = sr_cache(self)
+        self.cache_stat = True
         self.cache.open()
+        self.execfile("on_heartbeat",'heartbeat_cache')
+        self.on_heartbeat_list.append(self.on_heartbeat)
 
-    def close(self):
-        self.consumer.close()
+        # ===========================================================
+        # some sr_subscribe options reset to match sr_winnow behavior
+        # ===========================================================
 
-        if self.post_broker :
-           self.post_hc.close()
+        # set notify_only : no download
 
-        if self.cache  : 
-           self.cache.save()
-           self.cache.close()
+        self.notify_only = True
 
-    def connect(self):
+        # we dont save nor restore
 
-        # =============
-        # create message
-        # =============
+        self.save    = False
+        self.restore = False
 
-        self.msg = sr_message(self)
+        # default reportback if unset
 
-        # =============
-        # consumer
-        # =============
+        if self.reportback == None : self.reportback = True
 
-        self.consumer             = sr_consumer(self)
-        self.msg.report_publisher = self.consumer.publish_back()
-        self.msg.report_exchange  = self.report_exchange
-        self.msg.user             = self.broker.username
-
-        self.logger.info("reading from to %s@%s, exchange: %s" %
-               ( self.broker.username, self.broker.hostname, self.msg.exchange ) )
-        self.logger.info("report_back is %s to %s@%s, exchange: %s" %
-               ( self.reportback, self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
-
-        self.post_hc = self.consumer.hc
-
-        # =============
-        # if post_broker different from broker
-        # =============
-
-        if self.post_broker :
-           self.post_hc  = HostConnect( self.logger )
-           self.post_hc.set_url(self.post_broker)
-           self.post_hc.connect()
-
-           self.msg.user = self.post_broker.username
-
-           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
-                           (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
-        else:
-           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
-                           (self.broker.hostname,self.broker.username,self.broker.path) )
-
-        # =============
-        # publisher if post_broker is same as broker
-        # =============
-
-        self.publisher = Publisher(self.post_hc)
-        self.publisher.build()
-        self.msg.publisher = self.publisher
-
-        self.msg.pub_exchange  = self.post_exchange
-        self.msg.post_exchange_split  = self.post_exchange_split
-        self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
-
-        # =============
-        # amqp resources
-        # =============
-
-        self.declare_exchanges()
+        # MG FIXME : I dont think I forgot anything but if some options need
+        #            to be specifically set for sr_winnow put them HERE
 
     def overwrite_defaults(self):
 
@@ -194,18 +134,12 @@ class sr_winnow(sr_instances):
         if hasattr(self,'manager'):
            self.broker   = self.manager
 
-        self.cache       = None
+        # ===========================================================
+        # some sr_subscribe options reset to understand user sr_winnow setup
+        # ===========================================================
 
-        # caching by default (20 mins)
+        self.reportback = None
 
-        self.caching     = 1200
-        self.cache_stat  = True
-
-        # heartbeat to clean/save cache
-
-        self.execfile("on_heartbeat",'heartbeat_cache')
-        self.on_heartbeat_list.append(self.on_heartbeat)
-        
 
     def help(self):
         print("Usage: sr_winnow [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" )
@@ -220,204 +154,6 @@ class sr_winnow(sr_instances):
         print("DEBUG:")
         print("-debug")
 
-    # =============
-    # __on_message__
-    # =============
-
-    def __on_message__(self):
-
-        # invoke user defined on_message when provided
-
-        for plugin in self.on_message_list:
-           if not plugin(self): return False
-
-        return True
-
-    # =============
-    # __on_post__ posting of message
-    # =============
-
-    def __on_post__(self):
-
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list :
-           if not plugin(self): return False
-
-        ok = self.msg.publish( )
-
-        return ok
-
-    # =============
-    # process message  
-    # =============
-
-    def process_message(self):
-
-        self.logger.debug("Received %s %s %s" % 
-                         (self.msg.topic,self.msg.notice,self.msg.hdrstr))
-
-        #=================================
-        # now message is complete : invoke __on_message__
-        #=================================
-
-        ok = self.__on_message__()
-        if not ok : return ok
-
-        # ========================================
-        # cache testing/adding
-        # ========================================
-
-        new_msg = self.cache.check_msg(self.msg)
-        if not new_msg :
-           self.msg.report_publish(304,'Not modified')
-           self.logger.debug("Ignored %s" % (self.msg.notice))
-           return True
-
-        self.logger.debug("Added %s" % (self.msg.notice))
-
-        # announcing the first and unique message
-
-        self.__on_post__()
-        self.msg.report_publish(201,'Published')
-
-        return True
-
-
-    def run(self):
-
-        # present basic config
-
-        self.logger.info("sr_winnow run")
-
-        # loop/process messages
-
-        self.connect()
-
-        while True :
-              try  :
-                      #  is it sleeping ?
-                      if not self.has_vip() :
-                         self.logger.debug("sr_winnow does not have vip=%s, is sleeping", self.vip)
-                         time.sleep(5)
-                         continue
-                      else:
-                         self.logger.debug("sr_winnow is active on vip=%s", self.vip)
-
-                      #  heartbeat
-                      ok = self.heartbeat_check()
-
-                      #  consume message
-                      ok, self.msg = self.consumer.consume()
-                      self.logger.debug("sr_winnow consume, ok=%s" % ok)
-                      if not ok : continue
-
-                      #  process message (ok or not... go to the next)
-                      ok = self.process_message()
-
-              except:
-                      (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-
-    def reload(self):
-        self.logger.info("%s reload" % self.program_name)
-        self.close()
-        self.configure()
-        self.run()
-
-    def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
-        self.run()
-
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
-        self.close()
-        os._exit(0)
-
-    def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
-
-        # on consuming host, do cleanup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.cleanup()
-
-        # on posting host
-       
-        self.post_hc = self.consumer.hc
-        if self.post_broker :
-           self.post_hc = HostConnect( self.logger )
-           self.post_hc.set_url(self.post_broker)
-           self.post_hc.connect()
-
-        self.declare_exchanges(cleanup=True)
-
-        self.cache.close(unlink=True)
-        self.cache = None
-
-        self.close()
-        os._exit(0)
-
-    def declare(self):
-        self.logger.info("%s declare" % self.program_name)
-
-        # on consuming host, do setup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.declare()
-
-        # on posting host
-       
-        self.post_hc = self.consumer.hc
-        if self.post_broker :
-           self.post_hc = HostConnect( self.logger )
-           self.post_hc.set_url(self.post_broker)
-           self.post_hc.connect()
-
-        self.declare_exchanges()
-
-        self.close()
-        os._exit(0)
-
-    def declare_exchanges(self, cleanup=False):
-
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange setup
-              
-        for x in exchanges :
-            if cleanup: self.post_hc.exchange_delete(x)
-            else      : self.post_hc.exchange_declare(x)
-
-    def setup(self):
-        self.logger.info("%s setup" % self.program_name)
-
-        # on consuming host, do setup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.setup()
-
-        # on posting host
-       
-        self.post_hc = self.consumer.hc
-        if self.post_broker :
-           self.post_hc = HostConnect( self.logger )
-           self.post_hc.set_url(self.post_broker)
-           self.post_hc.connect()
-
-        self.declare_exchanges()
-
-        self.close()
-        os._exit(0)
-                 
 # ===================================
 # MAIN
 # ===================================
