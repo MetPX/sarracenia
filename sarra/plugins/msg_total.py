@@ -75,7 +75,7 @@ class Msg_Total(object):
         parent.msg_total_lag = parent.msg_total_lag + lag
 
         # message with sum 'R' and 'L' have no partstr
-        if msg.partstr :
+        if parent.msg.partstr :
           (method,psize,ptot,prem,pno) = msg.partstr.split(',')
           parent.msg_total_bytecount   = parent.msg_total_bytecount + int(psize)
         
