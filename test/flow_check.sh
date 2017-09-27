@@ -238,7 +238,23 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
         sleep 10
         queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    done
+
+   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+   del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+   message_rates=$((ack+inc+del))
+   while [ $message_rates -gt 0 ]; do
+        echo "Still $message_rates live message rates, waiting..."
+        sleep 10
+        ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+        inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+        del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+        message_rates=$((ack+inc+del))
+        ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+   done
+
    sleep 10
+
 fi
 
 countall
@@ -324,11 +340,22 @@ if ((NERROR>0)); then
    echo TYPE OF ERRORS IN LOG :
    echo
    grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c
-   exit 1
 fi
 if ((NERROR==0)); then
    echo NO ERRORS IN LOGS
-   exit 0
 fi
-exit $?
+
+
+# MG shows WARNING in logs if any
+
+echo
+NWARNING=`grep WARNING "$LOGDIR"/*.log | wc -l`
+if ((NWARNING>0)); then
+   echo TYPE OF WARNINGS IN LOG :
+   echo
+   grep WARNING "$LOGDIR"/*.log | sed 's/:.*WARNING/ \[WARNING/' | uniq -c
+fi
+if ((NWARNING==0)); then
+   echo NO WARNINGS IN LOGS
+fi
 
