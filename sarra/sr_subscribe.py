@@ -16,6 +16,7 @@
 #  Michel Grenier - Shared Services Canada
 #  Jun Hu         - Shared Services Canada
 #  Last Changed   : Dec 17 09:23:05 EST 2015
+#  Last Changed   : Tue Sep 26 17:30 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -85,7 +86,8 @@ class sr_subscribe(sr_instances):
         # posting... discard not permitted
 
         if self.post_broker :
-           self.post_document_root = self.document_root
+           if self.post_document_root == None :
+              self.post_document_root = self.document_root
 
         # impacting other settings
 
@@ -102,14 +104,24 @@ class sr_subscribe(sr_instances):
            self.execfile("on_heartbeat",'heartbeat_cache')
            self.on_heartbeat_list.append(self.on_heartbeat)
 
+        # reporting
+
+        if self.reportback :
+           self.report_exchange = 'xs_' + self.broker.username
+
 
     def close(self):
         self.consumer.close()
-        if self.save_fp:              self.save_fp.close()
-        if self.post_broker:          self.post_hc.close()
+
+        if self.post_broker :
+           if self.post_broker != self.broker : self.post_hc.close()
+
+        if self.save_fp: self.save_fp.close()
+
         if hasattr(self,'ftp_link') : self.ftp_link.close()
         if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
+
         if self.caching :
            self.cache.save()
            self.cache.close()
@@ -128,21 +140,24 @@ class sr_subscribe(sr_instances):
 
         self.consumer = sr_consumer(self)
 
+        self.logger.info("reading from to %s@%s, exchange: %s" % \
+                        ( self.broker.username, self.broker.hostname, self.exchange ) )
+
         # =============
         # report_publisher
         # =============
 
         if self.reportback :
 
-           report_exchange = 'xs_' + self.broker.username
-
            self.report_publisher     = self.consumer.publish_back()
            self.msg.report_publisher = self.report_publisher
-           self.msg.report_exchange  = report_exchange
+           self.msg.report_exchange  = self.report_exchange
+
            self.logger.info("report_back to %s@%s, exchange: %s" % 
                ( self.broker.username, self.broker.hostname, self.msg.report_exchange ) )
+
         else:
-           self.logger.warning("report_back suppressed")
+           self.logger.info("report_back suppressed")
 
 
         # =============
@@ -151,11 +166,13 @@ class sr_subscribe(sr_instances):
 
         if self.save :
            self.logger.warning("running in save mode")
-           self.post_broker   = None
-
-           self.consumer.save = True
-           if self.save_file  : self.save_path = self.save_file + self.save_path[-10:]
+           self.post_broker        = None
+           self.consumer.save      = True
            self.consumer.save_path = self.save_path
+
+           if self.save_file  :
+              self.save_path = self.save_file + self.save_path[-10:]
+              self.consumer.save_path = self.save_path
 
            self.save_fp       = open(self.save_path,"a")
            self.save_count    = 1
@@ -169,26 +186,37 @@ class sr_subscribe(sr_instances):
 
            # publisher host
 
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
+           self.post_hc = self.consumer.hc
+           if self.post_broker != self.broker :
+              self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_url( self.post_broker )
+              self.post_hc.connect()
+
+              self.msg.user = self.post_broker.username
+
+           self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
+                           (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
+
 
            # publisher
 
            self.publisher = Publisher(self.post_hc)
            self.publisher.build()
-           self.msg.publisher    = self.publisher
-           self.msg.pub_exchange = self.post_exchange
-           self.msg.post_exchange_split = self.post_exchange_split
+           self.msg.publisher = self.publisher
+           if self.post_exchange :
+              self.msg.pub_exchange = self.post_exchange
+              self.msg.post_exchange_split = self.post_exchange_split
+           self.logger.info("Output AMQP exchange(%s)" % self.post_exchange )
 
            # amqp resources
+
            self.declare_exchanges()
 
 
     def __do_download__(self):
 
-
-        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % (self.msg.urlstr, self.msg.url.scheme, self.new_file))
+        self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
+                         (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
         try :
                 if   self.msg.url.scheme == 'http' :
@@ -304,7 +332,7 @@ class sr_subscribe(sr_instances):
 
         # invoke user defined on_message when provided
 
-        self.local_file = self.new_dir + '/' + self.new_file     # FIXME: remove in 2018, once all plugins are converted.
+        self.local_file = self.new_dir + '/' + self.new_file  # FIXME: remove in 2018, once all plugins are converted.
         self.msg.local_file = self.local_file
         saved_file = self.local_file
 
@@ -365,9 +393,6 @@ class sr_subscribe(sr_instances):
 
         self.post_broker    = None
         self.post_exchange  = None
-
-        self.save_fp        = None
-        self.save_count     = 1
 
     # =============
     # process message  
@@ -432,12 +457,18 @@ class sr_subscribe(sr_instances):
            self.logger.debug("message is to remove %s" % self.new_file)
            try : 
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
-               if os.path.isdir( self.new_file) : os.rmdir( self.new_file)
+               if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
                self.logger.debug("%s removed" % self.new_file)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
                self.logger.error("remove %s failed." % self.new_file )
                if self.reportback: self.msg.report_publish(500, 'remove failed')
+
+           if self.post_broker :
+              self.msg.set_topic('v02.post',self.new_relpath)
+              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+              self.__on_post__()
+
            return True
 
         #=================================
@@ -447,22 +478,22 @@ class sr_subscribe(sr_instances):
         if self.msg.sumflg.startswith('L') :
            self.logger.debug("message is to link %s to %s" % ( self.new_file, self.msg.headers[ 'link' ] ) )
            try : 
+               ok = True
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
                self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
-               if self.reportback: self.msg.report_publish(201, 'linked')
+               if self.reportback: self.msg.report_publish(201,'linked')
            except:
+               ok = False
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
-		
 
            if ok and self.post_broker :
-              self.logger.debug("self.post_broker = %s" % self.post_broker)
               self.msg.set_topic('v02.post',self.new_relpath)
               self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
               self.__on_post__()
-              self.msg.report_publish(205,'Reset Content : linked')
 
            return True
+
 
         #=================================
         # prepare download 
@@ -490,8 +521,7 @@ class sr_subscribe(sr_instances):
 
         need_download = True
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
-           if self.reportback:
-              self.msg.report_publish(304, 'not modified')
+           if self.reportback: self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.new_file)
 
            # if we are processing an entire file... we are done
@@ -512,11 +542,14 @@ class sr_subscribe(sr_instances):
            # could not download
            if not ok : return False
 
+           # after download we dont propagate renaming... once used get rid of it
+           if 'rename' in self.msg.headers : del self.msg.headers['rename']
+
            # after download : setting of sum for 'z' flag ...
 
            if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
               self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
-              self.msg.report_publish(205,'Reset Content : checksum')
+              if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
            # onfly checksum is different from the message ???
            if not self.msg.onfly_checksum == self.msg.checksum :
@@ -528,14 +561,13 @@ class sr_subscribe(sr_instances):
               if self.recompute_chksum :
                  #self.msg.compute_local_checksum()
                  self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
-                 self.msg.report_publish(205,'Reset Content : checksum')
+                 if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
 
            # if the part should have been inplace... but could not
 
            if self.inplace and self.msg.in_partfile :
-              if self.reportback:
-                 self.msg.report_publish(307,'Temporary Redirect')
+              if self.reportback: self.msg.report_publish(307,'Temporary Redirect')
 
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
@@ -617,7 +649,7 @@ class sr_subscribe(sr_instances):
            self.msg.set_topic('v02.post',self.new_relpath)
            self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
            self.__on_post__()
-           self.msg.report_publish(201,'Published')
+           if self.reportback: self.msg.report_publish(201,'Published')
 
         #=================================
         # if we processed a file we are done
@@ -642,7 +674,6 @@ class sr_subscribe(sr_instances):
         """
         return True
 
-
     def restore_messages(self):
         self.logger.info("%s restore_messages" % self.program_name)
 
@@ -652,6 +683,21 @@ class sr_subscribe(sr_instances):
         # not active
 
         if self.vip  and  not self.has_vip() : return
+         
+        # restore_queue setup
+
+        if self.restore_queue != None:
+           user    = self.broker.username
+           config  = self.config_name
+           channel = self.post_hc.channel
+
+           # create temporary exchange to publish only to restore_queue.
+
+           self.restore_exchange = 'xs_%s.%s.%s.restore' % (user,self.program_name,config)
+           self.msg.pub_exchange =  self.restore_exchange
+           self.msg.post_exchange_split = 1
+           channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
+           channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
 
         # display restore message count
 
@@ -672,33 +718,6 @@ class sr_subscribe(sr_instances):
                  self.msg.exchange = 'save'
                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
                  self.msg.from_amqplib()
-
-                 # =====
-                 # MG COMMENTED THIS OUT 
-                 # there are several problems with this code part.
-                 # 1- builds urlstr and match against msg.urlstr
-                 # 2- self.consumer.consume already passed through filtering before the save
-                 # 3- anyway, if it was not the case and a message would be filtered, the count would 
-                 #    never match the total and the save_path would never get unlinked ...
-                 #    that would lead into eventual bugs (like old save_file to which we append new messages...)
-                 # 4- the one instance of isMatchingPattern in sr_config is available everywhere
-                 #    because it is inherited ... so already available in all programs
-                 # =====
-
-                 # make use of accept/reject
-                 #if self.use_pattern :
-                     # Adjust url to account for sundew extension if present, and files do not already include the names.
-                     #if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
-                     #   urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
-                     #else:
-                     #   urlstr=self.msg.urlstr
-
-                     #self.logger.debug("sr_sender restore, path being matched: %s " % ( urlstr )  )
-
-                     #if not self.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
-                     #   self.logger.debug("Rejected by accept/reject options")
-                     #   return False,self.msg
-
                  self.logger.info("%s restoring message %d of %d: topic: %s" %
                                  (self.program_name,  count,total, self.msg.topic) )
                  ok = self.process_message()
@@ -710,10 +729,24 @@ class sr_subscribe(sr_instances):
            self.logger.error("%s only restored %d of %d messages from save file: %s " %
                             (self.program_name, count, total, self.save_path ) )
 
+        # only if restoring from a restore_queue : cleanup and exit
+
+        if self.restore_queue != None:
+           self.post_hc.channel.queue_unbind( self.restore_queue, self.restore_exchange, '#' )
+           self.close()
+           os._exit(0)
+
 
     def run(self):
 
         self.logger.info("%s run" % self.program_name)
+
+        # if report_daemons is false than skip 'rr_' config ... cleaning up ressources if any
+
+        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+           self.logger.info("report_daemons is False, skipping %s config" % self.config_name)
+           self.cleanup()
+           os._exit(0)
 
         # loop/process messages
 
@@ -730,17 +763,15 @@ class sr_subscribe(sr_instances):
                       # if vip provided, check if has vip
 
                       if self.vip :
-                         active = self.has_vip()
-
-                         #  it is sleeping !
-                         if not active :
+                         #  is it sleeping ?
+                         if not self.has_vip() :
+                            self.logger.debug("%s does not have vip=%s, is sleeping", \
+                                             (self.program_name,self.vip))
                             time.sleep(5)
-                            self.logger.debug("%s does not have vip=%s, is sleeping", (self.program_name,self.vip))
-                            active=False
                             continue
+                         else:
+                            self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
 
-                         #  it is alive
-                         self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
 
                       #  heartbeat
                       ok = self.heartbeat_check()
@@ -820,7 +851,14 @@ class sr_subscribe(sr_instances):
         dr = self.document_root
 
         if self.currentDir :
-           relpath = self.currentDir + '/' + relpath
+           currentDir = self.currentDir
+           if '${YYYYMMDD}' in self.currentDir :
+              YYYYMMDD   = time.strftime("%Y%m%d", time.gmtime()) 
+              currentDir = currentDir.replace('${YYYYMMDD}',YYYYMMDD)
+           if '${SOURCE}' in self.currentDir  and 'source' in self.msg.headers:
+              currentDir = currentDir.replace('${SOURCE}',self.msg.headers['source'])
+
+           relpath = currentDir + '/' + relpath
            relpath = relpath.replace('//','/')
 
            if dr and dr in relpath :
@@ -858,9 +896,6 @@ class sr_subscribe(sr_instances):
         #self.logger.debug("new_srcpath = %s" % self.new_srcpath)
         #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
-        # we dont propagate renaming... once used get rid of it
-        if 'rename' in self.msg.headers : del self.msg.headers['rename']
-
     def reload(self):
         self.logger.info("%s reload" % self.program_name)
         self.close()
@@ -879,21 +914,33 @@ class sr_subscribe(sr_instances):
     def cleanup(self):
         self.logger.info("%s cleanup" % self.program_name)
 
+        # if report_daemons is false than skip 'rr_' config
+
+        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+           self.logger.info("skipping cleanup for %s" % self.config_name)
+           self.close()
+           os._exit(0)
+
+        # consumer declare
+
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.cleanup()
+
+        # if posting
+
+        if self.post_broker :
+           self.post_hc = self.consumer.hc
+           if self.post_broker != self.broker :
+              self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_url( self.post_broker )
+              self.post_hc.connect()
+           self.declare_exchanges(cleanup=True)
 
         # if caching
 
         if self.caching :
            self.cache.close(unlink=True)
-
-        # if posting
-
-        if self.post_broker :
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges(cleanup=True)
+           self.cache = None
 
         self.close()
         os._exit(0)
@@ -901,14 +948,25 @@ class sr_subscribe(sr_instances):
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
+        # if report_daemons is false than skip 'rr_' config
+
+        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+           self.logger.info("skipping declare for %s" % self.config_name)
+           self.close
+           os._exit(0)
+
+        # consumer declare
+
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
         # on posting host
         if self.post_broker :
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
+           self.post_hc = self.consumer.hc
+           if self.post_broker != self.broker :
+              self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_url( self.post_broker )
+              self.post_hc.connect()
            self.declare_exchanges()
 
         self.close()
@@ -936,14 +994,25 @@ class sr_subscribe(sr_instances):
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
 
+        # if report_daemons is false than skip 'rr_' config
+
+        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+           self.logger.info("skipping setup for %s" % self.config_name)
+           self.close
+           os._exit(0)
+
+        # consumer setup
+
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
 
         # on posting host
         if self.post_broker :
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
+           self.post_hc = self.consumer.hc
+           if self.post_broker != self.broker :
+              self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_url( self.post_broker )
+              self.post_hc.connect()
            self.declare_exchanges()
 
         if self.caching :
