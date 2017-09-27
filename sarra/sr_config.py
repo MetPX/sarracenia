@@ -388,6 +388,7 @@ class sr_config:
         # 
 
         # cache
+        self.cache                = None
         self.caching              = False
         self.cache_stat           = False
 
