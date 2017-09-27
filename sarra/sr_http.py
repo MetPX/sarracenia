@@ -142,7 +142,8 @@ class sr_http():
 
         # open self.http
 
-        ok = self.__open__(self.destination + '/' + self.path + '/' + remote_file, remote_offset, length )
+        url = self.destination + '/' + self.path + '/' + remote_file
+        ok  = self.__open__(url, remote_offset, length )
         if not ok : return False
 
         # on fly checksum 
@@ -230,7 +231,8 @@ class sr_http():
 
         self.entries = {}
 
-        ok = self.__open__(self.destination + '/' + self.path)
+        url = self.destination + '/' + self.path
+        ok  = self.__open__( url )
         if not ok : return self.entries
 
         # get html page for directory
@@ -590,11 +592,11 @@ def self_test():
           support_inplace = http.support_inplace
 
           if support_inplace :
-             fp = open("titi","w")
-             fp.write("01234567890")
+             fp = open("titi","wb")
+             fp.write(b"01234567890")
              fp.close()
 
-             fp = open("toto","r")
+             fp = open("toto","rb")
              data = fp.read()
              fp.close()
 
@@ -606,7 +608,7 @@ def self_test():
 
              tr.download(cfg)
 
-             fp = open("titi","r")
+             fp = open("titi","rb")
              data2 = fp.read()
              fp.close()
 
