@@ -438,7 +438,8 @@ class ftp_transport():
                    ftp = sr_ftp(parent)
                    ok = ftp.connect()
                    if not ok : return False
-                   self.ftp = ftp
+                   self.ftp  = ftp
+                   self.cdir = None
 
                 # for generalization purpose
                 if not ftp.support_inplace and msg.partflg == 'i':
@@ -561,7 +562,8 @@ class ftp_transport():
                    ftp = sr_ftp(parent)
                    ok  = ftp.connect()
                    if not ok : return False
-                   self.ftp = ftp
+                   self.ftp  = ftp
+                   self.cdir = None
                 
                 if self.cdir != new_dir :
                    self.logger.debug("ftp_transport send cd to %s" % new_dir)
