@@ -257,12 +257,16 @@ class sr_ftp():
            self.fp = open(local_file,'r+b')
            if local_offset != 0 : self.fp.seek(local_offset,0)
            self.ftp.retrbinary('RETR ' + remote_file, self.fpwrite, self.bufsize )
+           self.fp.flush()
+           os.fsync(self.fp)
            self.fpos = self.fp.tell()
            self.fp.close()
         else :
            self.fp = open(local_file,'r+')
            if local_offset != 0 : self.fp.seek(local_offset,0)
            self.ftp.retrlines ('RETR ' + remote_file, self.fpwritel )
+           self.fp.flush()
+           os.fsync(self.fp)
            self.fpos = self.fp.tell()
            self.fp.close()
 
@@ -419,8 +423,11 @@ class ftp_transport():
         urlstr      = msg.srcpath + '/' + msg.relpath
         new_lock    = ''
 
-        if os.getcwd() != parent.new_dir:
-            os.chdir(parent.new_dir)
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != parent.new_dir:
+           os.chdir(parent.new_dir)
 
         try :
                 parent.destination = msg.srcpath
