@@ -577,6 +577,11 @@ class sr_sender(sr_instances):
 
         self.local_path   = self.local_dir   + '/' + self.filename
 
+        self.local_offset = 0
+        self.local_length = 0
+
+        if self.msg.sumflg in ['R','L'] : return
+
         self.local_offset = self.msg.offset
         self.local_length = self.msg.length
 
