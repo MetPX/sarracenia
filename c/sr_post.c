@@ -161,7 +161,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
  
     header_reset();
     header_add( "atime", m->atime );
-    header_add( "from_clusters", m->from_clusters );
+    header_add( "from_cluster", m->from_cluster );
 
     sprintf( smallbuf, "%04o", m->mode );
     header_add( "mode", smallbuf );
@@ -190,7 +190,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     if ( status < 0 ) 
         log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
     else 
-        log_msg( LOG_INFO, "posting, publish message for %s%s \n", m->url, m->path );
+        log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
 
 }
 
@@ -238,7 +238,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost called with: %s sb=%p\n", fn, sb );
+     log_msg( LOG_DEBUG, "sr_%s called with: %s sb=%p\n", sr_c->cfg->progname, fn, sb );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
@@ -256,8 +256,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       return;
   }
   
-  if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->cfg->post_broker->exchange );
+  //if ( (sr_c->cfg) && sr_c->cfg->debug )
+  //   log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->cfg->post_broker->exchange );
 
 
   strcpy( postfn, fn );
@@ -288,9 +288,6 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   }
   routingkey[lasti]='\0';
 
-  if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "posting, routingkey: %s\n", routingkey );
-
   strcpy( message_body, sr_time2str(NULL));
   strcat( message_body, " " );
   set_url( message_body, sr_c->cfg->url );
@@ -307,8 +304,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
  */
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
-          message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
+     log_msg( LOG_DEBUG, "sr_%s routingkey: %s message_body: %s sumalgo:%c sb:%p event: 0x%x\n",  sr_c->cfg->progname,
+          routingkey, message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
 

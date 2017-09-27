@@ -171,8 +171,7 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
   if (sr_c->cfg->post_broker) {
        sr_c->cfg->post_broker = sr_broker_connect( sr_c->cfg->post_broker ) ; 
        if ( ! (sr_c->cfg->post_broker)  ) return(NULL);
-       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-            log_msg(  LOG_DEBUG, "sr_context_connect to post broker succeeded!\n" );
+       log_msg(  LOG_INFO, "connected to post broker %s\n", sr_broker_uri(sr_c->cfg->post_broker) );
   }
        
   return(sr_c);

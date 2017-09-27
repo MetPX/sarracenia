@@ -124,9 +124,9 @@ struct sr_mask_t *isMatchingPattern(struct sr_config_t *sr_cfg, const char* chai
    entry = sr_cfg->masks;
    while( entry ) 
    {
-       if ( (sr_cfg) && sr_cfg->debug )
-           log_msg( LOG_DEBUG,  "isMatchingPattern, testing mask: %s %-30s next=%p\n", 
-                (entry->accepting)?"accept":"reject", entry->clause, (entry->next) );
+       // if ( (sr_cfg) && sr_cfg->debug )
+       //     log_msg( LOG_DEBUG,  "isMatchingPattern, testing mask: %s %-30s next=%p\n", 
+       //          (entry->accepting)?"accept":"reject", entry->clause, (entry->next) );
 
        if ( !regexec(&(entry->regexp), chaine, (size_t)0, NULL, 0 ) ) {
            break; // matched
@@ -180,6 +180,29 @@ void add_mask(struct sr_config_t *sr_cfg, char *directory, char *option, int acc
 }
 
 #define NULTERM(x)  if (x != NULL) *x = '\0' ;
+
+char *sr_broker_uri( struct sr_broker_t *b )
+{
+   static char buf[PATH_MAX];
+   buf[0]='\0';
+   if (!b) {
+      strcpy( buf, "NULL" );
+      return(buf);
+   }
+
+   sprintf( buf, "amqp%s://%s@%s:%d/%s%s" ,
+     b->ssl?"s":"", b->user, b->hostname, b->port, b->exchange?"#":"", b->exchange?b->exchange:"" );
+/*
+   strcat( buf, "amqp" );
+   if (b->ssl) strcat( buf, "s" );
+   strcat( buf, "://" );
+   strcat( buf, b->user );
+   strcat( buf, b->user );
+ */
+
+   return(buf);
+}
+
 
 struct sr_broker_t *broker_uri_parse( char *src ) 
 {
@@ -427,7 +450,7 @@ char *subarg( struct sr_config_t *sr_cfg, char *arg )
      c=e+1; 
   }
   *d='\0';
-  log_msg( LOG_DEBUG, "argument after substitutions: %s\n", subargbuf );
+  //log_msg( LOG_DEBUG, "argument after substitutions: %s\n", subargbuf );
   return(subargbuf);
   
 }
@@ -460,8 +483,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(-1);
   }
 
-  if (sr_cfg->debug)
-     log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
+  //if (sr_cfg->debug)
+  //   log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
 
   if ( !strcmp( option, "accept" ) || !strcmp( option, "get" ) ) {
       add_mask( sr_cfg, sr_cfg->directory, argument, 1 );
@@ -877,7 +900,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
 
   if ( f==NULL ) 
   {
-          log_msg( LOG_ERROR, "error: failed to find configuration: %s\n", filename );
+          log_msg( LOG_CRITICAL, "error: failed to find configuration: %s\n", filename );
           exit(0);
   }
 

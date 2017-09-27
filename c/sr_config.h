@@ -164,6 +164,12 @@ void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub );
     add a topic to the list of bindings, based on the current topic prefix
   */
 
+char *sr_broker_uri( struct sr_broker_t *b );
+ /*
+   given a broker, print the corresponding uri string
+  */
+
+
 void sr_config_free( struct sr_config_t *sr_cfg );
 
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname); 

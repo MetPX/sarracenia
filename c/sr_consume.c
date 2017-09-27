@@ -149,12 +149,12 @@ int sr_consume_setup(struct sr_context *sr_c)
   {
       sr_add_topic(sr_c->cfg, "#" );
   }
-  log_msg( LOG_DEBUG, " topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
+  log_msg( LOG_DEBUG, "topics: %p, string=+%s+\n", sr_c->cfg->topics,  sr_c->cfg->topics  );
 
   for( t = sr_c->cfg->topics; t ; t=t->next )
   {
-      log_msg( LOG_INFO, " binding queue: %s to exchange: %s topic: %s\n",
-              sr_c->cfg->queuename, sr_c->cfg->broker->exchange, t->topic );
+      log_msg( LOG_INFO, "queue %s bound with topic %s to %s\n",
+              sr_c->cfg->queuename, t->topic, sr_broker_uri( sr_c->cfg->broker ) );
       amqp_queue_bind(sr_c->cfg->broker->conn, 1, 
             amqp_cstring_bytes(sr_c->cfg->queuename), 
             amqp_cstring_bytes(sr_c->cfg->broker->exchange), 
@@ -180,7 +180,15 @@ void assign_field( const char* key, char *value )
      struct sr_header_t *h;
 
      //log_msg( LOG_DEBUG, "parsing: \"%s\" : \"%s\"\n", key, value );
-     if ( !strcmp(key,"parts") ) {
+     if ( !strcmp(key,"atime") ) {
+         strcpy(msg.atime,value); 
+     } else if ( !strcmp(key,"from_cluster") ) {
+         strcpy(msg.from_cluster,value); 
+     } else if ( !strcmp(key,"mode") ) {
+         msg.mode=strtoul( value, NULL, 8);
+     } else if ( !strcmp(key,"mtime") ) {
+         strcpy(msg.mtime,value); 
+     } else if ( !strcmp(key,"parts") ) {
          //FIXME: no error checking, invalid parts header will cause a bobo.
          msg.parts_s=value[0];
          s=strtok(&(value[2]),",");
@@ -191,20 +199,16 @@ void assign_field( const char* key, char *value )
          msg.parts_rem = atol(s);
          s=strtok(NULL,",");
          msg.parts_num = atol(s);
-     } else if ( !strcmp(key,"mode") ) {
-         msg.mode=strtoul( value, NULL, 8);
-     } else if ( !strcmp(key,"to_clusters") ) {
-         strcpy(msg.to_clusters,value); 
-     } else if ( !strcmp(key,"atime") ) {
-         strcpy(msg.atime,value); 
-     } else if ( !strcmp(key,"mtime") ) {
-         strcpy(msg.mtime,value); 
-     } else if ( !strcmp(key,"sum") ) {
-         strcpy(msg.sum,value); 
-     } else if ( !strcmp(key,"url") ) {
-         strcpy(msg.url,value); 
      } else if ( !strcmp(key,"path") ) {
          strcpy(msg.path,value); 
+     } else if ( !strcmp(key,"source") ) {
+         strcpy(msg.source,value); 
+     } else if ( !strcmp(key,"sum") ) {
+         strcpy(msg.sum,value); 
+     } else if ( !strcmp(key,"to_clusters") ) {
+         strcpy(msg.to_clusters,value); 
+     } else if ( !strcmp(key,"url") ) {
+         strcpy(msg.url,value); 
      } else {
          h = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
          h->key=strdup(key);
@@ -218,6 +222,22 @@ void json_dump_strheader(char *tag, char*value)
 {
     printf( "\"%s\": \"%s\"", tag, value );
 }
+
+char *sr_message_2log(struct sr_message_t *m)
+{
+     static char b[10240];
+     
+     sprintf( b, "%s %s %s topic=%s", m->datestamp, m->url, m->path, m->routing_key );
+     sprintf( strchr( b, '\0' ), " sum=%s", m->sum  );
+     sprintf( strchr( b, '\0' ), " source=%s mtime=%s atime=%s", m->source, m->mtime, m->atime  );
+     sprintf( strchr( b, '\0' ), " to_clusters=%s from_cluster=%s mode=%04o", m->to_clusters, m->from_cluster, m->mode );
+     printf(  strchr( b, '\0' ), " parts=%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+
+     for( struct sr_header_t *h = msg.user_headers ; h ; h=h->next ) 
+          sprintf( strchr( b, '\0' ), " %s=%s", h->key, h->value );
+     return(b);
+}
+
 
 void sr_message_2json(struct sr_message_t *m)
 {
@@ -234,6 +254,8 @@ void sr_message_2json(struct sr_message_t *m)
      printf( "\"parts\": \"%c,%ld,%ld,%ld,%ld\"", 
            m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
      printf( ", " );
+     json_dump_strheader( "from_cluster", m->from_cluster );
+     json_dump_strheader( "source", m->source );
      json_dump_strheader( "sum", m->sum );
      printf( ", " );
      json_dump_strheader( "to_clusters", m->to_clusters );

@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "sr_consume.h"
+#include "sr_post.h"
 
 void usage()
 {
@@ -134,10 +135,11 @@ int main(int argc, char **argv)
   while(1)
   {
       m=sr_consume(sr_c);
+      log_msg( LOG_INFO, "received: %s\n", sr_message_2log(m) );
       if (m) {
         if ( !strcmp( sr_cfg.output, "json" ) ) sr_message_2json(m);      
         else if ( !strcmp( sr_cfg.output, "path" ) ) sr_message_2path(m);      
-        //else if ( !strcmp( sr_cfg.output, "post" ) ) sr_message_2post(m);      
+        else if ( !strcmp( sr_cfg.output, "post" ) ) sr_post_message(sr_c,m);      
       }
   }
   sr_context_close(sr_c);
