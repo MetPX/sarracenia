@@ -297,3 +297,20 @@ broker
 exchange
 ....
 
+
+Thneed III: use TOML.
+
+most of it is obvious.... but accept/reject would use the array of aray syntax:
+
+[[ filter ]]
+
+directory "/b"
+reject ".*haha.*"
+
+[[ filter ]]
+directory = "/a"
+accept .*hoho.*
+
+but no obvious way to "include" 
+
+

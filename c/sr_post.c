@@ -50,6 +50,9 @@
 
 #include "sr_context.h"
 
+// needed for sr_post_message.
+#include "sr_consume.h"
+
 /*
  Statically assign the maximum number of headers that can be included in a message.
  just picked a number.  I remember picking a larger one before, and it bombed, don't know why.
@@ -140,6 +143,91 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
 }
 
 
+void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
+{
+    char message_body[1024];
+    char smallbuf[256];
+    amqp_table_t table;
+    amqp_basic_properties_t props;
+    signed int status;
+    struct sr_header_t *uh;
+
+    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+    else 
+       sprintf( smallbuf, "" );
+
+    fprintf( stderr, "parts=%s\n", smallbuf);
+
+    if ( sr_c->cfg->cache > 0 ) 
+    { 
+           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], m->sum, m->path, smallbuf ) ; 
+           log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
+           if (!status) return; // cache hit.
+    }
+    strcpy( message_body, m->datestamp);
+    strcat( message_body, " " );
+    strcat( message_body, m->url );
+    strcat( message_body, " " );
+    strcat( message_body, m->path );
+    strcat( message_body, " \n" );
+ 
+    header_reset();
+
+    header_add( "atime", m->atime );
+    header_add( "from_cluster", m->from_cluster );
+
+    sprintf( smallbuf, "%04o", m->mode );
+    header_add( "mode", smallbuf );
+    header_add( "mtime", m->mtime );
+
+    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+    {
+       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+       header_add( "parts", smallbuf );
+    }
+
+    header_add( "sum", sr_hash2sumstr(m->sum));
+    header_add( "to_clusters", m->to_clusters );
+
+    for(  uh=m->user_headers; uh ; uh=uh->next )
+        header_add(uh->key, uh->value);
+
+    table.num_entries = hdrcnt;
+    table.entries=headers;
+
+    props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+    props.content_type = amqp_cstring_bytes("text/plain");
+    props.delivery_mode = 2; /* persistent delivery mode */
+    props.headers = table;
+
+    status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 
+              amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
+
+    if ( status < 0 ) 
+        log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
+    else 
+        log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
+
+}
+int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct stat *sb, struct sr_message_t *m ) 
+/*
+  reading a file, initialize the message that corresponds to it. Return the number of parts that will be needed.
+ */
+{
+   return(0);
+}
+
+struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct sr_message_t *m ) 
+/*
+  Given a message from a "started" file, the prototype message, and a sequence number ( sequence is number of blocks of partsze )
+  return the adjusted prototype message.  (requires reading part of the file to checksum it.)
+ */
+{
+  return(NULL);
+}
+
+
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
 
@@ -148,6 +236,8 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   char  partstr[255];
   char  modebuf[6];
   char  fn[PATH_MAXNUL];
+  char  postfn[PATH_MAXNUL];
+  char  *drfound;
   char  linkstr[PATH_MAXNUL];
   char *linkp;
   int   linklen;
@@ -180,8 +270,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
           strcpy( fn, pathspec );
   }
 
+
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost called with: %s sb=%p\n", fn, sb );
+     log_msg( LOG_DEBUG, "sr_%s called with: %s sb=%p\n", sr_c->cfg->progname, fn, sb );
 
   /* apply the accept/reject clauses */
   mask = isMatchingPattern(sr_c->cfg, fn);
@@ -199,46 +290,60 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       return;
   }
   
-  if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->exchange );
+  //if ( (sr_c->cfg) && sr_c->cfg->debug )
+  //   log_msg( LOG_DEBUG, "sr_cpost accepted posting to exchange:  %s\n", sr_c->cfg->post_broker->exchange );
 
+
+  strcpy( postfn, fn );
+  if (sr_c->cfg->documentroot) 
+  {
+      drfound = strstr(fn, sr_c->cfg->documentroot ); 
+   
+      if (drfound) 
+      {
+          drfound += strlen(sr_c->cfg->documentroot) ; 
+          strcpy( postfn, drfound );
+      } 
+  } 
   strcpy( routingkey, sr_c->cfg->topic_prefix );
 
-  strcat( routingkey, fn );
+  strcat( routingkey, postfn );
   lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(routingkey) ; i++ )
+  {
       if ( routingkey[i] == '/' ) 
       {
-           routingkey[i]='\0';
            if ( lasti > 0 ) 
            {
               routingkey[lasti]='.';
            }
            lasti=i;
       }
-
-  if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "posting, routingkey: %s\n", routingkey );
+  }
+  routingkey[lasti]='\0';
 
   strcpy( message_body, sr_time2str(NULL));
   strcat( message_body, " " );
   set_url( message_body, sr_c->cfg->url );
   strcat( message_body, " " );
+  strcat( message_body, postfn );
 
+/*
   if ( sr_c->cfg->documentroot ) 
   {
       if ( !strncmp( sr_c->cfg->documentroot, fn, strlen(sr_c->cfg->documentroot) ) ) 
           strcat( message_body, fn+strlen(sr_c->cfg->documentroot) );
   } else 
-      strcat( message_body, fn);
+     strcat( message_body, fn);
+ */
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_cpost message_body: %s sumalgo:%c sb:%p event: 0x%x\n", 
-          message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
+     log_msg( LOG_DEBUG, "sr_%s routingkey: %s message_body: %s sumalgo:%c sb:%p event: 0x%x\n",  sr_c->cfg->progname,
+          routingkey, message_body, sr_c->cfg->sumalgo, sb, sr_c->cfg->events );
 
   header_reset();
 
-  header_add( "to_clusters", sr_c->to );
+  header_add( "to_clusters", sr_c->cfg->to );
 
   for(  uh=sr_c->cfg->user_headers; uh ; uh=uh->next )
      header_add(uh->key, uh->value);
@@ -348,16 +453,19 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
       if ( status != 0 )
       {
-          status = amqp_basic_publish(sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->exchange), 
+          status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 
               amqp_cstring_bytes(routingkey), 0, 0, &props, amqp_cstring_bytes(message_body));
       }
       block_num++;
  
       if ( status < 0 ) 
-          log_msg( LOG_ERROR, "sr_cpost: publish of block %lu of %lu failed.\n", block_num, block_count );
-      else if ( (sr_c->cfg) && sr_c->cfg->debug )
-          log_msg( LOG_DEBUG, "posting, publish block %lu of %lu.\n", block_num, block_count );
-
+      {
+          log_msg( LOG_ERROR, "sr_%s: publish of block %lu of %lu failed.\n", sr_c->cfg->progname, block_num, block_count );
+      } else {
+          log_msg( LOG_INFO, "published: %s topic=%s sum=%s \n" , message_body, 
+              routingkey, sumstr );
+              // parts, modebuf, atimestr, mtimestr );
+      }
   }
 }
 
@@ -365,9 +473,9 @@ int sr_post_cleanup( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_delete( sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
+    amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
 
-    reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+    reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
@@ -380,11 +488,11 @@ int sr_post_init( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_declare( sr_c->cfg->broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
+    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
           amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
 
  
-    reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+    reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
         sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
@@ -419,7 +527,7 @@ void connect_and_post(const char *fn,const char* progname)
        config_read = sr_config_read(&sr_cfg,setstr);
        if (!config_read) return;
      }
-     sr_config_finalize( &sr_cfg, 0 );
+     if ( !sr_config_finalize( &sr_cfg, 0 )) return;
 
      sr_c = sr_context_init_config(&sr_cfg);
   } 
@@ -437,7 +545,7 @@ void connect_and_post(const char *fn,const char* progname)
   sr_c = sr_context_connect(sr_c);
   if (sr_c == NULL ) 
   {
-    log_msg( LOG_ERROR, "failed to parse AMQP broker settings\n");
+    log_msg( LOG_ERROR, "failed to parse AMQP post_broker settings\n");
     return;
   }
   if ( lstat( fn, &sb ) ) sr_post( sr_c, fn, NULL );

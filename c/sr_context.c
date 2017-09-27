@@ -103,7 +103,7 @@ void sr_amqp_reply_print(amqp_rpc_reply_t x, char const *context)
 
 
 
-struct sr_context *sr_context_connect(struct sr_context *sr_c) {
+struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
 
  /* set up a connection given a context.
   */
@@ -112,56 +112,71 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
   amqp_rpc_reply_t reply;
   amqp_channel_open_ok_t *open_status;
 
-  sr_c->cfg->broker->conn = amqp_new_connection();
+  broker->conn = amqp_new_connection();
 
-  if ( sr_c->cfg->broker->ssl ) {
-     sr_c->cfg->broker->socket = amqp_ssl_socket_new(sr_c->cfg->broker->conn);
-     if (!(sr_c->cfg->broker->socket)) {
+  if ( broker->ssl ) {
+     broker->socket = amqp_ssl_socket_new(broker->conn);
+     if (!(broker->socket)) {
         log_msg(  LOG_ERROR, "failed to create SSL amqp client socket.\n" );
         return(NULL);
      }
 
-     amqp_ssl_socket_set_verify_peer(sr_c->cfg->broker->socket, 0);
-     amqp_ssl_socket_set_verify_hostname(sr_c->cfg->broker->socket, 0);
+     amqp_ssl_socket_set_verify_peer(broker->socket, 0);
+     amqp_ssl_socket_set_verify_hostname(broker->socket, 0);
 
   } else {
-     sr_c->cfg->broker->socket = amqp_tcp_socket_new(sr_c->cfg->broker->conn);
-     if (!(sr_c->cfg->broker->socket)) {
+     broker->socket = amqp_tcp_socket_new(broker->conn);
+     if (!(broker->socket)) {
         log_msg(  LOG_ERROR, "failed to create AMQP client socket. \n" );
         return(NULL);
      }
   }
 
-  status = amqp_socket_open(sr_c->cfg->broker->socket, sr_c->cfg->broker->hostname, sr_c->cfg->broker->port);
+  status = amqp_socket_open(broker->socket, broker->hostname, broker->port);
   if (status < 0) {
     sr_amqp_error_print(status, "failed opening AMQP socket");
     return(NULL);
   }
 
-  reply = amqp_login(sr_c->cfg->broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, sr_c->cfg->broker->user, sr_c->cfg->broker->password);
+  reply = amqp_login(broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, broker->user, broker->password);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
     sr_amqp_reply_print(reply, "failed AMQP login");
     return(NULL);
   }
 
-  open_status = amqp_channel_open(sr_c->cfg->broker->conn, 1);
+  open_status = amqp_channel_open(broker->conn, 1);
   if (open_status == NULL ) {
     log_msg( LOG_ERROR, "failed AMQP amqp_channel_open\n");
     return(NULL);
   }
 
-  reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+  reply = amqp_get_rpc_reply(broker->conn);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
     sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
     return(NULL);
   }
 
-  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     log_msg(  LOG_DEBUG, "sr_context_connect succeeded!\n" );
-
-  return(sr_c);
+  return(broker);
 }
 
+struct sr_context *sr_context_connect(struct sr_context *sr_c) {
+
+  if (sr_c->cfg->broker)  {
+       sr_c->cfg->broker = sr_broker_connect( sr_c->cfg->broker ) ; 
+       if ( ! (sr_c->cfg->broker)  ) return(NULL);
+       if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+            log_msg(  LOG_DEBUG, "sr_context_connect to subscription broker succeeded!\n" );
+  }
+     
+  if (sr_c->cfg->post_broker) {
+       sr_c->cfg->post_broker = sr_broker_connect( sr_c->cfg->post_broker ) ; 
+       if ( ! (sr_c->cfg->post_broker)  ) return(NULL);
+       log_msg(  LOG_DEBUG, "connected to post broker %s\n", sr_broker_uri(sr_c->cfg->post_broker) );
+  }
+       
+  return(sr_c);
+
+}
 
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) 
 {
@@ -176,56 +191,46 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
 
   sr_c->cfg = sr_cfg;
-  sr_c->cfg->broker->conn = NULL;
 
-  if (!(sr_cfg->broker)) 
-  {
-    log_msg( LOG_ERROR, "no broker given\n" );
-    return( NULL );
-  }
-
-  if (sr_cfg->exchange==NULL) 
-  {
-    log_msg( LOG_ERROR, "no exchange given\n" );
-    return( NULL );
-  }
-
-  sr_c->exchange = sr_cfg->exchange ;
+  // FIXME: if prog is post, then only post_broker is OK.
+  // sr_c->exchange = sr_cfg->exchange ;
   
   sr_c->url = sr_cfg->url;
 
-  sr_c->to = ( sr_cfg->to == NULL ) ? sr_cfg->broker->hostname : sr_cfg->to;
-  sr_c->cfg->broker->socket = NULL;
-
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
-     log_msg( LOG_DEBUG, "broker: amqp%s://%s:%s@%s:%d\n", 
-       sr_cfg->broker->ssl?"s":"", sr_cfg->broker->user, (sr_cfg->broker->password)?"<pw>":"<null>", sr_cfg->broker->hostname, sr_cfg->broker->port );
+     if (sr_c->cfg->broker) 
+        log_msg( LOG_DEBUG, "broker: amqp%s://%s:%s@%s:%d\n", sr_cfg->broker->ssl?"s":"", sr_cfg->broker->user, 
+                 (sr_cfg->broker->password)?"<pw>":"<null>", sr_cfg->broker->hostname, sr_cfg->broker->port );
+
+     if (sr_c->cfg->post_broker) 
+        log_msg( LOG_DEBUG, "post_broker: amqp%s://%s:%s@%s:%d\n", sr_cfg->post_broker->ssl?"s":"", sr_cfg->post_broker->user, 
+                 (sr_cfg->post_broker->password)?"<pw>":"<null>", sr_cfg->post_broker->hostname, sr_cfg->post_broker->port );
   }
   
   return( sr_c );
 
 }
 
-void sr_context_close(struct sr_context *sr_c) 
+void sr_broker_close(struct sr_broker_t *broker) 
 {
 
   amqp_rpc_reply_t reply;
   signed int status;
 
-  reply = amqp_channel_close(sr_c->cfg->broker->conn, 1, AMQP_REPLY_SUCCESS);
+  reply = amqp_channel_close(broker->conn, 1, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       log_msg( LOG_ERROR, "sr_cpost: amqp channel close failed.\n");
       return;
   }
 
-  reply = amqp_connection_close(sr_c->cfg->broker->conn, AMQP_REPLY_SUCCESS);
+  reply = amqp_connection_close(broker->conn, AMQP_REPLY_SUCCESS);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
       log_msg( LOG_ERROR, "sr_cpost: amqp connection close failed.\n");
       return;
   }
 
-  status = amqp_destroy_connection(sr_c->cfg->broker->conn);
+  status = amqp_destroy_connection(broker->conn);
   if (status < 0 ) 
   {
       log_msg( LOG_ERROR, "sr_cpost: amqp context close failed.\n");
@@ -234,3 +239,13 @@ void sr_context_close(struct sr_context *sr_c)
 }
 
 
+void sr_context_close(struct sr_context *sr_c)  {
+
+  if (sr_c->cfg->broker) 
+  {
+      sr_broker_close( sr_c->cfg->broker );
+      log_msg( LOG_INFO, "sr_cpost: subscription broker closed.\n");
+  } 
+  if (sr_c->cfg->post_broker) sr_broker_close( sr_c->cfg->post_broker );
+
+}

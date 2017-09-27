@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: renamed client from csub2json to cthneed, added output: file, json, post
+* C: don't segfault when invalid regexp entered in accept/reject clause
+* C: don't segfault config file comments.
+* C: honour document_root
 * ftp,sftp,http standardisation + http exception changes
 * sr_message not using srcpath,relpath instead of url affects all components
 * cache.check_msg ... check for sum L and R which does not have parts

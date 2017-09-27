@@ -47,7 +47,7 @@ all: $(SARRA_OBJECT)
 	$(CC) $(CFLAGS) -o sr_utiltest sr_utiltest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 	$(CC) $(CFLAGS) -o sr_cachetest sr_cachetest.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
-	$(CC) $(CFLAGS) -o sr_csub2json sr_csub2json.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
+	$(CC) $(CFLAGS) -o sr_cthneed sr_cthneed.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 
 
 install:
@@ -55,11 +55,11 @@ install:
 	@mv *.so build/lib
 	@mv *.so.* build/lib
 	@mv sr_cpost build/bin
-	@mv sr_csub2json build/bin
+	@mv sr_cthneed build/bin
 	@cp *.h build/include/
 
 clean:
-	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_utiltest sr_csub2json sr_cachetest sr_cache_save.test
+	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_utiltest sr_cthneed sr_cachetest sr_cache_save.test
 	@rm -rf build
 
 test:

@@ -84,55 +84,59 @@ struct sr_broker_t {
   char *password;
   char *hostname;
   int   port;
+  char *exchange;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
-  struct sr_broket_t *next; 
+  struct sr_broker_t *next; 
 };
 
 
 struct sr_config_t {
-  int               accept_unmatched;
-  char*             action;
-  long unsigned     blocksize; // if partitioned, how big are they?
+  int                 accept_unmatched;
+  char*               action;
+  long unsigned       blocksize; // if partitioned, how big are they?
   struct sr_broker_t *broker;
-  float              cache;
-  struct sr_cache_t *cachep;
-  mode_t             chmod_log;
-  char              *configname;
-  int                debug;
-  char              *directory;
-  char              *documentroot;
-  int                durable;
-  sr_event_t         events;
-  char              *exchange;
-  int                expire;
-  int                follow_symlinks;
-  int                force_polling;
-  float              heartbeat;
-  int                instance;
-  char              *last_matched;  //have run isMatching.
-  int                log;           // use a log file, rather than standard files.
-  char              *logfn;           // use a log file, rather than standard files.
-  int                logseverity;      // severity of messages to log (regardless of where.)
-  struct sr_mask_t  *masks;
-  struct sr_mask_t  *match;
-  int                message_ttl;
-  char              *output;
-  int               pid;
-  char              *pidfile;
-  char              *progname;
-  struct sr_path_t  *paths;
-  int                pipe;  // pipe mode, read file names from standard input
-  char              *queuename;
-  int                realpath;
-  int                recursive;
-  float              sleep;
-  char               sumalgo; // checksum algorithm to use.
-  struct sr_topic_t *topics;
-  char               topic_prefix[AMQP_MAX_SS];
-  char              *url;
+  float               cache;
+  struct sr_cache_t  *cachep;
+  mode_t              chmod_log;
+  char               *configname;
+  int                 debug;
+  char               *directory;
+  char               *documentroot;
+  int                 durable;
+  sr_event_t          events;
+  char                *exchange;
+  int                 expire;
+  int                 follow_symlinks;
+  int                 force_polling;
+  float               heartbeat;
+  int                 instance;
+  char               *last_matched;  //have run isMatching.
+  char               *list;          //method to generate initial input list:  file or queue
+  int                 log;           // use a log file, rather than standard files.
+  char               *logfn;           // use a log file, rather than standard files.
+  int                 logseverity;      // severity of messages to log (regardless of where.)
+  struct sr_mask_t   *masks;
+  struct sr_mask_t   *match;
+  int                 message_ttl;
+  char               *output;
+  int                 pid;
+  char               *pidfile;
+  char               *progname;
+  struct sr_path_t   *paths;
+  int                 pipe;  // pipe mode, read file names from standard input
+  struct sr_broker_t *post_broker;
+  char               *post_exchange;
+  char               *queuename;
+  int                 realpath;
+  int                 recursive;
+  float               sleep;
+  char                sumalgo; // checksum algorithm to use.
+  char               *to;
+  struct sr_topic_t  *topics;
+  char                topic_prefix[AMQP_MAX_SS];
+  char               *url;
   struct sr_header_t *user_headers;
-  char             *to;
   
 };
 
@@ -159,6 +163,12 @@ void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub );
  /* 
     add a topic to the list of bindings, based on the current topic prefix
   */
+
+char *sr_broker_uri( struct sr_broker_t *b );
+ /*
+   given a broker, print the corresponding uri string
+  */
+
 
 void sr_config_free( struct sr_config_t *sr_cfg );
 

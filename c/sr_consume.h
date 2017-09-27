@@ -31,7 +31,7 @@ struct sr_message_t {
   char atime[SR_TIMESTRLEN];
   char datestamp  [SR_TIMESTRLEN];
   char exchange[AMQP_MAX_SS];
-  char from_clusters[AMQP_MAX_SS];
+  char from_cluster[AMQP_MAX_SS];
   int  mode;
   char mtime[SR_TIMESTRLEN];
   char parts_s;
@@ -39,19 +39,20 @@ struct sr_message_t {
   long parts_blkcount;
   long parts_rem;
   long parts_num;
+  char path[PATH_MAXNUL];
   char queue[AMQP_MAX_SS];
   char routing_key[AMQP_MAX_SS];
+  char source[AMQP_MAX_SS];
   char sum[SR_SUMSTRLEN];
   char to_clusters[AMQP_MAX_SS];
-  struct sr_header_t *user_headers;
   char url[PATH_MAXNUL];
-  char path[PATH_MAXNUL];
+  struct sr_header_t *user_headers;
 
   // sr_report(7) fields.
-  int statuscode;
+  float duration;
   char consumingurl[PATH_MAXNUL];
   char consuminguser[PATH_MAXNUL];
-  float duration;
+  int statuscode;
 
 };
 
@@ -73,11 +74,29 @@ int sr_consume_cleanup(struct sr_context *sr_c);
  */
 
 
+char *sr_message_2log(struct sr_message_t *m);
+/* 
+   make a string in the format for log messages. 
+ */
 
 void sr_message_2json(struct sr_message_t *m);
 /* 
-   print a message to stdout
+   print a message to stdout, the entire thing, in json save/restore format.
  */
+
+void sr_message_2path(struct sr_message_t *m);
+/* 
+   print a message to stdout, just the pathname to stdout.
+
+ */
+
+void sr_message_2post(struct sr_context *src, struct sr_message_t *m);
+/*
+  post a pessage to post the given message. 
+
+ */
+
+
 struct sr_message_t *sr_consume(struct sr_context *sr_c);
 
 #endif 

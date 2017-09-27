@@ -47,10 +47,8 @@
 struct sr_context {
 
   char settings[AMQP_MAX_SS];
-  const char *exchange;
   const char *file;
   const char *url;
-  const char *to;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
   int port;
