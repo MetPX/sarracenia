@@ -116,10 +116,6 @@ class sr_shovel(sr_subscribe):
         # the message is consumed and posted
 
         self.notify_only = True
-        
-        # no caching
-
-        self.caching = False
 
         # default reportback if unset
 
@@ -191,7 +187,7 @@ class sr_shovel(sr_subscribe):
         # Should there be accept/reject option used unmatch are accepted
 
         self.accept_unmatch = True
-
+        
         # ===========================================================
         # some sr_subscribe options reset to understand user sr_shovel setup
         # ===========================================================
