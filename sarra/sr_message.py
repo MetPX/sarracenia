@@ -721,12 +721,14 @@ class sr_message():
     # adjust headers from -headers option
 
     def trim_headers(self):
+        self.logger.debug("trim_headers")
 
         for k in self.del_headers:
             if k in self.headers : del self.headers[k]
 
         for k in self.add_headers:
             if k in self.headers : continue
+            self.headers[k] = self.add_headers[k]
 
     def verify_part_suffix(self,filepath):
         filename = os.path.basename(filepath)
