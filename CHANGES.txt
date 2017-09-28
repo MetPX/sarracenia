@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* sr_util in startup_args catch -help when only args given
+* sr_shovel : caching optional default to False
+* sr_subscribe help module : treats sr_shovel,sr_winnow,sr_sarra cases
+* sr_message module trim_headers to spread the new way of treating headers
 * option -headers to add or delete or reset message headers key,value pair
 * sr_sender 'R' and 'L' messages in set_local skip offset/length setting
 * ftp,sftp  resetting cdif on connect/reconnect

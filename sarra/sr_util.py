@@ -177,6 +177,7 @@ def startup_args(sys_argv):
 
     if largv < 3 :
        if argv[-1] in actions : action = argv[-1]
+       if argv[-1].lower().strip('-') in ['h','help'] : args = [ argv[-1] ]
        return (args,action,config,old)
 
     # check for action and config flags

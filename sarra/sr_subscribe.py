@@ -256,50 +256,178 @@ class sr_subscribe(sr_instances):
 
 
     def help(self):
-        print("Usage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
+
+        # ---------------------------
+        # general startup and version
+        # ---------------------------
+
+        print("\nUsage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
-        print("\nConnect to an AMQP broker to subscribe to timely file update announcements.\n")
-        print("Examples:\n")    
 
-        print("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
-        print("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
-        print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
-        print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout\n" % self.program_name)
+        # ---------------------------
+        # program's purpose
+        # ---------------------------
 
-        print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
-          "\nAMQP broker settings:\n" +
-          "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
-	  "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
-          "\nAMQP Queue bindings:\n" +
-          "\texchange      <name>         (default: xpublic)\n" +
-          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.post)\n" +
-          "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
-          "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
-          "\t\t\t* single directory wildcard (matches one directory)\n" +
-          "\t\t\t# wildcard (matches rest)\n" +
-          "\nAMQP Queue settings: (usually do not need to set any of these.)\n" +
-          "\tdurable       <boolean>      persist across broker restarts (default: False)\n" +
-          "\texpire        <minutes>      how long unused queues stay defined (default: None)\n" +
-          "\tmessage-ttl   <minutes>      how long messages stay in queue without being consumed (default: None)\n" +
-          "\tqueue_name    <name>         (default: program set it for you)\n" +
-          "\nHTTP Settings:\n" +
-          "\nLocal File Delivery settings:\n" +
-          "\taccept    <regexp pattern> regular expressions of files to download.\n" +
-          "\taccept_unmatch    <boolean> if no accept or reject clauses match, download? (default: no).\n" +
-          "\tdirectory <path>           where to place files (place ABOVE accept in configuration) (default: .)\n" +
-          "\tflatten   <string>         keep directories in filename replaced by *flatten* character (default: '/' )\n" +
-          "\tinflight  <.string>        suffix (or prefix) to name for files while they are downloaded (default: .tmp)\n" +
-          "\tmirror    <boolean>        same directory tree as on source, or flat. (default: false)\n" +
-          "\treject    <regexp pattern> regular expression of files to ignore (optional)\n" +
-          "\tstrip    <count> (number of directories to remove from beginning.)\n" +
-	  "" )
+        if self.program_name == 'sr_sarra' :
+           print("\n%s: Subscribe to download, and Recursively Re-Announce(implements a sarracenia pump)\n"\
+                    % self.program_name)
+           print("\nmininal configuration includes :")
+           print("broker, exchange, post_broker, [post_exchange (defaults to exchange)]\n")
 
-        print("if the download of the url received in the amqp message needs credentials")
-        print("you defines the credentials in the $HOME/.config/sarra/credentials.conf")
-        print("one url per line. as an example, the file could contain:")
-        print("http://myhttpuser:myhttppassword@apachehost.com/")
-        print("ftp://myftpuser:myftppassword@ftpserver.org/")
-        print("etc...")
+        if self.program_name == 'sr_winnow' :
+           print("\n%s: read messages from exchange and post them(post_exchange), suppressing duplicates\n"\
+                    % self.program_name)
+           print("\nmininal configuration includes :")
+           print("broker, exchange, [post_broker (defaults to broker)], post_exchange\n")
+
+        if self.program_name == 'sr_shovel' :
+           print("\n%s: read messages from exchange and post them on another broker using post_exchange\n"\
+                    % self.program_name)
+           print("\nmininal configuration includes :")
+           print("broker, exchange, post_broker, [post_exchange (defaults to exchange)]\n")
+
+        if self.program_name == 'sr_subscribe' :
+           print("\n%s: Connect to an AMQP broker, subscribe to file announcements, do timely downloads\n"\
+                    % self.program_name)
+           print("\nmininal configuration :")
+           print("sr_subscribe start ./aaa")
+           print("\t\twhere aaa is an empty file: downloads announced files on dd.weather in cwd\n")
+
+           print("\nExamples:\n")    
+
+           print("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
+           print("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
+           print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
+           print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
+           print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
+           print("\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
+
+        # ---------------------------
+        # option presentations
+        # ---------------------------
+
+        print("OPTIONS:")
+
+        # ---------------------------
+        # instances
+        # ---------------------------
+
+        if self.program_name != 'sr_winnow' :
+           print("\ninstances <nb_of_instances>      default 1")
+
+        # ---------------------------
+        # consumer broker
+        # ---------------------------
+
+        print("\nAMQP consumer broker settings:")
+        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>   (MANDATORY)")
+
+        if self.program_name == 'sr_subscribe':
+           print("\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
+
+        # ---------------------------
+        # queue bindings
+        # ---------------------------
+
+        print("\nAMQP Queue bindings:")
+
+        if self.program_name == 'sr_subscribe':
+          print("\texchange             <name>          (default: xpublic)")
+        else :
+          print("\texchange             <name>          (MANDATORY)")
+
+        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
+        print("\tsubtopic             <amqp pattern>  (default: #)")
+        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
+        print("\t\t\t* single directory wildcard (matches one directory)")
+        print("\t\t\t# wildcard (matches rest)")
+
+        # ---------------------------
+        # queue settings
+        # ---------------------------
+
+        print("\nAMQP Queue settings:")
+        print("\tqueue_name    <name>         (default: program set it for you)\n")
+        print("\tdurable              <boolean>       (default: False)")
+        print("\texpire               <minutes>       (default: None)")
+        print("\tmessage-ttl          <minutes>       (default: None)")
+
+        # ---------------------------
+        # message filtering
+        # ---------------------------
+
+        print("\nMessage targeted (filtering):")
+
+        if self.program_name in ['sr_sarra','sr_subscribe']:
+           print("\tdirectory <path>     target directory (post_document_root/directory/\"file settings\"")
+           print("\t * accept/reject following a directory option determine what is placed under it")
+           print("\t\t(default currentdir/\"file settings\"")
+
+        print("\taccept    <regexp pattern>           (default: None)")
+        print("\treject    <regexp pattern>           (default: None)")
+        print("\taccept_unmatch   <boolean> if no match for all accept/reject opt, accept message? (default: no).\n")
+        print("\ton_message           <script>        (default None)")
+
+        # ---------------------------
+        # file download settings
+        # ---------------------------
+
+        if self.program_name in ['sr_sarra','sr_subscribe'] :
+           print("\nFile download settings:")
+           print("\tdocument_root        <document_root> (MANDATORY)")
+           print("\tinplace              <boolean>       (default False)")
+           print("\toverwrite            <boolean>       (default False)")
+           print("\tflatten   <string>   filename= message relpath replacing '/' by *flatten*(default:'/')")
+           print("\tinflight  <.string>  suffix (or prefix) on filename during downloads (default: .tmp)\n")
+           print("\tmirror    <boolean>  same directory tree as message relpath or flat. (default: True)")
+           print("\tstrip     <count>    nb. of directories to remove from message relpath. (default: 0)")
+           print("\tdo_download          <script>        (default None)")
+           print("\ton_file              <script>        (default None)")
+           print("\n\tif the download of the url received in the amqp message needs credentials")
+           print("\tyou defines the credentials in the $HOME/.config/sarra/credentials.conf")
+           print("\tone url per line. as an example, the file could contain:")
+           print("\thttp://myhttpuser:myhttppassword@apachehost.com/")
+           print("\tftp://myftpuser:myftppassword@ftpserver.org/")
+           print("\tetc...")
+
+        # ---------------------------
+        # message posting
+        # ---------------------------
+
+        print("\nAMQP posting settings:")
+        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
+
+        if self.program_name == 'sr_sarra' :
+           print("\t\t(default: manager amqp broker in default.conf)")
+           print("\tpost_exchange        <name>          (default xpublic)")
+        else :
+           print("\tpost_exchange        <name>          (MANDATORY)")
+
+        print("\tpost_document_root   <name>          (default document_root)")
+        print("\turl                  <url>      post message: srcpath          (MANDATORY)")
+        print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
+        if self.program_name == 'sr_sarra' :
+           print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
+        print("\ton_post              <script>        (default None)")
+
+        # ---------------------------
+        # report posting
+        # ---------------------------
+
+        print("\nAMQP reporting to broker:")
+        if self.program_name == 'sr_sarra':
+           print("\treportback              <boolean>       (default: true)")
+        else :
+           print("\treportback              <boolean>       (default: false)")
+
+        print("\treport_exchange         <name>          (default: xreport)")
+
+        # ---------------------------
+        # debugging
+        # ---------------------------
+
+        print("\nDEBUG:")
+        print("\t-debug")
 
     # =============
     # __on_message__
