@@ -996,7 +996,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   {
          sr_cfg->cachep = sr_cache_open( p );
   } else {
-         unlink(p);
+         if (!access(p, F_OK )) unlink(p);
   }
 
   // FIXME: if prog is post, then only post_broker is OK.
