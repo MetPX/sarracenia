@@ -6,13 +6,19 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* C: renamed client from csub2json to cthneed, added output: file, json, post
-* C: don't segfault when invalid regexp entered in accept/reject clause
-* C: don't segfault config file comments.
-* C: honour document_root
-* ftp,sftp,http standardisation + http exception changes
-* sr_message not using srcpath,relpath instead of url affects all components
-* cache.check_msg ... check for sum L and R which does not have parts
+* sr_sender 'R' and 'L' messages in set_local skip offset/length setting
+* ftp,sftp  resetting cdif on connect/reconnect
+* plugin msg_total.py skip total byte increment when no partstr in message
+* flow_check.sh when no message in queues, check that all message rates are 0.0
+* sr_subscribe integration of restore_queue, process report_daemons,
+* winnow,shovel,sarra rewritten with an instantiation of sr_subscribe
+* sr_config some save,restore and cache defaults
+* ftp,sftp,http : preventive flush and sync file on close
+* ftp,sftp,http : correction of Eric's bug on os.getcwd and preventive flush sync file on close
+* correction of Eric's bug on os.getcwd
+* sr_file, sr_sarra, sr_subscribe, sr_sender, sr_message uses message srcpath,relpath
+* ftp,sftp,http standardisation + srcpath,relpath, http exceptions to avoid hang
+* sr_cache cache.check_msg ... check for sum L and R which does not have parts
 * sr_post using srcpath,relpath instead of url in posting modules
 * flow_cleanup fix config path to remove
 * flow_setup  fix number of exchanges and queues expected
