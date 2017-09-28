@@ -75,6 +75,9 @@ class sr_message():
 
         self.host          = socket.getfqdn()
 
+        self.add_headers   = self.parent.headers_to_add
+        self.del_headers   = self.parent.headers_to_del
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -144,23 +147,20 @@ class sr_message():
 
         self.start_timer()
 
-        if msg is not None:
-            #self.logger.debug("attributes= %s" % vars(msg))
-            self.exchange  = msg.delivery_info['exchange']
-            self.topic     = msg.delivery_info['routing_key']
-            self.headers   = msg.properties['application_headers']
-            self.notice    = msg.body
+        #self.logger.debug("attributes= %s" % vars(msg))
+        self.exchange  = msg.delivery_info['exchange']
+        self.topic     = msg.delivery_info['routing_key']
+        self.headers   = msg.properties['application_headers']
+        self.notice    = msg.body
 
-            if type(msg.body) == bytes :
-               self.notice = msg.body.decode("utf-8")
-  
-        self.partstr     = None
-        self.sumstr      = None
+        if type(msg.body) == bytes :
+           self.notice = msg.body.decode("utf-8")
 
         # retransmission case :
         # topic is name of the queue...
         # set exchange to xpublic
         # rebuild topic from notice : v02.post....
+
         if self.exchange == '' and self.topic[:2] == 'q_':
            self.logger.debug(" retransmit topic = %s" % self.topic)
            token = self.notice.split(' ')
@@ -173,6 +173,18 @@ class sr_message():
            words = path.split('/')
            self.topic    = 'v02.post.' + '.'.join(words[:-1])
            self.logger.debug(" modified for topic = %s" % self.topic)
+
+        # adjust headers from -headers option
+
+        for k in self.del_headers:
+            if k in self.headers : del self.headers[k]
+
+        for k in self.add_headers:
+            if k in self.headers : continue
+            self.headers[k]      = self.add_headers[k]
+  
+        self.partstr     = None
+        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]

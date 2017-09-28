@@ -415,6 +415,8 @@ class sr_config:
         self.rename               = None
         self.flow                 = None
 
+        self.headers_to_add       = {}
+        self.headers_to_del       = []
 
         #
 
@@ -1089,6 +1091,17 @@ class sr_config:
                      else :
                         self.force_polling = self.isTrue(words[1])
                         n = 2
+
+                elif words0 in ['headers']: # See: sr_config.7
+                     kvlist = words1.split('=')
+                     key    = kvlist[0]
+                     value  = kvlist[1]
+
+                     if value.lower() in ['none','null'] :
+                        self.headers_to_del.append(key)
+                     else :
+                        self.headers_to_add [key] = value
+                     n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
                      self.gateway_for = words1.split(',')
@@ -1820,10 +1833,12 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
+          self.debug   = self.silence
+          self.info    = self.silence
 
 def self_test():
     f = open("./bbb.inc","w")
@@ -1989,6 +2004,28 @@ def self_test():
        cfg.logger.error(" prefetch option:  did not work")
 
     cfg.config(cfg.user_config)
+
+    opt1 = "headers toto1=titi1"
+    cfg.option(opt1.split())
+    opt2 = "headers toto2=titi2"
+    cfg.option(opt2.split())
+    opt3 = "headers tutu1=None"
+    cfg.option(opt3.split())
+    opt4 = "headers tutu2=None"
+    cfg.option(opt4.split())
+
+    if not 'toto1' in cfg.headers_to_add      or \
+       not 'toto2' in cfg.headers_to_add      or \
+       cfg.headers_to_add['toto1'] != 'titi1' or \
+       cfg.headers_to_add['toto2'] != 'titi2' or \
+       len(cfg.headers_to_add)     != 2 :
+       cfg.logger.error(" option headers adding entries did not work")
+
+    if not 'tutu1' in cfg.headers_to_del      or \
+       not 'tutu2' in cfg.headers_to_del      or \
+       len(cfg.headers_to_del)     != 2 :
+       cfg.logger.error(" option headers deleting entries did not work")
+
 
     print("TEST PASSED")
     sys.exit(0)
