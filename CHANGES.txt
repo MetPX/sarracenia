@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* option -headers to add or delete or reset message headers key,value pair
 * sr_sender 'R' and 'L' messages in set_local skip offset/length setting
 * ftp,sftp  resetting cdif on connect/reconnect
 * plugin msg_total.py skip total byte increment when no partstr in message
