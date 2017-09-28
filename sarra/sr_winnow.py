@@ -42,10 +42,6 @@ except :
 class sr_winnow(sr_subscribe):
 
     def __init__(self,config=None,args=None):
-        if config == None:
-           self.help()
-           return
-
         sr_subscribe.__init__(self,config,args)
 
     def check(self):
@@ -139,20 +135,6 @@ class sr_winnow(sr_subscribe):
         # ===========================================================
 
         self.reportback = None
-
-
-    def help(self):
-        print("Usage: sr_winnow [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" )
-        print("version: %s \n" % sarra.__version__ )
-        print("read file announcements from exchange and reannounce them to post_exchange, suppressing duplicates\n")
-        print("OPTIONS:")
-        print("-b   <broker>                default manager (if configured)")
-        print("-e   <exchange>              MANDATORY")
-        print("-tp  <topic_prefix>          default v02.post")
-        print("-st  <subtopic>              default #")
-        print("-pe  <post_exchange>         MANDATORY")
-        print("DEBUG:")
-        print("-debug")
 
 # ===================================
 # MAIN
