@@ -344,18 +344,3 @@ fi
 if ((NERROR==0)); then
    echo NO ERRORS IN LOGS
 fi
-
-
-# MG shows WARNING in logs if any
-
-echo
-NWARNING=`grep WARNING "$LOGDIR"/*.log | wc -l`
-if ((NWARNING>0)); then
-   echo TYPE OF WARNINGS IN LOG :
-   echo
-   grep WARNING "$LOGDIR"/*.log | sed 's/:.*WARNING/ \[WARNING/' | uniq -c
-fi
-if ((NWARNING==0)); then
-   echo NO WARNINGS IN LOGS
-fi
-
