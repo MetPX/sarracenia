@@ -1114,6 +1114,7 @@ class sr_config:
                 elif words0 in ['help','h']: # See: sr_config.7
                      self.help()
                      needexit = True
+                     os._exit(0)
 
                 elif words0 in ['hostname']: # See: dd_subscribe (obsolete option...ok)
                      self.hostname = words[1] 
