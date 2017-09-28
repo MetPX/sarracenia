@@ -176,13 +176,8 @@ class sr_message():
 
         # adjust headers from -headers option
 
-        for k in self.del_headers:
-            if k in self.headers : del self.headers[k]
+        self.trim_headers()
 
-        for k in self.add_headers:
-            if k in self.headers : continue
-            self.headers[k]      = self.add_headers[k]
-  
         self.partstr     = None
         self.sumstr      = None
 
@@ -721,6 +716,17 @@ class sr_message():
 
     def start_timer(self):
         self.tbegin = time.time()
+
+
+    # adjust headers from -headers option
+
+    def trim_headers(self):
+
+        for k in self.del_headers:
+            if k in self.headers : del self.headers[k]
+
+        for k in self.add_headers:
+            if k in self.headers : continue
 
     def verify_part_suffix(self,filepath):
         filename = os.path.basename(filepath)
