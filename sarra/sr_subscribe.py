@@ -205,7 +205,7 @@ class sr_subscribe(sr_instances):
            self.msg.publisher = self.publisher
            if self.post_exchange :
               self.msg.pub_exchange = self.post_exchange
-              self.msg.post_exchange_split = self.post_exchange_split
+           self.msg.post_exchange_split = self.post_exchange_split
            self.logger.info("Output AMQP exchange(%s)" % self.post_exchange )
 
            # amqp resources
@@ -823,7 +823,7 @@ class sr_subscribe(sr_instances):
 
            self.restore_exchange = 'xs_%s.%s.%s.restore' % (user,self.program_name,config)
            self.msg.pub_exchange =  self.restore_exchange
-           self.msg.post_exchange_split = 1
+           self.msg.post_exchange_split = 0
            channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
            channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
 
@@ -861,7 +861,7 @@ class sr_subscribe(sr_instances):
 
         if self.restore_queue != None:
            self.post_hc.channel.queue_unbind( self.restore_queue, self.restore_exchange, '#' )
-           self.close()
+           self.cleanup()
            os._exit(0)
 
 
@@ -882,7 +882,7 @@ class sr_subscribe(sr_instances):
 
         # restoring messages
 
-        if self.restore : self.restore_messages()
+        if self.restore or self.restore_queue : self.restore_messages()
 
         # processing messages
 
@@ -1102,6 +1102,10 @@ class sr_subscribe(sr_instances):
 
     def declare_exchanges(self, cleanup=False):
 
+        # restore_queue mode has no post_exchange 
+
+        if not self.post_exchange : return
+
         # define post exchange (splitted ?)
 
         exchanges = []
@@ -1158,10 +1162,12 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = self.silence
+          self.debug   = print
           self.error   = print
-          self.info    = self.silence
+          self.info    = print
           self.warning = print
+          self.debug   = self.silence
+          self.info    = self.silence
 
 def test_sr_subscribe():
 
