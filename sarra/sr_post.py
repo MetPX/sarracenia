@@ -337,6 +337,8 @@ class sr_post(sr_config):
 
         if self.flow    != None : self.msg.headers['flow']            = self.flow
 
+        self.msg.trim_headers()
+
         ok = self.__on_post__()
 
         return ok

@@ -582,6 +582,8 @@ class sr_poll(sr_instances):
 
         self.logger.debug("Added %s" % (self.msg.notice))
 
+        self.msg.trim_headers()
+
         ok = self.__on_post__()
 
         return ok
