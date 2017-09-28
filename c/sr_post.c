@@ -155,7 +155,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
        sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
     else 
-       sprintf( smallbuf, "" );
+       smallbuf[0]='\0';
 
     fprintf( stderr, "parts=%s\n", smallbuf);
 
