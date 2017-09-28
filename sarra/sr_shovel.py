@@ -198,39 +198,6 @@ class sr_shovel(sr_subscribe):
 
         self.reportback = None
 
-    def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
-        print("version: %s \n" % sarra.__version__ )
-        print("read messages from exchange, apply on_message if provided, reannounce/post them to post_broker & post_exchange\n")
-        print("OPTIONS:")
-        print("instances <nb_of_instances>      default 1")
-        print("\nAMQP consumer broker settings:")
-        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
-        print("\t\t(MANDATORY)")
-        print("\nAMQP Queue bindings:")
-        print("\texchange             <name>          (MANDATORY)")
-        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
-        print("\tsubtopic             <amqp pattern>  (default: #)")
-        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
-        print("\t\t\t* single directory wildcard (matches one directory)")
-        print("\t\t\t# wildcard (matches rest)")
-        print("\treport_exchange         <name>          (default: xreport)")
-        print("\nAMQP Queue settings:")
-        print("\tdurable              <boolean>       (default: False)")
-        print("\texpire               <minutes>       (default: None)")
-        print("\tmessage-ttl          <minutes>       (default: None)")
-        print("\nMessage settings:")
-        print("\taccept    <regexp pattern>           (default: None)")
-        print("\treject    <regexp pattern>           (default: None)")
-        print("\ton_message           <script>        (default None)")
-        print("\nAMQP posting broker settings:")
-        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
-        print("\t\t(default: manager amqp broker in default.conf)")
-        print("\tpost_exchange        <name>          (default xpublic)")
-        print("\ton_post              <script>        (default None)")
-        print("DEBUG:")
-        print("-debug")
-
 # ===================================
 # MAIN
 # ===================================
