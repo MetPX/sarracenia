@@ -148,13 +148,13 @@ class sr_message():
         self.start_timer()
 
         #self.logger.debug("attributes= %s" % vars(msg))
-        self.exchange  = msg.delivery_info['exchange']
-        self.topic     = msg.delivery_info['routing_key']
-        self.headers   = msg.properties['application_headers']
-        self.notice    = msg.body
+        if msg :
+           self.exchange  = msg.delivery_info['exchange']
+           self.topic     = msg.delivery_info['routing_key']
+           self.headers   = msg.properties['application_headers']
+           self.notice    = msg.body
 
-        if type(msg.body) == bytes :
-           self.notice = msg.body.decode("utf-8")
+           if type(msg.body) == bytes: self.notice = msg.body.decode("utf-8")
 
         # retransmission case :
         # topic is name of the queue...
