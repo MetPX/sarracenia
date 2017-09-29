@@ -30,16 +30,32 @@ The notices take the form:
 git origin/master branch
 ------------------------
 
-**CHANGE**:  default *expire* setting was 0 (infinite) which means never expire.  Now it is 5 minutes.
+**CHANGE**:  default *expire* setting was 604800000 which means expire after a week.  Now it is 5 minutes.
 **It will also result data loss**, by dropping messages should the default be used in cases where the old value
 was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 
 the default behaviour, use setting::
 
-       *expire 0*
+       *expire 604800000*
 
 failure to do so, when connecting to configurations with older pumps versions  may result in warning messages about 
 mismatched properties when starting up an existing client. 
 FIXME: more specific?
+
+**SR_SARRA**  processing **SOURCE MESSAGES**  must have in their config changed::
+
+       **REPLACE**
+
+       *mirror false*
+       *source_from_exchange true*
+       *[perhaps some accept/reject sequence]*
+
+       **FOR THIS**
+
+       *mirror true*
+       *directory /${YYYYMMDD}/${SOURCE}*
+       *[same accept/reject sequence if any]*
+       *[if none add accept .*]*
+
 
 **NOTICE**: cache state file format changed and are mutually unintelligible between versions.  
 During upgrade, old cache file will be ignored.  This may cause some files to be accepted a second time.
