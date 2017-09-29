@@ -716,6 +716,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->action) free(sr_cfg->action);
   if (sr_cfg->configname) free(sr_cfg->configname);
   if (sr_cfg->directory) free(sr_cfg->directory);
+  if (sr_cfg->documentroot) free(sr_cfg->documentroot);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
@@ -1085,21 +1086,6 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      }
   }
  
-  //if ( sr_cfg->outlet ) 
-  if (0)
-  {
-     f = freopen( sr_cfg->outlet, "w", stdout );  
-     if (!f)
-     {
-         log_msg( LOG_CRITICAL, "failed to open outlet file: %s\n", sr_cfg->outlet );
-         free(sr_cfg->outlet);
-         sr_cfg->outlet=NULL;
-         return(0);
-     }
-     log_msg( LOG_INFO, "writing outlet to: %s\n", sr_cfg->outlet );
-     setlinebuf( f );
-  }
-
   return(1);
 }
 
