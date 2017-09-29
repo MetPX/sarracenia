@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
   if ( strcmp( sr_cfg.action, "foreground" ) )
   {
-      if (! sr_cfg.output) 
+      if (! sr_cfg.outlet) 
       {
            log_msg( LOG_CRITICAL, "must specify output file when running as daemon.\n");
            return(1);
@@ -137,9 +137,9 @@ int main(int argc, char **argv)
       m=sr_consume(sr_c);
       log_msg( LOG_INFO, "received: %s\n", sr_message_2log(m) );
       if (m) {
-        if ( !strcmp( sr_cfg.output, "json" ) ) sr_message_2json(m);      
-        else if ( !strcmp( sr_cfg.output, "url" ) ) sr_message_2path(m);      
-        else if ( !strcmp( sr_cfg.output, "post" ) ) sr_post_message(sr_c,m);      
+        if ( !strcmp( sr_cfg.outlet, "json" ) ) sr_message_2json(m);      
+        else if ( !strcmp( sr_cfg.outlet, "url" ) ) sr_message_2url(m);      
+        else if ( !strcmp( sr_cfg.outlet, "post" ) ) sr_post_message(sr_c,m);      
       }
   }
   sr_context_close(sr_c);

@@ -29,9 +29,11 @@
 
 struct sr_message_t {
   char atime[SR_TIMESTRLEN];
+  char body[10240]; 
   char datestamp  [SR_TIMESTRLEN];
   char exchange[AMQP_MAX_SS];
   char from_cluster[AMQP_MAX_SS];
+  char link[PATH_MAXNUL];
   int  mode;
   char mtime[SR_TIMESTRLEN];
   char parts_s;
@@ -84,7 +86,7 @@ void sr_message_2json(struct sr_message_t *m);
    print a message to stdout, the entire thing, in json save/restore format.
  */
 
-void sr_message_2path(struct sr_message_t *m);
+void sr_message_2url(struct sr_message_t *m);
 /* 
    print a message to stdout, just the pathname to stdout.
 
