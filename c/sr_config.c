@@ -1020,23 +1020,26 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       }
   }
 
-  if ( ! (sr_cfg->post_exchange) ) 
+  if ( sr_cfg->post_broker ) 
   {
-      if ( sr_cfg->exchange ) 
+      if ( ! (sr_cfg->post_exchange) ) 
       {
-          sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+          if ( sr_cfg->exchange ) 
+          {
+              sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+          } else {
+              sprintf( q, "xs_%s", sr_cfg->post_broker->user );
+              sr_cfg->post_broker->exchange= strdup(q);
+          }
       } else {
-          sprintf( q, "xs_%s", sr_cfg->post_broker->user );
-          sr_cfg->post_broker->exchange= strdup(q);
-      }
-  } else {
           sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
-  }
-
-  if ( sr_cfg->to == NULL ) 
-  {
-             log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
-             sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
+      }
+    
+      if ( sr_cfg->to == NULL ) 
+      {
+          log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
+          sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
+      }
   }
 
   if (!is_consumer) return(1);
