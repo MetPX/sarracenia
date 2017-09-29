@@ -58,6 +58,7 @@ class sr_config:
         # IN BIG DEBUG
         #self.debug = True
         #self.logpath = None
+        #self.loglevel = logging.DEBUG
         #self.setlog()
 
         # package_dir     = where sarra is installed on system
@@ -125,9 +126,6 @@ class sr_config:
 
         self.debug         = False
         self.remote_config = False
-        # IN BIG DEBUG
-        #self.debug = True
-        #self.loglevel = logging.DEBUG
         self.loglevel = logging.INFO
         self.setlog()
         self.logger.debug("sr_config __init__")
@@ -922,7 +920,7 @@ class sr_config:
                      self.chmod_log = int(words[1],8)
                      n = 2
 
-                elif words0 in ['cluster','cl']: # See: sr_config.7
+                elif words0 in ['cluster','cl','from_cluster','fc']: # See: sr_config.7
                      self.cluster = words1 
                      n = 2
 
@@ -1120,7 +1118,7 @@ class sr_config:
                      self.hostname = words[1] 
                      n = 2
 
-                elif words0 in ['inplace','in']: # See: sr_sarra.8, sr_post.1, sr_watch.1
+                elif words0 in ['inplace','in','assemble']: # See: sr_sarra.8, sr_post.1, sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.inplace = True
                         n = 1
@@ -1564,6 +1562,8 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['source_from_exchange','sfe']: # See: sr_sarra.8
+                     self.logger.warning("deprecated source_from exchange is of no use'")
+                     self.logger.warning("if a message has no source it is automatically assigned'")
                      if (words1 is None ) or words[0][0:1] == '-' : 
                         self.source_from_exchange = True
                         n = 1
@@ -1842,25 +1842,32 @@ class test_logger:
           self.info    = self.silence
 
 def self_test():
+
+    failed = False
+
+    # test include
     f = open("./bbb.inc","w")
-    f.write("randomize False\n")
+    f.write("randomize True\n")
     f.close()
     f = open("./aaa.conf","w")
     f.write("include bbb.inc\n")
     f.close()
-    # instantiation
+
+    # instantiation, test include and overwrite logs
     logger = test_logger()
     cfg    = sr_config(config="aaa")
-
-    # overwrite logs
     cfg.logger = logger
+    cfg.configure()
 
-    # defaults + check isTrue
+    if not cfg.randomize :
+       cfg.logger.error("problem with include")
+       failed = True
+
+    # back to defaults + check isTrue
     cfg.defaults()
     if not cfg.isTrue('true') or cfg.isTrue('false') :
-       cfg.logger.error("problem with isTrue")
-       cfg.logger.error("TEST FAILED")
-       sys.exit(1)
+       cfg.logger.error("problem with module isTrue")
+       failed = True
 
     # pluggin script checking
     f = open("./scrpt.py","w")
@@ -1877,27 +1884,24 @@ def self_test():
     f.write("self.this_script = transformer.perform\n")
     f.close()
 
+    # able to find the script
     ok, path = cfg.config_path("plugins","scrpt.py",mandatory=True,ctype='py')
     if not ok :
-       cfg.logger.error("problem with config_path")
-       cfg.logger.error("TEST FAILED")
-       os.unlink("./scrpt.py")
-       sys.exit(1)
-
-    cfg.this_value  = 0
+       cfg.logger.error("problem with config_path script not found")
+       failed = True
+ 
+    # able to load the script
     cfg.execfile("this_script",path)
     if cfg.this_script == None :
-       cfg.logger.error("problem with execfile")
-       cfg.logger.error("TEST FAILED")
-       os.unlink("./scrpt.py")
-       sys.exit(1)
+       cfg.logger.error("problem with module execfile script not loaded")
+       failed = True
 
+    # able to run the script
+    cfg.this_value = 0
     cfg.this_script(cfg)
     if cfg.this_value != 1 :
-       cfg.logger.error("problem with script ")
-       cfg.logger.error("TEST FAILED")
-       os.unlink("./scrpt.py")
-       sys.exit(1)
+       cfg.logger.error("problem to run the script ")
+       failed = True
     os.unlink("./scrpt.py")
 
     # general ... 
@@ -1910,21 +1914,21 @@ def self_test():
     # args ... 
 
     cfg.randomize = False
-    cfg.inplace   = False
+    cfg.assemble  = False
     cfg.logrotate = 5
-    cfg.args(['--randomize', '--inplace', 'True',  '--logrotate', '10', '-vip', '127.0.0.1', '-interface', 'lo' ])
+    cfg.args(['--randomize', '--assemble', 'True',  '--logrotate', '10'])
     if not cfg.randomize   or \
-       not cfg.inplace     or \
+       not cfg.assemble     or \
        cfg.logrotate != 10 :
        cfg.logger.error("problem with args")
-       sys.exit(1)
+       failed = True
 
 
     # has_vip... 
-
+    cfg.args(['-vip', '127.0.0.1' ])
     if not cfg.has_vip():
        cfg.logger.error("has_vip failed")
-       sys.exit(1)
+       failed = True
 
     # config... 
     #def isMatchingPattern(self, str, accept_unmatch = False): 
@@ -1941,11 +1945,10 @@ def self_test():
     cfg.option(opt2.split())
     if cfg.broker.geturl() != "amqp://a:b@toto" :
        cfg.logger.error("problem with args")
-       sys.exit(1)
+       failed = True
 
     opt1 = "parts i,128"
     cfg.option(opt1.split())
-
 
     opt1 = "sum z,d"
     cfg.option(opt1.split())
@@ -1971,25 +1974,19 @@ def self_test():
     cfg.option(opt1.split())
     cfg.option(opt2.split())
 
-    cfg.inplace       = False
-    opt1 = "include inplace_true.inc"
-    cfg.option(opt1.split())
-    if cfg.inplace != True :
-       cfg.logger.error(" include http:  did not work")
+    #cfg.reconnect     = True
+    #opt1 = "config reconnect_false.conf"
+    #cfg.option(opt1.split())
+    #if cfg.reconnect != False :
+    #   cfg.logger.error(" include http:  did not work")
 
-    cfg.reconnect     = True
-    opt1 = "config reconnect_false.conf"
-    cfg.option(opt1.split())
-    if cfg.reconnect != False :
-       cfg.logger.error(" include http:  did not work")
-
-    cfg.set_sumalgo('z,checksum_mg.py')
+    #cfg.set_sumalgo('z,checksum_mg.py')
 
     #cfg.remote_config = False
-    #cfg.inplace       = False
-    #opt1 = "include http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir/inplace_true.inc"
+    #cfg.assemble       = False
+    #opt1 = "include http://ddsr1.cmc.ec.gc.ca/keep_this_test_dir/assemble_true.inc"
     #cfg.option(opt1.split())
-    #if cfg.inplace == True :
+    #if cfg.assemble == True :
     #   cfg.logger.error(" include http: worked but should not")
 
     opt1 = "surplus_opt surplus_value"
@@ -1997,14 +1994,19 @@ def self_test():
 
     if cfg.surplus_opt != [ "surplus_value" ] :
        cfg.logger.error(" extended option:  did not work")
+       failed = True
 
     opt1 = "prefetch 10"
     cfg.option(opt1.split())
 
     if cfg.prefetch != 10 :
        cfg.logger.error(" prefetch option:  did not work")
+       failed = True
 
+    # reexecuting the config aaa.conf
     cfg.config(cfg.user_config)
+    os.unlink('aaa.conf')
+    os.unlink('bbb.inc')
 
     opt1 = "headers toto1=titi1"
     cfg.option(opt1.split())
@@ -2021,14 +2023,17 @@ def self_test():
        cfg.headers_to_add['toto2'] != 'titi2' or \
        len(cfg.headers_to_add)     != 2 :
        cfg.logger.error(" option headers adding entries did not work")
+       failed = True
 
     if not 'tutu1' in cfg.headers_to_del      or \
        not 'tutu2' in cfg.headers_to_del      or \
        len(cfg.headers_to_del)     != 2 :
        cfg.logger.error(" option headers deleting entries did not work")
+       failed = True
 
+    if not failed : print("TEST PASSED")
+    else :          print("TEST FAILED")
 
-    print("TEST PASSED")
     sys.exit(0)
 
 # ===================================

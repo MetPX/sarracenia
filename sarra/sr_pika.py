@@ -145,6 +145,18 @@ class HostConnect:
                     self.logger.error("Type=%s, Value=%s" % (stype, svalue))
 
    def exchange_delete(self,exchange):
+
+       # never delete basic and permanent exchanges...
+
+       if exchange in ['xpublic','xreport'] :
+          self.logger.info("exchange %s remains" % exchange)
+          return
+
+       if exchange.startswith('xwinnow') :
+          self.logger.info("exchange %s remains" % exchange)
+          return
+
+       # proceed for all others
        try    :
                     self.channel.exchange_delete(exchange)
                     self.logger.info("deleting exchange %s (%s@%s)" % (exchange,self.user,self.host))

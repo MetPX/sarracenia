@@ -271,25 +271,25 @@ class sr_subscribe(sr_instances):
         if self.program_name == 'sr_sarra' :
            print("\n%s: Subscribe to download, and Recursively Re-Announce(implements a sarracenia pump)\n"\
                     % self.program_name)
-           print("\nmininal configuration includes :")
+           print("\nminimal configuration includes :")
            print("broker, exchange, post_broker, [post_exchange (defaults to exchange)]\n")
 
         if self.program_name == 'sr_winnow' :
            print("\n%s: read messages from exchange and post them(post_exchange), suppressing duplicates\n"\
                     % self.program_name)
-           print("\nmininal configuration includes :")
+           print("\nminimal configuration includes :")
            print("broker, exchange, [post_broker (defaults to broker)], post_exchange\n")
 
         if self.program_name == 'sr_shovel' :
            print("\n%s: read messages from exchange and post them on another broker using post_exchange\n"\
                     % self.program_name)
-           print("\nmininal configuration includes :")
+           print("\nminimal configuration includes :")
            print("broker, exchange, post_broker, [post_exchange (defaults to exchange)]\n")
 
         if self.program_name == 'sr_subscribe' :
            print("\n%s: Connect to an AMQP broker, subscribe to file announcements, do timely downloads\n"\
                     % self.program_name)
-           print("\nmininal configuration :")
+           print("\nminimal configuration :")
            print("sr_subscribe start ./aaa")
            print("\t\twhere aaa is an empty file: downloads announced files on dd.weather in cwd\n")
 
@@ -984,7 +984,12 @@ class sr_subscribe(sr_instances):
               YYYYMMDD   = time.strftime("%Y%m%d", time.gmtime()) 
               currentDir = currentDir.replace('${YYYYMMDD}',YYYYMMDD)
            if '${SOURCE}' in self.currentDir  and 'source' in self.msg.headers:
-              currentDir = currentDir.replace('${SOURCE}',self.msg.headers['source'])
+              ex     = self.exchange
+              source = None
+              if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
+              elif self.source                   : source = self.source
+              else                               : source = self.broker.username
+              currentDir = currentDir.replace('${SOURCE}',source)
 
            relpath = currentDir + '/' + relpath
            relpath = relpath.replace('//','/')
@@ -1292,8 +1297,14 @@ def main():
 
     subscribe = sr_subscribe(config,args)
 
-    if action == None and config == None:
-       subscribe.help()
+    if action == None:
+       subscribe.logger.error("sr_subscribe requieres an action")
+       subscribe.logger.error("Use 'sr_subscribe -help' for details")
+       sys.exit(1)
+
+    if subscribe.config_name == None or not os.path.isfile(subscribe.user_config) :
+       subscribe.logger.error("sr_subscribe requieres a configuration file")
+       subscribe.logger.error("Use 'sr_subscribe -help' for details")
        sys.exit(1)
 
     if old :
