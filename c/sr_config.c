@@ -621,8 +621,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->message_ttl = atoi(argument)*60*1000;
       return(2);
 
-  } else if ( !strcmp( option, "output" ) ) {
-      sr_cfg->output = strdup(argument);
+  } else if ( !strcmp( option, "outlet" ) ) {
+      sr_cfg->outlet = strdup(argument);
       return(2);
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
@@ -716,6 +716,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->action) free(sr_cfg->action);
   if (sr_cfg->configname) free(sr_cfg->configname);
   if (sr_cfg->directory) free(sr_cfg->directory);
+  if (sr_cfg->documentroot) free(sr_cfg->documentroot);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
@@ -792,7 +793,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->message_ttl=0;
-  sr_cfg->output="json";
+  sr_cfg->outlet="json";
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;
@@ -1019,23 +1020,26 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       }
   }
 
-  if ( ! (sr_cfg->post_exchange) ) 
+  if ( sr_cfg->post_broker ) 
   {
-      if ( sr_cfg->exchange ) 
+      if ( ! (sr_cfg->post_exchange) ) 
       {
-          sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+          if ( sr_cfg->exchange ) 
+          {
+              sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
+          } else {
+              sprintf( q, "xs_%s", sr_cfg->post_broker->user );
+              sr_cfg->post_broker->exchange= strdup(q);
+          }
       } else {
-          sprintf( q, "xs_%s", sr_cfg->post_broker->user );
-          sr_cfg->post_broker->exchange= strdup(q);
-      }
-  } else {
           sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
-  }
-
-  if ( sr_cfg->to == NULL ) 
-  {
-             log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
-             sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
+      }
+    
+      if ( sr_cfg->to == NULL ) 
+      {
+          log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
+          sr_cfg->to = strdup(sr_cfg->post_broker->hostname) ;
+      }
   }
 
   if (!is_consumer) return(1);
@@ -1085,21 +1089,6 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      }
   }
  
-  //if ( sr_cfg->output ) 
-  if (0)
-  {
-     f = freopen( sr_cfg->output, "w", stdout );  
-     if (!f)
-     {
-         log_msg( LOG_CRITICAL, "failed to open output file: %s\n", sr_cfg->output );
-         free(sr_cfg->output);
-         sr_cfg->output=NULL;
-         return(0);
-     }
-     log_msg( LOG_INFO, "writing output to: %s\n", sr_cfg->output );
-     setlinebuf( f );
-  }
-
   return(1);
 }
 

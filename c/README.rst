@@ -24,19 +24,19 @@ This function takes the same options as sr_post, but the *sleep* argument,
 when supplied causes it to loop, checking for new items every *sleep* seconds 
 (equivalent to sr_watch.) There is also a sample consumer::
 
-  sr_cthneed
+  sr_cpump
 
 which obtains messages and, by default, prints them to standard output in json format identical
-the the format used by the python implementation for save/restore functionality.
+the the format used by the python implementation for save/restore.
 In order to have a complete downloader, one needs a script to parse the json output
-and invoke an appropriate binary downloader.  One can use the 'output' switch
+and invoke an appropriate binary downloader.  One can use the 'outlet' switch
 to choose other formats:
  
 json:
   the default format, json compatible with python save/restore.
 
 post:
-  turns sr_cthneed into an sr_shovel, if cache is on, then it is a winnow.
+  turns sr_cpump into an sr_shovel, if cache is on, then it is a winnow.
 
 url: 
   just print out the retrieval urls, rather than the entire message
