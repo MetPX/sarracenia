@@ -161,7 +161,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 
     if ( sr_c->cfg->cache > 0 ) 
     { 
-           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], m->sum, m->path, smallbuf ) ; 
+           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], (unsigned char*)(m->sum), m->path, smallbuf ) ; 
            log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
            if (!status) return; // cache hit.
     }
@@ -187,7 +187,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
        header_add( "parts", smallbuf );
     }
 
-    header_add( "sum", sr_hash2sumstr(m->sum));
+    header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
     header_add( "to_clusters", m->to_clusters );
 
     for(  uh=m->user_headers; uh ; uh=uh->next )
