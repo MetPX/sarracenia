@@ -56,6 +56,10 @@ FIXME: more specific?
        *[same accept/reject sequence if any]*
        *[if none add accept .*]*
 
+**NOTICE** the option **source_from_exchange** is no longer used. Any message without a source
+will be fixed with a value starting with the exchange if xs_source_*, the option source or
+the broker username of the originating message.
+
 
 **NOTICE**: cache state file format changed and are mutually unintelligible between versions.  
 During upgrade, old cache file will be ignored.  This may cause some files to be accepted a second time.
