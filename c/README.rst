@@ -27,9 +27,9 @@ when supplied causes it to loop, checking for new items every *sleep* seconds
   sr_cpump
 
 which obtains messages and, by default, prints them to standard output in json format identical
-the the format used by the python implementation for save/restore functionality.
+the the format used by the python implementation for save/restore.
 In order to have a complete downloader, one needs a script to parse the json output
-and invoke an appropriate binary downloader.  One can use the 'output' switch
+and invoke an appropriate binary downloader.  One can use the 'outlet' switch
 to choose other formats:
  
 json:

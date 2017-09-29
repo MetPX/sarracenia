@@ -621,8 +621,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->message_ttl = atoi(argument)*60*1000;
       return(2);
 
-  } else if ( !strcmp( option, "output" ) ) {
-      sr_cfg->output = strdup(argument);
+  } else if ( !strcmp( option, "outlet" ) ) {
+      sr_cfg->outlet = strdup(argument);
       return(2);
 
   } else if ( !strcmp( option, "queue" ) || !strcmp( option, "q" ) ) {
@@ -792,7 +792,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->message_ttl=0;
-  sr_cfg->output="json";
+  sr_cfg->outlet="json";
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;
@@ -1085,18 +1085,18 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      }
   }
  
-  //if ( sr_cfg->output ) 
+  //if ( sr_cfg->outlet ) 
   if (0)
   {
-     f = freopen( sr_cfg->output, "w", stdout );  
+     f = freopen( sr_cfg->outlet, "w", stdout );  
      if (!f)
      {
-         log_msg( LOG_CRITICAL, "failed to open output file: %s\n", sr_cfg->output );
-         free(sr_cfg->output);
-         sr_cfg->output=NULL;
+         log_msg( LOG_CRITICAL, "failed to open outlet file: %s\n", sr_cfg->outlet );
+         free(sr_cfg->outlet);
+         sr_cfg->outlet=NULL;
          return(0);
      }
-     log_msg( LOG_INFO, "writing output to: %s\n", sr_cfg->output );
+     log_msg( LOG_INFO, "writing outlet to: %s\n", sr_cfg->outlet );
      setlinebuf( f );
   }
 

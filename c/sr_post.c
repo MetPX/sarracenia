@@ -221,9 +221,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   int   linklen;
   char *linkp;
   char  linkstr[PATH_MAXNUL];
-  char  postfn[PATH_MAXNUL];
-  struct sr_mask_t *mask;
-  char  sumalgo;
+  char sumalgo;
    
     if (*pathspec != '/' ) // need absolute path.
     { 
@@ -242,7 +240,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
 
   if ( sb && S_ISDIR(sb->st_mode) ) return(0); // cannot post directories.
 
-  strcpy( postfn, fn );
+  strcpy( m->path, fn );
   if (sr_c->cfg->documentroot) 
   {
       drfound = strstr(fn, sr_c->cfg->documentroot ); 
@@ -250,13 +248,13 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       if (drfound) 
       {
           drfound += strlen(sr_c->cfg->documentroot) ; 
-          strcpy( postfn, drfound );
+          strcpy( m->path, drfound );
       } 
   } 
   // FIXME: 255? AMQP_SS_LEN limit?
   strcpy( m->routing_key, sr_c->cfg->topic_prefix );
 
-  strcat( m->routing_key, postfn );
+  strcat( m->routing_key, m->path );
   lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(m->routing_key) ; i++ )
   {
@@ -275,12 +273,13 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   strcat( m->body, " " );
   set_url( m->body, sr_c->cfg->url );
   strcat( m->body, " " );
-  strcat( m->body, postfn );
+  strcat( m->body, m->path );
 
   strcpy( m->to_clusters, sr_c->cfg->to );
 
   m->parts_blkcount=1;
-  sumalgo = sr_c->cfg->sumalgo;
+  m->parts_rem=0;
+  m->parts_num=0;
 
   // FIXME: no user headers.
   if ( !sb ) 
@@ -291,13 +290,14 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
       linklen = readlink( fn, linkstr, PATH_MAX );
-      linkstr[linklen]='\0';
+      m->link[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
-          linkp = realpath( linkstr, NULL );
+          // FIXME: bug... realpathat ? are we in correct dir for expansion.
+          linkp = realpath( m->link, NULL );
           if (linkp) 
           {
-               strcpy( linkstr, linkp );
+               strcpy( m->link, linkp );
                free(linkp);
           }
       }

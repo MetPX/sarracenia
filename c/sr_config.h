@@ -119,7 +119,7 @@ struct sr_config_t {
   struct sr_mask_t   *masks;
   struct sr_mask_t   *match;
   int                 message_ttl;
-  char               *output;
+  char               *outlet;
   int                 pid;
   char               *pidfile;
   char               *progname;
