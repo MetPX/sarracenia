@@ -212,10 +212,130 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 }
 int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct stat *sb, struct sr_message_t *m ) 
 /*
-  reading a file, initialize the message that corresponds to it. Return the number of parts that will be needed.
+  reading a file, initialize the message that corresponds to it. Return the number of messages to post entire file.
  */
 {
-   return(0);
+  char  *drfound;
+    char  fn[PATH_MAXNUL];
+  int lasti;
+  int   linklen;
+  char *linkp;
+  char  linkstr[PATH_MAXNUL];
+  char  postfn[PATH_MAXNUL];
+  struct sr_mask_t *mask;
+  char  sumalgo;
+   
+    if (*pathspec != '/' ) // need absolute path.
+    { 
+        getcwd( fn, PATH_MAX);
+        strcat( fn, "/" );
+        strcat( fn, pathspec);
+    } else {
+        if ( sr_c->cfg->realpath ) 
+            realpath( pathspec, fn );
+        else
+            strcpy( fn, pathspec );
+    }
+
+  if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
+     log_msg( LOG_DEBUG, "sr_%s file2message called with: %s sb=%p\n", sr_c->cfg->progname, fn, sb );
+
+  if ( sb && S_ISDIR(sb->st_mode) ) return(0); // cannot post directories.
+
+  strcpy( postfn, fn );
+  if (sr_c->cfg->documentroot) 
+  {
+      drfound = strstr(fn, sr_c->cfg->documentroot ); 
+   
+      if (drfound) 
+      {
+          drfound += strlen(sr_c->cfg->documentroot) ; 
+          strcpy( postfn, drfound );
+      } 
+  } 
+  // FIXME: 255? AMQP_SS_LEN limit?
+  strcpy( m->routing_key, sr_c->cfg->topic_prefix );
+
+  strcat( m->routing_key, postfn );
+  lasti=0;
+  for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(m->routing_key) ; i++ )
+  {
+      if ( m->routing_key[i] == '/' ) 
+      {
+           if ( lasti > 0 ) 
+           {
+              m->routing_key[lasti]='.';
+           }
+           lasti=i;
+      }
+  }
+  m->routing_key[lasti]='\0';
+
+  strcpy( m->body, sr_time2str(NULL));
+  strcat( m->body, " " );
+  set_url( m->body, sr_c->cfg->url );
+  strcat( m->body, " " );
+  strcat( m->body, postfn );
+
+  strcpy( m->to_clusters, sr_c->cfg->to );
+
+  m->parts_blkcount=1;
+  sumalgo = sr_c->cfg->sumalgo;
+
+  // FIXME: no user headers.
+  if ( !sb ) 
+  {
+      if ( ! ((sr_c->cfg->events)&SR_DELETE) ) return(0); // not posting deletes...
+      sumalgo='R';
+  } else if ( S_ISLNK(sb->st_mode) ) 
+  {
+      if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
+      linklen = readlink( fn, linkstr, PATH_MAX );
+      linkstr[linklen]='\0';
+      if ( sr_c->cfg->realpath ) 
+      {
+          linkp = realpath( linkstr, NULL );
+          if (linkp) 
+          {
+               strcpy( linkstr, linkp );
+               free(linkp);
+          }
+      }
+      // FIXME: no link field in sr_message.
+
+  } else if (S_ISREG(sb->st_mode)) 
+  {   /* regular files, add mode and determine block parameters */
+
+      if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return(0);
+
+      if ( access( fn, R_OK ) ) return(0); // will not be able to checksum if we cannot read.
+
+      strcpy( m->atime, sr_time2str(&(sb->st_atim)));
+      strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
+      m->mode = sb->st_mode & 07777 ;
+
+      // FIXME: path?
+      // FIXME: to_cluster?
+      // FIXME: queue?
+      // FIXME: source?
+      // FIXME: url?
+
+      // report...
+      // FIXME: duration, consumingurl, consuminguser, statuscode?
+
+      m->parts_blksz  = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
+      m->parts_s = (m->parts_blksz < sb->st_size )? 'i':'1' ;
+
+      if ( m->parts_blksz == 0 ) {
+          m->parts_rem = 0;
+      } else {
+          m->parts_rem = sb->st_size%(m->parts_blksz) ;
+          m->parts_blkcount = ( sb->st_size / m->parts_blksz ) + ( m->parts_rem?1:0 );
+      }
+
+  } 
+    
+  return(m->parts_blkcount);
 }
 
 struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct sr_message_t *m ) 
@@ -230,7 +350,6 @@ struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct s
 
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
-
   char  routingkey[255];
   char  message_body[1024];
   char  partstr[255];

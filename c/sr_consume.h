@@ -29,6 +29,7 @@
 
 struct sr_message_t {
   char atime[SR_TIMESTRLEN];
+  char body[10240]; 
   char datestamp  [SR_TIMESTRLEN];
   char exchange[AMQP_MAX_SS];
   char from_cluster[AMQP_MAX_SS];
