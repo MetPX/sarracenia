@@ -475,7 +475,7 @@ class sr_config:
         self.do_poll              = None
         self.do_send              = None
 
-        self.assemble             = False
+        self.inplace              = False
 
         self.inflight             = None
 
