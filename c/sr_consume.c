@@ -170,6 +170,16 @@ int sr_consume_setup(struct sr_context *sr_c)
   return(1);
 }
 
+char *sr_message_partstr(struct sr_message_t *m)
+{
+   static char smallbuf[255];
+
+   if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
+    else
+       smallbuf[0]='\0';
+    return(smallbuf);
+}
 
 void assign_field( const char* key, char *value )
  /* Assign the value of the field given by key to the corresponding member

@@ -75,6 +75,11 @@ int sr_consume_cleanup(struct sr_context *sr_c);
    delete queue declared by setup.
  */
 
+char *sr_message_partstr(struct sr_message_t *m);
+/*
+  return the parts string for an sr_message given the message structure.
+ */
+
 
 char *sr_message_2log(struct sr_message_t *m);
 /* 

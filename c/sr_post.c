@@ -76,7 +76,7 @@ void header_reset() {
     hdrcnt=0;
 }
 
-void header_add( char *tag, const char * value ) {
+void amqp_header_add( char *tag, const char * value ) {
 
   if ( hdrcnt >= HDRMAX ) 
   {
@@ -152,10 +152,13 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     signed int status;
     struct sr_header_t *uh;
 
+    strcpy( smallbuf, sr_message_partstr(m) );
+ /*
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
        sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
     else 
        smallbuf[0]='\0';
+ */
 
     fprintf( stderr, "parts=%s\n", smallbuf);
 
@@ -174,24 +177,24 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
  
     header_reset();
 
-    header_add( "atime", m->atime );
-    header_add( "from_cluster", m->from_cluster );
+    amqp_header_add( "atime", m->atime );
+    amqp_header_add( "from_cluster", m->from_cluster );
 
     sprintf( smallbuf, "%04o", m->mode );
-    header_add( "mode", smallbuf );
-    header_add( "mtime", m->mtime );
+    amqp_header_add( "mode", smallbuf );
+    amqp_header_add( "mtime", m->mtime );
 
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
        sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
-       header_add( "parts", smallbuf );
+       amqp_header_add( "parts", smallbuf );
     }
 
-    header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
-    header_add( "to_clusters", m->to_clusters );
+    amqp_header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
+    amqp_header_add( "to_clusters", m->to_clusters );
 
     for(  uh=m->user_headers; uh ; uh=uh->next )
-        header_add(uh->key, uh->value);
+        amqp_header_add(uh->key, uh->value);
 
     table.num_entries = hdrcnt;
     table.entries=headers;
@@ -210,6 +213,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
         log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
 
 }
+
 int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct stat *sb, struct sr_message_t *m ) 
 /*
   reading a file, initialize the message that corresponds to it. Return the number of messages to post entire file.
@@ -221,7 +225,6 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   int   linklen;
   char *linkp;
   char  linkstr[PATH_MAXNUL];
-  char sumalgo;
    
     if (*pathspec != '/' ) // need absolute path.
     { 
@@ -269,26 +272,23 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   }
   m->routing_key[lasti]='\0';
 
-  strcpy( m->body, sr_time2str(NULL));
-  strcat( m->body, " " );
-  set_url( m->body, sr_c->cfg->url );
-  strcat( m->body, " " );
-  strcat( m->body, m->path );
-
+  strcpy( m->datestamp, sr_time2str(NULL));
   strcpy( m->to_clusters, sr_c->cfg->to );
 
   m->parts_blkcount=1;
   m->parts_rem=0;
   m->parts_num=0;
+  m->sum[0]=sr_c->cfg->sumalgo;
 
-  // FIXME: no user headers.
+
   if ( !sb ) 
   {
       if ( ! ((sr_c->cfg->events)&SR_DELETE) ) return(0); // not posting deletes...
-      sumalgo='R';
+      m->sum[0]='R';
   } else if ( S_ISLNK(sb->st_mode) ) 
   {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
+      m->sum[0]='R';
       linklen = readlink( fn, linkstr, PATH_MAX );
       m->link[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
@@ -314,15 +314,6 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
       m->mode = sb->st_mode & 07777 ;
 
-      // FIXME: path?
-      // FIXME: to_cluster?
-      // FIXME: queue?
-      // FIXME: source?
-      // FIXME: url?
-
-      // report...
-      // FIXME: duration, consumingurl, consuminguser, statuscode?
-
       m->parts_blksz  = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
       m->parts_s = (m->parts_blksz < sb->st_size )? 'i':'1' ;
 
@@ -334,7 +325,6 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       }
 
   } 
-    
   return(m->parts_blkcount);
 }
 
@@ -344,11 +334,46 @@ struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct s
   return the adjusted prototype message.  (requires reading part of the file to checksum it.)
  */
 {
-  return(NULL);
+      m->parts_num = seq;
+
+      strcpy( m->sum, 
+              set_sumstr( m->sum[0], pathspec, NULL, m->link, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num ) 
+            ); 
+
+      if ( !(m->sum) ) 
+      {
+         log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", m->parts_s, pathspec );
+         return(NULL);
+      }
+  return(m);
 }
 
 
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
+{
+  static struct sr_message_t m;
+  int numblks;
+
+  strcpy( m.to_clusters, sr_c->cfg->to );
+  strcpy( m.from_cluster, sr_c->cfg->post_broker->hostname );
+  strcpy( m.source,  sr_c->cfg->post_broker->user );
+  strcpy( m.url, sr_c->cfg->url );
+  m.user_headers = sr_c->cfg->user_headers;
+
+  // report...
+  // FIXME: duration, consumingurl, consuminguser, statuscode?
+
+  numblks = sr_file2message_start( sr_c, pathspec, sb, &m );
+
+  for( int blk=0; (blk < numblks); blk++ )
+  {
+      if ( sr_file2message_seq(pathspec, blk, &m ) ) 
+          sr_post_message( sr_c, &m );
+  }
+
+}
+
+void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
   char  routingkey[255];
   char  message_body[1024];
@@ -453,7 +478,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       if ( !strncmp( sr_c->cfg->documentroot, fn, strlen(sr_c->cfg->documentroot) ) ) 
           strcat( message_body, fn+strlen(sr_c->cfg->documentroot) );
   } else 
-     strcat( message_body, fn);
+      strcat( message_body, fn);
  */
 
   if ( (sr_c->cfg) && sr_c->cfg->debug )
@@ -462,10 +487,10 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
   header_reset();
 
-  header_add( "to_clusters", sr_c->cfg->to );
+  amqp_header_add( "to_clusters", sr_c->cfg->to );
 
   for(  uh=sr_c->cfg->user_headers; uh ; uh=uh->next )
-     header_add(uh->key, uh->value);
+     amqp_header_add(uh->key, uh->value);
 
   sumalgo = sr_c->cfg->sumalgo;
   block_count = 1;
@@ -490,7 +515,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
                free(linkp);
           }
       }
-      header_add( "link", linkstr );
+      amqp_header_add( "link", linkstr );
 
   } else if (S_ISREG(sb->st_mode)) 
   {   /* regular files, add mode and determine block parameters */
@@ -500,12 +525,12 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       if ( access( fn, R_OK ) ) return; // will not be able to checksum if we cannot read.
 
       strcpy( atimestr, sr_time2str(&(sb->st_atim)));
-      header_add( "atime", atimestr);
+      amqp_header_add( "atime", atimestr);
 
       strcpy( mtimestr, sr_time2str(&(sb->st_mtim)));
-      header_add( "mtime", mtimestr );
+      amqp_header_add( "mtime", mtimestr );
       sprintf( modebuf, "%04o", (sb->st_mode & 07777) );
-      header_add( "mode", modebuf);
+      amqp_header_add( "mode", modebuf);
       block_size = set_blocksize( sr_c->cfg->blocksize, sb->st_size );
       psc = (block_size < sb->st_size )? 'i':'1' ;
 
@@ -534,10 +559,9 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
       hdrcnt = commonhdridx;
 
       if ( ( sumalgo != 'L' ) && ( sumalgo != 'R' ) )  {
-
           sprintf( partstr, "%c,%lu,%lu,%lu,%lu", psc, block_size, 
               block_count, block_rem, block_num );
-          header_add( "parts", partstr );
+          amqp_header_add( "parts", partstr );
       } else
           strcpy(partstr,"");
 
@@ -551,7 +575,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
          log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", sumalgo, fn );
          return;
       }
-      header_add( "sum", sumstr );
+      amqp_header_add( "sum", sumstr );
       
       table.num_entries = hdrcnt;
       table.entries=headers;

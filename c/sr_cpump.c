@@ -42,6 +42,7 @@ int main(int argc, char **argv)
   struct sr_message_t *m;
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
+  struct sr_mask_t *mask;
   int consume,i,ret;
   
   if ( argc < 3 ) usage();
@@ -134,8 +135,27 @@ int main(int argc, char **argv)
 
   while(1)
   {
+
+      // inlet: from queue, json, tree.
       m=sr_consume(sr_c);
+
       log_msg( LOG_INFO, "received: %s\n", sr_message_2log(m) );
+
+      /* apply the accept/reject clauses */
+      // FIXME BUG: patter to match is supposed to be complete URL, not just path...
+      mask = isMatchingPattern( &sr_cfg, m->path);
+      if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
+      {
+          log_msg( LOG_DEBUG, "rejecting: %s\n", m->path );
+          continue; 
+      }
+      // check cache.
+      ret = sr_cache_check( sr_cfg.cachep, m->parts_s, (unsigned char*)m->sum, m->path, sr_message_partstr(m) );
+      if (!ret) continue; // cache hit.
+
+      // do_pump=NULL
+ 
+      // outlet:
       if (m) {
         if ( !strcmp( sr_cfg.outlet, "json" ) ) sr_message_2json(m);      
         else if ( !strcmp( sr_cfg.outlet, "url" ) ) sr_message_2url(m);      
