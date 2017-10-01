@@ -247,6 +247,39 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
 }
 
 
+
+static int sendfile_init_done = 0;
+typedef ssize_t  (*sendfile_fn) (int, int, off_t *, size_t);
+static sendfile_fn sendfile_fn_ptr = NULL;
+
+ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
+{
+    ssize_t status;
+    char fdpath[32];
+    char real_path[PATH_MAX];
+    char *real_return;
+
+    if (!sendfile_init_done) 
+    {
+        sendfile_fn_ptr = (sendfile_fn) dlsym(RTLD_NEXT, "sendfile");
+        sendfile_init_done = 1;
+    }
+    status = sendfile_fn_ptr( out_fd, in_fd, offset, count );
+
+    snprintf( fdpath, 32, "/proc/self/fd/%d", out_fd );
+    real_return = realpath(fdpath, real_path);
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG sendfile to %s\n", real_path );
+
+    if (!real_return) return(status);
+    if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
+
+    return(shimpost(real_path,status));
+}
+
+
+
 static int copy_file_range_init_done = 0;
 typedef int  (*copy_file_range_fn) (int, loff_t *, int, loff_t *, size_t, unsigned int);
 static copy_file_range_fn copy_file_range_fn_ptr = NULL;
