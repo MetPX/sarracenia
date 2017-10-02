@@ -1052,7 +1052,7 @@ class sr_subscribe(sr_instances):
         if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping cleanup for %s" % self.config_name)
            self.close()
-           os._exit(0)
+           return
 
         # consumer declare
 
@@ -1076,7 +1076,6 @@ class sr_subscribe(sr_instances):
            self.cache = None
 
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -1086,7 +1085,7 @@ class sr_subscribe(sr_instances):
         if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping declare for %s" % self.config_name)
            self.close
-           os._exit(0)
+           return
 
         # consumer declare
 
@@ -1103,7 +1102,6 @@ class sr_subscribe(sr_instances):
            self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -1136,7 +1134,7 @@ class sr_subscribe(sr_instances):
         if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping setup for %s" % self.config_name)
            self.close
-           os._exit(0)
+           return
 
         # consumer setup
 
@@ -1157,7 +1155,6 @@ class sr_subscribe(sr_instances):
            self.cache.open()
 
         self.close()
-        os._exit(0)
                  
 # ===================================
 # self test
