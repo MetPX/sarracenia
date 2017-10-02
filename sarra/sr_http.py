@@ -384,7 +384,7 @@ class http_transport():
         token       = msg.relpath.split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        urlstr      = msg.srcpath + '/' + msg.relpath
+        urlstr      = msg.baseurl + '/' + msg.relpath
         new_lock    = ''
 
         try:    curdir = os.getcwd()
@@ -394,7 +394,7 @@ class http_transport():
            os.chdir(parent.new_dir)
 
         try :
-                parent.destination = msg.srcpath
+                parent.destination = msg.baseurl
 
                 http = self.http
                 if http == None or not http.check_is_connected() :
