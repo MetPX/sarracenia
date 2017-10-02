@@ -582,7 +582,11 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('R') :
-           self.logger.debug("message is to remove %s" % self.new_file)
+           self.logger.debug("message is to remove %s ignored" % self.new_file)
+           if not 'delete' in self.events: 
+              self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
+              return True
+
            try : 
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
@@ -605,6 +609,11 @@ class sr_subscribe(sr_instances):
 
         if self.msg.sumflg.startswith('L') :
            self.logger.debug("message is to link %s to %s" % ( self.new_file, self.msg.headers[ 'link' ] ) )
+           if not 'link' in self.events: 
+              self.logger.info("message to link %s to %s ignored (events setting)" %  \
+                                            ( self.new_file, self.msg.headers[ 'link' ] ) )
+              return True
+
            try : 
                ok = True
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
