@@ -37,17 +37,73 @@
 import os, os.path, shutil, subprocess, sys, time
 
 try :    
-         from sr_config         import *
-         from sr_post           import *
+         from sr_config          import *
+         from sr_poll            import *
+         from sr_post            import *
+         from sr_report          import *
+         from sr_sarra           import *
+         from sr_sender          import *
+         from sr_shovel          import *
+         from sr_subscribe       import *
+         from sr_watch           import *
+         from sr_winnow          import *
 except : 
-         from sarra.sr_config   import *
-         from sarra.sr_post     import *
+         from sarra.sr_config    import *
+         from sarra.sr_poll      import *
+         from sarra.sr_post      import *
+         from sarra.sr_report    import *
+         from sarra.sr_sarra     import *
+         from sarra.sr_sender    import *
+         from sarra.sr_shovel    import *
+         from sarra.sr_subscribe import *
+         from sarra.sr_watch     import *
+         from sarra.sr_winnow    import *
 
 cfg    = sr_config()
 action = sys.argv[-1]
 
-# an sr_subscribe config will be under ~/.config/sarra/subscribe,
-# will be  sr_subscribe ~/.config/sarra/subscribe/file.conf "action"
+# instantiate each program  with its configuration file
+# and invoke action if one of cleanup,declare,setup
+
+def instantiate(dirconf,pgm,confname,action):
+
+    #print(dirconf,pgm,confname,action)
+
+    config      = re.sub(r'(\.conf)','',confname)
+    orig        = sys.argv[0]
+
+    sys.argv[0] = 'sr_' + pgm
+
+    try:
+            inst  = None
+            if    pgm == 'poll':      inst = sr_poll     (config,[action])
+            elif  pgm == 'post':      inst = sr_post     (config,[action])
+            elif  pgm == 'sarra':     inst = sr_sarra    (config,[action])
+            elif  pgm == 'sender':    inst = sr_sender   (config,[action])
+            elif  pgm == 'shovel':    inst = sr_shovel   (config,[action])
+            elif  pgm == 'subscribe': inst = sr_subscribe(config,[action])
+            elif  pgm == 'watch':     inst = sr_watch    (config,[action])
+            elif  pgm == 'winnow':    inst = sr_winnow   (config,[action])
+            elif  pgm == 'report':    inst = sr_shovel   (dirconf+'/'+config,[action])
+            else: 
+                  print("code not configured for process type sr_%s" % pgm)
+                  sys.exit(1)
+
+            inst.configure()
+
+            if    action == 'cleanup': inst.cleanup()
+            elif  action == 'declare': inst.declare()
+            elif  action == 'setup':   inst.setup()
+
+            sys.argv[0] = orig
+
+    except:
+            print("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
+            sys.exit(1)
+
+      
+
+# invoke each program with its action and configuration file
 
 def invoke(dirconf,pgm,confname,action):
 
@@ -106,7 +162,10 @@ def scandir(dirconf,pgm,action):
     for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue
-        invoke(dirconf,pgm,confname,action)
+        if action in ['cleanup','declare','setup']:
+              instantiate(dirconf,pgm,confname,action)
+        else:
+              invoke(dirconf,pgm,confname,action)
 
 
 # ===================================
@@ -116,15 +175,11 @@ def scandir(dirconf,pgm,action):
 def main():
     # first check action
 
-    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'force_setup' ]:
+    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup']:
        print("USAGE: %s (start|stop|restart|reload|status|cleanup|declare|setup) (version: %s) " % (sys.argv[0], sarra.__version__) )
        sys.exit(1)
 
-    force  = False
     action = sys.argv[-1]
-    if action == 'force_setup' :
-       force = True
-       action = 'setup'
 
     # sarracenia program that may start without config file
     REPORT_PROGRAMS=['audit']
@@ -139,11 +194,6 @@ def main():
     # sarracenia program requiring configs
     
     SR_PROGRAMS =['post','watch','winnow','sarra','shovel','subscribe','sender','poll','report']
-
-    if not force and action == 'setup' :
-       subprocess.check_call(['sr','declare'])
-       subprocess.check_call(['sr','force_setup'])
-       sys.exit(0)
 
     for d in SR_PROGRAMS:
         pgm = d

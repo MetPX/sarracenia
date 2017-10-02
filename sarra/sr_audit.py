@@ -35,10 +35,12 @@
 import os,socket,sys,time,os.path
 
 try :    
+         from sr_amqp            import *
          from sr_rabbit          import *
          from sr_instances       import *
          from sr_util            import *
 except : 
+         from sarra.sr_amqp      import *
          from sarra.sr_rabbit    import *
          from sarra.sr_instances import *
          from sarra.sr_util      import *
@@ -47,10 +49,11 @@ class sr_audit(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
+        self.hc = None
 
     def add_exchange(self,e):
         self.logger.info("adding exchange '%s'" % e)
-        dummy = self.rabbitmqadmin("declare exchange name='%s' type=topic auto_delete=false durable=true"%e)
+        self.hc.exchange_declare(e)
 
     def add_user(self,u,role):
         self.logger.info("adding user %s, reset: %s, set_passwords: %s" % (u, self.reset, self.set_passwords) )
@@ -96,10 +99,10 @@ class sr_audit(sr_instances):
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            # setting up default exchanges for a source
-           dummy = self.rabbitmqadmin("declare exchange name='xs_%s' type=topic auto_delete=false durable=true"%u)
-           dummy = self.rabbitmqadmin("declare exchange name='xr_%s' type=topic auto_delete=false durable=true"%u)
+           self.hc.exchange_declare('xs_%s'%u)
+           self.hc.exchange_declare('xr_%s'%u)
            # deprecated
-           dummy = self.rabbitmqadmin("declare exchange name='xl_%s' type=topic auto_delete=false durable=true"%u)
+           self.hc.exchange_declare('xl_%s'%u)
            return
 
         # PS asked not to implement this (Fri Mar  4 2016)
@@ -125,14 +128,17 @@ class sr_audit(sr_instances):
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
            dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
            # setting up default exchanges for a subscriber
-           dummy = self.rabbitmqadmin("declare exchange name='xs_%s' type=topic auto_delete=false durable=true"%u)
-           dummy = self.rabbitmqadmin("declare exchange name='xr_%s' type=topic auto_delete=false durable=true"%u)
+           self.hc.exchange_declare('xs_%s'%u)
+           self.hc.exchange_declare('xr_%s'%u)
            # deprecated
-           dummy = self.rabbitmqadmin("declare exchange name='xl_%s' type=topic auto_delete=false durable=true"%u)
+           self.hc.exchange_declare('xl_%s'%u)
            return
 
     def close(self):
         self.logger.debug("sr_audit close")
+        if self.hc :
+           self.hc.close()
+           self.hc = None
 
     def check(self):
         self.logger.debug("sr_audit check")
@@ -195,11 +201,11 @@ class sr_audit(sr_instances):
 
     def delete_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
-        dummy = self.rabbitmqadmin("delete exchange name=%s"%e)
+        self.hc.exchange_delete(e)
 
     def delete_queue(self,q):
         self.logger.info("deleting queue %s" % q)
-        dummy = self.rabbitmqadmin("delete queue name=%s"%q)
+        self.hc.queue_delete(q)
 
     def delete_user(self,u):
         self.logger.info("deleting user %s" % u)
@@ -650,6 +656,7 @@ class sr_audit(sr_instances):
     def run(self):
         self.logger.info("sr_audit run")
 
+
         # loop : audit should never stop working   ;-)
 
         while True  :
@@ -664,6 +671,24 @@ class sr_audit(sr_instances):
 
                       self.logger.info("sr_audit waking up")
                       self.configure()
+
+                      # establish an amqp connection using admin
+
+                      self.hc = None
+
+                      try:
+                              self.hc = HostConnect(logger = self.logger)
+                              self.hc.loop = False
+                              self.hc.set_url(self.admin)
+                              self.hc.connect()
+                      except: pass
+
+                      if self.hc == None or self.hc.asleep or self.hc.connection == None:
+                         self.logger.error("no connection to broker with admin %s" % self.admin.geturl())
+                         try : self.hc.close()
+                         except: pass
+                         time.sleep(5)
+                         continue
 
                       # verify pump before anything else...
 
@@ -683,6 +708,9 @@ class sr_audit(sr_instances):
 
                       # verify overall queues
                       self.verify_queues()
+
+                      try : self.hc.close()
+                      except: pass
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
