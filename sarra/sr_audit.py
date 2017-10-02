@@ -239,6 +239,7 @@ class sr_audit(sr_instances):
 
     def run_sr_setup(self):
         self.logger.debug("setting up exchanges and queues from all config")
+        subprocess.check_call(['sr','declare'])
         subprocess.check_call(['sr','setup'])
 
     def verify_exchanges(self):
@@ -701,10 +702,10 @@ class sr_audit(sr_instances):
                           self.verify_report_routing()
                           # verify users from default/credentials
                           self.verify_users()
-                          # setup all exchanges and queues from configs
-                          self.run_sr_setup()
                           # verify overall exchanges (once everything created)
                           self.verify_exchanges()
+                          # setup all exchanges and queues from configs
+                          self.run_sr_setup()
 
                       # verify overall queues
                       self.verify_queues()
