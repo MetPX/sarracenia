@@ -185,7 +185,6 @@ class sr_report(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.cleanup()
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -193,7 +192,6 @@ class sr_report(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
         self.close()
-        os._exit(0)
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
@@ -201,7 +199,6 @@ class sr_report(sr_instances):
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.setup()
         self.close()
-        os._exit(0)
                  
 # ===================================
 # MAIN
