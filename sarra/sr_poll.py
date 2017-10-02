@@ -837,7 +837,6 @@ class sr_poll(sr_instances):
         self.cache.close(unlink=True)
 
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -856,7 +855,6 @@ class sr_poll(sr_instances):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -893,7 +891,6 @@ class sr_poll(sr_instances):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
 # ===================================
 # MAIN
