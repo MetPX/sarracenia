@@ -993,7 +993,7 @@ class sr_subscribe(sr_instances):
            if '${YYYYMMDD}' in self.currentDir :
               YYYYMMDD   = time.strftime("%Y%m%d", time.gmtime()) 
               currentDir = currentDir.replace('${YYYYMMDD}',YYYYMMDD)
-           if '${SOURCE}' in self.currentDir  and 'source' in self.msg.headers:
+           if '${SOURCE}' in self.currentDir :
               ex     = self.exchange
               source = None
               if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
