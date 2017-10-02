@@ -84,7 +84,7 @@ def instantiate(dirconf,pgm,confname,action):
             elif  pgm == 'subscribe': inst = sr_subscribe(config,[action])
             elif  pgm == 'watch':     inst = sr_watch    (config,[action])
             elif  pgm == 'winnow':    inst = sr_winnow   (config,[action])
-            elif  pgm == 'report':    inst = sr_shovel   (dirconf+'/'+config,[action])
+            elif  pgm == 'report':    inst = sr_report   (config,[action])
             else: 
                   print("code not configured for process type sr_%s" % pgm)
                   sys.exit(1)
