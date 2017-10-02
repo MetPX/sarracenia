@@ -672,7 +672,7 @@ class sr_sender(sr_instances):
 
         if not self.post_broker :
            self.close()
-           os._exit(0)
+           return
 
         # posting 
        
@@ -682,9 +682,7 @@ class sr_sender(sr_instances):
 
         self.declare_exchanges(cleanup=True)
 
-
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -696,7 +694,7 @@ class sr_sender(sr_instances):
 
         if not self.post_broker :
            self.close()
-           os._exit(0)
+           return
 
         # posting too
        
@@ -707,7 +705,6 @@ class sr_sender(sr_instances):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -738,7 +735,7 @@ class sr_sender(sr_instances):
 
         if not self.post_broker :
            self.close()
-           os._exit(0)
+           return
 
         # posting too
        
@@ -749,7 +746,6 @@ class sr_sender(sr_instances):
         self.declare_exchanges()
        
         self.close()
-        os._exit(0)
 
 # ===================================
 # MAIN
