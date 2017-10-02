@@ -195,7 +195,7 @@ class sr_post(sr_config):
         print("-b|broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-dr  <document_root>   default:None")
-        if self.program_name == 'sr_watch' : print("-e   <events>          default:create|delete|follow|link|modify\n")
+        print("-e   <events>          default:create|delete|follow|link|modify\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
         print("-f   <flow>            default:None\n")
         print("-h|--help\n")

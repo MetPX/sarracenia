@@ -366,6 +366,7 @@ class sr_subscribe(sr_instances):
         print("\taccept    <regexp pattern>           (default: None)")
         print("\treject    <regexp pattern>           (default: None)")
         print("\taccept_unmatch   <boolean> if no match for all accept/reject opt, accept message? (default: no).\n")
+        print("\tevents    <event list>  msg events processed (default:create|delete|follow|link|modify)")
         print("\ton_message           <script>        (default None)")
 
         # ---------------------------
