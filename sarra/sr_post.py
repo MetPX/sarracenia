@@ -72,8 +72,8 @@ class sr_post(sr_config):
            self.help()
            return
 
-        self.srcpath = self.url.geturl()
-        if self.url.scheme == 'file' : self.srcpath = 'file:'
+        self.baseurl = self.url.geturl()
+        if self.url.scheme == 'file' : self.baseurl = 'file:'
 
         if self.to_clusters == None :
            self.logger.error("-to option is mandatory\n")
@@ -115,13 +115,13 @@ class sr_post(sr_config):
            self.logger.debug("MY POSTER TRICK DID WORK !!!")
 
     def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,srcpath,relpath...")
+        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,baseurl,relpath...")
 
         urlstr  = url.geturl()
         relpath = url.path
-        srcpath = urlstr.replace(relpath,'')
+        baseurl = urlstr.replace(relpath,'')
 
-        return self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
+        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -272,9 +272,9 @@ class sr_post(sr_config):
         self.logger.debug("sr_post overwrite_defaults Done")
 
 
-    def post(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
 
-        urlstr = srcpath + '/' + relpath
+        urlstr = baseurl + '/' + relpath
 
         self.logger.debug("sr_post post %s caching(%s) exchange(%s)" % (urlstr,self.caching,exchange) )
 
@@ -316,7 +316,7 @@ class sr_post(sr_config):
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # set message notice
-        self.msg.set_notice(srcpath,relpath)
+        self.msg.set_notice(baseurl,relpath)
 
         # set message headers
         self.msg.headers = {}
@@ -343,7 +343,7 @@ class sr_post(sr_config):
 
         return ok
 
-    def post_local_file(self,path,exchange,srcpath,relpath,to_clusters,sumflg='d',rename=None):
+    def post_local_file(self,path,exchange,baseurl,relpath,to_clusters,sumflg='d',rename=None):
         self.logger.debug("sr_post post_local_file %s exchange(%s) " % (path,exchange) )
     
         # set partstr
@@ -394,13 +394,13 @@ class sr_post(sr_config):
 
         filename = os.path.basename(path)
 
-        ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
         self.logger.debug("sr_post post_local_file %s exchange(%s)" % (path,exchange ))
 
         return ok
 
-    def post_local_inplace(self,path,exchange,srcpath,relpath,to_clusters,chunksize=0,sumflg='d',rename=None):
+    def post_local_inplace(self,path,exchange,baseurl,relpath,to_clusters,chunksize=0,sumflg='d',rename=None):
         self.logger.debug("sr_post post_local_inplace")
 
         ok       = False
@@ -414,7 +414,7 @@ class sr_post(sr_config):
         # file too small for chunksize
 
         if chunksize <= 0 or chunksize >= fsiz : 
-           ok = self.post_local_file(path,exchange,srcpath,relpath,to_clusters,sumflg,rename)
+           ok = self.post_local_file(path,exchange,baseurl,relpath,to_clusters,sumflg,rename)
            return ok
 
         # count blocks and remainder
@@ -489,7 +489,7 @@ class sr_post(sr_config):
 
               # post
 
-              ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+              ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
               if not ok : return ok
 
               # reconnect ?
@@ -504,7 +504,7 @@ class sr_post(sr_config):
         return ok
 
 
-    def post_local_part(self,path,exchange,srcpath,relpath,to_clusters,rename=None):
+    def post_local_part(self,path,exchange,baseurl,relpath,to_clusters,rename=None):
         self.logger.debug("sr_post post_local_part")
 
         # verify part suffix is ok
@@ -526,7 +526,7 @@ class sr_post(sr_config):
         atime = timeflt2str(lstat.st_atime)
         mode  = lstat[stat.ST_MODE]
 
-        ok = self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
 
         return ok
 
@@ -569,7 +569,7 @@ class sr_post(sr_config):
         if self.event == 'delete' :
            hash = sha512()
            hash.update(bytes(filename, encoding='utf-8'))
-           ok = self.post(self.exchange,self.srcpath,self.relpath,self.to_clusters,None, \
+           ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
                     'R,%s' % hash.hexdigest(), rename, filename)
 
            if not ok : sys.exit(1)
@@ -594,7 +594,7 @@ class sr_post(sr_config):
                linkdest = os.readlink(filepath)
                hash = sha512()
                hash.update( bytes( linkdest, encoding='utf-8' ) )
-               ok = self.post( self.exchange,self.srcpath,self.relpath,self.to_clusters,None, \
+               ok = self.post( self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
                     'L,%s' % hash.hexdigest(), rename, filename, link=linkdest )
 
                if not ok : sys.exit(1)
@@ -612,7 +612,7 @@ class sr_post(sr_config):
         # ==============
 
         if self.partflg == 'p' :
-           ok = self.post_local_part(filepath,self.exchange,self.srcpath,self.relpath,self.to_clusters,rename)
+           ok = self.post_local_part(filepath,self.exchange,self.baseurl,self.relpath,self.to_clusters,rename)
            if not ok : sys.exit(1)
            return
 
@@ -664,7 +664,7 @@ class sr_post(sr_config):
         # ===================
 
         if self.blocksize > 0 :
-           ok = self.post_local_inplace(filepath,self.exchange,self.srcpath,self.relpath, \
+           ok = self.post_local_inplace(filepath,self.exchange,self.baseurl,self.relpath, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)
            return
@@ -673,7 +673,7 @@ class sr_post(sr_config):
         # whole file
         # ==============
 
-        ok = self.post_local_file(filepath,self.exchange,self.srcpath,self.relpath,self.to_clusters,self.sumflg,rename)
+        ok = self.post_local_file(filepath,self.exchange,self.baseurl,self.relpath,self.to_clusters,self.sumflg,rename)
         if not ok: sys.exit(1)
         return
 
@@ -726,7 +726,7 @@ class sr_post(sr_config):
               self.logger.error("no posting")
               return False
 
-        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.srcpath+self.relpath ) )
+        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.baseurl+self.relpath ) )
         self.posting()
 
         return True
