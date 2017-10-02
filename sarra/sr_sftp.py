@@ -523,7 +523,7 @@ class sftp_transport():
         token       = msg.relpath.split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        urlstr      = msg.srcpath + '/' + msg.relpath
+        urlstr      = msg.baseurl + '/' + msg.relpath
         new_lock    = ''
 
         try:    curdir = os.getcwd()
@@ -533,7 +533,7 @@ class sftp_transport():
             os.chdir(parent.new_dir)
 
         try :
-                parent.destination = msg.srcpath
+                parent.destination = msg.baseurl
 
                 sftp = self.sftp
                 if sftp == None or not sftp.check_is_connected() :
@@ -732,7 +732,7 @@ class sftp_transport():
                 except : pass
     
                 (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_srcpath+'/'+parent.new_relpath, stype ,svalue))
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (parent.new_baseurl+'/'+parent.new_relpath, stype ,svalue))
                 msg.report_publish(497,'sftp delivery failed')
     
                 return False
@@ -841,7 +841,7 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.srcpath = "sftp://localhost"
+           msg.baseurl = "sftp://localhost"
            msg.relpath = "tztz/ccc"
            msg.partflg = '1'
            msg.offset  = 0
