@@ -563,7 +563,7 @@ class sr_subscribe(sr_instances):
 
            if not new_msg :
               if self.reportback : self.msg.report_publish(304,'Not modified')
-              self.logger.debug("Ignored %s" % (self.msg.notice))
+              self.logger.info("Ignored %s not modified" % (self.msg.notice))
               return True
 
         #=================================
