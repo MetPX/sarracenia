@@ -428,7 +428,7 @@ class sr_sender(sr_instances):
 
         if self.post_broker :
            self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')
@@ -635,16 +635,16 @@ class sr_sender(sr_instances):
 
     def set_new_url(self):
 
-        self.new_srcpath = self.destination
-        if self.url      : self.new_srcpath = self.url.geturl()
-        self.new_srcpath = self.new_srcpath.strip('/')
+        self.new_baseurl = self.destination
+        if self.url      : self.new_baseurl = self.url.geturl()
+        self.new_baseurl = self.new_baseurl.strip('/')
 
         self.new_relpath = self.new_rpath + '/' + self.new_file
         self.new_relpath = self.new_relpath.replace('//','/')
         self.new_relpath = self.new_relpath.strip('/')
         self.new_relpath = '/' + self.new_relpath
 
-        if not self.post_document_root and 'ftp' in self.new_srcpath[:4] :
+        if not self.post_document_root and 'ftp' in self.new_baseurl[:4] :
            self.new_relpath = '/' + self.new_relpath
 
     def reload(self):
