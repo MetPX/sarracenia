@@ -787,7 +787,6 @@ class sr_post(sr_config):
         self.declare_exchanges(cleanup=True)
 
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -806,7 +805,6 @@ class sr_post(sr_config):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -843,7 +841,6 @@ class sr_post(sr_config):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
 # ===================================
 # MAIN
