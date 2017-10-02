@@ -420,7 +420,7 @@ class ftp_transport():
         token       = msg.relpath.split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
-        urlstr      = msg.srcpath + '/' + msg.relpath
+        urlstr      = msg.baseurl + '/' + msg.relpath
         new_lock    = ''
 
         try:    curdir = os.getcwd()
@@ -430,7 +430,7 @@ class ftp_transport():
            os.chdir(parent.new_dir)
 
         try :
-                parent.destination = msg.srcpath
+                parent.destination = msg.baseurl
 
                 ftp = self.ftp
                 if ftp == None or not ftp.check_is_connected() :
@@ -730,7 +730,7 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.srcpath = "ftp://localhost"
+           msg.baseurl = "ftp://localhost"
            msg.relpath = "tztz/ccc"
            msg.partflg = '1'
            msg.offset  = 0
