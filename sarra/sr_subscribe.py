@@ -405,7 +405,7 @@ class sr_subscribe(sr_instances):
            print("\tpost_exchange        <name>          (MANDATORY)")
 
         print("\tpost_document_root   <name>          (default document_root)")
-        print("\turl                  <url>      post message: srcpath          (MANDATORY)")
+        print("\turl                  <url>      post message: base_url         (MANDATORY)")
         print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
         if self.program_name == 'sr_sarra' :
            print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
@@ -436,6 +436,13 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
+        # if a message is received directly from a source...
+        # we dont trust its settings of  source and from_cluster
+
+        if self.source_from_exchange :
+           if 'source'       in self.msg.headers : del self.msg.headers['source']
+           if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
+ 
         # apply default to a message without a source
         ex = self.msg.exchange
         if not 'source' in self.msg.headers :
@@ -599,7 +606,7 @@ class sr_subscribe(sr_instances):
 
            if self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
               self.__on_post__()
 
            return True
@@ -627,7 +634,7 @@ class sr_subscribe(sr_instances):
 
            if ok and self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
               self.__on_post__()
 
            return True
@@ -785,7 +792,7 @@ class sr_subscribe(sr_instances):
 
         if self.post_broker :
            self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
            self.__on_post__()
            if self.reportback: self.msg.report_publish(201,'Published')
 
@@ -1025,18 +1032,18 @@ class sr_subscribe(sr_instances):
 
         self.new_dir     = new_dir
         self.new_file    = filename
-        self.new_srcpath = 'file:'
+        self.new_baseurl = 'file:'
         self.new_relpath = relpath
 
         if self.post_broker :
            if self.url :
-              self.new_srcpath = self.url.geturl()
+              self.new_baseurl = self.url.geturl()
            if self.post_document_root :
               self.new_relpath = self.new_relpath.replace(self.post_document_root,'',1)
 
         #self.logger.debug("new_dir     = %s" % self.new_dir)
         #self.logger.debug("new_file    = %s" % self.new_file)
-        #self.logger.debug("new_srcpath = %s" % self.new_srcpath)
+        #self.logger.debug("new_baseurl = %s" % self.new_baseurl)
         #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
     def reload(self):
