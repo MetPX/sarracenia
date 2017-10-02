@@ -46,13 +46,14 @@ int symlink(const char *target, const char* linkpath)
 {
     int status;
 
-fprintf( stderr, "symlink %s %s\n", target, linkpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG symlink %s %s\n", target, linkpath );
     if (!symlink_init_done) {
         symlink_fn_ptr = (symlink_fn) dlsym(RTLD_NEXT, "symlink");
         symlink_init_done = 1;
     }
     status = symlink_fn_ptr(target,linkpath);
     if ( !strncmp(linkpath,"/dev/", 5) ) return(status);
+    if ( !strncmp(linkpath,"/proc/", 6) ) return(status);
 
     return(shimpost(linkpath, status));
 }
@@ -66,13 +67,14 @@ int link(const char *target, const char* linkpath)
 {
     int status;
 
-fprintf( stderr, "link %s %s\n", target, linkpath );
+    if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG link %s %s\n", target, linkpath );
     if (!link_init_done) {
         link_fn_ptr = (link_fn) dlsym(RTLD_NEXT, "link");
         link_init_done = 1;
     }
     status = link_fn_ptr(target,linkpath);
     if ( !strncmp(target,"/dev/", 5) ) return(status);
+    if ( !strncmp(target,"/proc/", 6) ) return(status);
 
     return(shimpost(linkpath, status));
 }
@@ -88,7 +90,7 @@ int unlinkat(int dirfd, const char *path, int flags)
     char real_path[PATH_MAX];
     char *real_return;
 
-fprintf( stderr, "unlinkat %s\n", path );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat %s\n", path );
     if (!unlinkat_init_done) {
         unlinkat_fn_ptr = (unlinkat_fn) dlsym(RTLD_NEXT, "unlinkat");
         unlinkat_init_done = 1;
@@ -100,6 +102,7 @@ fprintf( stderr, "unlinkat %s\n", path );
  
     if (!real_return) return(status);
     if ( !strncmp(path,"/dev/", 5) ) return(status);
+    if ( !strncmp(path,"/proc/", 6) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,path);
@@ -115,7 +118,7 @@ int unlink(const char *path)
 {
     int status;
 
-fprintf( stderr, "unlink %s\n", path );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlink %s\n", path );
     if (!unlink_init_done) 
     {
         unlink_fn_ptr = (unlink_fn) dlsym(RTLD_NEXT, "unlink");
@@ -135,7 +138,7 @@ int rename(const char *oldpath, const char *newpath)
 {
     int status;
 
-fprintf( stderr, "renameat %s %s\n", oldpath, newpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
     if (!rename_init_done) 
     {
         rename_fn_ptr = (rename_fn) dlsym(RTLD_NEXT, "rename");
@@ -143,6 +146,7 @@ fprintf( stderr, "renameat %s %s\n", oldpath, newpath );
     }
     status = rename_fn_ptr(oldpath,newpath);
     if ( !strncmp(newpath,"/dev/", 5) ) return(status);
+    if ( !strncmp(newpath,"/proc/", 6) ) return(status);
 
     // delete old if necessary...
     if (!status) shimpost(oldpath,0);
@@ -164,7 +168,7 @@ int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpat
     char *oreal_return;
     
 
-fprintf( stderr, "renameat %s %s\n", oldpath, newpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
     if (!renameat_init_done) 
     {
         renameat_fn_ptr = (renameat_fn) dlsym(RTLD_NEXT, "renameat");
@@ -177,6 +181,7 @@ fprintf( stderr, "renameat %s %s\n", oldpath, newpath );
 
     if (!real_return) return(status);
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,newpath);
@@ -209,7 +214,7 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
     char oreal_path[PATH_MAX];
     char *oreal_return;
 
-fprintf( stderr, "renameat2 %s %s\n", oldpath, newpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
     if (!renameat2_init_done) 
     {
         renameat2_fn_ptr = (renameat2_fn) dlsym(RTLD_NEXT, "renameat2");
@@ -222,6 +227,7 @@ fprintf( stderr, "renameat2 %s %s\n", oldpath, newpath );
 
     if (!real_return) return(status);
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,newpath);
@@ -252,7 +258,6 @@ int copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size
     char real_path[PATH_MAX];
     char *real_return;
 
-fprintf( stderr, "copy_file_range\n" );
     if (!copy_file_range_init_done) 
     {
         copy_file_range_fn_ptr = (copy_file_range_fn) dlsym(RTLD_NEXT, "copy_file_range");
@@ -262,6 +267,8 @@ fprintf( stderr, "copy_file_range\n" );
 
     snprintf( fdpath, 32, "/proc/self/fd/%d", fd_out );
     real_return = realpath(fdpath, real_path);
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG copy_file_range to %s\n", real_path );
 
     if (!real_return) return(status);
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
@@ -301,6 +308,48 @@ int close(int fd)
     if (!real_return) return(status);
 
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG close %s\n", real_path );
+
+    return shimpost(real_path, status) ;
+}
+
+
+static int fclose_init_done = 0;
+typedef int  (*fclose_fn) (FILE *);
+static fclose_fn fclose_fn_ptr = fclose;
+
+int fclose(FILE *f) 
+{
+
+    int fd;
+    int fdstat;
+    char fdpath[32];
+    char real_path[PATH_MAX];
+    char *real_return;
+    int status;
+
+    if (!fclose_init_done) {
+        fclose_fn_ptr = (fclose_fn) dlsym(RTLD_NEXT, "fclose");
+        fclose_init_done = 1;
+    }
+    fd = fileno(f);
+ 
+    fdstat = fcntl(fd, F_GETFL);
+
+    if ( (fdstat & O_ACCMODE) == O_RDONLY ) return fclose_fn_ptr(f);
+  
+    snprintf(fdpath, 32, "/proc/self/fd/%d", fd);
+    real_return = realpath(fdpath, real_path);
+    status = fclose_fn_ptr(f);
+
+    if (!real_return) return(status);
+
+    if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG fclose continue %p %s\n", f, real_path );
 
     return shimpost(real_path, status) ;
 }
