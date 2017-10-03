@@ -888,7 +888,7 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config ... cleaning up ressources if any
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("report_daemons is False, skipping %s config" % self.config_name)
            self.cleanup()
            os._exit(0)
@@ -1047,7 +1047,7 @@ class sr_subscribe(sr_instances):
         #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
     def reload(self):
-        self.logger.info("%s reload" % self.program_name)
+        self.logger.info("%s reload" % self.program_name )
         self.close()
         self.configure()
         self.run()
@@ -1066,7 +1066,7 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping cleanup for %s" % self.config_name)
            return
 
@@ -1098,7 +1098,7 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping declare for %s" % self.config_name)
            self.close
            return
@@ -1147,7 +1147,7 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping setup for %s" % self.config_name)
            self.close
            return
