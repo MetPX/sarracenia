@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
   msg_2localfile:  this is a helper script to work with converters (filters) and senders.
 
@@ -87,15 +88,12 @@
 
   return True
 
-
-
 """
-import re
 
-class Msg_2LocalFile(object):
+class Msg_2LocalFile():
 
-    def __init__(self,parent) :
-        pass
+    def __init__(self,parent):
+        self.parent = parent
 
     def perform(self,parent):
         l = parent.logger
@@ -112,8 +110,6 @@ class Msg_2LocalFile(object):
 
         return True
 
-msg_2localfile=Msg_2LocalFile(self)
+msg_2localfile=Msg_2LocalFile(None)
 
 self.on_message=msg_2localfile.perform
-
-
