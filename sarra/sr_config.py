@@ -1057,8 +1057,8 @@ class sr_config:
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
-                           # should be expressed in mins (and in rabbitmq millisec hence 60000 factor)
-                           self.expire = int(words[1]) * 60 * 1000
+                           # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
+                           self.expire = int(words[1]) * 1000
                            if self.expire <= 0 : self.expire = None
                      n = 2
 
@@ -1218,7 +1218,8 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'message_ttl':  # See: sr_consumer.7
-                     self.message_ttl = int(words[1]) * 60 * 1000
+                     # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
+                     self.message_ttl = int(words[1]) * 1000
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 
