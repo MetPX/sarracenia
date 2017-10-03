@@ -232,7 +232,7 @@ class sr_message():
         self.topic        = self.topic_prefix + '.' + self.subtopic
 
         token        = self.notice.split(' ')
-        self.srcpath = token[2]
+        self.baseurl = token[2]
         self.relpath = token[3]
 
         self.set_notice(token[2],token[3])
@@ -272,7 +272,7 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.time    = token[0]
-        self.srcpath = token[1]
+        self.baseurl = token[1]
         self.relpath = token[2]
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
@@ -381,7 +381,7 @@ class sr_message():
 
         # Modify message for posting.
 
-        self.srcpath = 'file:'
+        self.baseurl = 'file:'
         self.relpath = new_file
 
         self.urlstr = 'file:/' + new_file
@@ -396,7 +396,7 @@ class sr_message():
         self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
-        self.set_notice(self.srcpath,self.relpath)
+        self.set_notice(self.baseurl,self.relpath)
 
     def set_hdrstr(self):
         self.hdrstr  = ''
@@ -419,7 +419,7 @@ class sr_message():
         self.local_checksum= None
        
         self.inplace       = self.parent.inplace
-        self.new_srcpath   = self.parent.new_srcpath
+        self.new_baseurl   = self.parent.new_baseurl
 
         self.new_dir       = self.parent.new_dir
         self.new_file      = self.parent.new_file
@@ -547,19 +547,19 @@ class sr_message():
 
         self.notice = '%s %s %s' % (self.time,static_part,path)
 
-    def set_notice(self,srcpath,relpath,time=None):
+    def set_notice(self,baseurl,relpath,time=None):
 
         self.time    = time
-        self.srcpath = srcpath
+        self.baseurl = baseurl
         self.relpath = relpath
         if not time  : self.set_time()
 
-        self.notice = '%s %s %s' % (self.time,srcpath,relpath)
+        self.notice = '%s %s %s' % (self.time,baseurl,relpath)
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
 
-        self.urlstr  = srcpath+relpath
+        self.urlstr  = baseurl+relpath
         self.url     = urllib.parse.urlparse(self.urlstr)
         #========================================
 

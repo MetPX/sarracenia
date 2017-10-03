@@ -366,6 +366,7 @@ class sr_subscribe(sr_instances):
         print("\taccept    <regexp pattern>           (default: None)")
         print("\treject    <regexp pattern>           (default: None)")
         print("\taccept_unmatch   <boolean> if no match for all accept/reject opt, accept message? (default: no).\n")
+        print("\tevents    <event list>  msg events processed (default:create|delete|follow|link|modify)")
         print("\ton_message           <script>        (default None)")
 
         # ---------------------------
@@ -404,7 +405,7 @@ class sr_subscribe(sr_instances):
            print("\tpost_exchange        <name>          (MANDATORY)")
 
         print("\tpost_document_root   <name>          (default document_root)")
-        print("\turl                  <url>      post message: srcpath          (MANDATORY)")
+        print("\turl                  <url>      post message: base_url         (MANDATORY)")
         print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
         if self.program_name == 'sr_sarra' :
            print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
@@ -435,6 +436,13 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
+        # if a message is received directly from a source...
+        # we dont trust its settings of  source and from_cluster
+
+        if self.source_from_exchange :
+           if 'source'       in self.msg.headers : del self.msg.headers['source']
+           if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
+ 
         # apply default to a message without a source
         ex = self.msg.exchange
         if not 'source' in self.msg.headers :
@@ -555,7 +563,7 @@ class sr_subscribe(sr_instances):
 
            if not new_msg :
               if self.reportback : self.msg.report_publish(304,'Not modified')
-              self.logger.debug("Ignored %s" % (self.msg.notice))
+              self.logger.info("Ignored %s not modified" % (self.msg.notice))
               return True
 
         #=================================
@@ -582,7 +590,11 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('R') :
-           self.logger.debug("message is to remove %s" % self.new_file)
+           self.logger.debug("message is to remove %s ignored" % self.new_file)
+           if not 'delete' in self.events: 
+              self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
+              return True
+
            try : 
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
@@ -594,7 +606,7 @@ class sr_subscribe(sr_instances):
 
            if self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
               self.__on_post__()
 
            return True
@@ -605,6 +617,11 @@ class sr_subscribe(sr_instances):
 
         if self.msg.sumflg.startswith('L') :
            self.logger.debug("message is to link %s to %s" % ( self.new_file, self.msg.headers[ 'link' ] ) )
+           if not 'link' in self.events: 
+              self.logger.info("message to link %s to %s ignored (events setting)" %  \
+                                            ( self.new_file, self.msg.headers[ 'link' ] ) )
+              return True
+
            try : 
                ok = True
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
@@ -617,7 +634,7 @@ class sr_subscribe(sr_instances):
 
            if ok and self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
               self.__on_post__()
 
            return True
@@ -775,7 +792,7 @@ class sr_subscribe(sr_instances):
 
         if self.post_broker :
            self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_srcpath,self.new_relpath,self.msg.time)
+           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
            self.__on_post__()
            if self.reportback: self.msg.report_publish(201,'Published')
 
@@ -871,7 +888,7 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config ... cleaning up ressources if any
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("report_daemons is False, skipping %s config" % self.config_name)
            self.cleanup()
            os._exit(0)
@@ -983,7 +1000,7 @@ class sr_subscribe(sr_instances):
            if '${YYYYMMDD}' in self.currentDir :
               YYYYMMDD   = time.strftime("%Y%m%d", time.gmtime()) 
               currentDir = currentDir.replace('${YYYYMMDD}',YYYYMMDD)
-           if '${SOURCE}' in self.currentDir  and 'source' in self.msg.headers:
+           if '${SOURCE}' in self.currentDir :
               ex     = self.exchange
               source = None
               if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
@@ -1015,22 +1032,22 @@ class sr_subscribe(sr_instances):
 
         self.new_dir     = new_dir
         self.new_file    = filename
-        self.new_srcpath = 'file:'
+        self.new_baseurl = 'file:'
         self.new_relpath = relpath
 
         if self.post_broker :
            if self.url :
-              self.new_srcpath = self.url.geturl()
+              self.new_baseurl = self.url.geturl()
            if self.post_document_root :
               self.new_relpath = self.new_relpath.replace(self.post_document_root,'',1)
 
         #self.logger.debug("new_dir     = %s" % self.new_dir)
         #self.logger.debug("new_file    = %s" % self.new_file)
-        #self.logger.debug("new_srcpath = %s" % self.new_srcpath)
+        #self.logger.debug("new_baseurl = %s" % self.new_baseurl)
         #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
     def reload(self):
-        self.logger.info("%s reload" % self.program_name)
+        self.logger.info("%s reload" % self.program_name )
         self.close()
         self.configure()
         self.run()
@@ -1049,10 +1066,9 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping cleanup for %s" % self.config_name)
-           self.close()
-           os._exit(0)
+           return
 
         # consumer declare
 
@@ -1076,17 +1092,16 @@ class sr_subscribe(sr_instances):
            self.cache = None
 
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping declare for %s" % self.config_name)
            self.close
-           os._exit(0)
+           return
 
         # consumer declare
 
@@ -1103,7 +1118,6 @@ class sr_subscribe(sr_instances):
            self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -1133,10 +1147,10 @@ class sr_subscribe(sr_instances):
 
         # if report_daemons is false than skip 'rr_' config
 
-        if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
+        if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping setup for %s" % self.config_name)
            self.close
-           os._exit(0)
+           return
 
         # consumer setup
 
@@ -1157,7 +1171,6 @@ class sr_subscribe(sr_instances):
            self.cache.open()
 
         self.close()
-        os._exit(0)
                  
 # ===================================
 # self test
@@ -1298,12 +1311,12 @@ def main():
     subscribe = sr_subscribe(config,args)
 
     if action == None:
-       subscribe.logger.error("sr_subscribe requieres an action")
+       subscribe.logger.error("sr_subscribe requires an action")
        subscribe.logger.error("Use 'sr_subscribe -help' for details")
        sys.exit(1)
 
     if subscribe.config_name == None or not os.path.isfile(subscribe.user_config) :
-       subscribe.logger.error("sr_subscribe requieres a configuration file")
+       subscribe.logger.error("sr_subscribe requires a configuration file")
        subscribe.logger.error("Use 'sr_subscribe -help' for details")
        sys.exit(1)
 

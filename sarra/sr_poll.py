@@ -130,8 +130,8 @@ class sr_poll(sr_instances):
            self.help()
            sys.exit(1)
 
-        self.srcpath = self.details.url.geturl()
-        if self.srcpath[-1] != '/' : self.srcpath += '/'
+        self.baseurl = self.details.url.geturl()
+        if self.baseurl[-1] != '/' : self.baseurl += '/'
 
         # check destination
 
@@ -176,15 +176,15 @@ class sr_poll(sr_instances):
            self.logger.debug("MY POSTER TRICK DID WORK !!!")
 
     def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,srcpath,relpath...")
+        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,baseurl,relpath...")
 
         urlstr  = url.geturl()
         relpath = url.path
-        srcpath = urlstr.replace(relpath,'')
+        baseurl = urlstr.replace(relpath,'')
 
-        if srcpath[-1] != '/' : srcpath += '/'
+        if baseurl[-1] != '/' : baseurl += '/'
 
-        return self.post(exchange,srcpath,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
+        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -543,14 +543,14 @@ class sr_poll(sr_instances):
         self.sumflg         = 'z,d'
 
 
-    def post(self,exchange,srcpath,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
 
         self.msg.exchange = exchange
         
         self.msg.set_topic(self.topic_prefix,relpath)
         if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
-        self.msg.set_notice(srcpath,relpath)
+        self.msg.set_notice(baseurl,relpath)
 
         # set message headers
         self.msg.headers = {}
@@ -705,7 +705,7 @@ class sr_poll(sr_instances):
                 if this_rename != None and this_rename[-1] == '/' :
                    this_rename += remote_file
                 
-                ok = self.post(self.exchange,self.srcpath,self.relpath,self.to_clusters, \
+                ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters, \
                                self.partstr,self.sumstr,this_rename,remote_file)
 
                 if ok : npost += 1
@@ -837,7 +837,6 @@ class sr_poll(sr_instances):
         self.cache.close(unlink=True)
 
         self.close()
-        os._exit(0)
 
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
@@ -856,7 +855,6 @@ class sr_poll(sr_instances):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
     def declare_exchanges(self, cleanup=False):
 
@@ -893,7 +891,6 @@ class sr_poll(sr_instances):
         self.declare_exchanges()
 
         self.close()
-        os._exit(0)
 
 # ===================================
 # MAIN

@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* sr_subscribe: events option is consider to perform link and delete messages
+* sr and sr_audit speed up from broker connection and class instantiations
 * sr_util in startup_args catch -help when only args given
 * sr_shovel : caching optional default to False
 * sr_subscribe help module : treats sr_shovel,sr_winnow,sr_sarra cases

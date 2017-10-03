@@ -14,9 +14,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Apr 19 13:20:00 CDT 2016
+#  Last Changed   : Tue Oct  3 18:25 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -35,7 +33,6 @@
 #
 #
 
-import signal
 
 #============================================================
 # usage example
@@ -45,38 +42,36 @@ import signal
 #============================================================
 
 try :    
-         from sr_consumer        import *
-         from sr_instances       import *
-         from sr_util            import *
+         from sr_subscribe       import *
 except : 
-         from sarra.sr_consumer  import *
-         from sarra.sr_instances import *
-         from sarra.sr_util      import *
+         from sarra.sr_subscribe import *
 
-
-class sr_report(sr_instances):
+class sr_report(sr_subscribe):
 
     def __init__(self,config=None,args=None):
         #start debug before it is set by args or config option
         #self.debug = True
         #self.setlog()
-        sr_instances.__init__(self,config,args)
+        sr_subscribe.__init__(self,config,args)
 
     def check(self):
+        self.logger.debug("%s check" % self.program_name)
         self.nbr_instances = 1
+        self.reportback    = False
+        self.notify_only   = True
+        self.post_broker   = None
 
         if self.broker == None :
            self.logger.error("no broker given")
            sys.exit(1)
 
+        username = self.broker.username
+
         if self.exchange == None:
-             if self.broker.username in self.users.keys():
-                  if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
-                       self.exchange = 'xreport'
-                  else:
-                       self.exchange = 'xr_' + self.broker.username
-             else:
-                self.exchange = 'xr_' + self.broker.username
+           self.exchange = 'xs_' + username
+           if username in self.users.keys():
+              if self.users[username] in [ 'feeder', 'admin' ]:
+                 self.exchange = 'xreport'
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic
@@ -95,10 +90,8 @@ class sr_report(sr_instances):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = self.masks == []
 
-    def close(self):
-        self.consumer.close()
-
     def overwrite_defaults(self):
+        self.logger.debug("%s overwrite_defaults" % self.program_name)
         self.broker               = None
         self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
@@ -110,99 +103,6 @@ class sr_report(sr_instances):
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
 
-    # =============
-    # __on_message__  internal message validation
-    # =============
-
-    def __on_message__(self):
-        self.logger.debug("sr_report __on_message__")
-
-        self.logger.debug("Received topic   %s" % self.msg.topic)
-        self.logger.debug("Received notice  %s" % self.msg.notice)
-        self.logger.debug("Received headers %s\n" % self.msg.hdrstr)
-
-        # user provided an on_message script
-
-        for plugin in self.on_message_list :
-            if not plugin(self): return False
-
-        return True
-
-
-    def run(self):
-
-        self.logger.info("sr_report run")
-
-        parent        = self
-        self.consumer = sr_consumer(parent)
-
-        #
-        # loop on all message
-        #
-
-        while True :
-
-          try  :
-                 #  is it sleeping ?
-                 if not self.has_vip() :
-                     self.logger.debug("sr_report does not have vip=%s, is sleeping", self.vip)
-                     time.sleep(5)
-                     continue
-                 else:
-                     self.logger.debug("sr_report is active on vip=%s", self.vip)
-
-                 #  heartbeat
-                 ok = self.heartbeat_check()
-
-                 ok, self.msg = self.consumer.consume()
-                 if not ok : continue
-
-                 ok = self.__on_message__()
-
-          except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                 
-
-    def reload(self):
-        self.logger.info("%s reload" % self.program_name)
-        self.close()
-        self.configure()
-        self.run()
-
-    def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
-        self.run()
-
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
-        self.close()
-        os._exit(0)
-
-    def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.cleanup()
-        self.close()
-        os._exit(0)
-
-    def declare(self):
-        self.logger.info("%s declare" % self.program_name)
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.declare()
-        self.close()
-        os._exit(0)
-
-    def setup(self):
-        self.logger.info("%s setup" % self.program_name)
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.setup()
-        self.close()
-        os._exit(0)
-                 
 # ===================================
 # MAIN
 # ===================================
@@ -212,14 +112,17 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     # config is optional so check the argument
+
     if config != None:
        cfg = sr_config()
        cfg.defaults()
        cfg.general()
        ok,config = cfg.config_path('report',config,mandatory=False)
        if not ok :
-          args.append(config)
           config = None
+          args   = []
+          args.extend(sys.argv[1:])
+          args.remove(action)
 
     srreport = sr_report(config,args)
 

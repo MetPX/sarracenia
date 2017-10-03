@@ -452,7 +452,6 @@ class sr_config:
         self.realpath             = False
         self.reconnect            = False
         self.recursive            = False
-        self.reload               = False
         self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
@@ -514,6 +513,9 @@ class sr_config:
 
         self.on_part              = None
         self.on_part_list         = []
+
+        self.do_it                = None
+        self.doit_list            = []
 
         self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
@@ -998,6 +1000,18 @@ class sr_config:
                         ok = False
                      n = 2
 
+                elif words0 == 'do_it': # See: sr_config.1, others...
+                     self.execfile("do_it",words1)
+                     if ( self.do_it == None ):
+                        if self.isNone(words1):
+                           self.doit_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.doit_list.append(self.do_it)
+                     n = 2
+
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
                      self.execfile("do_poll",words1)
                      if ( self.do_poll == None ) and not self.isNone(words1):
@@ -1057,8 +1071,8 @@ class sr_config:
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
-                           # should be expressed in mins (and in rabbitmq millisec hence 60000 factor)
-                           self.expire = int(words[1]) * 60 * 1000
+                           # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
+                           self.expire = int(words[1]) * 1000
                            if self.expire <= 0 : self.expire = None
                      n = 2
 
@@ -1218,7 +1232,8 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'message_ttl':  # See: sr_consumer.7
-                     self.message_ttl = int(words[1]) * 60 * 1000
+                     # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
+                     self.message_ttl = int(words[1]) * 1000
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 

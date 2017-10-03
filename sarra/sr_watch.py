@@ -119,6 +119,7 @@ class sr_watch(sr_instances):
            self.post.connect()
            self.post.cache.close(unlink=True)
            self.post.setup()
+           os._exit(0)
 
     def check_heartbeat(self):
         now    = time.time()
@@ -306,8 +307,6 @@ class sr_watch(sr_instances):
 
         self.post.cleanup()
 
-        os._exit(0)
-
     def declare(self):
         self.logger.info("%s declare" % self.program_name)
 
@@ -318,7 +317,6 @@ class sr_watch(sr_instances):
         self.post.declare()
 
         self.post.close()
-        os._exit(0)
 
     def setup(self):
         self.logger.info("%s setup" % self.program_name)
@@ -330,7 +328,6 @@ class sr_watch(sr_instances):
         self.post.declare()
 
         self.post.close()
-        os._exit(0)
 
 # ===================================
 # GLOBAL
