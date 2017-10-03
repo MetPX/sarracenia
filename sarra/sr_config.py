@@ -515,6 +515,9 @@ class sr_config:
         self.on_part              = None
         self.on_part_list         = []
 
+        self.do_it                = None
+        self.doit_list            = []
+
         self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
         self.on_line_list = [ self.on_line ]
@@ -996,6 +999,18 @@ class sr_config:
                      self.execfile("do_download",words1)
                      if ( self.do_download == None ) and not self.isNone(words1):
                         ok = False
+                     n = 2
+
+                elif words0 == 'do_it': # See: sr_config.1, others...
+                     self.execfile("do_it",words1)
+                     if ( self.do_it == None ):
+                        if self.isNone(words1):
+                           self.doit_list = []
+                        else:
+                           ok = False
+                           needexit = True
+                     else:
+                        self.doit_list.append(self.do_it)
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
