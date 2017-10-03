@@ -55,8 +55,8 @@ from   paramiko import *
 #
 # SFTP : supports remote file seek... so 'I' part possible
 #
-
-# requiere  parent.logger
+#
+# require   parent.logger
 #           parent.credentials
 #           parent.destination 
 #           parent.batch 

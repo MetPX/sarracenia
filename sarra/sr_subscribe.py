@@ -1068,7 +1068,6 @@ class sr_subscribe(sr_instances):
 
         if self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping cleanup for %s" % self.config_name)
-           self.close()
            return
 
         # consumer declare
@@ -1312,12 +1311,12 @@ def main():
     subscribe = sr_subscribe(config,args)
 
     if action == None:
-       subscribe.logger.error("sr_subscribe requieres an action")
+       subscribe.logger.error("sr_subscribe requires an action")
        subscribe.logger.error("Use 'sr_subscribe -help' for details")
        sys.exit(1)
 
     if subscribe.config_name == None or not os.path.isfile(subscribe.user_config) :
-       subscribe.logger.error("sr_subscribe requieres a configuration file")
+       subscribe.logger.error("sr_subscribe requires a configuration file")
        subscribe.logger.error("Use 'sr_subscribe -help' for details")
        sys.exit(1)
 
