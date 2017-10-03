@@ -452,7 +452,6 @@ class sr_config:
         self.realpath             = False
         self.reconnect            = False
         self.recursive            = False
-        self.reload               = False
         self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
