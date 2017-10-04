@@ -233,25 +233,26 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        
    case 'L' : // symlink case
         just_the_name=linkstr;       
+        SHA512_Init(&shactx);
+        SHA512_Update(&shactx, linkstr, strlen(linkstr) );
+        SHA512_Final(sumhash+1, &shactx);
+        return(sr_hash2sumstr(sumhash)); 
 
    case 'R' : // null, or removal.
+        just_the_name = rindex(fn,'/')+1;
+        if (just_the_name<2) just_the_name=fn;
+        SHA512_Init(&shactx);
+        SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
+        SHA512_Final(sumhash+1, &shactx);
+        return(sr_hash2sumstr(sumhash)); 
 
    case 'N' :
        SHA512_Init(&shactx);
-       if (!just_the_name) {
-           just_the_name = rindex(fn,'/')+1;
-           if (!just_the_name) just_the_name=fn;
-           strcpy( buf, just_the_name);
-           if (strlen(partstr) > 0 ) { 
-               strcat( buf, " " );
-               strcat( buf, partstr );
-           } else {    
-               sprintf( partstrbuf , "%c,%lu,%lu,%lu,%lu", algo, block_size, block_count, block_rem, block_num );
-               strcat( buf, partstrbuf );
-           } 
-           just_the_name=buf;
-       }
-       SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
+       just_the_name = rindex(fn,'/')+1;
+       if (just_the_name<2) just_the_name=fn;
+       strcpy( buf, just_the_name);
+       sprintf( buf , "%s%c,%lu,%lu,%lu,%lu", just_the_name, algo, block_size, block_count, block_rem, block_num );
+       SHA512_Update(&shactx, buf, strlen(buf) );
        SHA512_Final(sumhash+1, &shactx);
        return(sr_hash2sumstr(sumhash)); 
 
