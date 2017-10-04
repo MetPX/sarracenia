@@ -822,7 +822,7 @@ class sr_poll(sr_instances):
         os._exit(0)
 
     def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
+        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name) )
 
         # on posting host
 
@@ -839,7 +839,7 @@ class sr_poll(sr_instances):
         self.close()
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
+        self.logger.info("%s %s declare" % (self.program_name,self.config_name) )
 
         # on posting host
 
@@ -875,7 +875,7 @@ class sr_poll(sr_instances):
             else      : self.post_hc.exchange_declare(x)
 
     def setup(self):
-        self.logger.info("%s setup" % self.program_name)
+        self.logger.info("%s %s setup" % (self.program_name,self.config_name) )
 
         # on posting host
 
