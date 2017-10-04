@@ -13,25 +13,42 @@
 #include "sr_post.h"
 
 /*
- preload proof of concept from Alain St-Denis...
- with mods to work with sr_context
+ libsrshim.
+
+
+ FIXME:  1024, and PATH_MAX, should likely be replaced by code that mallocs properly.
 
  */
 
-/*
-  to avoid recursive calls.
- */
 
 static int in_librshim_already_dammit = 0;
 
 int shimpost( const char *path, int status )
 {
+    char *cwd=NULL;
+    char *real_path=NULL;
+
     if (in_librshim_already_dammit) return(status);
 
     in_librshim_already_dammit=1;
-
-    if (!status) connect_and_post(path,"post");
-
+    if (!status) 
+    {
+       if (path[0] == '/' )
+       {
+          if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG absolute shimpost %s\n", path );
+          connect_and_post(path,"post");
+       } else {
+          cwd = get_current_dir_name();
+          real_path = (char*)malloc( strlen(cwd) + strlen(path) + 2048 );
+          //getwd(real_path);
+          strcpy(real_path,cwd);
+          strcat(real_path,"/");
+          strcat(real_path,path);
+          connect_and_post( real_path ,"post");
+          free(real_path);
+          free(cwd);
+       }
+    }
     in_librshim_already_dammit=0;
 
     return(status);
@@ -87,7 +104,7 @@ int unlinkat(int dirfd, const char *path, int flags)
 {
     int status;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
 
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat %s\n", path );
@@ -162,9 +179,9 @@ int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpat
 {
     int status;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
-    char oreal_path[PATH_MAX];
+    char oreal_path[PATH_MAX+1];
     char *oreal_return;
     
 
@@ -209,9 +226,9 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
 {
     int status;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
-    char oreal_path[PATH_MAX];
+    char oreal_path[PATH_MAX+1];
     char *oreal_return;
 
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
@@ -256,7 +273,7 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
 {
     ssize_t status;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
 
     if (!sendfile_init_done) 
@@ -288,7 +305,7 @@ int copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size
 {
     int status;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
 
     if (!copy_file_range_init_done) 
@@ -321,7 +338,7 @@ int close(int fd)
 
     int fdstat;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
     int status;
 
@@ -359,7 +376,7 @@ int fclose(FILE *f)
     int fd;
     int fdstat;
     char fdpath[32];
-    char real_path[PATH_MAX];
+    char real_path[PATH_MAX+1];
     char *real_return;
     int status;
 
