@@ -128,7 +128,9 @@ class sr_post(sr_config):
 
     def close(self):
         self.logger.debug("sr_post close")
-        self.post_hc.close()
+
+        if self.post_hc :
+           self.post_hc.close()
         
         if self.cache :
            self.cache.save()
@@ -267,7 +269,8 @@ class sr_post(sr_config):
         if self.to_clusters == None:
             self.to_clusters = self.broker.hostname
 
-        self.cache = None
+        self.post_hc = None
+        self.cache   = None
 
         self.logger.debug("sr_post overwrite_defaults Done")
 
@@ -771,7 +774,7 @@ class sr_post(sr_config):
     # ===================== 
 
     def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
+        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name))
 
         # if caching
         if self.caching : self.cache.close(unlink=True)
@@ -789,7 +792,7 @@ class sr_post(sr_config):
         self.close()
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
+        self.logger.info("%s %s declare" % (self.program_name,self.config_name))
 
         # on posting host
 
@@ -828,7 +831,7 @@ class sr_post(sr_config):
     # setup: declare posting exchanges
 
     def setup(self):
-        self.logger.info("%s setup" % self.program_name)
+        self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
         # on posting host
 
@@ -891,8 +894,6 @@ def main():
     try :
 
 
-        post.connect()
-
         if   action == 'cleanup'    :
              post.cleanup()
              os._exit(0)
@@ -918,6 +919,8 @@ def main():
                   post.logger.error("no path to post")
                   post.help()
                   os._exit(1)
+
+              post.connect()
 
               for watchpath in post.postpath :
                   post1file(post, watchpath)

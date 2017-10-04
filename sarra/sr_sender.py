@@ -663,7 +663,7 @@ class sr_sender(sr_instances):
         os._exit(0)
 
     def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
+        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name))
 
         # on consuming host, do cleanup
 
@@ -685,7 +685,7 @@ class sr_sender(sr_instances):
         self.close()
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
+        self.logger.info("%s %s declare" % (self.program_name,self.config_name))
 
         # on consuming host, do setup
 
@@ -726,7 +726,7 @@ class sr_sender(sr_instances):
 
 
     def setup(self):
-        self.logger.info("%s setup" % self.program_name)
+        self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
         # on consuming host, do setup
 

@@ -55,11 +55,6 @@ class sr_config:
            print("Version %s" % sarra.__version__ )
            os._exit(0)
 
-        # IN BIG DEBUG
-        #self.debug = True
-        #self.logpath = None
-        #self.loglevel = logging.DEBUG
-        #self.setlog()
 
         # package_dir     = where sarra is installed on system
         # appdirs setup... on linux it gives :
@@ -128,6 +123,11 @@ class sr_config:
         self.remote_config = False
         self.loglevel = logging.INFO
         self.setlog()
+        # IN BIG DEBUG
+        #self.debug = True
+        #self.logpath = None
+        #self.loglevel = logging.DEBUG
+        #self.setlog()
         self.logger.debug("sr_config __init__")
 
         # hostname
@@ -170,6 +170,11 @@ class sr_config:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
            try    : os.makedirs(self.user_cache_dir,  0o775,True)
            except : pass
+
+        # keep a list of extended options
+
+        self.extended_options = []
+
 
         # check arguments
 
@@ -300,10 +305,17 @@ class sr_config:
         return False,config
 
     def configure(self):
+        self.logger.debug("configure")
         
-        if hasattr(self, 'cfg_already_read' ): 
-              if self.user_config in self.cfg_already_read: 
-                 return
+        # on reload : get rid of extended options... because they are lists
+
+        for opt in self.extended_options :
+            self.logger.info("clearing out extended options")
+            if hasattr(self,opt): delattr (self,opt)
+
+        self.extended_options = []
+
+        # go through normal configuration
 
         self.defaults()
         self.general()
@@ -315,19 +327,12 @@ class sr_config:
         self.args   (self.user_args)
         self.config (self.user_config)
 
-        if hasattr(self, 'cfg_already_read' ): 
-              self.cfg_already_read.append(self.user_config)
-
         # verify / complete settings
 
         self.check()
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
-
-
-        if not hasattr(self, 'cfg_already_read' ):
-            self.cfg_already_read = []
 
         self.action               = None
 
@@ -1641,6 +1646,7 @@ class sr_config:
                      self.logger.debug("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
                          setattr(self, words[0],[ value ])
+                         self.extended_options.append(words[0])
                      else:
                          value2=getattr(self,words[0])
                          value2.append(value)
