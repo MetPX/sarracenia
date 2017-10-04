@@ -109,6 +109,11 @@ class sr_subscribe(sr_instances):
         if self.reportback :
            self.report_exchange = 'xs_' + self.broker.username
 
+        # do_task should have doit_download for now... make it a plugin later
+        # and the download is the first thing that should be done
+
+        if not self.doit_download in self.do_task_list :
+           self.do_task_list.insert(0,self.doit_download)
 
     def close(self):
         self.consumer.close()
@@ -254,6 +259,19 @@ class sr_subscribe(sr_instances):
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
+    # =============
+    # __do_tasks__ (download, or send, or convert)
+    # =============
+
+    def __do_tasks__(self):
+        self.logger.debug("%s __do_tasks__" % self.program_name)
+
+        # invoke on_post when provided
+
+        for plugin in self.do_task_list:
+           if not plugin(self): return False
+
+        return True
 
     def help(self):
 
@@ -577,6 +595,21 @@ class sr_subscribe(sr_instances):
               if self.reportback : self.msg.report_publish(201,'Published')
            return True
 
+        #=================================
+        # doit, perform task on message...
+        #=================================
+
+        ok = self.__do_tasks__()
+
+        return ok
+
+
+    # =============
+    # doit_download
+    # =============
+
+    def doit_download(self,parent=None):
+        self.logger.debug("%s doit_download" % self.program_name)
 
         """
         FIXME: 201612-PAS There is perhaps several bug here:
@@ -899,7 +932,8 @@ class sr_subscribe(sr_instances):
 
         # restoring messages
 
-        if self.restore or self.restore_queue : self.restore_messages()
+        if self.restore or self.restore_queue :
+           self.restore_messages()
 
         # processing messages
 
