@@ -73,6 +73,8 @@ class DOWNLOAD_REWRITE(object):
           if type(parent.msg_download_threshold) is list:
              parent.msg_download_threshold = parent.chunksize_from_str( parent.msg_download_threshold[0] )
 
+          if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return True
+
           parts = msg.partstr.split(',')
           if parts[0] == '1':
               sz=int(parts[1])
