@@ -177,7 +177,8 @@ char *sr_message_partstr(struct sr_message_t *m)
    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
        sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
     else
-       smallbuf[0]='\0';
+       memset( smallbuf, '\0', 255);
+
     return(smallbuf);
 }
 
