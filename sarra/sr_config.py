@@ -519,8 +519,8 @@ class sr_config:
         self.on_part              = None
         self.on_part_list         = []
 
-        self.do_it                = None
-        self.doit_list            = []
+        self.do_task              = None
+        self.do_task_list         = []
 
         self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
@@ -1005,16 +1005,16 @@ class sr_config:
                         ok = False
                      n = 2
 
-                elif words0 == 'do_it': # See: sr_config.1, others...
-                     self.execfile("do_it",words1)
-                     if ( self.do_it == None ):
+                elif words0 == 'do_task': # See: sr_config.1, others...
+                     self.execfile("do_task",words1)
+                     if ( self.do_task == None ):
                         if self.isNone(words1):
-                           self.doit_list = []
+                           self.do_task_list = []
                         else:
                            ok = False
                            needexit = True
                      else:
-                        self.doit_list.append(self.do_it)
+                        self.do_task_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
