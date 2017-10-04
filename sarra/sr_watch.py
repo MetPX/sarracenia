@@ -78,7 +78,6 @@ inl = []
 class sr_watch(sr_instances):
 
     def __init__(self,config=None,args=None):
-        self.post = sr_post(config,args)
         sr_instances.__init__(self,config,args)
 
         self.last_heartbeat = time.time()
@@ -102,7 +101,7 @@ class sr_watch(sr_instances):
     def check(self):
         self.nbr_instances  = 1
         self.accept_unmatch = True
-        self.post.configure()
+        self.post = sr_post(self.user_config,self.user_args)
         self.watch_path        = self.post.watchpath()
         self.post.logger       = self.logger
         self.post.program_name = 'sr_watch'
@@ -116,7 +115,6 @@ class sr_watch(sr_instances):
         self.post.force_polling   = self.force_polling
         self.post.check()
         if self.reset :
-           self.post.connect()
            self.post.cache.close(unlink=True)
            self.post.setup()
            os._exit(0)
@@ -299,35 +297,13 @@ class sr_watch(sr_instances):
         os._exit(0)
 
     def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
-
-        # on posting host
-        self.check()
-        self.post.connect()
-
         self.post.cleanup()
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
-
-        # on posting host
-        self.check()
-        self.post.connect()
-
         self.post.declare()
-
-        self.post.close()
 
     def setup(self):
-        self.logger.info("%s setup" % self.program_name)
-
-        # on posting host
-        self.check()
-        self.post.connect()
-
-        self.post.declare()
-
-        self.post.close()
+        self.post.setup()
 
 # ===================================
 # GLOBAL
