@@ -152,19 +152,10 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     signed int status;
     struct sr_header_t *uh;
 
-    strcpy( smallbuf, sr_message_partstr(m) );
- /*
-    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
-       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
-    else 
-       smallbuf[0]='\0';
- */
-
-    fprintf( stderr, "parts=%s\n", smallbuf);
 
     if ( sr_c->cfg->cache > 0 ) 
     { 
-           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], (unsigned char*)(m->sum), m->path, smallbuf ) ; 
+           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], (unsigned char*)(m->sum), m->path, sr_message_partstr(m) ) ; 
            log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
            if (!status) return; // cache hit.
     }
@@ -186,8 +177,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
-       sprintf( smallbuf, "%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
-       amqp_header_add( "parts", smallbuf );
+       amqp_header_add( "parts", sr_message_partstr(m) );
     }
 
     amqp_header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
