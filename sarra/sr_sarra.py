@@ -140,6 +140,12 @@ class sr_sarra(sr_subscribe):
 
         if self.reportback == None : self.reportback = True
 
+        # do_task should have doit_download for now... make it a plugin later
+        # and the download is the first thing that should be done
+
+        if not self.doit_download in self.do_task_list :
+           self.do_task_list.insert(0,self.doit_download)
+
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_sarra put them HERE
 
