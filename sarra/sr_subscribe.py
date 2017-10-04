@@ -1062,7 +1062,7 @@ class sr_subscribe(sr_instances):
         os._exit(0)
 
     def cleanup(self):
-        self.logger.info("%s cleanup" % self.program_name)
+        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name))
 
         # if report_daemons is false than skip 'rr_' config
 
@@ -1094,7 +1094,7 @@ class sr_subscribe(sr_instances):
         self.close()
 
     def declare(self):
-        self.logger.info("%s declare" % self.program_name)
+        self.logger.info("%s %s declare" % (self.program_name,self.config_name))
 
         # if report_daemons is false than skip 'rr_' config
 
@@ -1143,7 +1143,7 @@ class sr_subscribe(sr_instances):
 
 
     def setup(self):
-        self.logger.info("%s setup" % self.program_name)
+        self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
         # if report_daemons is false than skip 'rr_' config
 
