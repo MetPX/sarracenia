@@ -44,6 +44,7 @@ int shimpost( const char *path, int status )
           strcpy(real_path,cwd);
           strcat(real_path,"/");
           strcat(real_path,path);
+          if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG relative shimpost %s\n", real_path );
           connect_and_post( real_path ,"post");
           free(real_path);
           free(cwd);
@@ -53,6 +54,12 @@ int shimpost( const char *path, int status )
 
     return(status);
 }
+
+char* fd2path( int fd, char *path ) 
+{
+
+}
+
 
 static int symlink_init_done = 0;
 typedef int  (*symlink_fn) (const char*,const char*);
@@ -103,26 +110,30 @@ static unlinkat_fn unlinkat_fn_ptr = unlinkat;
 int unlinkat(int dirfd, const char *path, int flags) 
 {
     int status;
-    char fdpath[32];
+    char fdpath[PATH_MAX+1];
     char real_path[PATH_MAX+1];
     char *real_return;
 
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat %s\n", path );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat %s dirfd=%d\n", path, dirfd );
     if (!unlinkat_init_done) {
         unlinkat_fn_ptr = (unlinkat_fn) dlsym(RTLD_NEXT, "unlinkat");
         unlinkat_init_done = 1;
     }
     status = unlinkat_fn_ptr(dirfd, path, flags);
 
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat directory AT_FDCW,=%d\n", AT_FDCWD );
+    
+    if ( dirfd == AT_FDCWD ) 
+       return(shimpost(path,status));
+    
     snprintf( fdpath, 32, "/proc/self/fd/%d", dirfd );
     real_return = realpath(fdpath, real_path);
- 
-    if (!real_return) return(status);
-    if ( !strncmp(path,"/dev/", 5) ) return(status);
-    if ( !strncmp(path,"/proc/", 6) ) return(status);
-
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat relative directory %s real_return=%p\n", fdpath, real_return );
     strcat(real_path,"/");
     strcat(real_path,path);
+    if (!real_return) return(status);
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat realpath %s\n", real_path );
 
     return(shimpost(real_path,status));
 }
@@ -155,7 +166,7 @@ int rename(const char *oldpath, const char *newpath)
 {
     int status;
 
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rename %s %s\n", oldpath, newpath );
     if (!rename_init_done) 
     {
         rename_fn_ptr = (rename_fn) dlsym(RTLD_NEXT, "rename");
@@ -193,12 +204,13 @@ int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpat
     }
     status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
 
+    if ( newdirfd == AT_FDCWD ) 
+       return(shimpost(newpath,status));
+
     snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
     real_return = realpath(fdpath, real_path);
 
     if (!real_return) return(status);
-    if ( !strncmp(real_path,"/dev/", 5) ) return(status);
-    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,newpath);
@@ -239,12 +251,13 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
     }
     status = renameat2_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
 
+    if ( newdirfd == AT_FDCWD ) 
+       return(shimpost(newpath,status));
+
     snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
     real_return = realpath(fdpath, real_path);
 
     if (!real_return) return(status);
-    if ( !strncmp(real_path,"/dev/", 5) ) return(status);
-    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
     strcat(real_path,"/");
     strcat(real_path,newpath);

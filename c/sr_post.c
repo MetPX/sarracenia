@@ -168,16 +168,23 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
  
     header_reset();
 
-    amqp_header_add( "atime", m->atime );
     amqp_header_add( "from_cluster", m->from_cluster );
 
-    sprintf( smallbuf, "%04o", m->mode );
-    amqp_header_add( "mode", smallbuf );
-    amqp_header_add( "mtime", m->mtime );
+    if ( m->sum[0] != 'R' )
+    {
+        amqp_header_add( "atime", m->atime );
+        sprintf( smallbuf, "%04o", m->mode );
+        amqp_header_add( "mode", smallbuf );
+        amqp_header_add( "mtime", m->mtime );
+    }
 
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
        amqp_header_add( "parts", sr_message_partstr(m) );
+    }
+    if ( m->sum[0] == 'L' )
+    {
+       amqp_header_add( "link", m->link );
     }
 
     amqp_header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
@@ -229,8 +236,10 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
     }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-     log_msg( LOG_DEBUG, "sr_%s file2message called with: %s sb=%p\n", sr_c->cfg->progname, fn, sb );
-
+  {
+     log_msg( LOG_DEBUG, "sr_%s file2message called with: %s sb=%p islnk=%d, isdir=%d, isreg=%d\n", 
+         sr_c->cfg->progname, fn, sb, sb?S_ISLNK(sb->st_mode):0, sb?S_ISDIR(sb->st_mode):0,sb?S_ISREG(sb->st_mode):0 );
+  }
   if ( sb && S_ISDIR(sb->st_mode) ) return(0); // cannot post directories.
 
   strcpy( m->path, fn );
@@ -278,20 +287,24 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   } else if ( S_ISLNK(sb->st_mode) ) 
   {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
-      m->sum[0]='R';
+      strcpy( m->atime, sr_time2str(&(sb->st_atim)));
+      strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
+      m->mode = sb->st_mode & 07777 ;
+
+      m->sum[0]='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
       m->link[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
-          // FIXME: bug... realpathat ? are we in correct dir for expansion.
           linkp = realpath( m->link, NULL );
           if (linkp) 
           {
                strcpy( m->link, linkp );
                free(linkp);
           }
+      } else {
+         strcpy( m->link, linkstr ); 
       }
-      // FIXME: no link field in sr_message.
 
   } else if (S_ISREG(sb->st_mode)) 
   {   /* regular files, add mode and determine block parameters */
