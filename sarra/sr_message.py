@@ -419,11 +419,12 @@ class sr_message():
         self.local_checksum= None
        
         self.inplace       = self.parent.inplace
-        self.new_baseurl   = self.parent.new_baseurl
-
         self.new_dir       = self.parent.new_dir
         self.new_file      = self.parent.new_file
+        self.new_baseurl   = self.parent.new_baseurl
         self.new_relpath   = self.parent.new_relpath
+
+        self.target_file   = None
 
         # file to file
 
@@ -456,7 +457,6 @@ class sr_message():
 
            if self.partflg == 'p' :
               self.target_file    = self.new_file.replace(self.suffix,'')
-              self.target_path    = self.new_dir + os.sep + self.target_file
               self.target_relpath = self.new_relpath.replace(self.suffix,'')
               part_file    = self.new_file
               part_relpath = self.new_relpath
@@ -466,7 +466,6 @@ class sr_message():
 
            if self.partflg == 'i' :
               self.target_file    = self.new_file
-              self.target_path    = self.new_dir + os.sep + self.target_file
               self.target_relpath = self.new_relpath
               part_file           = self.new_file + self.suffix
               part_relpath        = self.new_relpath + self.suffix
@@ -480,6 +479,7 @@ class sr_message():
            # try to make this message a file insert
 
            # file exists
+           self.target_path = self.new_dir + os.sep + self.target_file
            if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
               lstat   = os.stat(self.target_path)

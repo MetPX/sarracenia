@@ -42,11 +42,11 @@ def file_insert( parent,msg ) :
     parent.logger.debug("file_insert")
 
     # file must exists
-    if not os.path.isfile(msg.url.path):
-       fp = open(msg.url.path,'w')
+    if not os.path.isfile(msg.relpath):
+       fp = open(msg.relpath,'w')
        fp.close()
 
-    fp = open(msg.url.path,'r+b')
+    fp = open(msg.relpath,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
     ok = file_write_length(fp, msg, parent.bufsize, msg.filesize )
@@ -85,7 +85,7 @@ def file_insert_part(parent,msg,part_file):
              # proceed with insertion
 
              fp = open(part_file,'rb')
-             ft = open(msg.target_path,'r+b')
+             ft = open(msg.target_file,'r+b')
              ft.seek(msg.offset,0)
 
              # no worry with length, read all of part_file
@@ -94,7 +94,7 @@ def file_insert_part(parent,msg,part_file):
              bufsize = parent.bufsize
              if bufsize > msg.length : bufsize = msg.length
 
-             if chk : chk.set_path(os.path.basename(msg.target_path))
+             if chk : chk.set_path(os.path.basename(msg.target_file))
 
              i  = 0
              while i<msg.length :
@@ -131,7 +131,7 @@ def file_insert_part(parent,msg,part_file):
                 ok = parent.on_part(parent)
                 if not ok : 
                    msg.logger.warning("inserted but rejected by on_part %s " % part_file)
-                   msg.logger.warning("the file may not be correctly reassemble %s " % msg.target_path)
+                   msg.logger.warning("the file may not be correctly reassemble %s " % msg.target_file)
                    return ok
 
     # oops something went wrong
@@ -149,8 +149,8 @@ def file_insert_part(parent,msg,part_file):
     # publish now, if needed, that it is inserted
 
     if msg.publisher : 
-       msg.set_topic('v02.post',msg.new_relpath)
-       msg.set_notice(msg.new_baseurl,msg.new_relpath,msg.time)
+       msg.set_topic('v02.post',msg.target_relpath)
+       msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
        if chk :
           if    msg.sumflg == 'z' :
                 msg.set_sum(msg.checksum,msg.onfly_checksum)
@@ -164,7 +164,7 @@ def file_insert_part(parent,msg,part_file):
 
     # ok we reassembled the file and it is the last chunk... call on_file
     if msg.lastchunk : 
-       msg.logger.warning("file assumed complete with last part %s" % msg.target_path)
+       msg.logger.warning("file assumed complete with last part %s" % msg.target_file)
        #if parent.on_file:
        #   ok = parent.on_file(parent)
        for plugin in parent.on_file_list:
@@ -179,9 +179,9 @@ def file_insert_part(parent,msg,part_file):
 
 def file_link( msg ) :
 
-    try    : os.unlink(msg.local_file)
+    try    : os.unlink(msg.new_file)
     except : pass
-    try    : os.link(msg.new_path,msg.local_file)
+    try    : os.link(msg.relpath,msg.new_file)
     except : return False
 
     msg.compute_local_checksum()
@@ -212,9 +212,9 @@ def file_process( parent ) :
        if ok :
           if parent.delete :
               try: 
-                  os.unlink(msg.new_path)
+                  os.unlink(msg.relpath)
               except: 
-                  msg.logger.error("delete of link to %s failed"%(msg.new_path))
+                  msg.logger.error("delete of link to %s failed"%(msg.relpath))
           return ok
 
     # This part is for 2 reasons : insert part
@@ -223,12 +223,12 @@ def file_process( parent ) :
              ok = file_insert(parent,msg)
              if parent.delete :
                 if msg.partflg.startswith('i'):
-                   msg.logger.info("delete unimplemented for in-place part files %s" %(msg.new_path))
+                   msg.logger.info("delete unimplemented for in-place part files %s" %(msg.relpath))
                 else:
                    try: 
-                       os.unlink(msg.new_path)
+                       os.unlink(msg.relpath)
                    except: 
-                       msg.logger.error("delete of %s after copy failed"%(msg.new_path))
+                       msg.logger.error("delete of %s after copy failed"%(msg.relpath))
 
              if ok : return ok
 
@@ -237,7 +237,7 @@ def file_process( parent ) :
              msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
 
     msg.report_publish(499,'Not Copied')
-    msg.logger.error("could not copy %s in %s"%(msg.new_path,msg.local_file))
+    msg.logger.error("could not copy %s in %s"%(msg.relpath,msg.new_file))
 
     return False
 
@@ -250,15 +250,23 @@ def file_reassemble(parent):
 
     msg = parent.msg
 
+    if not hasattr(msg,'target_file') or msg.target_file == None : return
+
+    try:    curdir = os.getcwd()
+    except: curdir = None
+
+    if curdir != parent.new_dir:
+       os.chdir(parent.new_dir)
+
     # target file does not exit yet
 
-    if not os.path.isfile(msg.target_path) :
-       msg.logger.debug("insert_from_parts: target_path not found %s" % msg.target_path)
+    if not os.path.isfile(msg.target_file) :
+       msg.logger.debug("insert_from_parts: target_file not found %s" % msg.target_file)
        return
 
     # check target file size and pick starting part from that
 
-    lstat   = os.stat(msg.target_path)
+    lstat   = os.stat(msg.target_file)
     fsiz    = lstat[stat.ST_SIZE] 
     i       = int(fsiz /msg.chunksize)
 
@@ -274,7 +282,7 @@ def file_reassemble(parent):
 
           # set part file
 
-          part_file = msg.target_path + msg.suffix
+          part_file = msg.target_file + msg.suffix
           if not os.path.isfile(part_file) :
              msg.logger.debug("part file %s not found, stop insertion" % part_file)
              # break and not return because we want to check the lastchunk processing
@@ -282,7 +290,7 @@ def file_reassemble(parent):
 
           # check for insertion (size may have changed)
 
-          lstat   = os.stat(msg.target_path)
+          lstat   = os.stat(msg.target_file)
           fsiz    = lstat[stat.ST_SIZE] 
           if msg.offset > fsiz :
              msg.logger.debug("part file %s no ready for insertion (fsiz %d, offset %d)" % (part_file,fsiz,msg.offset))
@@ -311,15 +319,15 @@ def file_write_length(req,msg,bufsize,filesize):
 
     chk = msg.sumalgo
     msg.logger.debug("file_write_length chk = %s" % chk)
-    if chk : chk.set_path(os.path.basename(msg.local_file))
+    if chk : chk.set_path(msg.new_file)
 
     # file should exists
-    if not os.path.isfile(msg.local_file) :
-       fp = open(msg.local_file,'w')
+    if not os.path.isfile(msg.new_file) :
+       fp = open(msg.new_file,'w')
        fp.close()
 
     # file open read/modify binary
-    fp = open(msg.local_file,'r+b')
+    fp = open(msg.new_file,'r+b')
     if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
 
     nc = int(msg.length/bufsize)
@@ -346,10 +354,10 @@ def file_write_length(req,msg,bufsize,filesize):
   
     h = self.parent.msg.headers
     if self.parent.preserve_mode and 'mode' in h :
-        os.chmod(local_file, int( h['mode'], base=8) )
+        os.chmod(msg.new_file, int( h['mode'], base=8) )
 
     if self.parent.preserve_time and 'mtime' in h:
-        os.utime(local_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+        os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
     if chk : msg.onfly_checksum = chk.get_value()
 
@@ -368,16 +376,16 @@ def file_truncate(parent,msg):
     if not msg.lastchunk : return
 
     try :
-             lstat   = os.stat(msg.target_path)
+             lstat   = os.stat(msg.target_file)
              fsiz    = lstat[stat.ST_SIZE] 
 
              if fsiz > msg.filesize :
-                fp = open(msg.target_path,'r+b')
+                fp = open(msg.target_file,'r+b')
                 fp.truncate(msg.filesize)
                 fp.close()
 
-                msg.set_topic('v02.post',msg.new_relpath)
-                msg.set_notice(msg.new_baseurl,msg.new_relpath,msg.time)
+                msg.set_topic('v02.post',msg.target_relpath)
+                msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
                 msg.report_publish(205, 'Reset Content :truncated')
 
     except : pass
