@@ -1,8 +1,8 @@
 export SR_POST_CONFIG=`pwd`/test_post.conf
 export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
 
-#echo "ldd /usr/bin/python"
-#ldd /usr/bin/python2.7
+echo "ldd /usr/bin/python"
+ldd /usr/bin/python2.7
 
 #export LD_DEBUG=bindings
 

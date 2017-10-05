@@ -159,7 +159,6 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
    SHA512_CTX shactx;
 
    static int fd;
-   char partstrbuf[255];
    static char buf[SUMBUFSIZE];
    long bytes_read ; 
    long how_many_to_read;
@@ -240,7 +239,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
 
    case 'R' : // null, or removal.
         just_the_name = rindex(fn,'/')+1;
-        if (just_the_name<2) just_the_name=fn;
+        if (just_the_name<(char*)2) just_the_name=fn;
         SHA512_Init(&shactx);
         SHA512_Update(&shactx, just_the_name, strlen(just_the_name) );
         SHA512_Final(sumhash+1, &shactx);
@@ -249,7 +248,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
    case 'N' :
        SHA512_Init(&shactx);
        just_the_name = rindex(fn,'/')+1;
-       if (just_the_name<2) just_the_name=fn;
+       if (just_the_name<(char*)2) just_the_name=fn;
        strcpy( buf, just_the_name);
        sprintf( buf , "%s%c,%lu,%lu,%lu,%lu", just_the_name, algo, block_size, block_count, block_rem, block_num );
        SHA512_Update(&shactx, buf, strlen(buf) );
