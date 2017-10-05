@@ -55,11 +55,6 @@ int shimpost( const char *path, int status )
     return(status);
 }
 
-char* fd2path( int fd, char *path ) 
-{
-
-}
-
 
 static int symlink_init_done = 0;
 typedef int  (*symlink_fn) (const char*,const char*);
@@ -121,8 +116,6 @@ int unlinkat(int dirfd, const char *path, int flags)
     }
     status = unlinkat_fn_ptr(dirfd, path, flags);
 
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG unlinkat directory AT_FDCW,=%d\n", AT_FDCWD );
-    
     if ( dirfd == AT_FDCWD ) 
        return(shimpost(path,status));
     
@@ -177,8 +170,10 @@ int rename(const char *oldpath, const char *newpath)
     if ( !strncmp(newpath,"/proc/", 6) ) return(status);
 
     // delete old if necessary...
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rm %s \n", oldpath );
     if (!status) shimpost(oldpath,0);
 
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG announce %s \n", newpath );
     return(shimpost(newpath,status));
 }
 

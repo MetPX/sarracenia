@@ -170,18 +170,15 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 
     amqp_header_add( "from_cluster", m->from_cluster );
 
-    if ( m->sum[0] != 'R' )
-    {
-        amqp_header_add( "atime", m->atime );
-        sprintf( smallbuf, "%04o", m->mode );
-        amqp_header_add( "mode", smallbuf );
-        amqp_header_add( "mtime", m->mtime );
-    }
-
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
        amqp_header_add( "parts", sr_message_partstr(m) );
+       amqp_header_add( "atime", m->atime );
+       sprintf( smallbuf, "%04o", m->mode );
+       amqp_header_add( "mode", smallbuf );
+       amqp_header_add( "mtime", m->mtime );
     }
+
     if ( m->sum[0] == 'L' )
     {
        amqp_header_add( "link", m->link );
@@ -287,6 +284,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   } else if ( S_ISLNK(sb->st_mode) ) 
   {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
+
       strcpy( m->atime, sr_time2str(&(sb->st_atim)));
       strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
       m->mode = sb->st_mode & 07777 ;
@@ -296,11 +294,11 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       m->link[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
-          linkp = realpath( m->link, NULL );
-          if (linkp) 
+          linkp = realpath( linkstr, m->link );
+          if (!linkp) 
           {
-               strcpy( m->link, linkp );
-               free(linkp);
+               log_msg( LOG_ERROR, "sr_%s unable to obtain realpath for %s\n", sr_c->cfg->progname, fn );
+               return(0);
           }
       } else {
          strcpy( m->link, linkstr ); 
@@ -345,7 +343,7 @@ struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct s
 
       if ( !(m->sum) ) 
       {
-         log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", m->parts_s, pathspec );
+         log_msg( LOG_ERROR, "file2message_seq unable to generate %c checksum for: %s\n", m->parts_s, pathspec );
          return(NULL);
       }
   return(m);
@@ -575,7 +573,7 @@ void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
       if ( !sumstr ) 
       {
-         log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", sumalgo, fn );
+         log_msg( LOG_ERROR, "sr_%s unable to generate %c checksum for: %s\n", sr_c->cfg->progname, sumalgo, fn );
          return;
       }
       amqp_header_add( "sum", sumstr );
