@@ -372,7 +372,7 @@ class sr_config:
         self.queue_name           = None
         self.queue_suffix         = None
         self.durable              = False
-        self.expire               = 1000 *60 * 5  # 1 week= 1000millisec * 60s * 5m 
+        self.expire               = 1000 *60 * 5  # 5 mins = 1000millisec * 60s * 5m 
         self.reset                = False
         self.message_ttl          = None
         self.prefetch             = 1
@@ -1077,8 +1077,17 @@ class sr_config:
                            self.expire = None
                      else:
                            # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
-                           self.expire = int(words[1]) * 1000
-                           if self.expire <= 0 : self.expire = None
+                           factor = 1000
+                           str_value = words1
+                           if str_value[-1] in 'sS'   : factor = 1000
+                           if str_value[-1] in 'mM'   : factor = 1000 * 60
+                           if str_value[-1] in 'hH'   : factor = 1000 * 60 * 60
+                           if str_value[-1] in 'dD'   : factor = 1000 * 60 * 60 * 24
+                           if str_value[-1] in 'wW'   : factor = 1000 * 60 * 60 * 24 * 7
+                           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+                           self.expire = int(str_value) * factor
+                           if self.expire < 60000 : self.expire = 60000
                      n = 2
 
                 elif words0 == 'filename': # See: sr_poll.1, sr_sender.1
@@ -1237,8 +1246,21 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'message_ttl':  # See: sr_consumer.7
-                     # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
-                     self.message_ttl = int(words[1]) * 1000
+                     if    words1.lower() == 'none' :
+                           self.message_ttl = None
+                     else:
+                           # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
+                           factor = 1000
+                           str_value = words1
+                           if str_value[-1] in 'sS'   : factor = 1000
+                           if str_value[-1] in 'mM'   : factor = 1000 * 60
+                           if str_value[-1] in 'hH'   : factor = 1000 * 60 * 60
+                           if str_value[-1] in 'dD'   : factor = 1000 * 60 * 60 * 24
+                           if str_value[-1] in 'wW'   : factor = 1000 * 60 * 60 * 24 * 7
+                           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+                           self.message_ttl = int(str_value) * factor
+                           if self.message_ttl < 60000 : self.message_ttl = 60000
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 
@@ -1937,11 +1959,25 @@ def self_test():
     cfg.randomize = False
     cfg.assemble  = False
     cfg.logrotate = 5
-    cfg.args(['--randomize', '--assemble', 'True',  '--logrotate', '10'])
-    if not cfg.randomize   or \
-       not cfg.assemble     or \
-       cfg.logrotate != 10 :
-       cfg.logger.error("problem with args")
+    cfg.expire      = 0
+    expire_value    = 1000*60*60*3
+    message_value   = 1000*60*60*24*7*3
+    cfg.message_ttl = 0
+    cfg.args(['-expire','3h','-message_ttl','3W','--randomize', '--assemble', 'True',  '-logrotate', '10'])
+    if not cfg.randomize :
+       cfg.logger.error("problem randomize")
+       failed = True
+    if not cfg.inplace  :
+       cfg.logger.error("problem assemble")
+       failed = True
+    if cfg.logrotate !=10 :
+       cfg.logger.error("problem logrotate %s" % cfg.logrotate)
+       failed = True
+    if cfg.expire != expire_value :
+       cfg.logger.error("problem expire %s" % cfg.expire)
+       failed = True
+    if cfg.message_ttl != message_value :
+       cfg.logger.error("problem message_ttl %s" % cfg.message_ttl)
        failed = True
 
 
@@ -1965,7 +2001,7 @@ def self_test():
     cfg.option(opt1.split())
     cfg.option(opt2.split())
     if cfg.broker.geturl() != "amqp://a:b@toto" :
-       cfg.logger.error("problem with args")
+       cfg.logger.error("problem with args 2")
        failed = True
 
     opt1 = "parts i,128"
