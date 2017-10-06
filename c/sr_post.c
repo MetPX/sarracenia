@@ -4,7 +4,7 @@
  * Usage info after license block.
  *
  * This code is by Peter Silva copyright (c) 2017 part of MetPX.
- * copyright is to the Government of Canada. code is GPL.
+ * copyright is to the Government of Canada. code is GPLv2
  *
  * based on a amqp_sendstring from rabbitmq-c package
  * the original license is below:
@@ -35,6 +35,13 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/* Sneaky, likely unportable hack to get 'mv' into messages...
+ */
+
+#define S_IFMV   0200000
+
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <linux/limits.h>
@@ -87,7 +94,7 @@ void amqp_header_add( char *tag, const char * value ) {
   headers[hdrcnt].value.kind = AMQP_FIELD_KIND_UTF8;
   headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
   hdrcnt++;
-  //log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
+  log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
 }
 
 void set_url( char* m, char* spec ) 
@@ -170,18 +177,15 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 
     amqp_header_add( "from_cluster", m->from_cluster );
 
-    if ( m->sum[0] != 'R' )
-    {
-        amqp_header_add( "atime", m->atime );
-        sprintf( smallbuf, "%04o", m->mode );
-        amqp_header_add( "mode", smallbuf );
-        amqp_header_add( "mtime", m->mtime );
-    }
-
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
        amqp_header_add( "parts", sr_message_partstr(m) );
+       amqp_header_add( "atime", m->atime );
+       sprintf( smallbuf, "%04o", m->mode );
+       amqp_header_add( "mode", smallbuf );
+       amqp_header_add( "mtime", m->mtime );
     }
+
     if ( m->sum[0] == 'L' )
     {
        amqp_header_add( "link", m->link );
@@ -277,7 +281,10 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   m->parts_blkcount=1;
   m->parts_rem=0;
   m->parts_num=0;
-  m->sum[0]=sr_c->cfg->sumalgo;
+
+  m->user_headers=sr_c->cfg->user_headers;
+
+  m->sum[0]= sr_c->cfg->sumalgo;
 
 
   if ( !sb ) 
@@ -287,6 +294,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   } else if ( S_ISLNK(sb->st_mode) ) 
   {
       if ( ! ((sr_c->cfg->events)&SR_LINK) ) return(0); // not posting links...
+
       strcpy( m->atime, sr_time2str(&(sb->st_atim)));
       strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
       m->mode = sb->st_mode & 07777 ;
@@ -296,11 +304,11 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       m->link[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
-          linkp = realpath( m->link, NULL );
-          if (linkp) 
+          linkp = realpath( linkstr, m->link );
+          if (!linkp) 
           {
-               strcpy( m->link, linkp );
-               free(linkp);
+               log_msg( LOG_ERROR, "sr_%s unable to obtain realpath for %s\n", sr_c->cfg->progname, fn );
+               return(0);
           }
       } else {
          strcpy( m->link, linkstr ); 
@@ -312,6 +320,9 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       if ( ! ((sr_c->cfg->events)&(SR_CREATE|SR_MODIFY)) ) return(0);
 
       if ( access( fn, R_OK ) ) return(0); // will not be able to checksum if we cannot read.
+
+      if ( sb->st_mode & S_IFMV ) 
+          m->sum[0]= 'm' ;
 
       strcpy( m->atime, sr_time2str(&(sb->st_atim)));
       strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
@@ -345,7 +356,7 @@ struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct s
 
       if ( !(m->sum) ) 
       {
-         log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", m->parts_s, pathspec );
+         log_msg( LOG_ERROR, "file2message_seq unable to generate %c checksum for: %s\n", m->parts_s, pathspec );
          return(NULL);
       }
   return(m);
@@ -365,7 +376,6 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
   // report...
   // FIXME: duration, consumingurl, consuminguser, statuscode?
-
   numblks = sr_file2message_start( sr_c, pathspec, sb, &m );
 
   for( int blk=0; (blk < numblks); blk++ )
@@ -375,6 +385,42 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   }
 
 }
+
+void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *newname)
+/*
+   assume actual rename is completed, so newname exists.
+ */
+{
+  struct stat sb;
+  struct sr_header_t first_user_header;
+
+  if ( lstat( newname, &sb ) ) 
+  {
+     log_msg( LOG_ERROR, "sr_%s rename: %s cannot stat.\n", sr_c->cfg->progname, newname );
+     return;
+  }
+  sb.st_mode |= S_IFMV ;
+
+  first_user_header.next = sr_c->cfg->user_headers;
+  sr_c->cfg->user_headers =  &first_user_header ;
+
+  first_user_header.key = strdup( "newname" );
+  first_user_header.value = strdup( newname );
+
+  sr_post( sr_c,  oldname, S_ISREG(sb.st_mode)?(&sb):NULL );
+  
+  free(first_user_header.key);  
+  free(first_user_header.value);  
+  first_user_header.key = strdup( "oldname" );
+  first_user_header.value = strdup( oldname );
+
+  sr_post( sr_c,  newname, &sb );
+
+  free(first_user_header.key);  
+  sr_c->cfg->user_headers = first_user_header.next ;
+  
+}
+
 
 void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
@@ -575,7 +621,7 @@ void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
       if ( !sumstr ) 
       {
-         log_msg( LOG_ERROR, "sr_post unable to generate %c checksum for: %s\n", sumalgo, fn );
+         log_msg( LOG_ERROR, "sr_%s unable to generate %c checksum for: %s\n", sr_c->cfg->progname, sumalgo, fn );
          return;
       }
       amqp_header_add( "sum", sumstr );
@@ -647,58 +693,4 @@ int sr_post_init( struct sr_context *sr_c )
 
     return(1);
 }
-
-void connect_and_post(const char *fn,const char* progname) 
-{
-
-  static struct sr_config_t sr_cfg; 
-  static int config_read = 0;
-  struct sr_mask_t *mask; 
-  struct sr_context *sr_c = NULL;
-  char *setstr;
-  struct stat sb;
-
-  if ( !fn ) 
-  {
-     log_msg( LOG_ERROR, "post null\n" );
-     return;
-  }
-
-  setstr = getenv( "SR_POST_CONFIG" ) ;
-  if ( setstr != NULL )
-  { 
-     if ( config_read == 0 ) 
-     {
-       sr_config_init(&sr_cfg,progname);
-       config_read = sr_config_read(&sr_cfg,setstr);
-       if (!config_read) return;
-     }
-     if ( !sr_config_finalize( &sr_cfg, 0 )) return;
-
-     sr_c = sr_context_init_config(&sr_cfg);
-  } 
-  if (!sr_c) return;
- 
-  mask = isMatchingPattern(&sr_cfg, fn);
-  if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
-  { //reject.
-      log_msg( LOG_INFO, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
-            mask, mask->accepting, sr_cfg.accept_unmatched );
-      if (sr_cfg.debug) log_msg( LOG_DEBUG, "sr_cpost rejected 2: %s\n", fn );
-      return;
-  }
-
-  sr_c = sr_context_connect(sr_c);
-  if (sr_c == NULL ) 
-  {
-    log_msg( LOG_ERROR, "failed to parse AMQP post_broker settings\n");
-    return;
-  }
-  if ( lstat( fn, &sb ) ) sr_post( sr_c, fn, NULL );
-  else sr_post( sr_c, fn, &sb );
-
-  sr_context_close(sr_c);
-}
-
-
 
