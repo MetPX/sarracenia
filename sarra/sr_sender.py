@@ -15,8 +15,8 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Jan  5 08:31:59 EST 2016
-#  Last Changed   : Apr  29 14:30:00 CDT 2016
+#  Last Changed   : Wed Oct  4 20:24 UTC 2017
+#                   code rewritten : sr_sender is an instantiation of sr_subscribe
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -71,27 +71,18 @@ import os,sys,time
 import json
 
 try :    
-         from sr_amqp           import *
-         from sr_consumer       import *
-         from sr_ftp            import *
-         from sr_instances      import *
-         from sr_message        import *
-         from sr_util           import *
+         from sr_subscribe       import *
 except : 
-         from sarra.sr_amqp      import *
-         from sarra.sr_consumer  import *
-         from sarra.sr_ftp       import *
-         from sarra.sr_instances import *
-         from sarra.sr_message   import *
-         from sarra.sr_util      import *
+         from sarra.sr_subscribe import *
 
-class sr_sender(sr_instances):
+class sr_sender(sr_subscribe):
 
     def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+        sr_subscribe.__init__(self,config,args)
         self.sleep_connect_try_interval_min=0.01
         self.sleep_connect_try_interval_max=30
         self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
+
 
     def check(self):
         self.connected     = False 
@@ -102,6 +93,34 @@ class sr_sender(sr_instances):
            key = self.topic_prefix + '.#'
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
+
+        # accept/reject
+        self.use_pattern          = self.masks != []
+        self.accept_unmatch       = self.masks == []
+
+
+        # posting... discard not permitted
+
+        if self.post_broker :
+           if self.post_document_root == None :
+              self.post_document_root = self.document_root
+           if self.post_exchange      == None :
+              self.post_exchange      = self.exchange
+
+        # caching
+
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           self.cache.open()
+           self.execfile("on_heartbeat",'heartbeat_cache')
+           self.on_heartbeat_list.append(self.on_heartbeat)
+
+        # reporting (by default suppose we are on pump so xreport)
+
+        if self.reportback :
+           if self.report_exchange == None :
+              self.report_exchange = 'xreport'
 
         # no queue name allowed... force this one
 
@@ -119,96 +138,37 @@ class sr_sender(sr_instances):
            self.logger.error("destination option incorrect or missing\n")
            sys.exit(1)
 
-        # check destination
-        if self.post_broker != None :
-           if self.post_exchange == None : self.post_exchange = self.exchange
-
-        # accept/reject
-        self.use_pattern          = self.masks != []
-        self.accept_unmatch       = self.masks == []
-
         # to clusters required
 
         if self.to_clusters == None and self.post_broker != None :
-            self.to_clusters = self.post_broker.hostname
+           self.to_clusters = self.post_broker.hostname
 
+        # add msg_2localfile to the on_message_list at the beginning
+        #self.execfile("on_message",'msg_2localfile')
+        #if not self.on_message in self.on_message_list :
+        #   self.on_message_list.insert(0, self.on_message )
 
-    def close(self):
+        # do_task should have doit_send for now... make it a plugin later
+        # and the sending is the last thing that should be done
 
-        self.consumer.close()
-        if self.post_broker : self.post_hc.close()
+        if not self.doit_send in self.do_task_list :
+           self.do_task_list.append(self.doit_send)
 
-        if hasattr(self,'sftp_link'): self.sftp_link.close()
-        if hasattr(self,'ftp_link') : self.ftp_link.close()
+        # ===========================================================
+        # some sr_subscribe options reset to match sr_sarra behavior
+        # ===========================================================
 
-        self.connected = False 
+        # always sends ...
 
-    def connect(self):
+        self.notify_only = False
 
-        # =============
-        # create message
-        # =============
+        # never discard
 
-        self.msg = sr_message(self)
+        self.discard = False
 
-        # =============
-        # consumer
-        # =============
+        # default reportback if unset
 
-        self.consumer          = sr_consumer(self)
-
-        if self.save_file :
-            self.consumer.save_path = self.save_file + self.save_path[-10:]
-            self.save_path = self.consumer.save_path
-        else:
-            self.consumer.save_path = self.save_path
-
-        if self.save: self.consumer.save = True
-
-
-        self.msg.report_publisher = self.consumer.publish_back()
-        # modified by Murray Dec 5 2016
-        self.msg.report_exchange  = self.report_exchange
-        self.logger.debug("before if self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
-        if self.broker.username in self.users.keys():
-                  self.logger.debug("self.msg.report_exchange usernameifthereisone: %s\n" % (self.broker.username))
-                  if self.users[self.broker.username] == 'feeder' or self.users[self.broker.username] == 'admin':
-                       self.msg.report_exchange = 'xreport'
-                  else:
-                       self.msg.report_exchange = 'xs_' + self.broker.username
-        else:
-           self.msg.report_exchange = 'xs_' + self.broker.username
-
-        self.logger.debug("self.msg.report_exchange set to %s\n" % (self.msg.report_exchange))
-        self.msg.user          = self.details.url.username
-        self.msg.host          = self.details.url.scheme + '://' + self.details.url.hostname
-
-        if not self.post_broker :
-           self.connected = True
-           return
-
-        # =============
-        # if post_broker
-        # =============
-
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-
-        self.publisher = Publisher(self.post_hc)
-        self.publisher.build()
-
-        self.declare_exchanges()
-
-        self.msg.user                = self.post_broker.username
-        self.msg.publisher           = self.publisher
-        self.msg.pub_exchange        = self.post_exchange
-        self.msg.post_exchange_split = self.post_exchange_split
-
-        self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
-                        (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
-
-        self.connected = True 
+        if self.reportback == None : self.reportback = True
 
 
     # =============
@@ -245,118 +205,6 @@ class sr_sender(sr_instances):
         if self.reportback:
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
-    def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
-        print("version: %s \n" % sarra.__version__ )
-        print("OPTIONS:")
-        print("instances <nb_of_instances>      default 1")
-        print("\nAMQP consumer broker settings:")
-        print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
-        print("\t\t(MANDATORY)")
-        print("\nAMQP Queue bindings:")
-        print("\texchange             <name>          (default: xpublic)")
-        print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
-        print("\tsubtopic             <amqp pattern>  (default: #)")
-        print("\t\t  <amqp pattern> = <directory>.<directory>.<directory>...")
-        print("\t\t\t* single directory wildcard (matches one directory)")
-        print("\t\t\t# wildcard (matches rest)")
-        print("\nAMQP Queue settings:")
-        print("\tdurable              <boolean>       (default: False)")
-        print("\texpire               <minutes>       (default: None)")
-        print("\tmessage-ttl          <minutes>       (default: None)")
-        print("\nFile settings:")
-        print("\tdocument_root        <document_root> (MANDATORY)")
-        print("\taccept    <regexp pattern>           (default: None)")
-        print("\tmirror               <boolean>       (default True)")
-        print("\treject    <regexp pattern>           (default: None)")
-        print("\tstrip      <strip count (directory)> (default 0)")
-        print("\nDestination/message settings:")
-        print("\tdo_send              <script>        (default None)")
-        print("\tdestination          <url>           (MANDATORY)")
-        print("\tpost_document_root   <document_root> (default None)")
-        print("\turl                  <url>           (MANDATORY)")
-        print("\ton_message           <script>        (default None)")
-        print("\tto                   <cluster>       (MANDATORY)")
-        print("\nAMQP posting broker settings (optional):")
-        print("\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>")
-        print("\t\t(default: manager amqp broker in default.conf)")
-        print("\tpost_exchange        <name>          (default xs_postusername)")
-        print("\ton_post              <script>        (default None)")
-        print("DEBUG:")
-        print("-debug")
-
-    # =============
-    # __on_message__
-    # =============
-
-    def __on_message__(self):
-
-        # only if sending to another pump
-        if self.post_broker != None :
-           # the message has not specified a destination.
-           if not 'to_clusters' in self.msg.headers :
-              if self.reportback:
-                  self.msg.report_publish(403,"Forbidden : message without destination amqp header['to_clusters']")
-              self.logger.error("message without destination amqp header['to_clusters']")
-              return False
-
-           # this instances of sr_sender runs,
-           # to send product to cluster: self.to_clusters.
-           # since self.to_clusters might be a list, we check for 
-           # and try matching any of this list to the message's to_clusters list
-
-           ok = False
-           for cluster in self.msg.to_clusters :
-              if not cluster in self.to_clusters :  continue
-              ok = True
-              break
-
-           if not ok :
-              self.logger.warning("self.to_clusters=%s, self.msg.to_clusters=%s" % ( self.to_clusters, self.msg.to_clusters ) )
-              self.logger.warning("skipped : not for remote cluster...")
-              return False
-
-        if self.destination[:3] == 'ftp' :
-            # 'i' cannot be supported by ftp/ftps
-            # we cannot offset in the remote file to inject data
-            #
-            # FIXME instead of dropping the message
-            # the inplace part could be delivered as 
-            # a separate partfile and message set to 'p'
-            if  self.msg.partflg == 'i':
-                logger.error("ftp, inplace part file not supported")
-                if self.reportback:
-                   msg.report_publish(499,'ftp cannot deliver partitioned files')
-                return False
-
-        self.remote_file = self.new_file #FIXME: remove in 2018
-
-        # invoke user defined on_message when provided
-
-        for plugin in self.on_message_list:
-            if not plugin(self): return False
-
-            if self.remote_file != self.new_file : #FIXME: remove in 2018
-                logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
-                self.new_file = self.remote_file 
-
-        return True
-
-    # =============
-    # __on_post__ posting of message
-    # =============
-
-    def __on_post__(self):
-
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-            if not plugin(self): return False
-
-        ok = self.msg.publish( )
-
-        return ok
-
     def overwrite_defaults(self):
 
         # a destination must be provided
@@ -380,30 +228,47 @@ class sr_sender(sr_instances):
 
         self.accept_unmatch = True
 
+
     # =============
-    # process message  
+    # doit_send  
     # =============
 
-    def process_message(self):
+    def doit_send(self,parent=None):
+        self.logger.debug("doit_send with %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
-        self.logger.debug("Accepting to send %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.local_path = self.msg.relpath
 
-        #=================================
-        # setting up message with sr_sender config options
-        # self.set_local  : setting local info for the file/part
-        # self.set_new : setting remote server info for the file/part
-        #=================================
-
-        self.set_local()
-        self.set_new()
-        self.set_new_url()
+        if not self.msg.sumflg.startswith('file') and self.document_root :
+           self.local_path = self.document_root + '/' + self.msg.relpath
+           self.local_path = self.local_path.replace('//','/')
 
         #=================================
-        # now message is complete : invoke __on_message__
+        # impossible to send
         #=================================
 
-        ok = self.__on_message__()
-        if not ok : return ok
+        if self.destination[:3] == 'ftp' :
+            # 'i' cannot be supported by ftp/ftps
+            # we cannot offset in the remote file to inject data
+            #
+            # FIXME instead of dropping the message
+            # the inplace part could be delivered as 
+            # a separate partfile and message set to 'p'
+            if  self.msg.partflg == 'i':
+                self.logger.error("ftp, inplace part file not supported")
+                if self.reportback:
+                   msg.report_publish(499,'ftp cannot deliver partitioned files')
+                return False
+
+        #=================================
+        # check message for local file
+        #=================================
+
+        if self.msg.baseurl != 'file:' or not os.path.isfile(self.msg.relpath) :
+           self.logger.error("The file to send is not local: %s" % self.msg.relpath)
+           return False
+
+        self.local_path = self.msg.relpath
+        self.local_file = os.path.basename(self.msg.relpath)
 
         #=================================
         # proceed to send :  has to work
@@ -434,318 +299,6 @@ class sr_sender(sr_instances):
                self.msg.report_publish(201,'Published')
 
         return True
-
-    """
-      FIXME: isMatchingPattern is a copy of the routine in sr_config.
-         this is put here by Jun to get sr_sender restore to work...
-         we should probably fix this at some point, and remove the duplicate.
- 
-    """
-
-    def isMatchingPattern(self, chaine, accept_unmatch = False):
-
-        for mask in self.masks:
-            self.logger.debug(mask)
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-            if mask_regexp.match(chaine) :
-               if not accepting : return False
-               self.currentPattern    = pattern
-               self.currentDir        = maskDir
-               self.currentFileOption = maskFileOption
-               self.currentRegexp     = mask_regexp
-               return True
-
-        return accept_unmatch
-
-    def run(self):
-
-        # present basic config
-
-        self.logger.info("sr_sender run")
-
-        # loop/process messages
-
-        self.connect()
-
-        if self.restore and os.path.exists(self.save_path):
-           rtot=0
-           with open(self.save_path,"r") as rf:
-               for ml in rf:
-                   rtot += 1
-
-           self.logger.info("sr_sender restoring %d messages from save %s " % ( rtot, self.save_path ) )
-           rnow=0
-
-           with open(self.save_path,"r") as rf:
-               for ml in rf:
-                  rnow += 1
-                  self.msg.exchange = 'save'
-                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(ml)
-                  self.msg.from_amqplib()
-                  # make use of accept/reject
-                  if self.use_pattern :
-          
-                     # Adjust url to account for sundew extension if present, and files do not already include the names.
-                     if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
-                        urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
-                     else:
-                        urlstr=self.msg.urlstr
-          
-                     self.logger.debug("sr_sender restore, path being matched: %s " % ( urlstr )  )
-          
-                     if not self.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
-                        self.logger.debug("Rejected by accept/reject options")
-                        return False,self.msg
-          
-                  self.logger.info("sr_sender restoring message %d of %d: topic: %s" % (rnow, rtot, self.msg.topic) )
-                  ok = self.process_message()
-
-           if rnow >= rtot:
-               self.logger.info("sr_sender restore complete deleting save file: %s " % ( self.save_path ) )
-               os.unlink(self.save_path) 
-           else:
-               self.logger.error("sr_sender only restored %d of %d messages from save file: %s " % ( rnow, rtot, self.save_path ) )
-
-        if self.save :
-            self.logger.info("sr_sender saving to %s for future restore" % self.save_path )
-            sf = open(self.save_path,"a")
-            stot=0
-
-        active = self.has_vip()
-        if not active :
-            self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
-        else:
-            self.logger.debug("sr_sender is active on vip=%s" % self.vip)
-
-
-        while True :
-            try:
-
-                  if not self.has_vip() : #  is it sleeping ?
-                      if active:
-                          self.logger.debug("sr_sender does not have vip=%s, is sleeping" % self.vip)
-                          active=False
-     
-                      time.sleep(5)
-                      continue
-                  else:
-                     if not active:
-                         self.logger.debug("sr_sender is active on vip=%s" % self.vip)
-                         active=True
-
-                  #  heartbeat
-                  ok = self.heartbeat_check()
-
-                  #  consume message
-                  ok, self.msg = self.consumer.consume()
-                  if not ok : continue
-
-                  if self.save :
-                      stot += 1
-                      self.logger.info("sr_sender saving %d message topic: %s" % ( stot, self.msg.topic ) )
-                      sf.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' )   
-                      sf.flush()
-                  else:
-                      #  process message (ok or not... go to the next)
-                      ok = self.process_message()
-
-            except:
-                  (stype, svalue, tb) = sys.exc_info()
-                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-
-        if self.save:
-            sf.close()
-
-    def set_local(self):
-
-        self.local_root  = ''
-        self.local_rpath = ''
-
-        path  = '%s' % self.msg.relpath
-        token = path.split('/')
-
-        if self.document_root != None : self.local_root  = self.document_root
-        if len(token) > 1             : self.local_rpath = '/'.join(token[:-1])
-        self.filename = token[-1]
-
-
-        # Local directory (directory created if needed)
-
-        self.local_dir    = self.local_root + '/' + self.local_rpath
-        self.local_dir    = self.local_dir.replace('//','/')
-        self.local_file   = self.filename
-
-        self.local_path   = self.local_dir   + '/' + self.filename
-
-        self.local_offset = 0
-        self.local_length = 0
-
-        if self.msg.sumflg in ['R','L'] : return
-
-        self.local_offset = self.msg.offset
-        self.local_length = self.msg.length
-
-
-    def set_new(self):
-
-        self.new_root  = ''
-        if self.post_document_root != None : self.new_root = self.post_document_root
-
-        # mirror case by default
-
-        self.new_rpath = self.local_rpath
-        self.new_file  = self.local_file
-       
-
-        if self.strip > 0 :
-           token = self.new_rpath.split('/')
-           self.new_rpath = '/'.join(token[self.strip:])
-
-        # no mirror and no directory ...
-        if not self.mirror and self.currentDir == None :
-           self.logger.warning("no mirroring and directory unset : assumed None ")
-           self.new_rpath = ''
-
-        # a target directory was provided
-        if self.use_pattern and self.currentDir != None:
-           if self.mirror :
-              self.new_rpath = self.currentDir + self.new_rpath
-           else :
-              self.new_rpath = self.currentDir
-
-        # PDS like destination pattern/keywords
-
-        if self.currentFileOption != None :
-           self.new_file = self.sundew_getDestInfos(self.local_file)
-
-        if self.destfn_script :
-            last_new_file = self.new_file
-            ok = self.destfn_script(self)
-            if last_new_file != self.new_file :
-               self.logger.debug("destfn_script : %s becomes %s "  % (last_new_file,self.new_file) )
-
-        destDir = self.new_rpath
-        destDir = self.sundew_dirPattern(self.msg.urlstr,self.local_file,destDir,self.new_file)
-
-        self.new_rpath = destDir
-
-        # build dir/path and url from options
-
-        self.new_dir  = self.new_root + '/' + self.new_rpath
-
-    def set_new_url(self):
-
-        self.new_baseurl = self.destination
-        if self.url      : self.new_baseurl = self.url.geturl()
-        self.new_baseurl = self.new_baseurl.strip('/')
-
-        self.new_relpath = self.new_rpath + '/' + self.new_file
-        self.new_relpath = self.new_relpath.replace('//','/')
-        self.new_relpath = self.new_relpath.strip('/')
-        self.new_relpath = '/' + self.new_relpath
-
-        if not self.post_document_root and 'ftp' in self.new_baseurl[:4] :
-           self.new_relpath = '/' + self.new_relpath
-
-    def reload(self):
-        self.logger.info("%s reload" % self.program_name)
-        self.close()
-        self.configure()
-        self.run()
-
-    def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
-        self.run()
-
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
-        self.close()
-        os._exit(0)
-
-    def cleanup(self):
-        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name))
-
-        # on consuming host, do cleanup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.cleanup()
-
-        if not self.post_broker :
-           self.close()
-           return
-
-        # posting 
-       
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-
-        self.declare_exchanges(cleanup=True)
-
-        self.close()
-
-    def declare(self):
-        self.logger.info("%s %s declare" % (self.program_name,self.config_name))
-
-        # on consuming host, do setup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.declare()
-
-        if not self.post_broker :
-           self.close()
-           return
-
-        # posting too
-       
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-       
-        self.declare_exchanges()
-
-        self.close()
-
-    def declare_exchanges(self, cleanup=False):
-
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange setup
-              
-        for x in exchanges :
-            if cleanup: self.post_hc.exchange_delete(x)
-            else      : self.post_hc.exchange_declare(x)
-
-
-    def setup(self):
-        self.logger.info("%s %s setup" % (self.program_name,self.config_name))
-
-        # on consuming host, do setup
-
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.setup()
-
-        if not self.post_broker :
-           self.close()
-           return
-
-        # posting too
-       
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-       
-        self.declare_exchanges()
-       
-        self.close()
 
 # ===================================
 # MAIN
