@@ -302,7 +302,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
 
       m->sum[0]='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
-      m->link[linklen]='\0';
+      linkstr[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
           linkp = realpath( linkstr, m->link );
@@ -424,6 +424,11 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
 
 
 void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
+/*
+  deprecated original version all in one replaced by the multiple routines above.
+  should be deleted once the above is solid.
+
+ */
 {
   char  routingkey[255];
   char  message_body[1024];
