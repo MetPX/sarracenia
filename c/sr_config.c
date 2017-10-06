@@ -478,11 +478,14 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
   if ( strcspn(option," \t\n#") == 0 ) return(0);
 
   argument = subarg(sr_cfg, arg);
+ /* commented these lines when I noticed that if a single word (e.g. debug) is on a line by itself, this returns as an error
+    which aborts parsing of the config file, which is kind of drastic.  dunno why an option without an argument would be invalid...
+    leaving it here, in case we find a case where this was useful. -2017/10/05
   if (!argument) 
   {
       return(-1);
   }
-
+ */
   //if (sr_cfg->debug)
   //   log_msg( LOG_DEBUG, "option: %s,  argument: %s \n", option, argument );
 
