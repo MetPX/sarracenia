@@ -6,8 +6,8 @@ ldd /usr/bin/python2.7
 
 #export LD_DEBUG=bindings
 
-export SRSHIMDEBUG=lala
-export SRSHIMMV=po
+#export SRSHIMDEBUG=lala
+#export SRSHIMMV=po
 set -x
 /usr/bin/python2.7 pyiotest
 cp libsrshim.c ~/test/hoho_my_darling.txt
