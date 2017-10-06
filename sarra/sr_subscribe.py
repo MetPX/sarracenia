@@ -85,9 +85,8 @@ class sr_subscribe(sr_instances):
 
         # posting... discard not permitted
 
-        if self.post_broker :
-           if self.post_document_root == None :
-              self.post_document_root = self.document_root
+        if self.post_document_root == None :
+           self.post_document_root = self.document_root
 
         # impacting other settings
 
@@ -494,6 +493,10 @@ class sr_subscribe(sr_instances):
         self.msg.local_dir = self.new_dir
         saved_dir = self.new_dir
 
+        # sender
+        self.remote_file = self.new_file #FIXME: remove in 2018
+
+
         for plugin in self.on_message_list :
 
            if not plugin(self): return False
@@ -507,6 +510,12 @@ class sr_subscribe(sr_instances):
                self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
                self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
                self.new_dir = self.msg.local_dir
+
+           # sender
+           if self.remote_file != self.new_file : #FIXME: remove in 2018
+              logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
+              self.new_file = self.remote_file
+
 
         return True
 
@@ -585,20 +594,18 @@ class sr_subscribe(sr_instances):
               return True
 
         #=================================
-        # if notify_only... just post here
+        # if notify_only... publish if set
         #=================================
 
-        if self.notify_only :
-           if self.post_broker:
-              self.logger.debug("notify_only post")
-              self.__on_post__()
-              if self.reportback : self.msg.report_publish(201,'Published')
+        if self.notify_only and self.post_broker :
+           self.logger.debug("notify_only post")
+           ok = self.__on_post__()
+           if ok and self.reportback : self.msg.report_publish(201,'Published')
            return True
 
         #=================================
-        # doit, perform task on message...
+        # do all tasks
         #=================================
-
         ok = self.__do_tasks__()
 
         return ok
@@ -979,6 +986,32 @@ class sr_subscribe(sr_instances):
         self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
+
+    def set_dir_pattern(self,cdir):
+
+        new_dir = cdir
+
+        if '${DR}' in cdir and self.document_root != None :
+           new_dir = new_dir.replace('${DR}',self.document_root)
+
+        if '${PDR}' in cdir and self.post_document_root != None :
+           new_dir = new_dir.replace('${PDR}',self.post_document_root)
+
+        if '${YYYYMMDD}' in cdir :
+           YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
+           new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
+
+        if '${SOURCE}' in cdir :
+           ex     = self.exchange
+           source = None
+           if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
+           elif self.source                   : source = self.source
+           else                               : source = self.broker.username
+           new_dir = new_dir.replace('${SOURCE}',source)
+
+        return new_dir
+
+
     # ==============================================
     # how will the download file land on this server
     # with all options, this is really tricky
@@ -1005,80 +1038,67 @@ class sr_subscribe(sr_instances):
         if self.strip > 0 :
            try :
                    token   = token[self.strip:]
-                   relpath = '/'.join(token)
            except:
                    token   = [filename]
-                   relpath =  filename
 
         # if flatten... we flatten relative path
         # strip taken into account
 
         if self.flatten != '/' :
-           filename = self.flatten.join(token)
+           filename  = self.flatten.join(token)
+           token[-1] = [filename]
 
         if self.currentFileOption != None :
-           filename = self.sundew_getDestInfos(filename)
+           filename  = self.sundew_getDestInfos(filename)
+           token[-1] = [filename]
 
         # not mirroring
 
         if not self.mirror :
-           token   = [filename]
-           relpath =  filename
+           token = [filename]
 
         # uses current dir
 
-        dr = self.document_root
-
-        if self.currentDir :
-           currentDir = self.currentDir
-           if '${YYYYMMDD}' in self.currentDir :
-              YYYYMMDD   = time.strftime("%Y%m%d", time.gmtime()) 
-              currentDir = currentDir.replace('${YYYYMMDD}',YYYYMMDD)
-           if '${SOURCE}' in self.currentDir :
-              ex     = self.exchange
-              source = None
-              if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
-              elif self.source                   : source = self.source
-              else                               : source = self.broker.username
-              currentDir = currentDir.replace('${SOURCE}',source)
-
-           relpath = currentDir + '/' + relpath
-           relpath = relpath.replace('//','/')
-
-           if dr and dr in relpath :
-              relpath = '/' + relpath.replace(dr,'',1)
-
-           relpath = relpath.replace('//','/')
-           token   = relpath.split('/')
-
-        # not mirroring
-
         new_dir = ''
-        if dr : new_dir = dr
+        if self.currentDir : new_dir = self.currentDir
 
-        if len(token) > 1 :
-           new_dir = new_dir + '/' + '/'.join(token[:-1])
+        # add relpath
+
+        new_dir = new_dir + '/' + '/'.join(token[:-1])
+        new_dir = new_dir.replace('//','/')
+
+        if '$' in new_dir :
+           new_dir = self.set_dir_pattern(new_dir)
+
+        # resolution of sundew's dirPattern
 
         if 'sundew_extension' in self.msg.headers.keys() :
             tfname  = filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
             new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
-            relpath = new_dir + '/' + filename
+
+        # final value 
 
         self.new_dir     = new_dir
         self.new_file    = filename
+
+        # reset relpath from new_dir
+
+        relpath = new_dir + '/' + filename
+        if self.post_document_root :
+           relpath = relpath.replace(self.post_document_root, '')
+
+        # set the results for the new file (downloading or sending)
+
         self.new_baseurl = 'file:'
         self.new_relpath = relpath
 
-        if self.post_broker :
-           if self.url :
-              self.new_baseurl = self.url.geturl()
-           if self.post_document_root :
-              self.new_relpath = self.new_relpath.replace(self.post_document_root,'',1)
+        if self.post_broker and self.url :
+           self.new_baseurl = self.url.geturl()
 
-        #self.logger.debug("new_dir     = %s" % self.new_dir)
-        #self.logger.debug("new_file    = %s" % self.new_file)
-        #self.logger.debug("new_baseurl = %s" % self.new_baseurl)
-        #self.logger.debug("new_relpath = %s" % self.new_relpath)
+        self.logger.debug("new_dir     = %s" % self.new_dir)
+        self.logger.debug("new_file    = %s" % self.new_file)
+        self.logger.debug("new_baseurl = %s" % self.new_baseurl)
+        self.logger.debug("new_relpath = %s" % self.new_relpath)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )

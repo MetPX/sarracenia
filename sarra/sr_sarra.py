@@ -121,7 +121,13 @@ class sr_sarra(sr_subscribe):
 
         # standard post_document_root fallback from sr_subscribe
 
-        if not self.post_document_root : self.post_document_root = self.document_root
+        if self.post_document_root == None :
+           self.post_document_root = self.document_root
+
+        # currentDir is post_document_root if unset
+
+        if self.currentDir == None :
+           self.currentDir = self.post_document_root
 
         # always download ...
 
