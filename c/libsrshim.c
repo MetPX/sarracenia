@@ -13,12 +13,80 @@
 #include "sr_post.h"
 
 /*
- libsrshim.
-
+ libsrshim - intercepts calls to libc and kernel to post files for broker.
 
  FIXME:  1024, and PATH_MAX, should likely be replaced by code that mallocs properly.
 
+ set following variables to non-empty strings to activate.
+
+ SRSHIMDEBUG - when set, debug output triggerred.
+
+ SRSHIMMV - trigger new form of MV posting.
+
  */
+static struct sr_context *sr_c = NULL;
+static struct sr_config_t sr_cfg; 
+
+
+void srshim_initialize(const char* progname) 
+{
+
+  static int config_read = 0;
+  char *setstr;
+
+  if (sr_c) return;
+
+  setstr = getenv( "SR_POST_CONFIG" ) ;
+  if ( setstr != NULL )
+  { 
+     if ( config_read == 0 ) 
+     {
+       sr_config_init(&sr_cfg,progname);
+       config_read = sr_config_read(&sr_cfg,setstr);
+       if (!config_read) return;
+     }
+     if ( !sr_config_finalize( &sr_cfg, 0 )) return;
+
+     sr_c = sr_context_init_config(&sr_cfg);
+     sr_c = sr_context_connect( sr_c );
+
+  } 
+}
+
+
+void srshim_realpost(const char *fn) 
+/*
+  post using initialize sr_ context.
+
+ */
+{
+  struct sr_mask_t *mask; 
+  struct stat sb;
+
+  if (!fn || !sr_c) return;
+ 
+  mask = isMatchingPattern(&sr_cfg, fn);
+  if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
+  { //reject.
+      log_msg( LOG_INFO, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
+            mask, mask->accepting, sr_cfg.accept_unmatched );
+      if (sr_cfg.debug) log_msg( LOG_DEBUG, "sr_%s rejected 2: %s\n", sr_cfg.progname, fn );
+      return;
+  }
+
+  sr_c = sr_context_connect(sr_c);
+  if (sr_c == NULL ) 
+  {
+    log_msg( LOG_ERROR, "failed to parse AMQP post_broker settings\n");
+    return;
+  }
+  if ( lstat( fn, &sb ) ) 
+      sr_post( sr_c, fn, NULL );
+  else 
+      sr_post( sr_c, fn, &sb );
+
+  //sr_context_close(sr_c); FIXME: no close... any more...
+}
 
 
 static int in_librshim_already_dammit = 0;
@@ -33,19 +101,20 @@ int shimpost( const char *path, int status )
     in_librshim_already_dammit=1;
     if (!status) 
     {
+       srshim_initialize( "post" );
        if (path[0] == '/' )
        {
           if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG absolute shimpost %s\n", path );
-          connect_and_post(path,"post");
+          srshim_realpost( path );
        } else {
           cwd = get_current_dir_name();
-          real_path = (char*)malloc( strlen(cwd) + strlen(path) + 2048 );
+          real_path = (char*)malloc( strlen(cwd) + strlen(path) + 3 );
           //getwd(real_path);
           strcpy(real_path,cwd);
           strcat(real_path,"/");
           strcat(real_path,path);
           if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG relative shimpost %s\n", real_path );
-          connect_and_post( real_path ,"post");
+          srshim_realpost( real_path );
           free(real_path);
           free(cwd);
        }
@@ -151,6 +220,8 @@ int unlink(const char *path)
     return(shimpost(path,status));
 }
 
+int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags);
+
 static int rename_init_done = 0;
 typedef int  (*rename_fn) (const char*,const char*);
 static rename_fn rename_fn_ptr = rename;
@@ -160,6 +231,10 @@ int rename(const char *oldpath, const char *newpath)
     int status;
 
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rename %s %s\n", oldpath, newpath );
+
+    if (getenv("SRSHIMMV")) 
+         return( renameat99(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0 ));
+
     if (!rename_init_done) 
     {
         rename_fn_ptr = (rename_fn) dlsym(RTLD_NEXT, "rename");
@@ -168,6 +243,7 @@ int rename(const char *oldpath, const char *newpath)
     status = rename_fn_ptr(oldpath,newpath);
     if ( !strncmp(newpath,"/dev/", 5) ) return(status);
     if ( !strncmp(newpath,"/proc/", 6) ) return(status);
+
 
     // delete old if necessary...
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rm %s \n", oldpath );
@@ -192,11 +268,16 @@ int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpat
     
 
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
+
+    if (getenv("SRSHIMMV")) 
+         return( renameat99(olddirfd, oldpath, newdirfd, newpath, 0 ));
+
     if (!renameat_init_done) 
     {
         renameat_fn_ptr = (renameat_fn) dlsym(RTLD_NEXT, "renameat");
         renameat_init_done = 1;
     }
+
     status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
 
     if ( newdirfd == AT_FDCWD ) 
@@ -239,6 +320,10 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
     char *oreal_return;
 
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
+
+    if (getenv("SRSHIMMV")) 
+         return( renameat99(olddirfd, oldpath, newdirfd, newpath, flags ));
+
     if (!renameat2_init_done) 
     {
         renameat2_fn_ptr = (renameat2_fn) dlsym(RTLD_NEXT, "renameat2");
@@ -269,6 +354,87 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
         }
     }
     return(shimpost(real_path,status));
+}
+
+
+int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags)
+{
+    int status;
+    char fdpath[32];
+    char real_path[PATH_MAX+1];
+    char *real_return;
+    char oreal_path[PATH_MAX+1];
+    char *oreal_return;
+
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 %s %s\n", oldpath, newpath );
+
+    if (!renameat2_init_done) 
+    {
+        renameat2_fn_ptr = (renameat2_fn) dlsym(RTLD_NEXT, "renameat2");
+        renameat2_init_done = 1;
+    }
+    if (!renameat_init_done) 
+    {
+        renameat_fn_ptr = (renameat_fn) dlsym(RTLD_NEXT, "renameat");
+        renameat_init_done = 1;
+    }
+
+    if (renameat2_fn_ptr) 
+       status = renameat2_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
+    else if (renameat_fn_ptr && !flags )
+       status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
+    else {
+       log_msg( LOG_ERROR, "SRSHIMDEBUG renameat99 could not identify real entry point for renameat\n" );
+       return(-1);
+
+    }
+
+    srshim_initialize("post");
+
+    if (!sr_c) return(status);
+
+    if (status) 
+    {
+         if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 %s %s failed, no post\n", oldpath, newpath );
+         return(status);
+    }
+
+    if ( olddirfd == AT_FDCWD ) 
+    {
+       strcpy(oreal_path,oldpath);
+    } else {
+       snprintf( fdpath, 32, "/proc/self/fd/%d", olddirfd );
+       oreal_return = realpath(fdpath, oreal_path);
+       if (oreal_return) 
+       {
+         log_msg( LOG_WARNING, "srshim renameat99 could not obtain real_path for olddirfd=%s failed, no post\n", fdpath );
+         return(status);
+       }
+       strcat( oreal_path, "/" );
+       strcat( oreal_path, oldpath );
+    }
+
+    if ( newdirfd == AT_FDCWD ) 
+    {
+       strcpy(real_path,newpath);
+    } else {
+       snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
+       real_return = realpath(fdpath, real_path);
+       if (real_return) 
+       {
+         log_msg( LOG_WARNING, "srshim renameat99 could not obtain real_path for newdir=%s failed, no post\n", fdpath );
+         return(status);
+       }
+       strcat( real_path, "/" );
+       strcat( real_path, newpath );
+    }
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 sr_c=%p, oreal_path=%s, real_path=%s\n", 
+            sr_c, oreal_path, real_path );
+
+    sr_post_rename( sr_c, oreal_path, real_path );
+
+    return(status);
+
 }
 
 
