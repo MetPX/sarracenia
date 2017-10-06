@@ -175,6 +175,30 @@ srpostlogfile=$httpdocroot/srpostlogfile.log
 
 touch ${srpostlogfile}
 echo > ${srpostlstfile_old}
+
+
+# sr_post call
+
+function do_sr_post {
+
+   cd $srpostdir
+
+   # sr_post testing START
+   # TODO - consider if .httpdocroot ends with a '/' ?
+   ls $srpostdir > $srpostlstfile_new
+   # Obtain file listing delta
+   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
+
+   if ! [ "$srpostdelta" == "" ]; then
+     #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+     sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
+   fi
+
+   cp -p $srpostlstfile_new $srpostlstfile_old
+   # sr post testing END
+
+}
+
 # sr_post initial end
 
 countall
@@ -196,8 +220,6 @@ while [ "${totsarra}" == 0 ]; do
    printf "waiting to start...\n"
 done
 
-cd $srpostdir
-
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
       echo "starting shovels and waiting..."
@@ -206,19 +228,9 @@ while [ $totsarra -lt $smin ]; do
    fi
    sleep 10
 
-   # sr_post testing START
-   # TODO - consider if .httpdocroot ends with a '/' ?
-   ls $srpostdir > $srpostlstfile_new
-   # Obtain file listing delta
-   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
+   # do sr_posting if requiered
+   do_sr_post
 
-   if ! [ "$srpostdelta" == "" ]; then
-     #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-     sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
-   fi
-
-   cp -p $srpostlstfile_new $srpostlstfile_old
-   # sr post testing END
 
    countall
 
@@ -231,6 +243,10 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
    echo "stopping shovels and waiting..."
    sr_shovel stop t_dd2_f00 &
    sr_shovel stop t_dd1_f00 
+
+   # sleep a little more and then  do sr_posting if requiered
+   sleep 10
+   do_sr_post
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
@@ -253,9 +269,9 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
         ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
    done
 
-   sleep 10
-
 fi
+
+sleep 10
 
 countall
 
