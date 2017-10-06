@@ -98,7 +98,7 @@ void amqp_header_add( char *tag, const char * value ) {
 }
 
 void set_url( char* m, char* spec ) 
-  /* append a url spec to the given message buffer
+  /* Pick a URL from the spec (round-robin) copy it to the given buffer
    */
 {
   static const char* cu_url = NULL;
@@ -118,10 +118,10 @@ void set_url( char* m, char* spec )
          //log_msg( LOG_DEBUG, "4 picking url, set=%s, cu=%s\n", spec, cu_url );
      }
      sp=strchr(cu_url,',');
-     if (sp) strncat( m, cu_url, sp-cu_url );
-     else strcat( m, cu_url );
+     if (sp) strncpy( m, cu_url, sp-cu_url );
+     else strcpy( m, cu_url );
   } else  {
-     strcat( m, spec );
+     strcpy( m, spec );
   }
 }
 
@@ -166,6 +166,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
            log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
            if (!status) return; // cache hit.
     }
+
     strcpy( message_body, m->datestamp);
     strcat( message_body, " " );
     strcat( message_body, m->url );
@@ -371,7 +372,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   strcpy( m.to_clusters, sr_c->cfg->to );
   strcpy( m.from_cluster, sr_c->cfg->post_broker->hostname );
   strcpy( m.source,  sr_c->cfg->post_broker->user );
-  strcpy( m.url, sr_c->cfg->url );
+  set_url( m.url, sr_c->cfg->url );
   m.user_headers = sr_c->cfg->user_headers;
 
   // report...
@@ -520,6 +521,7 @@ void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   set_url( message_body, sr_c->cfg->url );
   strcat( message_body, " " );
   strcat( message_body, postfn );
+  strcat( message_body, " " );
 
 /*
   if ( sr_c->cfg->documentroot ) 
