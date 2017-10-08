@@ -353,9 +353,15 @@ calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 echo
 NERROR=`grep ERROR "$LOGDIR"/*.log | wc -l`
 if ((NERROR>0)); then
-   echo TYPE OF ERRORS IN LOG :
-   echo
-   grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c
+   fcel=flow_check_errors_logged.txt
+   grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   if [ "`wc -l $fcel`" -gt 10 ]; then
+       echo "more than 10 TYPES OF ERRORS found... have a look at $fcel for details"
+   else
+       echo TYPE OF ERRORS IN LOG :
+       echo
+       cat $fcel
+   fi
 fi
 if ((NERROR==0)); then
    echo NO ERRORS IN LOGS
