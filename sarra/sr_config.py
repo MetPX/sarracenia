@@ -529,6 +529,34 @@ class sr_config:
         self.on_watch             = None
         self.on_watch_list        = []
 
+    def elapsetime_from_str(self,str_value,setting_units='s'):
+        self.logger.debug("sr_config elapsetime_from_str %s unit %s" % (str_value,setting_units))
+
+        # str_value should be expressed in secs 
+        # unit is used to initialise the factor (ex: 's': factor = 1  'ms' : factor = 1000 )
+
+        factor    = 1
+
+        # most settings are in sec (or millisec)
+        if setting_units[-1] == 's' :
+           if setting_units == 'ms'   : factor = 1000
+           if str_value[-1] in 'sS'   : factor *= 1
+           if str_value[-1] in 'mM'   : factor *= 60
+           if str_value[-1] in 'hH'   : factor *= 60 * 60
+           if str_value[-1] in 'dD'   : factor *= 60 * 60 * 24
+           if str_value[-1] in 'wW'   : factor *= 60 * 60 * 24 * 7
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'd'     :
+           if str_value[-1] in 'dD'   : factor *= 1
+           if str_value[-1] in 'wW'   : factor *= 7
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elapsetime = float(str_value) * factor
+
+        return elapsetime
+
+
     def execfile(self, opname, path):
 
         setattr(self,opname,None)
@@ -902,7 +930,8 @@ class sr_config:
                                self.caching = self.isTrue(words[1])
                                if self.caching : self.caching = 300
                         else :
-                               self.caching = int(words[1])
+                               # caching setting is in sec 
+                               self.caching = int(self.elapsetime_from_str(words1,'s'))
                                if self.caching <= 0 : self.caching = False
                         n = 2
 
@@ -1076,17 +1105,8 @@ class sr_config:
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
-                           # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
-                           factor = 1000
-                           str_value = words1
-                           if str_value[-1] in 'sS'   : factor = 1000
-                           if str_value[-1] in 'mM'   : factor = 1000 * 60
-                           if str_value[-1] in 'hH'   : factor = 1000 * 60 * 60
-                           if str_value[-1] in 'dD'   : factor = 1000 * 60 * 60 * 24
-                           if str_value[-1] in 'wW'   : factor = 1000 * 60 * 60 * 24 * 7
-                           if str_value[-1].isalpha() : str_value = str_value[:-1]
-
-                           self.expire = int(str_value) * factor
+                           # rabbitmq setting is in millisec 
+                           self.expire = int(self.elapsetime_from_str(words1,'ms'))
                            if self.expire < 60000 : self.expire = 60000
                      n = 2
 
@@ -1134,7 +1154,9 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'heartbeat' :   # See: sr_config.7
-                     self.heartbeat = int(words[1])
+                     # heartbeat setting is in sec 
+                     self.heartbeat = self.elapsetime_from_str(words1,'s')
+                     if self.heartbeat <= 0 : self.heartbeat = 0
                      n = 2
 
                 elif words0 in ['help','h']: # See: sr_config.7
@@ -1218,7 +1240,9 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 
-                     self.logrotate = int(words[1])
+                     # log setting is in days 
+                     self.logrotate = int(self.elapsetime_from_str(words1,'d'))
+                     if self.logrotate < 1 : self.logrotate = 1
                      n = 2
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
@@ -1249,18 +1273,9 @@ class sr_config:
                      if    words1.lower() == 'none' :
                            self.message_ttl = None
                      else:
-                           # should be expressed in secs (and in rabbitmq millisec hence 1000 factor)
-                           factor = 1000
-                           str_value = words1
-                           if str_value[-1] in 'sS'   : factor = 1000
-                           if str_value[-1] in 'mM'   : factor = 1000 * 60
-                           if str_value[-1] in 'hH'   : factor = 1000 * 60 * 60
-                           if str_value[-1] in 'dD'   : factor = 1000 * 60 * 60 * 24
-                           if str_value[-1] in 'wW'   : factor = 1000 * 60 * 60 * 24 * 7
-                           if str_value[-1].isalpha() : str_value = str_value[:-1]
-
-                           self.message_ttl = int(str_value) * factor
-                           if self.message_ttl < 60000 : self.message_ttl = 60000
+                           # rabbitmq setting is in millisec 
+                           self.message_ttl = int(self.elapsetime_from_str(words1,'ms'))
+                           if self.message_ttl < 60000 : self.expire = 60000
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 
@@ -1596,7 +1611,9 @@ class sr_config:
                         n = 2
 
                 elif words0 == 'sleep': # See: sr_audit.8 sr_poll.1
-                     self.sleep = int(words[1])
+                     # sleep setting is in sec 
+                     self.sleep = self.elapsetime_from_str(words1,'s')
+                     if self.sleep <= 0 : self.sleep = 0
                      n = 2
 
                 elif words0 == 'source': # See: sr_post.1 sr_watch.1
@@ -1632,7 +1649,9 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'timeout': # See: sr_sarra.8
-                     self.timeout = float(words[1])
+                     # timeout setting is in sec 
+                     self.timeout = int(self.elapsetime_from_str(words1,'s'))
+                     if self.timeout <= 0 : self.timeout = None
                      n = 2
 
                 elif words0 == 'to': # See: sr_config.7
