@@ -40,7 +40,6 @@ status:
 #include "sr_config.h"
 
 
-
 void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    /* Append to linked list of paths to post
     */
@@ -54,29 +53,34 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
         || !strcmp( option, "foreground" ) 
         || !strcmp( option, "setup" ) 
         || !strcmp( option, "cleanup" ) 
+        || !strcmp( option, "declare" ) 
       )
    {
       if (sr_cfg->action) free(sr_cfg->action);
       sr_cfg->action = strdup(option);
       return;
    }
-   p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
-   if (p == NULL)
-   {
-       log_msg(LOG_ERROR, "malloc of path failed!\n" );
-       return;
-   }
-   p->next = NULL;
-   strcpy(p->path, option );
-
-   if ( ! sr_cfg->paths )
-   {
-       sr_cfg->paths = p;
-   } else {
-       n=sr_cfg->paths;
-       while( n->next ) n=n->next;
-       n->next = p;
-   }
+   //if ( !strcmp( sr_cfg->action,"foreground" )  &&  // posting a file...
+   //     ( !strcmp( sr_cfg->progname,"post") || !strcmp( sr_cfg->progname,"cpost") ) )
+   //{
+       p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
+       if (p == NULL)
+       {
+           log_msg(LOG_ERROR, "malloc of path failed!\n" );
+           return;
+       }
+       p->next = NULL;
+       strcpy(p->path, option );
+    
+       if ( ! sr_cfg->paths )
+       {
+           sr_cfg->paths = p;
+       } else {
+           n=sr_cfg->paths;
+           while( n->next ) n=n->next;
+           n->next = p;
+       }
+   //}
 }
 
 void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub )
@@ -1014,7 +1018,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       sr_cfg->broker  =  NULL ;
   }
 
-  if ( !strcmp(sr_cfg->progname,"post") ) 
+  if  ( !strcmp(sr_cfg->progname,"post") || !strcmp(sr_cfg->progname,"cpost") ) 
   {
       if ( !(sr_cfg->post_broker) ) 
       {

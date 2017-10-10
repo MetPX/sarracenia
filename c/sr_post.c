@@ -302,7 +302,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
 
       m->sum[0]='L';
       linklen = readlink( fn, linkstr, PATH_MAX );
-      m->link[linklen]='\0';
+      linkstr[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
       {
           linkp = realpath( linkstr, m->link );
@@ -424,6 +424,11 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
 
 
 void sr_post2(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
+/*
+  deprecated original version all in one replaced by the multiple routines above.
+  should be deleted once the above is solid.
+
+ */
 {
   char  routingkey[255];
   char  message_body[1024];
@@ -682,7 +687,7 @@ int sr_post_init( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
+    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange),
           amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
 
  

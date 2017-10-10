@@ -191,7 +191,7 @@ def main():
 
     # sarracenia program requiring configs
     
-    SR_PROGRAMS =['post','watch','winnow','sarra','shovel','subscribe','sender','poll','report']
+    SR_PROGRAMS =['post', 'cpost','watch','winnow','sarra','shovel','subscribe','sender','poll','report', 'cpump' ]
 
     for d in SR_PROGRAMS:
         pgm = d
