@@ -51,6 +51,8 @@ remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.p
 
 rm -f ${remove_if_present}
 
+C_ALSO="`which sr_cpost`"
+
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' "$CONFDIR"/credentials.conf`"
 
@@ -68,10 +70,17 @@ for exchange in $exchanges_to_delete ; do
 done
 
  
-templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
+templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
+c_templates="`ls cflow_templates/*/*.py cflow_templates/*/*.conf cflow_templates/*/*.inc`"
+
+if [ "$C_ALSO" ]; then
+  templates="$templates $c_templates"
+fi
+
 for cf in ${templates}; do
     echo "removing $cf"
-    rm "$CONFDIR"/${cf}
+    newcf="`echo $cf | sed 's+.*flow_templates\/++'`"
+    rm "$CONFDIR"/${newcf}
 done
 
 #for cf in "$CONFDIR"/shovel/rr*.conf  ; do

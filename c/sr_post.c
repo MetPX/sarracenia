@@ -687,7 +687,7 @@ int sr_post_init( struct sr_context *sr_c )
 {
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange),
+    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange),
           amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
 
  

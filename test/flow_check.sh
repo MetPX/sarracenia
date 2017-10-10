@@ -355,8 +355,9 @@ NERROR=`grep ERROR "$LOGDIR"/*.log | wc -l`
 if ((NERROR>0)); then
    fcel=flow_check_errors_logged.txt
    grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
-   if [ "`wc -l $fcel`" -gt 10 ]; then
-       echo "more than 10 TYPES OF ERRORS found... have a look at $fcel for details"
+   result="`wc -l $fcel|cut -d' ' -f1`"
+   if [ $result -gt 10 ]; then
+       echo "more than 10 TYPES OF ERRORS found... have a look at `pwd`/$fcel for details"
    else
        echo TYPE OF ERRORS IN LOG :
        echo

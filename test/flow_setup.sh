@@ -60,6 +60,9 @@ EOT
  exit 1
 fi
  
+# Determine whether we should be testing the C parts as well as the python implementation.
+C_ALSO="`which sr_cpost`" 
+echo "$C_ALSO"
 
 if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot
@@ -100,18 +103,26 @@ echo $testdocroot >.httpdocroot
 mkdir -p "$CONFDIR" 2> /dev/null
 
 
-for d in poll post report sarra sender shovel subscribe watch winnow ; do
+for d in poll cpump post report sarra sender shovel subscribe watch winnow ; do
    if [ ! -d "$CONFDIR"/$d ]; then
       mkdir "$CONFDIR"/$d
    fi
 done
 
-templates="`cd flow_templates; ls */*.py */*.conf */*.inc`"
+templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
+
+if [ "$C_ALSO" ]; then
+    c_templates="`ls cflow_templates/*/*.py cflow_templates/*/*.conf cflow_templates/*/*.inc`"
+    templates="$templates $c_templates"
+    echo "Adding C implementation tests as as well: $c_templates "
+fi
 
 for cf in ${templates}; do
     echo "installing $cf"
-    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <flow_templates/${cf} >"$CONFDIR"/${cf}
+    newcf="`echo $cf | sed 's+.*flow_templates\/++'`"
+    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <${cf} >"$CONFDIR"/${newcf}
 done
+
 
 passed_checks=0
 count_of_checks=0

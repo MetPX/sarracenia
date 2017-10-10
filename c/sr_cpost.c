@@ -431,7 +431,7 @@ int main(int argc, char **argv)
     
     if ( argc < 3 ) usage();
    
-    sr_config_init( &sr_cfg, "post" );
+    sr_config_init( &sr_cfg, "cpost" );
   
     i=1;
     while( i < argc ) 
@@ -450,7 +450,11 @@ int main(int argc, char **argv)
 
     for (; i < argc; i++ )
     {
-        sr_add_path(&sr_cfg, argv[i]);
+        if ( !strcmp(sr_cfg.action,"foreground") )
+            sr_add_path(&sr_cfg, argv[i]);
+        else
+            sr_config_read(&sr_cfg, argv[i] );
+
     }
 
     if (!sr_config_finalize( &sr_cfg, 0 ))
@@ -499,7 +503,7 @@ int main(int argc, char **argv)
     FIXME: wait until next version of sarra is released... not permitted on old ones.
     warn for now, error exit on future versions.
   */
-    if ( !strcmp( sr_cfg.action, "setup" ) )
+    if ( !strcmp( sr_cfg.action, "setup" ) || !strcmp( sr_cfg.action, "declare") )
     {
         if ( !sr_post_init( sr_c ) ) 
         {
