@@ -829,7 +829,8 @@ class sr_subscribe(sr_instances):
                              self.msg.set_topic('v02.post',self.new_relpath)
                              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
                              self.msg.headers['oldname'] = oldname
-                             self.__on_post__()
+                             ok = self.__on_post__()
+                             if ok and self.reportback : self.msg.report_publish(201,'Published')
                           return True
 
                  self.logger.debug("could not move %s to %s (hardlink)" % (oldpath,newpath))
@@ -860,7 +861,8 @@ class sr_subscribe(sr_instances):
               self.msg.set_topic('v02.post',self.new_relpath)
               self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
               if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
-              self.__on_post__()
+              ok = self.__on_post__()
+              if ok and self.reportback : self.msg.report_publish(201,'Published')
 
            return True
 
@@ -888,7 +890,8 @@ class sr_subscribe(sr_instances):
            if ok and self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
               self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
-              self.__on_post__()
+              ok = self.__on_post__()
+              if ok and self.reportback : self.msg.report_publish(201,'Published')
 
            return True
         #=================================
@@ -1044,8 +1047,8 @@ class sr_subscribe(sr_instances):
            self.msg.set_topic('v02.post',self.new_relpath)
            self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
            if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
-           self.__on_post__()
-           if self.reportback: self.msg.report_publish(201,'Published')
+           ok = self.__on_post__()
+           if ok and self.reportback: self.msg.report_publish(201,'Published')
 
         #=================================
         # if we processed a file we are done
