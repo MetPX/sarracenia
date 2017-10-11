@@ -529,8 +529,8 @@ class sr_config:
         self.on_watch             = None
         self.on_watch_list        = []
 
-    def elapsetime_from_str(self,str_value,setting_units='s'):
-        self.logger.debug("sr_config elapsetime_from_str %s unit %s" % (str_value,setting_units))
+    def duration_from_str(self,str_value,setting_units='s'):
+        self.logger.debug("sr_config duration_from_str %s unit %s" % (str_value,setting_units))
 
         # str_value should be expressed in secs 
         # unit is used to initialise the factor (ex: 's': factor = 1  'ms' : factor = 1000 )
@@ -552,9 +552,9 @@ class sr_config:
            if str_value[-1] in 'wW'   : factor *= 7
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
-        elapsetime = float(str_value) * factor
+        duration = float(str_value) * factor
 
-        return elapsetime
+        return duration
 
 
     def execfile(self, opname, path):
@@ -931,7 +931,7 @@ class sr_config:
                                if self.caching : self.caching = 300
                         else :
                                # caching setting is in sec 
-                               self.caching = int(self.elapsetime_from_str(words1,'s'))
+                               self.caching = int(self.duration_from_str(words1,'s'))
                                if self.caching <= 0 : self.caching = False
                         n = 2
 
@@ -1106,7 +1106,7 @@ class sr_config:
                            self.expire = None
                      else:
                            # rabbitmq setting is in millisec 
-                           self.expire = int(self.elapsetime_from_str(words1,'ms'))
+                           self.expire = int(self.duration_from_str(words1,'ms'))
                            if self.expire < 60000 : self.expire = 60000
                      n = 2
 
@@ -1155,7 +1155,7 @@ class sr_config:
 
                 elif words0 == 'heartbeat' :   # See: sr_config.7
                      # heartbeat setting is in sec 
-                     self.heartbeat = self.elapsetime_from_str(words1,'s')
+                     self.heartbeat = self.duration_from_str(words1,'s')
                      if self.heartbeat <= 0 : self.heartbeat = 0
                      n = 2
 
@@ -1192,6 +1192,9 @@ class sr_config:
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
                      if words[1].lower() in [ 'none' ]: 
                          self.inflight=None
+                     elif words[1][0].isnumeric() :
+                         self.inflight = self.duration_from_str(words1,'s')
+                         if self.inflight <= 1 : self.inflight = None
                      else:
                          self.inflight = words[1] 
                      n = 2
@@ -1241,7 +1244,7 @@ class sr_config:
 
                 elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 
                      # log setting is in days 
-                     self.logrotate = int(self.elapsetime_from_str(words1,'d'))
+                     self.logrotate = int(self.duration_from_str(words1,'d'))
                      if self.logrotate < 1 : self.logrotate = 1
                      n = 2
 
@@ -1274,7 +1277,7 @@ class sr_config:
                            self.message_ttl = None
                      else:
                            # rabbitmq setting is in millisec 
-                           self.message_ttl = int(self.elapsetime_from_str(words1,'ms'))
+                           self.message_ttl = int(self.duration_from_str(words1,'ms'))
                            if self.message_ttl < 60000 : self.expire = 60000
                      n = 2
 
@@ -1612,7 +1615,7 @@ class sr_config:
 
                 elif words0 == 'sleep': # See: sr_audit.8 sr_poll.1
                      # sleep setting is in sec 
-                     self.sleep = self.elapsetime_from_str(words1,'s')
+                     self.sleep = self.duration_from_str(words1,'s')
                      if self.sleep <= 0 : self.sleep = 0
                      n = 2
 
@@ -1650,7 +1653,7 @@ class sr_config:
 
                 elif words0 == 'timeout': # See: sr_sarra.8
                      # timeout setting is in sec 
-                     self.timeout = int(self.elapsetime_from_str(words1,'s'))
+                     self.timeout = int(self.duration_from_str(words1,'s'))
                      if self.timeout <= 0 : self.timeout = None
                      n = 2
 
@@ -2039,6 +2042,24 @@ def self_test():
     opt1 = "path .. ."
     cfg.option(opt1.split())
     cfg.logger.debug(cfg.postpath)
+
+    opt1 = "inflight ."
+    cfg.option(opt1.split())
+    if cfg.inflight != '.' :
+       cfg.logger.error("inflight .")
+       failed = True
+
+    opt1 = "inflight .tmp"
+    cfg.option(opt1.split())
+    if cfg.inflight != '.tmp' :
+       cfg.logger.error("inflight .tmp")
+       failed = True
+
+    opt1 = "inflight 1.5"
+    cfg.option(opt1.split())
+    if cfg.inflight != 1.5 :
+       cfg.logger.error("inflight 1.5")
+       failed = True
 
     #opt1 = "sum checksum_AHAH.py"
     #cfg.option(opt1.split())
