@@ -129,7 +129,7 @@ int get_sumhashlen( char algo )
     case '0': 
         return(4+1);
 
-    case 'N' : case 's' : case 'L' : case 'R' : case 'm' :
+    case 'N' : case 's' : case 'L' : case 'R' : 
         return(SHA512_DIGEST_LENGTH+1);
 
     default: 
@@ -255,7 +255,7 @@ char *set_sumstr( char algo, const char* fn, const char* partstr, char *linkstr,
        SHA512_Final(sumhash+1, &shactx);
        return(sr_hash2sumstr(sumhash)); 
 
-   case 's' : case 'm' :
+   case 's' : 
        SHA512_Init(&shactx);
 
        // keep file open through repeated calls.

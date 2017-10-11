@@ -333,7 +333,6 @@ long int chunksize_from_str(char *s)
    switch(u) 
    { 
    case 'k': case 'K': power=10; break;
-   case 'm': case 'M': power=20; break;
    case 'g': case 'G': power=30; break;
    case 't': case 'T': power=40; break;
    }
