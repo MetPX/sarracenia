@@ -272,6 +272,9 @@ class sr_post(sr_config):
         self.post_hc = None
         self.cache   = None
 
+        self.key     = None
+        self.value   = None
+
         self.logger.debug("sr_post overwrite_defaults Done")
 
 
@@ -340,9 +343,14 @@ class sr_post(sr_config):
 
         if self.flow    != None : self.msg.headers['flow']            = self.flow
 
+        if self.key     != None : self.msg.headers[self.key]          = self.value
+
         self.msg.trim_headers()
 
         ok = self.__on_post__()
+
+        self.key   = None
+        self.value = None
 
         return ok
 
@@ -708,8 +716,8 @@ class sr_post(sr_config):
 
         return True
 
-    def watching(self, fpath, event ):
-        self.logger.debug("sr_post watching %s, ev=%s" % ( fpath, event ) )
+    def watching(self, fpath, event, key=None, value=None ):
+        self.logger.debug("sr_post watching %s, ev=%s (%s,%s)" % ( fpath, event, key, value ) )
 
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
            fpath = fpath.replace('\\','/')
@@ -730,7 +738,14 @@ class sr_post(sr_config):
               return False
 
         self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.baseurl+self.relpath ) )
+        self.key     = key
+        self.value   = value
+
         self.posting()
+
+        self.key     = None
+        self.value   = None
+
 
         return True
 
