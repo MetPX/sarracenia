@@ -96,6 +96,7 @@ class sr_watch(sr_instances):
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
         self.sleep     = 0.1
+        #self.inflight  = 1.0
         
         
     def check(self):
@@ -248,6 +249,8 @@ class sr_watch(sr_instances):
             else:
                sld = self.watch_path 
 
+            self.myeventhandler.set_logger(self.logger)
+
             if self.post.force_polling :
                 self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
                 self.observer = PollingObserver()
@@ -339,6 +342,9 @@ def main():
             except:
                 pass
 
+        def set_logger(self,logger):
+            self.logger = logger
+
         def event_wakeup(self):
 
             # FIXME: Tiny potential for events to be dropped during copy.
@@ -355,14 +361,14 @@ def main():
                watch.post.lock_set()
                done=[]
                for f in self.events_outstanding:
-                   e=self.events_outstanding[f]
+                   e,k,v=self.events_outstanding[f]
 
-                   watch.logger.debug("event_wakeup looking at %s of %s " % (e, f) )
+                   self.logger.debug("event_wakeup looking at %s of %s (%s,%s) " % (e, f, k,v) )
                    # waiting for file to be unmodified for 'inflight' seconds...
-                   if e not in [ 'delete' ] and isinstance(watch.inflight,int):  
+                   if e not in [ 'delete', '*move*' ] and isinstance(watch.inflight,int):  
                       age = time.time() - os.stat(f)[stat.ST_MTIME] 
                       if age < watch.inflight :
-                          watch.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
+                          self.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
                           continue
 
                    #directory creation. Make failures a soft error that is retried.
@@ -378,32 +384,38 @@ def main():
                         continue
 
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
-                       watch.logger.debug("event_wakeup calling do_post ! " )
-                       self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e)
+                       self.logger.debug("event_wakeup calling do_post ! " )
+                       self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)
                        done += [ f ]
                    else:
-                       watch.logger.debug("event_wakeup SKIPPING %s of %s " % (e, f) )
+                       self.logger.debug("event_wakeup SKIPPING %s of %s (%s,%s)" % (e, f, k, v) )
 
                watch.post.lock_unset()
-               watch.logger.debug("event_wakeup done: %s " % done )
+               self.logger.debug("event_wakeup done: %s " % done )
                for f in done:
                    del self.events_outstanding[f]
 
-            watch.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
+            self.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
 
 
-        def event_post(self, path, tag):
+        def event_post(self, path, tag, key=None, value=None):
             # FIXME: as per tiny potential, this routine should likely queue events.
             # that is why have not replaced this function by direct assignment in callers.
-            self.new_events[path]=tag
+            self.new_events[path]=(tag,key,value)
         
-        def do_post(self, path, tag):
+        def do_post(self, path, tag, key, value):
             try:
-                #if watch.isMatchingPattern(path, accept_unmatch=True) :
-                watch.post.watching(path, tag)
+                # tag *move* triggers 2 events that represent a move in 2 different ways
+                # the hope is that one of the two at least will go through and get done if necessary
+                if tag == '*move*' :
+                   watch.post.watching(path,  'delete', 'newname', value)
+                   watch.post.watching(value, 'modify', 'oldname', path)
+                # other regular event tags
+                else :
+                   watch.post.watching(path, tag, key, value)
             except PermissionError as err:
-                self.outstanding_events[path] = tag
-                watch.logger.error(str(err))
+                self.outstanding_events[path] = (tag,key,value)
+                self.logger.error(str(err))
 
         def on_created(self, event):
             # need to us test, rather than event to so symlinked directories get added.
@@ -420,7 +432,7 @@ def main():
         def on_deleted(self, event):
             if event.src_path == watch.watch_path:
                 watch.stop_touch()
-                watch.logger.error('Exiting!')
+                self.logger.error('Exiting!')
                 os._exit(0)
             if (not event.is_directory):
                 self.event_post(event.src_path, 'delete')
@@ -429,16 +441,10 @@ def main():
             if (not event.is_directory):
                 self.event_post(event.src_path, 'modify')
 
+        # special move event_post tag *move*
         def on_moved(self, event):
             if (not event.is_directory):
-               # not so sure about testing accept/reject on src and dst
-               # but we dont care for now... it is not supported
-               #if watch.isMatchingPattern(event.src_path, accept_unmatch=True) and \
-               #   watch.isMatchingPattern(event.dest_path, accept_unmatch=True) :
-               #Every file rename inside the watch path will trigger new copy
-               #watch.post.move(event.src_path,event.dest_path)
-               # FIXME: what if dest_path is outside of the tree being watched? what happens?
-               self.event_post(event.dest_path, 'modify')
+               self.event_post(event.src_path, '*move*', 'newname', event.dest_path)
 
     watch.event_handler(MyEventHandler())
 
