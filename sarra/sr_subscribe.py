@@ -611,6 +611,114 @@ class sr_subscribe(sr_instances):
         return ok
 
 
+    #=================================
+    # determine a file from a relpath
+    #
+    # returns None,None,None     if resulting file is rejected (reject/on_message)
+    # returns None,None,newrelp  if resulting file is already up to date (newname only)
+    # returns dir,file,relpath   of the file determined by the message and argument relpath
+    #
+    #=================================
+
+    def determine_move_file(self,name,relpath):
+
+        # build a working message from self.msg
+        w_msg = sr_message(self)
+        w_msg.exchange = self.msg.exchange + ''
+        w_msg.notice   = self.msg.notice   + ''
+        w_msg.topic    = self.msg.topic    + ''
+
+        w_msg.headers     = self.msg.headers.copy()
+        w_msg.add_headers = self.msg.add_headers.copy()
+        w_msg.del_headers = self.msg.del_headers.copy()
+
+        # set working message  with relpath info
+
+        w_msg.set_topic ('v02.post', relpath )
+        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.time)
+
+        w_msg.parse_v02_post()
+
+        # make use of accept/reject on working message
+        if self.use_pattern :
+
+           # Adjust url to account for sundew extension if present, and files do not already include the names.
+           if urllib.parse.urlparse(w_msg.urlstr).path.count(":") < 1 and 'sundew_extension' in w_msg.headers.keys() :
+              urlstr = w_msg.urlstr + ':' + w_msg.headers[ 'sundew_extension' ]
+           else:
+              urlstr = w_msg.urlstr
+
+           self.logger.debug("determine_move_file, path being matched: %s " % ( urlstr )  )
+
+
+           if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
+              self.logger.debug("Rejected by accept/reject options")
+              return None,None,None
+
+        # get a copy of received message
+
+        saved_msg = self.msg
+
+        # user working message to validate with on_message
+
+        self.msg = w_msg
+        self.set_new()
+        self.msg.set_new()
+
+        ok = self.__on_message__()
+        if not ok : return None,None,None
+
+        # ok what we have found
+
+        #self.logger.debug("W new_dir     = %s" % self.new_dir)
+        #self.logger.debug("W new_file    = %s" % self.new_file)
+        #self.logger.debug("W new_baseurl = %s" % self.new_baseurl)
+        #self.logger.debug("W new_relpath = %s" % self.new_relpath)
+
+        # set the directory of the file we try to determine
+
+        found = True
+        try   : os.chdir(self.new_dir)
+        except: found = False
+
+        # if it is for 'newname' verify if the files are the same
+
+        if found and name == 'newname' :
+    
+           if not self.overwrite and self.msg.content_should_not_be_downloaded() :
+              if self.reportback : self.msg.report_publish(304,'Not modified')
+              self.new_dir  = None
+              self.new_file = None
+
+        # if it is for 'oldname' verify if the file exists
+
+        if found and name == 'oldname' :
+    
+           if not os.path.isfile(self.new_file):
+              self.logger.debug("move: oldname not found %s" % self.new_file)
+              self.new_dir  = None
+              self.new_file = None
+
+        # prepare results
+        tdir  = self.new_dir
+        tfile = self.new_file
+        trelp = self.new_relpath
+
+        # restore original message and settings
+
+        self.msg = saved_msg
+        self.set_new()
+        self.msg.set_new()
+
+        ok = self.__on_message__()
+
+        try   : os.chdir(self.new_dir)
+        except: pass
+
+        # return results
+
+        return tdir,tfile,trelp
+
     # =============
     # doit_download
     # =============
@@ -625,13 +733,117 @@ class sr_subscribe(sr_instances):
                do we need on_link? on_delete? ugh...
             
         """
+
+        need_download = True
+
+        #=================================
+        # move event: case 1
+        # sum has 'R,' and  self.msg.headers['newname'] provided
+        # Try to move oldfile from notice to newfile from headers['newname']
+        # If the move is performed or not, we continue in the module because
+        # the 'R,' meaning delete old file will be performed next
+        # and the move message will be (corrected and) propagated that way
+        #=================================
+
+        newname = None
+        if 'newname' in self.msg.headers :
+           newname = self.msg.headers
+
+           # it means that the message notice contains info about oldpath
+           oldpath = self.new_dir + '/' + self.new_file
+
+           # we can do something if the oldpath exists
+           if os.path.isfile(oldpath) : 
+
+              # determine the 'move to' file (accept/reject ok and on_message ok)
+              newdir,newfile,newrelp = self.determine_move_file('newname',self.msg.headers['newname'])
+              if newrelp != None : newname = newrelp
+
+              if newfile != None :
+                 newpath = newdir + '/' + newfile
+
+                 # if file already exists, remove it
+                 if os.path.isfile(newpath):
+                    try   : os.unlink(newpath)
+                    except: pass
+
+                 # make sure directory exists, create it if not
+                 if not os.path.isdir(newdir):
+                    try   : os.makedirs(newdir,0o775,True)
+                    except: pass
+                    #MG FIXME : except: return False  maybe ?
+
+                 # move the file (link)
+                 try   : 
+                         os.link(oldpath,newpath)
+                         self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                         if self.reportback: self.msg.report_publish(201, 'moved')
+                         need_download = False
+                 except: pass
+                 #MG FIXME : except: return False  maybe ?
+
+
+        #=================================
+        # move event: case 2
+        # self.msg.headers['oldname'] provided
+        # Try to move oldfile from headers['oldname'] to newfile from notice
+        # If the move is performed we are done (post and) return True
+        # If it doesnt work, continue and the file will be downloaded normally
+        #=================================
+
+        oldname = None
+        if 'oldname' in self.msg.headers :
+           oldname = self.msg.headers
+
+           # set 'move to' file
+           newpath = self.new_dir + '/' + self.new_file
+
+           # determine oldfile infos 
+
+           olddir,oldfile,oldrelp = self.determine_move_file('oldname',self.msg.headers['oldname'])
+           if oldrelp != None : oldname = oldrelp
+
+           if oldfile != None :
+              oldpath = olddir + '/' + oldfile
+
+              # oldfile exists: try to link it to newfile
+              # if it doesnt work... pass... the newfile will be downloaded
+
+              if os.path.isfile(oldpath) : 
+
+                 if not os.path.isdir(newdir):
+                    try   : os.makedirs(newdir,0o775,True)
+                    except: pass
+                    #MG FIXME : except: return False  maybe ?
+
+                 ok = True
+                 try    : os.link(oldpath,newpath)
+                 except : ok = False
+
+                 if ok  :
+                          need_download = False
+                          self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                          if self.reportback: self.msg.report_publish(201, 'moved')
+
+                          if self.post_broker :
+                             self.msg.set_topic('v02.post',self.new_relpath)
+                             self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+                             self.msg.headers['oldname'] = oldname
+                             self.__on_post__()
+                          return True
+
+                 self.logger.debug("could not move %s to %s (hardlink)" % (oldpath,newpath))
+                 self.logger.debug("newfile will be downloaded" % newpath)
+
         #=================================
         # delete event, try to delete the local product given by message
         #=================================
 
-        if self.msg.sumflg.startswith('R') :
-           self.logger.debug("message is to remove %s ignored" % self.new_file)
-           if not 'delete' in self.events: 
+        if self.msg.sumflg.startswith('R') : 
+
+           self.logger.debug("message is to remove %s" % self.new_file)
+
+           if not 'delete' in self.events and not 'newname' in self.msg.headers : 
               self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
               return True
 
@@ -647,6 +859,7 @@ class sr_subscribe(sr_instances):
            if self.post_broker :
               self.msg.set_topic('v02.post',self.new_relpath)
               self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+              if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
               self.__on_post__()
 
            return True
@@ -678,8 +891,6 @@ class sr_subscribe(sr_instances):
               self.__on_post__()
 
            return True
-
-
         #=================================
         # prepare download 
         # the document_root should exists : it the starting point of the downloads
@@ -704,7 +915,6 @@ class sr_subscribe(sr_instances):
         # verify checksum to avoid an unnecessary download
         #=================================
 
-        need_download = True
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
            if self.reportback: self.msg.report_publish(304, 'not modified')
            self.logger.debug("file not modified %s " % self.new_file)
@@ -728,7 +938,7 @@ class sr_subscribe(sr_instances):
            if not ok : return False
 
            # after download we dont propagate renaming... once used get rid of it
-           if 'rename' in self.msg.headers : del self.msg.headers['rename']
+           if 'rename'  in self.msg.headers : del self.msg.headers['rename']
 
            # after download : setting of sum for 'z' flag ...
 
@@ -833,6 +1043,7 @@ class sr_subscribe(sr_instances):
         if self.post_broker :
            self.msg.set_topic('v02.post',self.new_relpath)
            self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+           if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
            self.__on_post__()
            if self.reportback: self.msg.report_publish(201,'Published')
 
@@ -1009,6 +1220,10 @@ class sr_subscribe(sr_instances):
            else                               : source = self.broker.username
            new_dir = new_dir.replace('${SOURCE}',source)
 
+        if '${HH}' in cdir :
+           HH = time.strftime("%H", time.gmtime()) 
+           new_dir = new_dir.replace('${HH}',HH)
+
         return new_dir
 
 
@@ -1029,6 +1244,10 @@ class sr_subscribe(sr_instances):
         # case S=0  sr_post -> sr_suscribe... rename in headers
         # FIXME: 255 char limit on headers, rename will break!
         if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
+
+        # sometime like in watch or post, relpath has post_document_root
+        if self.post_document_root :
+           relpath = relpath.replace(self.post_document_root,'')
 
         token    = relpath.split('/')
         filename = token[-1]
@@ -1095,10 +1314,10 @@ class sr_subscribe(sr_instances):
         if self.post_broker and self.url :
            self.new_baseurl = self.url.geturl()
 
-        self.logger.debug("new_dir     = %s" % self.new_dir)
-        self.logger.debug("new_file    = %s" % self.new_file)
-        self.logger.debug("new_baseurl = %s" % self.new_baseurl)
-        self.logger.debug("new_relpath = %s" % self.new_relpath)
+        #self.logger.debug("new_dir     = %s" % self.new_dir)
+        #self.logger.debug("new_file    = %s" % self.new_file)
+        #self.logger.debug("new_baseurl = %s" % self.new_baseurl)
+        #self.logger.debug("new_relpath = %s" % self.new_relpath)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )
