@@ -82,24 +82,6 @@ while [ ${lo} -gt 0 ]; do
    sleep 5 
 done
 
-testrundir="`pwd`"
-
-echo "Starting trivial http server on: $testdocroot, saving pid in .httpserverpid"
-cd $testdocroot
-$testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
-httpserverpid=$!
-
-# note, defaults to port 2121 so devs can start it.
-python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
-ftpserverpid=$!
-
-
-cd $testrundir
-
-echo $ftpserverpid >.ftpserverpid
-echo $httpserverpid >.httpserverpid
-echo $testdocroot >.httpdocroot
-
 mkdir -p "$CONFDIR" 2> /dev/null
 
 
@@ -172,6 +154,7 @@ count_of_checks=$((${count_of_checks}+1))
 
 }
 
+
 #xchk 8 "only rabbitmq default systems exchanges should be present."
 
 # ensure users have exchanges:
@@ -181,6 +164,28 @@ adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); p
 qchk 11 "queues existing after 1st audit" "show overview" 
 
 xchk 27 "exchanges for flow test created."
+
+if [ "$1" = "declare" ]; then
+   exit 0
+fi
+
+testrundir="`pwd`"
+
+echo "Starting trivial http server on: $testdocroot, saving pid in .httpserverpid"
+cd $testdocroot
+$testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
+httpserverpid=$!
+
+# note, defaults to port 2121 so devs can start it.
+python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+ftpserverpid=$!
+
+
+cd $testrundir
+
+echo $ftpserverpid >.ftpserverpid
+echo $httpserverpid >.httpserverpid
+echo $testdocroot >.httpdocroot
 
 sr start
 ret=$?
