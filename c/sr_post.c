@@ -36,10 +36,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-/* Sneaky, likely unportable hack to get 'mv' into messages...
- */
-
-#define S_IFMV   0200000
 
 
 #include <unistd.h>
@@ -322,9 +318,6 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
 
       if ( access( fn, R_OK ) ) return(0); // will not be able to checksum if we cannot read.
 
-      if ( sb->st_mode & S_IFMV ) 
-          m->sum[0]= 'm' ;
-
       strcpy( m->atime, sr_time2str(&(sb->st_atim)));
       strcpy( m->mtime, sr_time2str(&(sb->st_mtim)));
       m->mode = sb->st_mode & 07777 ;
@@ -400,7 +393,6 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
      log_msg( LOG_ERROR, "sr_%s rename: %s cannot stat.\n", sr_c->cfg->progname, newname );
      return;
   }
-  sb.st_mode |= S_IFMV ;
 
   first_user_header.next = sr_c->cfg->user_headers;
   sr_c->cfg->user_headers =  &first_user_header ;
