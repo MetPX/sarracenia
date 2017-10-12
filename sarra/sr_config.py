@@ -1105,9 +1105,10 @@ class sr_config:
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
-                           # rabbitmq setting is in millisec 
+                           # rabbitmq setting is in millisec / user in secs
                            self.expire = int(self.duration_from_str(words1,'ms'))
-                           if self.expire < 60000 : self.expire = 60000
+                           if self.expire < 60000 : 
+                              self.logger.warning("expire setting (%s secs) may cause problem" % words[1])
                      n = 2
 
                 elif words0 == 'filename': # See: sr_poll.1, sr_sender.1
@@ -1278,7 +1279,8 @@ class sr_config:
                      else:
                            # rabbitmq setting is in millisec 
                            self.message_ttl = int(self.duration_from_str(words1,'ms'))
-                           if self.message_ttl < 60000 : self.expire = 60000
+                           if self.message_ttl < 60000 :
+                              self.logger.warning("message_ttl setting (%s secs) may cause problem" % words[1])
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 

@@ -326,13 +326,9 @@ class Queue:
 
    def add_expire(self, expire):
        self.expire = expire
-       # at least 1 min
-       if expire < 60000 : self.expire = 60000
 
    def add_message_ttl(self, message_ttl):
        self.message_ttl = message_ttl
-       # at least 10 secs
-       if message_ttl < 10000 : self.message_ttl = 10000
 
    def bind(self, exchange_name,exchange_key):
        self.channel.queue_bind(self.qname, exchange_name, exchange_key )
