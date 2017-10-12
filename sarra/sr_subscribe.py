@@ -483,6 +483,13 @@ class sr_subscribe(sr_instances):
            else:
               self.logger.warning("message without headers['to_clusters']")
 
+        # keep current value of these variables
+
+        val_new_dir     = self.new_dir
+        val_new_file    = self.new_file
+        val_new_baseurl = self.new_baseurl
+        val_new_relpath = self.new_relpath
+
         # invoke user defined on_message when provided
 
         self.local_file = self.new_dir + '/' + self.new_file  # FIXME: remove in 2018, once all plugins are converted.
@@ -493,6 +500,11 @@ class sr_subscribe(sr_instances):
         self.msg.local_dir = self.new_dir
         saved_dir = self.new_dir
 
+        if not hasattr(self,'new_url') :
+           self.new_url = self.new_baseurl + '/' + self.new_relpath  # FIXME: remove  in 2018, new_url replaced by new_baseurl and new_relpath
+           self.new_url = urllib.parse.urlparse(self.new_url)
+        saved_url    = self.new_url.geturl()
+
         # sender
         self.remote_file = self.new_file #FIXME: remove in 2018
 
@@ -502,20 +514,34 @@ class sr_subscribe(sr_instances):
            if not plugin(self): return False
 
            if self.msg.local_file != saved_file :
-               self.logger.warning("on_message plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
-               self.new_file = os.path.basename(self.local_file)
-               self.new_dir = os.path.dirname(self.local_file)
+              self.logger.warning("on_message plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
+              self.new_file = os.path.basename(self.local_file)
+              self.new_dir  = os.path.dirname( self.local_file)
 
            if self.msg.local_dir != saved_dir :
-               self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
-               self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
-               self.new_dir = self.msg.local_dir
+              self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
+              self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
+              self.new_dir = self.msg.local_dir
 
+           urlstr = self.new_url.geturl()
+           if urlstr != saved_url :
+              self.logger.warning("on_message plugins 2 should replace self.new_url, by parent.new_baseurl and parent.new_relpath" )
+              self.new_relpath = self.new_url.path
+              if not self.new_baseurl in urlstr:
+                 self.new_baseurl = urlstr.replace(self.new_relpath,'')
+               
            # sender
            if self.remote_file != self.new_file : #FIXME: remove in 2018
               logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
               self.new_file = self.remote_file
 
+           # if differences with new_dir/new_file... reset new_relpath
+
+           if self.new_dir != val_new_dir or self.new_file != val_new_file :
+              if self.new_relpath == val_new_relpath :
+                 relpath = self.new_dir + '/' + self.new_file
+                 if self.post_document_root : relpath = relpath.replace(self.post_document_root,'',1)
+                 self.new_relpath = relpath
 
         return True
 
