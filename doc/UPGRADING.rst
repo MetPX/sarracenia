@@ -30,7 +30,7 @@ The notices take the form:
 git origin/master branch
 ------------------------
 
-**CHANGE**:  default *expire* setting was 604800000 (in secs) which means expire after a week.  Now it is 5 minutes.
+**CHANGE**:  default *expire* setting was 10080 (in mins) which means expire after a week.  Now it is 5 minutes.
 **It will also result data loss**, by dropping messages should the default be used in cases where the old value
 was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 
 the default behaviour, use setting::
@@ -40,6 +40,11 @@ the default behaviour, use setting::
 failure to do so, when connecting to configurations with older pumps versions  may result in warning messages about 
 mismatched properties when starting up an existing client. 
 FIXME: more specific?
+
+If you had your own settings for expire and/or message_ttl you should append to the value m or M for minutes::
+
+        *expire 240M*
+        *message_ttl 480M*
 
 **SR_SARRA**  processing **SOURCE MESSAGES**  must have in their config changed::
 
@@ -55,7 +60,6 @@ FIXME: more specific?
        *source_from_exchange true*
        *directory ${PDR}/${YYYYMMDD}/${SOURCE}*
        *[same accept/reject sequence if any]*
-       *[if none add accept .*]*
 
 **NOTICE** PDR means post_document_root... if not provided, its value is the same as document_root.
  Any message without a source will be fixed with a value starting with the exchange if
