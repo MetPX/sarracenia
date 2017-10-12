@@ -737,6 +737,9 @@ class sr_post(sr_config):
               self.logger.error("no posting")
               return False
 
+           if value != None and dr in value :
+              value = value.replace(dr,'',1)
+
         self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.baseurl+self.relpath ) )
         self.key     = key
         self.value   = value
