@@ -25,7 +25,6 @@ class Transformer():
               ( b, a ) = p.split(",") 
               parent.logger.info("msg_replace_new_dir is %s " % p )
               parent.new_dir     = parent.new_dir.replace(b, a)
-              parent.new_relpath = parent.new_relpath.replace(b, a)
 
           return True
 
