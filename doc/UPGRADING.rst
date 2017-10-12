@@ -44,6 +44,7 @@ mismatched properties when starting up an existing client.
 
         old: *expire 240*      equivalent to new:  *expire 240M*
         old: "message_ttl 480* equivalent to new:  *message_ttl 480M*
+        old: logdays 5        equivalent to new:  *logdays 5d*
 
 **CHANGE**: in sr_sarra, processing messages on initial ingest must have in their config changed::
 
