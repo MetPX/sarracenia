@@ -1107,8 +1107,8 @@ class sr_config:
                      else:
                            # rabbitmq setting is in millisec / user in secs
                            self.expire = int(self.duration_from_str(words1,'ms'))
-                           if self.expire < 60000 : 
-                              self.logger.warning("expire setting (%s secs) may cause problem" % words[1])
+                           if self.expire < 300000 : 
+                              self.logger.warning("expire setting (%s) may cause problem...too low" % words[1])
                      n = 2
 
                 elif words0 == 'filename': # See: sr_poll.1, sr_sender.1
@@ -1279,8 +1279,8 @@ class sr_config:
                      else:
                            # rabbitmq setting is in millisec 
                            self.message_ttl = int(self.duration_from_str(words1,'ms'))
-                           if self.message_ttl < 60000 :
-                              self.logger.warning("message_ttl setting (%s secs) may cause problem" % words[1])
+                           if self.message_ttl < 300000 :
+                              self.logger.warning("message_ttl setting (%s) may cause problem...too low" % words[1])
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 
@@ -2114,6 +2114,12 @@ def self_test():
     opt3 = "headers tutu1=None"
     cfg.option(opt3.split())
     opt4 = "headers tutu2=None"
+    cfg.option(opt4.split())
+
+    opt4 = "expire 10m"
+    cfg.option(opt4.split())
+
+    opt4 = "message_ttl 10m"
     cfg.option(opt4.split())
 
     if not 'toto1' in cfg.headers_to_add      or \
