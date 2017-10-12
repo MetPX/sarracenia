@@ -6,31 +6,35 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* cleanup/declare/setup actions (all programs): no exit, log with configname
+* sr_subscribe/sr_sarra/sr_sender : do_task plugin (initialised to proper module for now)
+* sr_subscribe: headers' source and from_cluster forced when source_from_exchange
+* sr_subscribe: add substitution for ${DR} ${PDR} ${YYYYMMDD} ${SOURCE} ${HH}
+* sr_subscribe  log ignore message when already in cache
 * sr_subscribe: events option is consider to perform link and delete messages
-* sr and sr_audit speed up from broker connection and class instantiations
-* sr_util in startup_args catch -help when only args given
-* sr_shovel : caching optional default to False
-* sr_subscribe help module : treats sr_shovel,sr_winnow,sr_sarra cases
-* sr_message module trim_headers to spread the new way of treating headers
-* option -headers to add or delete or reset message headers key,value pair
-* sr_sender 'R' and 'L' messages in set_local skip offset/length setting
-* ftp,sftp  resetting cdif on connect/reconnect
-* plugin msg_total.py skip total byte increment when no partstr in message
-* flow_check.sh when no message in queues, check that all message rates are 0.0
-* sr_subscribe integration of restore_queue, process report_daemons,
-* winnow,shovel,sarra rewritten with an instantiation of sr_subscribe
-* sr_config some save,restore and cache defaults
-* ftp,sftp,http : preventive flush and sync file on close
-* ftp,sftp,http : correction of Eric's bug on os.getcwd and preventive flush sync file on close
-* correction of Eric's bug on os.getcwd
-* sr_file, sr_sarra, sr_subscribe, sr_sender, sr_message uses message srcpath,relpath
-* ftp,sftp,http standardisation + srcpath,relpath, http exceptions to avoid hang
-* sr_cache cache.check_msg ... check for sum L and R which does not have parts
-* sr_post using srcpath,relpath instead of url in posting modules
-* flow_cleanup fix config path to remove
-* flow_setup  fix number of exchanges and queues expected
+* sr_subscribe: modified to be a base class instantiated from most programs
+* sr_subscribe: integration of restore_queue, process report_daemons, save/restore
+* sr_subscribe: help module : treats sr_shovel,sr_winnow,sr_sarra cases
+* sr_sender: for R and L messages skip offset/length setting in module set_local()
+* sr_shovel: caching optional default to False
+* sr_config: some save,restore and cache defaults
+* sr_config: inflight supports duration_from_str (for sr_watch/post)
+* sr_config: duration_from_str  time suffix [sS] [mM] [hH] [dD] [wW] where applicable
+* sr_config: module configure cleans up extended options (proper reload)
+* sr_config: option -headers to add,delete or reset user's  key,value pair in message headers
+* sr_ftp,sr_sftp: connect/reconnect resets cdir (current dir)
+* sr_ftp,sr_sftp,sr_http: standardisation, http exception (no hang)
+* sr_ftp,sr_sftp,sr_http: fix Eric's os.getcwd bug, add preventive fp.flush and os.fsync
+* msg_total.py: plugin skip total byte increment when no partstr in message
+* sr_message: move support with oldname/newname (impact watch,post,subscribe,sarra,sender to come)
+* sr_message: srcpath turned to baseurl, set_notice(baseurl,relpath) ***impact all programs
+* sr_message: trim_headers for user added headers key,value pair  ***impact all programs
+* sr_cache: moduke cache.check_msg ... process correctly message without parts (sum L and R)
+* sr_audit,sr speed up through class instantiation and direct broker connection
 * sr_audit fix permissions for source and subscribe users
-
+* sr_amqp,sr_pika: cleanup skip removal of exchanges xpublic,xreport,xwinnow*
+* sr_util:  startup_args catches -help when only args given
+* flow_test: several changes to make it more reliable.
 
 **2.17.09a1**
 
