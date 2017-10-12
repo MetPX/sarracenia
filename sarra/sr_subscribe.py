@@ -685,7 +685,7 @@ class sr_subscribe(sr_instances):
 
         if found and name == 'newname' :
     
-           if not self.overwrite and self.msg.content_should_not_be_downloaded() :
+           if not self.overwrite and self.msg.partstr and self.msg.content_should_not_be_downloaded() :
               if self.reportback : self.msg.report_publish(304,'Not modified')
               self.new_dir  = None
               self.new_file = None
@@ -762,26 +762,27 @@ class sr_subscribe(sr_instances):
               if newfile != None :
                  newpath = newdir + '/' + newfile
 
-                 # if file already exists, remove it
-                 if os.path.isfile(newpath):
-                    try   : os.unlink(newpath)
-                    except: pass
+                 # only if the newpath doesnt exist
+                 if not os.path.isfile(newpath):
 
-                 # make sure directory exists, create it if not
-                 if not os.path.isdir(newdir):
-                    try   : os.makedirs(newdir,0o775,True)
+                    # make sure directory exists, create it if not
+                    if not os.path.isdir(newdir):
+                       try   : os.makedirs(newdir,0o775,True)
+                       except: pass
+                       #MG FIXME : except: return False  maybe ?
+
+                    # move the file (link)
+                    try   : 
+                            os.link(oldpath,newpath)
+                            self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                            if self.reportback: self.msg.report_publish(201, 'moved')
+                            need_download = False
                     except: pass
                     #MG FIXME : except: return False  maybe ?
 
-                 # move the file (link)
-                 try   : 
-                         os.link(oldpath,newpath)
-                         self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
-                         if self.reportback: self.msg.report_publish(201, 'moved')
-                         need_download = False
-                 except: pass
-                 #MG FIXME : except: return False  maybe ?
-
+                 # if the newpath exists log a message in debug only
+                 else : 
+                    self.logger.debug("could not move %s to %s (file exists)" % (oldpath,newpath))
 
         #=================================
         # move event: case 2
@@ -811,8 +812,8 @@ class sr_subscribe(sr_instances):
 
               if os.path.isfile(oldpath) : 
 
-                 if not os.path.isdir(newdir):
-                    try   : os.makedirs(newdir,0o775,True)
+                 if not os.path.isdir(self.new_dir):
+                    try   : os.makedirs(self.new_dir,0o775,True)
                     except: pass
                     #MG FIXME : except: return False  maybe ?
 
