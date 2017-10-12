@@ -189,13 +189,16 @@ function do_sr_post {
    # Obtain file listing delta
    srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
 
-   if ! [ "$srpostdelta" == "" ]; then
-     #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-     sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
+   if [ "$srpostdelta" == "" ]; then
+      return
    fi
 
+   #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
+   sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
+
    cp -p $srpostlstfile_new $srpostlstfile_old
-   # sr post testing END
+
+   do_sr_post
 
 }
 
