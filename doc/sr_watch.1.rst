@@ -338,13 +338,13 @@ reconnection to the broker everytime a post is to be sent.
 **[--on_heartbeat]**
 
 Every *heartbeat* seconds, the *on_heartbeat* is invoked.  For periodic operationsl that happen relatively rarely,
-scale of many minutes, usually.
+scale of many minutes, usually. The argument is actually a duration, so it can be expressed in various time units:  5m (five minutes),  2h (two hours), days, or weeks. 
 
 **[--on_watch]**
 
 Every *sleep* seconds, file system changes occurred are processed in a batch.  Prior to this processing,
 the *on_watch* plugin is invoked.  It can be used to put a file in one of the watched directories... 
-and have it published.  sleep is usually a much shorter interval than the heartbeat.
+and have it published.  sleep is usually a much shorter interval than the heartbeat. It is also a duration, and so can be expressed in the same units as well.
 
 
 CAVEATS

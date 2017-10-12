@@ -270,8 +270,8 @@ are held on the server for each subscriber.
 
 - **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)** 
 - **durable       <boolean>      (default: False)** 
-- **expire        <minutes>      (default: None)** 
-- **message-ttl   <minutes>      (default: None)** 
+- **expire        <duration>      (default: None)** 
+- **message-ttl   <duration>      (default: None)** 
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
@@ -282,11 +282,14 @@ Some variables can also be used within the queue_name like
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
 
-The  **expire**  option is expressed in minutes... it sets how long should live
-a queue without connections The  **durable** option set to True, means writes the queue
+The  **expire**  option is expressed as a duration... it sets how long should live
+a queue without connections.  A raw integer is expressed in seconds, if the suffix m,h.d,w
+are used, then the interval is in minutes, hours, days, or weeks.
+
+The  **durable** option set to True, means writes the queue
 on disk if the broker is restarted.
 
-The  **message-ttl**  option set the time in minutes a message can live in the queue.
+The  **message-ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
 The **prefetch** option sets the number of messages to fetch at one time.

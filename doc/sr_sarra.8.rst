@@ -95,8 +95,8 @@ Setting the queue on broker :
 
 - **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
 - **durable       <boolean>      (default: False)**
-- **expire        <minutes>      (default: 10080 mins = 1 week)**
-- **message-ttl   <minutes>      (default: None)**
+- **expire        <duration>      (default: 5m  == five minutes)**
+- **message-ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
 
