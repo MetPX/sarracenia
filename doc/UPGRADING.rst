@@ -30,12 +30,12 @@ The notices take the form:
 git origin/master branch
 ------------------------
 
-**CHANGE**:  default *expire* setting was 604800000 which means expire after a week.  Now it is 5 minutes.
+**CHANGE**:  default *expire* setting was 604800000 (in secs) which means expire after a week.  Now it is 5 minutes.
 **It will also result data loss**, by dropping messages should the default be used in cases where the old value
 was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 
 the default behaviour, use setting::
 
-       *expire 604800000*
+       *expire 1W*
 
 failure to do so, when connecting to configurations with older pumps versions  may result in warning messages about 
 mismatched properties when starting up an existing client. 
@@ -52,13 +52,16 @@ FIXME: more specific?
        **FOR THIS**
 
        *mirror true*
-       *directory /${YYYYMMDD}/${SOURCE}*
+       *source_from_exchange true*
+       *directory ${PDR}/${YYYYMMDD}/${SOURCE}*
        *[same accept/reject sequence if any]*
        *[if none add accept .*]*
 
-**NOTICE** the option **source_from_exchange** is no longer used. Any message without a source
-will be fixed with a value starting with the exchange if xs_source_*, the option source or
-the broker username of the originating message.
+**NOTICE** PDR means post_document_root... if not provided, its value is the same as document_root.
+ Any message without a source will be fixed with a value starting with the exchange if
+ xs_source_*, the option source or the broker username of the originating message. When a message comes
+ from a source, the option **source_from_exchange true** must be set to make sure to set the message's
+ headers[source] and headers[from_cluster] to the proper value.
 
 
 **NOTICE**: cache state file format changed and are mutually unintelligible between versions.  
