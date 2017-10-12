@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.10a1**
+
 * cleanup/declare/setup actions (all programs): no exit, log with configname
 * sr_subscribe/sr_sarra/sr_sender : do_task plugin (initialised to proper module for now)
 * sr_subscribe: headers' source and from_cluster forced when source_from_exchange
@@ -29,7 +31,7 @@ lists all changes between versions.
 * sr_message: move support with oldname/newname (impact watch,post,subscribe,sarra,sender to come)
 * sr_message: srcpath turned to baseurl, set_notice(baseurl,relpath) ***impact all programs
 * sr_message: trim_headers for user added headers key,value pair  ***impact all programs
-* sr_cache: moduke cache.check_msg ... process correctly message without parts (sum L and R)
+* sr_cache: module cache.check_msg ... process correctly message without parts (sum L and R)
 * sr_audit,sr speed up through class instantiation and direct broker connection
 * sr_audit fix permissions for source and subscribe users
 * sr_amqp,sr_pika: cleanup skip removal of exchanges xpublic,xreport,xwinnow*
