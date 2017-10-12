@@ -39,14 +39,13 @@ the default behaviour, use setting::
 
 failure to do so, when connecting to configurations with older pumps versions  may result in warning messages about 
 mismatched properties when starting up an existing client. 
-FIXME: more specific?
 
-If you had your own settings for expire and/or message_ttl you should append to the value m or M for minutes::
+**CHANGE**: expire and/or message_ttl settings now in seconds.  To get previous behaviour, append to the value m or M for minutes::
 
-        *expire 240M*
-        *message_ttl 480M*
+        old: *expire 240*      equivalent to new:  *expire 240M*
+        old: "message_ttl 480* equivalent to new:  *message_ttl 480M*
 
-**SR_SARRA**  processing **SOURCE MESSAGES**  must have in their config changed::
+**CHANGE**: in sr_sarra, processing messages on initial ingest must have in their config changed::
 
        **REPLACE**
 
@@ -61,11 +60,11 @@ If you had your own settings for expire and/or message_ttl you should append to 
        *directory ${PDR}/${YYYYMMDD}/${SOURCE}*
        *[same accept/reject sequence if any]*
 
-**NOTICE** PDR means post_document_root... if not provided, its value is the same as document_root.
- Any message without a source will be fixed with a value starting with the exchange if
- xs_source_*, the option source or the broker username of the originating message. When a message comes
- from a source, the option **source_from_exchange true** must be set to make sure to set the message's
- headers[source] and headers[from_cluster] to the proper value.
+PDR means post_document_root... if not provided, its value is the same as document_root.
+Any message without a source will be fixed with a value starting with the exchange if
+xs_source_*, the option source or the broker username of the originating message. When a message comes
+from a source, the option **source_from_exchange true** must be set to make sure to set the message's
+headers[source] and headers[from_cluster] to the proper value.
 
 
 **NOTICE**: cache state file format changed and are mutually unintelligible between versions.  
