@@ -875,7 +875,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
    *            and accept any filename under the config dir !!!
    */
   plen=strlen(p);
-  if ( strcmp(&(p[plen-5]), ".conf") and ! strcmp(&(p[plen-4]), ".inc") )
+  if ( strcmp(&(p[plen-5]), ".conf") && ! strcmp(&(p[plen-4]), ".inc") )
      strcat(p,".conf");
 
   // absolute paths in the normal places...
