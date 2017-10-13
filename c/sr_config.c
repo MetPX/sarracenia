@@ -868,15 +868,16 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   } else {
       strcpy( p, filename );
   }
-
   /* append .conf if not already there.
    * FIX ME MG  or not ending with .inc
    *            would be better to know that we are in "include" mode...
    *            and accept any filename under the config dir !!!
    */
   plen=strlen(p);
-  if ( strcmp(&(p[plen-5]), ".conf") && ! strcmp(&(p[plen-4]), ".inc") )
-     strcat(p,".conf");
+  if ( strcmp(&(p[plen-5]), ".conf") )
+  {
+     if ( strcmp(&(p[plen-4]), ".inc") ) { strcat(p,".conf");}
+  }
 
   // absolute paths in the normal places...
 
