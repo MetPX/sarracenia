@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   
   if ( argc < 3 ) usage();
  
-  sr_config_init( &sr_cfg, "csub" );
+  sr_config_init( &sr_cfg, "cpump" );
 
   i=1;
   while( i < argc ) 

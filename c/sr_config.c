@@ -904,9 +904,16 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   } else {
       strcpy( p, filename );
   }
+  /* append .conf if not already there.
+   * FIX ME MG  or not ending with .inc
+   *            would be better to know that we are in "include" mode...
+   *            and accept any filename under the config dir !!!
+   */
   plen=strlen(p);
-  if ( strcmp(&(p[plen-5]), ".conf") )  // append .conf if not already there.
-     strcat(p,".conf");
+  if ( strcmp(&(p[plen-5]), ".conf") )
+  {
+     if ( strcmp(&(p[plen-4]), ".inc") ) { strcat(p,".conf");}
+  }
 
   // absolute paths in the normal places...
 
@@ -1245,10 +1252,12 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         }
     } else {
         fprintf( stderr, "config %s not running.\n", sr_cfg->configname );
-        if ( !strcmp( sr_cfg->action, "stop" )   ) return(-1);
+        /*  MG FIXME if we are not running... if action is stop return 0 */
+        if ( !strcmp( sr_cfg->action, "stop" )   ) return(0);
     }
 
-    if ( !strcmp( sr_cfg->action, "status" ) ) return(-1);
+    /*  MG FIXME whatever was the state... if action is status return 0 */
+    if ( !strcmp( sr_cfg->action, "status" ) ) return(0);
 
     return(1); // Success! ready to continue!
 
