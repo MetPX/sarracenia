@@ -1219,7 +1219,8 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         if ( !strcmp( sr_cfg->action, "stop" )   ) return(-1);
     }
 
-    if ( !strcmp( sr_cfg->action, "status" ) ) return(-1);
+    /*  MG FIXME whatever was the state... if action is status return 0 */
+    if ( !strcmp( sr_cfg->action, "status" ) ) return(0);
 
     return(1); // Success! ready to continue!
 
