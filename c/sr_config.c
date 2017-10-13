@@ -1216,7 +1216,8 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         }
     } else {
         fprintf( stderr, "config %s not running.\n", sr_cfg->configname );
-        if ( !strcmp( sr_cfg->action, "stop" )   ) return(-1);
+        /*  MG FIXME if we are not running... if action is stop return 0 */
+        if ( !strcmp( sr_cfg->action, "stop" )   ) return(0);
     }
 
     /*  MG FIXME whatever was the state... if action is status return 0 */
