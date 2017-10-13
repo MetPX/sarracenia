@@ -266,6 +266,42 @@ struct sr_broker_t *broker_uri_parse( char *src )
     return(b);
 } 
 
+struct sr_header_t* sr_headers_copy( struct sr_header_t* o)
+/* return a linked list of headers that is a deep copy
+   of the original.
+ */
+{
+   struct sr_header_t *n=NULL,*c=NULL,*i=NULL;
+   for ( c=o; c ; c=c->next )
+   {
+       i = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
+       i.key = strdup(o.key); 
+       i.value = strdup(o.value); 
+       i.next = n;
+       n=i;
+   } 
+   return(n);
+}
+
+void sr_headers_free( struct sr_header_t* o)
+/* empty out a list of headers.
+ */
+{
+   struct sr_header_t *c=NULL,*i=NULL;
+
+   c=o;
+   while ( c )
+   {
+       free(c.key); 
+       free(c.value); 
+       i=c;
+       c = c.next;
+       free(i);
+   } 
+   return;
+}
+
+
 int sr_add_header(struct sr_config_t *cfg, char *s)
   /*
     Add a (user defined) header to the list of existing ones. 
