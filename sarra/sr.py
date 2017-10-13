@@ -67,6 +67,12 @@ action = sys.argv[-1]
 
 def instantiate(dirconf,pgm,confname,action):
 
+    # c stuff always requiere to spawn a call
+
+    if pgm in ['cpost','cpump'] :
+       subprocess.check_call([program,confpath,action])
+       return
+
     #print(dirconf,pgm,confname,action)
 
     config      = re.sub(r'(\.conf)','',confname)
@@ -114,18 +120,10 @@ def invoke(dirconf,pgm,confname,action):
                 subprocess.check_call([program,action,config])
                 return
 
-             # sr_post/sr_cpost cases  
+             # sr_post needs -c with absolute confpath
 
              confpath = dirconf + os.sep + pgm + os.sep + confname
              post = sr_post(confpath)
-
-             # if sleep... use sr_cpost
-             if post.sleep > 0 :
-                try :
-                        sr_cpost = shutil.which('sr_cpost')
-                        if sr_cpost == None : post.logger.error("sr_cpost not found but option sleep > 0")
-                        if sr_cpost != None : program = sr_cpost
-                except: pass
 
              subprocess.check_call([program,'-c',confpath,action])
              return
@@ -191,7 +189,11 @@ def main():
 
     # sarracenia program requiring configs
     
-    SR_PROGRAMS =['post', 'cpost','watch','winnow','sarra','shovel','subscribe','sender','poll','report', 'cpump' ]
+    SR_PROGRAMS = ['post', 'watch', 'winnow', 'sarra', 'shovel', 'subscribe', 'sender', 'poll', 'report']
+
+    # extend with C suff 
+
+    SR_PROGRAMS.extend( ['cpost', 'cpump'] )
 
     for d in SR_PROGRAMS:
         pgm = d
