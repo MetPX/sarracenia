@@ -220,144 +220,18 @@ int unlink(const char *path)
     return(shimpost(path,status));
 }
 
-int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags);
-
-static int rename_init_done = 0;
-typedef int  (*rename_fn) (const char*,const char*);
-static rename_fn rename_fn_ptr = rename;
-
-int rename(const char *oldpath, const char *newpath)
-{
-    int status;
-
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rename %s %s\n", oldpath, newpath );
-
-    if (getenv("SRSHIMMV")) 
-         return( renameat99(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0 ));
-
-    if (!rename_init_done) 
-    {
-        rename_fn_ptr = (rename_fn) dlsym(RTLD_NEXT, "rename");
-        rename_init_done = 1;
-    }
-    status = rename_fn_ptr(oldpath,newpath);
-    if ( !strncmp(newpath,"/dev/", 5) ) return(status);
-    if ( !strncmp(newpath,"/proc/", 6) ) return(status);
-
-
-    // delete old if necessary...
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rm %s \n", oldpath );
-    if (!status) shimpost(oldpath,0);
-
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG announce %s \n", newpath );
-    return(shimpost(newpath,status));
-}
-
 static int renameat_init_done = 0;
 typedef int  (*renameat_fn) (int, const char*, int, const char*);
-static renameat_fn renameat_fn_ptr = renameat;
-
-int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
-{
-    int status;
-    char fdpath[32];
-    char real_path[PATH_MAX+1];
-    char *real_return;
-    char oreal_path[PATH_MAX+1];
-    char *oreal_return;
-    
-
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
-
-    if (getenv("SRSHIMMV")) 
-         return( renameat99(olddirfd, oldpath, newdirfd, newpath, 0 ));
-
-    if (!renameat_init_done) 
-    {
-        renameat_fn_ptr = (renameat_fn) dlsym(RTLD_NEXT, "renameat");
-        renameat_init_done = 1;
-    }
-
-    status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
-
-    if ( newdirfd == AT_FDCWD ) 
-       return(shimpost(newpath,status));
-
-    snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
-    real_return = realpath(fdpath, real_path);
-
-    if (!real_return) return(status);
-
-    strcat(real_path,"/");
-    strcat(real_path,newpath);
-
-    if (!status) 
-    {
-        snprintf( fdpath, 32, "/proc/self/fd/%d", olddirfd );
-        oreal_return = realpath(fdpath, oreal_path);
-        if (oreal_return) 
-        {
-            strcat(oreal_path,"/");
-            strcat(oreal_path,oldpath);
-            shimpost( oreal_path, 0 );
-        }
-        
-    }
-    return(shimpost(real_path,status));
-}
+static renameat_fn renameat_fn_ptr = NULL;
 
 static int renameat2_init_done = 0;
 typedef int  (*renameat2_fn) (int, const char*, int, const char*, unsigned int);
 static renameat2_fn renameat2_fn_ptr = NULL;
 
-int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, unsigned int flags)
-{
-    int status;
-    char fdpath[32];
-    char real_path[PATH_MAX+1];
-    char *real_return;
-    char oreal_path[PATH_MAX+1];
-    char *oreal_return;
-
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
-
-    if (getenv("SRSHIMMV")) 
-         return( renameat99(olddirfd, oldpath, newdirfd, newpath, flags ));
-
-    if (!renameat2_init_done) 
-    {
-        renameat2_fn_ptr = (renameat2_fn) dlsym(RTLD_NEXT, "renameat2");
-        renameat2_init_done = 1;
-    }
-    status = renameat2_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
-
-    if ( newdirfd == AT_FDCWD ) 
-       return(shimpost(newpath,status));
-
-    snprintf( fdpath, 32, "/proc/self/fd/%d", newdirfd );
-    real_return = realpath(fdpath, real_path);
-
-    if (!real_return) return(status);
-
-    strcat(real_path,"/");
-    strcat(real_path,newpath);
-
-    if (!status) 
-    {
-        snprintf( fdpath, 32, "/proc/self/fd/%d", olddirfd );
-        oreal_return = realpath(fdpath, oreal_path);
-        if (oreal_return) 
-        {
-            strcat(oreal_path,"/");
-            strcat(oreal_path,oldpath);
-            shimpost( oreal_path, 0 );
-        }
-    }
-    return(shimpost(real_path,status));
-}
-
-
 int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags)
+/*
+  The real implementation of all renames.
+ */
 {
     int status;
     char fdpath[32];
@@ -435,6 +309,28 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
 
     return(status);
 
+}
+
+
+int rename(const char *oldpath, const char *newpath)
+{
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rename %s %s\n", oldpath, newpath );
+
+    return( renameat99(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0 ));
+}
+
+int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
+{
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
+
+    return( renameat99(olddirfd, oldpath, newdirfd, newpath, 0 ));
+}
+
+int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, unsigned int flags)
+{
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
+
+    return( renameat99(olddirfd, oldpath, newdirfd, newpath, flags ));
 }
 
 
