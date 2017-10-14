@@ -51,15 +51,14 @@ function calcres {
    #
 
 
+   tno=$((${tno}+1))
    if [ "${1}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
-      tno=$((${tno}+1))
       return 2
    fi
 
    if [ "${2}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results, 2nd item! ${3}\n" ${tno}
-      tno=$((${tno}+1))
       return 2
    fi
 
@@ -70,8 +69,6 @@ function calcres {
 
    min=$(( $mean - $maxerr ))
    max=$(( $mean + $maxerr ))
-
-   tno=$((${tno}+1))
 
    if [ $1 -lt $min -o $2 -lt $min -o $1 -gt $max -o $1 -gt $max ]; then
 	   printf "test %2d FAILURE: ${3}\n" ${tno}
@@ -162,9 +159,24 @@ function countall {
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
-
   countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
   totpost1="${tot}"
+
+  if [ ! "$C_ALSO" ]; then
+     return
+  fi
+
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_001.log | wc -l`"
+  totcpelle04r="${tot}"
+
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_001.log | wc -l`"
+  totcpelle04p="${tot}"
+
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_001.log | wc -l`"
+  totcpelle05r="${tot}"
+
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_001.log | wc -l`"
+  totcpelle05p="${tot}"
 
 }
 
@@ -358,6 +370,9 @@ calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
+
+tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
+tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
