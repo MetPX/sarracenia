@@ -107,11 +107,13 @@ int main(int argc, char **argv)
       return(0);
   }
 
+  /*
   if ( !strcmp( sr_cfg.action, "start" ) )
   {
       log_msg( LOG_CRITICAL, "FIXME output file when running as daemon is broken, aborting.\n");
       return(0);
   }
+   */
 
   if ( strcmp( sr_cfg.action, "foreground" ) )
   {
@@ -150,9 +152,11 @@ int main(int argc, char **argv)
           continue; 
       }
       // check cache.
-      ret = sr_cache_check( sr_cfg.cachep, m->parts_s, (unsigned char*)m->sum, m->path, sr_message_partstr(m) );
-      if (!ret) continue; // cache hit.
-
+      if (sr_cfg.cachep)
+      {
+          ret = sr_cache_check( sr_cfg.cachep, m->parts_s, (unsigned char*)m->sum, m->path, sr_message_partstr(m) );
+          if (!ret) continue; // cache hit.
+      }
       // do_pump=NULL
  
       // outlet:
