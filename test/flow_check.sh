@@ -21,6 +21,8 @@ EOF
 
 eval `application_dirs`
 
+C_ALSO="`which sr_cpost`" 
+
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 # The directory we run the flow test scripts in...
@@ -226,8 +228,12 @@ done
 while [ $totsarra -lt $smin ]; do
    if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
       echo "starting shovels and waiting..."
-      sr_shovel t_dd1_f00 start &
-      sr_shovel t_dd2_f00 start
+      sr_shovel start t_dd1_f00 &
+      sr_shovel start t_dd2_f00 
+      if [ "${C_ALSO}" ]; then
+         sr_cpump start pelle_dd1_f04 &
+         sr_cpump start pelle_dd2_f05
+      fi
    fi
    sleep 10
 
@@ -246,6 +252,10 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
    echo "stopping shovels and waiting..."
    sr_shovel stop t_dd2_f00 &
    sr_shovel stop t_dd1_f00 
+   if [ "${C_ALSO}" ]; then
+         sr_cpump stop pelle_dd1_f04 &
+         sr_cpump stop pelle_dd2_f05
+   fi
 
    # sleep a little more and then  do sr_posting if requiered
    sleep 10
@@ -360,7 +370,8 @@ if ((NERROR>0)); then
    grep ERROR "$LOGDIR"/*.log | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
-       echo "more than 10 TYPES OF ERRORS found... have a look at `pwd`/$fcel for details"
+       head $fcel
+       echo "more than 10 TYPES OF ERRORS found... for the rest, have a look at `pwd`/$fcel for details"
    else
        echo TYPE OF ERRORS IN LOG :
        echo

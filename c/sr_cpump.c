@@ -84,7 +84,6 @@ int main(int argc, char **argv)
         exit(abs(ret));
     }
 
-
   sr_c = sr_context_init_config( &sr_cfg );
   if (!sr_c) {
      log_msg( LOG_ERROR, "failed to build context from configuration\n");
@@ -95,15 +94,20 @@ int main(int argc, char **argv)
      log_msg( LOG_ERROR, "failed to connect context.\n");
      return(1);
   }
+  sr_consume_setup(sr_c);
+
+  if (!strcmp(sr_cfg.outlet,"post"))
+      sr_post_init( sr_c );
+  
+  if ( !strcmp( sr_cfg.action, "setup" ) || !strcmp( sr_cfg.action, "declare") )
+  {
+        return(0);
+  }
+
   if ( !strcmp( sr_cfg.action, "cleanup" ) )
   {
       sr_consume_cleanup(sr_c);
-      return(0);
-  }
-  sr_consume_setup(sr_c);
-
-  if ( !strcmp( sr_cfg.action, "setup" ) )
-  {
+      sr_post_cleanup( sr_c ); 
       return(0);
   }
 

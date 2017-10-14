@@ -71,7 +71,7 @@ done
 
  
 templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
-c_templates="`ls cflow_templates/*/*.py cflow_templates/*/*.conf cflow_templates/*/*.inc`"
+c_templates="`ls cflow_templates/*/*.conf cflow_templates/*/*.inc`"
 
 if [ "$C_ALSO" ]; then
   templates="$templates $c_templates"

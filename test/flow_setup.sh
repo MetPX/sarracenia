@@ -72,6 +72,8 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot/sent_by_tsource2send
   mkdir $testdocroot/recd_by_srpoll_test1
   mkdir $testdocroot/posted_by_srpost_test2
+  mkdir $testdocroot/cfr
+  mkdir $testdocroot/cfile
 fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
@@ -94,7 +96,7 @@ done
 templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
 
 if [ "$C_ALSO" ]; then
-    c_templates="`ls cflow_templates/*/*.py cflow_templates/*/*.conf cflow_templates/*/*.inc`"
+    c_templates="`ls cflow_templates/*/*.conf cflow_templates/*/*.inc`"
     templates="$templates $c_templates"
     echo "Adding C implementation tests as as well: $c_templates "
 fi

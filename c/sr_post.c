@@ -150,6 +150,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 {
     char message_body[1024];
     char smallbuf[256];
+    char thisexchange[256];
     amqp_table_t table;
     amqp_basic_properties_t props;
     signed int status;
@@ -202,7 +203,13 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     props.delivery_mode = 2; /* persistent delivery mode */
     props.headers = table;
 
-    status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 
+    strcpy( thisexchange, sr_c->cfg->post_broker->exchange );
+
+    if ( sr_c->cfg->post_broker->exchange_split > 0 ) 
+    { 
+        sprintf( strchr( thisexchange, '\0' ), "%02d", m->sum[ get_sumhashlen(m->sum[0])-1 ] % sr_c->cfg->post_broker->exchange_split ); 
+    }
+    status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(thisexchange), 
               amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
 
     if ( status < 0 ) 
@@ -401,6 +408,8 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   first_user_header.value = strdup( newname );
 
   sr_post( sr_c,  oldname, S_ISREG(sb.st_mode)?(&sb):NULL );
+
+  fprintf( stderr, "HOHOHO!\n" );
   
   free(first_user_header.key);  
   free(first_user_header.value);  
@@ -417,35 +426,64 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
 
 int sr_post_cleanup( struct sr_context *sr_c )
 {
+    char exchange[256];
     amqp_rpc_reply_t reply;
 
-    amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
-
-    reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
-    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+    if ( sr_c->cfg->post_broker->exchange_split ) 
     {
-        sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
-        return(0);
+        for ( int i = 0; i < sr_c->cfg->post_broker->exchange_split ; i++ )
+        {
+            sprintf( exchange, "%s%02d", sr_c->cfg->post_broker->exchange, i );
+            log_msg( LOG_INFO, "deleting exchange %s%02d\n", sr_broker_uri( sr_c->cfg->post_broker ), i  );
+            amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(exchange), 0 );
+            reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+            if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+            {
+                sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
+            }
+        }
+    } else {
+        log_msg( LOG_INFO, "deleting exchange %s\n", sr_broker_uri( sr_c->cfg->post_broker )  );
+        amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
+        reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+        if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+        {
+            sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange delete");
+        }
     }
     return(1);
 }
 
 int sr_post_init( struct sr_context *sr_c )
 {
+    char exchange[256];
     amqp_rpc_reply_t reply;
 
-    log_msg( LOG_INFO, "declaring exchange %s\n", sr_broker_uri( sr_c->cfg->post_broker )  );
 
-    amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange),
-          amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
-
- 
-    reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
-    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+    if ( sr_c->cfg->post_broker->exchange_split ) 
     {
-        sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
-        //return(0);
-    }
+        for ( int i = 0; i < sr_c->cfg->post_broker->exchange_split ; i++ )
+        {
+            log_msg( LOG_INFO, "declaring exchange %s%02d\n", sr_broker_uri( sr_c->cfg->post_broker ), i  );
+            sprintf( exchange, "%s%02d", sr_c->cfg->post_broker->exchange, i );
+            amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(exchange),
+                 amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
+            reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+            if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+            {
+                sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
+            }
+        }
+    } else  {
+        log_msg( LOG_INFO, "declaring exchange %s\n", sr_broker_uri( sr_c->cfg->post_broker )  );
+        amqp_exchange_declare( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange),
+             amqp_cstring_bytes("topic"), 0, sr_c->cfg->durable, 0, 0, amqp_empty_table );
+        reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+        if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+        {
+            sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply exchange declare");
+        }
+    } 
 
     return(1);
 }

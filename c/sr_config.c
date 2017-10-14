@@ -275,9 +275,9 @@ struct sr_header_t* sr_headers_copy( struct sr_header_t* o)
    for ( c=o; c ; c=c->next )
    {
        i = (struct sr_header_t *)malloc( sizeof(struct sr_header_t) );
-       i.key = strdup(o.key); 
-       i.value = strdup(o.value); 
-       i.next = n;
+       i->key = strdup(o->key); 
+       i->value = strdup(o->value); 
+       i->next = n;
        n=i;
    } 
    return(n);
@@ -292,10 +292,10 @@ void sr_headers_free( struct sr_header_t* o)
    c=o;
    while ( c )
    {
-       free(c.key); 
-       free(c.value); 
+       free(c->key); 
+       free(c->value); 
        i=c;
-       c = c.next;
+       c = c->next;
        free(i);
    } 
    return;
@@ -701,6 +701,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->post_exchange = strdup(argument);
       return(2);
 
+  } else if ( !strcmp( option, "post_exchange_split" ) || !strcmp( option, "pxs" ) ) {
+      sr_cfg->post_exchange_split = atoi(argument);
+      return(2);
+
   } else if ( !strcmp( option, "realpath" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->realpath = val&2;
@@ -835,13 +839,14 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->masks=NULL;
   sr_cfg->match=NULL;
   sr_cfg->message_ttl=0;
-  sr_cfg->outlet="json";
+  sr_cfg->outlet=strdup("json");
   sr_cfg->paths=NULL;
   sr_cfg->pid=-1;
   sr_cfg->pidfile=NULL;
   sr_cfg->pipe=0;
   sr_cfg->post_broker=NULL;
   sr_cfg->post_exchange=NULL;
+  sr_cfg->post_exchange_split=0;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);
@@ -1054,14 +1059,14 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
           sr_cfg->progname, sr_cfg->action,
           log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", sr_cfg->sleep, sr_cfg->heartbeat );
 
-  if ( !(sr_cfg->post_broker) ) 
-  {
-      sr_cfg->post_broker  = sr_cfg->broker ;
-      sr_cfg->broker  =  NULL ;
-  }
-
   if  ( !strcmp(sr_cfg->progname,"post") || !strcmp(sr_cfg->progname,"cpost") ) 
   {
+      if ( !(sr_cfg->post_broker) ) 
+      {
+          sr_cfg->post_broker  = sr_cfg->broker ;
+          sr_cfg->broker  =  NULL ;
+      }
+
       if ( !(sr_cfg->post_broker) ) 
       {
              log_msg( LOG_ERROR, "no post_broker given\n" );
@@ -1071,6 +1076,9 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
   if ( sr_cfg->post_broker ) 
   {
+      free(sr_cfg->outlet);
+      sr_cfg->outlet = strdup("post");
+
       if ( ! (sr_cfg->post_exchange) ) 
       {
           if ( sr_cfg->exchange ) 
@@ -1083,6 +1091,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       } else {
           sr_cfg->post_broker->exchange= strdup(sr_cfg->post_exchange) ;
       }
+      sr_cfg->post_broker->exchange_split= sr_cfg->post_exchange_split;
     
       if ( sr_cfg->to == NULL ) 
       {
@@ -1118,8 +1127,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      f =  fopen( p, "r" );
      if ( f ) // read the queue name from the file.
      {
-         fgets(p,PATH_MAX,f);
-         sr_cfg->queuename=strdup(p);
+         fgets(q,PATH_MAX,f);
+         sr_cfg->queuename=strdup(q);
          fclose(f);
      } else {
          sprintf( q, "q_%s.sr_%s.%s.%ld.%ld",
@@ -1130,11 +1139,14 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
          f = fopen( p, "w" ); // save the queue name for next time.
          if (f) 
          {
-             if (sr_cfg->debug)
-                log_msg( LOG_DEBUG, "writing %s to %s\n", q, p );
+             log_msg( LOG_DEBUG, "writing %s to %s\n", q, p );
              fputs( q, f );
              fclose(f);
          }
+     }
+     if ( !strcmp( sr_cfg->action, "cleanup") ) 
+     {
+         unlink(p);
      }
   }
  

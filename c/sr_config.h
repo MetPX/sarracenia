@@ -85,6 +85,7 @@ struct sr_broker_t {
   char *hostname;
   int   port;
   char *exchange;
+  int   exchange_split;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
   struct sr_broker_t *next; 
@@ -127,6 +128,7 @@ struct sr_config_t {
   int                 pipe;  // pipe mode, read file names from standard input
   struct sr_broker_t *post_broker;
   char               *post_exchange;
+  int                 post_exchange_split;
   char               *queuename;
   int                 realpath;
   int                 recursive;
