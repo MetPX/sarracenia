@@ -70,7 +70,7 @@ def instantiate(dirconf,pgm,confname,action):
     # c stuff always requiere to spawn a call
 
     if pgm in ['cpost','cpump'] :
-       subprocess.check_call([program,confpath,action])
+       subprocess.check_call([ "sr_" + pgm, action, confname])
        return
 
     #print(dirconf,pgm,confname,action)
@@ -154,7 +154,6 @@ def scandir(dirconf,pgm,action):
     path = dirconf + os.sep + pgm
 
     if not os.path.isdir(path) : return
-
     for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue

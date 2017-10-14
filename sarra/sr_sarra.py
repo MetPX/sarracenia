@@ -144,7 +144,7 @@ class sr_sarra(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = True
+        if self.reportback == None : self.reportback = False
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done

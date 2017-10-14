@@ -371,8 +371,11 @@ calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
 
-tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
-tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
+# because of accept/reject filters, these numbers are never similar, so these tests are wrong.
+# tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
+# tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
+
+calcres  ${totcpelle04r} ${totcpelle05r} "pump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
