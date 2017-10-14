@@ -1055,9 +1055,9 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   }
 
   // FIXME: if prog is post, then only post_broker is OK.
-  log_msg( LOG_DEBUG, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g, heartbeat=%g\n",
-          sr_cfg->progname, sr_cfg->action,
-          log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", sr_cfg->sleep, sr_cfg->heartbeat );
+  log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g heartbeat=%g cache=%g cache_file=%s\n",
+          sr_cfg->progname, sr_cfg->action, log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", 
+          sr_cfg->sleep, sr_cfg->heartbeat, sr_cfg->cache, sr_cfg->cachep?p:"off" );
 
   if  ( !strcmp(sr_cfg->progname,"post") || !strcmp(sr_cfg->progname,"cpost") ) 
   {

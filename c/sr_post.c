@@ -156,14 +156,6 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     signed int status;
     struct sr_header_t *uh;
 
-
-    if ( sr_c->cfg->cache > 0 ) 
-    { 
-           status = sr_cache_check( sr_c->cfg->cachep, m->sum[0], (unsigned char*)(m->sum), m->path, sr_message_partstr(m) ) ; 
-           log_msg( LOG_DEBUG, "post_message cache_check result=%d\n", status );
-           if (!status) return; // cache hit.
-    }
-
     strcpy( message_body, m->datestamp);
     strcat( message_body, " " );
     strcat( message_body, m->url );
@@ -368,6 +360,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 {
   static struct sr_message_t m;
   int numblks;
+  int status;
 
   strcpy( m.to_clusters, sr_c->cfg->to );
   strcpy( m.from_cluster, sr_c->cfg->post_broker->hostname );
@@ -382,7 +375,15 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   for( int blk=0; (blk < numblks); blk++ )
   {
       if ( sr_file2message_seq(pathspec, blk, &m ) ) 
+      {
+           if ( sr_c->cfg->cache > 0 ) 
+           { 
+               status = sr_cache_check( sr_c->cfg->cachep, m.sum[0], (unsigned char*)(m.sum), m.path, sr_message_partstr(&m) ); 
+               log_msg( LOG_DEBUG, "post_message cache_check: %s\n", status?"not found":"already there, no post" );
+               if (!status) continue; // cache hit.
+           }
           sr_post_message( sr_c, &m );
+      }
   }
 
 }
