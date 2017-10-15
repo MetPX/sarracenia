@@ -171,8 +171,11 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     {
        amqp_header_add( "parts", sr_message_partstr(m) );
        amqp_header_add( "atime", m->atime );
-       sprintf( smallbuf, "%04o", m->mode );
-       amqp_header_add( "mode", smallbuf );
+       if ( m->mode > 0 ) 
+       {
+           sprintf( smallbuf, "%04o", m->mode );
+           amqp_header_add( "mode", smallbuf );
+       }
        amqp_header_add( "mtime", m->mtime );
     }
 
@@ -410,8 +413,6 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
 
   sr_post( sr_c,  oldname, S_ISREG(sb.st_mode)?(&sb):NULL );
 
-  fprintf( stderr, "HOHOHO!\n" );
-  
   free(first_user_header.key);  
   free(first_user_header.value);  
   first_user_header.key = strdup( "oldname" );

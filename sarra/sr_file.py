@@ -353,7 +353,7 @@ def file_write_length(req,msg,bufsize,filesize):
     fp.close()
   
     h = self.parent.msg.headers
-    if self.parent.preserve_mode and 'mode' in h :
+    if self.parent.preserve_mode and 'mode' in h and h['mode'] > 0 :
         os.chmod(msg.new_file, int( h['mode'], base=8) )
 
     if self.parent.preserve_time and 'mtime' in h:

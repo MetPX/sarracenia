@@ -139,6 +139,8 @@ char *inotify_event_2string( uint32_t mask )
     
     if (mask|IN_CREATE) strcpy(evstr, "create");
     else if (mask|IN_MODIFY) strcpy(evstr, "modify");
+    else if (mask|IN_MOVED_FROM) strcpy(evstr, "rename");
+    else if (mask|IN_MOVED_TO) strcpy(evstr, "rename");
     else if (mask|IN_DELETE) strcpy(evstr, "delete");
     else strcpy( evstr, "dunno!" );
     if (mask|IN_ISDIR) strcat( evstr, ",directory" );
@@ -171,18 +173,27 @@ void do1file( struct sr_context *sr_c, char *fn )
     int w;
     struct dirent *e;
     struct stat sb;
+    struct sr_mask_t *mask;
     char ep[PATH_MAXNUL];
 
   /*
     if (sr_c->cfg->debug)
         log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
    */
+    /* apply the accept/reject clauses */
+
+    // FIXME BUG: pattern to match is supposed to be complete URL, not just path...
+    mask = isMatchingPattern( sr_c->cfg, fn );
+    if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) )
+    {
+          log_msg( LOG_DEBUG, "rejecting: %s\n", fn );
+          return;
+    }
 
     if ( lstat(fn, &sb) < 0 ) {
          log_msg( LOG_ERROR, "failed to lstat: %s\n", fn );
          return;
     }
-
 
     if (S_ISLNK(sb.st_mode)) 
     {   // process a symbolic link.
@@ -279,6 +290,9 @@ void dir_stack_check4events( struct sr_context *sr_c )
     char *p;
     struct inotify_event *e;
     struct dir_stack *d;
+    int rename_steps=0;
+    char *oldname;
+    char *newname;
     int ret;
     struct hash_entry *new_entry, *entries_done, *tmpe = NULL;
 
@@ -314,6 +328,32 @@ void dir_stack_check4events( struct sr_context *sr_c )
                     ret, sizeof(struct inotify_event)+e->len,
                     inotify_event_2string(e->mask), e->len, fn );
             }
+            /* rename processing
+               rename arrives as two events, old name MOVE_FROM, new name MOVE_TO.
+               need to group them together to call sr_post_rename.
+             */
+            if ( e->mask == IN_MOVED_FROM)
+            {
+               log_msg( LOG_DEBUG, "rename, oldname=%s\n", fn );
+               rename_steps++;
+               oldname=strdup(fn);               
+            }
+            if ( e->mask == IN_MOVED_TO )
+            {
+               rename_steps++;
+               newname=strdup(fn);               
+               log_msg( LOG_DEBUG, "rename, newname=%s\n", fn );
+            }
+            if ( ( e->mask && (IN_MOVED_FROM|IN_MOVED_TO) ) && ( rename_steps == 2 )  )
+            {
+               log_msg( LOG_DEBUG, "ok invoking rename %s %s\n", oldname, newname );
+               sr_post_rename( sr_c, oldname, newname );
+               rename_steps=0;
+               free(oldname); 
+               free(newname);
+               oldname=NULL;
+               newname=NULL;
+            }
             /* FIXME: missing: check for repeats. if post succeeds, remove from list.
                   if post fails, move to *pending* list.
  
@@ -328,7 +368,8 @@ void dir_stack_check4events( struct sr_context *sr_c )
                 new_entry = (struct hash_entry *)malloc( sizeof(struct hash_entry) );
                 new_entry->fn = strdup(fn);
                 HASH_ADD_KEYPTR( hh, entries_done, new_entry->fn, strlen(new_entry->fn), new_entry );
-                do1file( sr_c, fn);
+                if ( !( e->mask && (IN_MOVED_FROM|IN_MOVED_TO)) )
+                    do1file( sr_c, fn);
             } 
         }
     }
@@ -450,10 +491,10 @@ int main(int argc, char **argv)
 
     for (; i < argc; i++ )
     {
-        if ( !strcmp(sr_cfg.action,"foreground") )
-            sr_add_path(&sr_cfg, argv[i]);
-        else
-            sr_config_read(&sr_cfg, argv[i] );
+          if ( !strcmp(sr_cfg.action,"foreground") )
+               sr_add_path(&sr_cfg, argv[i]);
+          else
+               sr_config_read(&sr_cfg, argv[i] );
 
     }
 
@@ -530,9 +571,15 @@ int main(int argc, char **argv)
     if (!sr_cfg.force_polling) 
     {
         inotify_event_mask=IN_DONT_FOLLOW; 
-        if (sr_cfg.events|SR_CREATE) inotify_event_mask |= IN_CREATE;  // includes mkdir & symlink.
-        if (sr_cfg.events|SR_MODIFY) inotify_event_mask |= IN_CLOSE_WRITE;
-        if (sr_cfg.events|SR_DELETE) inotify_event_mask |= IN_DELETE;
+
+        if (sr_cfg.events|SR_CREATE) // includes mkdir & symlink.
+            inotify_event_mask |= IN_CREATE|IN_MOVED_FROM|IN_MOVED_TO;  
+
+        if (sr_cfg.events|SR_MODIFY) 
+            inotify_event_mask |= IN_CLOSE_WRITE|IN_MOVED_FROM|IN_MOVED_TO;
+
+        if (sr_cfg.events|SR_DELETE) 
+            inotify_event_mask |= IN_DELETE;
   
         inot_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
         if ( inot_fd < 0) 
@@ -585,7 +632,7 @@ int main(int argc, char **argv)
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
             tsleep.tv_nsec =  (long) ((sr_cfg.sleep-elapsed)-tsleep.tv_sec);
-            log_msg( LOG_DEBUG, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
+            //log_msg( LOG_DEBUG, "debug: watch sleeping for %g seconds. \n", (sr_cfg.sleep-elapsed));
             nanosleep( &tsleep, NULL );
        } else 
             log_msg( LOG_INFO, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");

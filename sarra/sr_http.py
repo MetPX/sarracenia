@@ -450,7 +450,7 @@ class http_transport():
                 # fix permission 
 
                 h = msg.headers
-                if self.parent.preserve_mode and 'mode' in h :
+                if self.parent.preserve_mode and 'mode' in h and h['mode'] > 0:
                    os.chmod(parent.new_file, int( h['mode'], base=8) )
                 elif self.parent.chmod != 0:
                    os.chmod(parent.new_file, self.parent.chmod )
