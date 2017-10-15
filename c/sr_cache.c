@@ -213,7 +213,7 @@ int sr_cache_save( struct sr_cache_t *cachep, int to_stdout)
     }
     if (!to_stdout) 
     {
-        fclose(f);
+        fclose(f); // should flush, so consistent representation written to disk.
         cachep->fp = fopen(cachep->fn,"a");
     }
     return(count);

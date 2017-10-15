@@ -35,25 +35,15 @@ void usage()
     fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
     exit(1);
 }
-struct sr_config_t sr_cfg;
-
-void stop_handler(int sig)
-{
-     log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
-     sr_cache_close( sr_cfg.cachep );
-
-     // propagate handler for further processing, likely trigger exit.
-     signal( sig, SIG_DFL );
-     raise(sig);  
-}
-
 
 int main(int argc, char **argv)
 {
   struct sr_message_t *m;
   struct sr_context *sr_c;
+  struct sr_config_t sr_cfg;
   struct sr_mask_t *mask;
   int consume,i,ret;
+
   
   if ( argc < 3 ) usage();
  
@@ -140,7 +130,7 @@ int main(int argc, char **argv)
   }
  
   // Assert: this is a working instance, not a launcher...
-  if ( sr_config_save_pid( &sr_cfg ) )
+  if ( sr_config_activate( &sr_cfg ) )
   {
         log_msg( LOG_WARNING, 
             "could not save pidfile %s: possible to run conflicting instances  \n", 
@@ -149,13 +139,7 @@ int main(int argc, char **argv)
   log_msg( LOG_INFO, "%s config: %s, pid: %d, queue: %s bound to exchange: %s starting\n", 
             sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid, sr_cfg.queuename, sr_cfg.exchange );
 
-  if ( sr_cfg.cache > 0 ) 
-  {
-     if ( signal( SIGTERM, stop_handler ) == SIG_ERR ) 
-         log_msg( LOG_ERROR, "unable to set stop handler\n" );
-     else
-         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
-  }
+
   while(1)
   {
 
@@ -165,7 +149,7 @@ int main(int argc, char **argv)
       log_msg( LOG_INFO, "received: %s\n", sr_message_2log(m) );
 
       /* apply the accept/reject clauses */
-      // FIXME BUG: patter to match is supposed to be complete URL, not just path...
+      // FIXME BUG: pattern to match is supposed to be complete URL, not just path...
       mask = isMatchingPattern( &sr_cfg, m->path);
       if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
       {
@@ -186,6 +170,9 @@ int main(int argc, char **argv)
         else if ( !strcmp( sr_cfg.outlet, "url" ) ) sr_message_2url(m);      
         else if ( !strcmp( sr_cfg.outlet, "post" ) ) sr_post_message(sr_c,m);      
       }
+
+      sr_context_heartbeat_check( sr_c );
+
   }
   sr_context_close(sr_c);
   free(sr_c);

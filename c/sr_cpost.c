@@ -439,41 +439,6 @@ void usage()
      exit(1);
 }
 
-void heartbeat(struct sr_context *sr_c) 
-/* run this every heartbeat interval 
- */
-{
-   int cached_count;
-   log_msg( LOG_INFO, "heartbeat processing start\n" );
-   
-   if (sr_c->cfg->cachep)
-   {
-       log_msg( LOG_INFO, "heartbeat starting to clean cache\n" );
-       sr_cache_clean(sr_c->cfg->cachep, sr_c->cfg->cache );
-       log_msg( LOG_INFO, "heartbeat cleaned, hashes left: %ld\n", HASH_COUNT(sr_c->cfg->cachep->data) );
-       if (HASH_COUNT(sr_c->cfg->cachep->data) == 0) 
-       {
-          sr_c->cfg->cachep->data=NULL;
-       }
-       cached_count = sr_cache_save(sr_c->cfg->cachep, 0 );
-       log_msg( LOG_INFO, "heartbeat after cleaning, cache stores %d entries.\n", cached_count );
-   }
-}
-
-struct sr_cache_t *thecache=NULL;
-
-void stop_handler(int sig)
-{
-     log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
-
-     if (thecache)
-         sr_cache_close( thecache );
-
-     // propagate handler for further processing, likely trigger exit.
-     signal( sig, SIG_DFL );
-     raise(sig);
-}
-
 
 int main(int argc, char **argv)
 {
@@ -482,9 +447,9 @@ int main(int argc, char **argv)
     char inbuff[PATH_MAXNUL];
     int consume,i,pass;
     int ret;
-    struct timespec tstart, tsleep, tend;
+
+    struct timespec tsleep ;
     float elapsed;
-    float since_last_heartbeat;
     
     if ( argc < 3 ) usage();
    
@@ -575,18 +540,10 @@ int main(int argc, char **argv)
     }
      
     // Assert: this is a working instance, not a launcher...
-    if ( sr_config_save_pid( &sr_cfg ) ) 
+    if ( sr_config_activate( &sr_cfg ) ) 
     {
         log_msg( LOG_WARNING, "could not save pidfile %s: possible to run conflicting instances  \n", sr_cfg.pidfile );
     } 
-    if ( sr_cfg.cache > 0 )
-    {
-     thecache = sr_cfg.cachep;
-     if ( signal( SIGTERM, stop_handler ) == SIG_ERR )
-         log_msg( LOG_ERROR, "unable to set stop handler\n" );
-     else
-         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
-    }
 
     log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
 
@@ -611,9 +568,6 @@ int main(int argc, char **argv)
             log_msg( LOG_ERROR, "inot init failed: error: %d\n", errno );
     }
   
-    since_last_heartbeat = 0.0;
-    clock_gettime( CLOCK_REALTIME, &tstart );  
-
     while (1) 
     {
       
@@ -636,22 +590,7 @@ int main(int argc, char **argv)
 
        if  (sr_cfg.sleep <= 0.0) break; // one shot.
   
-       clock_gettime( CLOCK_REALTIME, &tend );  
-       elapsed = ( tend.tv_sec + (tend.tv_nsec/1e9) ) - 
-                 ( tstart.tv_sec + (tstart.tv_nsec/1e9) )  ;
-  
-       since_last_heartbeat = since_last_heartbeat + elapsed ;
-
-       //log_msg( LOG_DEBUG, "tend.tv_sec=%ld, tstart.tv_sec=%ld sr_cpost:  elapsed: %g since_last_heartbeat: %g hb: %g\n", 
-       //      tend.tv_sec, tstart.tv_sec, elapsed, since_last_heartbeat, sr_cfg.heartbeat );
-
-       clock_gettime( CLOCK_REALTIME, &tstart );  
-
-       if (since_last_heartbeat >= sr_cfg.heartbeat )
-       {
-           heartbeat(sr_c);
-           since_last_heartbeat = 0.0;
-       } 
+       elapsed = sr_context_heartbeat_check(sr_c);
 
        if ( elapsed < sr_cfg.sleep ) 
        {
@@ -662,7 +601,8 @@ int main(int argc, char **argv)
        } else 
             log_msg( LOG_INFO, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
   
-       latest_min_mtim = tstart;
+       // FIXME: I think this breaks non Inotify walks...
+       // latest_min_mtim = tstart;
        pass++; 
     }
   

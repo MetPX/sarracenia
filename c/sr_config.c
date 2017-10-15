@@ -1153,7 +1153,27 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   return(1);
 }
 
-int sr_config_save_pid( struct sr_config_t *sr_cfg )
+
+struct sr_cache_t *thecache=NULL;
+
+void stop_handler(int sig)
+{
+     log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
+
+     if (thecache)
+         sr_cache_close( thecache );
+
+     // propagate handler for further processing, likely trigger exit.
+     signal( sig, SIG_DFL );
+     raise(sig);
+}
+
+int sr_config_activate( struct sr_config_t *sr_cfg )
+/* 
+   now a really running instance.
+   SIDE EFFECT: sets a signal handler for SIGTERM (to clanly close cache on exit.)
+
+ */
 {
   FILE *f;
 
@@ -1163,9 +1183,17 @@ int sr_config_save_pid( struct sr_config_t *sr_cfg )
   {
          fprintf(f,"%d\n", sr_cfg->pid );
          fclose(f);
-         return(0);
-  } 
-  return(-1);
+  } else return(-1);
+
+  if ( sr_cfg->cache > 0 )
+  {
+     thecache = sr_cfg->cachep;
+     if ( signal( SIGTERM, stop_handler ) == SIG_ERR )
+         log_msg( LOG_ERROR, "unable to set stop handler\n" );
+     else
+         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
+  }
+ 
 }
 
 int sr_config_startstop( struct sr_config_t *sr_cfg)

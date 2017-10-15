@@ -159,6 +159,7 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
   return(broker);
 }
 
+
 struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
   if (sr_c->cfg->broker)  {
@@ -178,15 +179,17 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
 }
 
+static struct timespec tstart;
+
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) 
 {
 
   struct sr_context *sr_c;
-  struct timespec ts;
 
   // seed for random checksums... random enough...
-  clock_gettime( CLOCK_REALTIME , &ts);
-  srandom(ts.tv_nsec);
+  // also initializes tstart for use by heartbeat processing.
+  clock_gettime( CLOCK_REALTIME , &tstart);
+  srandom(tstart.tv_nsec);
 
   sr_c = (struct sr_context *)malloc(sizeof(struct sr_context));
 
@@ -248,4 +251,55 @@ void sr_context_close(struct sr_context *sr_c)  {
   } 
   if (sr_c->cfg->post_broker) sr_broker_close( sr_c->cfg->post_broker );
 
+}
+
+void sr_context_heartbeat(struct sr_context *sr_c)
+/* run this every heartbeat interval 
+ */
+{
+   int cached_count;
+   log_msg( LOG_INFO, "heartbeat processing start\n" );
+
+   if (sr_c->cfg->cachep)
+   {
+       log_msg( LOG_INFO, "heartbeat starting to clean cache\n" );
+       sr_cache_clean(sr_c->cfg->cachep, sr_c->cfg->cache );
+       log_msg( LOG_INFO, "heartbeat cleaned, hashes left: %ld\n", HASH_COUNT(sr_c->cfg->cachep->data) );
+       if (HASH_COUNT(sr_c->cfg->cachep->data) == 0)
+       {
+          sr_c->cfg->cachep->data=NULL;
+       }
+       cached_count = sr_cache_save(sr_c->cfg->cachep, 0 );
+       log_msg( LOG_INFO, "heartbeat after cleaning, cache stores %d entries.\n", cached_count );
+   }
+}
+
+
+float sr_context_heartbeat_check(struct sr_context *sr_c)
+/* 
+   Check if you need to do to run heartbeat processing.  
+   Returns: elapsed time since previous call, in seconds.
+
+   Note: sr_context_init_config must be called before first call to initialize "previous call" timing.
+ */
+{
+    static struct timespec tend;
+    static float elapsed;
+    static float since_last_heartbeat=0;
+
+    clock_gettime( CLOCK_REALTIME, &tend );
+    elapsed = ( tend.tv_sec + (tend.tv_nsec/1e9) ) -
+              ( tstart.tv_sec + (tstart.tv_nsec/1e9) )  ;
+
+    since_last_heartbeat = since_last_heartbeat + elapsed ;
+
+    clock_gettime( CLOCK_REALTIME, &tstart );
+
+    if (since_last_heartbeat >= sr_c->cfg->heartbeat )
+    {
+       sr_context_heartbeat(sr_c);
+       since_last_heartbeat = 0.0;
+    }
+
+    return(elapsed);
 }
