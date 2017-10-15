@@ -462,7 +462,7 @@ class sr_sftp():
         elif self.parent.chmod !=0 : 
            rfp.chmod( self.parent.chmod )
 
-        if self.parent.preserve_time and 'mtime' in msg.headers :
+        if self.parent.preserve_time and 'mtime' in msg.headers and msg.headers['mtime'] :
            rfp.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
 
         rfp.close()

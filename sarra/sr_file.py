@@ -356,7 +356,7 @@ def file_write_length(req,msg,bufsize,filesize):
     if self.parent.preserve_mode and 'mode' in h and h['mode'] > 0 :
         os.chmod(msg.new_file, int( h['mode'], base=8) )
 
-    if self.parent.preserve_time and 'mtime' in h:
+    if self.parent.preserve_time and 'mtime' in h and h['mtime'] :
         os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
     if chk : msg.onfly_checksum = chk.get_value()

@@ -494,7 +494,7 @@ class ftp_transport():
 
                 # fix time 
 
-                if self.parent.preserve_time and 'mtime' in h:
+                if self.parent.preserve_time and 'mtime' in h and h['mtime']:
                    os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
 
                 # fix message if no partflg (means file size unknown until now)

@@ -1171,6 +1171,9 @@ void stop_handler(int sig)
 int sr_config_activate( struct sr_config_t *sr_cfg )
 /* 
    now a really running instance.
+
+   return 0 on success, < 0 on error.
+     
    SIDE EFFECT: sets a signal handler for SIGTERM (to clanly close cache on exit.)
 
  */
@@ -1193,7 +1196,7 @@ int sr_config_activate( struct sr_config_t *sr_cfg )
      else
          log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
   }
- 
+  return(0); 
 }
 
 int sr_config_startstop( struct sr_config_t *sr_cfg)

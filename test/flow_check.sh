@@ -187,10 +187,10 @@ function countall {
   countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_001.log | wc -l`"
   totcveille="${tot}"
 
-  countthem "`grep 'downloaded:' $LOGDIR/sr_subscribe_cdnld_f21_000*.log | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_000*.log | wc -l`"
   totcdnld="${tot}"
 
-  countthem "`grep 'downloaded:' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
   totcfile="${tot}"
 
 }
@@ -395,8 +395,9 @@ if [ "$C_ALSO" ]; then
   calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
 
   totcvan=$(( ${totcvan14p} + ${totcvan15p} ))
-  calcres  ${totcvan} ${totcdnld} "subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
-  calcres  ${totcveille} ${totcdnld} "veille_f34 should post the same number of files ($totcveille) that subscribe downloaded ($totcdnld)"
+  calcres  ${totcvan} ${totcdnld} "cdnld_f21 subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
+  calcres  ${totcveille} ${totcdnld} "veille_f34 should post the same number of files ($totcveille) that subscribe cdnld_f21 downloaded ($totcdnld)"
+  calcres  ${totcveille} ${totcfile} "veille_f34 should post the same number of files ($totcveille) that subscribe cfile_f44 downloaded ($totcfile)"
 
 fi
 

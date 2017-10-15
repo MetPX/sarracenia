@@ -332,13 +332,13 @@ void dir_stack_check4events( struct sr_context *sr_c )
                rename arrives as two events, old name MOVE_FROM, new name MOVE_TO.
                need to group them together to call sr_post_rename.
              */
-            if ( e->mask == IN_MOVED_FROM)
+            if ( (e->mask&IN_MOVED_FROM) == IN_MOVED_FROM)
             {
                log_msg( LOG_DEBUG, "rename, oldname=%s\n", fn );
                rename_steps++;
                oldname=strdup(fn);               
             }
-            if ( e->mask == IN_MOVED_TO )
+            if ( (e->mask&IN_MOVED_TO) == IN_MOVED_TO )
             {
                rename_steps++;
                newname=strdup(fn);               
@@ -364,12 +364,19 @@ void dir_stack_check4events( struct sr_context *sr_c )
                best to do 1 first, and then optimize later if necessary.                     
              */
             HASH_FIND_STR( entries_done, fn, tmpe );
+
+            log_msg( LOG_DEBUG, "looking in entries_done, for %s, result=%p\n", fn, tmpe );
+
             if (!tmpe) {
                 new_entry = (struct hash_entry *)malloc( sizeof(struct hash_entry) );
                 new_entry->fn = strdup(fn);
                 HASH_ADD_KEYPTR( hh, entries_done, new_entry->fn, strlen(new_entry->fn), new_entry );
-                if ( !( e->mask && (IN_MOVED_FROM|IN_MOVED_TO)) )
+                log_msg( LOG_DEBUG, "e->mask=%04x from:  %04x  to: %04x \n", e->mask, IN_MOVED_FROM, IN_MOVED_TO );
+                if ( !( e->mask & (IN_MOVED_FROM|IN_MOVED_TO)) )
+                {
+                    log_msg( LOG_DEBUG, "do one file: %s\n", fn );
                     do1file( sr_c, fn);
+                }
             } 
         }
     }
@@ -592,6 +599,7 @@ int main(int argc, char **argv)
   
        elapsed = sr_context_heartbeat_check(sr_c);
 
+       
        if ( elapsed < sr_cfg.sleep ) 
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);

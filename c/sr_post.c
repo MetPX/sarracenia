@@ -411,7 +411,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   first_user_header.key = strdup( "newname" );
   first_user_header.value = strdup( newname );
 
-  sr_post( sr_c,  oldname, S_ISREG(sb.st_mode)?(&sb):NULL );
+  sr_post( sr_c,  oldname, (!access(oldname, F_OK) && S_ISREG(sb.st_mode))?(&sb):NULL );
 
   free(first_user_header.key);  
   free(first_user_header.value);  
