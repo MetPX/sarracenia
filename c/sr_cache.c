@@ -251,7 +251,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
    
        if (!sum) 
        {
-           log_msg( LOG_ERROR, "corrupt line in cache file %s: %s\n", fn, buf );
+           log_msg( LOG_ERROR, "corrupt line %d in cache file %s: %s\n", line_count, fn, buf );
            continue;
        }
 
@@ -259,7 +259,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
    
        if (!timestr) 
        {
-           log_msg( LOG_ERROR, "no timestring, corrupt line in cache file %s: %s\n", fn, buf );
+           log_msg( LOG_ERROR, "no timestring, corrupt line %d in cache file %s: %s\n", line_count, fn, buf );
            continue;
        }
 
@@ -267,7 +267,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
    
        if (!path) 
        {
-           log_msg( LOG_ERROR, "no path, corrupt line in cache file %s: %s\n", fn, buf );
+           log_msg( LOG_ERROR, "no path, corrupt line %d in cache file %s: %s\n", line_count, fn, buf );
            continue;
        }
 
@@ -280,7 +280,7 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
    
            if (!partstr) 
            {
-               log_msg( LOG_ERROR, "no partstr, corrupt line in cache file %s: %s\n", fn, buf );
+               log_msg( LOG_ERROR, "no partstr, corrupt line %d in cache file %s: %s\n", line_count, fn, buf );
                continue;
            }
        }
@@ -348,7 +348,8 @@ struct sr_cache_t *sr_cache_open( const char *fn )
     c->data = sr_cache_load(fn);
     c->fn =  strdup(fn);
     c->fp = fopen(fn,"a");
-
+    // FIXME: if necessary, disable buffering. I don't think it should be necessary, but saw some corruption in tests.
+    //setbuf(c->fp,NULL);
   /*
     fprintf( stderr, "sr_cache_open loaded:\n" );
     sr_cache_save( c, 1 ); // FIXME, debug

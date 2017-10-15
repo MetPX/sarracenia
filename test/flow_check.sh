@@ -375,7 +375,7 @@ calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f
 # tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
 # tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
 
-calcres  ${totcpelle04r} ${totcpelle05r} "pump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
+calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 

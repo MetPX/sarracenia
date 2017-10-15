@@ -77,10 +77,14 @@ if [ "$C_ALSO" ]; then
   templates="$templates $c_templates"
 fi
 
+state_files=""
+
 for cf in ${templates}; do
     echo "removing $cf"
     newcf="`echo $cf | sed 's+.*flow_templates\/++'`"
     rm "$CONFDIR"/${newcf}
+    sd="`echo $newcf | sed 's+.conf$++'`"
+    state_files="${state_files} $CACHEDIR/${sd}"
 done
 
 #for cf in "$CONFDIR"/shovel/rr*.conf  ; do
@@ -88,9 +92,10 @@ done
 #done
 
 
+httpdr=""
 if [ -f .httpdocroot ]; then
-   echo " you may want to rm -rf `cat .httpdocroot` "
+   httpdr="`cat .httpdocroot`"
 fi
 
-echo " you may want to rm -rf $LOGDIR/* $CACHEDIR/watch/*/* "
+echo " you may want to rm -rf $httpdr $LOGDIR/* $CACHEDIR/watch/*/* ${state_files} "
 

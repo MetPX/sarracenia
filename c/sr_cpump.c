@@ -6,8 +6,6 @@
  * This code is by Peter Silva copyright (c) 2017 part of MetPX.
  * copyright is to the Government of Canada. code is GPL.
  *
- * based on a amqp_sendstring from rabbitmq-c package
- * the original license is below:
  */
 
 /* 
@@ -16,6 +14,7 @@
   spits out ´unimplemented option´ where appropriate...
  */
 #include <stdio.h>
+#include <signal.h>
 
 #include "sr_consume.h"
 #include "sr_post.h"
@@ -36,12 +35,23 @@ void usage()
     fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
     exit(1);
 }
+struct sr_config_t sr_cfg;
+
+void stop_handler(int sig)
+{
+     log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
+     sr_cache_close( sr_cfg.cachep );
+
+     // propagate handler for further processing, likely trigger exit.
+     signal( sig, SIG_DFL );
+     raise(sig);  
+}
+
 
 int main(int argc, char **argv)
 {
   struct sr_message_t *m;
   struct sr_context *sr_c;
-  struct sr_config_t sr_cfg;
   struct sr_mask_t *mask;
   int consume,i,ret;
   
@@ -139,6 +149,13 @@ int main(int argc, char **argv)
   log_msg( LOG_INFO, "%s config: %s, pid: %d, queue: %s bound to exchange: %s starting\n", 
             sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid, sr_cfg.queuename, sr_cfg.exchange );
 
+  if ( sr_cfg.cache > 0 ) 
+  {
+     if ( signal( SIGTERM, stop_handler ) == SIG_ERR ) 
+         log_msg( LOG_ERROR, "unable to set stop handler\n" );
+     else
+         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
+  }
   while(1)
   {
 
