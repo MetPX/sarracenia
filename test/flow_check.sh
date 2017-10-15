@@ -178,6 +178,21 @@ function countall {
   countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_001.log | wc -l`"
   totcpelle05p="${tot}"
 
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_001.log | wc -l`"
+  totcvan14p="${tot}"
+
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_001.log | wc -l`"
+  totcvan15p="${tot}"
+
+  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_001.log | wc -l`"
+  totcveille="${tot}"
+
+  countthem "`grep 'downloaded:' $LOGDIR/sr_subscribe_cdnld_f21_000*.log | wc -l`"
+  totcdnld="${tot}"
+
+  countthem "`grep 'downloaded:' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
+  totcfile="${tot}"
+
 }
 
 # sr_post initial start
@@ -375,7 +390,16 @@ calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f
 # tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
 # tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
 
-calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
+if [ "$C_ALSO" ]; then
+
+  calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
+
+  totcvan=$(( ${totcvan14p} + ${totcvan15p} ))
+  calcres  ${totcvan} ${totcdnld} "subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
+  calcres  ${totcveille} ${totcdnld} "veille_f34 should post the same number of files ($totcveille) that subscribe downloaded ($totcdnld)"
+
+fi
+
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
 
