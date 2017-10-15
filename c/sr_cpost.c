@@ -459,6 +459,22 @@ void heartbeat(struct sr_context *sr_c)
        log_msg( LOG_INFO, "heartbeat after cleaning, cache stores %d entries.\n", cached_count );
    }
 }
+
+struct sr_cache_t *thecache=NULL;
+
+void stop_handler(int sig)
+{
+     log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
+
+     if (thecache)
+         sr_cache_close( thecache );
+
+     // propagate handler for further processing, likely trigger exit.
+     signal( sig, SIG_DFL );
+     raise(sig);
+}
+
+
 int main(int argc, char **argv)
 {
     struct sr_context *sr_c;
@@ -563,6 +579,15 @@ int main(int argc, char **argv)
     {
         log_msg( LOG_WARNING, "could not save pidfile %s: possible to run conflicting instances  \n", sr_cfg.pidfile );
     } 
+    if ( sr_cfg.cache > 0 )
+    {
+     thecache = sr_cfg.cachep;
+     if ( signal( SIGTERM, stop_handler ) == SIG_ERR )
+         log_msg( LOG_ERROR, "unable to set stop handler\n" );
+     else
+         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
+    }
+
     log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
 
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
