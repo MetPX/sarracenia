@@ -90,7 +90,7 @@ void amqp_header_add( char *tag, const char * value ) {
   headers[hdrcnt].value.kind = AMQP_FIELD_KIND_UTF8;
   headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
   hdrcnt++;
-  log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
+  //log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
 }
 
 void set_url( char* m, char* spec ) 

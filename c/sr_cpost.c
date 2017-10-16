@@ -278,6 +278,12 @@ void do1file( struct sr_context *sr_c, char *fn )
 
 }
 
+struct rename_list {
+       char *ofn;
+       char *nfn;
+       uint32_t cookie;
+       struct rename_list *next;
+};
 
 void dir_stack_check4events( struct sr_context *sr_c )
  /* at the end of each sleeping interval, read the queue of outstanding events
@@ -289,11 +295,9 @@ void dir_stack_check4events( struct sr_context *sr_c )
     char *p;
     struct inotify_event *e;
     struct dir_stack *d;
-    int rename_from=0;
-    int rename_to=0;
-    char *oldname;
-    char *newname;
     int ret;
+    struct rename_list *old_names=NULL,*on=NULL, *prevon=NULL;
+
     struct hash_entry *new_entry, *entries_done, *tmpe = NULL;
 
     /* fixme: MISSING: process pending list
@@ -303,7 +307,6 @@ void dir_stack_check4events( struct sr_context *sr_c )
     entries_done = NULL; 
 
     /* normal event processing. */
-    log_msg( LOG_DEBUG, "dir_stack_check4events\n" );
 
     /* FIXME: MISSING: initialize done_list? */
 
@@ -330,31 +333,47 @@ void dir_stack_check4events( struct sr_context *sr_c )
 
             /* rename processing
                rename arrives as two events, old name MOVE_FROM, new name MOVE_TO.
-               need to group them together to call sr_post_rename.
+               need to group them together by cookie to call sr_post_rename.
              */
-            if ( (e->mask&IN_MOVED_FROM) == IN_MOVED_FROM)
+            if ( ( (e->mask&IN_MOVED_FROM) == IN_MOVED_FROM) || ( (e->mask&IN_MOVED_TO) == IN_MOVED_TO ) )
             {
-               log_msg( LOG_DEBUG, "rename, oldname=%s\n", fn );
-               rename_from++;
-               oldname=strdup(fn);               
+               log_msg( LOG_DEBUG, "rename, %sname=%s\n", ((e->mask&IN_MOVED_TO) == IN_MOVED_TO )?"new":"old", fn );
+               if ( old_names ) {
+                  prevon=NULL;
+                  for( on = old_names; ( on && ( on->cookie != e->cookie )) ; on = on->next )
+                       prevon = on ;
+                  if (on) {
+                      if ( on->ofn ) 
+                      {
+                         log_msg( LOG_DEBUG, "ok invoking rename ofn=%s %s\n", on->ofn, fn );
+                         sr_post_rename( sr_c, on->ofn, fn );
+                         free(on->ofn);
+                      } else {
+                         log_msg( LOG_DEBUG, "ok invoking rename %s nfn=%s\n", fn, on->nfn );
+                         sr_post_rename( sr_c, fn, on->nfn );
+                         free(on->nfn);
+                      }
+                      if (prevon)
+                         prevon->next = on->next; 
+                      else
+                         old_names = on->next;
+                      free(on); 
+                      on=NULL;
+                      continue;
+                  }
+               } 
+               on=(struct rename_list *)malloc( sizeof( struct rename_list) );
+               on->cookie = e->cookie;
+               on->ofn=NULL;
+               on->nfn=NULL;
+               if ( (e->mask&IN_MOVED_TO) == IN_MOVED_TO )
+                          on->nfn=strdup(fn);               
+               else
+                          on->ofn=strdup(fn);               
+               on->next = old_names;
+               old_names=on;
             }
-            if ( (e->mask&IN_MOVED_TO) == IN_MOVED_TO )
-            {
-               rename_to++;
-               newname=strdup(fn);               
-               log_msg( LOG_DEBUG, "rename, newname=%s\n", fn );
-            }
-            if ( ( e->mask & (IN_MOVED_FROM|IN_MOVED_TO) ) && rename_from && rename_to  )
-            {
-               log_msg( LOG_DEBUG, "ok invoking rename %s %s\n", oldname, newname );
-               sr_post_rename( sr_c, oldname, newname );
-               rename_from=0;
-               rename_to=0;
-               free(oldname); 
-               free(newname);
-               oldname=NULL;
-               newname=NULL;
-            }
+
             /* FIXME: missing: check for repeats. if post succeeds, remove from list.
                   if post fails, move to *pending* list.
  
