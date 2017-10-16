@@ -398,6 +398,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
 {
   struct stat sb;
   struct sr_header_t first_user_header;
+  struct sr_mask_t *mask;
 
   if ( lstat( newname, &sb ) ) 
   {
@@ -411,14 +412,23 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   first_user_header.key = strdup( "newname" );
   first_user_header.value = strdup( newname );
 
-  sr_post( sr_c,  oldname, (!access(oldname, F_OK) && S_ISREG(sb.st_mode))?(&sb):NULL );
+  mask = isMatchingPattern( sr_c->cfg, oldname );
+  if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
+      log_msg( LOG_DEBUG, "rejecting: %s\n", oldname );
+  else 
+      sr_post( sr_c,  oldname, (!access(oldname, F_OK) && S_ISREG(sb.st_mode))?(&sb):NULL );
+ 
 
   free(first_user_header.key);  
   free(first_user_header.value);  
   first_user_header.key = strdup( "oldname" );
   first_user_header.value = strdup( oldname );
 
-  sr_post( sr_c,  newname, &sb );
+  mask = isMatchingPattern( sr_c->cfg, newname );
+  if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
+      log_msg( LOG_DEBUG, "rejecting: %s\n", newname );
+  else 
+      sr_post( sr_c,  newname, &sb );
 
   free(first_user_header.key);  
   sr_c->cfg->user_headers = first_user_header.next ;

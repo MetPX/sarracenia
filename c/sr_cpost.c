@@ -136,14 +136,13 @@ char evstr[80];
 
 char *inotify_event_2string( uint32_t mask )
 {
-    
-    if (mask|IN_CREATE) strcpy(evstr, "create");
-    else if (mask|IN_MODIFY) strcpy(evstr, "modify");
-    else if (mask|IN_MOVED_FROM) strcpy(evstr, "rename");
-    else if (mask|IN_MOVED_TO) strcpy(evstr, "rename");
-    else if (mask|IN_DELETE) strcpy(evstr, "delete");
-    else strcpy( evstr, "dunno!" );
-    if (mask|IN_ISDIR) strcat( evstr, ",directory" );
+    if (mask&IN_CREATE) strcpy(evstr, "create");
+    else if (mask&IN_MODIFY) strcpy(evstr, "modify");
+    else if (mask&IN_MOVED_FROM) strcpy(evstr, "rename");
+    else if (mask&IN_MOVED_TO) strcpy(evstr, "rename");
+    else if (mask&IN_DELETE) strcpy(evstr, "delete");
+    else sprintf( evstr, "dunno: %04x!", mask );
+    if (mask&IN_ISDIR) strcat( evstr, ",directory" );
     return(evstr);
 }
 
@@ -303,6 +302,7 @@ void dir_stack_check4events( struct sr_context *sr_c )
     entries_done = NULL; 
 
     /* normal event processing. */
+    log_msg( LOG_DEBUG, "dir_stack_check4events\n" );
 
     /* FIXME: MISSING: initialize done_list? */
 
@@ -322,12 +322,11 @@ void dir_stack_check4events( struct sr_context *sr_c )
                  continue;
             } 
             sprintf( fn, "%s/%s", d->path, e->name ); 
-            if (sr_c->cfg->debug)
-            {
-                printf( "bytes read: %d, sz ev: %ld, event: %s: len=%d, fn=%s\n",
-                    ret, sizeof(struct inotify_event)+e->len,
+
+            log_msg( LOG_DEBUG, "bytes read: %d, sz ev: %ld, event: %04x %s: len=%d, fn=%s\n",
+                    ret, sizeof(struct inotify_event)+e->len, e->mask,
                     inotify_event_2string(e->mask), e->len, fn );
-            }
+
             /* rename processing
                rename arrives as two events, old name MOVE_FROM, new name MOVE_TO.
                need to group them together to call sr_post_rename.
@@ -363,6 +362,7 @@ void dir_stack_check4events( struct sr_context *sr_c )
                      store the list in order, so faster search.
                best to do 1 first, and then optimize later if necessary.                     
              */
+
             HASH_FIND_STR( entries_done, fn, tmpe );
 
             log_msg( LOG_DEBUG, "looking in entries_done, for %s, result=%p\n", fn, tmpe );
@@ -377,6 +377,8 @@ void dir_stack_check4events( struct sr_context *sr_c )
                     log_msg( LOG_DEBUG, "do one file: %s\n", fn );
                     do1file( sr_c, fn);
                 }
+            } else {
+                log_msg( LOG_DEBUG, "entries_done hit! ignoring:%s\n", fn );
             } 
         }
     }
