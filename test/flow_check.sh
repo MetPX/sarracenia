@@ -311,7 +311,7 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
 
 fi
 
-sleep 10
+#sleep 10
 
 countall
 

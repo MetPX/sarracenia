@@ -98,7 +98,7 @@ templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.
 if [ "$C_ALSO" ]; then
     c_templates="`ls cflow_templates/*/*.conf cflow_templates/*/*.inc`"
     templates="$templates $c_templates"
-    echo "Adding C implementation tests as as well: $c_templates "
+    echo "as sr_cpost is available, adding C implementation tests as as well"
 fi
 
 for cf in ${templates}; do
@@ -163,9 +163,13 @@ count_of_checks=$((${count_of_checks}+1))
 sr_audit --users foreground
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-qchk 11 "queues existing after 1st audit" "show overview" 
-
-xchk 27 "exchanges for flow test created."
+if [ "$C_ALSO" ]; then
+   qchk 15 "queues existing after 1st audit" "show overview" 
+   xchk 31 "exchanges for flow test created."
+else
+   qchk 11 "queues existing after 1st audit" "show overview" 
+   xchk 27 "exchanges for flow test created."
+fi
 
 if [ "$1" = "declare" ]; then
    exit 0

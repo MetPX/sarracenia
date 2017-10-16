@@ -289,7 +289,8 @@ void dir_stack_check4events( struct sr_context *sr_c )
     char *p;
     struct inotify_event *e;
     struct dir_stack *d;
-    int rename_steps=0;
+    int rename_from=0;
+    int rename_to=0;
     char *oldname;
     char *newname;
     int ret;
@@ -334,20 +335,21 @@ void dir_stack_check4events( struct sr_context *sr_c )
             if ( (e->mask&IN_MOVED_FROM) == IN_MOVED_FROM)
             {
                log_msg( LOG_DEBUG, "rename, oldname=%s\n", fn );
-               rename_steps++;
+               rename_from++;
                oldname=strdup(fn);               
             }
             if ( (e->mask&IN_MOVED_TO) == IN_MOVED_TO )
             {
-               rename_steps++;
+               rename_to++;
                newname=strdup(fn);               
                log_msg( LOG_DEBUG, "rename, newname=%s\n", fn );
             }
-            if ( ( e->mask && (IN_MOVED_FROM|IN_MOVED_TO) ) && ( rename_steps == 2 )  )
+            if ( ( e->mask & (IN_MOVED_FROM|IN_MOVED_TO) ) && rename_from && rename_to  )
             {
                log_msg( LOG_DEBUG, "ok invoking rename %s %s\n", oldname, newname );
                sr_post_rename( sr_c, oldname, newname );
-               rename_steps=0;
+               rename_from=0;
+               rename_to=0;
                free(oldname); 
                free(newname);
                oldname=NULL;
