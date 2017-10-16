@@ -895,7 +895,7 @@ def main():
          cfg  = config
          if config : cfg = os.path.basename(config)
          post.logger.info("%s %s %s (unimplemented in python)" % (post.program_name,cfg,action))
-         sys.exit(0)
+         os._exit(0)
 
     # supported actions in both
     elif action in ['cleanup','declare','setup' ] :
@@ -907,7 +907,7 @@ def main():
          post      = sr_post(config=None,args=sys.argv[1:])
          post.loop = False
 
-    if post.in_error : sys.exit(1)
+    if post.in_error : os._exit(1)
 
     try :
 
@@ -952,20 +952,20 @@ def main():
     except :
              (stype, value, tb) = sys.exc_info()
              post.logger.error("Type: %s, Value:%s\n" % (stype, value))
-             sys.exit(1)
+             os._exit(1)
 
     """
     Workaround closes stderr to suppress error messages from sys.exit(0).
     See bug #74 for details. 
-    """
     if post.debug:
         post.logger.debug("FIXME: if you connect to SSL broker, there is a tear down bug bug #74." )
         post.logger.debug("FIXME: Message is harmless, but should take the time to fix eventually." )
         post.logger.debug("FIXME: outside debug mode, the message is suppressed." )
     else:
         os.close(2)
+    """
 
-    sys.exit(0)
+    os._exit(0)
 
 # =========================================
 # direct invocation

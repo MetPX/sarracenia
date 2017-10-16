@@ -188,9 +188,9 @@ def main():
     else :
            shovel.logger.error("action unknown %s" % action)
            shovel.help()
-           sys.exit(1)
+           os._exit(1)
 
-    sys.exit(0)
+    os._exit(0)
 
 # =========================================
 # direct invocation

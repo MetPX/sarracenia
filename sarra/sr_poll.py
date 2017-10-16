@@ -918,9 +918,9 @@ def main():
     else :
            poll.logger.error("action unknown %s" % action)
            poll.help()
-           sys.exit(1)
+           os._exit(1)
 
-    sys.exit(0)
+    os._exit(0)
 
 
 # =========================================
