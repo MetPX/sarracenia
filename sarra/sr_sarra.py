@@ -225,9 +225,9 @@ def main():
     else :
            sarra.logger.error("action unknown %s" % action)
            self.help()
-           sys.exit(1)
+           os._exit(1)
 
-    sys.exit(0)
+    os._exit(0)
 
 # =========================================
 # direct invocation
