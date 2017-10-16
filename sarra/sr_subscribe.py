@@ -1640,9 +1640,9 @@ def main():
     else :
            subscribe.logger.error("action unknown %s" % action)
            subscribe.help()
-           sys.exit(1)
+           os_.exit(1)
 
-    sys.exit(0)
+    os._exit(0)
 
 # =========================================
 # direct invocation
