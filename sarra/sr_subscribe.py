@@ -1234,9 +1234,11 @@ class sr_subscribe(sr_instances):
 
         if '${DR}' in cdir and self.document_root != None :
            new_dir = new_dir.replace('${DR}',self.document_root)
+           new_dir = new_dir.replace('//','/')
 
         if '${PDR}' in cdir and self.post_document_root != None :
            new_dir = new_dir.replace('${PDR}',self.post_document_root)
+           new_dir = new_dir.replace('//','/')
 
         if '${YYYYMMDD}' in cdir :
            YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
@@ -1253,6 +1255,7 @@ class sr_subscribe(sr_instances):
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 
            new_dir = new_dir.replace('${HH}',HH)
+
 
         return new_dir
 
@@ -1279,12 +1282,15 @@ class sr_subscribe(sr_instances):
         if self.post_document_root :
            relpath = relpath.replace(self.post_document_root,'')
 
+        relpath  = relpath.replace('//','/')
         token    = relpath.split('/')
         filename = token[-1]
 
         # if strip is used... strip N heading directories
 
         if self.strip > 0 :
+           strip = self.strip
+           if relpath[0] == '/' : strip = strip + 1
            try :
                    token   = token[self.strip:]
            except:
@@ -1335,10 +1341,12 @@ class sr_subscribe(sr_instances):
         relpath = new_dir + '/' + filename
         if self.post_document_root :
            relpath = relpath.replace(self.post_document_root, '')
+        relpath = relpath.replace('//','/')
 
         # set the results for the new file (downloading or sending)
 
         self.new_baseurl = 'file:'
+
         self.new_relpath = relpath
 
         if self.post_broker and self.url :
