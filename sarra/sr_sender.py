@@ -263,7 +263,8 @@ class sr_sender(sr_subscribe):
         # check message for local file
         #=================================
 
-        if self.msg.baseurl != 'file:' or not os.path.isfile(self.msg.relpath) :
+        if self.msg.baseurl != 'file:' or \
+           (self.msg.sumflg != 'R' and not os.path.isfile(self.msg.relpath)) :
            self.logger.error("The file to send is not local: %s" % self.msg.relpath)
            return False
 
