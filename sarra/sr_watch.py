@@ -395,7 +395,7 @@ def main():
                for f in done:
                    del self.events_outstanding[f]
 
-            self.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
+            #self.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
 
 
         def event_post(self, path, tag, key=None, value=None):
