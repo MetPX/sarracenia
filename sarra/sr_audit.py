@@ -148,8 +148,8 @@ class sr_audit(sr_instances):
 
         # audit must be user  admin
         if not hasattr(self,'admin'):
-           self.logger.error("admin user not set... sr_audit stop")
-           sys.exit(1)
+           self.logger.info("admin user not set...")
+           os._exit(0)
 
         # get other admins  users
 
@@ -780,8 +780,8 @@ def main():
     if hasattr( audit.admin, 'username') :
         audit.logger.debug("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
     else:
-        audit.logger.critical("As no admin is set, shutting down sr_audit")
-        sys.exit(0)
+        audit.logger.info("%s has no admin set..." % audit.program_name)
+        action = 'stop'
 
     if   action == 'foreground' : audit.foreground_parent()
     elif action == 'reload'     : audit.reload_parent()
@@ -795,9 +795,9 @@ def main():
     elif action == 'setup'      : audit.setup()
     else :
            audit.logger.error("action unknown %s" % action)
-           sys.exit(1)
+           os._exit(1)
 
-    sys.exit(0)
+    os._exit(0)
 
 # =========================================
 # direct invocation
