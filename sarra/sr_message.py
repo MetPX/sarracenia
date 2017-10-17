@@ -233,7 +233,7 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.baseurl = token[2]
-        self.relpath = token[3]
+        self.relpath = token[3].replace('%20',' ')
 
         self.set_notice(token[2],token[3])
 
@@ -273,7 +273,7 @@ class sr_message():
         token        = self.notice.split(' ')
         self.time    = token[0]
         self.baseurl = token[1]
-        self.relpath = token[2]
+        self.relpath = token[2].replace('%20',' ')
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
 
@@ -530,22 +530,23 @@ class sr_message():
         self.time   = time
         if time    == None : self.set_time()
         path        = url.path.strip('/')
+        notice_path = path.replace(' ','%20')
 
         if url.scheme == 'file' :
-           self.notice = '%s %s %s' % (self.time,'file:','/'+path)
+           self.notice = '%s %s %s' % (self.time,'file:','/'+notice_path)
            return
 
         urlstr      = url.geturl()
         static_part = urlstr.replace(url.path,'') + '/'
 
         if url.scheme == 'http' :
-           self.notice = '%s %s %s' % (self.time,static_part,path)
+           self.notice = '%s %s %s' % (self.time,static_part,notice_path)
            return
 
         if url.scheme[-3:] == 'ftp'  :
-           if url.path[:2] == '//'   : path = '/' + path
+           if url.path[:2] == '//'   : notice_path = '/' + notice_path
 
-        self.notice = '%s %s %s' % (self.time,static_part,path)
+        self.notice = '%s %s %s' % (self.time,static_part,notice_path)
 
     def set_notice(self,baseurl,relpath,time=None):
 
@@ -554,12 +555,14 @@ class sr_message():
         self.relpath = relpath
         if not time  : self.set_time()
 
-        self.notice = '%s %s %s' % (self.time,baseurl,relpath)
+        notice_relpath = relpath.replace(' ','%20')
+
+        self.notice = '%s %s %s' % (self.time,baseurl,notice_relpath)
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
 
-        self.urlstr  = baseurl+relpath
+        self.urlstr  = baseurl+notice_relpath
         self.url     = urllib.parse.urlparse(self.urlstr)
         #========================================
 
