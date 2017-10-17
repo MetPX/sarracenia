@@ -87,7 +87,7 @@ done
 mkdir -p "$CONFDIR" 2> /dev/null
 
 
-for d in poll cpump post report sarra sender shovel subscribe watch winnow ; do
+for d in poll cpost cpump post report sarra sender shovel subscribe watch winnow ; do
    if [ ! -d "$CONFDIR"/$d ]; then
       mkdir "$CONFDIR"/$d
    fi
