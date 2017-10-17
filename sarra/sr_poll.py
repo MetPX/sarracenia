@@ -621,7 +621,7 @@ class sr_poll(sr_instances):
 
             pdir = self.dirPattern(self.destDir)
             if pdir != '' : self.destDir = pdir
-            self.destDir = self.destDir[1:]
+            #self.destDir = self.destDir[1:]
 
             # cd to that directory
 
