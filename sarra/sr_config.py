@@ -839,10 +839,23 @@ class sr_config:
            # options need to check if there
            if hasattr(self,'broker') and self.broker  : buser  = self.broker.username
 
-           words1 = words1.replace('${HOSTNAME}',   self.hostname)
-           words1 = words1.replace('${PROGRAM}',    self.program_name)
-           words1 = words1.replace('${CONFIG}',     config)
-           words1 = words1.replace('${BROKER_USER}',buser)
+           if '$' in words1 :
+              words1 = words1.replace('${HOSTNAME}',   self.hostname)
+              words1 = words1.replace('${PROGRAM}',    self.program_name)
+              words1 = words1.replace('${CONFIG}',     config)
+              words1 = words1.replace('${BROKER_USER}',buser)
+
+           if '$' in words1 :
+              elst = []
+              plst = words1.split('}')
+              for parts in plst :
+                  try:
+                          if '{' in parts : elst.append((parts.split('{'))[1])
+                  except: pass
+              for e in elst :
+                  try:    words1 = words1.replace('${'+e+'}',os.environ.get(e))
+                  except: pass
+
           
         # parsing
 
@@ -1007,7 +1020,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'directory': # See: sr_config.7 
-                     self.currentDir = words1
+                     self.currentDir = words1.replace('//','/')
                      n = 2
 
                 elif words0 in ['discard','d','download-and-discard']:  # sr_subscribe.1
@@ -2134,6 +2147,12 @@ def self_test():
        not 'tutu2' in cfg.headers_to_del      or \
        len(cfg.headers_to_del)     != 2 :
        cfg.logger.error(" option headers deleting entries did not work")
+       failed = True
+
+    opt4="directory ${MAIL}/${USER}/${SHELL}/blabla"
+    cfg.option(opt4.split())
+    if '$' in cfg.currentDir:
+       cfg.logger.error(" env variable substitution failed %s" % cfg.currentDir)
        failed = True
 
     if not failed : print("TEST PASSED")
