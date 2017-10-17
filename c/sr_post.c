@@ -165,18 +165,24 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
  
     header_reset();
 
-    amqp_header_add( "from_cluster", m->from_cluster );
+    if ( m->from_cluster && m->from_cluster[0] )
+        amqp_header_add( "from_cluster", m->from_cluster );
 
     if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
     {
        amqp_header_add( "parts", sr_message_partstr(m) );
-       amqp_header_add( "atime", m->atime );
+
+       if ( m->atime && m->atime[0] )
+           amqp_header_add( "atime", m->atime );
+
        if ( m->mode > 0 ) 
        {
            sprintf( smallbuf, "%04o", m->mode );
            amqp_header_add( "mode", smallbuf );
        }
-       amqp_header_add( "mtime", m->mtime );
+
+       if ( m->mtime && m->mtime[0] )
+           amqp_header_add( "mtime", m->mtime );
     }
 
     if ( m->sum[0] == 'L' )
@@ -185,9 +191,11 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     }
 
     amqp_header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
-    amqp_header_add( "to_clusters", m->to_clusters );
 
-    for(  uh=m->user_headers; uh ; uh=uh->next )
+    if ( m->to_clusters && m->to_clusters[0] )
+        amqp_header_add( "to_clusters", m->to_clusters );
+
+    for( uh=m->user_headers; uh ; uh=uh->next )
         amqp_header_add(uh->key, uh->value);
 
     table.num_entries = hdrcnt;
