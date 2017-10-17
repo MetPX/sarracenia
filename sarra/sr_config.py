@@ -1639,8 +1639,6 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['source_from_exchange','sfe']: # See: sr_sarra.8
-                     self.logger.warning("deprecated source_from exchange is of no use'")
-                     self.logger.warning("if a message has no source it is automatically assigned'")
                      if (words1 is None ) or words[0][0:1] == '-' : 
                         self.source_from_exchange = True
                         n = 1
