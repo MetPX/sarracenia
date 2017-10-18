@@ -562,6 +562,13 @@ int main(int argc, char **argv)
     {
         log_msg( LOG_WARNING, "failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
     }
+    if ( !strcmp( sr_cfg.action, "setup" ) )
+    {
+       sr_context_close(sr_c);
+       free(sr_c);
+       sr_config_free(&sr_cfg);  
+       exit(0);
+    }
 
     if ( strcmp( sr_cfg.action, "foreground" ) )
     {
