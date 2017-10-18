@@ -27,23 +27,15 @@ httpdocroot=`cat $tstdir/.httpdocroot`
 
 # function to see if same amount of files
 
-function wait_dir_to_be_the_same() {
+function wait_dir_to_be_the_same {
 
-       cd "$httpdocroot"/cfr
-       COUNT=`find . -type f -print | wc -l`
-       COUNT2=`find . -type l -print | wc -l`
-       TCOUNT=$(($COUNT+$COUNT2))
+       COUNT=`find "$httpdocroot"/cfr -type $1 -print | wc -l`
        sleep 5
-       cd ../cfile
-       MCOUNT=`find . -type f -print | wc -l`
-       MCOUNT2=`find . -type l -print | wc -l`
-       TMCOUNT=$(($MCOUNT+$MCOUNT2))
-       while [ "${TMCOUNT}" != "${TCOUNT}" ]; do
+       MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | wc -l`
+       while [ "${MCOUNT}" != "${COUNT}" ]; do
              sleep 5
-             MCOUNT=`find . -type f -print | wc -l`
-             MCOUNT2=`find . -type l -print | wc -l`
-             TMCOUNT=$(($MCOUNT+$MCOUNT2))
-             echo "(${TMCOUNT} expecting ${TCOUNT})"
+             MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | wc -l`
+             echo "(${MCOUNT} expecting ${COUNT})"
        done
 }
 
@@ -52,11 +44,13 @@ function wait_dir_to_be_the_same() {
 
 sr_cpost stop veille_f34 > /dev/null 2>&1
 sr_cpost cleanup veille_f34 > /dev/null 2>&1
-rm "$LOGDIR"/sr_cpost_veille_f34*.log 2> /dev/null
+rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
+sr_cpost setup veille_f34 > /dev/null 2>&1
 
 sr_subscribe stop cfile_f44 > /dev/null 2>&1
 sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
-rm "$LOGDIR"/sr_subscribe_cfile_f44*.log 2> /dev/null
+rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
+sr_subscribe setup cfile_f44 > /dev/null 2>&1
 
 # preventive cleanup (previous runs)
 
@@ -81,7 +75,7 @@ echo "checking sr_cpost copy"
 cd "$httpdocroot"/cfr
 find . -type f -print                | xargs -iAAA cp AAA AAA.COPY
 find . -type f -print | grep -v COPY | xargs -iAAA cp AAA AAA.COPY2
-wait_dir_to_be_the_same
+wait_dir_to_be_the_same f
 echo "success"
 
 # move 
@@ -89,7 +83,7 @@ echo "success"
 echo "checking sr_cpost move"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | xargs -iAAA  mv AAA.COPY2 AAA.MOVE
-wait_dir_to_be_the_same
+wait_dir_to_be_the_same f
 echo "success"
 
 # softlink 
@@ -97,7 +91,7 @@ echo "success"
 echo "checking sr_cpost softlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | xargs -iAAA  ln -s AAA AAA.SLINK
-wait_dir_to_be_the_same
+wait_dir_to_be_the_same l
 echo "success"
 
 # hardlink 
@@ -105,16 +99,16 @@ echo "success"
 echo "checking sr_cpost hardlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA ln AAA AAA.HLINK
-wait_dir_to_be_the_same
+wait_dir_to_be_the_same f
 echo "success"
 
 # hardlink 
 
 echo "checking sr_cpost remove"
-cd "$httpdocroot"/cfr
+cd "$httpdocroot"/cfr 
 find . -type f -print | grep COPY | xargs -n1 rm
 find . -type f -print | grep MOVE | xargs -n1 rm
 find . -type f -print | grep LINK | xargs -n1 rm
 find . -type l -print | grep LINK | xargs -n1 rm
-wait_dir_to_be_the_same
+wait_dir_to_be_the_same f
 echo "success"
