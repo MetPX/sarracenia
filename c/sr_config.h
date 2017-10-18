@@ -86,6 +86,7 @@ struct sr_broker_t {
   int   port;
   char *exchange;
   int   exchange_split;
+  uint64_t last_delivery_tag;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
   struct sr_broker_t *next; 

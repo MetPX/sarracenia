@@ -6,6 +6,17 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* now support environment variables in config files with ${var}
+* bugfix: misbehaved when file names have blanks in them.
+* fix for bug #74 - error messages on shutdown of amqps connection.
+* C: cpost setup/cleanup/declare/restart etc... some were broken, fixed.
+* C: added sighandler to avoid cache corruption when terminating.
+* C: add rename support to cpost (was only in libcshim and python before.)
+* C: bugfix: C was inventing fields if not provided (mode=0, mtime="").
+* C: added tx.select & tx.confirm (publish acknowledgements)
+* C: FIXME: not yet: basic_ack (consumer acknowledges only after successful processing, rather than on receipt.)
+* C: integrated into flow_tests.
+
 **2.17.10a1**
 
 * cleanup/declare/setup actions (all programs): no exit, log with configname

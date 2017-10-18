@@ -108,6 +108,7 @@ int main(int argc, char **argv)
   {
       sr_consume_cleanup(sr_c);
       sr_post_cleanup( sr_c ); 
+      sr_context_close(sr_c);
       return(0);
   }
 
@@ -145,6 +146,8 @@ int main(int argc, char **argv)
 
       // inlet: from queue, json, tree.
       m=sr_consume(sr_c);
+
+      if (!m) break;
 
       log_msg( LOG_INFO, "received: %s\n", sr_message_2log(m) );
 

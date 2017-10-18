@@ -21,8 +21,13 @@ EOF
 
 eval `application_dirs`
 
-
+set -x
 sr stop
+sr_cpump cleanup pelle_dd1_f04
+sr_cpump cleanup pelle_dd2_f05
+sr cleanup
+
+set +x
 
 
 echo "cleanup trivial http server... "
@@ -77,6 +82,7 @@ if [ "$C_ALSO" ]; then
   templates="$templates $c_templates"
 fi
 
+
 state_files=""
 
 for cf in ${templates}; do
@@ -97,5 +103,9 @@ if [ -f .httpdocroot ]; then
    httpdr="`cat .httpdocroot`"
 fi
 
-echo " you may want to rm -rf $httpdr $LOGDIR/* $CACHEDIR/watch/*/* ${state_files} "
+if [ "${LOGDIR}" -a "${state_files}" ]; then
+   set -x
+   rm -rf $httpdr $LOGDIR/* $CACHEDIR/watch/*/* ${state_files}
+   set +x
+fi
 

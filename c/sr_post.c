@@ -480,7 +480,7 @@ int sr_post_cleanup( struct sr_context *sr_c )
         }
     } else {
         log_msg( LOG_INFO, "deleting exchange %s\n", sr_broker_uri( sr_c->cfg->post_broker )  );
-        amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->exchange), 0 );
+        amqp_exchange_delete( sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(sr_c->cfg->post_broker->exchange), 0 );
         reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
         if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
         {

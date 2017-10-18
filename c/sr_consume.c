@@ -324,11 +324,31 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
         free(tmph);
     }
 
+    /*
+      basic_ack added as per michel's algorithm prior to consuming next.
+      formerly was:  acked on receipt, which meant if the consumer crashed before
+      it finished, the message would not be requeued.  
+      now:  only ack when starting to work on next message.
+     */
+ /*
+    if (sr_c->cfg->broker->last_delivery_tag > 0)
+    {
+        log_msg( LOG_DEBUG, "acking: %d\n", sr_c->cfg->broker->last_delivery_tag );
+        result = amqp_basic_ack( sr_c->cfg->broker->conn, 1, sr_c->cfg->broker->last_delivery_tag, 0 );
+
+        reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+        if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+        {
+                sr_amqp_reply_print(reply, "basic_ack failed");
+                return(NULL);
+        }
+    }
+  */
     amqp_basic_consume(sr_c->cfg->broker->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 
           amqp_empty_bytes, // consumer_tag
           0,  // no_local
-          1,  // ack
+          1,  // ack - if set to 1, then comment out basic_ack code above.
           0,  // not_exclusive
           amqp_empty_table);
 
@@ -355,6 +375,9 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
   
     d = (amqp_basic_deliver_t *) frame.payload.method.decoded;
 
+    log_msg( LOG_DEBUG, "consumer_tag: %s, delivery_tag: %d\n", (char *)d->consumer_tag.bytes, d->delivery_tag );
+
+    sr_c->cfg->broker->last_delivery_tag = d->delivery_tag ;
     /*
     log_msg( stdout, " {\n\t\"exchange\": \"%.*s\",\n\t\"routingkey\": \"%.*s\",\n",
                (int) d->exchange.len, (char *) d->exchange.bytes,
