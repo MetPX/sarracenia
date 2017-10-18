@@ -481,10 +481,9 @@ int main(int argc, char **argv)
     struct timespec tsleep ;
     float elapsed;
     
-    if ( argc < 3 ) usage();
-   
     sr_config_init( &sr_cfg, "cpost" );
   
+
     i=1;
     while( i < argc ) 
     {
@@ -509,6 +508,13 @@ int main(int argc, char **argv)
 
     }
 
+    if ( sr_cfg.help ) usage();
+
+    if ( !strcmp( sr_cfg.action, "list" ))
+    {
+        sr_config_list( &sr_cfg );
+        exit(0);
+    }
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");

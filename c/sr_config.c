@@ -28,6 +28,9 @@ status:
 #include <sys/socket.h>
 #include <netdb.h>
 
+//for opendir/readdir
+#include <dirent.h>
+
 // for kill
 #include <signal.h>
 
@@ -48,9 +51,12 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *n;
 
    if ( !strcmp( option, "start" ) 
+        || !strcmp( option, "list" )
         || !strcmp( option, "status" )
         || !strcmp( option, "stop" ) 
         || !strcmp( option, "foreground" ) 
+        || !strcmp( option, "reload" ) 
+        || !strcmp( option, "restart" ) 
         || !strcmp( option, "setup" ) 
         || !strcmp( option, "cleanup" ) 
         || !strcmp( option, "declare" ) 
@@ -640,6 +646,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->heartbeat = atof(argument);
       return(2);
 
+  } else if ( !strcmp( option, "help" ) || !strcmp( option, "h" ) ) {
+      sr_cfg->help=1;
+      return(1);
+
   } else if ( !strcmp( option, "header" ) ) {
       val = sr_add_header(sr_cfg, argument);
       return(1+(val&1));
@@ -859,6 +869,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
   sr_cfg->heartbeat=300.0;
+  sr_cfg->help=0;
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   sr_cfg->user_headers=NULL; 
@@ -1003,7 +1014,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      sr_cfg->progname=strdup("NONE");
 
   // if the state directory is missing, build it.
-  sprintf( p, "%s/.cache/%s/%s", getenv("HOME"), sr_cfg->progname, sr_cfg->configname ) ;
+  sprintf( p, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_cfg->progname, sr_cfg->configname ) ;
   ret = stat( p, &sb );
   if ( ret ) {
      sprintf( p, "%s/.cache", getenv("HOME") );
@@ -1293,6 +1304,7 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
             fprintf( stderr, "running instance for config %s (pid %d) stopped.\n", sr_cfg->configname, sr_cfg->pid );
             return(0);
         }
+        if ( !strcmp( sr_cfg->action, "restart" ) ) return(0);
     } else {
         fprintf( stderr, "config %s not running.\n", sr_cfg->configname );
         /*  MG FIXME if we are not running... if action is stop return 0 */
@@ -1304,4 +1316,34 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
 
     return(1); // Success! ready to continue!
 
+}
+
+
+void sr_config_list( struct sr_config_t *sr_cfg )
+{
+  char p[256];
+  DIR *cld;
+  struct dirent *d;
+  char *s;
+  int l;
+  
+  sprintf( p, "%s/.config/sarra/%s", getenv("HOME"), sr_cfg->progname ) ;
+  
+  fprintf( stdout, "Configurations available for sr_%s:\n", sr_cfg->progname );
+  cld = opendir( p );
+  while ( ( d = readdir(cld)) ) 
+  {
+       if ( d->d_name[0] == '.' ) continue;
+       l = strlen(d->d_name);
+       l -=5;
+       if ( l > 0 ) 
+       {
+           s = &(d->d_name[l]);
+           if (strcmp(s,".conf"))
+              continue;
+           *s='\0';
+       }
+       fprintf( stdout, "\t%s\n" , d->d_name );
+  }
+  closedir(cld);
 }
