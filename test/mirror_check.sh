@@ -51,9 +51,11 @@ function wait_dir_to_be_the_same() {
 # MIRROR TEST
 
 sr_cpost stop veille_f34 > /dev/null 2>&1
+sr_cpost cleanup veille_f34 > /dev/null 2>&1
 rm "$LOGDIR"/sr_cpost_veille_f34*.log 2> /dev/null
 
 sr_subscribe stop cfile_f44 > /dev/null 2>&1
+sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
 rm "$LOGDIR"/sr_subscribe_cfile_f44*.log 2> /dev/null
 
 # preventive cleanup (previous runs)
