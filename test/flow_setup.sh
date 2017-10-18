@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# make sure libsrshim is off
+
+export SR_POST_CONFIG=""
+export LD_PRELOAD=""
+
+
 export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
