@@ -75,7 +75,7 @@ rm /tmp/libsrshim.log.tmp 2> /dev/null
 
 # copy 
 
-echo "checking sr_cpost copy"
+echo "checking libsrshim copy"
 find "$httpdocroot"/cfr -type f -print                | xargs -iAAA cp AAA AAA.COPY  >> /tmp/libsrshim.log.tmp 2>&1
 find "$httpdocroot"/cfr -type f -print | grep -v COPY | xargs -iAAA cp AAA AAA.COPY2 >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same copy
@@ -83,28 +83,28 @@ echo "success"
 
 # move 
 
-echo "checking sr_cpost move"
+echo "checking libsrshim move"
 find "$httpdocroot"/cfr -type f -print | grep -v COPY | xargs -iAAA  mv AAA.COPY2 AAA.MOVE  >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same move
 echo "success"
 
 # softlink 
 
-echo "checking sr_cpost softlink"
+echo "checking libsrshim softlink"
 find "$httpdocroot"/cfr -type f -print | grep -v COPY | grep -v MOVE | xargs -iAAA  ln -s AAA AAA.SLINK >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same softlink
 echo "success"
 
 # hardlink 
 
-echo "checking sr_cpost hardlink"
+echo "checking libsrshim hardlink"
 find "$httpdocroot"/cfr -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA ln AAA AAA.HLINK >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same hardlink
 echo "success"
 
 # hardlink 
 
-echo "checking sr_cpost remove"
+echo "checking libsrshim remove"
 find "$httpdocroot"/cfr -type f -print | grep COPY | xargs -n1 rm >> /tmp/libsrshim.log.tmp 2>&1
 find "$httpdocroot"/cfr -type f -print | grep MOVE | xargs -n1 rm >> /tmp/libsrshim.log.tmp 2>&1
 find "$httpdocroot"/cfr -type f -print | grep LINK | xargs -n1 rm >> /tmp/libsrshim.log.tmp 2>&1
