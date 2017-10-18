@@ -153,6 +153,8 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     char thisexchange[256];
     amqp_table_t table;
     amqp_basic_properties_t props;
+    amqp_tx_commit_ok_t *commit_status;
+    amqp_rpc_reply_t reply;
     signed int status;
     struct sr_header_t *uh;
 
@@ -215,11 +217,24 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(thisexchange), 
               amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
 
-    amqp_tx_commit( sr_c->cfg->post_broker->conn, 1 );
+
     if ( status < 0 ) 
+    {
         log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
-    else 
-        log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
+        return;
+    }
+
+    commit_status = amqp_tx_commit( sr_c->cfg->post_broker->conn, 1 );
+    if ( ! commit_status )
+    {
+       log_msg( LOG_ERROR, "broker failed to acknowledge publish event\n"  );
+       reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+           sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+       }
+       return;
+    }
+    log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
 
 }
 

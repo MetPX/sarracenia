@@ -190,7 +190,7 @@ void do1file( struct sr_context *sr_c, char *fn )
     }
 
     if ( lstat(fn, &sb) < 0 ) {
-         //log_msg( LOG_ERROR, "failed to lstat: %s\n", fn );
+         log_msg( LOG_INFO, "failed to lstat: %s, remove assumed.\n", fn );
          sr_post(sr_c,fn, NULL);       /* post file remove */
          return;
     }
@@ -558,17 +558,9 @@ int main(int argc, char **argv)
         return(0);
     }
   
- /*
-    FIXME: wait until next version of sarra is released... not permitted on old ones.
-    warn for now, error exit on future versions.
-  */
-    if ( !strcmp( sr_cfg.action, "setup" ) || !strcmp( sr_cfg.action, "declare") )
+    if ( !sr_post_init( sr_c ) ) 
     {
-        if ( !sr_post_init( sr_c ) ) 
-        {
         log_msg( LOG_WARNING, "failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
-        }
-        return(0);
     }
 
     if ( strcmp( sr_cfg.action, "foreground" ) )
