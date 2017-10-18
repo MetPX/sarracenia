@@ -1281,6 +1281,7 @@ class sr_subscribe(sr_instances):
         # sometime like in watch or post, relpath has post_document_root
         if self.post_document_root :
            relpath = relpath.replace(self.post_document_root,'')
+           if relpath[0] == '/' : relpath = relpath[1:]
 
         relpath  = relpath.replace('//','/')
         token    = relpath.split('/')
@@ -1292,7 +1293,7 @@ class sr_subscribe(sr_instances):
            strip = self.strip
            if relpath[0] == '/' : strip = strip + 1
            try :
-                   token   = token[self.strip:]
+                   token   = token[strip:]
            except:
                    token   = [filename]
 
