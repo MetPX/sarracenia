@@ -111,6 +111,7 @@ struct sr_config_t {
   int                 follow_symlinks;
   int                 force_polling;
   float               heartbeat;
+  int                 help;           // print usage and exit if set.
   int                 instance;
   char               *last_matched;  //have run isMatching.
   char               *list;          //method to generate initial input list:  file or queue
@@ -230,5 +231,7 @@ int sr_config_startstop( struct sr_config_t *sr_cfg);
 
  */
 
+void sr_config_list( struct sr_config_t *sr_cfg );
+/* list the available configurations for the given progname */
 
 #endif
