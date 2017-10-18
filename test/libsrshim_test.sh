@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export SR_POST_CONFIG=""
+export LD_PRELOAD=""
+
 function application_dirs {
 python3 << EOF
 import appdirs
