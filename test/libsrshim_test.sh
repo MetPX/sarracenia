@@ -120,3 +120,6 @@ find . -type f -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
 find . -type l -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same f
 echo "success"
+
+export SR_POST_CONFIG=""
+export LD_PRELOAD=""
