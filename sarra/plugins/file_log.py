@@ -15,7 +15,7 @@ class File_Log(object):
           
     def perform(self,parent):
 
-        parent.logger.info("file_log downloaded to: %s" % parent.msg.new_file)
+        parent.logger.info("file_log downloaded to: %s/%s" % ( parent.new_dir, parent.msg.new_file) )
         return True
 
 file_log = File_Log(self)

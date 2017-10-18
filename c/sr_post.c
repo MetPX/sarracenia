@@ -215,6 +215,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(thisexchange), 
               amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
 
+    amqp_tx_commit( sr_c->cfg->post_broker->conn, 1 );
     if ( status < 0 ) 
         log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
     else 

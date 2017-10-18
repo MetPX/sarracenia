@@ -190,7 +190,8 @@ void do1file( struct sr_context *sr_c, char *fn )
     }
 
     if ( lstat(fn, &sb) < 0 ) {
-         log_msg( LOG_ERROR, "failed to lstat: %s\n", fn );
+         //log_msg( LOG_ERROR, "failed to lstat: %s\n", fn );
+         sr_post(sr_c,fn, NULL);       /* post file remove */
          return;
     }
 

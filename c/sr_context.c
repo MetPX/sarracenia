@@ -156,6 +156,8 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
     return(NULL);
   }
 
+  amqp_tx_select(broker->conn, 1);
+
   return(broker);
 }
 
