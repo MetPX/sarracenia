@@ -25,6 +25,11 @@ The notices take the form:
   the consequence is either a configuration line that has no effect (wasteful) or the application
   may generate messages.  
    
+Installation Instructions
+-------------------------
+
+`Installation Guide <Install.html>`_
+
 
 
 git origin/master branch

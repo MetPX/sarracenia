@@ -20,8 +20,9 @@ Client Installation
 
 The package is built for python version 3.4 or higher.  On systems where
 they are available, debian packages are recommended.
-These can be obtained from the launchpad repository, or using pip
-(and PyPI.) In both cases, the other python packages (or dependencies) needed
+These can be obtained from the launchpad repository.
+If you cannot use debian packages, then consider pip packages avialable from PyPI.
+In both cases, the other python packages (or dependencies) needed
 will be installed by the package manager automatically.
 
 
@@ -61,17 +62,21 @@ PIP
 On windows, or other linux distributions where system packages are not available, the
 above procedures are not applicable.  There are also special cases, such as if using
 python in virtual env, where it is more practical to install the package using
-pip (python install package) from http://pypi.python.org/_.  It is straightforward
+pip (python install package) from `<http://pypi.python.org/>`_.  It is straightforward
 to do that::
 
   sudo pip install metpx-sarracenia
 
 and to upgrade after the initial installation::
 
-  sudo pip install --upgrade metpx-sarracenia
+  sudo pip uninstall metpx-sarracenia
+  sudo pip install metpx-sarracenia
 
-On many systems where both pythons 2 and 3 are installed, you may need to specify
-pip3 rather than pip.
+
+NOTE:: 
+
+  On many systems where both pythons 2 and 3 are installed, you may need to specify
+  pip3 rather than pip.
 
 
 Windows
@@ -84,5 +89,5 @@ complete package should install with all features.
 
 If you do not have a python environment handy, then the easiest one to get going with
 is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for Sarracenia. You can obtain winpython from http://winpython.github.io/_
+all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>'_ 
 (note: select python version >3 ) Then one can install with pip (as above.)
