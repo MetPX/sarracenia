@@ -12,3 +12,7 @@ reject .*/model_giops/.*
 # radar imagery
 reject .*/GIF/.*
 
+# reject moving targets (file overwritten in a matter of secs)
+reject .*citypage.*
+reject .*marine_weather.*
+reject .*hydrometric.*

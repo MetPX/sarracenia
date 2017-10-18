@@ -875,6 +875,9 @@ class sr_subscribe(sr_instances):
               self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
               return True
 
+           try:    os.chdir(self.new_dir)
+           except: pass
+
            try : 
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
