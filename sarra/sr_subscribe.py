@@ -875,11 +875,10 @@ class sr_subscribe(sr_instances):
               self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
               return True
 
-           try:    os.chdir(self.new_dir)
-           except: pass
-
            try : 
+               os.chdir(self.new_dir)
                if os.path.isfile(self.new_file) : os.unlink(self.new_file)
+               if os.path.islink(self.new_file) : os.unlink(self.new_file)
                if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
                self.logger.debug("%s removed" % self.new_file)
                if self.reportback: self.msg.report_publish(201, 'removed')
@@ -907,8 +906,18 @@ class sr_subscribe(sr_instances):
                                             ( self.new_file, self.msg.headers[ 'link' ] ) )
               return True
 
+           if not os.path.isdir(self.new_dir):
+              try   : os.makedirs(self.new_dir,0o775,True)
+              except: pass
+
+           try: os.chdir(self.new_dir)
+           except: pass
+
            try : 
                ok = True
+               if os.path.isfile(self.new_file) : os.unlink(self.new_file)
+               if os.path.islink(self.new_file) : os.unlink(self.new_file)
+               if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
                os.symlink( self.msg.headers[ 'link' ], self.new_file )
                self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201,'linked')
@@ -924,6 +933,7 @@ class sr_subscribe(sr_instances):
               if ok and self.reportback : self.msg.report_publish(201,'Published')
 
            return True
+
         #=================================
         # prepare download 
         # the document_root should exists : it the starting point of the downloads
@@ -1176,6 +1186,10 @@ class sr_subscribe(sr_instances):
            self.logger.info("report_daemons is False, skipping %s config" % self.config_name)
            self.cleanup()
            os._exit(0)
+
+        # reset was asked... so cleanup before connection
+
+        if self.reset : self.cleanup()
 
         # loop/process messages
 
