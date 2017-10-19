@@ -14,6 +14,7 @@ cp libsrshim.c ~/test/hoho_my_darling.txt
 touch hihi
 ln -s hoho haha
 mv haha hihi
+ln hihi hoohoo
 mv ~/test/hoho_my_darling.txt ~/test/hoho2.log
 rm hihi
 rm ~/test/hoho2.log

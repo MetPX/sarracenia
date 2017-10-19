@@ -147,25 +147,6 @@ int symlink(const char *target, const char* linkpath)
 }
 
 
-static int link_init_done = 0;
-typedef int  (*link_fn) (const char*,const char*);
-static link_fn link_fn_ptr = link;
-
-int link(const char *target, const char* linkpath) 
-{
-    int status;
-
-    if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG link %s %s\n", target, linkpath );
-    if (!link_init_done) {
-        link_fn_ptr = (link_fn) dlsym(RTLD_NEXT, "link");
-        link_init_done = 1;
-    }
-    status = link_fn_ptr(target,linkpath);
-    if ( !strncmp(target,"/dev/", 5) ) return(status);
-    if ( !strncmp(target,"/proc/", 6) ) return(status);
-
-    return(shimpost(linkpath, status));
-}
 
 static int unlinkat_init_done = 0;
 typedef int  (*unlinkat_fn) (int dirfd, const char*, int flags);
@@ -183,6 +164,7 @@ int unlinkat(int dirfd, const char *path, int flags)
         unlinkat_fn_ptr = (unlinkat_fn) dlsym(RTLD_NEXT, "unlinkat");
         unlinkat_init_done = 1;
     }
+
     status = unlinkat_fn_ptr(dirfd, path, flags);
 
     if ( dirfd == AT_FDCWD ) 
@@ -220,6 +202,15 @@ int unlink(const char *path)
     return(shimpost(path,status));
 }
 
+
+static int link_init_done = 0;
+typedef int  (*link_fn) (const char*,const char*);
+static link_fn link_fn_ptr = link;
+
+static int linkat_init_done = 0;
+typedef int  (*linkat_fn) (int, const char*, int, const char *, int flags);
+static linkat_fn linkat_fn_ptr = linkat;
+
 static int renameat_init_done = 0;
 typedef int  (*renameat_fn) (int, const char*, int, const char*);
 static renameat_fn renameat_fn_ptr = NULL;
@@ -228,7 +219,7 @@ static int renameat2_init_done = 0;
 typedef int  (*renameat2_fn) (int, const char*, int, const char*, unsigned int);
 static renameat2_fn renameat2_fn_ptr = NULL;
 
-int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags)
+int renameorlink(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags, int link)
 /*
   The real implementation of all renames.
  */
@@ -240,7 +231,7 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
     char oreal_path[PATH_MAX+1];
     char *oreal_return;
 
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 %s %s\n", oldpath, newpath );
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameorlink %s %s\n", oldpath, newpath );
 
     if (!renameat2_init_done) 
     {
@@ -253,14 +244,34 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
         renameat_init_done = 1;
     }
 
-    if (renameat2_fn_ptr) 
-       status = renameat2_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
-    else if (renameat_fn_ptr && !flags )
-       status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
-    else {
-       log_msg( LOG_ERROR, "SRSHIMDEBUG renameat99 could not identify real entry point for renameat\n" );
-       return(-1);
+    if (!link_init_done) {
+        link_fn_ptr = (link_fn) dlsym(RTLD_NEXT, "link");
+        link_init_done = 1;
+    }
 
+    if (!linkat_init_done) {
+        linkat_fn_ptr = (linkat_fn) dlsym(RTLD_NEXT, "linkat");
+        linkat_init_done = 1;
+    }
+
+    if (link)
+    {
+       if (linkat_fn_ptr) 
+          status = linkat_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
+       else if (link_fn_ptr && !flags )
+          status = link_fn_ptr(oldpath, newpath);
+       else {
+          log_msg( LOG_ERROR, "SRSHIMDEBUG renameorlink could not identify real entry point for link\n" );
+       }
+    } else {
+       if (renameat2_fn_ptr) 
+          status = renameat2_fn_ptr(olddirfd, oldpath, newdirfd, newpath, flags);
+       else if (renameat_fn_ptr && !flags )
+          status = renameat_fn_ptr(olddirfd, oldpath, newdirfd, newpath);
+       else {
+          log_msg( LOG_ERROR, "SRSHIMDEBUG renameorlink could not identify real entry point for renameat\n" );
+          return(-1);
+       }
     }
 
     srshim_initialize("post");
@@ -269,7 +280,7 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
 
     if (status) 
     {
-         if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 %s %s failed, no post\n", oldpath, newpath );
+         if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameorlink %s %s failed, no post\n", oldpath, newpath );
          return(status);
     }
 
@@ -281,7 +292,7 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
        oreal_return = realpath(fdpath, oreal_path);
        if (oreal_return) 
        {
-         log_msg( LOG_WARNING, "srshim renameat99 could not obtain real_path for olddirfd=%s failed, no post\n", fdpath );
+         log_msg( LOG_WARNING, "srshim renameorlink could not obtain real_path for olddirfd=%s failed, no post\n", fdpath );
          return(status);
        }
        strcat( oreal_path, "/" );
@@ -296,13 +307,13 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
        real_return = realpath(fdpath, real_path);
        if (real_return) 
        {
-         log_msg( LOG_WARNING, "srshim renameat99 could not obtain real_path for newdir=%s failed, no post\n", fdpath );
+         log_msg( LOG_WARNING, "srshim renameorlink could not obtain real_path for newdir=%s failed, no post\n", fdpath );
          return(status);
        }
        strcat( real_path, "/" );
        strcat( real_path, newpath );
     }
-    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat99 sr_c=%p, oreal_path=%s, real_path=%s\n", 
+    if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameorlink sr_c=%p, oreal_path=%s, real_path=%s\n", 
             sr_c, oreal_path, real_path );
 
     sr_post_rename( sr_c, oreal_path, real_path );
@@ -312,25 +323,39 @@ int renameat99(int olddirfd, const char *oldpath, int newdirfd, const char *newp
 }
 
 
+int link(const char *target, const char* linkpath) 
+{
+    if (getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG link %s %s\n", target, linkpath );
+    return( renameorlink(AT_FDCWD, target, AT_FDCWD, linkpath, 0, 1 ));
+}
+
+int linkat(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, int flags) 
+{
+    if ( getenv("SRSHIMDEBUG")) 
+         fprintf( stderr, "SRSHIMDEBUG linkat olddirfd=%d, oldname=%s newdirfd=%d newname=%s flags=%d\n", 
+            olddirfd, oldpath, newdirfd, newpath, flags );
+    return( renameorlink(olddirfd, oldpath, newdirfd, newpath, flags, 1 ));
+}
+
 int rename(const char *oldpath, const char *newpath)
 {
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG rename %s %s\n", oldpath, newpath );
 
-    return( renameat99(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0 ));
+    return( renameorlink(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0, 0 ));
 }
 
 int renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
 {
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat %s %s\n", oldpath, newpath );
 
-    return( renameat99(olddirfd, oldpath, newdirfd, newpath, 0 ));
+    return( renameorlink(olddirfd, oldpath, newdirfd, newpath, 0, 0 ));
 }
 
 int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, unsigned int flags)
 {
     if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameat2 %s %s\n", oldpath, newpath );
 
-    return( renameat99(olddirfd, oldpath, newdirfd, newpath, flags ));
+    return( renameorlink(olddirfd, oldpath, newdirfd, newpath, flags, 0 ));
 }
 
 
