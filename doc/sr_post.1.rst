@@ -292,6 +292,12 @@ if necessary.
 The concatenation of the two last fields of the announcement defines
 what the subscribers will use to download the product. 
 
+**[-header <name>=<value>]**
+
+Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
+
+
+
 
 ADMINISTRATOR SPECIFIC
 ======================

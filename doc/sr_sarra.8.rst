@@ -124,19 +124,13 @@ To consume messages, the mandatory options are :
 **broker**, **exchange**. The default bindings is
 all post messages from that exchange.
 
-The program will not process message that :
-
-1- has no source      (message.headers['source'])
-2- has no origin      (message.headers['from_cluster'])
-3- has no destination (message.headers['to_clusters'])
-
-
-Important note 1:
-
 If the messages are posted directly from a source,
 the exchange used is 'xs_<brokerSourceUsername>'.
-Such message does not contain a source nor an origin cluster.
-The user must set this option to **True**:
+Such message may not contain a source nor an origin cluster,
+or a malicious user may set the values incorrectly.
+To protect against malicious settings, administrators
+should set *source_from_exchange* to **True**.
+
 
 - **source_from_exchange  <boolean> (default: False)**
 
@@ -147,6 +141,9 @@ option **cluster** taken from default.conf):
 self.msg.headers['source']       = <brokerUser>
 self.msg.headers['from_cluster'] = cluster
 
+overriding any values present in the message.  This setting
+should always be used when ingesting data from a 
+user exchange.
 
 Important note 2:
 
