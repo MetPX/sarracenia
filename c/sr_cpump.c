@@ -30,8 +30,6 @@ void usage()
     fprintf( stderr, "\t\tqueue <name> - queue to declare & use.\n" );
 
     fprintf( stderr, "\nThis is a stripped down C implementation of sr_subscribe(1), see man page for details\n\n" );
-    fprintf( stderr, "examples of missing features: \n\n" );
-    fprintf( stderr, "\t\tno cache.\n" );
     fprintf( stderr, "\t\tcan only display messages (no downloading.)\n" );
     exit(1);
 }
@@ -45,7 +43,7 @@ int main(int argc, char **argv)
   int consume,i,ret;
 
   
-  if ( argc < 3 ) usage();
+  //if ( argc < 3 ) usage();
  
   sr_config_init( &sr_cfg, "cpump" );
 
@@ -70,6 +68,15 @@ int main(int argc, char **argv)
   {
         sr_config_read(&sr_cfg, sr_cfg.paths->path );
   }
+
+  if ( sr_cfg.help ) usage();
+
+  if ( !strcmp( sr_cfg.action, "list" ))
+  {
+        sr_config_list( &sr_cfg );
+        exit(0);
+  }
+  
   if (!sr_config_finalize( &sr_cfg, 1))
   {
      log_msg( LOG_ERROR, "failed to finalize configuration\n");

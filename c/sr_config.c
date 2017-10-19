@@ -544,7 +544,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->accept_unmatched = val&2;
       return(1+(val&1));
 
-  } else if ( !strcmp( option, "action" ) ) {
+  } else if ( !strcmp( option, "action" ) || !strcmp( option, "a" ) ) {
       if (sr_cfg->action) free(sr_cfg->action);
       sr_cfg->action = strdup(argument);
       return(2);
