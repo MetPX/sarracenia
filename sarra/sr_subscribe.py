@@ -876,10 +876,11 @@ class sr_subscribe(sr_instances):
               return True
 
            try : 
-               os.chdir(self.new_dir)
-               if os.path.isfile(self.new_file) : os.unlink(self.new_file)
-               if os.path.islink(self.new_file) : os.unlink(self.new_file)
-               if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
+               path = self.new_dir + os.sep + self.new_file
+
+               if os.path.isfile(path) : os.unlink(path)
+               if os.path.islink(path) : os.unlink(path)
+               if os.path.isdir (path) : os.rmdir (path)
                self.logger.debug("%s removed" % self.new_file)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
@@ -910,15 +911,14 @@ class sr_subscribe(sr_instances):
               try   : os.makedirs(self.new_dir,0o775,True)
               except: pass
 
-           try: os.chdir(self.new_dir)
-           except: pass
-
+           ok = True
            try : 
-               ok = True
-               if os.path.isfile(self.new_file) : os.unlink(self.new_file)
-               if os.path.islink(self.new_file) : os.unlink(self.new_file)
-               if os.path.isdir (self.new_file) : os.rmdir (self.new_file)
-               os.symlink( self.msg.headers[ 'link' ], self.new_file )
+               path = self.new_dir + os.sep + self.new_file
+
+               if os.path.isfile(path) : os.unlink(path)
+               if os.path.islink(path) : os.unlink(path)
+               if os.path.isdir (path) : os.rmdir (path)
+               os.symlink( self.msg.headers[ 'link' ], path )
                self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201,'linked')
            except:
