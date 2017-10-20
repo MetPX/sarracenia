@@ -179,7 +179,7 @@ and under which name.
 - **overwrite <boolean>        (default: true)** 
 - **suppress_duplicates   <off|on|999>     (default: off) 
 - **reject    <regexp pattern> (optional)** 
-- **strip     <count>          (default: 0)**
+- **strip     <count|regexp>   (default: 0)**
 - **source_from_exchange  <boolean> (default: False)**
 
 
@@ -238,6 +238,21 @@ For example ::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+when a regexp is provide in place of a number, it indicates a pattern to be removed
+from the relative path.  for example if::
+
+   strip  .*?GIF/
+
+Will also result in the file being placed the same location. 
+
+NOTE::
+    with strip, use of ? modifier (to prevent *greediness* ) is often helpful in 
+    regular expressions. It ensures the shortest match is used.
+
+    For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
+    The expression:  .*?GIF   matches: radar/PRECIP/GIF
+    whereas the expression: .*GIF   matches the entire string.
+
 
 The  **flatten**  option is use to set a separator character. The default value ( '/' )
 nullifies the effect of this option.  This character replaces the '/' in the url 
