@@ -45,7 +45,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -65,7 +65,7 @@ All sr\_ tools store all sensitive authentication info is stored in the credenti
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_  
+For more details, see: `sr_subscribe(7) credentials <sr_subscribe.7.html/#credentials>`_  
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -79,7 +79,7 @@ to an exchange.  These options define which messages (URL notifications) the pro
 
 Several topic options may be declared. To give a correct value to the subtopic,
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
+for more details, see: `sr_subscribe(7) <sr_subscribe.7.html>`_  
 
 One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the 
@@ -134,7 +134,7 @@ A variety of example configuration files are available here:
 
  `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
+for more details, see: `sr_subscribe(7) <sr_subscribe.7.html>`_  
 
 
 
@@ -166,13 +166,11 @@ A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
 The only arguments the script receives is **parent**, which is an instance of
 the **sr_report** class
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
+for more details, see: `sr_subscribe(7) <sr_subscribe.7.html>`_  
 
 
 SEE ALSO
 --------
-
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

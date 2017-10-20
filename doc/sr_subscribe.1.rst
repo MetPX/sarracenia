@@ -50,16 +50,17 @@ or use other means to kill its process. That would be the old **dd_subscribe** b
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
+the resources. **setup** creates and additionally binds the queues.
 
-CONFIGURATION
-=============
+Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
 
-In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first.
-That page fully explains the option configuration language, and how to find
-the option settings. briefly:
+`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_sender(1) <sr_sender.1.html>`_ - copy messages, only, not files.
+`sr_winnow(8) <sr_winnow.8.html>`_ - suppress duplicates.
+`sr_shovel(8) <sr_shovel.8.html>`_ - copy messages, only, not files.
+`sr_sarra(8) <sr_sarra.8.html>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
 
+All of these components accept the same options, with the same effects.
 
 CONFIGURATION FILES
 -------------------
@@ -93,6 +94,75 @@ vs::
 
 Places files matching X in the current working directory, and the *directory A* setting does nothing.
 
+
+Option Syntax
+-------------
+
+Options are placed in configuration files, one per line, in the form:
+
+ **option <value>**
+
+For example::
+
+  **debug true**
+  **debug**
+
+sets the *debug* option to enable more verbose logging.  If no value is specified,
+the value true is implicit. so the above are equivalent.
+
+To provide non-functional description of configuration, or comments, use lines that begin with a **#**.
+
+**All options are case sensitive.**  **Debug** is not the same as **debug** or **DEBUG**.
+Those are three different options (two of which do not exist and will have no effect,
+but should generate an ´unknown option warning´.)
+
+Options and command line arguments are equivalent.  Every command line argument
+has a corresponding long version starting with '--'.  For example *-u* has the
+long form *--url*. One can also specify this option in a configuration file.
+To do so, use the long form without the '--', and put its value separated by a space.
+The following are all equivalent:
+
+  - **url <url>**
+  - **-u <url>**
+  - **--url <url>**
+
+Settings in an individual .conf file are read in after the default.conf
+file, and so can override defaults.   Options specified on
+the command line override configuration files.
+
+Settings are interpreted in order.  Each file is read from top to bottom.
+for example:
+
+sequence #1::
+
+  reject .*\.gif
+  accept .*
+
+
+sequence #2::
+
+  accept .*
+  reject .*\.gif
+
+
+.. note::
+   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
+   will it match something like .gif2 ? is there an assumed .* at the end?
+
+
+In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
+accepts everything) is encountered before the reject statement, so the reject has no effect.
+
+Several options that need to be reused in different config file can be grouped in a file.
+In each config where the options subset should appear, the user would then use :
+
+  - **--include <includeConfigPath>**
+
+The includeConfigPath would normally reside under the same config dir of its master configs.
+There is no restriction, any option  can be placed in a config file included. The user must
+be aware that, for many options, several declarations means overwriting their values.
+
+
     
 LOG FILES
 ---------
@@ -106,13 +176,11 @@ There will be a log file for each *instance* (download process) of an sr_subscri
 
 One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
 
-
-
-CREDENTIAL OPTIONS
-------------------
+CREDENTIALS
+-----------
 
 One normally does not specify passwords in configuration files.  Rather they are placed in the credentials file.
-so for every url specified, that requires a password, one places a matching entry in credentials.conf.
+For every url specified that requires a password, one places a matching entry in credentials.conf.
 The broker option sets all the credential information to connect to the  **RabbitMQ** server 
 
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
@@ -121,17 +189,92 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-All sr\_ tools store all sensitive authentication info in the credentials.conf file.
-Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to things such as private keys, or FTP modes.  SFTP is a special case, in that if the .ssh config files
-are configured for use by OpenSSH, the tools will try to interpret them such that likel no sftp entry 
-is required as long as one can sftp onto the host without a challenge (the configuration specifies which keys
-to present, and no passphrase is needed.) 
+For all **sarracenia** programs, the confidential parts of credentials are stored
+only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
+passwords and settings needed by components.  The format is one entry per line.  Examples:
 
-For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_  
+- **amqp://user1:password1@host/**
+- **amqps://user2:password2@host:5671/dev**
 
-AMQP QUEUE DECLARATION
-----------------------
+- **sftp://user5:password5@host**
+- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+
+- **ftp://user7:password7@host  passive,binary**
+- **ftp://user8:password8@host:2121  active,ascii**
+
+- **ftps://user7:De%3Aize@host  passive,binary,tls**
+- **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
+
+
+In other configuration files or on the command line, the url simply lacks the
+password or key specification.  The url given in the other files is looked
+up in credentials.conf.
+
+Note::
+ SFTP credentials are optional, in that sarracenia will look in the .ssh directory
+ and use the normal SSH credentials found there.
+
+ These strings are URL encoded, so if an account has a password with a special 
+ character, its URL encoded equivalent can be supplied.  In the last example above, 
+ **%2f** means that the actual password isi: **/dot8**
+ The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
+
+
+
+CONSUMER
+========
+
+Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
+AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.html>`_ messages, 
+announcing the availability of a file by publishing it´s URL ( or a part of a file ), but 
+there are also `sr_report(7) <sr_report.7.html>`_ messages which can be processed using the 
+same tools.  AMQP messages are published to an exchange on a broker (AMQP server.)  The 
+exchange delivers messages to queues.  To receive messages, one must provide the credentials 
+to connect to the broker (AMQP message pump).  Once connected, a consumer needs to create a 
+queue to hold pending messages.  The consumer must then bind the queue to one or more exchanges 
+so that they put messages in its queue.
+
+Once the bindings are set, the program can receive messages. When a message is received,
+further filtering is possible using regular expression onto the AMQP messages.
+After a message passes this selection process, and other internal validation, the
+component can run an **on_message** plugin script to perform additional message processing.
+If this plugin returns False, the message is discarded. If True, processing continues.
+
+The following sections explains all the options to set this "consuming" part of
+sarracenia programs.
+
+
+
+Setting the Broker 
+------------------
+
+**broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
+
+An AMQP URI is used to configure a connection to a message pump (aka AMQP broker.)
+Some sarracenia components set a reasonable default for that option. 
+You provide the normal user,host,port of connections.  In most configuration files,
+the password is missing.  The password is normally only included in the credentials.conf file.
+
+Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
+
+for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
+
+
+either in the default.conf or each specific configuration file.
+The broker option tell each component which broker to contact.
+
+**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+
+::
+      (default: None and it is mandatory to set it ) 
+
+Once connected to an AMQP broker, the user needs to bind a queue
+to exchanges and topics to determine the messages of interest.
+
+
+
+Creating the Queue
+------------------
 
 Once connected to an AMQP broker, the user needs to create a queue.
 
@@ -175,12 +318,13 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
 
-When **--reset** is set, and a component is (re)started, its queue is
+When **reset** is set, and a component is (re)started, its queue is
 deleted (if it already exists) and recreated according to the component's
 queue options.  This is when a broker option is modified, as the broker will
 refuse access to a queue declared with options that differ from what was
-set at creation.  It can also be used to discard a queue
-quickly when a receiver has been shut down for a long period.
+set at creation.  It can also be used to discard a queue quickly when a receiver 
+has been shut down for a long period. if duplicate suppression is active, then
+the reception cache is also discarded.
 
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
@@ -190,10 +334,10 @@ via sarracenia, because sarracenia itself picks appropriate values.
 AMQP QUEUE BINDINGS
 -------------------
 
-Once one has a queue, it must be bounde to an exchange.
-Users almost always need to set these options.  Once a queue exists
-on the broker, it must be bound to an exchange.  Bindings define which
-messages (URL notifications) the program receives.  The root of the topic
+Once one has a queue, it must be bound to an exchange.
+Users almost always need to set these options. Once a queue exists
+on the broker, it must be bound to an exchange. Bindings define which
+messages (URL notifications) the program receives. The root of the topic
 tree is fixed to indicate the protocol version and type of the
 message (but developers can override it with the **topic_prefix**
 option.)
@@ -206,15 +350,13 @@ These options define which messages (URL notifications) the program receives:
 
 Several topic options may be declared. To give a correct value to the subtopic,
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
-length limited to 255 encoded bytes, or the 
-more powerful regular expression based  **accept/reject**  mechanisms described below.  The 
-difference being that the AMQP filtering is applied by the broker itself, saving the 
-notices from being delivered to the client at all. The  **accept/reject**  patterns apply to 
-messages sent by the broker to the subscriber.  In other words,  **accept/reject**  are 
-client side filters, whereas  **subtopic**  is server side filtering.  
+One has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
+length limited to 255 encoded bytes, or the more powerful regular expression 
+based  **accept/reject**  mechanisms described below. The difference being that the 
+AMQP filtering is applied by the broker itself, saving the notices from being delivered 
+to the client at all. The  **accept/reject**  patterns apply to messages sent by the 
+broker to the subscriber. In other words,  **accept/reject**  are client side filters, 
+whereas **subtopic** is server side filtering.  
 
 It is best practice to use server side filtering to reduce the number of announcements sent
 to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
@@ -258,6 +400,63 @@ specify a non-default protocol version of messages to subscribe to.
 
 
 
+Regexp Message Filtering 
+------------------------
+
+We have selected our messages through **exchange**, **subtopic** and
+perhaps patterned  **subtopic** with AMQP's limited wildcarding. 
+The broker puts the corresponding messages in our queue.
+The component downloads the these messages.
+
+Sarracenia clients implement a the more powerful client side filtering
+using regular expression based mechanisms.
+
+- **accept    <regexp pattern> (optional)**
+- **reject    <regexp pattern> (optional)**
+- **accept_unmatch   <boolean> (default: False)**
+
+The  **accept**  and  **reject**  options use regular expressions (regexp).
+The regexp is applied to the the message's URL for a match.
+
+If the message's URL of a file matches a **reject**  pattern, the message
+is acknowledged as consumed to the broker and skipped.
+
+One that matches an **accept** pattern is processed by the component.
+
+In many configurations, **accept** and **reject** options are mixed
+with the **directory** option.  They then relate accepted messages
+to the **directory** value they are specified under.
+
+After all **accept** / **reject**  options are processed, normally
+the message acknowledged as consumed and skipped. To override that
+default, set **accept_unmatch** to True.   However,  if
+no **accept** / **reject** are specified, the program assumes it
+should accept all messages and sets **accept_unmatch** to True.
+
+The **accept/reject** are interpreted in order.
+Each option is processed orderly from top to bottom.
+for example:
+
+sequence #1::
+
+  reject .*\.gif
+  accept .*
+
+sequence #2::
+
+  accept .*
+  reject .*\.gif
+
+
+In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
+accepts everything) is encountered before the reject statement, so the reject has no effect.
+
+It is best practice to use server side filtering to reduce the number of announcements sent
+to the component to a small superset of what is relevant, and perform only a fine-tuning with the
+client side mechanisms, saving bandwidth and processing for all. more details on how
+to apply the directives follow:
+
+
 DELIVERY SPECIFICATIONS
 -----------------------
 
@@ -265,17 +464,19 @@ These options set what files the user wants and where it will be placed,
 and under which name.
 
 - **accept    <regexp pattern> (must be set)** 
+- **accept_unmatch   <boolean> (default: False)**
+- **attempts     <count>          (default: 3)**
 - **batch     <count>          (default: 100)**
 - **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
-- **accept_unmatch   <boolean> (default: False)**
-- **attempts     <count>          (default: 3)**
 - **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
 - **document_root <path>       (default: /)**
 - **filename (for sundew compatibility..  see that section)**
 - **flatten   <string>         (default: '/')** 
+- **heartbeat <count>                 (default: 300 seconds)**
+- **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
@@ -287,10 +488,19 @@ and under which name.
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
-The  **inflight**  option is a suffix given to the file during the download
-and taken away when it is completed... If  **inflight**  is set to  **.** 
-then it is prefixed with it and taken away when it is completed...
-This gives a mean to avoid processing the file prematurely.
+
+The  **inflight**  option sets how to ignore files when they are being transferred
+or (in mid-flight betweeen two systems.) The value can be a file name suffix, which is 
+appended to create a temporary name during the transfer.  If **inflight**  is set to **.**,
+then it is a prefix, to conform with the standard for "hidden" files on unix/linux.
+In either case, when the transfer is complete, the file is renamed to it's permanent name
+to allow further processing.
+
+The  **inflight**  option can also be specified as a time interval, for example, 10 for
+10 seconds.  When set to a time interval, a reader of a file ensures that it waits until
+the file has not been modified in that interval.  So a file woll not be processed until
+it has stayed the same for at least 10 seconds.
+
 
 The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
 
@@ -374,6 +584,18 @@ would result in the creation of the filepath ::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+One can also specify variable substitutions to be performed on arguments to the directory 
+option, with the use of *${..}* notation::
+
+   SOURCE   - the amqp user that injected data (taken from the message.)
+   DR       - the document root 
+   YYYYMMDD - the current daily timestamp.
+   HH       - the current hourly timestamp.
+   *var*    - any environment variable.
+
+Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
+built-in value takes precedence over a variable of the same name in the environment.
+
 **document_root** supplies the directory path that is the root of, say a web server tree.
 one in the selected notification gives the absolute path of the file.  This can be
 provided when the URL actually refers to a local file, to avoid a needless download.
@@ -398,15 +620,25 @@ When the option is set, values in the message for the *source* and *from_cluster
 self.msg.headers['source']       = <brokerUser>
 self.msg.headers['from_cluster'] = cluster
 
-replacing any values present in the message.  This setting should always be used when ingesting data from a
-user exchange.  These fields are used to return reports to the origin of injected data.
+replacing any values present in the message. This setting should always be used when ingesting data from a
+user exchange. These fields are used to return reports to the origin of injected data.
+It is commonly combined with::
 
+       *mirror true*
+       *source_from_exchange true*
+       *directory ${PDR}/${YYYYMMDD}/${SOURCE}*
+  
+To have data arrive in the standard format tree.
+
+The **heartbeat** option sets how often to execute periodic processing as determined by 
+the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
-is compared against previous ones received, to see if it is a duplicate.  If the message is considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including parts header)
-and checksum.  every *hearbeat* interval, a cleanup process looks for files in the cache that
-have not been referenced in **cache** seconds, and deletes them, in order to keep the cache size
-limited.  Different settings are appropriate for different use cases.
+is compared against previous ones received, to see if it is a duplicate. If the message is 
+considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including 
+parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
+cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
+the cache size limited. Different settings are appropriate for different use cases.
 
 Note:: 
 
@@ -419,6 +651,8 @@ Note::
   So one should generally use a winnowing configuration (sr_winnow) ahead of a download with
   multiple parallel instances.  
 
+**kbytes_ps** is greater than 0, the process attempts to respect this delivery
+speed in kilobytes per second... ftp,ftps,or sftp)
 
 Permission bits on the destination files written are controlled by the *mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
@@ -427,8 +661,6 @@ If no source mode is available, the *default_mode* will be applied to files, and
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
-
-
 
 
 
@@ -452,8 +684,6 @@ was specified.)
 A variety of example configuration files are available here:
 
  `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
-
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
 
 
 
@@ -503,8 +733,73 @@ These reports are used for delivery tuning and for data sources to generate stat
 Set this option to **False**, to prevent generation of reports for this usage.
 
 
-OUTPUT POSTING OPTIONS
-----------------------
+
+LOGS
+====
+
+Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
+at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
+The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep
+is set by the 'logdays' parameter.  Log files older than **logdays** duration are deleted.  A duration takes a time unit suffix, such as 'd' for days, 'w' for weeks, or 'h' for hours.
+
+- **debug**  setting option debug is identical to use  **loglevel debug**
+
+
+- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
+
+- **logdays** duration to keep logs online, usually expressed in days ( default: 5d )
+
+- **loglevel** the level of logging as expressed by python's logging.
+               possible values are :  critical, error, info, warning, debug.
+
+- **chmod_log** the permission bits to set on log files (default 0600 )
+
+placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) setting the XDG_CACHE_HOME environment variable.
+
+
+INSTANCES
+=========
+
+Sometimes one instance of a component and configuration is not enough to process & send all available notifications.
+
+**instances      <integer>     (default:1)**
+
+The instance option allows launching serveral instances of a component and configuration.
+When running sr_sender for example, a number of runtime files that are created.
+In the ~/.cache/sarra/sender/configName directory::
+
+  A .sr_sender_configname.state         is created, containing the number instances.
+  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
+
+In directory ~/.cache/sarra/var/log::
+
+  A .sr_sender_configname_$instance.log  is created as a log of $instance process.
+
+The logs can be written in another directory than the default one with option :
+
+**log            <directory logpath>  (default:~/.cache/sarra/var/log)**
+
+.. note::  
+  FIXME: indicate windows location also... dot files on windows?
+
+
+.. Note::
+
+  While the brokers keep the queues available for some time, Queues take resources on 
+  brokers, and are cleaned up from time to time.  A queue which is not
+  accessed and has too many (implementation defined) files queued will be destroyed.
+  Processes which die should be restarted within a reasonable period of time to avoid
+  loss of notifications.  A queue which is not accessed for a long (implementation dependent)
+  period will be destroyed. 
+
+.. Note::
+   FIXME  The last sentence is not really right...sr_audit does track the queues'age... 
+          sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
+          
+
+
+POSTING OPTIONS
+===============
 
 When advertising files downloaded for downstream consumers, one must set 
 the rabbitmq configuration for an output broker.
@@ -606,8 +901,6 @@ the **sr_subscribe** class
 Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
-for more details, see: `sr_config(7) <sr_config.7.html>`_  
-
 
 ROUTING
 =======
@@ -654,13 +947,140 @@ so that report routing shovels will obtain messages from downstream consumers an
 them available to upstream sources.
 
 
+PLUGIN SCRIPTS
+==============
+
+Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
+flexibility to override those common cases with user plugins scripts, written in python.
+MetPX comes with a variety of scripts which can act as examples.
+
+Users can place their own scripts in the script sub-directory
+of their config directory tree.
+
+A user script should be placed in the ~/.config/sarra/plugins directory.
+
+There are two varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
+to implement functions, replacing built-in functionality, for example, to implement
+additional transfer protocols.
+
+- do_download - to implement additional download protocols.
+
+- do_poll - to implement additional polling protocols and processes.
+
+- do_send - to implement additional sending protocols and processes.
+
+
+On\_* plugins are used more often. They allow actions to be inserted to augment the default
+processing for various specialized use cases. The scripts are invoked by having a given
+configuration file specify an on_<event> option. The event can be one of:
+
+- on_file -- When the reception of a file has been completed, trigger followup action.
+
+- on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
+
+- on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
+  the files already published. The package provide a working example under plugins/html_page.py.
+
+- on_line -- In **sr_poll** a line from the ls on the remote host is read in.
+
+- on_message -- when an sr_post(7) message has been received.  For example, a message has been received
+  and additional criteria are being evaluated for download of the corresponding file.  if the on_msg
+  script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
+  which decides that data that is too old is not worth downloading.)
+
+- on_part -- Large file transfers are split into parts.  Each part is transferred separately.
+  When a completed part is received, one can specify additional processing.
+
+- on_post -- when a data source (or sarra) is about to post a message, permit customized
+  adjustments of the post.
+
+- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
+  It could be used to put a file in one of the watch directory and have it published when needed.
+
+
+The simplest example of a plugin: A do_nothing.py script for **on_file**::
+
+  class Transformer(object): 
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          logger = parent.logger
+
+          logger.info("I have no effect but adding this log line")
+
+          return True
+
+  transformer  = Transformer()
+  self.on_file = transformer.perform
+
+The only arguments the script receives it **parent**, which is an instance of
+the **sr_subscribe** class
+Should one of these scripts return False, the processing of the message/file
+will stop there and another message will be consumed from the broker.
+For other events, the last line of the script must be modified to correspond.
+Multiple scripts can be attached to the same event, in which case they are
+called in the order they appear in the configuration.
+
+One can specify *on_message None* to reset the list to no plugins (removes
+msg_log, so it suppresses logging of message receipt.)
+
+More examples are available in the Programming Guide.
+
+
+
+ROLES
+=====
+
+*of interest only to administrators*
+
+The *feeder* option specifies the account used by default system transfers for components such as
+sr_shovel, sr_sarra and sr_sender (when posting).
+
+- **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+
+- **admin   <name>        (default: None)**
+
+When set, the admin option will cause sr start to start up the sr_audit daemon.
+
+Most users are defined using the *declare* option.
+
+- **declare <role> <name>   (no defaults)**
+
+Role:
+
+subscriber
+
+  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
+  not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
+  where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
+  is where an sr_subscribe process will send it's report messages.
+
+  By convention/default, the *anonymous* user is created on all pumps to permit subscription without
+  a specific account.
+
+source
+
+  A user permitted to subscribe or originate data.  A source does not necessarily represent
+  one person or type of data, but rather an organization responsible for the data produced.
+  So if an organization gathers and makes available ten kinds of data with a single contact
+  email or phone number for questions about the data and it's availability, then all of
+  those collection activities might use a single 'source' account.
+
+  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
+  to send report messages about processing and receipt of data. source may also have an xl_<user>
+  exchange where, as per report routing configurations, report messages of consumers will be sent.
+
+User credentials are placed in the credentials files, and *sr_audit* will update
+the broker to accept what is specified in that file, as long as the admin password is
+already correct.
+
+
 
 
 
 SEE ALSO
 --------
-
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
