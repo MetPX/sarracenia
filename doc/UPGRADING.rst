@@ -35,6 +35,22 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+
+2.17.10a2
+---------
+
+strip behaviour bug may be restored, that might solve the send issue.
+Changes to strip implemented for 10a1 likely need to be reversed.  New ability to specify
+regexp as argument of strip is likely easier to use.
+
+
+2.17.10a1
+---------
+
+**BUG**:  sr_sender does not work properly in some configurations.  behaviour of 'strip' inadvertantly changed.
+   do not upgrade to this version.
+
+
 **CHANGE**:  default *expire* setting was 10080 (in mins) which means expire after a week.  Now it is 5 minutes.
 **It will also result data loss**, by dropping messages should the default be used in cases where the old value
 was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 

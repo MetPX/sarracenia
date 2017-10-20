@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* add regexp option to strip.
 * now support environment variables in config files with ${var}
 * bugfix: misbehaved when file names have blanks in them.
 * added -header option to sr_post.
