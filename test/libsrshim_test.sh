@@ -32,12 +32,13 @@ httpdocroot=`cat $tstdir/.httpdocroot`
 
 function wait_dir_to_be_the_same {
 
-       COUNT=`find "$httpdocroot"/cfr -type $1 -print | wc -l`
+       COUNT=`find "$httpdocroot"/cfr -type $1 -print | grep $2 | wc -l`
+       echo "expecting " $COUNT
        sleep 5
-       MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | wc -l`
+       MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | grep $2 | wc -l`
        while [ "${MCOUNT}" != "${COUNT}" ]; do
              sleep 5
-             MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | wc -l`
+             MCOUNT=`find "$httpdocroot"/cfile -type $1 -print | grep $2 | wc -l`
              echo "(${MCOUNT} expecting ${COUNT})"
        done
 }
@@ -83,7 +84,7 @@ echo "checking libsrshim copy"
 cd "$httpdocroot"/cfr
 find . -type f -print                | xargs -iAAA cp AAA AAA.COPY  >> /tmp/libsrshim.log.tmp 2>&1
 find . -type f -print | grep -v COPY | xargs -iAAA cp AAA AAA.COPY2  >> /tmp/libsrshim.log.tmp 2>&1
-wait_dir_to_be_the_same f
+wait_dir_to_be_the_same f COPY
 echo "success"
 
 # move 
@@ -91,7 +92,7 @@ echo "success"
 echo "checking libsrshim move"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | xargs -iAAA  mv AAA.COPY2 AAA.MOVE  >> /tmp/libsrshim.log.tmp 2>&1
-wait_dir_to_be_the_same f
+wait_dir_to_be_the_same f MOVE
 echo "success"
 
 # softlink 
@@ -99,7 +100,7 @@ echo "success"
 echo "checking libsrshim softlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | xargs -iAAA  ln -s AAA AAA.SLINK  >> /tmp/libsrshim.log.tmp 2>&1
-wait_dir_to_be_the_same l
+wait_dir_to_be_the_same l SLINK
 echo "success"
 
 # hardlink 
@@ -107,7 +108,7 @@ echo "success"
 echo "checking libsrshim hardlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA ln AAA AAA.HLINK  >> /tmp/libsrshim.log.tmp 2>&1
-wait_dir_to_be_the_same f
+wait_dir_to_be_the_same f HLINK
 echo "success"
 
 # hardlink 
@@ -118,7 +119,7 @@ find . -type f -print | grep COPY | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
 find . -type f -print | grep MOVE | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
 find . -type f -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
 find . -type l -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
-wait_dir_to_be_the_same f
+wait_dir_to_be_the_same f \.
 echo "success"
 
 export SR_POST_CONFIG=""
