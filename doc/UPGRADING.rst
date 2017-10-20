@@ -39,16 +39,18 @@ git origin/master branch
 2.17.10a2
 ---------
 
+**BUG**:  sr_sender does not work in some configurations.  Do not upgrade to this version.
+
 strip behaviour bug may be restored, that might solve the send issue.
 Changes to strip implemented for 10a1 likely need to be reversed.  New ability to specify
-regexp as argument of strip is likely easier to use.
+regexp as argument of strip is likely easier to use. This version is only to be used
+for internal mirroring project (unaffected by sr_sender bug.)
 
 
 2.17.10a1
 ---------
 
-**BUG**:  sr_sender does not work properly in some configurations.  behaviour of 'strip' inadvertantly changed.
-   do not upgrade to this version.
+**BUG**:  sr_sender does not work properly in some configurations.  Do not upgrade to this version.
 
 
 **CHANGE**:  default *expire* setting was 10080 (in mins) which means expire after a week.  Now it is 5 minutes.

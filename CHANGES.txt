@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.10a2**
+
 * add regexp option to strip.
 * now support environment variables in config files with ${var}
 * bugfix: misbehaved when file names have blanks in them.
