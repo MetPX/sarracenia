@@ -123,7 +123,7 @@ replaced by a period ( ´.´ ), as in AMQP period is the hierarchical
 separator character. The top of the topic tree is used by sr_sarracenia,
 so usually users only deal with sub-topics, two levels down from the root.
 
-By default, the sub-topic is ´#´ which is a wildcard that matches and and all 
+By default, the sub-topic is ´#´ which is a wildcard that matches all 
 subtopics. The other wildcard usable in the subtopic option is ´*´ which matches 
 anything between two periods (a single level of the topic hierarchy.)  The
 subtopic option tells the broker what notifications are of interest to a 
@@ -238,7 +238,7 @@ Every configuration results in corresponding resources being declared on the bro
 When changing *subtopic* or *queue* settings, or when one expects to not use a configuration for
 an extended period of time, it is best to::
 
-  sr_subscriber cleanup CMC.conf
+  sr_subscribe cleanup CMC.conf
 
 which will de-allocate the queue (and it's bindings) on the server.
 
@@ -376,8 +376,8 @@ Note the following::
   accept .*/observations/swob-ml/.*
 
   #write all SWOBS into the current working directory
-  #BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE .
-  #     NO subtopic MEANS EXCESSIVE NOTIFICATIONS processed.
+  #BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE
+  #     NOT having a "subtopic" and filtering with "accept" MEANS EXCESSIVE NOTIFICATIONS are processed.
   EOT
 
 This configuration, from the subscriber point of view, will likely deliver
@@ -481,9 +481,9 @@ The *inflight* option allows one to set the name of the temporary files during t
 to conform to other software´s expectations.  the default setting is '.tmp' so
 that temporary files have that suffix.
 
-Setting *inflight* to ´.´ will cause the temporary files to begin a dot, the tradition
+Setting *inflight* to ´.´ will cause the temporary files to begin with a dot, the tradition
 for making hidden files on linux.  Setting *inflight* to something other than that, 
-such as 'inflight .temp´ will cause the name of the temporary files to be suffixed with ´.temp´
+such as 'inflight .temp´ will cause the name of the temporary files to be suffixed with ´.temp´.
 When a file is completely received, it will be renamed, removing the *inflight* 
 .temp suffix.  Another possibility is to use *tempdir* dir option.  When software 
 is particularly stubborn about ingesting anything it sees::
@@ -499,7 +499,7 @@ The 'ls' method works especially well if ''do_something'' erases the file after 
 is processed, so that the 'ls' command is only ever processing a small directory 
 tree, and every file that shows up is *new*.
 
-For a hierarchy of file (when mirror is true), ls itself is a bit unwieldy.  Perhaps 
+For a hierarchy of files (when mirror is true), ls itself is a bit unwieldy.  Perhaps 
 the following is better::
 
   while true; do
@@ -653,7 +653,7 @@ Anti-Virus Scanning
 
 Another example of easy use of a plugin is to achieve anti-virus scanning.
 Assuming that ClamAV is installed, as well as the python3-pyclamd
-package, then one can adding the following to an sr_subscribe 
+package, then one can add the following to an sr_subscribe 
 configuration file::
 
   broker amqp://dd.weather.gc.ca
