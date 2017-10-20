@@ -40,11 +40,18 @@ The actions **cleanup**, **declare**, **setup** can be used to manage resources 
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
 the resources. **setup** creates and additionnaly does the bindings of queues.
 
+sr_shovel is an sr_subscribe with the following presets::
+   
+   no-download True
+   suppress_duplicates off
+  
+
+
 CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first. 
+`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first. 
 It fully explains the option configuration language, and how to find 
 the option settings.
 
@@ -94,7 +101,7 @@ in default.conf.
 The **post_exchange** option sets a new exchange for the selected messages.
 The default is to publish under the exchange it was consumed.
 
-The **post_exchange_split** is documented in sr_config.
+The **post_exchange_split** is documented in sr_subscribe.
 
 Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. 
@@ -192,7 +199,7 @@ will create the save files in the current directory named here_000x.save where x
 SEE ALSO
 --------
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - sarra downloader.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

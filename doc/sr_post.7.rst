@@ -252,6 +252,7 @@ in messages when appropriate.   Headers are a mandatory element included in late
 
 **rename=<relpath>** 
 
+ *DEPRECATED* Do Not use.
  The relative path from the current directory in which to
  place the file.
 
@@ -276,6 +277,22 @@ in messages when appropriate.   Headers are a mandatory element included in late
  as complete, and the file is renamed on download according to the
  specification (in this case, mine.gif)
 
+ This feature was never used in practice and is being phased out.
+
+**oldname=<path>**
+**newname=<path>**
+
+ when a file is renamed at the source, to send it to subscribers, two posts 
+ result: One message is announced with the new name as the srcpath, 
+ and the oldname header set to the previous file name.
+ Another message is send with the old name as the src path, and the *newname* 
+ as a header.  This ensures that *accept/reject* clauses are correctly
+ interpreted, as a *rename* may result in a download if the former name
+ matches a *reject*  clause, or a file removal if the new name
+ is matches a *reject* clause.
+
+ hard links are also handled as an ordinary post of the file with a *oldname*
+ header set.
 
 **source=<sourceid>**
  a character field indicating the source of the data injected into the network.

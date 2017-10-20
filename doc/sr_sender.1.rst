@@ -54,7 +54,7 @@ the rabbitmq server. The resources are either queues or exchanges. **declare** c
 the resources. **setup** creates and additionnaly does the bindings of queues.
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -80,7 +80,7 @@ All sr\_ tools store all sensitive authentication info in the credentials.conf f
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) credentials <sr_config.7.html/#credentials>`_
+For more details, see: `sr_subscribe(7) credentials <sr_subscribe.7.html/#credentials>`_
 
 
 QUEUE BINDINGS OPTIONS
@@ -93,7 +93,7 @@ These options define which messages (URL notifications) the program receives:
 - **topic_prefix  <name>         (default: v02.post)**
 - **subtopic      <amqp pattern> (default: #)**
 
-as described in `sr_config(7) <sr_config.7.html>`_  
+as described in `sr_subscribe(7) <sr_subscribe.7.html>`_  
 
 MESSAGE SELECTION OPTIONS 
 -------------------------
@@ -102,7 +102,7 @@ MESSAGE SELECTION OPTIONS
  - **reject        <regexp pattern> (default: None)** 
  - **on_message            <script> (default: None)** 
 
-as described in `sr_config(7) <sr_config.7.html>`_  
+as described in `sr_subscribe(7) <sr_subscribe.7.html>`_  
 
 One has the choice of filtering using  **subtopic**  with only AMQP's limited 
 wildcarding, and/or with the more powerful regular expression based  **accept/reject**  
@@ -300,7 +300,7 @@ Notice:
 SEE ALSO
 ========
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

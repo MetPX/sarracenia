@@ -519,6 +519,7 @@ int main(int argc, char **argv)
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
+        sr_config_free(&sr_cfg);
         return(1);
     }
 
@@ -535,6 +536,7 @@ int main(int argc, char **argv)
     if (!sr_c) 
     {
         log_msg( LOG_CRITICAL, "failed to read config\n");
+        sr_config_free(&sr_cfg);
         return(1);
     }
 
@@ -543,6 +545,7 @@ int main(int argc, char **argv)
     if (!sr_c) 
     {
         log_msg( LOG_CRITICAL, "failed to establish sr_context\n");
+        sr_config_free(&sr_cfg);
         return(1);
     }
 
@@ -552,9 +555,13 @@ int main(int argc, char **argv)
         {
             log_msg( LOG_WARNING, "failed to delete exchange: %s\n", 
                  sr_cfg.exchange );
+            sr_context_close(sr_c);
+            sr_config_free(&sr_cfg);
             return(1);
         }
         log_msg( LOG_INFO, "exchange: %s deleted\n", sr_cfg.exchange );
+       sr_context_close(sr_c);
+        sr_config_free(&sr_cfg);
         return(0);
     }
   

@@ -51,7 +51,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`__  page which should be read first.
+`sr_subscribe(7) <sr_subscribe.7.html>`__  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -69,7 +69,7 @@ All sr\_ tools store all sensitive authentication info in the credentials.conf f
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_config(7) <sr_config.7.html/#credentials>`__
+For more details, see: `sr_subscribe(7) <sr_subscribe.7.html/#credentials>`__
 
 
 VIP, INTERFACE 
@@ -333,7 +333,7 @@ The interface option used to be required with *vip*, now all interfaces are scan
 SEE ALSO
 --------
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

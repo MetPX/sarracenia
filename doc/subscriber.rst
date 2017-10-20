@@ -234,6 +234,7 @@ In any event, after a few minutes, Here is what the current directory looks like
 Server Side Resources Allocated for Subscribers
 -----------------------------------------------
 
+Every configuration results in corresponding resources being declared on the broker.
 When changing *subtopic* or *queue* settings, or when one expects to not use a configuration for
 an extended period of time, it is best to::
 
@@ -261,15 +262,9 @@ when they will not be needed for an extended periods, or when experimenting with
 Working with Multiple Configurations
 -------------------------------------
 
-A small digression:
-
-normally one just specifies the full path to the configuration file for sr_subscribe.
-When running downloads from multiple sources, or to different destinations, one can place 
-all the subscription configuration files, with the .conf suffix, in a standard 
-directory: ~/.config/sarra/subscribe/
-
-Imagine there are two files in that directory:  CMC.conf and NWS.conf.
-One could then run:: 
+Place all configuration files, with the .conf suffix, in a standard directory: ~/.config/sarra/subscribe/
+For example, if there are two files in that directory:  CMC.conf and NWS.conf,
+one could then run:: 
 
   peter@idefix:~/test$ sr_subscribe start CMC.conf 
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
@@ -282,7 +277,7 @@ One could then run::
   2016-01-14 18:13:01,427 [INFO] sr_subscribe CMC 0006 starting
   peter@idefix:~/test$ 
 
-from anywhere, and the configuration in the directory would be invoked.  Also, one can use by using 
+and the configuration in the directory would be invoked.  Also, one can use by using 
 the sr command to start/stop multiple configurations at once.  The sr command will go through the 
 default directories and start up all the configurations it finds::
 
@@ -300,7 +295,33 @@ default directories and start up all the configurations it finds::
   peter@idefix:~/test$ 
 
 will start up some sr_subscribe processes as configured by CMC.conf and others to match NWS.conf.
-sr stop will also do what you would expect.  As will sr status.  Back to file reception:
+sr stop will also do what you would expect.  As will sr status.  
+
+
+High Priority Delivery
+----------------------
+
+While the sarracenia protocol does not provide explicit prioritization, the use of
+multiple queues provides similar benefits.  Each configuration results 
+in a queue declaraton on the server side.  Group products at like priority into 
+a queue by selecting them using a common configuration.  The smaller the groupings, 
+the lower the delay of processing. While all queues are processed at the same priority,
+data passes though shorter queues more quickly.
+
+To make the advice concrete, take the example of the Environment Canada data 
+mart ( dd.weather.gc.ca ), which distributes gridded binaries, GOES satellite imagery, many 
+thousands of city forecasts, observations, RADAR products, etc...  For real-time weather, warnings 
+and RADAR data are the highest priority. At certain times of the day, or in cases of backlogs, 
+many hundreds of thousands of products can delay receipt of high priority products
+if only a single queue is used.  
+
+To ensure prompt processing of data in this case, define one configuration to subscribe
+to weather warnings (which are a very small number of products), a second for the RADARS
+(a larger but still relatively small group), and a third (largest grouping) for all the other data. 
+Each configuration will use a separate queue.  Warnings will be processed fastest, RADARS will queue
+up against each other and so experience some more delay, and other products will share a single
+queue and be subject to more delay in cases of backlog.
+
 
 
 

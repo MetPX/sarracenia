@@ -25,6 +25,14 @@ and reposts the notifications, suppressing the redundant ones by comparing their
 fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
 in the `sr_post(7) <sr_post.7.html>`_ man page.
 
+**sr_winnow** is an sr_subscribe with the following options forced::
+
+   no-download True  
+   suppress_duplicates on
+   accept_unmatch True
+
+The suppress_duplicates lifetime can be adjusted, but it is always on.
+
 **sr_winnow** connects to a *broker* (often the same as the posting broker)
 and subscribes to the notifications of interest. On reception if a notification,
 it looks up its **sum** in its cache.  if it is found, the file has already come through,
@@ -53,7 +61,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_config(7) <sr_config.7.html>`_  page which should be read first.
+`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -147,7 +155,7 @@ is desired... if one returns False, the processing of the message will stop
 there. If they all return True, the program will continue processing from there.  
 
 
-See `sr_config(7) <sr_config.7.html>`_  for more details.
+See `sr_subscribe(7) <sr_subscribe.7.html>`_  for more details.
 
  
 OUTPUT NOTIFICATION OPTIONS
@@ -181,8 +189,6 @@ Now just scans all interfaces.
 
 SEE ALSO
 ========
-
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

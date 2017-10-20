@@ -8,6 +8,7 @@ lists all changes between versions.
 
 * now support environment variables in config files with ${var}
 * bugfix: misbehaved when file names have blanks in them.
+* added -header option to sr_post.
 * fix for bug #74 - error messages on shutdown of amqps connection.
 * C: cpost setup/cleanup/declare/restart etc... some were broken, fixed.
 * C: added sighandler to avoid cache corruption when terminating.

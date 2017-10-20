@@ -55,7 +55,7 @@ CONFIGURATION
 =============
 
 This document focuses on detailing the program's options. We invite the reader to
-read the document `sr_config(7) <sr_config.7.html>`_  first. It fully explains the
+read the document `sr_subscribe(7) <sr_subscribe.7.html>`_  first. It fully explains the
 option syntax, the configuration file location, the credentials ... etc.
 
 Standard sarracenia configuration would expect the config file to be found in :
@@ -124,19 +124,13 @@ To consume messages, the mandatory options are :
 **broker**, **exchange**. The default bindings is
 all post messages from that exchange.
 
-The program will not process message that :
-
-1- has no source      (message.headers['source'])
-2- has no origin      (message.headers['from_cluster'])
-3- has no destination (message.headers['to_clusters'])
-
-
-Important note 1:
-
 If the messages are posted directly from a source,
 the exchange used is 'xs_<brokerSourceUsername>'.
-Such message does not contain a source nor an origin cluster.
-The user must set this option to **True**:
+Such message may not contain a source nor an origin cluster,
+or a malicious user may set the values incorrectly.
+To protect against malicious settings, administrators
+should set *source_from_exchange* to **True**.
+
 
 - **source_from_exchange  <boolean> (default: False)**
 
@@ -147,6 +141,9 @@ option **cluster** taken from default.conf):
 self.msg.headers['source']       = <brokerUser>
 self.msg.headers['from_cluster'] = cluster
 
+overriding any values present in the message.  This setting
+should always be used when ingesting data from a 
+user exchange.
 
 Important note 2:
 
@@ -312,7 +309,7 @@ The option **on_post** would be used to do such a setup.
 SEE ALSO
 ========
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

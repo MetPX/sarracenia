@@ -777,6 +777,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
+  if (sr_cfg->outlet) free(sr_cfg->outlet);
   if (sr_cfg->pidfile) free(sr_cfg->pidfile);
   if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
   if (sr_cfg->progname) free(sr_cfg->progname);
@@ -1166,14 +1167,16 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 }
 
 
-struct sr_cache_t *thecache=NULL;
+struct sr_config_t *thecfg=NULL;
 
 void stop_handler(int sig)
 {
      log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
 
-     if (thecache)
-         sr_cache_close( thecache );
+     if (thecfg && thecfg->cachep)
+         sr_cache_close( thecfg->cachep );
+
+     sr_config_free( thecfg );
 
      // propagate handler for further processing, likely trigger exit.
      signal( sig, SIG_DFL );
@@ -1202,11 +1205,15 @@ int sr_config_activate( struct sr_config_t *sr_cfg )
 
   if ( sr_cfg->cache > 0 )
   {
-     thecache = sr_cfg->cachep;
+     thecfg = sr_cfg;
      if ( signal( SIGTERM, stop_handler ) == SIG_ERR )
-         log_msg( LOG_ERROR, "unable to set stop handler\n" );
+         log_msg( LOG_ERROR, "unable to set SIGTERM handler\n" );
      else
-         log_msg( LOG_DEBUG, "set stop handler to cleanup cache on exit.\n" );
+         log_msg( LOG_DEBUG, "set SIGINT handler to cleanup cache on exit.\n" );
+     if ( signal( SIGINT, stop_handler ) == SIG_ERR )
+         log_msg( LOG_ERROR, "unable to set SIGINT handler\n" );
+     else
+         log_msg( LOG_DEBUG, "set SIGINT handler to cleanup cache on exit.\n" );
   }
   return(0); 
 }
