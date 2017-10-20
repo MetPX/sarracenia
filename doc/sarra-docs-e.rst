@@ -60,7 +60,6 @@ Formats/Protocols
 
 * `sr_post(7) <sr_post.7.html>`_ - the format of postings. Posted by watch and post, consumed by subscribe.
 * `sr_report(7) <sr_report.7.html>`_ - the format of report messages. Sent by consumers, for sources to measure reach.
-* `sr_config(7) <sr_config.7.html>`_ - reference for options used by many components.
 
 
 Glossary

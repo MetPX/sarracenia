@@ -55,7 +55,7 @@ CONFIGURATION
 =============
 
 This document focuses on detailing the program's options. We invite the reader to
-read the document `sr_config(7) <sr_config.7.html>`_  first. It fully explains the
+read the document `sr_subscribe(7) <sr_subscribe.7.html>`_  first. It fully explains the
 option syntax, the configuration file location, the credentials ... etc.
 
 Standard sarracenia configuration would expect the config file to be found in :
@@ -309,7 +309,7 @@ The option **on_post** would be used to do such a setup.
 SEE ALSO
 ========
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

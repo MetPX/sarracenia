@@ -319,7 +319,7 @@ These settings pertain to previous versions of the client, and have been superce
 SEE ALSO
 --------
 
-`sr_config(7) <sr_config.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscibe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 
