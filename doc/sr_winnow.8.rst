@@ -29,6 +29,7 @@ in the `sr_post(7) <sr_post.7.html>`_ man page.
 
    no-download True  
    suppress_duplicates on
+   accept_unmatch True
 
 The suppress_duplicates lifetime can be adjusted, but it is always on.
 

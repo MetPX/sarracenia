@@ -40,6 +40,13 @@ The actions **cleanup**, **declare**, **setup** can be used to manage resources 
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
 the resources. **setup** creates and additionnaly does the bindings of queues.
 
+sr_shovel is an sr_subscribe with the following presets::
+   
+   no-download True
+   suppress_duplicates off
+  
+
+
 CONFIGURATION
 =============
 

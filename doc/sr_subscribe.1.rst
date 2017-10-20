@@ -596,11 +596,15 @@ option, with the use of *${..}* notation::
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
 
-**document_root** supplies the directory path that is the root of, say a web server tree.
-one in the selected notification gives the absolute path of the file.  This can be
-provided when the URL actually refers to a local file, to avoid a needless download.
+**document_root** supplies the directory path that, when combined with the relative
+one in the selected notification gives the absolute path of the file to be sent.
 The defaults is None which means that the path in the notification is the absolute one.
-**FIXME**: cannot explain this... do not know what it is myself.
+
+**FIXME**::
+    cannot explain this... do not know what it is myself. This is taken from sender.
+    in a subscriber, if it is set... will it download? or will it assume it is local?
+    in a sender.
+   
 
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :

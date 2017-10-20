@@ -29,6 +29,13 @@ information about their success in doing so.
 
 The **sr_report** command takes two arguments: a configuration file described below,
 followed by an action, one of: start|stop|restart|reload|status or foreground... (self described).
+sr_report is sr_subscribe with the following settings changed::
+
+  no-download True
+  topic-prefix v02.report
+  cache off
+  accept_unmatch True
+  report_back False
 
 The **foreground** action is different. It is used when building a configuration
 or debugging things, when the user wants to run the program and its configfile 
