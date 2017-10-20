@@ -171,6 +171,7 @@ and under which name.
 - **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
+- **document_root <path>       (default: /)**
 - **filename (for sundew compatibility..  see that section)**
 - **flatten   <string>         (default: '/')** 
 - **inflight  <string>         (default: .tmp)** 
@@ -179,6 +180,8 @@ and under which name.
 - **suppress_duplicates   <off|on|999>     (default: off) 
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count>          (default: 0)**
+- **source_from_exchange  <boolean> (default: False)**
+
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
@@ -251,6 +254,12 @@ would result in the creation of the filepath ::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+**document_root** supplies the directory path that is the root of, say a web server tree.
+one in the selected notification gives the absolute path of the file.  This can be
+provided when the URL actually refers to a local file, to avoid a needless download.
+The defaults is None which means that the path in the notification is the absolute one.
+**FIXME**: cannot explain this... do not know what it is myself.
+
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 1- the file to be downloaded is already on the user's file system at the right place and
@@ -259,6 +268,19 @@ The default is True (overwrite without checking).
 
 The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
 usefull when debugging or testing a configuration.
+
+The **source_from_exchange** option is mainly for use by administrators.
+If messages is received posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
+Such message be missing a source from_cluster headings, or a malicious user may set the values incorrectly.
+To protect against malicious settings, administrators should set the **source_from_exchange** option.
+
+When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden.
+self.msg.headers['source']       = <brokerUser>
+self.msg.headers['from_cluster'] = cluster
+
+replacing any values present in the message.  This setting should always be used when ingesting data from a
+user exchange.  These fields are used to return reports to the origin of injected data.
+
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
 is compared against previous ones received, to see if it is a duplicate.  If the message is considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including parts header)
@@ -366,10 +388,10 @@ the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
- - **[-dr|--document_root <path>]     (optional)**
- - **post_url          <url>          (MANDATORY)**
+ - **[-pdr|--post_document_root <path>]     (optional)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0) **
+ - **post_url          <url>          (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
 
@@ -386,11 +408,11 @@ the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 
-The *document_root* option supplies the directory path that, when combined (or found) 
+The *post_document_root* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
-The document root part of the local path will be removed from the posted announcement.
+The post document root part of the path will be removed from the posted announcement.
 for sftp: url's it can be appropriate to specify a path relative to a user account.
-Example of that usage would be:  -dr ~user  -url sftp:user@host
+Example of that usage would be:  -pdr ~user  -url sftp:user@host
 for file: url's, document_root is usually not appropriate.  To post an absolute path,
 omit the -dr setting, and just specify the complete path as an argument.
 
