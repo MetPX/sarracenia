@@ -383,6 +383,9 @@ def main():
 
                         continue
 
+                   # MG link would not work
+                   if e in ['create', 'modify'] and os.path.islink(f) : e = 'link'
+
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
                        self.logger.debug("event_wakeup calling do_post ! " )
                        self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)

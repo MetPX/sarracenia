@@ -465,6 +465,7 @@ class sr_config:
         self.save_file            = None
         self.sleep                = 0
         self.strip                = 0
+        self.pstrip               = None
         self.source               = None
         self.source_from_exchange = False
 
@@ -1647,7 +1648,12 @@ class sr_config:
                         n = 2
 
                 elif words0 == 'strip': # See: sr_config.7 
-                     self.strip = int(words[1])
+                     if words1.isnumeric() :
+                        self.strip  = int(words1)
+                        self.pstrip = None
+                     else:                   
+                        self.strip  = 0
+                        self.pstrip = words1
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
@@ -2151,6 +2157,18 @@ def self_test():
     cfg.option(opt4.split())
     if '$' in cfg.currentDir:
        cfg.logger.error(" env variable substitution failed %s" % cfg.currentDir)
+       failed = True
+
+    opt4='strip 4'
+    cfg.option(opt4.split())
+    if cfg.strip != 4 :
+       cfg.logger.error(" strip 4 failed")
+       failed = True
+
+    opt4='strip .*aaa'
+    cfg.option(opt4.split())
+    if cfg.pstrip != '.*aaa' :
+       cfg.logger.error(" strip .*aaa failed")
        failed = True
 
     if not failed : print("TEST PASSED")

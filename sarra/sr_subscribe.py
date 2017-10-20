@@ -720,7 +720,7 @@ class sr_subscribe(sr_instances):
 
         if found and name == 'oldname' :
     
-           if not os.path.isfile(self.new_file):
+           if not os.path.exists(self.new_file):
               self.logger.debug("move: oldname not found %s" % self.new_file)
               self.new_dir  = None
               self.new_file = None
@@ -779,7 +779,7 @@ class sr_subscribe(sr_instances):
            oldpath = self.new_dir + '/' + self.new_file
 
            # we can do something if the oldpath exists
-           if os.path.isfile(oldpath) : 
+           if os.path.exists(oldpath) : 
 
               # determine the 'move to' file (accept/reject ok and on_message ok)
               newdir,newfile,newrelp = self.determine_move_file('newname',self.msg.headers['newname'])
@@ -789,7 +789,7 @@ class sr_subscribe(sr_instances):
                  newpath = newdir + '/' + newfile
 
                  # only if the newpath doesnt exist
-                 if not os.path.isfile(newpath):
+                 if not os.path.exists(newpath):
 
                     # make sure directory exists, create it if not
                     if not os.path.isdir(newdir):
@@ -797,10 +797,16 @@ class sr_subscribe(sr_instances):
                        except: pass
                        #MG FIXME : except: return False  maybe ?
 
-                    # move the file (link)
+                    # move
                     try   : 
-                            os.link(oldpath,newpath)
-                            self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                            # file link
+                            if os.path.isfile(oldpath) or os.path.islink(oldpath) :
+                               os.link(oldpath,newpath)
+                               self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                            # dir rename
+                            if os.path.isdir( oldpath) : 
+                               os.rename(oldpath,newpath)
+                               self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                             if self.reportback: self.msg.report_publish(201, 'moved')
                             need_download = False
                     except: pass
@@ -836,20 +842,27 @@ class sr_subscribe(sr_instances):
               # oldfile exists: try to link it to newfile
               # if it doesnt work... pass... the newfile will be downloaded
 
-              if os.path.isfile(oldpath) : 
+              if os.path.exists(oldpath) : 
 
                  if not os.path.isdir(self.new_dir):
                     try   : os.makedirs(self.new_dir,0o775,True)
                     except: pass
                     #MG FIXME : except: return False  maybe ?
 
+                 # move
                  ok = True
-                 try    : os.link(oldpath,newpath)
-                 except : ok = False
+                 try   : 
+                         if os.path.isfile(oldpath) or os.path.islink(oldpath) :
+                            os.link(oldpath,newpath)
+                            self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
+                         if os.path.isdir( oldpath) : 
+                            os.rename(oldpath,newpath)
+                            self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
+                         need_download = False
+                 except: ok = False
 
                  if ok  :
                           need_download = False
-                          self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
                           if self.post_broker :
@@ -1244,18 +1257,21 @@ class sr_subscribe(sr_instances):
         self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
-
     def set_dir_pattern(self,cdir):
 
         new_dir = cdir
 
         if '${DR}' in cdir and self.document_root != None :
            new_dir = new_dir.replace('${DR}',self.document_root)
-           new_dir = new_dir.replace('//','/')
+           #MG preventive ... should not be requiered if
+           #                  document_root does not end with /
+           #                  ${DR} starts new_dir
+           #new_dir = new_dir.replace('//','/')
 
         if '${PDR}' in cdir and self.post_document_root != None :
            new_dir = new_dir.replace('${PDR}',self.post_document_root)
-           new_dir = new_dir.replace('//','/')
+           #MG preventive ... should not be requiered if post_document_root does not end with /
+           #new_dir = new_dir.replace('//','/')
 
         if '${YYYYMMDD}' in cdir :
            YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
@@ -1295,24 +1311,51 @@ class sr_subscribe(sr_instances):
         # FIXME: 255 char limit on headers, rename will break!
         if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
 
-        # sometime like in watch or post, relpath has post_document_root
-        if self.post_document_root :
-           relpath = relpath.replace(self.post_document_root,'')
-           if relpath[0] == '/' : relpath = relpath[1:]
+        # MG to investigate further... in which case was this needed ...
+        #    anyway dont put it here... breaks strip
 
-        relpath  = relpath.replace('//','/')
+        # sometime like in watch or post, relpath has post_document_root
+        #if self.post_document_root :
+        #   relpath = relpath.replace(self.post_document_root,'')
+        #   if relpath[0] == '/' : relpath = relpath[1:]
+
+        # MG  if '//' eventually means absolutepath and '/' relpath than dont clean
+        #     configs watch,post,poll should be configured correctly not to add '/' to relpath
+
+        # relpath  = relpath.replace('//','/')
+
         token    = relpath.split('/')
         filename = token[-1]
 
-        # if strip is used... strip N heading directories
+        # if provided, strip (integer) ... strip N heading directories
+        #         or  pstrip (pattern str) strip regexp pattern from relpath
+        # cannot have both (see setting of option strip in sr_config)
 
         if self.strip > 0 :
            strip = self.strip
-           if relpath[0] == '/' : strip = strip + 1
+           #MG folling code was a fix...
+           #   if strip is a number of directories
+           #   add 1 to strip not to count '/'
+           #   impact to current configs avoided by commenting out
+
+           #if relpath[0] == '/' : strip = strip + 1
            try :
                    token   = token[strip:]
+
+           # strip too much... keep the filename
            except:
                    token   = [filename]
+
+        # strip using a pattern
+
+        elif self.pstrip != None :
+           #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
+           try:    relstrip = re.sub(self.pstrip,'',relpath,1)
+           except: relstrip = relpath
+
+           # if filename dissappear... same as numeric strip, keep the filename
+           if not filename in relstrip : relstrip = filename
+           token = relstrip.split('/')
 
         # if flatten... we flatten relative path
         # strip taken into account
@@ -1337,8 +1380,12 @@ class sr_subscribe(sr_instances):
 
         # add relpath
 
-        new_dir = new_dir + '/' + '/'.join(token[:-1])
-        new_dir = new_dir.replace('//','/')
+        if len(token) > 1 :
+           new_dir = new_dir + '/' + '/'.join(token[:-1])
+           #MG that was a preventive replacement... 
+           #   if '//' becomes the way to set absolute path
+           #   new_dir should keep a starting //
+           #new_dir = new_dir.replace('//','/')
 
         if '$' in new_dir :
            new_dir = self.set_dir_pattern(new_dir)
@@ -1359,7 +1406,9 @@ class sr_subscribe(sr_instances):
         relpath = new_dir + '/' + filename
         if self.post_document_root :
            relpath = relpath.replace(self.post_document_root, '')
-        relpath = relpath.replace('//','/')
+
+        #MG again.. preventive replacement...
+        #relpath = relpath.replace('//','/')
 
         # set the results for the new file (downloading or sending)
 
