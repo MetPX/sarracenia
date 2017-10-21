@@ -420,8 +420,11 @@ void usage()
      fprintf( stderr, "\taccept_unmatch <boolean> - if not matched, accept? (default: true).\n" );
      fprintf( stderr, "\taction [start|stop|setup|cleanup|foreground] default: foreground\n" );
      fprintf( stderr, "\t\tstart - start a daemon running (will detach) and write to log.\n" );
+     fprintf( stderr, "\t\thelp - view this usage.\n" );
      fprintf( stderr, "\t\tstop - stop a running daemon.\n" );
-     fprintf( stderr, "\t\tsetup - declare broker resources (to be ready for subscribers to bind to.)\n" );
+     fprintf( stderr, "\t\tlist - list configurations available.\n" );
+     fprintf( stderr, "\t\tdeclare - declare broker resources (to be ready for subscribers to bind to.)\n" );
+     fprintf( stderr, "\t\tsetup - bind queues to resources, declaring if needed.)\n" );
      fprintf( stderr, "\t\tcleanup - delete any declared broker resources.\n" );
      fprintf( stderr, "\t\tforeground - run as a foreground process logging to stderr (ideal for debugging.)\n" );
      fprintf( stderr, "\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials. MANDATORY\n" );
@@ -465,7 +468,8 @@ void usage()
      fprintf( stderr, "\t\t(a comma separated list of urls will result in alternation among multiple file postings.)\n" );
 
      fprintf( stderr, "\t<paths> - list of files and/or directories to post (same as *path* option.)\n\n" );
-     fprintf( stderr, "This is a C implementation of sr_post(1), see man page for details\n\n" );
+     fprintf( stderr, "This is a limited C implementation of sr_post(1), see man page for details\n\n" );
+     fprintf( stderr, "does not support plugins. main difference: specifying sleep makes it act like sr_watch\n\n" );
      exit(1);
 }
 
@@ -508,7 +512,7 @@ int main(int argc, char **argv)
 
     }
 
-    if ( sr_cfg.help ) usage();
+    if ( !strcmp(sr_cfg.action, "help") || sr_cfg.help ) usage();
 
     if ( !strcmp( sr_cfg.action, "list" ))
     {
