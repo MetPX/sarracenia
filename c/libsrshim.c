@@ -24,7 +24,7 @@
  SRSHIMMV - trigger new form of MV posting.
 
  FIXME:
-    cases not handled:  moving a directory (requires recursive post?)
+     sigh.... redirection... the final frontier...
 
     rmdir(2)
       - directory must be empty, so rmdir has no effect (only deal with files.)
@@ -36,8 +36,11 @@
 
     truncate(2)
       - hmm... This one we might have to do...
+      - ftruncate is fine, as will be followed by a close, but truncate... hmm..
 
     truncate64(2)
+
+
  */
 static struct sr_context *sr_c = NULL;
 static struct sr_config_t sr_cfg; 

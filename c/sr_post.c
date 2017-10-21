@@ -36,7 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-
+#include <dirent.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -415,6 +415,45 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
 }
 
+void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *newname);
+
+void sr_post_rename_dir(struct sr_context *sr_c, const char *oldname, const char *newname)
+{
+  DIR *dir;
+  struct dirent *e;
+  char oldpath[PATH_MAX+1];
+  int oldlen;
+  char newpath[PATH_MAX+1];
+  int newlen;
+
+  log_msg( LOG_DEBUG, "sr_%s starting rename_dir: %s %s \n", sr_c->cfg->progname, oldname, newname );
+  dir = opendir( newname );
+  if (!dir) return;
+  
+  // build oldname and new name as sub of current ones.
+  strcpy(oldpath, oldname );
+  strcat(oldpath, "/" );
+  oldlen=strlen(oldpath);
+
+  strcpy(newpath, newname );
+  strcat(newpath, "/" );
+  newlen = strlen(newpath);
+ 
+  while( (e = readdir(dir)) ) 
+  {
+      if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") )
+          continue;
+      strcat( oldpath, e->d_name );
+      strcat( newpath, e->d_name );
+      sr_post_rename( sr_c, oldpath, newpath );
+
+      oldpath[oldlen]='\0';
+      newpath[newlen]='\0';
+  }
+
+  closedir(dir);
+}
+
 void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *newname)
 /*
    assume actual rename is completed, so newname exists.
@@ -424,10 +463,18 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   struct sr_header_t first_user_header;
   struct sr_mask_t *mask;
 
+      
+  log_msg( LOG_DEBUG, "sr_%s starting rename: %s %s \n", sr_c->cfg->progname, oldname, newname );
+
   if ( lstat( newname, &sb ) ) 
   {
      log_msg( LOG_ERROR, "sr_%s rename: %s cannot stat.\n", sr_c->cfg->progname, newname );
      return;
+  }
+  if ( S_ISDIR(sb.st_mode) )
+  {
+      sr_post_rename_dir( sr_c, oldname, newname );
+      return;
   }
 
   first_user_header.next = sr_c->cfg->user_headers;
@@ -457,6 +504,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   free(first_user_header.key);  
   sr_c->cfg->user_headers = first_user_header.next ;
   
+
 }
 
 
