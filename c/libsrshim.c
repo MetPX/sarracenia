@@ -23,6 +23,21 @@
 
  SRSHIMMV - trigger new form of MV posting.
 
+ FIXME:
+    cases not handled:  moving a directory (requires recursive post?)
+
+    rmdir(2)
+      - directory must be empty, so rmdir has no effect (only deal with files.)
+        hmm... do we need to start dealing with directories?
+        result: even with delete active, empty directories likely.
+
+    sendfile64(2)
+      - sendfile is dealt with... dunno that we need a separate 64 variety.
+
+    truncate(2)
+      - hmm... This one we might have to do...
+
+    truncate64(2)
  */
 static struct sr_context *sr_c = NULL;
 static struct sr_config_t sr_cfg; 
