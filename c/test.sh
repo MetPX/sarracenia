@@ -1,7 +1,10 @@
 
 
-export SR_POST_CONFIG=`pwd`/test_post.conf
-export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
+if [ ! "${LD_PRELOAD}" ]; then
+   export SR_POST_CONFIG=`pwd`/test_post.conf
+   export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
+   exec $0
+fi
 
 #echo "ldd /usr/bin/python"
 #ldd /usr/bin/python2.7
