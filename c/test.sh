@@ -1,3 +1,5 @@
+
+
 export SR_POST_CONFIG=`pwd`/test_post.conf
 export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
 
@@ -9,7 +11,11 @@ export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
 #export SRSHIMDEBUG=lala
 #export SRSHIMMV=po
 set -x
-echo "hoho" >>~/test/hoho
+
+echo "FIXME: KNOWN ISSUE redirection close does not get posted!"
+bash -c 'echo "hoho" >>~/test/hoho'
+
+truncate --size=2 ~/test/hoho
 
 /usr/bin/python2.7 pyiotest
 cp libsrshim.c ~/test/hoho_my_darling.txt

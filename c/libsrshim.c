@@ -32,14 +32,8 @@
         result: even with delete active, empty directories likely.
 
     sendfile64(2)
-      - sendfile is dealt with... dunno that we need a separate 64 variety.
-
-    truncate(2)
-      - hmm... This one we might have to do...
-      - ftruncate is fine, as will be followed by a close, but truncate... hmm..
-
     truncate64(2)
-
+      - ordinary calls are dealt with... dunno that we need a separate 64 variety.
 
  */
 static struct sr_context *sr_c = NULL;
@@ -143,10 +137,32 @@ int shimpost( const char *path, int status )
 }
 
 
+static int truncate_init_done = 0;
+typedef int  (*truncate_fn) (const char*,off_t length);
+static truncate_fn truncate_fn_ptr = truncate;
+
+int truncate(const char *path, off_t length) 
+{
+    int status;
+
+    if (!truncate_init_done) {
+        truncate_fn_ptr = (truncate_fn) dlsym(RTLD_NEXT, "truncate");
+        truncate_init_done = 1;
+    }
+    status = truncate_fn_ptr(path,length);
+    if ( !strncmp(path,"/dev/", 5) ) return(status);
+    if ( !strncmp(path,"/proc/", 6) ) return(status);
+
+    return(shimpost(path, status));
+
+}
+
+
+
+
 static int symlink_init_done = 0;
 typedef int  (*symlink_fn) (const char*,const char*);
 static symlink_fn symlink_fn_ptr = symlink;
-
 
 int symlink(const char *target, const char* linkpath) 
 {
