@@ -50,12 +50,13 @@ Sr_subscribe is very configurable and is the basis for other components of sarra
 `sr_sarra(8) <sr_sarra.8.html>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
 
 All of these components accept the same options, with the same effects.
-There is also `sr_cpump(1) <sr_cpump.1.html>`_ which is a limited C implementation.
-The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
-followed by an a configuration file described below.
+There is also `sr_cpump(1) <sr_cpump.1.html>`_ which is a C version that implements a
+subset of the options here, but where they are implemented, they have the same effect.
 
-When any component is invoked,
-a configuration file and an operation are specified.  The operation is one of:
+The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
+followed by an a configuration file. 
+
+When any component is invoked, an operation and a configuration file are specified. The operation is one of:
 
  - foreground:  run a single instance in the foreground logging to stderr
  - restart: stop and then start the configuration.
@@ -621,12 +622,12 @@ from the relative path.  for example if::
 Will also result in the file being placed the same location. 
 
 NOTE::
-    with **strip**, use of ? modifier (to prevent *greediness* ) is often helpful. 
+    with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
     It ensures the shortest match is used.
 
     For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
     The expression:  .*?GIF   matches: radar/PRECIP/GIF
-    whereas the expression: .*GIF   matches the entire name.
+    whereas the expression: .*GIF matches the entire name.
 
 
 The  **flatten**  option is use to set a separator character. The default value ( '/' )
@@ -1013,9 +1014,8 @@ them available to upstream sources.
 PLUGIN SCRIPTS
 ==============
 
-Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
-flexibility to override or add functionality with python plugins scripts.
-MetPX comes with a variety of example plugins, and uses some to implement base functionality,
+One can override or add functionality with python plugins scripts.
+Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
 such as logging (implemented by default use of msg_log, file_log, post_log plugins. )
 
 Users can place their own scripts in the script sub-directory
