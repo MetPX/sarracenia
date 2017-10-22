@@ -6,13 +6,6 @@ if [ ! "${LD_PRELOAD}" ]; then
    exec $0
 fi
 
-#echo "ldd /usr/bin/python"
-#ldd /usr/bin/python2.7
-
-#export LD_DEBUG=bindings
-
-#export SRSHIMDEBUG=lala
-#export SRSHIMMV=po
 set -x
 
 echo "FIXME: KNOWN ISSUE redirection close does not get posted!"
