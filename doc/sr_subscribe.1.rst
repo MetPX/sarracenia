@@ -338,14 +338,14 @@ via sarracenia, because sarracenia itself picks appropriate values.
 The **save** option is used to read messages from the queue and write them
 to a local file, saving them for future processing, rather than processing
 them immediately.  See the *Destination Unavailable* section of 
-the `sr_sender(1) <sr_sender.1.rst>`_ manual page for more details.
+the `sr_sender(1) <sr_sender.1.html>`_ manual page for more details.
 The **restore** option implements the reverse function, reading from the file
 for processing.  
 
 If **restore_to_queue** is specified, then rather than triggering local
 processing, the messages restored are posted to a temporary exchange 
 bound to the given queue.  For an example, see Queue Save/Restore in
-the `sr_shovel(8) <sr_shovel.8.rst>`_ manual page.
+the `sr_shovel(8) <sr_shovel.8.html>`_ manual page.
 
 
 AMQP QUEUE BINDINGS
@@ -486,11 +486,9 @@ and under which name.
 - **batch     <count>          (default: 100)**
 - **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
-- **destfn_script (sundew compatibility... see that section)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
 - **document_root <path>       (default: /)**
-- **filename (for sundew compatibility..  see that section)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
 - **kbytes_ps <count>               (default: 0)**
@@ -606,9 +604,14 @@ option, with the use of *${..}* notation::
 
    SOURCE   - the amqp user that injected data (taken from the message.)
    DR       - the document root 
+   PDR      - the post document root 
    YYYYMMDD - the current daily timestamp.
    HH       - the current hourly timestamp.
    *var*    - any environment variable.
+
+The YYYYMMDD and HH time stamps refer to the time at which the data is processed, it 
+is not decoded or derived from the content of the files delivered.  All date/times
+in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
@@ -865,7 +868,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[-pdr|--post_document_root <path>]     (optional)**
  - **post_exchange     <name>         (default: xpublic)**
- - **post_exchange_split   <number>   (default: 0) **
+ - **post_exchange_split   <number>   (default: 0)**
  - **post_url          <url>          (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
