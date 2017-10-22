@@ -910,6 +910,7 @@ the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
+ - **[--outlet <post|json|url>]            (default: post)**
  - **[-pdr|--post_document_root <path>]     (optional)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
@@ -929,6 +930,8 @@ The parts and their checksums are stored in the cache. Partitions can traverse
 the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
+The *outlet* option, implemented only in *sr_cpump*, allows the final output
+to be other than a post.  See `sr_cpump(1) <sr_cpump.html>`_ for details.
 
 The *post_document_root* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
@@ -960,42 +963,6 @@ instanced in the normal way.  example::
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
-
-
-
-
-PLUGINS
--------
-
-There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program:
-
-- **do_download <script>        (default: None)** 
-- **on_message  <script>        (default: msg_log)** 
-- **on_file     <script>        (default: file_log)** 
-- **on_parts    <script>        (default: None)** 
-
-A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
-(this one being for **on_file**)::
-
- class Transformer(object): 
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          logger = parent.logger
-
-          logger.info("I have no effect but adding this log line")
-
-          return True
-
- transformer  = Transformer()
- self.on_file = transformer.perform
-
-The only arguments the script receives it **parent**, which is an instance of
-the **sr_subscribe** class
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
 
 
 ROUTING
@@ -1047,13 +1014,12 @@ PLUGIN SCRIPTS
 ==============
 
 Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
-flexibility to override those common cases with user plugins scripts, written in python.
-MetPX comes with a variety of scripts which can act as examples.
+flexibility to override or add functionality with python plugins scripts.
+MetPX comes with a variety of example plugins, and uses some to implement base functionality,
+such as logging (implemented by default use of msg_log, file_log, post_log plugins. )
 
 Users can place their own scripts in the script sub-directory
-of their config directory tree.
-
-A user script should be placed in the ~/.config/sarra/plugins directory.
+of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
 
 There are two varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
 to implement functions, replacing built-in functionality, for example, to implement
@@ -1110,18 +1076,26 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
   transformer  = Transformer()
   self.on_file = transformer.perform
 
-The only arguments the script receives it **parent**, which is an instance of
-the **sr_subscribe** class
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
-For other events, the last line of the script must be modified to correspond.
-Multiple scripts can be attached to the same event, in which case they are
-called in the order they appear in the configuration.
+The last line of the script is specific to the kind of plugin being
+written, and must be modified to correspond (on_file or an on_file, on_message 
+for an on_message, etc...) The plugins stack. For example, one can have 
+multiple *on_message* plugins specified, and they will be invoked in the order 
+given in the configuration file.  Should one of these scripts return False, 
+the processing of the message/file will stop there.  Processing will only 
+continue if all configured plugins return True.  One can specify *on_message None* to 
+reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt.)
 
-One can specify *on_message None* to reset the list to no plugins (removes
-msg_log, so it suppresses logging of message receipt.)
+The only argument the script receives is **parent**, which is a data
+structure containing all the settings, as **parent.<setting>**, and
+the content of the message itself as **parent.msg** and the headers
+are available as **parent.msg[ <header> ]**.  The path to write a file
+to is available as There is also **parent.new_dir** / **parent.new_file**
 
-More examples are available in the Programming Guide.
+When downloading, this would be a local file combination. In the sender
+case, these would give the path on the remote server.  All of these
+fields can be modified by plugins.
+
+See the `Programming Guide <http://metpx.sf.net/Prog.html>`_ for more details.
 
 
 Queue Save/Restore
