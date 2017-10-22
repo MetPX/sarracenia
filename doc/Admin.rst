@@ -43,12 +43,12 @@ as well.  The two mechanisms currently supported are web servers, and SFTP.  In 
 case, all of the components are on the same server, but there is no need for that.  the
 broker could be on a different server from both ends of a given hop of a data transfer.
 
-The best way for data transfers to occur is to avoid polling (use of sr_watch.) It is more
+The best way for data transfers to occur is to avoid polling. It is more
 efficient if writers can be coaxed into emitting appropriate sr_post messages.  Similarly,
 when delivering, it is ideal if the receivers use sr_subscribe, and a on_file plugin
 to trigger their further processing, so that the file is handed to them without polling.
 This is the most efficient way of working, but it is understood that not all software
-can be made co-operative.
+can be made co-operative.  Tools to poll for those cases are sr_poll, and sr_watch.
 
 Generally speaking, Linux is the main deployment target, and the only platform on which
 server configurations are deployed.  Other platforms are used as client end points.
@@ -401,6 +401,10 @@ of the sr_shovel(8) manual page.  There is a similar mechanism used to write mes
 to disk, to avoid them overloading the broker.   When the consumer is back in service, the
 *restore_to_queue* option can be used to recover missing messages.
 
+FIXME: Need to consolidate and express the limitation of one rabbitmq's *one cpu to serve a queue*, and 
+Jun's multiple queue technique when volume dictates that.
+
+FIXME: Need to document post_exchange_split, as a means of exceeding capacity of single winnow.
 
 
 
