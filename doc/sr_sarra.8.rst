@@ -26,97 +26,20 @@ DESCRIPTION
 
 **sr_sarra** is a program that Subscribes to file notifications,
 Acquires the files and ReAnnounces them at their new locations.
-
 The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
 
 **sr_sarra** connects to a *broker* (often the same as the remote file server
 itself) and subscribes to the notifications of interest. It uses the notification
 information to download the file on the local server its running on.
-After, it produces a new notification for the local file on a broker (usually on the local server).
+It then posts a notification for the downloaded files on a broker (usually on the local server).
 
 **sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
 or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
 that announce its' products.
 
-The **sr_sarra** command takes two arguments: an action start|stop|restart|reload|status.
-followed by a configuration file described below.
+The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.html>`_  with the following presets::
 
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile
-interactively...   The **foreground** instance is not concerned by other actions,
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux
-or use other means to kill its process.
-
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
-
-
-CONFIGURATION
-=============
-
-This document focuses on detailing the program's options. We invite the reader to
-read the document `sr_subscribe(7) <sr_subscribe.7.html>`_  first. It fully explains the
-option syntax, the configuration file location, the credentials ... etc.
-
-Standard sarracenia configuration would expect the config file to be found in :
-
- - linux: ~/.config/sarra/sarra/configfile.conf
- - Windows: %AppDir%/science.gc.ca/sarra/sarra, this might be:
-   C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\configfile.conf
-
-When creating a new configuration file, the user can take advantage of executing
-the program with  **--debug foreground configfile**  with a configfile.conf in
-the current working directory.
-
-The options used in the configfile are described in the next sections.
-
-
-Multiple Streams
-================
-
-When executed,  the program uses the default queue name.
-If it is stopped, the posted messages continue to accumulate on the
-broker in the queue.  When the program is restarted, the queue name
-is reused, and no messages are lost.
-
-Message processing can be parallelized by running multiple instances of the program.
-The program shares the same queue. The messages will be distributed between instances.
-Simply launch the program with option instances set to an integer greater than 1.
-
-
-Consuming Options
-=================
-
-Setting the source broker :
-
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-Setting the queue on broker :
-
-- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
-- **durable       <boolean>      (default: False)**
-- **expire        <duration>      (default: 5m  == five minutes)**
-- **message-ttl   <duration>      (default: None)**
-- **prefetch      <N>            (default: 1)**
-- **reset         <boolean>      (default: False)**
-
-Setting the bindings on the queue :
-
- - **exchange      <name>         (default: xpublic)**
- - **topic_prefix  <amqp pattern> (default: varies -- developer option)**
- - **subtopic      <amqp pattern> (subtopic need to be set)**
-
-Using regular expression filtering messages
-
-- **accept       <regexp pattern> (optional)**
-- **reject       <regexp pattern> (optional)**
-- **accept_unmatch      <boolean> (default: False)**
-
-Running a plugin on selected messages
-
-- **on_message      <script_name> (default: msg_log)**
+   mirror True
 
 
 Specific consuming requirements
@@ -147,11 +70,6 @@ overriding any values present in the message.  This setting
 should always be used when ingesting data from a 
 user exchange.
 
-Important note 2:
-
-The set of **on_message** plugins (if provided) are invoked
-after a product has been selected for download as
-described in the next section.
 
 
 LOCAL DESTINATION OPTIONS
@@ -163,7 +81,7 @@ These options set where the program downloads the file
 - **attempts      <integer>        (default: 3)**
 - **document_root <path>           (default: .)**
 - **mirror        <boolean>        (default: true)**
-- **strip         <integer>        (default: 0)**
+- **strip         <integer|regexp>        (default: 0)**
 - **inplace       <boolean>        (default: true)**
 
 The **attempts** setting sets the maximum number of times to 
@@ -180,14 +98,9 @@ If message has self.msg.headers['rename'] than :
 When **mirror** is true, we are usually in a pump to pump
 configuration and we are satisfied with the message's path as is.
 
-If **mirror** is false, it means that we need to add the sarracenia
-standard   yyyymmdd/source pair in front of the relative_path
-
-**if not mirror: relative_path = YYYYMMDD/<brokerUser>/relative_path**
-
 Next, the **strip** option is applied, if set to N>0. The relative_path
 has its N first directories removed... if N is too big, the filename
-is kept.
+is kept. One can also specify a regular expression (usually non-greedy.)
 
 The **document_root** sets a directory the root of the download tree.
 This directory never appears in the newly created amqp notifications.
@@ -200,19 +113,7 @@ of file parts, will put these parts inplace in the file in an orderly fashion.
 Each part, once inserted in the file, is announced to subscribers.
 
 Depending of **inplace** and if the message was a part, the path can
-change again (adding a part suffix if necessary). The resulting variables used for
-the local destination to download a file (or a part) are :
-
-parent.new_file         :  name of the file to write.
-parent.new_dir          :  name of the directory in which to write the file.
-parent.msg.local_offset :  offset position in the local file
-parent.msg.offset       :  offset position of the remote file
-parent.msg.length       :  length of file or part
-parent.msg.in_partfile  :  T/F file temporary in part file
-parent.msg.local_url    :  url for reannouncement
-
-These variables are important to know if one wants to use an **on_message**,
-**on_part** or **on_file** plugin.
+change again (adding a part suffix if necessary). 
 
 
 DOWNLOAD OPTIONS

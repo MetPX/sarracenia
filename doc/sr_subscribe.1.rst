@@ -532,23 +532,30 @@ and under which name.
 - **batch     <count>          (default: 100)**
 - **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
+- **delete    <boolean>>       (default: False)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
 - **document_root <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
+- **inplace       <boolean>        (default: true)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
-- **suppress_duplicates   <off|on|999>     (default: off)**
+- **recompute_chksum <boolean> (default: False)**
 - **reject    <regexp pattern> (optional)** 
-- **strip     <count|regexp>   (default: 0)**
 - **source_from_exchange  <boolean> (default: False)**
+- **strip     <count|regexp>   (default: 0)**
+- **suppress_duplicates   <off|on|999>     (default: off)**
+- **timeout     <float>         (default: 0)**
 
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
+
+The **timeout** option, sets the number of seconds to wait before aborting a
+connection or download attempt.
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.) The value can be a file name suffix, which is 
@@ -562,6 +569,8 @@ The  **inflight**  option can also be specified as a time interval, for example,
 the file has not been modified in that interval.  So a file woll not be processed until
 it has stayed the same for at least 10 seconds.
 
+When the **delete** option is set, after a download has completed successfully, the subscriber
+will delete the file at the upstream source.  Default is false.
 
 The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
 
@@ -672,6 +681,17 @@ The defaults is None which means that the path in the notification is the absolu
     in a sender.
    
 
+Large files may be sent as a series of parts, rather than all at once.
+When downloading, if **inplace** is true, these parts will be appended to the file 
+in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
+There are some deployments of sarracenia where one pump will only ever see a few parts, and
+not the entirety, of multi-part files. :q
+
+
+The **inplace** option defaults to True. 
+Depending of **inplace** and if the message was a part, the path can
+change again (adding a part suffix if necessary).
+
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 1- the file to be downloaded is already on the user's file system at the right place and
@@ -736,6 +756,17 @@ If no source mode is available, the *default_mode* will be applied to files, and
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
+
+For each download, the checksum is computed during transfer. If **recompute_chksum**
+is set to True, and the recomputed checksum differ from the on in the message,
+the new value will overwrite the one from the incoming amqp message. This is used
+when a file is being pulled from a remote non-sarracenia source, in which case a place
+holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
+message for downstream consumers. On can also use this method to override checksum choice.
+For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
+the checksums with MD5.   There are also cases, where, for various reasons, the upstream
+checksums are simply wrong, and should be overridden for downstream consumers.
+
 
 
 
@@ -1090,6 +1121,17 @@ structure containing all the settings, as **parent.<setting>**, and
 the content of the message itself as **parent.msg** and the headers
 are available as **parent.msg[ <header> ]**.  The path to write a file
 to is available as There is also **parent.new_dir** / **parent.new_file**
+Some other available variables::
+
+  parent.new_file         :  name of the file to write.
+  parent.new_dir          :  name of the directory in which to write the file.
+  parent.msg.local_offset :  offset position in the local file
+  parent.msg.offset       :  offset position of the remote file
+  parent.msg.length       :  length of file or part
+  parent.msg.in_partfile  :  T/F file temporary in part file
+  parent.msg.local_url    :  url for reannouncement
+
+
 
 When downloading, this would be a local file combination. In the sender
 case, these would give the path on the remote server.  All of these
