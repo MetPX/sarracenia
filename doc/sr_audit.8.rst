@@ -17,7 +17,9 @@ SYNOPSIS
 ========
 
  **sr_audit** configfile foreground|start|stop|restart|reload|status 
+
  **sr_audit** --pump  foreground configfile
+
  **sr_audit** --users foreground configfile
 
 DESCRIPTION

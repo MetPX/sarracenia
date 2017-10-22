@@ -16,7 +16,7 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] [ *-p|--path ] path1 path2...pathN
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] [ *-p|--path ] path1 path2...pathN
 
 DESCRIPTION
 ===========
@@ -29,6 +29,10 @@ Subscribers use `sr_subscribe <sr_subscribe.1.html>`_
 To consume announcements and download the file.  To make files available 
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
 also called a broker.  
+
+This manual page is primarily concerned with the python implementation,
+but there is also an implementation in C, which works nearly identically,
+except for the lack of plugins.
 
 
 CREDENTIAL OPTIONS

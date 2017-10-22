@@ -1,12 +1,12 @@
 ==========
- SR_Winnow 
+ SR_CPUMP 
 ==========
 
----------------------------
-Suppress Redundant Messages
----------------------------
+-----------------
+sr_subscribe in C
+-----------------
 
-:Manual section: 8 
+:Manual section: 1 
 :Date: @Date@
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
@@ -14,37 +14,45 @@ Suppress Redundant Messages
 SYNOPSIS
 ========
 
-**sr_winnow** foreground|start|stop|restart|reload|status configfile
-**sr_winnow** cleanup|declare|setup configfile
+**sr_cpump** foreground|start|stop|restart|reload|status configfile
+**sr_cpump** cleanup|declare|setup configfile
 
 DESCRIPTION
 ===========
 
-**sr_winnow** is a program that Subscribes to file notifications, 
-and reposts the notifications, suppressing the redundant ones by comparing their 
-fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
-in the `sr_post(7) <sr_post.7.html>`_ man page.
+**sr_cpump** is an alternate implementation of `sr_subscribe(7) <sr_subscribe.1.html>`_ 
+with some limitations.  
 
-**sr_winnow** is an `sr_subscribe(7) <sr_subscribe.1.html>`_ with the following options forced::
+ - doesn't download data, but only circulates posts.
+ - runs as only a single instance (no multiple instances.) 
+ - does not support any plugins.
+ - does not support vip for high availability.
 
-   no-download True  
-   suppress_duplicates on
-   accept_unmatch True
+It can therefore act as a drop-in replacement for:
 
-The suppress_duplicates lifetime can be adjusted, but it is always on.
+   `sr_report(1) <sr_report.1.html>`_ - process report messages.
 
-**sr_winnow** connects to a *broker* (often the same as the posting broker)
+   `sr_shovel(1) <sr_shovel.1.html>`_ - process shovel messages.
+
+   `sr_winnow(1) <sr_winnow.1.html>`_ - process winnow messages.
+
+The C implementation may be easier to make available in specialized environments, 
+such as High Performance Computing, as it has far fewer dependencies than the python version.
+It also uses far less memory for a given role.  Normally the python version 
+is recommended, but there are some cases where use of the C implementation is sensible.
+
+**sr_cpump** connects to a *broker* (often the same as the posting broker)
 and subscribes to the notifications of interest. On reception if a notification,
 it looks up its **sum** in its cache.  if it is found, the file has already come through,
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_winnow** can be used to trim messages from `sr_post(1) <sr_post.1.html>`_,
+**sr_cpump** can be used to trim messages from `sr_post(1) <sr_post.1.html>`_,
 `sr_poll(1) <sr_poll.1.html>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc... It is 
 used when there are multiple sources of the same data, so that clients only download the
 source data once, from the first source that posted it.
 
-The **sr_winnow** command takes two argument: an action start|stop|restart|reload|status... (self described)
+The **sr_cpump** command takes two argument: an action start|stop|restart|reload|status... (self described)
 followed by a configuration file described below.
 
 The **foreground** is used when debugging a configuration, when the user wants to 
@@ -60,8 +68,8 @@ the resources. **setup** creates and additionnaly does the bindings of queues.
 CONFIGURATION
 =============
 
-In general, the options for this component are described by the
-`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
+In general, the options for this component are described by 
+the `sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -78,7 +86,7 @@ These options define which messages (URL notifications) the program receives:
 
 The **exchange** is mandatory.
 
-If **sr_winnow** is to be used to winnow products from a source 
+If **sr_cpump** is to be used to winnow products from a source 
 (**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
 be named 'xs\_'SourceUserName.  SourceUserName is the one set in the broker
 option, (the amqp user the source uses to announce products.)
@@ -104,43 +112,42 @@ announcements sent to the client to a small superset of what is relevant, and
 perform only a fine-tuning with the client side mechanisms, saving bandwidth 
 and processing for all.
 
-The user can provide **on_message** scripts. When a message is accepted up 
-to this level of verification, the **on_message** scripts are called... with 
-the **sr_winnow** class instance as argument.  The scripts can perform whatever 
-is desired... if one returns False, the processing of the message will stop 
-there. If they all return True, the program will continue processing from there.  
-
-See `sr_subscribe(7) <sr_subscribe.7.html>`_  for more details.
+See `sr_subscribe(1) <sr_subscribe.1.html>`_  for more details.
 
  
 OUTPUT NOTIFICATION OPTIONS
 ---------------------------
 
-The notifications that are not ignored by **sr_winnow** are reposted.
-The options ar
+sr_cpump has one option that is different from the python implementation:
 
-**post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-**post_exchange     <name>         (MANDATORY)** 
-**on_post           <script>       (default: None)** 
+**outlet  <post|json|url>**
 
-The **post_broker** defaults to the input broker if not provided.
-Just set it to another broker if you want to send the notifications
-elsewhere.
+the options are:
 
-The **post_exchange** must be set by the user. This is the exchange under
-which the notifications will be posted.
+post:
 
-The user can provide an **on_post** script. Just before the message gets
-publish to the **post_broker** and under the **post_exchange**, the 
-**on_post** script is called... with the **sr_winnow** class instance as argument.
-The script can perform whatever you want... if it returns False, the message will not 
-bepublished. If True, the program will continue processing from there.  
+  post messages to an post_exchange
+  
+  **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+  **post_exchange     <name>         (MANDATORY)** 
+  **on_post           <script>       (default: None)** 
+  
+  The **post_broker** defaults to the input broker if not provided.
+  Just set it to another broker if you want to send the notifications
+  elsewhere.
+  
+  The **post_exchange** must be set by the user. This is the exchange under
+  which the notifications will be posted.
+  
+json:
+ 
+  write each message to standard output, one per line in the same json format used for 
+  queue save/restore by the python implementation.
 
-DEPRECATED
-==========
+url:
 
-**interface -option formerly required in conjunction with *vip*.  **
-Now just scans all interfaces.
+  just output the retrieval URL to standard output.
+
 
 SEE ALSO
 ========

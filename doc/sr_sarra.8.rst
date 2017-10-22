@@ -17,7 +17,9 @@ SYNOPSIS
 ========
 
 **sr_sarra** foreground|start|stop|restart|reload|status configfile
+
 **sr_sarra** cleanup|declare|setup configfile
+
 
 DESCRIPTION
 ===========

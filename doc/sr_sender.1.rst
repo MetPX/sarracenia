@@ -15,6 +15,7 @@ SYNOPSIS
 ========
 
 **sr_sender** foreground|start|stop|restart|reload|status configfile
+
 **sr_sender** cleanup|declare|setup configfile
 
 DESCRIPTION
@@ -122,6 +123,14 @@ to this level of verification, the **on_message** scripts are called... with
 the **sr_sender** class instance as argument.  The scripts can perform whatever 
 is desired... if one returns False, the processing of the message will stop 
 there. If all return True, the program will continue processing from there.  
+
+Often, a broker will announce files using a remote protocol such as HTTP,
+but for the sender it is actually a local file.  In such cases, one will
+see a message: **ERROR: The file to send is not local.** 
+An on message plugin will convert the web url into a local file one::
+
+  document_root /var/httpd/www
+  on_message msg_2localfile
 
 If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.

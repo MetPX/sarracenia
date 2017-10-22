@@ -17,6 +17,7 @@ SYNOPSIS
 ========
 
  **sr_shovel** foreground|start|stop|restart|reload|status configfile
+
  **sr_shovel** cleanup|declare|setup configfile
 
 DESCRIPTION

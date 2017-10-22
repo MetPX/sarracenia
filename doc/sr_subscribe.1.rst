@@ -17,7 +17,9 @@ SYNOPSIS
 ========
 
  **sr_subscribe** foreground|start|stop|restart|reload|status configfile
+
  **sr_subscribe** cleanup|declare|setup configfile
+
  (formerly **dd_subscribe** )
 
 DESCRIPTION
@@ -61,6 +63,7 @@ Sr_subscribe is very configurable and is the basis for other components of sarra
 `sr_sarra(8) <sr_sarra.8.html>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
 
 All of these components accept the same options, with the same effects.
+There is also `sr_cpump(1) <sr_cpump.1.html>`_ which is a limited C implementation.
 
 CONFIGURATION FILES
 -------------------
@@ -286,6 +289,9 @@ Setting the queue on broker :
 - **message-ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
+- **restore       <boolean>      (default: False)**
+- **restore_to_queue <queuename> (default: None)**
+- **save          <boolean>      (default: False)**
 
 Usually components guess reasonable defaults for all these values
 and users do not need to set them.  For less usual cases, the user
@@ -329,6 +335,17 @@ the reception cache is also discarded.
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
+The **save** option is used to read messages from the queue and write them
+to a local file, saving them for future processing, rather than processing
+them immediately.  See the *Destination Unavailable* section of 
+the `sr_sender(1) <sr_sender.1.rst>`_ manual page for more details.
+The **restore** option implements the reverse function, reading from the file
+for processing.  
+
+If **restore_to_queue** is specified, then rather than triggering local
+processing, the messages restored are posted to a temporary exchange 
+bound to the given queue.  For an example, see Queue Save/Restore in
+the `sr_shovel(8) <sr_shovel.8.rst>`_ manual page.
 
 
 AMQP QUEUE BINDINGS
@@ -480,7 +497,7 @@ and under which name.
 - **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
-- **suppress_duplicates   <off|on|999>     (default: off) 
+- **suppress_duplicates   <off|on|999>     (default: off)**
 - **reject    <regexp pattern> (optional)** 
 - **strip     <count|regexp>   (default: 0)**
 - **source_from_exchange  <boolean> (default: False)**
@@ -644,21 +661,26 @@ parts header) and checksum. Every *hearbeat* interval, a cleanup process looks f
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
 
-Note:: 
+**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
+alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
+One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-  Use of the cache is incompatible with the default *parts 0* strategy, one must specify an 
-  alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
-  One must avoid the dynamic algorithm that will change the partition size used as a file grows.
+**Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the 
+first time a posting is received, it could be picked by one instance, and if a duplicate one is received
+it would likely be picked up by another instance. **For effective duplicate suppression with instances**, 
+one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate 
+suppression turned off and output with *post_exchange_split*, which route posts by checksum to 
+a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
 
-  The cache is local to each instance.  When using N instances, the first time a posting is 
-  received, it could be picked by one instance, and the second potentially by another one.
-  So one should generally use a winnowing configuration (sr_winnow) ahead of a download with
-  multiple parallel instances.  
-
+  
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
 
-Permission bits on the destination files written are controlled by the *mode* directives.
+**FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
+
+**default_mode, default_dir_mode, preserve_modes**, 
+
+Permission bits on the destination files written are controlled by the *preserve_mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
 If no source mode is available, the *default_mode* will be applied to files, and the
 *default_dir_mode* will be applied to directories. If no default is specified,
@@ -800,6 +822,29 @@ The logs can be written in another directory than the default one with option :
    FIXME  The last sentence is not really right...sr_audit does track the queues'age... 
           sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
           
+
+ACTIVE/PASSIVE OPTIONS
+----------------------
+
+**sr_subscribe** can be used on a single server node, or multiple nodes
+could share responsibility. Some other, separately configured, high availability
+software presents a **vip** (virtual ip) on the active server. Should
+the server go down, the **vip** is moved on another server.
+Both servers would run **sr_subscribe**. It is for that reason that the
+following options were implemented:
+
+ - **vip          <string>          (None)**
+
+When you run only one **sr_subscribe** on one server, these options are not set,
+and sr_subscribe will run in 'standalone mode'.
+
+In the case of clustered brokers, you would set the options for the
+moving vip.
+
+**vip 153.14.126.3**
+
+When **sr_subscribe** does not find the vip, it sleeps for 5 seconds and retries.
+If it does, it consumes and process a message and than rechecks for the vip.
 
 
 POSTING OPTIONS
