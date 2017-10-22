@@ -25,6 +25,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+.. contents::
 
 Sr_subscribe is a program to efficiently download files from websites or file servers 
 that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
@@ -40,20 +41,6 @@ supplying to an external program) specifying the -n (*notify_only*, or *no downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
-followed by an a configuration file described below.
-
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions, 
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process. That would be the old **dd_subscribe** behavior...
-
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally binds the queues.
-
 Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
 
 `sr_report(1) <sr_report.1.html>`_ - process report messages.
@@ -64,6 +51,66 @@ Sr_subscribe is very configurable and is the basis for other components of sarra
 
 All of these components accept the same options, with the same effects.
 There is also `sr_cpump(1) <sr_cpump.1.html>`_ which is a limited C implementation.
+The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
+followed by an a configuration file described below.
+
+When any component is invoked,
+a configuration file and an operation are specified.  The operation is one of:
+
+ - foreground:  run a single instance in the foreground logging to stderr
+ - restart: stop and then start the configuration.
+ - start:  start the configuration running
+ - status: check if the configuration is running.
+ - stop: stop the configuration from running
+
+The remaining operations manage the resources (exchanges,queues) used by the component on
+the rabbitmq server.
+
+ - cleanup:  deletes the component's resources on the server
+ - declare:  creates the component's resources on the server
+ - setup:    like declare, additionnaly does queue bindings
+
+For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with
+the dd configuration as a single foreground instance.
+
+The **foreground** action is used when building a configuration or for debugging.
+The **foreground** instance will run regardless of other instances which are currently
+running.  Should instances be running, it shares the same message queue with them.
+A user stop the **foreground** instance by simply using <ctrl-c> on linux
+or use other means to kill the process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionally binds the queues.
+
+
+Documentation
+-------------
+
+When the command line is invoked with either the *help* action, or *-h* *-help* op
+**help** has a component print a list of valid options. While the manual pages provide
+reference material, that is the ability to locate specific information quickly, it
+is not meant as a starting point for using the package.  There guides available
+at the sourceforge site that provide a better introduction:
+
+users:
+
+* `Subscriber Guide <http://metpx.sf.net/subscriber.html>`_ - effective downloading from a pump.
+* `Source Guide <http://metpx.sf.net/source.html>`_ - effective uploading to a pump
+* `Programming Guide <http://metpx.sf.net/Prog.html>`_ - Programming custom plugins for workflow integration.
+
+Administrators:
+
+* `Admin Guide <http://metpx.sf.net/Admin.html>`_ - Configuration of Pumps
+* `Installation <http://metpx.sf.net/Install.html>`_ - initial installation.
+* `Upgrade Guide <http://metpx.sf.net/Admin.html>`_ - MUST READ when upgrading pumps.
+ 
+and contributors:
+
+* `Developer Guide <http://metpx.sf.net/Dev.html>`_ - contributing to sarracenia development.
+
+There are also other manual pages available here: `See Also`_
+
 
 CONFIGURATION FILES
 -------------------
@@ -337,15 +384,13 @@ via sarracenia, because sarracenia itself picks appropriate values.
 
 The **save** option is used to read messages from the queue and write them
 to a local file, saving them for future processing, rather than processing
-them immediately.  See the *Destination Unavailable* section of 
-the `sr_sender(1) <sr_sender.1.html>`_ manual page for more details.
+them immediately.  See the `Sender Destination Unavailable`_ section for more details.
 The **restore** option implements the reverse function, reading from the file
 for processing.  
 
 If **restore_to_queue** is specified, then rather than triggering local
 processing, the messages restored are posted to a temporary exchange 
-bound to the given queue.  For an example, see Queue Save/Restore in
-the `sr_shovel(8) <sr_shovel.8.html>`_ manual page.
+bound to the given queue.  For an example, see `Shovel Save/Restore`_ 
 
 
 AMQP QUEUE BINDINGS
@@ -773,7 +818,6 @@ is set by the 'logdays' parameter.  Log files older than **logdays** duration ar
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
-
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
 
 - **logdays** duration to keep logs online, usually expressed in days ( default: 5d )
@@ -1078,6 +1122,140 @@ One can specify *on_message None* to reset the list to no plugins (removes
 msg_log, so it suppresses logging of message receipt.)
 
 More examples are available in the Programming Guide.
+
+
+Queue Save/Restore
+==================
+
+
+Sender Destination Unavailable
+------------------------------
+
+If the server to which the files are being sent is going to be unavailable for
+a prolonged period, and there is a large number of messages to send to them, then
+the queue will build up on the broker. As the performance of the entire broker
+is affected by large queues, one needs to minimize such queues.
+
+The *-save* and *-restore* options are used get the messages away from the broker
+when too large a queue will certainly build up.
+The *-save* option copies the messages to a (per instance) disk file (in the same directory
+that stores state and pid files), as json encoded strings, one per line.
+When a queue is building up::
+
+   sr_sender stop <config> 
+   sr_sender -save start <config> 
+
+And run the sender in *save* mode (which continually writes incoming messages to disk)
+in the log, a line for each message written to disk::
+
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+
+Continue in this mode until the absent server is again available.  At that point::
+
+   sr_sender stop <config> 
+   sr_sender -restore start <config> 
+
+While restoring from the disk file, messages like the following will appear in the log::
+
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+
+
+After the last one::
+
+  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
+
+
+and the sr_sender will function normally thereafter.
+
+
+
+Shovel Save/Restore
+-------------------
+
+If a queue builds up on a broker because a subscriber is unable to process
+messages, overall broker performance will suffer, so leaving the queue lying around
+is a problem. As an administrator, one could keep a configuration like this
+around::
+
+  % more ~/tools/save.conf
+  broker amqp://tfeed@localhost/
+  topic_prefix v02.post
+  exchange xpublic
+
+  post_rate_limit 50
+  on_post post_rate_limit
+  post_broker amqp://tfeed@localhost/
+
+The configuration relies on the use of an administrator or feeder account.
+note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consumer messages from the queue
+and save them to disk::
+
+  % cd ~/tools
+  % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
+
+  2017-03-18 13:07:27,786 [INFO] sr_shovel start
+  2017-03-18 13:07:27,786 [INFO] sr_sarra run
+  2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+  2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
+  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
+  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v02.post.hydrometric.doc.hydrometric_StationList.csv
+          .
+          .
+          .
+  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v02.post.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
+  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v02.post.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
+
+  ^C2017-03-18 13:11:27,261 [INFO] signal stop
+  2017-03-18 13:11:27,261 [INFO] sr_shovel stop
+
+
+  % wc -l /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
+  189 /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
+  % 
+
+The messages are written to a file in the caching directory for future use, with
+the name of the file being based on the configuration name used.   the file is in
+json format, one message per line (lines are very long.) and so filtering with other tools
+is possible to modify the list of saved messages.  Note that a single save file per
+configuration is automatically set, so to save multiple queues, one would need one configurations
+file per queue to be saved.  Once the subscriber is back in service, one can return the messages
+saved to a file into the same queue::
+
+  % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
+
+  2017-03-18 13:15:33,610 [INFO] sr_shovel start
+  2017-03-18 13:15:33,611 [INFO] sr_sarra run
+  2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
+  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
+     .
+     .
+     .
+  2017-03-18 13:15:33,825 [INFO] post_log notice=20170318165832.323 http://localhost:8000/hydrometric/csv/BC/hourly/BC_hourly_hydrometric.csv headers={'sundew_extension': 'BC:HYDRO:CSV:DEV::20170318165829', 'toolong': '1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß', 'filename': 'BC_hourly_hydrometric.csv', 'to_clusters': 'DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM', 'sum': 'd,a22b2df5e316646031008654b29c4ac3', 'parts': '1,12270407,1,0,0', 'source': 'metpx', 'from_cluster': 'DD', 'atime': '20170318165832.323', 'mtime': '20170318165832.323'}
+  2017-03-18 13:15:33,826 [INFO] sr_shovel restore complete deleting save file: /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
+
+
+  2017-03-18 13:19:26,991 [INFO] signal stop
+  2017-03-18 13:19:26,991 [INFO] sr_shovel stop
+  % 
+
+All the messages saved are returned to the named *return_to_queue*. Note that the use of the *post_rate_limit*
+plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
+to be tuned in practice.
+
+by default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
+To Choose a different destination, *save_file* option is available::
+
+  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
+
+will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
+
 
 
 

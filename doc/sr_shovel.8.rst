@@ -56,30 +56,6 @@ In general, the options for this component are described by the
 It fully explains the option configuration language, and how to find 
 the option settings.
 
-Consuming Options
-=================
-
-This program consumes `sr_post(7) <sr_post.7.html>`_ or `sr_report(7) <sr_report.7.html>`_ 
-messages.  One needs to set the options to connect to the broker to receive messages from:
-
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-Setting the bindings on the queue :
-
-- **exchange      <name>         (default: xpublic)** 
-- **topic_prefix  <amqp pattern> (default: varies -- developer option)** 
-- **subtopic      <amqp pattern> (subtopic need to be set)** 
-
-Using regular expression filtering messages :
-
-- **accept       <regexp pattern> (optional)** 
-- **reject       <regexp pattern> (optional)** 
-- **accept_unmatch      <boolean> (default: False)** 
-
-Running a plugin on selected messages :
-
-- **on_message      <script_name> (optional)** 
-
 
 POSTING OPTIONS
 ===============
@@ -95,7 +71,7 @@ The user can overwrite the defaults with options :
 - **post_exchange_split <number> (default: 0)**
 - **on_post         <script_name> (optional)** 
 
-The post_broker option sets the credential informations to connect to the
+The post_broker option sets the credential information to connect to the
 output **RabbitMQ** server. The default is the value of the **feeder** option
 in default.conf.
 
@@ -107,6 +83,7 @@ The **post_exchange_split** is documented in sr_subscribe.
 Before a message is published, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup. 
 The message is only published if the script returns True.
+
 
 QUEUE Save/Restore
 ==================

@@ -21,108 +21,10 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_sender** is a program that Subscribes to file notifications, 
-and sends the file to a remote server. It can also, if needed,
-post a notification on a remote broker. It is used to send products
-directly from a **pump**.
-
-The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
-
-**sr_sender** connects to a *broker* and subscribes to the notifications
-of interest. On reception of a notification, it determines the location
-of the file on the server it runs. Than it determines its remote directory
-and name. Now being ready to deliver the file, it connects to the destination
-server and delivers the file accordingly.  If the user sets up a **post_broker**
-a notification is created and sent to that broker.
-
-The primary purpose of this program is to replicate (or partially replicate) a pump
-onto another that would not be allowed to acquire the products directly (PAZ, or 
-firewalled network pump)...  or to provide direct file delivery to clients.
-For this second objective, we added **metpx-sundew** like options and behaviors.
-
-The **sr_sender** command takes two argument: an action start|stop|restart|reload|status (self described)
-followed by a configuration file described below.
-
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions, 
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process.
-
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
-
-In general, the options for this component are described by the
-`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
-It fully explains the option configuration language, and how to find
-the option settings.
-
-sr_sender is a standard consumer, using all the normal AMQP settings for brokers,exchanges,
+**sr_sender** is a component derived from `sr_subscribe(1) <sr_subscribe.1.html>`_
+used to send loca files to a remote one using a file transfer protocol, primarily SFTP.
+**sr_sender** is a standard consumer, using all the normal AMQP settings for brokers,exchanges,
 queues, and all the standard client side filtering with accept, reject, on_message.
-
-
-SOURCE NOTIFICATION OPTIONS
----------------------------
-
-CREDENTIAL OPTIONS
-------------------
-
-The broker option sets all the credential information to connect to the  **RabbitMQ** server
-
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-::
-
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
-
-All sr\_ tools store all sensitive authentication info in the credentials.conf file.
-Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to thins such as private keys, or FTP modes.
-
-For more details, see: `sr_subscribe(7) credentials <sr_subscribe.7.html/#credentials>`_
-
-
-QUEUE BINDINGS OPTIONS
-----------------------
-
-First, the program needs to set all the rabbitmq configurations for a source broker.
-These options define which messages (URL notifications) the program receives:
-
-- **exchange      <name>         (default: xpublic)** 
-- **topic_prefix  <name>         (default: v02.post)**
-- **subtopic      <amqp pattern> (default: #)**
-
-as described in `sr_subscribe(7) <sr_subscribe.7.html>`_  
-
-MESSAGE SELECTION OPTIONS 
--------------------------
-
- - **accept        <regexp pattern> (default: None)** 
- - **reject        <regexp pattern> (default: None)** 
- - **on_message            <script> (default: None)** 
-
-as described in `sr_subscribe(7) <sr_subscribe.7.html>`_  
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited 
-wildcarding, and/or with the more powerful regular expression based  **accept/reject**  
-mechanisms described below.  The difference being that the AMQP filtering is 
-applied by the broker itself, saving the notices from being delivered to the 
-client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber.  In other words,  **accept/reject**  are client 
-side filters, whereas  **subtopic**  is server side filtering.  
-
-It is best practice to use server side filtering to reduce the number of 
-announcements sent to the client to a small superset of what is relevant, and 
-perform only a fine-tuning with the client side mechanisms, saving bandwidth 
-and processing for all.
-
-The user can provide **on_message** scripts. When a message is accepted up 
-to this level of verification, the **on_message** scripts are called... with 
-the **sr_sender** class instance as argument.  The scripts can perform whatever 
-is desired... if one returns False, the processing of the message will stop 
-there. If all return True, the program will continue processing from there.  
 
 Often, a broker will announce files using a remote protocol such as HTTP,
 but for the sender it is actually a local file.  In such cases, one will
@@ -135,6 +37,7 @@ An on message plugin will convert the web url into a local file one::
 If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.
 If not, the message is skipped.
+
 
 DESTINATION UNAVAILABLE
 -----------------------

@@ -65,6 +65,7 @@ A variable number of days are stored on each data pump, for those
 with an emphasis on real-time reliable delivery, the number of days
 will be shorter.  For other pumps, where long term outages need
 to be tolerated, more days will be kept. 
+
 Under the first level of date trees, there is a directory
 per source.  A Source in Sarracenia is an account used to inject
 data into the pump network.  Data can cross many pumps on it´s
@@ -88,7 +89,7 @@ staff, and the names are chosen to represent the origin of the data.
 A First Example
 ---------------
 
-The tree described above is the conventional one found on most data pumps, 
+The tree described above is the *conventional* one found on most data pumps, 
 but the original data pump, dd.weather.gc.ca, pre-dates the convention.
 Regardless of the tree, one can browse it to find the data of interest. 
 On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
@@ -301,12 +302,14 @@ sr stop will also do what you would expect.  As will sr status.
 High Priority Delivery
 ----------------------
 
-While the sarracenia protocol does not provide explicit prioritization, the use of
+While the Sarracenia protocol does not provide explicit prioritization, the use of
 multiple queues provides similar benefits.  Each configuration results 
 in a queue declaraton on the server side.  Group products at like priority into 
 a queue by selecting them using a common configuration.  The smaller the groupings, 
 the lower the delay of processing. While all queues are processed at the same priority,
-data passes though shorter queues more quickly.
+data passes though shorter queues more quickly. One can summarize with:
+
+  **Use Multiple Configurations to Prioritize**
 
 To make the advice concrete, take the example of the Environment Canada data 
 mart ( dd.weather.gc.ca ), which distributes gridded binaries, GOES satellite imagery, many 
@@ -321,7 +324,6 @@ to weather warnings (which are a very small number of products), a second for th
 Each configuration will use a separate queue.  Warnings will be processed fastest, RADARS will queue
 up against each other and so experience some more delay, and other products will share a single
 queue and be subject to more delay in cases of backlog.
-
 
 
 
@@ -352,12 +354,14 @@ for examples of this transformed path.
 
   - .* means any sequence of characters of any length. In other words, match anything.
   - cap.* means any sequence of characters that starts with cap.
-  - .*CAP.* means any sequence of characters with CAP somewhere in it.
-  - .*cap means any sequence of characters that ends with CAP.
+  - .*CAP.* means any sequence of characters with CAP somewhere in it. 
+  - .*cap means any sequence of characters that ends with CAP.  In case where multiple portions of the string could match, the longest one is selected.
+  - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
 
   Please consult various internet resources for more information on the full
   variety of matching possible with regular expressions:
 
+  - https://docs.python.org/3/library/re.html
   - https://en.wikipedia.org/wiki/Regular_expression
   - http://www.regular-expressions.info/ 
 
@@ -726,4 +730,12 @@ or not.
 
 This filtering requires implementation of a local dataless pump with 
 sr_winnow.  See the Administrator Guide for more information.
+
+More Information
+----------------
+
+The `sr_subscribe(1) <sr_subscribe.1.html>`_ is the definitive source of reference
+information for configuration options.   For additional information,
+consult: `Sarracenia Documentation <http://metpx.sf.net/sarra-e-docs.html>`_
+
 
