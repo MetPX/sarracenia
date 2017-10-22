@@ -243,6 +243,16 @@ files are posted.
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
+**[--sleep <time> ]**
+
+*This option is only available in the c implementation (sr_cpost), which transforms cpost into a sr_watch
+The time to wait between generating events.  When files are written frequently, it is counter productive
+to produce a post for every change, as it can produce a continuous stream of changes where the transfers
+cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
+in* sleep *time, and produce a single post.*
+
+
+
 **[-sub|--subtopic <key>]**
 
 The subtopic default can be overwritten with the *subtopic* option.
