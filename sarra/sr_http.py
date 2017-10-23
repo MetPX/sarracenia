@@ -410,10 +410,9 @@ class http_transport():
                    msg.report_publish(499,'http does not support partitioned file transfers')
                    return False
                 
-                if self.cdir != cdir :
+                if http.cwd != cdir :
                    self.logger.debug("http_transport download cd to %s" %cdir)
                    http.cd(cdir)
-                   self.cdir  = cdir
     
                 remote_offset = 0
                 if  msg.partflg == 'i': remote_offset = msg.offset
