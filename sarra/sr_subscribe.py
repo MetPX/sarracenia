@@ -272,6 +272,30 @@ class sr_subscribe(sr_instances):
 
         return True
 
+    # =============
+    # get_source_from_exchange
+    # =============
+
+    def get_source_from_exchange(self):
+        self.logger.debug("%s get_source_from_exchange" % self.program_name)
+
+        source = None
+        ex     = self.msg.exchange
+        if len(ex) < 4 or not ex.startswith('xs_') : return source
+
+        # check if source is a valid declared source user
+
+        len_u   = 0
+        try:
+                for u in self.users :
+                    if self.users[u] != 'source' : continue
+                    if ex[3:].startswith(u) and len(u) > len_u :
+                       source = u
+                       len_u  = len(u)
+        except: pass
+
+        return source
+
     def help(self):
 
         # ---------------------------
@@ -463,9 +487,10 @@ class sr_subscribe(sr_instances):
         # apply default to a message without a source
         ex = self.msg.exchange
         if not 'source' in self.msg.headers :
-           if len(ex) > 3 and ex[:3] == 'xs_' : self.msg.headers['source'] = ex[3:].split('_')[0]
-           elif self.source                   : self.msg.headers['source'] = self.source
-           else                               : self.msg.headers['source'] = self.broker.username
+           source = self.get_source_from_exchange()
+           if   source != None : self.msg.headers['source'] = source
+           elif self.source    : self.msg.headers['source'] = self.source
+           else                : self.msg.headers['source'] = self.broker.username
            self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
 
         # apply default to a message without an origin cluster

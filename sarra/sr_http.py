@@ -448,10 +448,13 @@ class http_transport():
 
                 # fix permission 
 
-                h = msg.headers
-                if self.parent.preserve_mode and 'mode' in h and h['mode'] > 0:
-                   os.chmod(parent.new_file, int( h['mode'], base=8) )
-                elif self.parent.chmod != 0:
+                mod = 0
+                h   = msg.headers
+                if self.parent.preserve_mode and 'mode' in h :
+                   mod = int( h['mode'], base=8)
+                   os.chmod(parent.new_file, mod )
+
+                if mod == 0 and self.parent.chmod != 0:
                    os.chmod(parent.new_file, self.parent.chmod )
 
                 # fix time 
@@ -541,7 +544,7 @@ def self_test():
     cfg.message_ttl    = 30
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
-    cfg.queue_name     = None
+    cfg.queue_name     = "cmc.sr_http.test"
     cfg.kbytes_ps      = 0
     cfg.reset          = False
     cfg.timeout        = 10.0
