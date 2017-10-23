@@ -335,8 +335,8 @@ def main():
 
         def __init__(self):
             super().__init__()
-            self.new_events = {}
-            self.events_outstanding = {}
+            self.new_events = []
+            self.events_outstanding = []
             try: 
                 watch.inflight = int(watch.inflight)
             except:
@@ -353,15 +353,18 @@ def main():
             #     more details: https://github.com/gorakhargosh/watchdog/issues/392
             watch.check_heartbeat()
 
-            nu = self.new_events.copy()
-            self.new_events={}
+            self.events_outstanding.extend(self.new_events)
+            self.new_events=[]
 
-            self.events_outstanding.update(nu)
-            if len(self.events_outstanding) > 0:
+            cur_events=[]
+            cur_events.extend(self.events_outstanding)
+
+            if len(cur_events) > 0:
                watch.post.lock_set()
                done=[]
-               for f in self.events_outstanding:
-                   e,k,v=self.events_outstanding[f]
+               for idx,t in enumerate(cur_events):
+
+                   f, e, k, v = t
 
                    self.logger.debug("event_wakeup looking at %s of %s (%s,%s) " % (e, f, k,v) )
                    # waiting for file to be unmodified for 'inflight' seconds...
@@ -373,6 +376,11 @@ def main():
 
                    #directory creation. Make failures a soft error that is retried.
                    if os.path.isdir(f):
+                        self.logger.debug("dir event_wakeup %s of %s (%s,%s)" % (e, f, k, v) )
+                        if e == '*move*' :
+                           self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)
+                           done += [ idx ]
+
                         if watch.recursive: 
                             if os.path.islink(f): 
                                 if watch.post.realpath: p=os.path.realpath(f)
@@ -383,20 +391,21 @@ def main():
 
                         continue
 
-                   # MG link would not work
+                   # MG link would not work without this line
                    if e in ['create', 'modify'] and os.path.islink(f) : e = 'link'
 
                    if (e not in [ 'create', 'modify'] ) or os.access(f, os.R_OK):
                        self.logger.debug("event_wakeup calling do_post ! " )
                        self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)
-                       done += [ f ]
+                       done += [ idx ]
                    else:
                        self.logger.debug("event_wakeup SKIPPING %s of %s (%s,%s)" % (e, f, k, v) )
 
                watch.post.lock_unset()
                self.logger.debug("event_wakeup done: %s " % done )
-               for f in done:
-                   del self.events_outstanding[f]
+               done.reverse()
+               for idx in done:
+                   del self.events_outstanding[idx]
 
             #self.logger.debug("event_wakeup left over: %s " % self.events_outstanding )
 
@@ -404,7 +413,7 @@ def main():
         def event_post(self, path, tag, key=None, value=None):
             # FIXME: as per tiny potential, this routine should likely queue events.
             # that is why have not replaced this function by direct assignment in callers.
-            self.new_events[path]=(tag,key,value)
+            self.new_events.append((path,tag,key,value))
         
         def do_post(self, path, tag, key, value):
             try:
@@ -446,8 +455,10 @@ def main():
 
         # special move event_post tag *move*
         def on_moved(self, event):
-            if (not event.is_directory):
-               self.event_post(event.src_path, '*move*', 'newname', event.dest_path)
+            #if (not event.is_directory):
+            #   self.event_post(event.src_path, '*move*', 'newname', event.dest_path)
+            #self.logger.debug("MOVE dir event %s %s %s %s" % (event.src_path, '*move*', 'newname', event.dest_path))
+            self.event_post(event.src_path, '*move*', 'newname', event.dest_path)
 
     watch.event_handler(MyEventHandler())
 
