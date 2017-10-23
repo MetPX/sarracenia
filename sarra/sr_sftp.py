@@ -589,10 +589,14 @@ class sftp_transport():
 
                 # fix permission 
 
-                h = msg.headers
+                mod = 0
+                h   = msg.headers
                 if self.parent.preserve_mode and 'mode' in h :
-                   os.chmod(parent.new_file, int( h['mode'], base=8) )
-                elif self.parent.chmod != 0:
+                   try   : mod = int( h['mode'], base=8)
+                   except: mod = 0
+                   if mod > 0 : os.chmod(parent.new_file, mod )
+
+                if mod == 0 and self.parent.chmod != 0:
                    os.chmod(parent.new_file, self.parent.chmod )
 
                 # fix time 

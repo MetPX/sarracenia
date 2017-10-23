@@ -277,7 +277,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def get_source_from_exchange(self,exchange):
-        self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,ex))
+        self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
 
         source = None
         if len(exchange) < 4 or not exchange.startswith('xs_') : return source
