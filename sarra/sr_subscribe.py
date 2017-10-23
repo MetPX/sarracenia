@@ -276,20 +276,20 @@ class sr_subscribe(sr_instances):
     # get_source_from_exchange
     # =============
 
-    def get_source_from_exchange(self):
-        self.logger.debug("%s get_source_from_exchange" % self.program_name)
+    def get_source_from_exchange(self,exchange):
+        self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
 
         source = None
-        ex     = self.msg.exchange
-        if len(ex) < 4 or not ex.startswith('xs_') : return source
+        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
 
         # check if source is a valid declared source user
 
         len_u   = 0
         try:
+                # look for user with role source
                 for u in self.users :
                     if self.users[u] != 'source' : continue
-                    if ex[3:].startswith(u) and len(u) > len_u :
+                    if exchange[3:].startswith(u) and len(u) > len_u :
                        source = u
                        len_u  = len(u)
         except: pass
@@ -485,9 +485,8 @@ class sr_subscribe(sr_instances):
            if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
  
         # apply default to a message without a source
-        ex = self.msg.exchange
         if not 'source' in self.msg.headers :
-           source = self.get_source_from_exchange()
+           source = self.get_source_from_exchange(self.msg.exchange)
            if   source != None : self.msg.headers['source'] = source
            elif self.source    : self.msg.headers['source'] = self.source
            else                : self.msg.headers['source'] = self.broker.username
@@ -1303,11 +1302,10 @@ class sr_subscribe(sr_instances):
            new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
 
         if '${SOURCE}' in cdir :
-           ex     = self.exchange
-           source = None
-           if len(ex) > 3 and ex[:3] == 'xs_' : source = ex[3:].split('_')[0]
-           elif self.source                   : source = self.source
-           else                               : source = self.broker.username
+           src = self.get_source_from_exchange(self.exchange)
+           if   src != None : source = src
+           elif self.source : source = self.source
+           else             : source = self.broker.username
            new_dir = new_dir.replace('${SOURCE}',source)
 
         if '${HH}' in cdir :
