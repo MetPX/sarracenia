@@ -25,7 +25,7 @@ and reposts the notifications, suppressing the redundant ones by comparing their
 fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
 in the `sr_post(7) <sr_post.7.html>`_ man page.
 
-**sr_winnow** is an sr_subscribe with the following options forced::
+**sr_winnow** is an `sr_subscribe(7) <sr_subscribe.1.html>`_ with the following options forced::
 
    no-download True  
    suppress_duplicates on
@@ -65,122 +65,9 @@ In general, the options for this component are described by the
 It fully explains the option configuration language, and how to find
 the option settings.
 
-
-ACTIVE/PASSIVE OPTIONS
-----------------------
-
-**sr_winnow** can be used on a single server node, or multiple nodes
-could share responsibility. Some other, separately configured, high availability 
-software presents a **vip** (virtual ip) on the active server. Should 
-the server go down, the **vip** is moved on another server.
-Both servers would run **sr_winnow**. It is for that reason that the 
-following options were implemented:
-
- - **vip          <string>          (None)** 
-
-When you run only one **sr_winnow** on one server, these options are not set,
-and sr_winnow will run in 'standalone mode'.
-
-In the case of clustered brokers, you would set the options for the 
-moving vip.
-
-**vip 153.14.126.3**
-
-When **sr_winnow** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and process a message and than rechecks for the vip.
-
-
-SOURCE NOTIFICATION OPTIONS
----------------------------
-
-First, the program needs to set all the rabbitmq configurations for a source 
-broker.  The broker option sets all the credential information to connect 
-to the **AMQP** server 
-
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-::
-
-      (default: None and it is mandatory to set it ) 
-
-
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
-
-QUEUE BINDING OPTIONS
----------------------
-
-First, the program needs to set all the rabbitmq configurations for a source broker.
-These options define which messages (URL notifications) the program receives:
-
-- **exchange      <name>         (MANDATORY)** 
-- **topic_prefix  <name>         (default: v02.post)**
-- **subtopic      <amqp pattern> (default: #)**
-
-The **exchange** is mandatory.
-
-If **sr_winnow** is to be used to winnow products from a source 
-(**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
-be named 'xs\_'SourceUserName.  SourceUserName is the one set in the broker
-option, (the amqp user the source uses to announce products.)
-
-
-MESSAGE SELECTION OPTIONS
--------------------------
-
- - **accept        <regexp pattern> (default: False)** 
- - **reject        <regexp pattern> (default: False)** 
- - **on_message            <script> (default: None)** 
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited 
-wildcarding, and/or with the more powerful regular expression based  **accept/reject**  
-mechanisms described below.  The difference being that the AMQP filtering is 
-applied by the broker itself, saving the notices from being delivered to the 
-client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber.  In other words,  **accept/reject**  are client 
-side filters, whereas  **subtopic**  is server side filtering.  
-
-It is best practice to use server side filtering to reduce the number of 
-announcements sent to the client to a small superset of what is relevant, and 
-perform only a fine-tuning with the client side mechanisms, saving bandwidth 
-and processing for all.
-
-**sr_winnow** does not check, in the received message, the destination clusters. 
-So no message is discarted if without destination, source or other missing attributs.
-
-The user can provide **on_message** scripts. When a message is accepted up 
-to this level of verification, the **on_message** scripts are called... with 
-the **sr_winnow** class instance as argument.  The scripts can perform whatever 
-is desired... if one returns False, the processing of the message will stop 
-there. If they all return True, the program will continue processing from there.  
-
-
 See `sr_subscribe(7) <sr_subscribe.7.html>`_  for more details.
 
  
-OUTPUT NOTIFICATION OPTIONS
----------------------------
-
-The notifications that are not ignored by **sr_winnow** are reposted.
-The options ar
-
-**post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-**post_exchange     <name>         (MANDATORY)** 
-**on_post           <script>       (default: None)** 
-
-The **post_broker** defaults to the input broker if not provided.
-Just set it to another broker if you want to send the notifications
-elsewhere.
-
-The **post_exchange** must be set by the user. This is the exchange under
-which the notifications will be posted.
-
-The user can provide an **on_post** script. Just before the message gets
-publish to the **post_broker** and under the **post_exchange**, the 
-**on_post** script is called... with the **sr_winnow** class instance as argument.
-The script can perform whatever you want... if it returns False, the message will not 
-bepublished. If True, the program will continue processing from there.  
-
 DEPRECATED
 ==========
 

@@ -17,16 +17,19 @@ SYNOPSIS
 ========
 
  **sr_subscribe** foreground|start|stop|restart|reload|status configfile
+
  **sr_subscribe** cleanup|declare|setup configfile
+
  (formerly **dd_subscribe** )
 
 DESCRIPTION
 ===========
 
+.. contents::
 
-Sr_subscribe is a program to efficiently download files from websites or file servers 
+Sr_subscribe is a program to download files from websites or file servers 
 that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
-publish a message for each file as soon as it is available.  Clients connect to a
+publish messages for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
@@ -38,20 +41,6 @@ supplying to an external program) specifying the -n (*notify_only*, or *no downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-The **sr_subscribe** command takes two argument: action start|stop|restart|reload|status (self described)
-followed by an a configuration file described below.
-
-The **foreground** action is different. It would be used when building a configuration
-or debugging things. It is used when the user wants to run the program and its configfile 
-interactively...   The **foreground** instance is not concerned by other actions, 
-but should the configured instances be running it shares the same (configured) message queue.
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process. That would be the old **dd_subscribe** behavior...
-
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally binds the queues.
-
 Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
 
 `sr_report(1) <sr_report.1.html>`_ - process report messages.
@@ -61,16 +50,71 @@ Sr_subscribe is very configurable and is the basis for other components of sarra
 `sr_sarra(8) <sr_sarra.8.html>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
 
 All of these components accept the same options, with the same effects.
+There is also `sr_cpump(1) <sr_cpump.1.html>`_ which is a C version that implements a
+subset of the options here, but where they are implemented, they have the same effect.
+
+The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
+followed by an a configuration file. 
+
+When any component is invoked, an operation and a configuration file are specified. The operation is one of:
+
+ - foreground:  run a single instance in the foreground logging to stderr
+ - restart: stop and then start the configuration.
+ - start:  start the configuration running
+ - status: check if the configuration is running.
+ - stop: stop the configuration from running
+
+The remaining operations manage the resources (exchanges,queues) used by the component on
+the rabbitmq server.
+
+ - cleanup:  deletes the component's resources on the server
+ - declare:  creates the component's resources on the server
+ - setup:    like declare, additionnaly does queue bindings
+
+For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with
+the dd configuration as a single foreground instance.
+
+The **foreground** action is used when building a configuration or for debugging.
+The **foreground** instance will run regardless of other instances which are currently
+running.  Should instances be running, it shares the same message queue with them.
+A user stop the **foreground** instance by simply using <ctrl-c> on linux
+or use other means to kill the process.
+
+The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. **declare** creates
+the resources. **setup** creates and additionally binds the queues.
+
+
+Documentation
+-------------
+
+When the command line is invoked with either the *help* action, or *-h* *-help* op
+**help** has a component print a list of valid options. While the manual pages provide
+reference material, that is the ability to locate specific information quickly, it
+is not meant as a starting point for using the package.  There guides available
+at the sourceforge site that provide a better introduction:
+
+users:
+
+* `Subscriber Guide <http://metpx.sf.net/subscriber.html>`_ - effective downloading from a pump.
+* `Source Guide <http://metpx.sf.net/source.html>`_ - effective uploading to a pump
+* `Programming Guide <http://metpx.sf.net/Prog.html>`_ - Programming custom plugins for workflow integration.
+
+Administrators:
+
+* `Admin Guide <http://metpx.sf.net/Admin.html>`_ - Configuration of Pumps
+* `Installation <http://metpx.sf.net/Install.html>`_ - initial installation.
+* `Upgrade Guide <http://metpx.sf.net/Admin.html>`_ - MUST READ when upgrading pumps.
+ 
+and contributors:
+
+* `Developer Guide <http://metpx.sf.net/Dev.html>`_ - contributing to sarracenia development.
+
+There are also other manual pages available here: `See Also`_
+
 
 CONFIGURATION FILES
 -------------------
-
-Place settings, one per line with a keyword first, and the setting value afterward
-example configuration line::
-
- broker amqp://anonymous@dd.weather.gc.ca
-
-In the above example, *broker* is the option keyword, and the rest of the line is the value assigned to the setting.
 
 The configuration file for an sr_subscribe configuration called *myflow*
 
@@ -80,8 +124,53 @@ The configuration file for an sr_subscribe configuration called *myflow*
  - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
 
-It is just a sequence of settings, one per line. Note that the files are read in order, most importantly for
-*directory* and *accept* clauses.  Example::
+ - MAC: FIXME.
+
+The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
+are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+
+One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
+individual configuration files can be placed in any directory and invoked with the 
+complete path.   When components are invoked, the provided file is interpreted as a 
+file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
+component will look in the component's config directory ( **config_dir** / **component** )
+for a matching .conf file.
+
+If it is still not found, it will look for it in the site config dir
+(linux: /usr/share/default/sarra/**component**).
+
+Finally, if the user has set option **remote_config** to True and if he has
+configured web sites where configurations can be found (option **remote_config_url**),
+The program will try to download the named file from each site until it finds one.
+If successful, the file is downloaded to **config_dir/Downloads** and interpreted
+by the program from there.  There is a similar process for all *plugins* that can
+be interpreted and executed within sarracenia components.  Components will first
+look in the *plugins* directory in the users config tree, then in the site
+directory, then in the sarracenia package itself, and finally it will look remotely.
+
+
+Option Syntax
+-------------
+
+Options are placed in configuration files, one per line, in the form:
+
+  **option <value>**
+
+For example::
+
+  **debug true**
+  **debug**
+
+sets the *debug* option to enable more verbose logging.  If no value is specified,
+the value true is implicit. so the above are equivalent.  An second example 
+configuration line::
+
+  broker amqp://anonymous@dd.weather.gc.ca
+
+In the above example, *broker* is the option keyword, and the rest of the line is the 
+value assigned to the setting. Configuration files are a sequence of settings, one per line. 
+Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
+Example::
 
     directory A
     accept X
@@ -92,23 +181,8 @@ vs::
     accept X
     directory A
 
-Places files matching X in the current working directory, and the *directory A* setting does nothing.
-
-
-Option Syntax
--------------
-
-Options are placed in configuration files, one per line, in the form:
-
- **option <value>**
-
-For example::
-
-  **debug true**
-  **debug**
-
-sets the *debug* option to enable more verbose logging.  If no value is specified,
-the value true is implicit. so the above are equivalent.
+Places files matching X in the current working directory, and the *directory A* setting 
+does nothing in relation to X.
 
 To provide non-functional description of configuration, or comments, use lines that begin with a **#**.
 
@@ -162,7 +236,6 @@ The includeConfigPath would normally reside under the same config dir of its mas
 There is no restriction, any option  can be placed in a config file included. The user must
 be aware that, for many options, several declarations means overwriting their values.
 
-
     
 LOG FILES
 ---------
@@ -175,6 +248,7 @@ There will be a log file for each *instance* (download process) of an sr_subscri
    Windows: FIXME? dunno.
 
 One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+
 
 CREDENTIALS
 -----------
@@ -218,7 +292,6 @@ Note::
  character, its URL encoded equivalent can be supplied.  In the last example above, 
  **%2f** means that the actual password isi: **/dot8**
  The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
-
 
 
 CONSUMER
@@ -286,6 +359,9 @@ Setting the queue on broker :
 - **message-ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
+- **restore       <boolean>      (default: False)**
+- **restore_to_queue <queuename> (default: None)**
+- **save          <boolean>      (default: False)**
 
 Usually components guess reasonable defaults for all these values
 and users do not need to set them.  For less usual cases, the user
@@ -329,6 +405,15 @@ the reception cache is also discarded.
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
+The **save** option is used to read messages from the queue and write them
+to a local file, saving them for future processing, rather than processing
+them immediately.  See the `Sender Destination Unavailable`_ section for more details.
+The **restore** option implements the reverse function, reading from the file
+for processing.  
+
+If **restore_to_queue** is specified, then rather than triggering local
+processing, the messages restored are posted to a temporary exchange 
+bound to the given queue.  For an example, see `Shovel Save/Restore`_ 
 
 
 AMQP QUEUE BINDINGS
@@ -469,25 +554,30 @@ and under which name.
 - **batch     <count>          (default: 100)**
 - **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
-- **destfn_script (sundew compatibility... see that section)**
+- **delete    <boolean>>       (default: False)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
 - **document_root <path>       (default: /)**
-- **filename (for sundew compatibility..  see that section)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
+- **inplace       <boolean>        (default: true)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
-- **suppress_duplicates   <off|on|999>     (default: off) 
+- **recompute_chksum <boolean> (default: False)**
 - **reject    <regexp pattern> (optional)** 
-- **strip     <count|regexp>   (default: 0)**
 - **source_from_exchange  <boolean> (default: False)**
+- **strip     <count|regexp>   (default: 0)**
+- **suppress_duplicates   <off|on|999>     (default: off)**
+- **timeout     <float>         (default: 0)**
 
 
 The **attempts** option indicates how many times to attempt downloading the data 
 before giving up.  The default of 3 should be appropriate in most cases.
+
+The **timeout** option, sets the number of seconds to wait before aborting a
+connection or download attempt.
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.) The value can be a file name suffix, which is 
@@ -501,6 +591,8 @@ The  **inflight**  option can also be specified as a time interval, for example,
 the file has not been modified in that interval.  So a file woll not be processed until
 it has stayed the same for at least 10 seconds.
 
+When the **delete** option is set, after a download has completed successfully, the subscriber
+will delete the file at the upstream source.  Default is false.
 
 The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
 
@@ -561,12 +653,12 @@ from the relative path.  for example if::
 Will also result in the file being placed the same location. 
 
 NOTE::
-    with **strip**, use of ? modifier (to prevent *greediness* ) is often helpful. 
+    with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
     It ensures the shortest match is used.
 
     For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
     The expression:  .*?GIF   matches: radar/PRECIP/GIF
-    whereas the expression: .*GIF   matches the entire name.
+    whereas the expression: .*GIF matches the entire name.
 
 
 The  **flatten**  option is use to set a separator character. The default value ( '/' )
@@ -589,9 +681,14 @@ option, with the use of *${..}* notation::
 
    SOURCE   - the amqp user that injected data (taken from the message.)
    DR       - the document root 
+   PDR      - the post document root 
    YYYYMMDD - the current daily timestamp.
    HH       - the current hourly timestamp.
    *var*    - any environment variable.
+
+The YYYYMMDD and HH time stamps refer to the time at which the data is processed, it 
+is not decoded or derived from the content of the files delivered.  All date/times
+in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
@@ -605,6 +702,17 @@ The defaults is None which means that the path in the notification is the absolu
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
    
+
+Large files may be sent as a series of parts, rather than all at once.
+When downloading, if **inplace** is true, these parts will be appended to the file 
+in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
+There are some deployments of sarracenia where one pump will only ever see a few parts, and
+not the entirety, of multi-part files. :q
+
+
+The **inplace** option defaults to True. 
+Depending of **inplace** and if the message was a part, the path can
+change again (adding a part suffix if necessary).
 
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
@@ -644,27 +752,43 @@ parts header) and checksum. Every *hearbeat* interval, a cleanup process looks f
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
 
-Note:: 
+**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
+alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
+One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-  Use of the cache is incompatible with the default *parts 0* strategy, one must specify an 
-  alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
-  One must avoid the dynamic algorithm that will change the partition size used as a file grows.
+**Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the 
+first time a posting is received, it could be picked by one instance, and if a duplicate one is received
+it would likely be picked up by another instance. **For effective duplicate suppression with instances**, 
+one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate 
+suppression turned off and output with *post_exchange_split*, which route posts by checksum to 
+a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
 
-  The cache is local to each instance.  When using N instances, the first time a posting is 
-  received, it could be picked by one instance, and the second potentially by another one.
-  So one should generally use a winnowing configuration (sr_winnow) ahead of a download with
-  multiple parallel instances.  
-
+  
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
 
-Permission bits on the destination files written are controlled by the *mode* directives.
+**FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
+
+**default_mode, default_dir_mode, preserve_modes**, 
+
+Permission bits on the destination files written are controlled by the *preserve_mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
 If no source mode is available, the *default_mode* will be applied to files, and the
 *default_dir_mode* will be applied to directories. If no default is specified,
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
+
+For each download, the checksum is computed during transfer. If **recompute_chksum**
+is set to True, and the recomputed checksum differ from the on in the message,
+the new value will overwrite the one from the incoming amqp message. This is used
+when a file is being pulled from a remote non-sarracenia source, in which case a place
+holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
+message for downstream consumers. On can also use this method to override checksum choice.
+For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
+the checksums with MD5.   There are also cases, where, for various reasons, the upstream
+checksums are simply wrong, and should be overridden for downstream consumers.
+
 
 
 
@@ -748,7 +872,6 @@ is set by the 'logdays' parameter.  Log files older than **logdays** duration ar
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
-
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
 
 - **logdays** duration to keep logs online, usually expressed in days ( default: 5d )
@@ -801,6 +924,29 @@ The logs can be written in another directory than the default one with option :
           sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
           
 
+ACTIVE/PASSIVE OPTIONS
+----------------------
+
+**sr_subscribe** can be used on a single server node, or multiple nodes
+could share responsibility. Some other, separately configured, high availability
+software presents a **vip** (virtual ip) on the active server. Should
+the server go down, the **vip** is moved on another server.
+Both servers would run **sr_subscribe**. It is for that reason that the
+following options were implemented:
+
+ - **vip          <string>          (None)**
+
+When you run only one **sr_subscribe** on one server, these options are not set,
+and sr_subscribe will run in 'standalone mode'.
+
+In the case of clustered brokers, you would set the options for the
+moving vip.
+
+**vip 153.14.126.3**
+
+When **sr_subscribe** does not find the vip, it sleeps for 5 seconds and retries.
+If it does, it consumes and process a message and than rechecks for the vip.
+
 
 POSTING OPTIONS
 ===============
@@ -818,9 +964,10 @@ the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
+ - **[--outlet <post|json|url>]            (default: post)**
  - **[-pdr|--post_document_root <path>]     (optional)**
  - **post_exchange     <name>         (default: xpublic)**
- - **post_exchange_split   <number>   (default: 0) **
+ - **post_exchange_split   <number>   (default: 0)**
  - **post_url          <url>          (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
@@ -837,6 +984,8 @@ The parts and their checksums are stored in the cache. Partitions can traverse
 the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
+The *outlet* option, implemented only in *sr_cpump*, allows the final output
+to be other than a post.  See `sr_cpump(1) <sr_cpump.html>`_ for details.
 
 The *post_document_root* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
@@ -868,42 +1017,6 @@ instanced in the normal way.  example::
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
-
-
-
-
-PLUGINS
--------
-
-There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program:
-
-- **do_download <script>        (default: None)** 
-- **on_message  <script>        (default: msg_log)** 
-- **on_file     <script>        (default: file_log)** 
-- **on_parts    <script>        (default: None)** 
-
-A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
-(this one being for **on_file**)::
-
- class Transformer(object): 
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          logger = parent.logger
-
-          logger.info("I have no effect but adding this log line")
-
-          return True
-
- transformer  = Transformer()
- self.on_file = transformer.perform
-
-The only arguments the script receives it **parent**, which is an instance of
-the **sr_subscribe** class
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
 
 
 ROUTING
@@ -954,14 +1067,12 @@ them available to upstream sources.
 PLUGIN SCRIPTS
 ==============
 
-Metpx Sarracenia provides minimum functionality to deal with the most common cases, but provides
-flexibility to override those common cases with user plugins scripts, written in python.
-MetPX comes with a variety of scripts which can act as examples.
+One can override or add functionality with python plugins scripts.
+Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
+such as logging (implemented by default use of msg_log, file_log, post_log plugins. )
 
 Users can place their own scripts in the script sub-directory
-of their config directory tree.
-
-A user script should be placed in the ~/.config/sarra/plugins directory.
+of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
 
 There are two varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
 to implement functions, replacing built-in functionality, for example, to implement
@@ -979,8 +1090,12 @@ processing for various specialized use cases. The scripts are invoked by having 
 configuration file specify an on_<event> option. The event can be one of:
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
+  The **on_file** option defaults to file_log, which writes a downloading status message.
 
 - on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
+  defaults to heatbeat_cache, and heartbeat_log.  heartbeat_cache cleans the cache periodically,
+  and heartbeat_log prints a log message ( helpful in detecting the difference between problems
+  and inactivity. ) 
 
 - on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
   the files already published. The package provide a working example under plugins/html_page.py.
@@ -996,7 +1111,8 @@ configuration file specify an on_<event> option. The event can be one of:
   When a completed part is received, one can specify additional processing.
 
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
-  adjustments of the post.
+  adjustments of the post. on_part also defaults to post_log, which prints a message
+  whenever a file is to be posted.
 
 - on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
   It could be used to put a file in one of the watch directory and have it published when needed.
@@ -1018,18 +1134,171 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
   transformer  = Transformer()
   self.on_file = transformer.perform
 
-The only arguments the script receives it **parent**, which is an instance of
-the **sr_subscribe** class
-Should one of these scripts return False, the processing of the message/file
-will stop there and another message will be consumed from the broker.
-For other events, the last line of the script must be modified to correspond.
-Multiple scripts can be attached to the same event, in which case they are
-called in the order they appear in the configuration.
+The last line of the script is specific to the kind of plugin being
+written, and must be modified to correspond (on_file or an on_file, on_message 
+for an on_message, etc...) The plugins stack. For example, one can have 
+multiple *on_message* plugins specified, and they will be invoked in the order 
+given in the configuration file.  Should one of these scripts return False, 
+the processing of the message/file will stop there.  Processing will only 
+continue if all configured plugins return True.  One can specify *on_message None* to 
+reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt.)
 
-One can specify *on_message None* to reset the list to no plugins (removes
-msg_log, so it suppresses logging of message receipt.)
+The only argument the script receives is **parent**, which is a data
+structure containing all the settings, as **parent.<setting>**, and
+the content of the message itself as **parent.msg** and the headers
+are available as **parent.msg[ <header> ]**.  The path to write a file
+to is available as There is also **parent.new_dir** / **parent.new_file**
+Some other available variables::
 
-More examples are available in the Programming Guide.
+  parent.new_file         :  name of the file to write.
+  parent.new_dir          :  name of the directory in which to write the file.
+  parent.msg.local_offset :  offset position in the local file
+  parent.msg.offset       :  offset position of the remote file
+  parent.msg.length       :  length of file or part
+  parent.msg.in_partfile  :  T/F file temporary in part file
+  parent.msg.local_url    :  url for reannouncement
+
+
+
+When downloading, this would be a local file combination. In the sender
+case, these would give the path on the remote server.  All of these
+fields can be modified by plugins.
+
+See the `Programming Guide <http://metpx.sf.net/Prog.html>`_ for more details.
+
+
+Queue Save/Restore
+==================
+
+
+Sender Destination Unavailable
+------------------------------
+
+If the server to which the files are being sent is going to be unavailable for
+a prolonged period, and there is a large number of messages to send to them, then
+the queue will build up on the broker. As the performance of the entire broker
+is affected by large queues, one needs to minimize such queues.
+
+The *-save* and *-restore* options are used get the messages away from the broker
+when too large a queue will certainly build up.
+The *-save* option copies the messages to a (per instance) disk file (in the same directory
+that stores state and pid files), as json encoded strings, one per line.
+When a queue is building up::
+
+   sr_sender stop <config> 
+   sr_sender -save start <config> 
+
+And run the sender in *save* mode (which continually writes incoming messages to disk)
+in the log, a line for each message written to disk::
+
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+
+Continue in this mode until the absent server is again available.  At that point::
+
+   sr_sender stop <config> 
+   sr_sender -restore start <config> 
+
+While restoring from the disk file, messages like the following will appear in the log::
+
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+
+
+After the last one::
+
+  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
+
+
+and the sr_sender will function normally thereafter.
+
+
+
+Shovel Save/Restore
+-------------------
+
+If a queue builds up on a broker because a subscriber is unable to process
+messages, overall broker performance will suffer, so leaving the queue lying around
+is a problem. As an administrator, one could keep a configuration like this
+around::
+
+  % more ~/tools/save.conf
+  broker amqp://tfeed@localhost/
+  topic_prefix v02.post
+  exchange xpublic
+
+  post_rate_limit 50
+  on_post post_rate_limit
+  post_broker amqp://tfeed@localhost/
+
+The configuration relies on the use of an administrator or feeder account.
+note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consumer messages from the queue
+and save them to disk::
+
+  % cd ~/tools
+  % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
+
+  2017-03-18 13:07:27,786 [INFO] sr_shovel start
+  2017-03-18 13:07:27,786 [INFO] sr_sarra run
+  2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+  2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
+  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
+  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v02.post.hydrometric.doc.hydrometric_StationList.csv
+          .
+          .
+          .
+  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v02.post.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
+  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v02.post.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
+
+  ^C2017-03-18 13:11:27,261 [INFO] signal stop
+  2017-03-18 13:11:27,261 [INFO] sr_shovel stop
+
+
+  % wc -l /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
+  189 /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
+  % 
+
+The messages are written to a file in the caching directory for future use, with
+the name of the file being based on the configuration name used.   the file is in
+json format, one message per line (lines are very long.) and so filtering with other tools
+is possible to modify the list of saved messages.  Note that a single save file per
+configuration is automatically set, so to save multiple queues, one would need one configurations
+file per queue to be saved.  Once the subscriber is back in service, one can return the messages
+saved to a file into the same queue::
+
+  % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
+
+  2017-03-18 13:15:33,610 [INFO] sr_shovel start
+  2017-03-18 13:15:33,611 [INFO] sr_sarra run
+  2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
+  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
+     .
+     .
+     .
+  2017-03-18 13:15:33,825 [INFO] post_log notice=20170318165832.323 http://localhost:8000/hydrometric/csv/BC/hourly/BC_hourly_hydrometric.csv headers={'sundew_extension': 'BC:HYDRO:CSV:DEV::20170318165829', 'toolong': '1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß', 'filename': 'BC_hourly_hydrometric.csv', 'to_clusters': 'DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM', 'sum': 'd,a22b2df5e316646031008654b29c4ac3', 'parts': '1,12270407,1,0,0', 'source': 'metpx', 'from_cluster': 'DD', 'atime': '20170318165832.323', 'mtime': '20170318165832.323'}
+  2017-03-18 13:15:33,826 [INFO] sr_shovel restore complete deleting save file: /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
+
+
+  2017-03-18 13:19:26,991 [INFO] signal stop
+  2017-03-18 13:19:26,991 [INFO] sr_shovel stop
+  % 
+
+All the messages saved are returned to the named *return_to_queue*. Note that the use of the *post_rate_limit*
+plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
+to be tuned in practice.
+
+by default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
+To Choose a different destination, *save_file* option is available::
+
+  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
+
+will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
+
 
 
 

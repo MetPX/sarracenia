@@ -1,3 +1,20 @@
+metpx-sarracenia (2.17.10a2) unstable; urgency=medium
+
+  * add regexp option to strip.
+  * now support environment variables in config files with ${var}
+  * bugfix: misbehaved when file names have blanks in them.
+  * added -header option to sr_post.
+  * rename support added to sr_watch and python side as well.
+  * fix for bug #74 - error messages on shutdown of amqps connection.
+  * C: cpost setup/cleanup/declare/restart etc... some were broken, fixed.
+  * C: added sighandler to avoid cache corruption when terminating.
+  * C: add rename support to cpost (was only in libcshim and python before.)
+  * C: bugfix: C was inventing fields if not provided (mode=0, mtime="").
+  * C: added tx.select & tx.confirm (publish acknowledgements)
+  * C: integrated into flow_tests.
+
+ -- Peter Silva <peter@idefix>  Fri, 20 Oct 2017 13:21:57 -0400
+
 metpx-sarracenia (2.17.10a1) unstable; urgency=medium
 
   * cleanup/declare/setup actions (all programs): no exit, log with configname

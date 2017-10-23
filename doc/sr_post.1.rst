@@ -16,7 +16,8 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] [ *-p|--path ] path1 path2...pathN
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] 
+[ *-p|--path ] path1 path2...pathN* ]
 
 DESCRIPTION
 ===========
@@ -30,23 +31,13 @@ To consume announcements and download the file.  To make files available
 to subscribers, **sr_post** sends the announcements to an AMQP server, 
 also called a broker.  
 
+This manual page is primarily concerned with the python implementation,
+but there is also an implementation in C, which works nearly identically,
+except for the lack of plugins.  Differences:
 
-CREDENTIAL OPTIONS
-------------------
-
-The broker option sets all the credential information to connect to the  **RabbitMQ** server
-
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-::
-
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
-
-All sr\_ tools store all sensitive authentication info in the credentials.conf file.
-Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to thins such as private keys, or FTP modes.
-
-For more details, see: `sr_subscribe(7) credentials <sr_subscribe.7.html#credentials>`_
+ - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
+ - *sleep* option, used only in the C implementation, transforms sr_cpost into something
+   that works like `sr_watch(1) <sr_watch.1.html>`_.
 
 
 Mandatory Settings
@@ -70,7 +61,6 @@ Format of argument to the *path* option::
 
 the *-pipe* option can be specified to have sr_post read path names from standard 
 input as well.
-
 
 
 An example invocation of *sr_post*::
@@ -150,18 +140,12 @@ common settings, and methods of specifying them.
   Example of that usage would be:  -dr ~user  -url sftp:user@host  
   for file: url's, document_root is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
-  
 
 **[-ex|--exchange <exchange>]**
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
   Use the *exchange* option to override that default.
   Note that the administrator must have created the exchange before one can post to it.
-
-**[-f|--flow <string>]**
-
-  An arbitrary label that allows the user to identify a specific flow.
-  The flow string is sets in the amqp message header.  By default, there is no flow.
 
 **[-h|-help|--help**
 
@@ -225,7 +209,6 @@ the *document_root*, present and needed.
 The pipe option is for sr_post to read the names of the files to post from standard input to read from
 redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
 
-
 **[-rec|--recursive <boolean>]**
 
 The recursive default is False when the **path** given (possibly combined with **document_root**)
@@ -242,6 +225,14 @@ files are posted.
 
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+
+**[--sleep <time> ]**
+
+*This option is only available in the c implementation (sr_cpost), which transforms cpost into a sr_watch
+The time to wait between generating events.  When files are written frequently, it is counter productive
+to produce a post for every change, as it can produce a continuous stream of changes where the transfers
+cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
+in* sleep *time, and produce a single post.*
 
 **[-sub|--subtopic <key>]**
 

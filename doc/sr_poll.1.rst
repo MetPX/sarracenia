@@ -17,7 +17,9 @@ SYNOPSIS
 ========
 
 **sr_poll** foreground|start|stop|restart|reload|status configfile 
+
 **sr_poll** cleanup|declare|setup configfile 
+
 
 DESCRIPTION
 ===========

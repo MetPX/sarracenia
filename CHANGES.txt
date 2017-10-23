@@ -6,6 +6,14 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* FIXME: sr_cpost sleep > 0 & force-polling broken since 10a2
+* documentation consolidated to sr_subscribe, much duplication gone.
+* C: added directory support to sr_post_rename
+* C: libsrshim: added support for the truncate(2) system call.
+
+**2.17.10a2**
+
+* add regexp option to strip.
 * now support environment variables in config files with ${var}
 * bugfix: misbehaved when file names have blanks in them.
 * added -header option to sr_post.

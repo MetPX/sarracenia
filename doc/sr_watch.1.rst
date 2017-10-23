@@ -132,6 +132,32 @@ ARGUMENTS AND OPTIONS
 Please refer to the `sr_subscribe(7) <sr_subscribe.7.html>`_ manual page for a detailed description of
 common settings, and methods of specifying them.
 
+**[--blocksize <value>]**
+
+the value should be one of::
+
+   0 - autocompute an appropriate partitioning strategy (default)
+   1 - always send files in a single part.
+   p,<sz> - used a fixed partition size (example size: 1M )
+
+Files can be announced as multiple blocks (or parts.) Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in paralllel.  When files change, transfers are
+optimized by only sending parts which have changed.
+
+The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
+for files of various sizes.  As the file size varies, the automatic computation will give different
+results. This will result in resending information which has not changed as partitions of a different
+size will have different sums.  Where large files are being appended to, it make sense to specify a 
+fixed partition size. 
+
+In cases where a custom downloader is used which does not understand partitioning, it is necessary
+to avoid having the file split into parts, so one would specify '1' to force all files to be send
+as a single part.
+
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+
 **[-b|--broker <broker>]**
        *broker*  is the broker to connect to to send the post.
 
@@ -191,44 +217,6 @@ Display program options.
 Set a file where all the logs will be written.
 Logfile will rotate at 'midnight' and kept for an history of 5 files.
 
-
-**[-rn|--rename <path>]**
-
-With the  *rename*   option, the user can
-suggest a destination path for its files. If the given
-path ends with '/' it suggests a directory path... 
-If it doesn't, the option specifies a file renaming.
-
-
-**[-to|--to <destination>,<destination>,... ]** 
-
-  A comma-separated list of destination clusters to which the posted data should be sent.
-  Ask pump administrators for a list of valid destinations.
-
-  default: the hostname of the broker being posted to.
-
-.. note:: 
-  FIXME: a good list of destination should be discoverable.
-
-
-**[-tp|--topic_prefix <key>]**
-
-By default, the topic is made of the default topic_prefix : version  *V02* , an action  *post* ,
-followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-You can overwrite the topic_prefix by setting this option.
-
-**[-rec|--recursive <boolean>]**
-
-The recursive default is False. When the **url** given (possibly combined with **document_root**)
-describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
-files are watched.
-
-
-**[-sub|--subtopic <key>]**
-
-The subtopic default can be overwritten with the  *subtopic*  option.
-
-
 **[-p|--path path]**
 
 **sr_post** evaluates the filesystem path from the **path** option 
@@ -248,6 +236,47 @@ The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
 the *document_root* present and needed.
 
+**[-rec|--recursive <boolean>]**
+
+The recursive default is False. When the **url** given (possibly combined with **document_root**)
+describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
+files are watched.
+
+**[-rn|--rename <path>]**
+
+With the  *rename*   option, the user can
+suggest a destination path for its files. If the given
+path ends with '/' it suggests a directory path... 
+If it doesn't, the option specifies a file renaming.
+
+**[-sub|--subtopic <key>]**
+
+The subtopic default can be overwritten with the  *subtopic*  option.
+
+**[--sleep <time> ]**
+
+The time to wait between generating events.  When files are written frequently, it is counter productive
+to produce a post for every change, as it can produce a continuous stream of changes where the transfers
+cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file 
+in *sleep* time, and produce a single post.
+
+
+**[-to|--to <destination>,<destination>,... ]** 
+
+  A comma-separated list of destination clusters to which the posted data should be sent.
+  Ask pump administrators for a list of valid destinations.
+
+  default: the hostname of the broker being posted to.
+
+.. note:: 
+  FIXME: a good list of destination should be discoverable.
+
+**[-tp|--topic_prefix <key>]**
+
+By default, the topic is made of the default topic_prefix : version  *V02* , an action  *post* ,
+followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+You can overwrite the topic_prefix by setting this option.
+
 **[-u|--url <url>]**
 
 The **url** option sets the protocol, credentials, host and port under
@@ -261,31 +290,6 @@ If the concatenation of the two last fields of the announcement that defines
 what the subscribers will use to download the product. 
 
 
-**[--blocksize <value>]**
-
-the value should be one of::
-
-   0 - autocompute an appropriate partitioning strategy (default)
-   1 - always send files in a single part.
-   p,<sz> - used a fixed partition size (example size: 1M )
-
-Files can be announced as multiple blocks (or parts.) Each part has a separate checksum.
-The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in paralllel.  When files change, transfers are
-optimized by only sending parts which have changed.
-
-The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
-for files of various sizes.  As the file size varies, the automatic computation will give different
-results. This will result in resending information which has not changed as partitions of a different
-size will have different sums.  Where large files are being appended to, it make sense to specify a 
-fixed partition size. 
-
-In cases where a custom downloader is used which does not understand partitioning, it is necessary
-to avoid having the file split into parts, so one would specify '1' to force all files to be send
-as a single part.
-
-The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
 
 
 **[-sum|--sum <string>]**
@@ -344,7 +348,8 @@ scale of many minutes, usually. The argument is actually a duration, so it can b
 
 Every *sleep* seconds, file system changes occurred are processed in a batch.  Prior to this processing,
 the *on_watch* plugin is invoked.  It can be used to put a file in one of the watched directories... 
-and have it published.  sleep is usually a much shorter interval than the heartbeat. It is also a duration, and so can be expressed in the same units as well.
+and have it published.  sleep is usually a much shorter interval than the heartbeat. It is also a 
+duration, and so can be expressed in the same units as well.
 
 
 CAVEATS

@@ -16,8 +16,9 @@ SYNOPSIS
 ========
 
  **sr_report** foreground|start|stop|restart|reload|status configfile
+
  **sr_report** cleanup|declare|setup configfile
- (formerly **dd_subscribe** )
+
 
 DESCRIPTION
 ===========

@@ -35,6 +35,23 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+
+2.17.10a2
+---------
+
+strip behaviour bug may be restored, that might solve the send issue.
+
+
+2.17.10a1
+---------
+
+**CHANGE**:  All sr_sender configurations require plugin to read from local files. Please Add::
+
+  on_message msg_2localfile
+  
+Failure to do so will result in *The file to send is not local* message, and send will fail.
+
+
 **CHANGE**:  default *expire* setting was 10080 (in mins) which means expire after a week.  Now it is 5 minutes.
 **It will also result data loss**, by dropping messages should the default be used in cases where the old value
 was expected.  A disconnection of more than 5 minutes will cause the queue to be erased.  To configure what was previously 

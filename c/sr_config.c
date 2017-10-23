@@ -51,6 +51,7 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *n;
 
    if ( !strcmp( option, "start" ) 
+        || !strcmp( option, "help" )
         || !strcmp( option, "list" )
         || !strcmp( option, "status" )
         || !strcmp( option, "stop" ) 
