@@ -27,6 +27,8 @@ with some limitations.
  - runs as only a single instance (no multiple instances.) 
  - does not support any plugins.
  - does not support vip for high availability.
+ - different regular expression library:  POSIX vs. python.
+ - does not support regex for the strip command (no non-greedy regex, which is key for this use case.)
 
 It can therefore act as a drop-in replacement for:
 
@@ -47,19 +49,19 @@ it looks up its **sum** in its cache.  if it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_cpump** can be used to trim messages from `sr_post(1) <sr_post.1.html>`_,
-`sr_poll(1) <sr_poll.1.html>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc... It is 
-used when there are multiple sources of the same data, so that clients only download the
-source data once, from the first source that posted it.
+**sr_cpump** can be used, like `sr_winnow(1) <sr_winnow.1.html>`_,  to trim messages 
+from `sr_post(1) <sr_post.1.html>`_, `sr_poll(1) <sr_poll.1.html>`_  
+or `sr_watch(1) <sr_watch.1.html>`_  etc... It is used when there are multiple 
+sources of the same data, so that clients only download the source data once, from 
+the first source that posted it.
 
 The **sr_cpump** command takes two argument: an action start|stop|restart|reload|status... (self described)
-followed by a configuration file described below.
+followed by a configuration file.
 
-The **foreground** is used when debugging a configuration, when the user wants to 
+The **foreground** action is used when debugging a configuration, when the user wants to 
 run the program and its configfile interactively...   The **foreground** instance 
-is not concerned by other actions. 
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process.
+is not concerned by other actions.  The user would stop using the **foreground** instance 
+by simply <ctrl-c> on linux or use other means send SIGINT or SIGTERM to the process.
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
@@ -73,23 +75,9 @@ the `sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
-
-QUEUE BINDING OPTIONS
----------------------
-
-First, the program needs to set all the rabbitmq configurations for a source broker.
-These options define which messages (URL notifications) the program receives:
-
-- **exchange      <name>         (MANDATORY)** 
-- **topic_prefix  <name>         (default: v02.post)**
-- **subtopic      <amqp pattern> (default: #)**
-
-The **exchange** is mandatory.
-
-If **sr_cpump** is to be used to winnow products from a source 
-(**sr_post**, **sr_watch**, **sr_poll**)  then the exchange would
-be named 'xs\_'SourceUserName.  SourceUserName is the one set in the broker
-option, (the amqp user the source uses to announce products.)
+**NOTE**: The regular expression library used in the C implementation is the POSIX
+one, and the grammar is slightly different from the python implementation.  Some
+adjustments may be needed.
 
 
 MESSAGE SELECTION OPTIONS

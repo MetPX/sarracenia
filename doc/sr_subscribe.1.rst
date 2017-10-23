@@ -27,9 +27,9 @@ DESCRIPTION
 
 .. contents::
 
-Sr_subscribe is a program to efficiently download files from websites or file servers 
+Sr_subscribe is a program to download files from websites or file servers 
 that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
-publish a message for each file as soon as it is available.  Clients connect to a
+publish messages for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
@@ -116,13 +116,6 @@ There are also other manual pages available here: `See Also`_
 CONFIGURATION FILES
 -------------------
 
-Place settings, one per line with a keyword first, and the setting value afterward
-example configuration line::
-
- broker amqp://anonymous@dd.weather.gc.ca
-
-In the above example, *broker* is the option keyword, and the rest of the line is the value assigned to the setting.
-
 The configuration file for an sr_subscribe configuration called *myflow*
 
  - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) 
@@ -131,8 +124,53 @@ The configuration file for an sr_subscribe configuration called *myflow*
  - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
 
-It is just a sequence of settings, one per line. Note that the files are read in order, most importantly for
-*directory* and *accept* clauses.  Example::
+ - MAC: FIXME.
+
+The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
+are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+
+One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
+individual configuration files can be placed in any directory and invoked with the 
+complete path.   When components are invoked, the provided file is interpreted as a 
+file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
+component will look in the component's config directory ( **config_dir** / **component** )
+for a matching .conf file.
+
+If it is still not found, it will look for it in the site config dir
+(linux: /usr/share/default/sarra/**component**).
+
+Finally, if the user has set option **remote_config** to True and if he has
+configured web sites where configurations can be found (option **remote_config_url**),
+The program will try to download the named file from each site until it finds one.
+If successful, the file is downloaded to **config_dir/Downloads** and interpreted
+by the program from there.  There is a similar process for all *plugins* that can
+be interpreted and executed within sarracenia components.  Components will first
+look in the *plugins* directory in the users config tree, then in the site
+directory, then in the sarracenia package itself, and finally it will look remotely.
+
+
+Option Syntax
+-------------
+
+Options are placed in configuration files, one per line, in the form:
+
+  **option <value>**
+
+For example::
+
+  **debug true**
+  **debug**
+
+sets the *debug* option to enable more verbose logging.  If no value is specified,
+the value true is implicit. so the above are equivalent.  An second example 
+configuration line::
+
+  broker amqp://anonymous@dd.weather.gc.ca
+
+In the above example, *broker* is the option keyword, and the rest of the line is the 
+value assigned to the setting. Configuration files are a sequence of settings, one per line. 
+Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
+Example::
 
     directory A
     accept X
@@ -143,23 +181,8 @@ vs::
     accept X
     directory A
 
-Places files matching X in the current working directory, and the *directory A* setting does nothing.
-
-
-Option Syntax
--------------
-
-Options are placed in configuration files, one per line, in the form:
-
- **option <value>**
-
-For example::
-
-  **debug true**
-  **debug**
-
-sets the *debug* option to enable more verbose logging.  If no value is specified,
-the value true is implicit. so the above are equivalent.
+Places files matching X in the current working directory, and the *directory A* setting 
+does nothing in relation to X.
 
 To provide non-functional description of configuration, or comments, use lines that begin with a **#**.
 
@@ -213,7 +236,6 @@ The includeConfigPath would normally reside under the same config dir of its mas
 There is no restriction, any option  can be placed in a config file included. The user must
 be aware that, for many options, several declarations means overwriting their values.
 
-
     
 LOG FILES
 ---------
@@ -226,6 +248,7 @@ There will be a log file for each *instance* (download process) of an sr_subscri
    Windows: FIXME? dunno.
 
 One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+
 
 CREDENTIALS
 -----------
@@ -269,7 +292,6 @@ Note::
  character, its URL encoded equivalent can be supplied.  In the last example above, 
  **%2f** means that the actual password isi: **/dot8**
  The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
-
 
 
 CONSUMER
@@ -1068,8 +1090,12 @@ processing for various specialized use cases. The scripts are invoked by having 
 configuration file specify an on_<event> option. The event can be one of:
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
+  The **on_file** option defaults to file_log, which writes a downloading status message.
 
 - on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
+  defaults to heatbeat_cache, and heartbeat_log.  heartbeat_cache cleans the cache periodically,
+  and heartbeat_log prints a log message ( helpful in detecting the difference between problems
+  and inactivity. ) 
 
 - on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
   the files already published. The package provide a working example under plugins/html_page.py.
@@ -1085,7 +1111,8 @@ configuration file specify an on_<event> option. The event can be one of:
   When a completed part is received, one can specify additional processing.
 
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
-  adjustments of the post.
+  adjustments of the post. on_part also defaults to post_log, which prints a message
+  whenever a file is to be posted.
 
 - on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
   It could be used to put a file in one of the watch directory and have it published when needed.
