@@ -21,14 +21,16 @@ EOF
 
 eval `application_dirs`
 
-set -x
 sr stop
-sr_cpump cleanup pelle_dd1_f04
-sr_cpump cleanup pelle_dd2_f05
-sr cleanup
 
-set +x
+sr_cpump cleanup pelle_dd1_f04 &
+sr_cpump cleanup pelle_dd2_f05 &
+sr cleanup &
 
+echo extra lines for the sr_cpump cleanup hanging
+sleep 10
+killall sr_cpump
+echo remove these 2 when corrected
 
 echo "cleanup trivial http server... "
 if [ -f .httpserverpid ]; then

@@ -78,7 +78,7 @@ sr_subscribe start cfile_f44 > /dev/null 2>&1
 
 # copy 
 
-echo "checking sr_cpost copy"
+echo "checking sr_watch copy"
 cd "$httpdocroot"/cfr
 find . -type f -print                | xargs -iAAA cp AAA AAA.COPY
 find . -type f -print | grep -v COPY | xargs -iAAA cp AAA AAA.COPY2
@@ -87,7 +87,7 @@ echo "success"
 
 # move 
 
-echo "checking sr_cpost move"
+echo "checking sr_watch move"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | xargs -iAAA  mv AAA.COPY2 AAA.MOVE
 wait_dir_to_be_the_same f MOVE
@@ -95,7 +95,7 @@ echo "success"
 
 # softlink 
 
-echo "checking sr_cpost softlink"
+echo "checking sr_watch softlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | xargs -iAAA  ln -s AAA AAA.SLINK
 wait_dir_to_be_the_same l SLINK
@@ -103,7 +103,7 @@ echo "success"
 
 # hardlink 
 
-echo "checking sr_cpost hardlink"
+echo "checking sr_watch hardlink"
 cd "$httpdocroot"/cfr
 find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA ln AAA AAA.HLINK
 wait_dir_to_be_the_same f HLINK
@@ -111,7 +111,7 @@ echo "success"
 
 # hardlink 
 
-echo "checking sr_cpost remove"
+echo "checking sr_watch remove"
 cd "$httpdocroot"/cfr 
 find . -type f -print | grep COPY | xargs -n1 rm
 find . -type f -print | grep MOVE | xargs -n1 rm
