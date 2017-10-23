@@ -8,10 +8,14 @@ Small Simplifying Features
 
 In addition to *thneed* work.  other small things.
 
+- fix: force-polling broken since recent libsrshim work.
+
 
 Remove:
 
  - 'flow' option should be removed, *header* has replaced it's function.
+
+ - 'recursive' ... I think it is just always true.
 
  - *rename* functionality should be removed, as it is not used in practice.
    there was rename has a message header, and rename as an additional field on messages.
