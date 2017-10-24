@@ -144,9 +144,9 @@ class sr_sender(sr_subscribe):
            self.to_clusters = self.post_broker.hostname
 
         # add msg_2localfile to the on_message_list at the beginning
-        #self.execfile("on_message",'msg_2localfile')
-        #if not self.on_message in self.on_message_list :
-        #   self.on_message_list.insert(0, self.on_message )
+
+        self.execfile("on_message",'msg_2localfile')
+        self.on_message_list.append(self.on_message )
 
         # do_task should have doit_send for now... make it a plugin later
         # and the sending is the last thing that should be done
