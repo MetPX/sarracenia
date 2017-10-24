@@ -481,15 +481,15 @@ class sr_subscribe(sr_instances):
         # we dont trust its settings of  source and from_cluster
 
         if self.source_from_exchange :
-           if 'source'       in self.msg.headers : del self.msg.headers['source']
+           source = self.get_source_from_exchange(self.msg.exchange)
+           if source : self.msg.headers['source'] = source
+           else      : del self.msg.headers['source']
            if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
  
         # apply default to a message without a source
         if not 'source' in self.msg.headers :
-           source = self.get_source_from_exchange(self.msg.exchange)
-           if   source != None : self.msg.headers['source'] = source
-           elif self.source    : self.msg.headers['source'] = self.source
-           else                : self.msg.headers['source'] = self.broker.username
+           if self.source: self.msg.headers['source'] = self.source
+           else          : self.msg.headers['source'] = self.broker.username
            self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
 
         # apply default to a message without an origin cluster
@@ -1302,7 +1302,11 @@ class sr_subscribe(sr_instances):
            new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
 
         if '${SOURCE}' in cdir :
-           src = self.get_source_from_exchange(self.exchange)
+
+           src = None
+           if self.source_from_exchange :
+              src = self.get_source_from_exchange(self.msg.exchange)
+ 
            if   src != None : source = src
            elif self.source : source = self.source
            else             : source = self.broker.username
