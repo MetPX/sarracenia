@@ -24,7 +24,9 @@ Remove:
 
 Add:
 
-*loghost* option.  To include the hostname in the logfile names.
+  -- delete support to sr_Watch in polling mode (already in sr_cpost.)
+
+*statehost* option.  To include the hostname in the logfile names,recent_files, etc... all state files.
            values:   Off|on|short|fqdn
 
           default off,  on== short,   fqdn=Fully qualified domain name.
