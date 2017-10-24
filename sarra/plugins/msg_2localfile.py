@@ -99,12 +99,14 @@ class Msg_2LocalFile():
         l = parent.logger
         m = parent.msg
 
+        if m.baseurl == 'file:' : return True
+
         m.saved_baseurl = m.baseurl
         m.saved_relpath = m.relpath
 
         m.baseurl = 'file:'
        
-        if parent.document_root :
+        if parent.document_root and not m.relpath.startswith(parent.document_root) :
            m.relpath = parent.document_root + '/' + m.relpath
            m.relpath.replace('//','/')
 
