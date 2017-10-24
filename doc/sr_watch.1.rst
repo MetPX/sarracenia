@@ -164,6 +164,11 @@ for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses 
 **[-c|--config <configfile>]**
        A file filled with options.
 
+**[--delete <boolean>]**
+
+In force_polling mode, assume that directories empty themselves, so that every file in each *path*
+should be posted at every polling pass, instead of just new ones.
+
 **[-dr|--document_root <path>]**
 
 The  *document_root*  option supplies the directory path that,
