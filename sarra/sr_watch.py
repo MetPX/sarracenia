@@ -71,9 +71,8 @@ except :
          from sarra.sr_post      import *
          from sarra.sr_util      import *
 
-inl = []
-
-
+inl = {}
+pol = {}
 
 class sr_watch(sr_instances):
 
@@ -176,7 +175,7 @@ class sr_watch(sr_instances):
          Find all the subdirectories of the given path, start watches on them. 
          deal with symbolically linked directories correctly
         """
-        global inl
+        global inl,pol
 
         if os.path.islink(p):
             realp = os.path.realpath(p)
@@ -197,7 +196,8 @@ class sr_watch(sr_instances):
            try:
                ow = self.observer.schedule(self.myeventhandler, d, recursive=self.recursive )
                self.obs_watched.append(ow)
-               inl.append(dir_dev_id)
+               inl[dir_dev_id] = (ow,d)
+               pol[d] = ow
                self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
            except:
                self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
@@ -345,6 +345,35 @@ def main():
         def set_logger(self,logger):
             self.logger = logger
 
+        def dont_watch(self,path):
+            global inl,pol
+
+            self.logger.info("turning watch down for path %s" % path)
+            if not path in pol : self.logger.info("could not")
+            if not path in pol : return
+
+            self.logger.info("doing it")
+            ow = pol[path]
+            self.observer.remove_handler_for_watch(self.myeventhandler, ow)
+            self.observer.unschedule(ow)
+            del pol[path]
+
+        def post_recursive_move(self,f,e,k,v):
+            self.logger.debug("post_recursive_move %s of %s (%s,%s) " % (e, f, k,v) )
+
+            for x in os.listdir(v):
+                dst = v+os.sep+x
+                src = f+os.sep+x
+                sok = src.replace( os.sep + '.' + os.sep, os.sep)
+                if os.path.isdir(dst):
+                   self.moving_dir.append((sok,e,k,dst))
+                   self.post_recursive_move(sok,e,k,dst)
+                   continue
+
+                #self.dont_watch(sok)
+
+                self.do_post(sok, e, k, dst)
+
         def event_wakeup(self):
 
             # FIXME: Tiny potential for events to be dropped during copy.
@@ -375,18 +404,36 @@ def main():
                           continue
 
                    #directory creation. Make failures a soft error that is retried.
-                   if os.path.isdir(f):
+
+                   check_dir = f
+                   if e == '*move*' : check_dir = v
+                   
+                   if os.path.isdir(check_dir):
                         self.logger.debug("dir event_wakeup %s of %s (%s,%s)" % (e, f, k, v) )
                         if e == '*move*' :
-                           self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)
+                           fok = f.replace( os.sep + '.' + os.sep, os.sep)
+                           # specify v... to turn off f
+                           #self.dont_watch(fok)
+                           self.do_post(fok, e, k, v)
                            done += [ idx ]
+                           self.moving_dir = []
+                           self.post_recursive_move(f,e,k,v)
+                           # at the end of posting all moved files,
+                           # old directories should announced their removal
+                           # reverse list to have lower subdirs first
+                           self.moving_dir.reverse()
+                           for mt in self.moving_dir :
+                               mf, me, mk, mv = mt
+                               #self.dont_watch(mf)
+                               self.do_post(mf, me, mk, mv)
 
                         if watch.recursive: 
-                            if os.path.islink(f): 
-                                if watch.post.realpath: p=os.path.realpath(f)
-                                else: p=f+os.sep+'.'
-                            else: p=f
+                            p = check_dir
+                            if os.path.islink(check_dir): 
+                                if watch.post.realpath: p=os.path.realpath(check_dir)
+                                else: p=check_dir+os.sep+'.'
                        
+                            self.logger.info("set priming_walk on %s" % p )
                             watch.priming_walk(p)
 
                         continue
@@ -421,6 +468,7 @@ def main():
                 # the hope is that one of the two at least will go through and get done if necessary
                 if tag == '*move*' :
                    watch.post.watching(path,  'delete', 'newname', value)
+                   if os.path.isdir(value) : return
                    watch.post.watching(value, 'modify', 'oldname', path)
                 # other regular event tags
                 else :
