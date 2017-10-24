@@ -73,8 +73,8 @@ find . -type f -print | grep MOVE | xargs -n1 rm 2> /dev/null
 sr_watch stop    ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
 sr_watch cleanup ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
 sr_watch setup   ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_watch -debug -recursive start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_subscribe start cfile_f44 > /dev/null 2>&1
+sr_watch -debug --recursive start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
 
 # copy 
 
@@ -109,13 +109,22 @@ find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA
 wait_dir_to_be_the_same f HLINK
 echo "success"
 
-# hardlink 
+# WhiteSpace in name
+
+echo "checking sr_watch filename with space"
+cd "$httpdocroot"/cfr
+find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA cp AAA "AAA. SPACE test"
+wait_dir_to_be_the_same f SPACE
+echo "success"
+
+# removal 
 
 echo "checking sr_watch remove"
 cd "$httpdocroot"/cfr 
-find . -type f -print | grep COPY | xargs -n1 rm
-find . -type f -print | grep MOVE | xargs -n1 rm
-find . -type f -print | grep LINK | xargs -n1 rm
-find . -type l -print | grep LINK | xargs -n1 rm
+find . -type f -print | grep COPY  | xargs -n1 rm
+find . -type f -print | grep MOVE  | xargs -n1 rm
+find . -type f -print | grep LINK  | xargs -n1 rm
+find . -type l -print | grep LINK  | xargs -n1 rm
+find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA
 wait_dir_to_be_the_same f \.
 echo "success"

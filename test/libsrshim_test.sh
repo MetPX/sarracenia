@@ -111,16 +111,26 @@ find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA
 wait_dir_to_be_the_same f HLINK
 echo "success"
 
-# hardlink 
+# WhiteSpace in name
+
+echo "checking libsrshim filename with space"
+cd "$httpdocroot"/cfr
+find . -type f -print | grep -v COPY | grep -v MOVE | grep -v LINK | xargs -iAAA cp AAA "AAA. SPACE test" >> /tmp/libsrshim.log.tmp 2>&1
+wait_dir_to_be_the_same f SPACE
+echo "success"
+
+# removal 
 
 echo "checking libsrshim remove"
 cd "$httpdocroot"/cfr 
-find . -type f -print | grep COPY | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
-find . -type f -print | grep MOVE | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
-find . -type f -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
-find . -type l -print | grep LINK | xargs -n1 rm  >> /tmp/libsrshim.log.tmp 2>&1
+find . -type f -print | grep COPY  | xargs -n1 rm
+find . -type f -print | grep MOVE  | xargs -n1 rm
+find . -type f -print | grep LINK  | xargs -n1 rm
+find . -type l -print | grep LINK  | xargs -n1 rm
+find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA
 wait_dir_to_be_the_same f \.
 echo "success"
 
-export SR_POST_CONFIG=""
-export LD_PRELOAD=""
+echo 'export SR_POST_CONFIG='${SR_POST_CONFIG}
+echo 'export LD_PRELOAD='${LD_PRELOAD}
+
