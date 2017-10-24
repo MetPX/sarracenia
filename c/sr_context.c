@@ -192,7 +192,15 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
 
 }
 
+/* The time that the program was started, or the last call to heartbeat check.
+   
+ */
 static struct timespec tstart;
+
+struct timespec time_of_last_run()
+{
+   return(tstart);
+}
 
 struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg) 
 {

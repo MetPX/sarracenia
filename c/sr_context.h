@@ -55,7 +55,6 @@ struct sr_context {
   struct sr_config_t *cfg;
 };
 
-
 void sr_amqp_error_print(int x, char const *context);
 /* utility functions for handling rabbitmq-c call return values.
    for rabbitmq-c routines that return an integer, process the output.
@@ -73,6 +72,8 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg);
    returns connection to a broker based on given configuration.
    returns an sr_context ready for use by connect.
  */
+
+struct timespec time_of_last_run();
 
 
 struct sr_context *sr_context_connect(struct sr_context *sr_c);

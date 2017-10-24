@@ -599,6 +599,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       log_level=1;
       return(1+(val&1));
 
+  } else if ( !strcmp( option, "delete" ) ) {
+      val = StringIsTrue(argument);
+      sr_cfg->delete = val&2;
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "directory" ) ) {
       sr_cfg->directory = strdup(argument);
       return(2);
@@ -836,6 +841,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->chmod_log=0600;
   sr_cfg->configname=NULL;
   sr_cfg->debug=0;
+  sr_cfg->delete=0;
   sr_cfg->directory=NULL;
   sr_cfg->documentroot=NULL;
   sr_cfg->durable=1;

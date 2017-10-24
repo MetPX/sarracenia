@@ -30,7 +30,6 @@
 
 #include "uthash.h"
 
-
 /* 
   for each directory opened, store it's dev+inode pair.
   if you encounter another directory witht the same numbers, there is a loop.
@@ -175,10 +174,8 @@ void do1file( struct sr_context *sr_c, char *fn )
     struct sr_mask_t *mask;
     char ep[PATH_MAXNUL];
 
-  /*
-    if (sr_c->cfg->debug)
-        log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
-   */
+    //if (sr_c->cfg->debug)
+    //    log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
     /* apply the accept/reject clauses */
 
     // FIXME BUG: pattern to match is supposed to be complete URL, not just path...
@@ -431,6 +428,7 @@ void usage()
      fprintf( stderr, "\tchmod_log <mode> - permissions to set on log files (default: 0600)\n" );
      fprintf( stderr, "\tconfig|c <name> - Configuration file (to store options) MANDATORY\n" );
      fprintf( stderr, "\tdebug <on|off> - more verbose output. (default: off) \n" );
+     fprintf( stderr, "\tdelete <on|off> - Assume Directories empty themselves. (default: off) \n" );
      fprintf( stderr, "\tdocument_root|dr <path> - part of tree to subtract from advertised URL's.\n" );
      fprintf( stderr, "\tdurable <boolean> - AMQP parameter, exchange declared persist across broker restarts (default: true)\n" );
      fprintf( stderr, "\tevents <list> - types of file events to post (default: create,modify,link,delete )\n" );
@@ -628,6 +626,11 @@ int main(int argc, char **argv)
            }
            dir_stack_reset(); 
 
+           // FIXME: I think this breaks non Inotify walks...
+           if ( sr_cfg.force_polling && !sr_cfg.delete )
+               latest_min_mtim = time_of_last_run();
+
+           //log_msg( LOG_ERROR, "latest_min_mtime: %d, %d\n", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );
        } else {
 
            dir_stack_check4events(sr_c); // inotify. process accumulated events.
@@ -638,7 +641,6 @@ int main(int argc, char **argv)
   
        elapsed = sr_context_heartbeat_check(sr_c);
 
-       
        if ( elapsed < sr_cfg.sleep ) 
        {
             tsleep.tv_sec = (long) (sr_cfg.sleep - elapsed);
@@ -648,8 +650,6 @@ int main(int argc, char **argv)
        } else 
             log_msg( LOG_INFO, "INFO: watch, one pass takes longer than sleep interval, not sleeping at all\n");
   
-       // FIXME: I think this breaks non Inotify walks...
-       // latest_min_mtim = tstart;
        pass++; 
     }
   
