@@ -21,6 +21,8 @@ Remove:
    there was rename has a message header, and rename as an additional field on messages.
    both should be removed.  Should we iterate the version of version2 protocol?
 
+ - 'filename' in msg.headers
+
 
 Add:
 
@@ -63,3 +65,4 @@ additional *actions* component x::
        includes:
                mine.inc
   enable/disable     rename config file from .conf to .off
+                     if disable and running... warn and dont do
