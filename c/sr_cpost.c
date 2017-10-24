@@ -566,10 +566,15 @@ int main(int argc, char **argv)
         return(0);
     }
   
-    if ( !sr_post_init( sr_c ) ) 
+
+    sr_post_init( sr_c );
+
+    if ( ! sr_c->cfg->url )
     {
-        log_msg( LOG_WARNING, "failed to declare exchange: %s (talking to a pump < 2.16.7 ?) \n", sr_cfg.exchange );
+       log_msg( LOG_ERROR, "URL setting missing\n");
+       return(0);
     }
+
     if ( !strcmp( sr_cfg.action, "setup" ) )
     {
        sr_context_close(sr_c);

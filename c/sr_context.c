@@ -138,6 +138,10 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
     sr_amqp_error_print(status, "failed opening AMQP socket");
     return(NULL);
   }
+  if ( !(broker->password) ) {
+    log_msg(  LOG_ERROR, "No broker password found.\n" );
+    return(NULL);
+  }
 
   reply = amqp_login(broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, broker->user, broker->password);
   if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {

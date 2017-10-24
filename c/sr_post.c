@@ -151,6 +151,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     char message_body[1024];
     char smallbuf[256];
     char thisexchange[256];
+    //char *c,*d;
     amqp_table_t table;
     amqp_basic_properties_t props;
     amqp_tx_commit_ok_t *commit_status;
@@ -245,6 +246,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
 {
   char  *drfound;
     char  fn[PATH_MAXNUL];
+  char *c, *d;
   int lasti;
   int   linklen;
   char *linkp;
@@ -269,7 +271,14 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   }
   if ( sb && S_ISDIR(sb->st_mode) ) return(0); // cannot post directories.
 
-  strcpy( m->path, fn );
+  /* copy filename to path, but inserting %20 for every space
+   */
+  c = m->path;
+  d = fn;
+  while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+  *c='\0';
+  //strcpy( m->path, fn );
+
   if (sr_c->cfg->documentroot) 
   {
       drfound = strstr(fn, sr_c->cfg->documentroot ); 
