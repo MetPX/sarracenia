@@ -189,16 +189,25 @@ how to process them. if it is not set, then no symbolic link events will ever be
 By default, the exchange used is amq.topic. This exchange is provided on broker
 for general usage. It can be overwritten with this  *exchange*  option
 
-**[-f|--flow <string>]**
-
-The *flow* is an arbitrary label that allows the user to identify a specific flow.
-The flow string is sets in the amqp message header.  By default there is no flow.
-
 **[-fp|--force_polling <boolean>]**
 
 By Default, sr_watch selects a (OS dependent) optimal method to watch a directory.   For large trees,
 the optimal method can be manyfold (10x or even 100x) faster to recognize when a file has been modified.
-In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed file systems), so one must use a slower but more reliable and portable polling method.  The *force_poll* keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
+In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed 
+file systems), so one must use a slower but more reliable and portable polling method.  The *force_polling* 
+keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
+FIXME: KNOWN LIMITATION: When *force_polling* is set, the *sleep* setting, should be at least 5 seconds.
+not clear why.   
+
+NOTE::
+
+  When directories are consumed by processes using the subscriber *delete* option, they stay empty, and
+  every file should be reported on every pass.  When subscribers do not use *delete*, sr_watch needs to
+  know which files are new.  It does so by noting the time of the beginning of the last polling pass.
+  File are posted if their modification time is newer than that.  This will result in many multiple posts
+  by sr_watch, which can be minimized with the use of cache.   One could even depend on the cache
+  entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
+  every time (ignoring mtime)
 
 **[-fs|--follow_symlinks <boolean>]**
 
@@ -207,6 +216,13 @@ and the destination of a symbolic link is a file, then that destination file sho
 If the destination of the symbolic link is a directory, then the directory should be added to those being
 monitored by sr_watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic 
 link is taken.
+
+**[-header <name>=<value>]**
+
+Add a <name> header with the given value to advertisements. Used to pass strings as metadata in the
+advertisements to improve decision making for consumers.  Should be used sparingly. There are limits
+on how many headers can be used, and the minimizing the size of messages has important performance
+impacts.
 
 **[-h|-help|--help]**
 

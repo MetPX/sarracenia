@@ -103,6 +103,7 @@ struct sr_config_t {
   mode_t              chmod_log;
   char               *configname;
   int                 debug;
+  int                 delete;
   char               *directory;
   char               *documentroot;
   int                 durable;

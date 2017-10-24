@@ -428,6 +428,7 @@ void usage()
      fprintf( stderr, "\tchmod_log <mode> - permissions to set on log files (default: 0600)\n" );
      fprintf( stderr, "\tconfig|c <name> - Configuration file (to store options) MANDATORY\n" );
      fprintf( stderr, "\tdebug <on|off> - more verbose output. (default: off) \n" );
+     fprintf( stderr, "\tdelete <on|off> - Assume Directories empty themselves. (default: off) \n" );
      fprintf( stderr, "\tdocument_root|dr <path> - part of tree to subtract from advertised URL's.\n" );
      fprintf( stderr, "\tdurable <boolean> - AMQP parameter, exchange declared persist across broker restarts (default: true)\n" );
      fprintf( stderr, "\tevents <list> - types of file events to post (default: create,modify,link,delete )\n" );
@@ -626,7 +627,7 @@ int main(int argc, char **argv)
            dir_stack_reset(); 
 
            // FIXME: I think this breaks non Inotify walks...
-           if (sr_cfg.force_polling)
+           if ( sr_cfg.force_polling && !sr_cfg.delete )
                latest_min_mtim = time_of_last_run();
 
            //log_msg( LOG_ERROR, "latest_min_mtime: %d, %d\n", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );

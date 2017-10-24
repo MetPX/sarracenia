@@ -37,7 +37,7 @@ except for the lack of plugins.  Differences:
 
  - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
  - *sleep* option, used only in the C implementation, transforms sr_cpost into something
-   that works like `sr_watch(1) <sr_watch.1.html>`_.
+   that works like `sr_watch(1) <sr_watch.1.html>`_. 
 
 
 Mandatory Settings
@@ -228,11 +228,18 @@ files are posted.
 
 **[--sleep <time> ]**
 
-*This option is only available in the c implementation (sr_cpost), which transforms cpost into a sr_watch
-The time to wait between generating events.  When files are written frequently, it is counter productive
-to produce a post for every change, as it can produce a continuous stream of changes where the transfers
-cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
-in* sleep *time, and produce a single post.*
+**This option is only available in the c implementation (sr_cpost)**
+When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
+generating events.  When files are written frequently, it is counter productive to produce a post for 
+every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
+enough to keep up.  In such circumstances, one can group all changes made to a file
+in *sleep* time, and produce a single post.
+
+NOTE::
+    in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.html>`_ ) the sleep 
+    interval should not be less than about five seconds, as it may miss posting some files.
+
+   
 
 **[-sub|--subtopic <key>]**
 
