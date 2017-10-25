@@ -26,6 +26,14 @@ Remove:
 
 Add:
 
+  -- variable definition for plugins.  A way to declare variables to avoid the 'unknown setting' error message.
+     in __init__ in each plugins something like.
+
+         self.declare_option( "message_threshold" )
+
+     just declares the option so that know unknown message is generated...
+
+
   -- delete support to sr_Watch in polling mode (already in sr_cpost.)
 
 *statehost* option.  To include the hostname in the logfile names,recent_files, etc... all state files.
