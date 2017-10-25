@@ -123,11 +123,11 @@ echo "success"
 
 echo "checking libsrshim remove"
 cd "$httpdocroot"/cfr 
-find . -type f -print | grep COPY  | xargs -n1 rm
-find . -type f -print | grep MOVE  | xargs -n1 rm
-find . -type f -print | grep LINK  | xargs -n1 rm
-find . -type l -print | grep LINK  | xargs -n1 rm
-find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA
+find . -type f -print | grep COPY  | xargs -n1 rm   >> /tmp/libsrshim.log.tmp 2>&1
+find . -type f -print | grep MOVE  | xargs -n1 rm   >> /tmp/libsrshim.log.tmp 2>&1
+find . -type f -print | grep LINK  | xargs -n1 rm   >> /tmp/libsrshim.log.tmp 2>&1
+find . -type l -print | grep LINK  | xargs -n1 rm   >> /tmp/libsrshim.log.tmp 2>&1
+find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA   >> /tmp/libsrshim.log.tmp 2>&1
 wait_dir_to_be_the_same f \.
 echo "success"
 
