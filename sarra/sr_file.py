@@ -33,7 +33,100 @@
 #
 #
 
-import os, stat, sys
+import os, stat, sys, time
+
+#============================================================
+# file protocol in sarracenia supports/uses :
+#
+# connect
+# close
+#
+# if a source    : get    (remote,local)
+#                  ls     ()
+#                  cd     (dir)
+#                  delete (path)
+#
+# require   parent.logger
+#           parent.credentials
+#           parent.destination 
+#           parent.batch 
+#           parent.chmod
+#           parent.chmod_dir
+#     opt   parent.kbytes_ps
+#     opt   parent.bufsize
+
+class sr_file():
+    def __init__(self, parent) :
+        parent.logger.debug("sr_file __init__")
+
+        self.logger      = parent.logger
+        self.parent      = parent 
+
+    # cd
+    def cd(self, path):
+        self.logger.debug("sr_file cd %s" % path)
+        os.chdir(path)
+        self.path = path
+
+    # chmod
+    def chmod(self,perm,path):
+        self.logger.debug("sr_file chmod %s %s" % ( "{0:o}".format(perm),path))
+        os.chmod(path,perm)
+
+    # close
+    def close(self):
+        self.logger.debug("sr_file close")
+        return
+
+    # connect
+    def connect(self):
+        self.logger.debug("sr_file connect %s" % self.parent.destination)
+
+        self.recursive   = self.parent.recursive
+        self.destination = self.parent.destination
+        self.timeout     = self.parent.timeout
+
+        self.kbytes_ps = 0
+        self.bufsize   = 8192
+
+        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
+        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
+
+        self.connected   = True
+
+        return True
+
+    # delete
+    def delete(self, path):
+        self.logger.debug("sr_file rm %s" % path)
+        os.unlink(path)
+
+    # ls
+    def ls(self):
+        self.logger.debug("sr_file ls")
+        self.entries  = {}
+        self.root = self.path
+        self.ls_python(self.path)
+        return self.entries
+
+    def ls_python(self,dpath):
+        for x in os.listdir(dpath):
+            dst = dpath + os.sep + x
+            if os.path.isdir(dst):
+               if self.recursive : self.ls_python(dst)
+               continue
+            relpath = dst.replace(self.root,'',1)
+            if relpath[0] == '/' : relpath = relpath[1:]
+
+            lstat = os.stat(dst)
+            line  = stat.filemode(lstat.st_mode)
+            line += ' %d %d %d' % (lstat.st_nlink,lstat.st_uid,lstat.st_gid)
+            line += ' %d' % lstat.st_size
+            line += ' %s' % time.strftime("%b %d %H:%M", time.localtime(lstat.st_mtime))
+            line += ' %s' % relpath
+            self.entries[relpath] = line
+
+
 
 # file_insert
 # called by file_process (general file:// processing)
@@ -397,7 +490,7 @@ def file_truncate(parent,msg):
 #     protocol standardization class
 #
 
-class sr_file():
+class sr_file2():
     def __init__(self, parent) :
         parent.logger.debug("sr_file __init__")
 
@@ -622,15 +715,19 @@ class sr_file():
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
+    #
+    #   self.get(remote_file,local_file,remote_offset,local_offset,length,filesize)
+    #
+    #
+    #   mod = 0
+    #   msg = self.parent.msg
+    #   if self.parent.preserve_mode and 'mode' in msg.headers :
+    #      mod = int(msg.headers['mode'], base=8)
+    #      if mod > 0 : self.chmod( mod )
+    #   elif self.parent.chmod !=0 : 
+    #      self.chmod( self.parent.chmod )
+    #
+    #   if self.parent.preserve_time and 'mtime' in msg.headers :
+    #      self.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
 
-        self.get(remote_file,local_file,remote_offset,local_offset,length,filesize)
 
-
-        msg = self.parent.msg
-        if self.parent.preserve_mode and 'mode' in msg.headers :
-           self.chmod( int(msg.headers['mode'], base=8) )
-        elif self.parent.chmod !=0 : 
-           self.chmod( self.parent.chmod )
-
-        if self.parent.preserve_time and 'mtime' in msg.headers :
-           self.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
