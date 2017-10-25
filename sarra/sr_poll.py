@@ -79,6 +79,7 @@ from collections import *
 try :    
          from sr_amqp           import *
          from sr_cache          import *
+         from sr_file           import *
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
@@ -87,6 +88,7 @@ try :
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
+         from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
@@ -132,6 +134,7 @@ class sr_poll(sr_instances):
 
         self.baseurl = self.details.url.geturl()
         if self.baseurl[-1] != '/' : self.baseurl += '/'
+        if self.baseurl.startswith('file:'): self.baseurl = 'file:'
 
         # check destination
 
@@ -180,9 +183,10 @@ class sr_poll(sr_instances):
 
         urlstr  = url.geturl()
         relpath = url.path
-        baseurl = urlstr.replace(relpath,'')
 
+        baseurl = urlstr.replace(relpath,'')
         if baseurl[-1] != '/' : baseurl += '/'
+        if self.baseurl.startswith('file:'): self.baseurl = 'file:'
 
         return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
 
@@ -257,6 +261,7 @@ class sr_poll(sr_instances):
         url = self.details.url
 
         self.dest = None
+        if url.scheme == 'file' : self.dest = sr_file(self)
         if url.scheme == 'ftp'  : self.dest = sr_ftp(self)
         if url.scheme == 'ftps' : self.dest = sr_ftp(self)
 
@@ -407,7 +412,7 @@ class sr_poll(sr_instances):
                 return True
 
         except:
-                self.logger.error("sftp_load_ls_file: Unable to parse files from %s" % path )
+                self.logger.error("load_ls_file: Unable to parse files from %s" % path )
 
         return False
 
@@ -445,7 +450,7 @@ class sr_poll(sr_instances):
             return True
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.warning("sftp.lsdir: Could not ls directory %s" % self.destDir)
+            self.logger.warning("dest.lsdir: Could not ls directory %s" % self.destDir)
             self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
 
         return False
