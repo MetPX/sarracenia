@@ -41,6 +41,11 @@ Add:
 
           default off,  on== short,   fqdn=Fully qualified domain name.
 
+
+Consolidate: sr_watch and sr_post -> sr_post.
+
+    the only difference should be that post becomes a watch, then sleep > 0.
+
    
 Efficient file truncation support:
  
