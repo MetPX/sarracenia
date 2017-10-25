@@ -472,6 +472,68 @@ class sr_subscribe(sr_instances):
         print("\t-debug")
 
     # =============
+    # __on_file__
+    # =============
+
+    def __on_file__(self):
+        self.logger.debug("%s __on_file__" % self.program_name)
+
+        # keep current value of these variables
+
+        val_new_dir     = self.new_dir
+        val_new_file    = self.new_file
+        val_new_baseurl = self.new_baseurl
+        val_new_relpath = self.new_relpath
+
+        for plugin in self.on_file_list :
+
+           # invoke user defined on_file when provided
+
+           self.local_file = self.new_dir + '/' + self.new_file  # FIXME: remove in 2018, once all plugins are converted.
+           self.msg.local_file = self.local_file
+           saved_file = self.local_file
+
+           self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
+           self.msg.local_dir = self.new_dir
+           saved_dir = self.new_dir
+
+           # sender
+           self.remote_file = self.new_file #FIXME: remove in 2018
+
+           if not plugin(self): return False
+
+           if self.msg.local_file != saved_file :
+              self.logger.warning("on_file plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
+              self.new_file = os.path.basename(self.msg.local_file)
+              self.new_dir  = os.path.dirname( self.msg.local_file)
+
+           if self.msg.local_dir != saved_dir :
+              self.logger.warning("on_file plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
+              self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
+              self.new_dir = self.msg.local_dir
+
+           # sender
+           if self.remote_file != self.new_file : #FIXME: remove in 2018
+              logger.warning("on_file plugin should be updated: replace parent.remote_file, by parent.new_file")
+              self.new_file = self.remote_file
+
+           # this code should not be removed ... necessary when the plugin changed something
+           # if differences with new_dir and/or new_file...
+           # reset new_relpath if it stayed the same
+
+           if self.new_dir != val_new_dir or self.new_file != val_new_file :
+              if self.new_relpath == val_new_relpath :
+                 relpath = self.new_dir + '/' + self.new_file
+                 if self.post_document_root : relpath = relpath.replace(self.post_document_root,'',1)
+                 self.new_relpath = relpath
+              # to do it once (per plugin changes)
+              val_new_dir     = self.new_dir
+              val_new_file    = self.new_file
+              val_new_relpath = self.new_relpath
+
+        return True
+
+    # =============
     # __on_message__
     # =============
 
@@ -1093,12 +1155,14 @@ class sr_subscribe(sr_instances):
                              (not self.inplace) or \
                              (self.inplace and (self.msg.lastchunk and not self.msg.in_partfile)))):
 
-                 for plugin in self.on_file_list:
-                     if not plugin(self): return False
+                 if not self.__on_file__(): return False
 
-                     if ( self.msg.local_file != self.new_file ): # FIXME remove in 2018
-                        self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.new_file" )
-                        self.new_file = self.msg.local_file
+                 #for plugin in self.on_file_list:
+                 #    if not plugin(self): return False
+
+                 #    if ( self.msg.local_file != self.new_file ): # FIXME remove in 2018
+                 #       self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.new_file" )
+                 #       self.new_file = self.msg.local_file
 
            # discard option
 
