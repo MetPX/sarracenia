@@ -494,8 +494,7 @@ def main():
                 watch.stop_touch()
                 self.logger.error('Exiting!')
                 os._exit(0)
-            if (not event.is_directory):
-                self.event_post(event.src_path, 'delete')
+            self.event_post(event.src_path, 'delete')
     
         def on_modified(self, event):
             if (not event.is_directory):
