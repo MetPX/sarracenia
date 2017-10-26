@@ -125,3 +125,18 @@ find . -type l -print | grep LINK  | xargs -n1 rm
 find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA
 wait_dir_to_be_the_same f \.
 echo "success"
+
+# move directory
+
+echo "checking sr_cpost move directory"
+cd "$httpdocroot"/cfr
+no=0
+for d in `ls`; do
+    if [ -d "$d" ]; then
+       no=$((${no}+1))
+       echo mv $d ${d}_${no}
+       mv $d ${d}_${no}
+    fi
+done
+wait_dir_to_be_the_same f \.
+echo "success"

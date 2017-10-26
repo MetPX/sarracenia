@@ -131,6 +131,20 @@ find . -type f -print | grep SPACE | sed 's/ /\\ /' | xargs -iAAA rm AAA   >> /t
 wait_dir_to_be_the_same f \.
 echo "success"
 
+# move directory
+
+echo "checking sr_cpost move directory"
+cd "$httpdocroot"/cfr
+no=0
+for d in `ls`; do
+    if [ -d "$d" ]; then
+       no=$((${no}+1))
+       echo mv $d ${d}_${no}
+       mv $d ${d}_${no}    >> /tmp/libsrshim.log.tmp 2>&1
+    fi
+done
+wait_dir_to_be_the_same f \.
+echo "success"
+
 echo 'export SR_POST_CONFIG='${SR_POST_CONFIG}
 echo 'export LD_PRELOAD='${LD_PRELOAD}
-
