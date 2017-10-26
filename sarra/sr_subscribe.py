@@ -1360,15 +1360,7 @@ class sr_subscribe(sr_instances):
            new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
 
         if '${SOURCE}' in cdir :
-
-           src = None
-           if self.source_from_exchange :
-              src = self.get_source_from_exchange(self.msg.exchange)
- 
-           if   src != None : source = src
-           elif self.source : source = self.source
-           else             : source = self.broker.username
-           new_dir = new_dir.replace('${SOURCE}',source)
+           new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
 
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 
