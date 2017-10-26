@@ -1351,15 +1351,9 @@ class sr_subscribe(sr_instances):
 
         if '${DR}' in cdir and self.document_root != None :
            new_dir = new_dir.replace('${DR}',self.document_root)
-           #MG preventive ... should not be requiered if
-           #                  document_root does not end with /
-           #                  ${DR} starts new_dir
-           #new_dir = new_dir.replace('//','/')
 
         if '${PDR}' in cdir and self.post_document_root != None :
            new_dir = new_dir.replace('${PDR}',self.post_document_root)
-           #MG preventive ... should not be requiered if post_document_root does not end with /
-           #new_dir = new_dir.replace('//','/')
 
         if '${YYYYMMDD}' in cdir :
            YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
@@ -1401,19 +1395,6 @@ class sr_subscribe(sr_instances):
         # case S=0  sr_post -> sr_suscribe... rename in headers
         # FIXME: 255 char limit on headers, rename will break!
         if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
-
-        # MG to investigate further... in which case was this needed ...
-        #    anyway dont put it here... breaks strip
-
-        # sometime like in watch or post, relpath has post_document_root
-        #if self.post_document_root :
-        #   relpath = relpath.replace(self.post_document_root,'')
-        #   if relpath[0] == '/' : relpath = relpath[1:]
-
-        # MG  if '//' eventually means absolutepath and '/' relpath than dont clean
-        #     configs watch,post,poll should be configured correctly not to add '/' to relpath
-
-        # relpath  = relpath.replace('//','/')
 
         token    = relpath.split('/')
         filename = token[-1]
@@ -1473,10 +1454,6 @@ class sr_subscribe(sr_instances):
 
         if len(token) > 1 :
            new_dir = new_dir + '/' + '/'.join(token[:-1])
-           #MG that was a preventive replacement... 
-           #   if '//' becomes the way to set absolute path
-           #   new_dir should keep a starting //
-           #new_dir = new_dir.replace('//','/')
 
         if '$' in new_dir :
            new_dir = self.set_dir_pattern(new_dir)
@@ -1487,10 +1464,6 @@ class sr_subscribe(sr_instances):
             tfname  = filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
             new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
-        # final value 
-
-        self.new_dir     = new_dir
-        self.new_file    = filename
 
         # reset relpath from new_dir
 
@@ -1498,14 +1471,18 @@ class sr_subscribe(sr_instances):
         if self.post_document_root :
            relpath = relpath.replace(self.post_document_root, '')
 
-        #MG again.. preventive replacement...
-        #relpath = relpath.replace('//','/')
-
         # set the results for the new file (downloading or sending)
 
         self.new_baseurl = 'file:'
 
-        self.new_relpath = relpath
+        # final value
+        # NOTE : normpath keeps '/a/b/c' and '//a/b/c' the same
+        #        Everywhere else // or /../ are corrected.
+        #        but if the number of / starting the path > 2  ... it will result into 1 /
+
+        self.new_dir     = os.path.normpath(new_dir)
+        self.new_file    = filename
+        self.new_relpath = os.path.normpath(relpath)
 
         if self.post_broker and self.url :
            self.new_baseurl = self.url.geturl()
