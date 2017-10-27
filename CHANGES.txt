@@ -6,7 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* FIXME: sr_watch remembers moved directories and posts message for old and new dir
+
+**2.17.10a3**
+* C: directories posted during rename. not sure what effect is.
 * documentation consolidated to sr_subscribe, much duplication gone.
 * C: sr_cpost force_polling works properly now (using cache.)
 * C: bugfix double free segfault on exit.

@@ -35,15 +35,28 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.10a3
+---------
+
+**CHANGE**: sr_sender now includes by default: on_message msg_2localfile, so that change
+from previous versions @ 2.17.10 no longer required.
+
+Many issues resolved closer to usable.
+
 
 2.17.10a2
 ---------
+
+**BUGS**: Do not install this version. result of major refactor only used for deployment testing.
 
 strip behaviour bug may be restored, that might solve the send issue.
 
 
 2.17.10a1
 ---------
+
+**BUGS**: Do not install this version. result of major refactor only used for deployment testing.
+          many small issues, a bit numerous to list.
 
 **CHANGE**:  All sr_sender configurations require plugin to read from local files. Please Add::
 
