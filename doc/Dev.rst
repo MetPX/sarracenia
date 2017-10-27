@@ -147,19 +147,26 @@ The configuration one is trying to replicate:
 .. image:: Flow_test.svg
 
 Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
-can start a browser.
+can start a browser. If working with the c implementation as well, there are also the following
+flows defined:
+
+.. image:: cFlow_test.svg
 
 A typical development workflow will be::
 
    cd sarra ; *make coding changes*
+   cd ../c
+   debuild -uc -us
    cd ..
    debuild -uc -us
-   sudo dpkg -i ../pkg.deb
+   sudo dpkg -i ../pkg.deb sarrac*.deb libsarra*.deb
    cd test
    ./flow_cleanup.sh
    rm directories with state (indicated by flow_cleanup.sh)
    ./flow_setup.sh  ; *starts the flows*
    ./flow_check.sh  ; *checks the flows*
+   ./cpost_test.sh  ; *checks the c posting flow*
+   ./libsrshim_test.sh  ; *checks libc shim library*
    
 One can then study the results, and determing the next cycle of modifications to make.
 The rest of this section documents these steps in much more detail.  

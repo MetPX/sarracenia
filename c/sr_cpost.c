@@ -152,7 +152,7 @@ static    int inot_fd=0;
 
 
 static    int first_call = 1;
-struct timespec latest_min_mtim;
+//struct timespec latest_min_mtim;
 
 int ts_newer( struct timespec a, struct timespec b)
    /*  return true is a is newer than b.
@@ -197,7 +197,7 @@ void do1file( struct sr_context *sr_c, char *fn )
            log_msg( LOG_DEBUG, "debug: %s is a symbolic link. (follow=%s) posting\n", 
                fn, ( sr_c->cfg->follow_symlinks )?"on":"off" );
 
-        if (ts_newer( sb.st_mtim, latest_min_mtim ))
+        //if (ts_newer( sb.st_mtim, latest_min_mtim ))
             sr_post(sr_c,fn, &sb);       // post the link itself.
 
     /* FIXME:  INOT  - necessary? I think symlinks can be skipped?
@@ -210,7 +210,7 @@ void do1file( struct sr_context *sr_c, char *fn )
              return;
         }
 
-        if (ts_newer( latest_min_mtim, sb.st_mtim ) ) return; // only the link was new.
+        //if (ts_newer( latest_min_mtim, sb.st_mtim ) ) return; // only the link was new.
 
     }
 
@@ -218,9 +218,9 @@ void do1file( struct sr_context *sr_c, char *fn )
     {
          if (sr_c->cfg->debug)
              log_msg( LOG_DEBUG, 
-                 "info: opening directory: %s, first_call=%s, recursive=%s, follow_symlinks=%s latest_min_mtim=%ld.%09ld\n", 
+                 "info: opening directory: %s, first_call=%s, recursive=%s, follow_symlinks=%s\n", 
                  fn, first_call?"on":"off", (sr_c->cfg->recursive)?"on":"off", 
-                 (sr_c->cfg->follow_symlinks)?"on":"off", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );
+                 (sr_c->cfg->follow_symlinks)?"on":"off" );
 
          if ( !first_call && !(sr_c->cfg->recursive) ) return;
 
@@ -269,9 +269,10 @@ void do1file( struct sr_context *sr_c, char *fn )
              log_msg( LOG_DEBUG, "info: closing directory: %s\n", fn );
 
     } else 
-        if (ts_newer( sb.st_mtim, latest_min_mtim )) 
+    {
+        //if (ts_newer( sb.st_mtim, latest_min_mtim )) 
             sr_post(sr_c,fn, &sb);  // process a file
-
+    }
 
 }
 
@@ -597,8 +598,8 @@ int main(int argc, char **argv)
     log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
 
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
-    latest_min_mtim.tv_sec = 0;
-    latest_min_mtim.tv_nsec = 0;
+    //latest_min_mtim.tv_sec = 0;
+    //latest_min_mtim.tv_nsec = 0;
     if (!sr_cfg.force_polling) 
     {
         inotify_event_mask=IN_DONT_FOLLOW; 
@@ -632,8 +633,8 @@ int main(int argc, char **argv)
            dir_stack_reset(); 
 
            // FIXME: I think this breaks non Inotify walks...
-           if ( sr_cfg.force_polling && !sr_cfg.delete )
-               latest_min_mtim = time_of_last_run();
+           //if ( sr_cfg.force_polling && !sr_cfg.delete )
+           //    latest_min_mtim = time_of_last_run();
 
            //log_msg( LOG_ERROR, "latest_min_mtime: %d, %d\n", latest_min_mtim.tv_sec, latest_min_mtim.tv_nsec );
        } else {
