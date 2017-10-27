@@ -176,7 +176,11 @@ class HostConnect:
        try    :
                     self.channel.queue_delete(queue_name)
        except :
-                    self.logger.warning("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
+                    (stype, svalue, tb) = sys.exc_info()
+                    error_str = '%s' % svalue
+                    if not 'NOT_FOUND' in error_str :
+                       self.logger.error("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
+                       self.logger.error("Type=%s, Value=%s" % (stype, svalue))
 
    def reconnect(self):
        self.close()
