@@ -1,3 +1,21 @@
+metpx-sarracenia (2.17.10a3) unstable; urgency=medium
+
+  * C: directories posted during rename. not sure what effect is.
+  * documentation consolidated to sr_subscribe, much duplication gone.
+  * C: sr_cpost force_polling works properly now (using cache.)
+  * C: bugfix double free segfault on exit.
+  * C: added directory support to sr_post_rename
+  * C: libsrshim: added support for the truncate(2) system call.
+  * many fixes based on deployment testing.
+  * support files names with spaces in them.
+  * call on_file plugins when symbolic link created.
+  * sr_config    : environment variable substituted for option value
+  * sr_sender    : on_msg msg_2localfile now by default (so no longer need to specify for every sender.)
+  * sr_subscribe : changing determination of source (source_from_exchange or missing)
+  * rmdir support (python only.)
+
+ -- Peter Silva <peter@idefix>  Fri, 27 Oct 2017 17:26:21 -0400
+
 metpx-sarracenia (2.17.10a2) unstable; urgency=medium
 
   * add regexp option to strip.
