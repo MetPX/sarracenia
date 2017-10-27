@@ -34,6 +34,9 @@ An on message plugin will convert the web url into a local file one::
   document_root /var/httpd/www
   on_message msg_2localfile
 
+This on_message plugin is part of the default settings for senders, but one
+still needs to specify document_root for it to function.
+
 If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.
 If not, the message is skipped.
