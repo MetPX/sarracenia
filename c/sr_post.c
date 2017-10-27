@@ -483,7 +483,6 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   if ( S_ISDIR(sb.st_mode) )
   {
       sr_post_rename_dir( sr_c, oldname, newname );
-      return;
   }
 
   first_user_header.next = sr_c->cfg->user_headers;
