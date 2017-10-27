@@ -7,9 +7,29 @@ lists all changes between versions.
 **git repo(unreleased)**
 
 * FIXME: sr_cpost sleep > 0 & force-polling broken since 10a2
+* FIXME: sr_watch remembers moved directories and posts message for old and new dir
 * documentation consolidated to sr_subscribe, much duplication gone.
 * C: added directory support to sr_post_rename
 * C: libsrshim: added support for the truncate(2) system call.
+* sr_http      : fix for permission bug 
+* sr_file      : adding support polling 
+* sr_message   : %20 replace space in relpath for notice
+* sr_poll      : able to use sr_file...
+* sr_sender    : on_msg msg_2localfile at overwrite defaults
+* sr_config    : environment variable substituted for option value
+* sr_subscribe : changing determination of source (source_from_exchange or missing)
+* sr_subscribe : changing determination of source (source_from_exchange or missing)
+* sr_subscribe : supports filename with spaces (%20)
+* sr_subscribe : msg.headers ['source'] when directory has ${SOURCE}
+* sr_subscribe : os.path.normpath on new_dir, new_relpath
+* sr_subscribe : module __on_file__
+* sr_subscribe : strip patterns
+* sr_watch     : ordered events, posts the removal of a directory...(supported by sr_subscribe...)
+* sr_post      : supports filename with spaces (%20)
+* sr_audit     : runs without admin user
+* test scripts : directory moving 
+* test scripts : filename with spaces
+* test scripts : checking libsrshim,cpost and watch
 
 **2.17.10a2**
 
