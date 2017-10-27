@@ -18,7 +18,6 @@ lists all changes between versions.
 * sr_sender    : on_msg msg_2localfile at overwrite defaults
 * sr_config    : environment variable substituted for option value
 * sr_subscribe : changing determination of source (source_from_exchange or missing)
-* sr_subscribe : changing determination of source (source_from_exchange or missing)
 * sr_subscribe : supports filename with spaces (%20)
 * sr_subscribe : msg.headers ['source'] when directory has ${SOURCE}
 * sr_subscribe : os.path.normpath on new_dir, new_relpath
@@ -26,10 +25,8 @@ lists all changes between versions.
 * sr_subscribe : strip patterns
 * sr_watch     : ordered events, posts the removal of a directory...(supported by sr_subscribe...)
 * sr_post      : supports filename with spaces (%20)
-* sr_audit     : runs without admin user
 * test scripts : directory moving 
 * test scripts : filename with spaces
-* test scripts : checking libsrshim,cpost and watch
 
 **2.17.10a2**
 
