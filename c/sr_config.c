@@ -1181,8 +1181,10 @@ void stop_handler(int sig)
      log_msg( LOG_INFO, "shutting down: signal %d received\n", sig);
 
      if (thecfg && thecfg->cachep)
+     {
          sr_cache_close( thecfg->cachep );
-
+         thecfg->cachep=NULL;
+     }
      sr_config_free( thecfg );
 
      // propagate handler for further processing, likely trigger exit.
