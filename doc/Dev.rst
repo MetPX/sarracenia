@@ -271,19 +271,112 @@ configuration to run before there is enough data to do the proper measurements::
 
 sample output::
 
-     blacklab% ./flow_check.sh
-     initial sample building sample size 3421 need at least 1000
-     test 1: SUCCESS, shovel1 (3421) reading the same as shovel2 (3421) does
-     test 2: SUCCESS, winnow (6841) reading double what sarra (3421) does
-     test 3: SUCCESS, subscribe (3421) has the same number of items as sarra (3421)
-     test 4: SUCCESS, subscribe (3421) has the same number of items as shovel1 (3421)
-     blacklab%
+    initial sample building sample size 8 need at least 1000 
+    sample now   1021 
+    Sufficient!
+    stopping shovels and waiting...
+    2017-10-28 00:37:02,422 [INFO] sr_shovel t_dd1_f00 0001 stopping
+    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: instances option not implemented, ignored.
+    info: instances option not implemented, ignored.
+    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report_back option not implemented, ignored.
+    info: report_back option not implemented, ignored.
+    2017-10-28 00:37:02,436 [INFO] sr_shovel t_dd2_f00 0001 stopping
+    running instance for config pelle_dd1_f04 (pid 15872) stopped.
+    running instance for config pelle_dd2_f05 (pid 15847) stopped.
+        maximum of the shovels is: 1022
+    
+    test  1 success: shovels t_dd1_f00 ( 1022 ) and t_dd2_f00 ( 1022 ) should have about the same number of items read
+    test  2 success: sarra tsarra (1022) should be reading about half as many items as (both) winnows (2240)
+    test  3 success: tsarra (1022) and sub t_f30 (1022) should have about the same number of items
+    test  4 success: max shovel (1022) and subscriber t_f30 (1022) should have about the same number of items
+    test  5 success: count of truncated headers (1022) and subscribed messages (1022) should have about the same number of items
+    test  6 success: count of downloads by subscribe t_f30 (1022) and messages received (1022) should be about the same
+    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr_watch (1022) should be about the same
+    test  8 success: posted by watch(1022) and sent by sr_sender (1022) should be about the same
+    test  9 success: 1022 of 1022: files sent with identical content to those downloaded by subscribe
+    test 10 success: 1022 of 1022: poll test1_f62 and subscribe q_f71 run together. Should have equal results.
+    test 11 success: post test2_f61 1022 and subscribe r_ftp_f70 1021 run together. Should be about the same.
+    test 12 success: cpump both pelles (c shovel) should receive about the same number of messages (3665) (3662)
+    test 13 success: cdnld_f21 subscribe downloaded (1022) the same number of files that was published by both van_14 and van_15 (1022)
+    test 14 success: veille_f34 should post the same number of files (1022) that subscribe cdnld_f21 downloaded (1022)
+    test 15 success: veille_f34 should post the same number of files (1022) that subscribe cfile_f44 downloaded (1022)
+    test 16 success: Overall 15 of 15 passed!
 
-if the flow_check.sh passes, then
-one has a reasonable confidence in the overall functionality of the application,
-but the test coverage is not exhaustive.  It is more qualitative sampling of the most
-common use cases rather than a thorough examination of all functionality.  While not
+    TYPE OF ERRORS IN LOG :
+
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan00' in vhost '/'
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
+    blacklab% 
+
+if the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
+python application, but the test coverage is not exhaustive. this is the lowest gate for committing
+changes to thy python code into the master branch. It is more qualitative sampling of the most
+common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
+
+C Flow tests
+~~~~~~~~~~~~
+
+After the initial flow tests are run, one could continue to specifically test the c implementation, like so::
+
+    blacklab% ./cpost_check.sh
+    checking sr_cpost copy
+    expecting  2044
+    success
+    checking sr_cpost move
+    expecting  1022
+    success
+    checking sr_cpost softlink
+    expecting  1022
+    success
+    checking sr_cpost hardlink
+    expecting  1022
+    success
+    checking sr_cpost filename with space
+    expecting  1022
+    success
+    checking sr_cpost remove
+    expecting  1022
+    success
+    checking sr_cpost move directory
+    mv bulletins bulletins_1
+    mv observations observations_2
+    expecting  1022
+    success
+    blacklab% 
+    
+which checks the results of cpost explicitly, followed by a check of the shim library::
+
+    blacklab% ./libsrshim_test.sh
+    checking libsrshim copy
+    expecting  2044
+    success
+    checking libsrshim move
+    expecting  1022
+    success
+    checking libsrshim softlink
+    expecting  1022
+    success
+    checking libsrshim hardlink
+    expecting  1022
+    success
+    checking libsrshim filename with space
+    expecting  1022
+    success
+    checking libsrshim remove
+    expecting  1022
+    success
+    checking sr_cpost move directory
+    mv bulletins_1 bulletins_1_1
+    mv observations_2 observations_2_2
+    expecting  1022
+    success
+    export SR_POST_CONFIG=/home/peter/.config/sarra/cpost/veille_f34.conf
+    export LD_PRELOAD=/home/peter/src/sarracenia/test/../c/libsrshim.so.1.0.0
+    blacklab%
+
+A clean result of all the above tests in the minimum benchmark for committing changes to the
+C code back to the master branch.
 
 Rerun basic self test
 ~~~~~~~~~~~~~~~~~~~~~
