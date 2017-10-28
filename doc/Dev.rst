@@ -248,7 +248,7 @@ Setup the flow_test Environment
 
 One part of the flow test runs an ftp server.  Need the following package for that::
 
-    sudo apt-get install python3-pyftpdlib 
+    sudo apt-get install python3-pyftpdlib python3-paramiko
 
 The setup script starts a trivial web server, and ftp server, 
 and defines some fixed test clients that will be used during self-tests::

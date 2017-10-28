@@ -2,7 +2,7 @@ Source: metpx-sarracenia
 Section: python
 Priority: optional
 Maintainer: Shared Services Canada Supercomputing <ssc.hpc-chp.spc@canada.ca>
-Build-Depends: debhelper (>= 9), python3, python3-setuptools, python3-docutils, python3-pyftpdlib python3-paramiko
+Build-Depends: debhelper (>= 9), python3, python3-setuptools, python3-docutils
 Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
 Vcs-Git: http://git.code.sf.net/p/metpx/git
