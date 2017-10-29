@@ -41,6 +41,9 @@ git origin/master branch
 **CHANGE**: sr_sender now includes by default: on_message msg_2localfile, so that change
 from previous versions @ 2.17.10 no longer required.
 
+**ACTION**: must run sr_audit --reset --users foreground to correct permissions, since it was broken in previous release.  
+
+
 Many issues resolved closer to usable.
 
 
@@ -107,7 +110,7 @@ headers[source] and headers[from_cluster] to the proper value.
 During upgrade, old cache file will be ignored.  This may cause some files to be accepted a second time.
 *FIXME*  work-arounds? 
 
-**ACTION**: must run sr_audit --users foreground to correct permissions, since it was broken in previous release.   
+**ACTION**: must run sr_audit --reset --users foreground to correct permissions, since it was broken in previous release.   
 
 
 
