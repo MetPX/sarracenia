@@ -252,7 +252,7 @@ char *sr_message_2log(struct sr_message_t *m)
 
         sprintf(  strchr( b, '\0' ), " parts=%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
      }
-     for( struct sr_header_t *h = msg.user_headers ; h ; h=h->next ) 
+     for( struct sr_header_t *h = m->user_headers ; h ; h=h->next ) 
           sprintf( strchr( b, '\0' ), " %s=%s", h->key, h->value );
      return(b);
 }
