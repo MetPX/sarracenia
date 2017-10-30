@@ -6,6 +6,13 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.10a4**
+
+* C: msg pretty printer now includes user defined headers.
+* C: loglevel now accepts words: none, critical, error, warning, info, debug. (like python version.)
+* C: logevel numbers inverted (formerly 99 was be very quiet, no 0 is quiet.)
+* switched library dependency from amqplib to pika.
+* fix for no_download switch which wasn´t impeding downloads.
 
 **2.17.10a3**
 * C: directories posted during rename. not sure what effect is.
