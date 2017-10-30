@@ -132,7 +132,7 @@ class sr_credentials:
            if url.scheme == 'file' : return True
            return False
 
-        # amqp... vhost not check: default / (sr_amqp.py)
+        # amqp... vhost not check: default / 
 
         # user and password provided we are ok 
         user  = url.username != None and url.username != '' 
