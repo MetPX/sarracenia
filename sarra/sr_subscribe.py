@@ -709,10 +709,11 @@ class sr_subscribe(sr_instances):
         # if notify_only... publish if set
         #=================================
 
-        if self.notify_only and self.post_broker :
-           self.logger.debug("notify_only post")
-           ok = self.__on_post__()
-           if ok and self.reportback : self.msg.report_publish(201,'Published')
+        if self.notify_only :
+           if self.post_broker :
+              self.logger.debug("notify_only post")
+              ok = self.__on_post__()
+              if ok and self.reportback : self.msg.report_publish(201,'Published')
            return True
 
         #=================================
