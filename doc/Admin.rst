@@ -6,7 +6,7 @@
 .. note::
    Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
 
-   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
+   **FIXME**: Missing sections are highlighted by **FIXME**. What is here should be accurate!
 
 .. Contents::
 
@@ -30,35 +30,37 @@ Listing of elements still missing from documentation.
 Introduction
 ------------
 
-Sarracenia pumps form a network.  The network use rabbitmq brokers as a transfer manager
-which sends advertisements in one direction and report messages in the opposite direction.
-Administrators configure the paths that data flows through at each pump, as each broker acts
-independently, managing transfers from transfer engines it can reach, with no knowledge of
-the overall network.  The locations of pump and the directions of traffic flow are
-chosen to work with permitted flows.  Ideally, no firewall exceptions are needed.
+Sarracenia pumps form a network. The network use rabbitmq brokers as a transfer 
+manager which sends advertisements in one direction and report messages in the 
+opposite direction. Administrators configure the paths that data flows through 
+at each pump, as each broker acts independently, managing transfers from 
+transfer engines it can reach, with no knowledge of the overall network. The 
+locations of pump and the directions of traffic flow are chosen to work with 
+permitted flows. Ideally, no firewall exceptions are needed.
 
-Sarracenia does no data transport.  It is a management layer to co-ordinate the use of
-transport layers.  So to get a running pump, actual transport mechanisms need to be set up
-as well.  The two mechanisms currently supported are web servers, and SFTP.  In the simplest
-case, all of the components are on the same server, but there is no need for that.  the
-broker could be on a different server from both ends of a given hop of a data transfer.
+Sarracenia does no data transport. It is a management layer to co-ordinate 
+the use of transport layers. So to get a running pump, actual transport mechanisms 
+need to be set up as well. The two mechanisms currently supported are web 
+servers, and SFTP. In the simplest case, all of the components are on the 
+same server, but there is no need for that. The broker could be on a 
+different server from both ends of a given hop of a data transfer.
 
 The best way for data transfers to occur is to avoid polling. It is more
-efficient if writers can be coaxed into emitting appropriate sr_post messages.  Similarly,
-when delivering, it is ideal if the receivers use sr_subscribe, and a on_file plugin
-to trigger their further processing, so that the file is handed to them without polling.
+efficient if writers can be coaxed into emitting appropriate sr_post messages. 
+Similarly, when delivering, it is ideal if the receivers use sr_subscribe, and 
+an on_file plugin to trigger their further processing, so that the file is handed to them without polling.
 This is the most efficient way of working, but it is understood that not all software
-can be made co-operative.  Tools to poll for those cases are sr_poll, and sr_watch.
+can be made co-operative. Tools to poll for those cases are sr_poll, and sr_watch.
 
 Generally speaking, Linux is the main deployment target, and the only platform on which
-server configurations are deployed.  Other platforms are used as client end points.
-This isn´t a limitation, it is just what is used and tested.  Implementations of
+server configurations are deployed. Other platforms are used as client end points.
+This isn´t a limitation, it is just what is used and tested. Implementations of
 the pump on Windows should work, they just are not tested.
 
 Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
-The AMQP broker is extremely light on today's servers.  The examples in this manual were implemented
+The AMQP broker is extremely light on today's servers. The examples in this manual were implemented
 on a commercial virtual private server (VPS) with 256 MB of RAM, and 700MB of swap taken from a 20 GByte
 disk. Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
 (which includes, all public facing weather and environmental data from Environment and Climate Change
@@ -67,10 +69,10 @@ to reduce bandwidth usage, but in terms of performance in message passing, it ke
 quite well.
 
 Each Sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
-enough of them to keep up (on the small VPS, ran 10 of them.)  so about 30 mbytes of RAM actually used.
-The broker's RAM usage is what determines the number of clients which can be served.  Slower clients require
-more RAM for their queues.  So running brokerage tasks and aggressive cleaning can reduce the overall
-memory footprint.  The broker was configured to use 128 MB of RAM in the examples in this manual.
+enough of them to keep up (on the small VPS, ran 10 of them.) so about 30 mbytes of RAM actually used.
+The broker's RAM usage is what determines the number of clients which can be served. Slower clients require
+more RAM for their queues. So running brokerage tasks and aggressive cleaning can reduce the overall
+memory footprint. The broker was configured to use 128 MB of RAM in the examples in this manual.
 The rest of the RAM was used by the apache processes for the web transport engine.
 
 While the above was adequate for proof of concept, it would be impractical to be clearing out
@@ -81,9 +83,9 @@ data from disk after only an hour, and the number of clients supportable is like
 IPv6
 ~~~~
 
-The configuration shown in this manual was implemented on a small VPS with IPv6 enabled.  A client
+The configuration shown in this manual was implemented on a small VPS with IPv6 enabled. A client
 from far away connected to the rabbitmq broker using IPv6, and the subscription to the apache httpd
-worked without issues.  It just works.  There is no difference between IPv4 and IPv6 for sarra tools,
+worked without issues. It just works. There is no difference between IPv4 and IPv6 for sarra tools,
 which are agnostic of IP addresses.
 
 On the other hand, one is expected to use hostnames, since use of IP addresses will break certificate
@@ -95,9 +97,9 @@ Mapping AMQP Concepts to Sarracenia
 -----------------------------------
 
 One thing that is safe to say is that one needs to understand a bit about AMQP to work
-with Sarracenia.  AMQP is a vast and interesting topic in it's own right.  No attempt is
+with Sarracenia. AMQP is a vast and interesting topic in it's own right. No attempt is
 made to explain all of it here. This section just provides a little context, and introduces
-only background concepts needed to understand and/or use Sarracenia.  For more information
+only background concepts needed to understand and/or use Sarracenia. For more information
 on AMQP itself, a set of links is maintained at
 the `Metpx web site <http://metpx.sourceforge.net/#amqp>`_ but a search engine
 will also reveal a wealth of material.
@@ -108,8 +110,8 @@ will also reveal a wealth of material.
 
 An AMQP Server is called a Broker. *Broker* is sometimes used to refer to the software,
 other times server running the broker software (same confusion as *web server*.) In the
-above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue.  There are
-many different broker software implementations. We use rabbitmq.  We are not trying to
+above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue. There are
+many different broker software implementations. We use rabbitmq. We are not trying to
 be rabbitmq specific, but management functions differ between implementations.
 
 *Queues* are usually taken care of transparently, but you need to know
@@ -212,7 +214,7 @@ A description of the conventional flow of messages through exchanges on a pump:
 
 The purpose of these conventions is to encourage a reasonably secure means of operating.
 If a message is taken from xs_Alice, then the process doing the reading is responsible for
-ensuring that it is tagged as coming from Alice on this cluster.  This prevents certain
+ensuring that it is tagged as coming from Alice on this cluster. This prevents certain
 types of ´spoofing´ as messages can only be posted by proper owners.
 
 
@@ -221,14 +223,14 @@ Users and Roles
 
 Usernames for pump authentication are significant in that they are visible to all.
 They are used in the directory path on public trees, as well as to authenticate to the broker.
-They need to be understandable.  they are often wider scope than a person...
-perhaps call them 'Accounts'.   It can be elegant to configure the same usernames
+They need to be understandable. They are often wider scope than a person...
+perhaps call them 'Accounts'. It can be elegant to configure the same usernames
 for use in transport engines.
 
 All Account names should be unique, but nothing will avoid clashes when sources originate from
-different pump networks, and clients at different destinations.  In practice, name clashes are
+different pump networks, and clients at different destinations. In practice, name clashes are
 addressed by routing to avoid two different sources' with the same name having their
-data offerings combined on a single tree.  On the other hand, name clashes are not always an error.
+data offerings combined on a single tree. On the other hand, name clashes are not always an error.
 Use of a common source account name on different clusters may be used to implement folders that
 are shared between the two accounts with the same name.
 
@@ -239,14 +241,14 @@ role can be one of:
 subscriber
   A subscriber is user that can only subscribe to data and report messages. Not permitted to inject data.
   Each subscriber gets an xs_<user> named exchange on the pump, where if a user is named *Acme*,
-  the corresponding exchange will be *xs_Acme*.  This exchange is where an sr_subscribe
+  the corresponding exchange will be *xs_Acme*. This exchange is where an sr_subscribe
   process will send it's report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
 
 source
-  A user permitted to subscribe or originate data.  A source does not necessarily represent
+  A user permitted to subscribe or originate data. A source does not necessarily represent
   one person or type of data, but rather an organization responsible for the data produced.
   So if an organization gathers and makes available ten kinds of data with a single contact
   email or phone number for questions about the data and it's availability, then all of
@@ -261,9 +263,9 @@ source
   corresponding to the data the source injected are written in exchange xl_<user>.
 
   When a route injects data, the path is modified by sarracenia to prepend a fixed upper part
-  of the directory tree.  The first level directory is the day of ingest into the network in
-  YYYYMMDD format.  The second level directory is the source name.  So for a user Alice, injecting
-  data on May 4th, 2016, the root of the directory tree is:  20160504/Alice.  Note that all
+  of the directory tree. The first level directory is the day of ingest into the network in
+  YYYYMMDD format. The second level directory is the source name. So for a user Alice, injecting
+  data on May 4th, 2016, the root of the directory tree is:  20160504/Alice. Note that all
   pumps are expected to run in the UTC timezone (widely, but inaccurately, referred to as GMT.)
 
   There are daily directories because there is a system-wide life-time for data, it is deleted
@@ -278,7 +280,7 @@ source
 .. note::
    restrictions by user name not yet implemented, but planned.
 
-   FIXME: monitor role is missing.  someone who can read all logs, but not change anything.
+   FIXME: monitor role is missing. someone who can read all logs, but not change anything.
    Ideal for service desks, and security monitoring.
 
 feeder
@@ -332,22 +334,22 @@ access only their own resources (exchange and queues).
 The administrative user name is an installation choice, and exactly as for any other
 user, the configuration files are placed under ~/.config/sarra/, with the
 defaults under default.conf, and the configurations for components under
-directories named after each component.  In the component directories,
+directories named after each component. In the component directories,
 Configuration files have the .conf suffix.
 
 The administrative processes perform validation of postings from sources. Once
 they are validated, forward the postings to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
 
-- sr_audit   - purge useless queues, create exchanges and users, set user permissions according to their roles.
-- sr_poll    - for sources without advertisements, revert to explicit polling for initial injection.
-- sr_sarra   - various configurations to pull data from other pumps to make it available from the local pump.
-- sr_sender  - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
-- sr_winnow  - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
-- sr_shovel  - copy advertisements from pump to another, usually to feed sr_winnow.
+- sr_audit  - purge useless queues, create exchanges and users, set user permissions according to their roles.
+- sr_poll   - for sources without advertisements, revert to explicit polling for initial injection.
+- sr_sarra  - various configurations to pull data from other pumps to make it available from the local pump.
+- sr_sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
+- sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
+- sr_shovel - copy advertisements from pump to another, usually to feed sr_winnow.
 
 As for any other user, there may be any number of configurations
-to set up, and all of them may need to run at once.  To do so easily, one can invoke::
+to set up, and all of them may need to run at once. To do so easily, one can invoke::
 
   sr start
 
@@ -358,9 +360,9 @@ They are set in ~/.config/sarra/default.conf like so::
   feeder amqp://pumpUser@localhost/
   admin  amqps://adminUser@boule.example.com/
 
-Then the report and audit components are started as well.  It is standard practice to use a different
+Then the report and audit components are started as well. It is standard practice to use a different
 AMQP user for administrative tasks, such as exchange or user creation, which are performed by the admin
-user,  from data flow tasks, such as pulling and posting data, performed by the feeder user.
+user, from data flow tasks, such as pulling and posting data, performed by the feeder user.
 Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.
 
@@ -370,35 +372,35 @@ for each account, and the various configuration files would use the appropriate 
 Housekeeping - sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-When a client connects to a broker, it creates a queue which is then bound to an exchange.  The user
+When a client connects to a broker, it creates a queue which is then bound to an exchange. The user
 can choose to have the client self-destruct when disconnected (*auto-delete*), or it can make
 it *durable* which means it should remain, waiting for the client to connect again, even across
-reboots.  Clients often want to pick up where they left off, so the queues need to stay around.
+reboots. Clients often want to pick up where they left off, so the queues need to stay around.
 
 sr_audit
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
-they will build up over time.  We have a script that looks for unused queues, and cleans them out.
+they will build up over time. We have a script that looks for unused queues, and cleans them out.
 Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
-One can change this limit by having  option *max_queue_size 50000* in default.conf.
+One can change this limit by having option *max_queue_size 50000* in default.conf.
 
 
 Excess Queueing
 ~~~~~~~~~~~~~~~
 
-When rabbitmq has hundreds of thousands of messages queued, broker performance can suffer.  Such
+When rabbitmq has hundreds of thousands of messages queued, broker performance can suffer. Such
 accumulations can occur when the destination of a sender is down for a prolonged period, or a 
 subscriber is unavailable for some reason. In many cases, one can simply shutdown the sender,
-and delete the queue on the broker.  While that solves the broker performance issue, the user
+and delete the queue on the broker. While that solves the broker performance issue, the user
 will not receive the notifications.
 
 To avoid data loss, please consult the sr_sender(1) manual page *DESTINATION UNAVAILABLE* section
-for details of save and restore options.  Briefly, when a sender is placed in *save* mode, rather
-than attempting to send each file, the messages written to a disk file.  When the remote user
+for details of save and restore options. Briefly, when a sender is placed in *save* mode, rather
+than attempting to send each file, the messages written to a disk file. When the remote user
 is back, one invokes *restore* mode, and the disk file is read back, and the files are sent.
 
 In the case of components other than a sender, please consult the QUEUE Save/Restore section
-of the sr_shovel(8) manual page.  There is a similar mechanism used to write messages queued
-to disk, to avoid them overloading the broker.   When the consumer is back in service, the
+of the sr_shovel(8) manual page. There is a similar mechanism used to write messages queued
+to disk, to avoid them overloading the broker. When the consumer is back in service, the
 *restore_to_queue* option can be used to recover missing messages.
 
 FIXME: Need to consolidate and express the limitation of one rabbitmq's *one cpu to serve a queue*, and 
@@ -413,19 +415,19 @@ Routing
 -------
 
 The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
-sr_sarra and/or sr_sender configurations from one pump to the next.  
+sr_sarra and/or sr_sender configurations from one pump to the next. 
 
 .. warning::
   **FIXME**: sample sender to push to another pump.
   describe the to_cluster, gateway_for , and cluster options.
 
-Report messages are defined in the sr_report(7) man page.  They are emitted by *consumers* at the end,
-as well as *feeders* as the messages traverse pumps.  Report messages are posted to
+Report messages are defined in the sr_report(7) man page. They are emitted by *consumers* at the end,
+as well as *feeders* as the messages traverse pumps. Report messages are posted to
 the xs\_<user> exchange, and after validation sent to the xreport exchange by the shovel component 
 configurations created by sr_audit.
 
 Messages in xreports destined for other clusters are routed to destinations by
-manually configured shovels.  See the Reports_ section for more details.
+manually configured shovels. See the Reports_ section for more details.
 
 
 What is Going On?
@@ -455,7 +457,7 @@ Init Integration
 ~~~~~~~~~~~~~~~~
 
 System integration is highly non-portable and general instructions are not provided.
-No attempt is made at this sort of integration on non-linux systems yet.  The information here
+No attempt is made at this sort of integration on non-linux systems yet. The information here
 pertains only to Linux servers.
 
 By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
@@ -493,7 +495,7 @@ On an upstart or sysv-init based system:
 Rabbitmq Setup
 --------------
 
-Sample information on setting up a rabbitmq broker for sarracenia to use.  The broker does not have to
+Sample information on setting up a rabbitmq broker for sarracenia to use. The broker does not have to
 be on the same host as anything else, but there has to be one reachable from at least one of the
 transport engines.
 
@@ -519,7 +521,7 @@ WebUI
 
 Sr_audit makes use of a variety of calls to the web management interface.
 sr_audit is the component which, as the name implies, audits configurations
-for left over queues, or attempts at malicious usage.  Without this sort
+for left over queues, or attempts at malicious usage. Without this sort
 of auditing, the switch is likely to accumulate messages rapidly, which
 slows it down to a greater degree as the amount of messages pending increases
 potentially overflowing to disk.
@@ -528,15 +530,15 @@ Basically, from a root shell one must::
 
  rabbitmq-plugins enable rabbitmq_management
 
-which will enable the webUI for the broker.  To prevent access to the management
+which will enable the webUI for the broker. To prevent access to the management
 interface for undesirables, use of firewalls, or listening only to localhost
 interface for the management ui is suggested.
 
 TLS
 ~~~
 
-One should encrypt broker traffic.  Obtaining certificates is outside the scope
-of these instructions, so it is not discussed in detail.  For the purposes of
+One should encrypt broker traffic. Obtaining certificates is outside the scope
+of these instructions, so it is not discussed in detail. For the purposes of
 the example, one method is to obtain certificates from `letsencrypt <http://www.letsencrypt.org>`_ ::
 
     root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
@@ -566,7 +568,7 @@ the example, one method is to obtain certificates from `letsencrypt <http://www.
     cert.pem  chain.pem  fullchain.pem  privkey.pem
     root@boule:~#
 
-This process produces key files readable only by root.  To make the files
+This process produces key files readable only by root. To make the files
 readable by the broker (which runs under the rabbitmq users name) one will have
 to adjust the permissions to allow the broker to read the files.
 probably the simplest way to do this is to copy them elsewhere::
@@ -606,14 +608,14 @@ also `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_ )::
     EOT
 
 Now the broker and management interface are both configured to encrypt all traffic
-passed between client and broker.  An unencrypted listener was configured for localhost,
+passed between client and broker. An unencrypted listener was configured for localhost,
 where encryption on the local machine is useless, and adds cpu load. But management only
 has a single encrypted listener configured.
 
 .. NOTE::
 
   Currently, sr_audit expects the Management interface to be on port 15671 if encrypted,
-  15672 otherwise.  Sarra has no configuration setting to tell it otherwise.  Choosing another
+  15672 otherwise. Sarra has no configuration setting to tell it otherwise. Choosing another
   port will break sr_audit. **FIXME**.
 
 
@@ -621,11 +623,11 @@ Change Defaults
 ~~~~~~~~~~~~~~~
 
 In order to perform any configuration changes the broker needs to be running.
-One needs to start up the rabbitmq broker.  on older ubuntu systems, that would be done by::
+One needs to start up the rabbitmq broker. On older ubuntu systems, that would be done by::
 
   service rabbitmq-server start
 
-on newer systems with systemd, the best method is::
+On newer systems with systemd, the best method is::
 
   systemctl start rabbitmq-server
 
@@ -653,7 +655,7 @@ Some other administrator must be defined... let's call it *bunnymaster*, setting
 Create a local linux account under which sarra administrative tasks will run (say Sarra).
 This is where credentials and configuration for pump level activities will be stored.
 As the configuration is maintained with this user, it is expected to be actively used
-by humans, and so should have a proper interactive shell environment.  Some administrative
+by humans, and so should have a proper interactive shell environment. Some administrative
 access is needed, so the user is added to the sudo group::
 
   root@boule:~# useradd -m sarra
@@ -716,7 +718,7 @@ and a feeder user (in the examples: feeder.) Management of other users is done w
 the sr_audit program.
 
 First, write the correct credentials for the admin and feeder users in
-the credentials file  .config/sarra/credentials.conf ::
+the credentials file .config/sarra/credentials.conf ::
 
  amqps://bunnymaster:MaestroDelConejito@boule.example.com/
  amqp://feeder:NoHayPanDuro@localhost/
@@ -727,7 +729,7 @@ the credentials file  .config/sarra/credentials.conf ::
 Note that the feeder credentials are presented twice, once to allow un-encrypted access via
 localhost, and a second time to permit access over TLS, potentially from other hosts (necessary
 when a broker is operating in a cluster, with feeder processes running on multiple transport
-engine nodes.)  Next step is to put roles in .config/sarra/default.conf ::
+engine nodes.) Next step is to put roles in .config/sarra/default.conf ::
 
  admin  amqps://root@boule.example.com/
  feeder amqp://feeder@localhost/
@@ -781,7 +783,7 @@ The *sr_audit* program:
 .. Note::
    PS changed this so that with --users it exits after one pass... um.. not great ...
    but otherwise:
-   The program runs as a daemon.  After the initial pass to create the users,
+   The program runs as a daemon. After the initial pass to create the users,
    It will go into to sleep, and then audit the configuration again.
    To stop it from running in the foreground, stop it with: <ctrl-c>
    (most common linux default intterupt character)
@@ -861,8 +863,8 @@ again.
 First Subscribe
 ~~~~~~~~~~~~~~~
 
-When setting up a pump, normally the purpose is to connect it to some other pump.  To set
-the parameters setting up a subscription helps us set parameters for sarra later.  So first
+When setting up a pump, normally the purpose is to connect it to some other pump. To set
+the parameters setting up a subscription helps us set parameters for sarra later. So first
 try a subscription to an upstream pump::
 
   sarra@boule:~$ ls
@@ -887,7 +889,7 @@ add the password for the upstream pump to credentials.conf ::
 
   sarra@boule:~/.config/sarra$ echo "amqp://anonymous:anonymous@dd.weather.gc.ca/" >>../credentials.conf
 
-then do a short foreground run, to see if it is working. hit Ctrl-C to stop it after a few messages::
+then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it after a few messages::
 
   sarra@boule:~/.config/sarra$ sr_subscribe foreground dd
   2016-03-28 09:21:27,708 [INFO] sr_subscribe start
@@ -907,8 +909,8 @@ then do a short foreground run, to see if it is working. hit Ctrl-C to stop it a
   2016-03-28 09:21:30,693 [INFO] sr_subscribe stop
   sarra@boule:~/.config/sarra/subscribe$
 
-So the connection to upstream is functional.  Connecting to the server means a queue is allocated on the server,
-and it will continue to accumulate messages, waiting for the client to connect again.  This was just a test, so we
+So the connection to upstream is functional. Connecting to the server means a queue is allocated on the server,
+and it will continue to accumulate messages, waiting for the client to connect again. This was just a test, so we
 want the server to discard the queue::
 
   sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
@@ -925,9 +927,9 @@ Sarra from Another Pump
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Sarra is used to have a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
-but also needs the configuration to post to the downstream broker.  The feeder account on the broker is used for this sort
-of work, and is a semi-administrative user, able to publish data to any exchange.  Assume Apache is set up (not covered here) with a
-document root of /var/www/html.  The linux account we have created to run all the sr processes is '*sarra*', so we make sure
+but also needs the configuration to post to the downstream broker. The feeder account on the broker is used for this sort
+of work, and is a semi-administrative user, able to publish data to any exchange. Assume Apache is set up (not covered here) with a
+document root of /var/www/html. The linux account we have created to run all the sr processes is '*sarra*', so we make sure
 the document root is writable to those processes::
 
   sarra@boule:~$ cd ~/.config/sarra/sarra
@@ -1009,7 +1011,7 @@ Reports
 ~~~~~~~
 
 Now that data is flowing, we need to take a look at the flow of report messages, which essentially are used by each pump to tell
-upstream that data has been downloaded.  Sr_audit helps with routing by creating the following configurations:
+upstream that data has been downloaded. Sr_audit helps with routing by creating the following configurations:
 
  - for each subscriber, a shovel configuration named rr_<user>2xreport.conf is created
  - for each source, a shovel configureation named rr_xreport2<user>user.conf is created
@@ -1061,11 +1063,11 @@ Sample::
 Explanations:
   - msg_by_source tsource2 selects that only the reports for data injected by the tsource2 user should be 
     selected.
-  - the selected reports should be copied to the user's xr\_ exchange, where that user invoking sr_report will find them.  
+  - the selected reports should be copied to the user's xr\_ exchange, where that user invoking sr_report will find them.
 
 
 When a source invokes the sr_report component, the default exchange will be xr\_ (eXchange for Reporting). All reports received
-from subscribers to data from this source will be routed to this exchange.  
+from subscribers to data from this source will be routed to this exchange.
 
 If an administrator invokes sr_report, it will default to the xreport exchange, and show reports from all subscribers on the cluster.
 
@@ -1101,7 +1103,7 @@ Basically, The two sorts of shovels built automatically by sr_audit will do all 
 When there are volume issues, these configurations can be tweaked to increase the number of instances or use
 post_exchange_split where appropriate.
 
-Manual shovel configuration is also required to route messages between clusters.  It is just a variation
+Manual shovel configuration is also required to route messages between clusters. It is just a variation
 of intra-cluster report routing.
 
 
@@ -1121,7 +1123,7 @@ anything else?
 Cleanup
 ~~~~~~~
 
-These are examples, the implementation of cleanup is not covered by sarracenia.  Given a reasonably small tree as
+These are examples, the implementation of cleanup is not covered by sarracenia. Given a reasonably small tree as
 given above, it can be practical to scan the tree and prune the old files from it.
 a cron job like so::
 
@@ -1133,13 +1135,13 @@ a cron job like so::
 
 This might see a bit aggressive, but this file was on a very small virtual server that was only
 intended for real-time data transfer so keeping data around for extended periods would have
-filled the disk and stopped all transfers.  In large scale transfers, there is always a trade
+filled the disk and stopped all transfers. In large scale transfers, there is always a trade
 off between the practicality of keeping the data around forever, and the need for performance,
-which requires us to prune directory trees regularly.  File system performance is optimal with
+which requires us to prune directory trees regularly. File system performance is optimal with
 reasonably sized trees, and when the trees get to large, the 'find' process to traverse it, can
 become too onerous.
 
-One can more easily maintain smaller directory trees by having them roll over regularly.  If you
+One can more easily maintain smaller directory trees by having them roll over regularly. If you
 have enough disk space to last one or more days, then a single logical cron job that would operate
 on the daily trees without incurring the penalty of a find, is a good approach.
 
@@ -1177,7 +1179,7 @@ Sr_sender
 Where firewalls prevent use of sarra to pull from a pump like a subscriber would, one can reverse the feed by having the
 upstream pump explicitly feed the downstream one.
 
-FIXME:  elaborate sample sr_sender configuration.
+FIXME: elaborate sample sr_sender configuration.
 
 
 
@@ -1223,13 +1225,13 @@ Dataless
 
 Standalone
   the most obvious one, run the entire stack on a single server, openssh and a web server
-  as well the broker and sarra itself.  Makes a complete data pump, but without any redundancy.
+  as well the broker and sarra itself. Makes a complete data pump, but without any redundancy.
 
 Switching/Routing
   Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
-  a load balancer.  The load balancer algorithm is just round-robin, with no attempt to associate
-  a given source with a given node.  This has the effect of pumping different parts of large files
-  through different nodes.  So one will see parts of files announced by such pump, to be
+  a load balancer. The load balancer algorithm is just round-robin, with no attempt to associate
+  a given source with a given node. This has the effect of pumping different parts of large files
+  through different nodes. So one will see parts of files announced by such pump, to be
   re-assembled by subscribers.
 
 Data Dissemination
@@ -1243,8 +1245,8 @@ FIXME:
 Dataless or S=0
 ~~~~~~~~~~~~~~~
 
-A configuration which includes only the AMQP broker.  This configuration can be used when users
-have access to disk space on both ends and only need a mediator.  This is the configuration
+A configuration which includes only the AMQP broker. This configuration can be used when users
+have access to disk space on both ends and only need a mediator. This is the configuration
 of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
 not need any, or pumps deployed to provide redundant HA to remote data centres.
 
@@ -1261,10 +1263,10 @@ Dataless With Sr_winnow
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Another example of a dataless pump would be to provide product selection from two upstream
-sources using sr_winnow.  The sr_winnow is fed by shovels from upstream sources, and
-the local clients just connect to this local pump.  sr_winnow takes
+sources using sr_winnow. The sr_winnow is fed by shovels from upstream sources, and
+the local clients just connect to this local pump. sr_winnow takes
 care of only presenting the products from the first server to make
-them available.   one would configure sr_winnow to output to the xpublic exchange
+them available. One would configure sr_winnow to output to the xpublic exchange
 on the pump.
 
 subscriber just point at the output of sr_winnow on the local pump.
@@ -1282,12 +1284,12 @@ having the credentials to access it)
 Standalone
 ~~~~~~~~~~
 
-In a standalone configuration, there is only one node in the configuration.  It runs all components
-and shares none with any other nodes.  That means the Broker and data services such as sftp and
+In a standalone configuration, there is only one node in the configuration. It runs all components
+and shares none with any other nodes. That means the Broker and data services such as sftp and
 apache are on the one node.
 
 One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
-queueing and transmission away from the instrument.  It is restarted when the opportunity arises.
+queueing and transmission away from the instrument. It is restarted when the opportunity arises.
 It is just a matter of installing and configuring all a data flow engine, a broker, and the package
 itself on a single server.
 
@@ -1297,7 +1299,7 @@ Switching/Routing
 ~~~~~~~~~~~~~~~~~
 
 In switching/routing configuration, there is a pair of machines running a single broker for a pool
-of transfer engines.  So each transfer engine´s view of the file space is local, but the queues are
+of transfer engines. So each transfer engine´s view of the file space is local, but the queues are
 global to the pump.
 
 
@@ -1306,7 +1308,7 @@ same config file create by default an identical **queue_name**. Targetting the
 same broker, it forces the queue to be shared. If it should be avoided,
 the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
 Each node will have its own queue, only shared by the node instances.
-ex.:  queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
+ex.: queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
 
 
 Advanced Installations
@@ -1432,7 +1434,7 @@ The answer I got from the Rabbitmq gurus ::
   > authentification...
   > The user's  permissions, vhost ... etc  would already be set directly
   > on the server
-  > with rabbitmqctl...   The only thing ldap would be used for would be
+  > with rabbitmqctl...  The only thing ldap would be used for would be
   > logging.
   > Is that possible... ?   I am asking because our ldap schema is quite
   > different from
@@ -1471,12 +1473,12 @@ in the ~/.config/sarra/credentials.conf file, and that file is forced to 600 per
 Server/Broker
 ~~~~~~~~~~~~~
 
-Authentication used by transport engines is independent of that used for the brokers.  A security
+Authentication used by transport engines is independent of that used for the brokers. A security
 assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate
 the overall security of a given deployment.
 
 
-The most secure method of transport is the use of SFTP with keys rather than passwords.  Secure
+The most secure method of transport is the use of SFTP with keys rather than passwords. Secure
 storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
 file just points to those key files.
 
@@ -1498,7 +1500,7 @@ Each user Alice, on a broker to which she has access:
 Alice cannot create any exchanges or other queues not shown above.
 
 Rabbitmq provides the granularity of security to restrict the names of
-objects, but not their types.  Thus, given the ability to create a queue named q_Alice,
+objects, but not their types. Thus, given the ability to create a queue named q_Alice,
 a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
 queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.
 
@@ -1509,23 +1511,23 @@ for mis-use, and cleaning it up.
 Input Validation
 ~~~~~~~~~~~~~~~~
 
-Users such as Alice post their messages to their own exchange (xs_Alice).  Processes which read from
-user exchanges have a responsibility for validation.   The process that reads xs_Alice (likely an sr_sarra)
+Users such as Alice post their messages to their own exchange (xs_Alice). Processes which read from
+user exchanges have a responsibility for validation. The process that reads xs_Alice (likely an sr_sarra)
 will overwrite any *source* or *cluster* heading written into the message with the correct values for
 the current cluster, and the user which posted the message.
 
-The checksum algorithm used must also be validated.  The algorithm must be known.  Similarly, if
-there is a malformed header of some kind, it should be rejected immediately.  Only well-formed messages
+The checksum algorithm used must also be validated. The algorithm must be known. Similarly, if
+there is a malformed header of some kind, it should be rejected immediately. Only well-formed messages
 should be forwarded for further processing.
 
 In the case of sr_sarra, the checksum is re-calculated when downloading the data, it
-ensures it matches the message.  If they do not match, an error report message is published.
+ensures it matches the message. If they do not match, an error report message is published.
 If the *recompute_checksum* option is True, the newly calculated checksum is put into the message.
 Depending on the level of confidence between a pair of pumps, the level of validation may be
 relaxed to improve performance.
 
 Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
-users on the remote pumps and any other pumps the pump is forwarding for.  In that case, the validation
+users on the remote pumps and any other pumps the pump is forwarding for. In that case, the validation
 constraints are a little different:
 
 - source doesn´t matter. (feeders can represent other users, so do not overwrite.)
@@ -1542,12 +1544,12 @@ Privileged System Access
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Ordinary (sources, and subscribers) users operate sarra within their own permissions on the system,
-like an scp command.  The pump administrator account also runs under a normal linux user account and,
+like an scp command. The pump administrator account also runs under a normal linux user account and,
 given requires privileges only on the AMQP broker, but nothing on the underlying operating system.
 It is convenient to grant the pump administrator sudo privileges for the rabbitmqctl command.
 
 The may be a single task which must operate with privileges: cleaning up the database, which is an easily
-auditable script that must be run on a regular basis.  If all acquisition is done via sarra, then all of
+auditable script that must be run on a regular basis. If all acquisition is done via sarra, then all of
 the files will belong to the pump administrator, and privileged access is not required for this either.
 
 
@@ -1555,23 +1557,23 @@ Content Scanning
 ~~~~~~~~~~~~~~~~
 
 In cases where security scanning of file being transferred is deemed necessary,
-one configures sarra with an *on_part* plugin.  The sample *clamav_scan.py* plugin is included
+one configures sarra with an *on_part* plugin. The sample *clamav_scan.py* plugin is included
 with the package. It depends on some additional packages::
 
   sudo apt-get install python3-pyclamd
 
-By default, all parts of a file are scanned.  One can set an option in the configuration for the component
+By default, all parts of a file are scanned. One can set an option in the configuration for the component
 invoking the plugin like so::
 
   clamav_maxblock 3
   on_part clamav_scan.py
 
-to limit scanning to only the first three parts of a file.  When a file is scanned, the log of the component
+to limit scanning to only the first three parts of a file. When a file is scanned, the log of the component
 with scanning configured will have an entry like so::
 
   2016-03-30 00:41:55,497 [INFO] clamav_scan took 0.000952244 seconds, no viruses in /home/peter/test/boule/20160330/metpx/bulletins/alphanumeric/20160330/CA/CWAO/04/CACN00_CWAO_300400__PBD_05042
 
-When plugged into Sarra, as the plugin returns True, the re-advertisement proceeds.  If a virus were found, an error
+When plugged into Sarra, as the plugin returns True, the re-advertisement proceeds. If a virus were found, an error
 message is printed and the plugin returns False so that the part's advertisement would not be posted (so subscribers and
 downstream pumps will not pick it up.)
 
@@ -1583,11 +1585,11 @@ downstream pumps will not pick it up.)
 Hooks from Sundew
 -----------------
 
-This information is very likely irrelevant to almost all users.  Sundew is another module of MetPX which is essentially being
-replaced by Sarracenia.  This information is only useful to those with an installed based of Sundew wishing to bridge
-to sarracenia.  The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module
-from MetPX as the data source.  There was no concept of multiple users, as the switch operates as a single dissemination
-and routing tool.  This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source.
+This information is very likely irrelevant to almost all users. Sundew is another module of MetPX which is essentially being
+replaced by Sarracenia. This information is only useful to those with an installed based of Sundew wishing to bridge
+to sarracenia. The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module
+from MetPX as the data source. There was no concept of multiple users, as the switch operates as a single dissemination
+and routing tool. This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source.
 It assumes a deep understanding of MetPX-Sundew. Currently, the dd_notify.py script creates messages for the
 protocol exp., v00. and v02 (latest sarracenia protocol version)
 
@@ -1596,7 +1598,7 @@ Notifications on DD
 ~~~~~~~~~~~~~~~~~~~
 
 As a higher performance replacement for Atom/RSS feeds which tell subscribers when new data is available, we put a broker
-on our data dissemination server (dd.weather.gc.ca.) Clients can subscribe to it.  To create the notifications, we have
+on our data dissemination server (dd.weather.gc.ca.) Clients can subscribe to it. To create the notifications, we have
 one Sundew Sender (named wxo-b1-oper-dd.conf) with a send script::
 
   type script
@@ -1620,7 +1622,7 @@ one Sundew Sender (named wxo-b1-oper-dd.conf) with a send script::
   batch 100
 
 We see all the configuration information for a single-file sender, but the send_script overrides the
-normal sender with something that builds AMQP messages as well.  This Sundew sender config
+normal sender with something that builds AMQP messages as well. This Sundew sender config
 invokes *sftp_amqp.py* as a script to do the actual send, but also to place the payload of an
 AMQP message in the /apps/px/txq/dd-notify-wxo-b1/, queuing it up for a Sundew AMQP sender.
 That sender´s config is::
@@ -1643,7 +1645,7 @@ That sender´s config is::
 
    accept ^(.*)\+\+.*
 
-The key for the topic includes a substitution.  The *${0}* contains the directory tree where the
+The key for the topic includes a substitution. The *${0}* contains the directory tree where the
 file has been placed on dd (with the / replaced by .)  For example, here is a log file entry::
 
   2013-06-06 14:47:11,368 [INFO] (86 Bytes) Message radar.24_HR_ACCUM.GIF.XSS++201306061440_XSS_24_HR_ACCUM_MM.gif:URP:XSS:RADAR:GIF::20130606144709  delivered (lat=1.368449,speed=168950.887119)
