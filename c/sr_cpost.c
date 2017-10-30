@@ -576,7 +576,7 @@ int main(int argc, char **argv)
        return(0);
     }
 
-    if ( !strcmp( sr_cfg.action, "setup" ) )
+    if ( !strcmp( sr_cfg.action, "setup" ) || !strcmp( sr_cfg.action, "declare" ) )
     {
        sr_context_close(sr_c);
        free(sr_c);
