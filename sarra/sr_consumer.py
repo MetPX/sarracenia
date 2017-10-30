@@ -33,13 +33,13 @@
 import os,sys,random,time
 
 try :    
-         from sr_amqp           import *
          from sr_config         import *
          from sr_message        import *
+         from sr_pika           import *
 except : 
-         from sarra.sr_amqp     import *
          from sarra.sr_config   import *
          from sarra.sr_message  import *
+         from sarra.sr_pika     import *
 
 # class sr_consumer
 
