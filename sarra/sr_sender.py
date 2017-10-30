@@ -238,9 +238,7 @@ class sr_sender(sr_subscribe):
 
         self.local_path = self.msg.relpath
 
-        if not self.msg.sumflg.startswith('file') and self.document_root :
-           self.local_path = self.document_root + '/' + self.msg.relpath
-           self.local_path = self.local_path.replace('//','/')
+        # the code of msg_2localfile could be put here...
 
         #=================================
         # impossible to send
