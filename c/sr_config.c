@@ -595,7 +595,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
   } else if ( !strcmp( option, "debug" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->debug = val&2;
-      sr_cfg->logseverity=1;
+      sr_cfg->logseverity=99;
       log_level=1;
       return(1+(val&1));
 
@@ -662,7 +662,21 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(1+(val&1));
 
   } else if ( !strcmp( option, "loglevel" ) ) {
-      sr_cfg->logseverity = atoi(argument);
+      if ( !strcasecmp( argument, "info" ) ) {
+         sr_cfg->logseverity = LOG_INFO ;
+      } else if ( !strcasecmp( argument, "warning" ) || !strcasecmp( argument, "warn" ) ) {
+         sr_cfg->logseverity = LOG_WARNING ;
+      } else if ( !strcasecmp( argument, "error" ) ) {
+         sr_cfg->logseverity = LOG_ERROR ;
+      } else if ( !strcasecmp( argument, "critical" ) ) {
+         sr_cfg->logseverity = LOG_CRITICAL ;
+      } else if ( !strcasecmp( argument, "debug" ) ) {
+         sr_cfg->logseverity = LOG_DEBUG ;
+      } else if ( !strcasecmp( argument, "none" ) ) {
+         sr_cfg->logseverity = 0 ;
+      } else     
+         sr_cfg->logseverity = atoi(argument);
+      
       log_level = sr_cfg->logseverity;
       return(2);
 

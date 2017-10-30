@@ -29,7 +29,7 @@ void log_msg(int prio, const char *format, ...)
     clock_gettime( CLOCK_REALTIME , &ts);
     gmtime_r(&(ts.tv_sec),&s);
 
-    if (prio < log_level) return;
+    if (prio > log_level) return;
 
     switch (prio)
     {

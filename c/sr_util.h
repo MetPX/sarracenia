@@ -14,11 +14,11 @@
 extern int log_level ;
 
 // log message severities.
-#define LOG_DEBUG     (1)
-#define LOG_INFO      (2)
-#define LOG_WARNING   (4)
-#define LOG_ERROR     (8)
-#define LOG_CRITICAL (16)
+#define LOG_DEBUG     (5)
+#define LOG_INFO      (4)
+#define LOG_WARNING   (3)
+#define LOG_ERROR     (2)
+#define LOG_CRITICAL  (1)
 
 void log_msg(const int prio, const char *format, ...);
 
