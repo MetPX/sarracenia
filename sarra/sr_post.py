@@ -160,9 +160,9 @@ class sr_post(sr_config):
         self.post_exchange = self.exchange
 
         self.post_hc      = HostConnect( self.logger )
-        self.post_hc.loop = self.loop
-
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
+        self.post_hc.loop = self.loop
         self.post_hc.connect()
 
         self.publisher = Publisher(self.post_hc)
@@ -803,7 +803,9 @@ class sr_post(sr_config):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
+
         self.post_hc.connect()
         self.declare_exchanges(cleanup=True)
 
@@ -818,6 +820,7 @@ class sr_post(sr_config):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
 
@@ -857,6 +860,7 @@ class sr_post(sr_config):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
         self.declare_exchanges()
@@ -926,8 +930,9 @@ def main():
 
               if post.reset :
                  post.logger.info("reset: cache cleaned")
-                 post.cache.close(unlink=True)
-                 post.cache.open()
+                 if post.cache :
+                    post.cache.close(unlink=True)
+                    post.cache.open()
                  os._exit(0)
 
               if len(post.postpath) == 0 :
