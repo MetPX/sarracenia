@@ -222,6 +222,7 @@ class sr_poll(sr_instances):
         self.post_exchange = self.exchange
 
         self.post_hc   = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
         self.publisher = Publisher(self.post_hc)
@@ -835,6 +836,7 @@ class sr_poll(sr_instances):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
         self.declare_exchanges(cleanup=True)
@@ -852,6 +854,7 @@ class sr_poll(sr_instances):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
 
@@ -888,6 +891,7 @@ class sr_poll(sr_instances):
         self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
+        self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
         self.post_hc.connect()
        
