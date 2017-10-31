@@ -47,6 +47,9 @@ except: pass
 try   : import pika
 except: pass
 
+import paramiko
+from   paramiko import *
+
 try :
          from sr_credentials       import *
          from sr_util              import *
@@ -1279,6 +1282,7 @@ class sr_config:
                      if level in 'info'     : self.loglevel = logging.INFO
                      if level in 'warning'  : self.loglevel = logging.WARNING
                      if level in 'debug'    : self.loglevel = logging.DEBUG
+                     if level in 'none'     : self.loglevel = None
                      n = 2
 
 
@@ -1795,6 +1799,13 @@ class sr_config:
 
         LOG_FORMAT  = ('%(asctime)s [%(levelname)s] %(message)s')
 
+        if self.loglevel == None :
+           if hasattr(self,'logger') : del self.logger
+           self.logger = logging.RootLogger(logging.CRITICAL)
+           noop        = logging.NullHandler()
+           self.logger.addHandler(noop)
+           return
+           
         if not hasattr(self,'logger') :
            logging.basicConfig(level=self.loglevel, format=LOG_FORMAT)
            self.logger = logging.getLogger()
@@ -1804,7 +1815,8 @@ class sr_config:
 
         if self.logpath == self.lpath :
            self.logger.debug("sr_config setlog 2")
-           if hasattr(self,'debug') and self.debug : self.logger.setLevel(logging.DEBUG)
+           if hasattr(self,'debug') and self.debug :
+              self.logger.setLevel(logging.DEBUG)
            return
 
         if self.logpath == None :
