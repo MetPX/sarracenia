@@ -63,7 +63,7 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[ 
-    "pika", 
+    "amqplib", 
     "appdirs",
     "watchdog", 
     "netifaces", 
