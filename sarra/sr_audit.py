@@ -35,13 +35,13 @@
 import os,socket,sys,time,os.path
 
 try :    
+         from sr_amqp            import *
          from sr_instances       import *
-         from sr_pika            import *
          from sr_rabbit          import *
          from sr_util            import *
 except : 
+         from sarra.sr_amqp      import *
          from sarra.sr_instances import *
-         from sarra.sr_pika      import *
          from sarra.sr_rabbit    import *
          from sarra.sr_util      import *
 
