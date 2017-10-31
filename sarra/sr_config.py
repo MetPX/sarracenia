@@ -41,6 +41,12 @@ from   appdirs import *
 import shutil
 import sarra
 
+try   : import amqplib.client_0_8 as amqp
+except: pass
+
+try   : import pika
+except: pass
+
 try :
          from sr_credentials       import *
          from sr_util              import *
@@ -388,7 +394,10 @@ class sr_config:
         self.delete               = False
 
         self.report_exchange      = 'xreport'
-        # 
+          
+        # amqp
+
+        self.use_pika             = 'pika' in sys.modules
 
         # cache
         self.cache                = None
@@ -1687,6 +1696,14 @@ class sr_config:
                      self.url = urllib.parse.urlparse(words1)
                      n = 2
 
+                elif words0 == 'use_pika': # See: FIX ME
+                     if (words1 is None) or words[0][0:1] == '-' :
+                        self.use_pika = True
+                        n = 1
+                     else :
+                        self.use_pika = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 == 'users':  # See: sr_audit.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.users_flag = True
@@ -2169,6 +2186,26 @@ def self_test():
     cfg.option(opt4.split())
     if cfg.pstrip != '.*aaa' :
        cfg.logger.error(" strip .*aaa failed")
+       failed = True
+
+    pika = cfg.use_pika
+
+    opt4='use_pika True'
+    cfg.option(opt4.split())
+    if not cfg.use_pika :
+       cfg.logger.error(" use_pika 1 failed")
+       failed = True
+
+    opt4='use_pika False'
+    cfg.option(opt4.split())
+    if cfg.use_pika :
+       cfg.logger.error(" use_pika 2 failed")
+       failed = True
+
+    opt4='use_pika'
+    cfg.option(opt4.split())
+    if not cfg.use_pika :
+       cfg.logger.error(" use_pika 3 failed")
        failed = True
 
     if not failed : print("TEST PASSED")
