@@ -77,22 +77,22 @@ from collections import *
 #============================================================
 
 try :    
+         from sr_amqp           import *
          from sr_cache          import *
          from sr_file           import *
          from sr_ftp            import *
          from sr_http           import *
          from sr_instances      import *
          from sr_message        import *
-         from sr_pika           import *
          from sr_util           import *
 except : 
+         from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
-         from sarra.sr_pika      import *
          from sarra.sr_util      import *
 
 class sr_poll(sr_instances):

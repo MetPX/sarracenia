@@ -43,16 +43,16 @@ from collections import *
 #============================================================
 
 try :
+         from sr_amqp          import *
          from sr_cache         import *
          from sr_config        import *
          from sr_message       import *
-         from sr_pika          import *
          from sr_util          import *
 except :
+         from sarra.sr_amqp    import *
          from sarra.sr_cache   import *
          from sarra.sr_config  import *
          from sarra.sr_message import *
-         from sarra.sr_pika    import *
          from sarra.sr_util    import *
 
 class sr_post(sr_config):
