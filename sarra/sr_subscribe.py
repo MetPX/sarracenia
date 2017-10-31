@@ -193,6 +193,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
 
@@ -539,36 +540,6 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
-        # if a message is received directly from a source...
-        # we dont trust its settings of  source and from_cluster
-
-        if self.source_from_exchange :
-           source = self.get_source_from_exchange(self.msg.exchange)
-           if source : self.msg.headers['source'] = source
-           else      : del self.msg.headers['source']
-           if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
- 
-        # apply default to a message without a source
-        if not 'source' in self.msg.headers :
-           if self.source: self.msg.headers['source'] = self.source
-           else          : self.msg.headers['source'] = self.broker.username
-           self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
-
-        # apply default to a message without an origin cluster
-        if not 'from_cluster' in self.msg.headers :
-           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
-           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
-           self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
-
-        # apply default to a message without routing clusters
-        if not 'to_clusters' in self.msg.headers :
-           if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
-           elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
-           if 'to_clusters' in self.msg.headers :
-              self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
-           else:
-              self.logger.warning("message without headers['to_clusters']")
-
         # keep current value of these variables
 
         val_new_dir     = self.new_dir
@@ -678,9 +649,43 @@ class sr_subscribe(sr_instances):
         self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
 
         #=================================
+        # complete the message (source,from_cluster,to_clusters)
+        #=================================
+
+        # if a message is received directly from a source...
+        # we dont trust its settings of  source and from_cluster
+
+        if self.source_from_exchange :
+           source = self.get_source_from_exchange(self.msg.exchange)
+           if source : self.msg.headers['source'] = source
+           else      : del self.msg.headers['source']
+           if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
+ 
+        # apply default to a message without a source
+        if not 'source' in self.msg.headers :
+           if self.source: self.msg.headers['source'] = self.source
+           else          : self.msg.headers['source'] = self.broker.username
+           self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
+
+        # apply default to a message without an origin cluster
+        if not 'from_cluster' in self.msg.headers :
+           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+           self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
+
+        # apply default to a message without routing clusters
+        if not 'to_clusters' in self.msg.headers :
+           if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
+           elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
+           if 'to_clusters' in self.msg.headers :
+              self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
+           else:
+              self.logger.warning("message without headers['to_clusters']")
+
+        #=================================
         # setting up message with sr_subscribe config options
-        # self.set_local     : how/where sr_subscribe is configured for that product
-        # self.msg.set_local : how message settings (like parts) applies in this case
+        # self.set_new    : how/where sr_subscribe is configured for that product
+        # self.msg.set_new: how message settings (like parts) applies in this case
         #=================================
 
         self.set_new()
@@ -1520,6 +1525,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges(cleanup=True)
@@ -1552,6 +1558,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()
@@ -1601,6 +1608,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
+              self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()
