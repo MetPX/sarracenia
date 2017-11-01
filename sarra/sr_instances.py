@@ -71,9 +71,10 @@ class sr_instances(sr_config):
         self.instance      = i
         self.instance_name = self.basic_name + '_%.4d' % i
 
-        #self.instance_str = 'sr_' + self.instance_name[3:].replace('_',' ')
         self.instance_str  = self.program_name
         if self.config_name: self.instance_str += ' ' + self.config_name + ' %.4d' % i
+
+        # setting of context files
 
         self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
         self.logpath       = self.user_log_dir   + os.sep + self.instance_name + '.log'
@@ -109,6 +110,8 @@ class sr_instances(sr_config):
         self.logger.debug("sr_instances foreground_parent")
         self.nbr_instances = 0
         self.save_path     = self.user_cache_dir + os.sep + self.basic_name + '_0000.save'
+        self.logpath       = None
+        self.setlog()
         self.start()
 
     def reload_instance(self):
