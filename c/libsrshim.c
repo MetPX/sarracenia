@@ -484,6 +484,9 @@ int close(int fd)
   
     snprintf(fdpath, 32, "/proc/self/fd/%d", fd);
     real_return = realpath(fdpath, real_path);
+
+    srshim_initialize( "post" );
+
     status = close_fn_ptr(fd);
 
     if (!real_return) return(status);
