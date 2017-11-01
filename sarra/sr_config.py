@@ -1737,8 +1737,8 @@ class sr_config:
                      #        see post_override plugin.
                      #
                      value = ' '.join(words[1:])
-                     self.logger.debug("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
+                         self.logger.warning("unrecognized option %s %s" % (words[0],value))
                          setattr(self, words[0],[ value ])
                          self.extended_options.append(words[0])
                          self.logger.debug("extend set %s = '%s'" % (words[0],getattr(self,words[0])))
