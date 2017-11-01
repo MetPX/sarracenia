@@ -340,21 +340,6 @@ class sr_config:
 
         self.check()
 
-    def declare_option(self,option):
-        self.logger.debug("sr_config declare_option")
-
-        if not hasattr(self,option):
-           setattr(self, option, [] )
-           self.extended_options.append(option)
-           self.logger.debug("declare_option %s  OK!" % option)
-           return
-
-        value2 = getattr(self,option)
-        if not isinstance(value2,list):
-              self.logger.error("declare_option %s already an internal attribute" % option)
-        else:
-              self.logger.warning("declare_option %s already a list attribute (redeclared?)" % option)
-
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
@@ -2236,21 +2221,6 @@ def self_test():
     if not cfg.use_pika :
        cfg.logger.error(" use_pika 3 failed")
        failed = True
-
-    cfg.declare_option('toto')
-    if not hasattr(cfg,'toto'):
-       cfg.logger.error(" declare_option failed 1")
-       failed = True
-
-    if not isinstance(cfg.toto,list) :
-       cfg.logger.error(" declare_option failed 2")
-       failed = True
-
-    # redeclare should not harm
-    #cfg.declare_option('toto')
-
-    # trying to use an option should not harm
-    #cfg.declare_option('use_pika')
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
