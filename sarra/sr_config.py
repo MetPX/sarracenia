@@ -126,22 +126,24 @@ class sr_config:
         try    : os.makedirs(self.http_dir,        0o775,True)
         except : pass
 
-        # logging is interactive at start
-
-        self.debug         = False
-        self.remote_config = False
-        self.loglevel = logging.INFO
-        self.setlog()
-        # IN BIG DEBUG
-        #self.debug = True
-        #self.logpath = None
-        #self.loglevel = logging.DEBUG
-        #self.setlog()
-        self.logger.debug("sr_config __init__")
-
         # hostname
 
-        self.hostname     = socket.getfqdn()
+        self.hostname  = socket.getfqdn()
+
+        # logging is interactive at start
+
+        self.debug     = False
+        self.statehost = False
+        self.hostform  = 'short'
+        self.loglevel  = logging.INFO
+
+        #self.debug    = True
+        #self.loglevel = logging.DEBUG
+
+        self.LOG_FORMAT= ('%(asctime)s [%(levelname)s] %(message)s')
+        logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
+        self.logger = logging.getLogger()
+        self.logger.debug("sr_config __init__")
 
         # program_name
 
@@ -151,9 +153,10 @@ class sr_config:
 
         # config
 
-        self.config_dir   = ''
-        self.config_name  = None
-        self.user_config  = config
+        self.config_dir    = ''
+        self.config_name   = None
+        self.user_config   = config
+        self.remote_config = False
 
         # config might be None ... in some program or if we simply instantiate a class
         # but if it is not... it better be an existing file
@@ -336,6 +339,20 @@ class sr_config:
         self.args   (self.user_args)
         self.config (self.user_config)
 
+        # did the user configured self.user_*_dir/hostname
+
+        if self.statehost :
+           hostdir = self.hostname
+           if self.hostform == 'short' : hostdir = self.hostname.split('.')[0] 
+
+           self.user_log_dir   += os.sep + hostdir
+           try    : os.makedirs(self.user_log_dir, 0o775,True)
+           except : pass
+
+           self.user_cache_dir += os.sep + hostdir
+           try    : os.makedirs(self.user_cache_dir, 0o775,True)
+           except : pass
+
         # verify / complete settings
 
         self.check()
@@ -467,7 +484,6 @@ class sr_config:
         self.randomize            = False
         self.realpath             = False
         self.reconnect            = False
-        self.recursive            = False
         self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
@@ -995,6 +1011,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
+                     debug = self.debug
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.debug = True
                         n = 1
@@ -1002,9 +1019,10 @@ class sr_config:
                         self.debug = self.isTrue(words[1])
                         n = 2
 
-                     if self.debug :
-                        self.loglevel = logging.DEBUG
-                        self.logger.setLevel(self.loglevel)
+                     if self.debug : self.loglevel = logging.DEBUG
+                     else:           self.loglevel = logging.INFO
+
+                     if debug != self.debug : self.set_loglevel()
 
                 elif words0 == 'delete': # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1278,6 +1296,7 @@ class sr_config:
                      if level in 'warning'  : self.loglevel = logging.WARNING
                      if level in 'debug'    : self.loglevel = logging.DEBUG
                      if level in 'none'     : self.loglevel = None
+                     self.set_loglevel()
                      n = 2
 
 
@@ -1563,14 +1582,6 @@ class sr_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['recursive','rec']: # See: sr_post.1, sr_watch.1
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.recursive = True
-                        n = 1
-                     else :
-                        self.recursive = self.isTrue(words[1])
-                        n = 2
-
                 elif words0 in ['remote_config']: # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.remote_config = True
@@ -1655,6 +1666,18 @@ class sr_config:
                         self.source_from_exchange = self.isTrue(words[1])
                         n = 2
 
+                elif words0 == 'statehost': # MG FIXME to be documented somewhere ???
+                     self.statehost = True
+                     self.hostform  = 'short'
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        n = 1
+                     elif words1.lower() in ['short','fqdn']:
+                        self.hostform  = words1.lower()
+                        n = 2
+                     else:
+                        if not self.isTrue(words[1]): self.statehost = False
+                        n = 2
+
                 elif words0 == 'strip': # See: sr_config.7 
                      if words1.isnumeric() :
                         self.strip  = int(words1)
@@ -1723,7 +1746,7 @@ class sr_config:
                      #
                      value = ' '.join(words[1:])
                      if not hasattr(self,words[0]):
-                         self.logger.warning("unrecognized option %s %s" % (words[0],value))
+                         self.logger.debug("unrecognized option %s %s" % (words[0],value))
                          setattr(self, words[0],[ value ])
                          self.extended_options.append(words[0])
                          self.logger.debug("extend set %s = '%s'" % (words[0],getattr(self,words[0])))
@@ -1789,54 +1812,53 @@ class sr_config:
            self.lastflg = 'd'
            self.sumalgo = checksum_d()
 
+
+    def set_loglevel(self):
+
+        if self.loglevel == None :
+           if hasattr(self,'logger') : del self.logger
+           self.logpath = None
+           self.logger  = logging.RootLogger(logging.CRITICAL)
+           noop         = logging.NullHandler()
+           self.logger.addHandler(noop)
+           return
+
+        self.logger.setLevel(self.loglevel)
+
     def setlog(self):
 
         import logging.handlers
 
-        LOG_FORMAT  = ('%(asctime)s [%(levelname)s] %(message)s')
+        self.set_loglevel()
 
-        if self.loglevel == None :
-           if hasattr(self,'logger') : del self.logger
-           self.logger = logging.RootLogger(logging.CRITICAL)
-           noop        = logging.NullHandler()
-           self.logger.addHandler(noop)
-           return
-           
-        if not hasattr(self,'logger') :
-           logging.basicConfig(level=self.loglevel, format=LOG_FORMAT)
-           self.logger = logging.getLogger()
-           self.lpath  = None
-           self.logger.debug("sr_config setlog 1")
+        # no log
+
+        if self.loglevel == None : return
+
+        # interactive
+
+        if self.logpath  == None :
+           self.logger.debug("on screen logging")
            return
 
-        if self.logpath == self.lpath :
-           self.logger.debug("sr_config setlog 2")
-           if hasattr(self,'debug') and self.debug :
-              self.logger.setLevel(logging.DEBUG)
-           return
-
-        if self.logpath == None :
-           self.logger.debug("switching log to stdout")
-           del self.logger
-           self.setlog()
-           return
+        # to file
 
         self.logger.debug("switching to log file %s" % self.logpath )
+
+        del self.logger
+
+        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
-        self.lpath   = self.logpath
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.lpath, when='midnight', \
+        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
                        interval=1, backupCount=self.logrotate)
         fmt          = logging.Formatter( LOG_FORMAT )
         self.handler.setFormatter(fmt)
-
-        del self.logger
 
         self.logger = logging.RootLogger(logging.WARNING)
         self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
         os.chmod( self.logpath, self.chmod_log )
-        if self.debug :
-           self.logger.setLevel(logging.DEBUG)
+
 
     # check url and add credentials if needed from credential file
 
@@ -2220,6 +2242,36 @@ def self_test():
     cfg.option(opt4.split())
     if not cfg.use_pika :
        cfg.logger.error(" use_pika 3 failed")
+       failed = True
+
+    opt4='statehost False'
+    cfg.option(opt4.split())
+    if cfg.statehost :
+       cfg.logger.error(" statehost 1 failed")
+       failed = True
+
+    opt4='statehost True'
+    cfg.option(opt4.split())
+    if not cfg.statehost or cfg.hostform != 'short' :
+       cfg.logger.error(" statehost 2 failed")
+       failed = True
+
+    opt4='statehost SHORT'
+    cfg.option(opt4.split())
+    if not cfg.statehost or cfg.hostform != 'short' :
+       cfg.logger.error(" statehost 3 failed")
+       failed = True
+
+    opt4='statehost fqdn'
+    cfg.option(opt4.split())
+    if not cfg.statehost or cfg.hostform != 'fqdn' :
+       cfg.logger.error(" statehost 3 failed")
+       failed = True
+
+    opt4='statehost TOTO'
+    cfg.option(opt4.split())
+    if cfg.statehost and cfg.hostform != None:
+       cfg.logger.error(" statehost 4 failed")
        failed = True
 
     if not failed : print("TEST PASSED")
