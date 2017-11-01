@@ -78,7 +78,7 @@ class sr_watch(sr_instances):
 
     def __init__(self,config=None,args=None):
         sr_instances.__init__(self,config,args)
-
+        self.recursive      = True
         self.last_heartbeat = time.time()
 
     def close(self):
