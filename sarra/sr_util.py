@@ -389,7 +389,7 @@ def self_test():
     # TESTING startup_args
     # ===================================
 
-    targs   = [ '-recursive', 'True' ]
+    targs   = [ '-randomize', 'True' ]
     taction = 'cleanup'
     tconfig = 'toto'
     told    = False
@@ -402,18 +402,18 @@ def self_test():
     testing_args[ 2] = ['program', taction ]
 
     testing_args[ 3] = ['program',                       taction, tconfig ]
-    testing_args[ 4] = ['program', '-recursive', 'True', taction, tconfig ]
+    testing_args[ 4] = ['program', '-randomize', 'True', taction, tconfig ]
 
-    testing_args[ 5] = ['program', '-a', taction,      '-recursive', 'True', tconfig ]
-    testing_args[ 6] = ['program', '-c', tconfig,      '-recursive', 'True', taction ]
+    testing_args[ 5] = ['program', '-a', taction,      '-randomize', 'True', tconfig ]
+    testing_args[ 6] = ['program', '-c', tconfig,      '-randomize', 'True', taction ]
 
-    testing_args[ 7] = ['program', '-action', taction, '-recursive', 'True', tconfig ]
-    testing_args[ 8] = ['program', '-config', tconfig, '-recursive', 'True', taction ]
+    testing_args[ 7] = ['program', '-action', taction, '-randomize', 'True', tconfig ]
+    testing_args[ 8] = ['program', '-config', tconfig, '-randomize', 'True', taction ]
 
-    testing_args[ 9] = ['program', '-config', tconfig, '-a', taction, '-recursive', 'True' ]
+    testing_args[ 9] = ['program', '-config', tconfig, '-a', taction, '-randomize', 'True' ]
 
     # old style
-    testing_args[10] = ['program', '-recursive', 'True', tconfig, taction ]
+    testing_args[10] = ['program', '-randomize', 'True', tconfig, taction ]
     testing_args[11] = ['program',                       tconfig, taction ]
 
 
