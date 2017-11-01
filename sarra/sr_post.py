@@ -60,7 +60,8 @@ class sr_post(sr_config):
     def __init__(self,config=None,args=None):
         sr_config.__init__(self,config,args)
         self.configure()
-        self.in_error = False
+        self.in_error  = False
+        self.recursive = True
 
     def check(self):
         self.logger.debug("sr_post check")
@@ -91,7 +92,7 @@ class sr_post(sr_config):
 
         # resetting logs if needed
 
-        if self.program_name != 'sr_watch' and self.logpath != self.lpath : self.setlog()
+        if self.program_name != 'sr_watch' : self.setlog()
 
         # check for caching
       
@@ -206,7 +207,6 @@ class sr_post(sr_config):
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
-        print("-recursive             default:enable recursive post")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
         print("-path <path1... pathN> default:required")
