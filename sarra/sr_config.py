@@ -1006,6 +1006,19 @@ class sr_config:
                         self.loglevel = logging.DEBUG
                         self.logger.setLevel(self.loglevel)
 
+                elif words0 in [ 'declare_option' ]:  # MG  FIXME  to be documented ?somewhere?
+                     if not hasattr(self,words1):
+                         setattr(self, words1, [] )
+                         self.extended_options.append(words1)
+                         self.logger.debug("declare_option %s  OK!" % words1)
+                     else:
+                         value2 = getattr(self,words1)
+                         if not isinstance(value2,list):
+                               self.logger.error("declare_option %s already an internal attribute" % words1)
+                         else:
+                               self.logger.warning("declare_option %s already a list attribute" % words1)
+                     n = 2
+
                 elif words0 == 'delete': # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.delete = True
@@ -1722,15 +1735,16 @@ class sr_config:
                      #        see post_override plugin.
                      #
                      value = ' '.join(words[1:])
-                     self.logger.debug("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
+                         self.logger.debug("unrecognized option %s %s" % (words[0],value))
                          setattr(self, words[0],[ value ])
                          self.extended_options.append(words[0])
+                         self.logger.debug("extend set %s = '%s'" % (words[0],getattr(self,words[0])))
                      else:
                          value2=getattr(self,words[0])
                          value2.append(value)
                          setattr(self,words[0],value2)
-                     self.logger.debug("extend self.%s = '%s'" % (words[0],getattr(self,words[0])))
+                         self.logger.debug("extend add %s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
@@ -2136,6 +2150,12 @@ def self_test():
        cfg.logger.error(" extended option:  did not work")
        failed = True
 
+    opt1 = "surplus_opt surplus_value2"
+    cfg.option(opt1.split())
+    if cfg.surplus_opt[0] != "surplus_value" or cfg.surplus_opt[1] != "surplus_value2":
+       cfg.logger.error(" extended option:  did not work")
+       failed = True
+
     opt1 = "prefetch 10"
     cfg.option(opt1.split())
 
@@ -2214,6 +2234,24 @@ def self_test():
     if not cfg.use_pika :
        cfg.logger.error(" use_pika 3 failed")
        failed = True
+
+    opt4='declare_option toto'
+    cfg.option(opt4.split())
+    if not hasattr(cfg,'toto'):
+       cfg.logger.error(" declare_option failed 1")
+       failed = True
+
+    if not isinstance(cfg.toto,list) :
+       cfg.logger.error(" declare_option failed 2")
+       failed = True
+
+    # redeclare should not harm
+    #opt4='declare_option toto'
+    #cfg.option(opt4.split())
+
+    # trying to use an option should not harm
+    #opt4='declare_option use_pika'
+    #cfg.option(opt4.split())
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
