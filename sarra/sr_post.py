@@ -199,7 +199,6 @@ class sr_post(sr_config):
         print("-dr  <document_root>   default:None")
         print("-e   <events>          default:create|delete|follow|link|modify\n")
         print("-ex  <exchange>        default:xs_\"broker.username\"")
-        print("-f   <flow>            default:None\n")
         print("-h|--help\n")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
@@ -340,8 +339,6 @@ class sr_post(sr_config):
         if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
         if self.source  != None : self.msg.headers['source']          = self.source
         if filename            != None : self.msg.headers['filename'] = filename
-
-        if self.flow    != None : self.msg.headers['flow']            = self.flow
 
         if self.key     != None : self.msg.headers[self.key]          = self.value
 
