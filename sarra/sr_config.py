@@ -340,6 +340,21 @@ class sr_config:
 
         self.check()
 
+    def declare_option(self,option):
+        self.logger.debug("sr_config declare_option")
+
+        if not hasattr(self,option):
+           setattr(self, option, [] )
+           self.extended_options.append(option)
+           self.logger.debug("declare_option %s  OK!" % option)
+           return
+
+        value2 = getattr(self,option)
+        if not isinstance(value2,list):
+              self.logger.error("declare_option %s already an internal attribute" % option)
+        else:
+              self.logger.warning("declare_option %s already a list attribute (redeclared?)" % option)
+
     def defaults(self):
         self.logger.debug("sr_config defaults")
 
@@ -1005,19 +1020,6 @@ class sr_config:
                      if self.debug :
                         self.loglevel = logging.DEBUG
                         self.logger.setLevel(self.loglevel)
-
-                elif words0 in [ 'declare_option' ]:  # MG  FIXME  to be documented ?somewhere?
-                     if not hasattr(self,words1):
-                         setattr(self, words1, [] )
-                         self.extended_options.append(words1)
-                         self.logger.debug("declare_option %s  OK!" % words1)
-                     else:
-                         value2 = getattr(self,words1)
-                         if not isinstance(value2,list):
-                               self.logger.error("declare_option %s already an internal attribute" % words1)
-                         else:
-                               self.logger.warning("declare_option %s already a list attribute" % words1)
-                     n = 2
 
                 elif words0 == 'delete': # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1735,8 +1737,8 @@ class sr_config:
                      #        see post_override plugin.
                      #
                      value = ' '.join(words[1:])
+                     self.logger.debug("unrecognized option %s %s" % (words[0],value))
                      if not hasattr(self,words[0]):
-                         self.logger.debug("unrecognized option %s %s" % (words[0],value))
                          setattr(self, words[0],[ value ])
                          self.extended_options.append(words[0])
                          self.logger.debug("extend set %s = '%s'" % (words[0],getattr(self,words[0])))
@@ -2235,8 +2237,7 @@ def self_test():
        cfg.logger.error(" use_pika 3 failed")
        failed = True
 
-    opt4='declare_option toto'
-    cfg.option(opt4.split())
+    cfg.declare_option('toto')
     if not hasattr(cfg,'toto'):
        cfg.logger.error(" declare_option failed 1")
        failed = True
@@ -2246,12 +2247,10 @@ def self_test():
        failed = True
 
     # redeclare should not harm
-    #opt4='declare_option toto'
-    #cfg.option(opt4.split())
+    #cfg.declare_option('toto')
 
     # trying to use an option should not harm
-    #opt4='declare_option use_pika'
-    #cfg.option(opt4.split())
+    #cfg.declare_option('use_pika')
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
