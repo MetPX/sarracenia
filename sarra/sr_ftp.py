@@ -351,10 +351,17 @@ class sr_ftp():
            fp.close()
 
         try:
-           if ( 'mode' in self.msg.headers ) and self.preserve_mode :
-               self.ftp.chmod( int(self.msg.header['mode'], 8) , remote_file );
-           elif self.chmod > 0:
-               self.ftp.chmod( parent.chmod , remote_file );
+           # chmod remote_file if needed.
+
+           mod = 0
+           h   = msg.headers
+           if self.parent.preserve_mode and 'mode' in h :
+              try   : mod = int( h['mode'], base=8)
+              except: mod = 0
+              if mod > 0 : self.chmod( mod , remote_file )
+
+           if mod == 0 and self.parent.chmod != 0:
+              self.chmod(self.parent.chmod, remote_file )
 
            # no support in ftp for utime.
 
