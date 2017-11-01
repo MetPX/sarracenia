@@ -82,7 +82,7 @@ class sr_file():
     def connect(self):
         self.logger.debug("sr_file connect %s" % self.parent.destination)
 
-        self.recursive   = self.parent.recursive
+        self.recursive   = True
         self.destination = self.parent.destination
         self.timeout     = self.parent.timeout
 
