@@ -709,7 +709,7 @@ class sr_poll(sr_instances):
                    this_rename += remote_file
                 
                 ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters, \
-                               self.partstr,self.sumstr,this_rename,remote_file)
+                               self.partstr,self.sumstr,this_rename)
 
                 if ok : npost += 1
 
