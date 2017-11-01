@@ -86,12 +86,14 @@ void srshim_realpost(const char *fn)
       return;
   }
 
+  /*
   sr_c = sr_context_connect(sr_c);
   if (sr_c == NULL ) 
   {
     log_msg( LOG_ERROR, "failed to parse AMQP post_broker settings\n");
     return;
   }
+   */
   if ( lstat( fn, &sb ) ) 
       sr_post( sr_c, fn, NULL );
   else 
@@ -482,6 +484,9 @@ int close(int fd)
   
     snprintf(fdpath, 32, "/proc/self/fd/%d", fd);
     real_return = realpath(fdpath, real_path);
+
+    srshim_initialize( "post" );
+
     status = close_fn_ptr(fd);
 
     if (!real_return) return(status);
