@@ -121,7 +121,7 @@ class sr_post(sr_config):
         relpath = url.path
         baseurl = urlstr.replace(relpath,'')
 
-        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
+        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -277,7 +277,7 @@ class sr_post(sr_config):
         self.logger.debug("sr_post overwrite_defaults Done")
 
 
-    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
 
         urlstr = baseurl + '/' + relpath
 
@@ -338,7 +338,6 @@ class sr_post(sr_config):
 
         if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
         if self.source  != None : self.msg.headers['source']          = self.source
-        if filename            != None : self.msg.headers['filename'] = filename
 
         if self.key     != None : self.msg.headers[self.key]          = self.value
 
@@ -400,9 +399,7 @@ class sr_post(sr_config):
 
         # post
 
-        filename = os.path.basename(path)
-
-        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
 
         self.logger.debug("sr_post post_local_file %s exchange(%s)" % (path,exchange ))
 
@@ -439,7 +436,6 @@ class sr_post(sr_config):
         # bad flag provided
         if self.lastflg != sumflg : sumflg = self.lastflg
 
-        filename = os.path.basename(path)
         blocks   = list(range(0,block_count))
 
         # randomize chunks
@@ -497,7 +493,7 @@ class sr_post(sr_config):
 
               # post
 
-              ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+              ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
               if not ok : return ok
 
               # reconnect ?
@@ -527,14 +523,13 @@ class sr_post(sr_config):
 
         if rename != None and not suffix in rename : rename += suffix
 
-        filename = os.path.basename(path)
         lstat   = os.stat(path)
 
         mtime = timeflt2str(lstat.st_mtime)
         atime = timeflt2str(lstat.st_atime)
         mode  = lstat[stat.ST_MODE]
 
-        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode)
+        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
 
         return ok
 
@@ -568,17 +563,15 @@ class sr_post(sr_config):
            if len(token) <= self.strip : strip = len(token)-1
            rename = os.sep+os.sep.join(token[strip:])
               
-        filename = os.path.basename(filepath)
-
         # ==============
         # delete event...
         # ==============
 
         if self.event == 'delete' :
            hash = sha512()
-           hash.update(bytes(filename, encoding='utf-8'))
+           hash.update(bytes(os.path.basename(filepath), encoding='utf-8'))
            ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
-                    'R,%s' % hash.hexdigest(), rename, filename)
+                    'R,%s' % hash.hexdigest(), rename)
 
            if not ok : sys.exit(1)
            return
@@ -603,7 +596,7 @@ class sr_post(sr_config):
                hash = sha512()
                hash.update( bytes( linkdest, encoding='utf-8' ) )
                ok = self.post( self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
-                    'L,%s' % hash.hexdigest(), rename, filename, link=linkdest )
+                    'L,%s' % hash.hexdigest(), rename, link=linkdest )
 
                if not ok : sys.exit(1)
 

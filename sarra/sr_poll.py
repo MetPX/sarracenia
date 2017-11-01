@@ -188,7 +188,7 @@ class sr_poll(sr_instances):
         if baseurl[-1] != '/' : baseurl += '/'
         if self.baseurl.startswith('file:'): self.baseurl = 'file:'
 
-        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,filename,mtime,atime,mode,link)
+        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -549,7 +549,7 @@ class sr_poll(sr_instances):
         self.sumflg         = 'z,d'
 
 
-    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
 
         self.msg.exchange = exchange
         
@@ -573,7 +573,6 @@ class sr_poll(sr_instances):
 
         if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
         if self.source  != None : self.msg.headers['source']       = self.source
-        if filename     != None : self.msg.headers['filename']     = filename
 
         # ========================================
         # cache testing

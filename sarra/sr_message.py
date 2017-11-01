@@ -242,8 +242,6 @@ class sr_message():
         self.checksum = token[0]
         self.filesize = int(token[1])
 
-        self.filename = self.headers['filename']
-
         self.headers['source'] = 'metpx'
 
         self.partstr = '1,%d,1,0,0' % self.filesize
@@ -393,7 +391,6 @@ class sr_message():
 
         self.headers[ 'sum' ] = sumstr
         self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
-        self.headers[ 'filename' ] = os.path.basename(new_file)
         self.headers[ 'mtime' ] = timeflt2str(fstat.st_mtime)
 
         self.set_notice(self.baseurl,self.relpath)
@@ -406,7 +403,7 @@ class sr_message():
 
         # added for v00 compatibility (old version of dd_subscribe)
         # can be taken off when v02 will be fully deployed and end user uses sr_subscribe
-        self.headers['filename'] = os.path.basename(self.relpath).split(':')[0][0:200]
+        #self.headers['filename'] = os.path.basename(self.relpath).split(':')[0][0:200]
 
 
     # Once we know the local file we want to use
