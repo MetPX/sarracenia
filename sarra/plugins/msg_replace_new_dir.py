@@ -14,6 +14,10 @@
 class Transformer():
       def __init__(self,parent):
 
+        # make parent known about this possible option
+
+        parent.declare_option('msg_replace_new_dir')
+
         if not hasattr(parent,'msg_replace_new_dir'):
            parent.logger.error("msg_replace_new_dir setting mandatory")
            return
