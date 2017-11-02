@@ -234,20 +234,6 @@ class sr_post(sr_config):
         print("-r  : randomize chunk posting")
         print("-rr : reconnect between chunks\n")
 
-    def lock_set(self):
-        #self.logger.debug("sr_post lock_set")
-
-        if self.reset :
-           self.cache.close(unlink=True)
-           self.logger.info("posting cache was reset...")
-           os._exit(0)
-
-    def lock_unset(self):
-        #self.logger.debug("sr_post lock_unset")
-        if self.caching :
-           self.logger.debug("sr_post cache_close")
-           self.cache.save()
-
     def move(self,src,dst):
         self.logger.warning("file moved support not implemented. Event ignored.")
 

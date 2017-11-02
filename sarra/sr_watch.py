@@ -43,12 +43,12 @@
 # conditions:
 #
 # (messaging)
-# broker                  = where the message is announced
-# exchange                = xs_source_user
+# post_broker             = where the message is announced
+# post_exchange           = xs_source_user
 # subtopic                = default to the path of the URL with '/' replaced by '.'
 # topic_prefix            = v02.post
-# document_root           = the root directory from which the url path is exposed
-# url                     = taken from the destination
+# post_base_dir           = the root directory from which the url path is exposed
+# post_base_url           = taken from the destination
 # sum                     = 0   no sum computed... if we dont download the product
 #                           x   if we download the product
 # rename                  = which path under root, the file should appear
@@ -88,9 +88,6 @@ class sr_watch(sr_instances):
         self.observer.stop()
 
     def overwrite_defaults(self):
-
-        if self.to_clusters == None:
-            self.to_clusters = self.broker.hostname
 
         self.blocksize = 200 * 1024 * 1024
         self.caching   = True
@@ -389,7 +386,6 @@ def main():
             cur_events.extend(self.events_outstanding)
 
             if len(cur_events) > 0:
-               watch.post.lock_set()
                done=[]
                for idx,t in enumerate(cur_events):
 
@@ -448,7 +444,6 @@ def main():
                    else:
                        self.logger.debug("event_wakeup SKIPPING %s of %s (%s,%s)" % (e, f, k, v) )
 
-               watch.post.lock_unset()
                self.logger.debug("event_wakeup done: %s " % done )
                done.reverse()
                for idx in done:
