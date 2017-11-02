@@ -16,7 +16,7 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post|sr_cpost** [ *OPTIONS* ][ *-b|--broker broker* ][ *-u|--url url* ] 
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url* ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
 DESCRIPTION
@@ -43,9 +43,9 @@ except for the lack of plugins.  Differences:
 Mandatory Settings
 ------------------
 
-The [*-u|--url url*] option specifies the location 
+The [*-pbu|--post_base_url url*] option specifies the location 
 subscribers will download the file from.  There is usually one post per file.
-Format of argument to the *url* option::
+Format of argument to the *post_base_url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
@@ -65,7 +65,7 @@ input as well.
 
 An example invocation of *sr_post*::
 
- sr_post -b amqp://broker.com -u sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
+ sr_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
 
 By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
@@ -95,10 +95,10 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- sr_post -b amqp://broker.com -dr /data/web/public_data -u http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
+ sr_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the document_root and relative path of the source url to obtain the local file path)
+(concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'
 
@@ -111,10 +111,6 @@ ARGUMENTS AND OPTIONS
 
 Please refer to the `sr_subscribe(7) <sr_subscribe.7.html>`_ manual page for a detailed description of 
 common settings, and methods of specifying them.
-
-**[-b|--broker <broker>]**
-
-  the broker to which the post is sent.
 
 **[-c|--config <configfile>]**
 
@@ -130,15 +126,33 @@ common settings, and methods of specifying them.
   If caching is in use,  **blocksize** should be set (to either 1 (announce entire file) 
   or a fixed blocksize.) as otherwise blocksize will vary as a function of file size.
 
-**[-dr|--document_root <path>]**
+**[-p|--path path1 path2 ... pathN]**
 
-  The *document_root* option supplies the directory path that,
+**sr_post** evaluates the filesystem paths from the **path** option 
+and possibly the **base_dir** if the option is used.
+
+If a path defines a file, this file is announced.
+
+If a path defines a directory, then all files in that directory are
+announced... 
+
+The AMQP announcements are made of the three fields, the announcement time,
+the **post_base_url** option value and the resolved paths to which were withdrawn from
+the *base_dir*, present and needed.
+
+**[-pb|--post_broker <broker>]**
+
+  the broker to which the post is sent.
+
+**[-pbd|--post_base_dir <path>]**
+
+  The *base_dir* option supplies the directory path that,
   when combined (or found) in the given *path*, 
   gives the local absolute path to the data file to be posted.
   The document root part of the local path will be removed from the posted announcement.
   for sftp: url's it can be appropriate to specify a path relative to a user account.
-  Example of that usage would be:  -dr ~user  -url sftp:user@host  
-  for file: url's, document_root is usually not appropriate.  To post an absolute path, 
+  Example of that usage would be:  -dr ~user  -post_base_url sftp:user@host  
+  for file: url's, base_dir is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
 
 **[-ex|--exchange <exchange>]**
@@ -185,19 +199,18 @@ In cases where a custom downloader is used which does not understand partitionin
 to avoid having the file split into parts, so one would specify '1' to force all files to be send
 as a single part.
 
-**[-p|--path path1 path2 ... pathN]**
+**[-pbu|--post_base_url <url>]**
 
-**sr_post** evaluates the filesystem paths from the **path** option 
-and possibly the **document_root** if the option is used.
+The **url** option sets the protocol, credentials, host and port under
+which the product can be fetched.
 
-If a path defines a file, this file is announced.
+The AMQP announcememet is made of the three fields, the announcement time,
+this **url** value and the given **path** to which was withdrawn from the *base_dir*
+if necessary.
 
-If a path defines a directory, then all files in that directory are
-announced... 
+The concatenation of the two last fields of the announcement defines
+what the subscribers will use to download the product. 
 
-The AMQP announcements are made of the three fields, the announcement time,
-the **url** option value and the resolved paths to which were withdrawn from
-the *document_root*, present and needed.
 
 **[-pipe <boolean>]**
 
@@ -267,17 +280,6 @@ of the postings have access to the algorithm.
   You can overwrite the topic_prefix by setting this option.
 
 
-**[-u|--url <url>]**
-
-The **url** option sets the protocol, credentials, host and port under
-which the product can be fetched.
-
-The AMQP announcememet is made of the three fields, the announcement time,
-this **url** value and the given **path** to which was withdrawn from the *document_root*
-if necessary.
-
-The concatenation of the two last fields of the announcement defines
-what the subscribers will use to download the product. 
 
 **[-header <name>=<value>]**
 

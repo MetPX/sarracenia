@@ -31,11 +31,11 @@ but for the sender it is actually a local file.  In such cases, one will
 see a message: **ERROR: The file to send is not local.** 
 An on message plugin will convert the web url into a local file one::
 
-  document_root /var/httpd/www
+  base_dir /var/httpd/www
   on_message msg_2localfile
 
 This on_message plugin is part of the default settings for senders, but one
-still needs to specify document_root for it to function.
+still needs to specify base_dir for it to function.
 
 If a **post_broker** is set, **sr_sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.
@@ -87,12 +87,12 @@ SETUP 1 : PUMP TO PUMP REPLICATION
 ----------------------------------
 
  - **mirror             <boolean>   (default: True)** 
- - **document_root      <directory> (None)** 
+ - **base_dir      <directory> (None)** 
 
  - **destination        <url>       (MANDATORY)** 
  - **do_send            <script>    (None)** 
  - **kbytes_ps          <int>       (default: 0)** 
- - **post_document_root <directory> (default: '')** 
+ - **post_base_dir <directory> (default: '')** 
 
  - **to               <clustername> (default: <post_broker host>)** 
  - **on_post           <script>     (default: None)** 
@@ -101,7 +101,7 @@ SETUP 1 : PUMP TO PUMP REPLICATION
 
 For pump replication, **mirror** is set to True (default)
 
-**document_root** supplies the directory path that, when combined with the relative
+**base_dir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
 The defaults is None which means that the path in the notification is the absolute one.
 
@@ -112,8 +112,8 @@ The program uses the file ~/.conf/sarra/credentials.conf to get the remaining de
 user need to implement another sending mechanism, he would provide the plugin script 
 through option **do_send**.
 
-On the remote site, the **post_document_root** serves the same purpose as the
-**document_root** on this server.  The defaults is None which means that the delivered path
+On the remote site, the **post_base_dir** serves the same purpose as the
+**base_dir** on this server.  The defaults is None which means that the delivered path
 is the absolute one.
 
 Now we are ready to send the product... For example, if the selected notification looks like this :
@@ -122,8 +122,8 @@ Now we are ready to send the product... For example, if the selected notificatio
 
 **sr_sender**  performs the following pseudo-delivery:
 
-sends local file [**document_root**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_document_root**]/relative/path/to/IMPORTANT_product
+sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_base_dir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** is greater than 0, the process attempts to respect this delivery speed... ftp,ftps,or sftp)
 
 At this point, a pump to pump setup need needs to send the remote notification...
@@ -156,10 +156,10 @@ with some new ones  to ease explanation.
 
 
  - **mirror             <boolean>   (default: True)** 
- - **document_root      <directory> (None)** 
+ - **base_dir      <directory> (None)** 
 
  - **destination        <url>       (MANDATORY)** 
- - **post_document_root <directory> (default: '')** 
+ - **post_base_dir <directory> (default: '')** 
 
  - **directory          <path>      (MANDATORY)** 
  - **on_message            <script> (default: None)** 
@@ -169,8 +169,8 @@ with some new ones  to ease explanation.
 There are 2 differences with the previous case : 
 the **directory**, and the **filename** options.
 
-The **document_root** is the same, and so are the
-**destination**  and the **post_document_root** options.
+The **base_dir** is the same, and so are the
+**destination**  and the **post_base_dir** options.
 
 The **directory** option defines another "relative path" for the product
 at its destination.  It is tagged to the **accept** options defined after it.
@@ -197,8 +197,8 @@ If the notification selected is, as above, this :
 It was selected by the first **accept** option. The remote relative path becomes
 **/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
 
-sends local file [**document_root**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_document_root**]/my/new/important_location/IMPORTANT_product
+sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_base_dir**]/my/new/important_location/IMPORTANT_product
 
 
 Usually this way of using **sr_sender** would not require posting of the product.
