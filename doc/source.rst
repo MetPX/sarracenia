@@ -548,7 +548,7 @@ Example::
     +++ echo 'FIXME: exec above fixes ... builtin i/o like redirection not being posted!'
     FIXME: exec above fixes ... builtin i/o like redirection not being posted!
     +++ bash -c 'echo "hoho" >>~/test/hoho'
-    2017-10-21 20:20:44,092 [INFO] sr_post settings: action=foreground log_level=1 recursive=on follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,092 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,092 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,092 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,094 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
@@ -557,7 +557,7 @@ Example::
     2017-10-21 20:20:44,096 [DEBUG] sr_post file2message called with: /home/peter/test/hoho sb=0x7ffef2aae2f0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,096 [INFO] published: 20171021202044.096 sftp://peter@localhost /home/peter/test/hoho topic=v02.post.home.peter.test sum=s,a0bcb70b771de1f614c724a86169288ee9dc749a6c0bbb9dd0f863c2b66531d21b65b81bd3d3ec4e345c2fea59032a1b4f3fe52317da3bf075374f7b699b10aa source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202002.304 atime=20171021202002.308 mode=0644 parts=1,2,1,0,0
     +++ /usr/bin/python2.7 pyiotest
-    2017-10-21 20:20:44,105 [INFO] sr_post settings: action=foreground log_level=1 recursive=on follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,105 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,105 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,105 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,107 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
@@ -566,7 +566,7 @@ Example::
     2017-10-21 20:20:44,108 [DEBUG] sr_post file2message called with: /home/peter/src/sarracenia/c/hoho sb=0x7ffeb02838b0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,108 [INFO] published: 20171021202044.108 sftp://peter@localhost /c/hoho topic=v02.post.c sum=s,9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043 source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202044.101 atime=20171021202002.320 mode=0644 parts=1,5,1,0,0
     +++ cp libsrshim.c /home/peter/test/hoho_my_darling.txt
-    2017-10-21 20:20:44,112 [INFO] sr_post settings: action=foreground log_level=1 recursive=on follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,112 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,112 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,112 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,114 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch

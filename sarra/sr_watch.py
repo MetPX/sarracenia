@@ -234,8 +234,8 @@ class sr_watch(sr_instances):
 
     def run(self):
             self.post.logger = self.logger
-            self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s recursive=%s " % \
-                  ( self.partflg, self.sumflg, self.caching , self.recursive ))
+            self.logger.info("sr_watch run partflg=%s, sum=%s, caching=%s " % \
+                  ( self.partflg, self.sumflg, self.caching ))
             self.logger.info("sr_watch realpath=%s follow_links=%s force_polling=%s"  % \
                   ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
             self.validate_cache()

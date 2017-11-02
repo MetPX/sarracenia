@@ -248,20 +248,13 @@ If a path defines a file this file is watched.
 If a path defines a directory then all files in that directory are
 watched... 
 
-If this path defines a directory and the option **recursice** is true
-then all files in that directory are watched and should **sr_watch** finds
-one (or more) directory(ies), it watches it(them) recursively
-until all the tree is scanned.
+If this path defines a directory, all files in that directory are 
+watched and should **sr_watch** find one (or more) directory(ies), it 
+watches it(them) recursively until all the tree is scanned.
 
 The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
 the *document_root* present and needed.
-
-**[-rec|--recursive <boolean>]**
-
-The recursive default is False. When the **url** given (possibly combined with **document_root**)
-describes a directory,  if **recursive** is True, the directory tree is scanned down and all subtree
-files are watched.
 
 **[-rn|--rename <path>]**
 
