@@ -181,6 +181,7 @@ class sr_config:
         # keep a list of extended options
 
         self.extended_options = []
+        self.known_options    = []
 
 
         # check arguments
@@ -217,6 +218,18 @@ class sr_config:
 
     def check(self):
         self.logger.debug("sr_config check")
+
+    def check_extended(self):
+        self.logger.debug("sr_config check_extended")
+
+        ok = True
+        for option in self.extended_options :
+            if option in self.known_options : continue
+            value=getattr(self,option)
+            self.logger.warning("extended option %s = %s (unknown or not declared)" % (option,value) ) 
+            ok = False
+
+        return ok
 
     def chunksize_from_str(self,str_value):
         self.logger.debug("sr_config chunksize_from_str %s" % str_value)
@@ -316,11 +329,12 @@ class sr_config:
         
         # on reload : get rid of extended options... because they are lists
 
+        self.logger.debug("clearing out extended options")
         for opt in self.extended_options :
-            self.logger.info("clearing out extended options")
             if hasattr(self,opt): delattr (self,opt)
 
         self.extended_options = []
+        self.known_options    = []
 
         # go through normal configuration
 
@@ -334,23 +348,42 @@ class sr_config:
         self.args   (self.user_args)
         self.config (self.user_config)
 
-        # did the user configured self.user_*_dir/hostname
+        # configure some directories if statehost was set
+
+        self.configure_statehost()
+
+        # verify / complete settings
+
+        self.check()
+
+        # check extended options
+
+        self.check_extended()
+
+
+    def configure_statehost(self):
+        self.logger.debug("configure_statehost")
 
         hostdir = None
+
+        # user asked for statehost
+
         if self.statehost :
            hostdir = self.hostname
            if self.hostform == 'short' : hostdir = self.hostname.split('.')[0] 
 
-        # finalize user_log_dir and create directory if needed
+        # finalize user_log_dir
 
         if hostdir and not hostdir in self.user_log_dir :
            self.user_log_dir = self.user_log_dir[:-4] + os.sep + hostdir + '/log'
+
+        # create user_log_dir 
 
         self.logger.debug("sr_config user_log_dir  %s " % self.user_log_dir ) 
         try    : os.makedirs(self.user_log_dir, 0o775,True)
         except : pass
 
-        # finalize user_cache_dir and create directory if needed
+        # finalize user_cache_dir
 
         if hostdir and not hostdir in self.user_cache_dir :
            self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
@@ -358,14 +391,16 @@ class sr_config:
            self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
            self.user_cache_dir += os.sep + "%s" % self.config_name
 
+        # create user_cache_dir
+
         if not self.program_name in [ 'sr', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
            try    : os.makedirs(self.user_cache_dir,  0o775,True)
            except : pass
 
-        # verify / complete settings
-
-        self.check()
+    def declare_option(self,option):
+        self.logger.debug("sr_config declare_option")
+        self.known_options.append(option)
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
@@ -2162,19 +2197,6 @@ def self_test():
     #if cfg.assemble == True :
     #   cfg.logger.error(" include http: worked but should not")
 
-    opt1 = "surplus_opt surplus_value"
-    cfg.option(opt1.split())
-
-    if cfg.surplus_opt != [ "surplus_value" ] :
-       cfg.logger.error(" extended option:  did not work")
-       failed = True
-
-    opt1 = "surplus_opt surplus_value2"
-    cfg.option(opt1.split())
-    if cfg.surplus_opt[0] != "surplus_value" or cfg.surplus_opt[1] != "surplus_value2":
-       cfg.logger.error(" extended option:  did not work")
-       failed = True
-
     opt1 = "prefetch 10"
     cfg.option(opt1.split())
 
@@ -2282,6 +2304,33 @@ def self_test():
     cfg.option(opt4.split())
     if cfg.statehost and cfg.hostform != None:
        cfg.logger.error(" statehost 4 failed")
+       failed = True
+
+    opt4='extended TOTO'
+    cfg.option(opt4.split())
+
+    cfg.declare_option('extended')
+    if not cfg.check_extended():
+       cfg.logger.error(" declared extended 1 failed")
+       failed = True
+
+    opt4='extended_bad TITI'
+    cfg.option(opt4.split())
+    #if cfg.check_extended():
+    #   cfg.logger.error(" undeclared extended failed")
+    #   failed = True
+
+    opt1 = "surplus_opt surplus_value"
+    cfg.option(opt1.split())
+
+    if cfg.surplus_opt != [ "surplus_value" ] :
+       cfg.logger.error(" extended option:  did not work")
+       failed = True
+
+    opt1 = "surplus_opt surplus_value2"
+    cfg.option(opt1.split())
+    if cfg.surplus_opt[0] != "surplus_value" or cfg.surplus_opt[1] != "surplus_value2":
+       cfg.logger.error(" extended option:  did not work")
        failed = True
 
     if not failed : print("TEST PASSED")
