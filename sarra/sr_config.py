@@ -1784,10 +1784,10 @@ class sr_config:
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
 
-                elif words0 in ['post_base_url','url','u','post_url']: # See: sr_config.7 
+                elif words0 in ['post_base_url','pbu','url','u','post_url']: # See: sr_config.7 
                      if words0 in ['url','u'] : self.logger.warning("option url deprecated please use post_base_url")
-                     self.post_base_url = urllib.parse.urlparse(words1)
-                     self.url = self.post_base_url
+                     self.url = urllib.parse.urlparse(words1)
+                     self.post_base_url = words1
                      n = 2
 
                 elif words0 == 'use_pika': # See: FIX ME

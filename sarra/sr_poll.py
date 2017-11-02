@@ -117,14 +117,14 @@ class sr_poll(sr_instances):
         if self.post_broker == None :
            if self.broker   != None :
               self.post_broker = self.broker
-              self.logger.warning("use post_broker to set broker for sr_poll")
+              self.logger.warning("use post_broker to set broker")
 
         # enforcing post_exchange
 
         if self.post_exchange == None :
            if self.exchange   != None :
               self.post_exchange = self.exchange
-              self.logger.warning("use post_exchange to set exchange for sr_poll")
+              self.logger.warning("use post_exchange to set exchange")
 
         if self.post_exchange  == None :
            self.post_exchange   = 'xs_%s' % self.post_broker.username

@@ -66,27 +66,50 @@ class sr_post(sr_config):
     def check(self):
         self.logger.debug("sr_post check")
 
+        # enforcing post_broker
+
+        if self.post_broker == None :
+           if self.broker   != None :
+              self.post_broker = self.broker
+              self.logger.warning("use post_broker to set broker")
+
+        # enforcing post_exchange
+
+        if self.post_exchange == None :
+           if self.exchange   != None :
+              self.post_exchange = self.exchange
+              self.logger.warning("use post_exchange to set exchange")
+
+        if self.post_exchange  == None :
+           self.post_exchange   = 'xs_%s' % self.post_broker.username
+
+        # verify post_base_dir
+
+        if self.post_base_dir == None :
+           if self.post_document_root != None :
+              self.post_base_dir = self.post_document_root
+              self.logger.warning("use post_base_dir instead of post_document_root")
+           elif self.document_root != None :
+              self.post_base_dir = self.document_root
+              self.logger.warning("use post_base_dir instead of document_root")
+
+
+        # verify post_base_url
+
         self.in_error = False
-        if self.url == None :
-           self.logger.error("url required")
+        if self.post_base_url == None :
+           self.logger.error("post_base_url required")
            self.in_error = True
            self.help()
            return
 
-        self.baseurl = self.url.geturl()
-        if self.url.scheme == 'file' : self.baseurl = 'file:'
+        # set a default to_clusters if none given
 
-        if self.to_clusters == None :
-           self.logger.error("-to option is mandatory\n")
-           self.in_error = True
-           return
+        if self.to_clusters == None:
+            self.to_clusters = self.post_broker.hostname
 
-        # sarra exchange default value is xs_'broker.username'
-
-        if self.exchange == None :
-           self.exchange = 'xs_%s' % self.broker.username
-
-        self.post_exchange = self.exchange
+        # masks != [] accept only what matches given accept/reject options
+        # masks == [] accept everything (because there is no match to do)
 
         self.accept_unmatch = self.masks == []
 
@@ -100,9 +123,6 @@ class sr_post(sr_config):
         if self.caching :
            self.cache = sr_cache(self)
            self.cache.open()
-
-           # heartbeat to clean/save cache
-
            self.execfile("on_heartbeat",'heartbeat_cache')
            self.on_heartbeat_list.append(self.on_heartbeat)
 
@@ -115,14 +135,15 @@ class sr_post(sr_config):
         if self.poster.post == self.post_url :
            self.logger.debug("MY POSTER TRICK DID WORK !!!")
 
-    def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,baseurl,relpath...")
+    def post_url(self,post_exchange,url,to_clusters,\
+                      partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
+        self.logger.warning("instead of using self.poster.post(post_exchange,url... use self.post(post_exchange,post_base_url,post_relpath...")
 
-        urlstr  = url.geturl()
-        relpath = url.path
-        baseurl = urlstr.replace(relpath,'')
+        urlstr        = url.geturl()
+        post_relpath  = url.path
+        post_base_url = urlstr.replace(post_relpath,'')
 
-        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
+        return self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -157,9 +178,6 @@ class sr_post(sr_config):
         # posting
         # =============
 
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
-
         self.post_hc      = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
@@ -192,14 +210,14 @@ class sr_post(sr_config):
         self.declare_exchanges()
 
     def help(self):
-        print("\nUsage: %s -u <url> -b <broker> ... [OPTIONS]\n" % self.program_name )
+        print("\nUsage: %s -u <url> -pb <post_broker> ... [OPTIONS]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
-        print("-b|broker   <broker>          default:amqp://guest:guest@localhost/")
+        print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
-        print("-dr  <document_root>   default:None")
+        print("-pbd <post_base_dir>   default:None")
         print("-e   <events>          default:create|delete|follow|link|modify\n")
-        print("-ex  <exchange>        default:xs_\"broker.username\"")
+        print("-pe  <post_exchange>        default:xs_\"broker.username\"")
         print("-h|--help\n")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
@@ -260,8 +278,10 @@ class sr_post(sr_config):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_post overwrite_defaults")
-        if self.to_clusters == None:
-            self.to_clusters = self.broker.hostname
+
+        self.post_broker   = None 
+        self.post_exchange = None 
+        self.post_base_url = None 
 
         self.post_hc = None
         self.cache   = None
@@ -272,11 +292,12 @@ class sr_post(sr_config):
         self.logger.debug("sr_post overwrite_defaults Done")
 
 
-    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,post_exchange,post_base_url,post_relpath,to_clusters, \
+             partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
 
-        urlstr = baseurl + '/' + relpath
+        urlstr = post_base_url + '/' + post_relpath
 
-        self.logger.debug("sr_post post %s caching(%s) exchange(%s)" % (urlstr,self.caching,exchange) )
+        self.logger.debug("sr_post post %s caching(%s) post_exchange(%s)" % (urlstr,self.caching,post_exchange) )
 
         # apply accept/reject
         if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
@@ -287,36 +308,36 @@ class sr_post(sr_config):
 
         if self.caching :
 
-           new_post = self.cache.check(str(sumstr),relpath,partstr)
+           new_post = self.cache.check(str(sumstr),post_relpath,partstr)
 
            if new_post :
 
               # delete
               if sumstr.startswith('R,'):
-                 self.cache.delete_path(relpath)
+                 self.cache.delete_path(post_relpath)
 
               # link - never store them, message contains whole payload.
               elif sumstr.startswith('L,'):
-                 self.cache.delete_path(relpath)
+                 self.cache.delete_path(post_relpath)
 
               else:
-                 self.logger.info("caching %s"% relpath )
+                 self.logger.info("caching %s"% post_relpath )
 
            # modified, or repost
            else:
-                self.logger.debug("skipped already posted %s %s %s" % (relpath,partstr,sumstr))
+                self.logger.debug("skipped already posted %s %s %s" % (post_relpath,partstr,sumstr))
                 return True
                  
         # set message exchange
-        self.msg.exchange = exchange
+        self.msg.exchange = post_exchange
         
         # set message topic
-        self.msg.set_topic(self.topic_prefix,relpath)
+        self.msg.set_topic(self.topic_prefix,post_relpath)
         if self.subtopic != None :
            self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
         # set message notice
-        self.msg.set_notice(baseurl,relpath)
+        self.msg.set_notice(post_base_url,post_relpath)
 
         # set message headers
         self.msg.headers = {}
@@ -345,8 +366,8 @@ class sr_post(sr_config):
 
         return ok
 
-    def post_local_file(self,path,exchange,baseurl,relpath,to_clusters,sumflg='d',rename=None):
-        self.logger.debug("sr_post post_local_file %s exchange(%s) " % (path,exchange) )
+    def post_local_file(self,path,post_exchange,post_base_url,post_relpath,to_clusters,sumflg='d',rename=None):
+        self.logger.debug("sr_post post_local_file %s post_exchange(%s) " % (path,post_exchange) )
     
         # set partstr
 
@@ -394,13 +415,13 @@ class sr_post(sr_config):
 
         # post
 
-        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
+        ok = self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
 
-        self.logger.debug("sr_post post_local_file %s exchange(%s)" % (path,exchange ))
+        self.logger.debug("sr_post post_local_file %s post_exchange(%s)" % (path,post_exchange ))
 
         return ok
 
-    def post_local_inplace(self,path,exchange,baseurl,relpath,to_clusters,chunksize=0,sumflg='d',rename=None):
+    def post_local_inplace(self,path,post_exchange,post_base_url,post_relpath,to_clusters,chunksize=0,sumflg='d',rename=None):
         self.logger.debug("sr_post post_local_inplace")
 
         ok       = False
@@ -414,7 +435,7 @@ class sr_post(sr_config):
         # file too small for chunksize
 
         if chunksize <= 0 or chunksize >= fsiz : 
-           ok = self.post_local_file(path,exchange,baseurl,relpath,to_clusters,sumflg,rename)
+           ok = self.post_local_file(path,post_exchange,post_base_url,post_relpath,to_clusters,sumflg,rename)
            return ok
 
         # count blocks and remainder
@@ -488,7 +509,7 @@ class sr_post(sr_config):
 
               # post
 
-              ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
+              ok = self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
               if not ok : return ok
 
               # reconnect ?
@@ -503,7 +524,7 @@ class sr_post(sr_config):
         return ok
 
 
-    def post_local_part(self,path,exchange,baseurl,relpath,to_clusters,rename=None):
+    def post_local_part(self,path,post_exchange,post_base_url,post_relpath,to_clusters,rename=None):
         self.logger.debug("sr_post post_local_part")
 
         # verify part suffix is ok
@@ -524,7 +545,7 @@ class sr_post(sr_config):
         atime = timeflt2str(lstat.st_atime)
         mode  = lstat[stat.ST_MODE]
 
-        ok = self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
+        ok = self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode)
 
         return ok
 
@@ -546,15 +567,15 @@ class sr_post(sr_config):
            rename += os.path.basename(self.fpath)
 
         # strip option when no rename option
-        # strip 'N' heading directories from relpath
+        # strip 'N' heading directories from post_relpath
 
         if self.strip != 0:
            if rename != None :
               self.logger.error("option strip used with option rename conflicts")
               sys.exit(1)
            strip  = self.strip
-           token  = self.relpath.split(os.sep)
-           if self.relpath[0] == os.sep  : strip += 1
+           token  = self.post_relpath.split(os.sep)
+           if self.post_relpath[0] == os.sep  : strip += 1
            if len(token) <= self.strip : strip = len(token)-1
            rename = os.sep+os.sep.join(token[strip:])
               
@@ -565,7 +586,7 @@ class sr_post(sr_config):
         if self.event == 'delete' :
            hash = sha512()
            hash.update(bytes(os.path.basename(filepath), encoding='utf-8'))
-           ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
+           ok = self.post(self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters,None, \
                     'R,%s' % hash.hexdigest(), rename)
 
            if not ok : sys.exit(1)
@@ -590,7 +611,7 @@ class sr_post(sr_config):
                linkdest = os.readlink(filepath)
                hash = sha512()
                hash.update( bytes( linkdest, encoding='utf-8' ) )
-               ok = self.post( self.exchange,self.baseurl,self.relpath,self.to_clusters,None, \
+               ok = self.post( self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters,None, \
                     'L,%s' % hash.hexdigest(), rename, link=linkdest )
 
                if not ok : sys.exit(1)
@@ -608,7 +629,7 @@ class sr_post(sr_config):
         # ==============
 
         if self.partflg == 'p' :
-           ok = self.post_local_part(filepath,self.exchange,self.baseurl,self.relpath,self.to_clusters,rename)
+           ok = self.post_local_part(filepath,self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters,rename)
            if not ok : sys.exit(1)
            return
 
@@ -660,7 +681,7 @@ class sr_post(sr_config):
         # ===================
 
         if self.blocksize > 0 :
-           ok = self.post_local_inplace(filepath,self.exchange,self.baseurl,self.relpath, \
+           ok = self.post_local_inplace(filepath,self.post_exchange,self.post_base_url,self.post_relpath, \
                                                   self.to_clusters,self.blocksize,self.sumflg,rename)
            if not ok : sys.exit(1)
            return
@@ -669,7 +690,7 @@ class sr_post(sr_config):
         # whole file
         # ==============
 
-        ok = self.post_local_file(filepath,self.exchange,self.baseurl,self.relpath,self.to_clusters,self.sumflg,rename)
+        ok = self.post_local_file(filepath,self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters,self.sumflg,rename)
         if not ok: sys.exit(1)
         return
 
@@ -707,25 +728,26 @@ class sr_post(sr_config):
         if sys.platform == 'win32' : # put the slashes in the right direction on windows
            fpath = fpath.replace('\\','/')
 
-        self.event   = event
-        self.relpath = fpath
-        self.fpath   = fpath
+        self.event = event
+        self.fpath = fpath
 
-        if self.document_root != None :
-           dr = self.document_root
-           if dr in fpath :
-              self.relpath = fpath.replace(dr,'',1)
+        self.post_relpath = fpath
+
+        if self.post_base_dir != None :
+           pbd = self.post_base_dir
+           if pbd in fpath :
+              self.post_relpath = fpath.replace(pbd,'',1)
            elif fpath[0] != os.sep :
-              self.fpath = dr + os.sep + fpath
+              self.fpath = pbd + os.sep + fpath
            else :
-              self.logger.error("document_root %s not present in %s" % (dr,fpath))
+              self.logger.error("post_base_dir %s not present in %s" % (pbd,fpath))
               self.logger.error("no posting")
               return False
 
-           if value != None and dr in value :
+           if value != None and pbd in value :
               value = value.replace(dr,'',1)
 
-        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.baseurl+self.relpath ) )
+        self.logger.debug("sr_post watching %s, ev=%s, url=%s" % ( fpath, event, self.post_base_url+self.post_relpath ) )
         self.key     = key
         self.value   = value
 
@@ -748,9 +770,9 @@ class sr_post(sr_config):
              self.logger.error("only one path should be given for sr_watch")
              sys.exit(1)
  
-        if self.document_root != None :
-           if not self.document_root in watch_path :
-              watch_path = self.document_root + os.sep + watch_path
+        if self.post_base_dir != None :
+           if not self.post_base_dir in watch_path :
+              watch_path = self.post_base_dir + os.sep + watch_path
  
         if not os.path.exists(watch_path):
            self.logger.error("Not found %s " % watch_path )
@@ -784,9 +806,6 @@ class sr_post(sr_config):
 
         # on posting host
 
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
-
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
@@ -800,9 +819,6 @@ class sr_post(sr_config):
         self.logger.info("%s %s declare" % (self.program_name,self.config_name))
 
         # on posting host
-
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
@@ -840,9 +856,6 @@ class sr_post(sr_config):
         self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
         # on posting host
-
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
