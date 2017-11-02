@@ -106,6 +106,7 @@ struct sr_config_t {
   int                 delete;
   char               *directory;
   char               *documentroot;
+  char                statehost;  // '0','s','f' meaning no, short fqdn
   int                 durable;
   sr_event_t          events;
   char                *exchange;
