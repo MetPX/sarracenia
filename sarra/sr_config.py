@@ -119,8 +119,6 @@ class sr_config:
 
         try    : os.makedirs(self.user_config_dir, 0o775,True)
         except : pass
-        try    : os.makedirs(self.user_log_dir,    0o775,True)
-        except : pass
         try    : os.makedirs(self.user_plugins_dir,0o775,True)
         except : pass
         try    : os.makedirs(self.http_dir,        0o775,True)
@@ -178,10 +176,7 @@ class sr_config:
         self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
         self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
         self.user_cache_dir += os.sep + "%s" % self.config_name
-        if not self.program_name in [ 'sr', 'sr_config' ]:
-           self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
-           try    : os.makedirs(self.user_cache_dir,  0o775,True)
-           except : pass
+        # user_cache_dir will be created later in configure()
 
         # keep a list of extended options
 
@@ -341,16 +336,31 @@ class sr_config:
 
         # did the user configured self.user_*_dir/hostname
 
+        hostdir = None
         if self.statehost :
            hostdir = self.hostname
            if self.hostform == 'short' : hostdir = self.hostname.split('.')[0] 
 
-           self.user_log_dir   += os.sep + hostdir
-           try    : os.makedirs(self.user_log_dir, 0o775,True)
-           except : pass
+        # finalize user_log_dir and create directory if needed
 
+        if hostdir and not hostdir in self.user_log_dir :
+           self.user_log_dir = self.user_log_dir[:-4] + os.sep + hostdir + '/log'
+
+        self.logger.debug("sr_config user_log_dir  %s " % self.user_log_dir ) 
+        try    : os.makedirs(self.user_log_dir, 0o775,True)
+        except : pass
+
+        # finalize user_cache_dir and create directory if needed
+
+        if hostdir and not hostdir in self.user_cache_dir :
+           self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
            self.user_cache_dir += os.sep + hostdir
-           try    : os.makedirs(self.user_cache_dir, 0o775,True)
+           self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
+           self.user_cache_dir += os.sep + "%s" % self.config_name
+
+        if not self.program_name in [ 'sr', 'sr_config' ]:
+           self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
+           try    : os.makedirs(self.user_cache_dir,  0o775,True)
            except : pass
 
         # verify / complete settings
