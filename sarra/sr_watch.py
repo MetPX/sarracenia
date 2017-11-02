@@ -102,9 +102,9 @@ class sr_watch(sr_instances):
         self.nbr_instances  = 1
         self.accept_unmatch = True
         self.post = sr_post(self.user_config,self.user_args)
-        self.watch_path        = self.post.watchpath()
-        self.post.logger       = self.logger
         self.post.program_name = 'sr_watch'
+        self.post.logger       = self.logger
+        self.watch_path        = self.post.watchpath()
         self.post.blocksize    = self.blocksize
         self.post.partflg      = self.partflg
         self.post.sumflg       = self.sumflg
