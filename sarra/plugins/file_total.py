@@ -29,6 +29,11 @@ class Msg_Total(object):
         """
         logger = parent.logger
 
+        # make parent know about these possible options
+
+        parent.declare_option('file_total_interval')
+        parent.declare_option('file_total_maxlag')
+
         if hasattr(parent,'file_total_maxlag'):
             if type(parent.file_total_maxlag) is list:
                 parent.file_total_maxlag=int(parent.file_total_maxlag[0])
