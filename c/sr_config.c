@@ -756,15 +756,16 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   } else if ( !strcmp( option, "statehost" )|| !strcmp( option, "sh") ) {
       sr_cfg->statehost = 's';
-      if ( !strcmp(argument, "short") || !strcmp(argument, "SHORT" ) ) {
+      if ( !strcasecmp( argument, "short" ) ) {
          sr_cfg->statehost = 's';
          return(2);
       };
-      if ( !strcmp(argument, "fqdn") || !strcmp(argument, "FQDN" ) ) {
+      if ( !strcasecmp( argument, "fqdn") ) {
          sr_cfg->statehost = 'f';
          return(2);
       };
       val = StringIsTrue(argument);
+      val = val&2;
       if ( ! val ) {
          sr_cfg->statehost = '0';
       };
@@ -1054,27 +1055,11 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   if (! sr_cfg->progname )
      sr_cfg->progname=strdup("NONE");
 
-  // if the state directory is missing, build it.
-  sprintf( p, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_cfg->progname, sr_cfg->configname ) ;
-  ret = stat( p, &sb );
-  if ( ret ) {
-     sprintf( p, "%s/.cache", getenv("HOME") );
-     mkdir( p, 0700 );
-     strcat( p, "/" );
-     strcat( p, "sarra" );
-     mkdir( p, 0700 );
-     strcat( p, "/" );
-     strcat( p, sr_cfg->progname );
-     mkdir( p, 0700 );
-     strcat( p, "/" );
-     strcat( p, sr_cfg->configname );
-     mkdir( p, 0700 );
-  }
-
   // subdir for statehost
 
   d   = NULL;
   val = NULL;
+  printf(" statehost = %c\n",sr_cfg->statehost);
   if ( sr_cfg->statehost != '0' ) {
      val = local_fqdn();
 
@@ -1087,12 +1072,57 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      }
   }
 
-  // logfn statehost
+  // if the state directory is missing, build it.
+  if (val) {
+       sprintf( p, "%s/.cache/sarra/%s/%s/%s", getenv("HOME"), val, sr_cfg->progname, sr_cfg->configname ) ;
+  }
+  else {
+       sprintf( p, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_cfg->progname, sr_cfg->configname ) ;
+  }
+  ret = stat( p, &sb );
+  if ( ret ) {
+     sprintf( p, "%s/.cache", getenv("HOME") );
+     mkdir( p, 0700 );
+     strcat( p, "/" );
+     strcat( p, "sarra" );
+     mkdir( p, 0700 );
+     if (val) {
+        strcat( p, "/" );
+        strcat( p, val );
+        mkdir( p, 0700 );
+     }
+     strcat( p, "/" );
+     strcat( p, sr_cfg->progname );
+     mkdir( p, 0700 );
+     strcat( p, "/" );
+     strcat( p, sr_cfg->configname );
+     mkdir( p, 0700 );
+  }
+
+  // if the log directory is missing, build it.
+  if (val) {
+       sprintf( p, "%s/.cache/sarra/%s/log", getenv("HOME"), val );
+  }
+  else {
+       sprintf( p, "%s/.cache/sarra/log", getenv("HOME") );
+  }
+  ret = stat( p, &sb );
+  if ( ret ) {
+     sprintf( p, "%s/.cache/sarra", getenv("HOME") );
+     if (val) {
+        strcat( p, "/" );
+        strcat( p, val );
+        mkdir( p, 0700 );
+     }
+     strcat( p, "/log" );
+     mkdir( p, 0700 );
+  }
+
+  // logfn
   if ( val ) {
      sprintf( p, "%s/.cache/sarra/%s/log/sr_%s_%s_%03d.log", getenv("HOME"), 
          sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
   }
-  // logfn default
   else {
      sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
          sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
@@ -1111,7 +1141,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   // pidfn statehost
   if ( val ) {
      sprintf( p, "%s/.cache/sarra/%s/%s/%s/i%03d.pid", getenv("HOME"), 
-         sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+        val, sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
   }
   // pidfn default
   else {
@@ -1132,7 +1162,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   // cachefn statehost
   if ( val ) {
       sprintf( p, "%s/.cache/sarra/%s/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
-               sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+               val, sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
   }
   // cachefn default
   else {
