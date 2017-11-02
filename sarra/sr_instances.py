@@ -51,13 +51,11 @@ class sr_instances(sr_config):
 
         sr_config.__init__(self,config,args)
         self.cwd = os.getcwd()
-        self.build_parent()
         self.configure()
+        self.build_parent()
 
     def build_parent(self):
         self.logger.debug("sr_instances build_parent")
-
-        self.logpath    = None
 
         self.basic_name = self.program_name
         if self.config_name : self.basic_name += '_' + self.config_name 
