@@ -754,6 +754,22 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_add_topic( sr_cfg, argument );
       return(2);
 
+  } else if ( !strcmp( option, "statehost" )|| !strcmp( option, "sh") ) {
+      sr_cfg->statehost = 's';
+      if ( !strcmp(argument, "short") || !strcmp(argument, "SHORT" ) ) {
+         sr_cfg->statehost = 's';
+         return(2);
+      };
+      if ( !strcmp(argument, "fqdn") || !strcmp(argument, "FQDN" ) ) {
+         sr_cfg->statehost = 'f';
+         return(2);
+      };
+      val = StringIsTrue(argument);
+      if ( ! val ) {
+         sr_cfg->statehost = '0';
+      };
+      return(1+(val&1));
+
   } else if ( !strcmp( option, "sum" ) ) {
       sr_cfg->sumalgo = argument[0];
       return(2);
@@ -1024,6 +1040,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
  */
 {
+  char *d;
+  char *val;
   char p[PATH_MAX];
   char q[AMQP_MAX_SS];
   FILE *f;
@@ -1053,8 +1071,32 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
      mkdir( p, 0700 );
   }
 
-  sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
-      sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  // subdir for statehost
+
+  d   = NULL;
+  val = NULL;
+  if ( sr_cfg->statehost != '0' ) {
+     val = local_fqdn();
+
+     // short
+     if ( sr_cfg->statehost == 's' ) {
+        d = strchr( val, '.' );
+        if (d) {
+           *d='\0';
+        }
+     }
+  }
+
+  // logfn statehost
+  if ( val ) {
+     sprintf( p, "%s/.cache/sarra/%s/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+  }
+  // logfn default
+  else {
+     sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  }
 
   sr_cfg->logfn = strdup(p);
 
@@ -1066,8 +1108,17 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       log_setup( sr_cfg->logfn , sr_cfg->chmod_log, sr_cfg->debug?LOG_DEBUG:(sr_cfg->logseverity) );
   }
 
-  sprintf( p, "%s/.cache/sarra/%s/%s/i%03d.pid", getenv("HOME"), 
-      sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  // pidfn statehost
+  if ( val ) {
+     sprintf( p, "%s/.cache/sarra/%s/%s/%s/i%03d.pid", getenv("HOME"), 
+         sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+  }
+  // pidfn default
+  else {
+     sprintf( p, "%s/.cache/sarra/%s/%s/i%03d.pid", getenv("HOME"), 
+         sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  }
+
 
   sr_cfg->pidfile = strdup(p);
   f = fopen(p,"r");
@@ -1078,9 +1129,18 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
          fclose(f);
   } 
 
-  // FIXME: open and read cache file if present. seek to end.
-  sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
-           sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  // cachefn statehost
+  if ( val ) {
+      sprintf( p, "%s/.cache/sarra/%s/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
+               sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+  }
+  // cachefn default
+  else {
+      // FIXME: open and read cache file if present. seek to end.
+      sprintf( p, "%s/.cache/sarra/%s/%s/recent_files_%03d.cache", getenv("HOME"), 
+               sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  }
+
   if (sr_cfg->cache > 0) 
   {
          sr_cfg->cachep = sr_cache_open( p );
