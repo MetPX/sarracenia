@@ -473,10 +473,16 @@ class sr_config:
         self.save_fp              = None
         self.save_count           = 1
 
-        # publish
+        # new set
+        self.base_dir             = None
+        self.post_base_dir        = None
+        self.post_base_url        = None
+
+        # deprecated set
         self.document_root        = None
         self.post_document_root   = None
         self.url                  = None
+
         self.postpath             = []
         self.movepath             = []
 
@@ -983,6 +989,17 @@ class sr_config:
 
                 elif words0 == 'batch' : # See: sr_config.7
                      self.batch = int(words[1])
+                     n = 2
+
+                elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
+                     path = os.path.abspath(words1)
+                     if self.realpath:
+                         path = os.path.realpath(path)
+                     if sys.platform == 'win32':
+                         self.base_dir = path.replace('\\','/')
+                     else:
+                         self.base_dir = path
+                     # FIXME MG should we test if directory exists ? and warn if not 
                      n = 2
 
                 elif words0 in ['broker','b'] : # See: sr_consumer.7 ++   fixme: everywhere, perhaps reduce
@@ -1535,6 +1552,14 @@ class sr_config:
                         self.logger.error("problem with path option")
                         needexit = True
 
+                elif words0 in ['post_base_dir','pbd']: # See: sr_sarra,sender,shovel,winnow
+                     if sys.platform == 'win32':
+                         self.post_base_dir = words1.replace('\\','/')
+                     else:
+                         self.post_base_dir = words1
+                     n = 2
+
+
                 elif words0 in ['post_broker','pb'] : # See: sr_sarra,sender,shovel,winnow
                      urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
@@ -1759,8 +1784,10 @@ class sr_config:
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
 
-                elif words0 in ['url','u','post_url']: # See: sr_config.7 
-                     self.url = urllib.parse.urlparse(words1)
+                elif words0 in ['post_base_url','url','u','post_url']: # See: sr_config.7 
+                     if words0 in ['url','u'] : self.logger.warning("option url deprecated please use post_base_url")
+                     self.post_base_url = urllib.parse.urlparse(words1)
+                     self.url = self.post_base_url
                      n = 2
 
                 elif words0 == 'use_pika': # See: FIX ME
@@ -2332,6 +2359,16 @@ def self_test():
     if cfg.surplus_opt[0] != "surplus_value" or cfg.surplus_opt[1] != "surplus_value2":
        cfg.logger.error(" extended option:  did not work")
        failed = True
+
+    opt1 = "base_dir /home/aspymjg/dev/metpx-sarracenia/sarra"
+    cfg.option(opt1.split())
+
+    opt1 = "post_base_dir /totot/toto"
+    cfg.option(opt1.split())
+
+    opt1 = "post_base_url file://toto"
+    cfg.option(opt1.split())
+
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
