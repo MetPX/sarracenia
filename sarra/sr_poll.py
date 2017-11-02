@@ -51,9 +51,9 @@
 # do_line                 = a script reformatting the content of the list directory...
 #                           (it is needed sometimes to takeaway useless or unstable fields)
 # (messaging)
-# broker                  = where the message is announced... one specific user per poll source
-# exchange                = xs_source_user
-# url                     = taken from the destination
+# post_broker             = where the message is announced... one specific user per poll source
+# post_exchange           = xs_source_user
+# post_base_url           = taken from the destination
 # sum                     = 0   no sum computed... if we dont download the product
 #                           x   if we download the product
 # part                    = 1   file entirely downloaded (for now) ... find filesize from ls ?
@@ -111,6 +111,24 @@ class sr_poll(sr_instances):
         return False
 
     def check(self):
+
+        # enforcing post_broker
+
+        if self.post_broker == None :
+           if self.broker   != None :
+              self.post_broker = self.broker
+              self.logger.warning("use post_broker to set broker for sr_poll")
+
+        # enforcing post_exchange
+
+        if self.post_exchange == None :
+           if self.exchange   != None :
+              self.post_exchange = self.exchange
+              self.logger.warning("use post_exchange to set exchange for sr_poll")
+
+        if self.post_exchange  == None :
+           self.post_exchange   = 'xs_%s' % self.post_broker.username
+
         # force 1 instance
         self.nbr_instances = 1
         self.sleeping      = False
@@ -119,7 +137,7 @@ class sr_poll(sr_instances):
         # to clusters required
 
         if self.to_clusters == None:
-           self.to_clusters = self.broker.hostname
+           self.to_clusters = self.post_broker.hostname
 
         # check destination
 
@@ -132,17 +150,9 @@ class sr_poll(sr_instances):
            self.help()
            sys.exit(1)
 
-        self.baseurl = self.details.url.geturl()
-        if self.baseurl[-1] != '/' : self.baseurl += '/'
-        if self.baseurl.startswith('file:'): self.baseurl = 'file:'
-
-        # check destination
-
-        if self.exchange  == None :
-           self.exchange   = 'xs_%s' % self.broker.username
-
-
-        self.post_exchange = self.exchange
+        self.post_base_url = self.details.url.geturl()
+        if self.post_base_url[-1] != '/' : self.post_base_url += '/'
+        if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
 
         # check sumflg should start with z,
 
@@ -179,16 +189,16 @@ class sr_poll(sr_instances):
            self.logger.debug("MY POSTER TRICK DID WORK !!!")
 
     def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(exchange,baseurl,relpath...")
+        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(post_exchange,post_base_url,post_relpath...")
 
         urlstr  = url.geturl()
-        relpath = url.path
+        post_relpath = url.path
 
-        baseurl = urlstr.replace(relpath,'')
-        if baseurl[-1] != '/' : baseurl += '/'
-        if self.baseurl.startswith('file:'): self.baseurl = 'file:'
+        post_base_url = urlstr.replace(post_relpath,'')
+        if post_base_url[-1] != '/' : post_base_url += '/'
+        if post_base_url.startswith('file:'): post_base_url = 'file:'
 
-        return self.post(exchange,baseurl,relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
+        return self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
 
     # ENDOF TRICK for false self.poster
     # ========================================
@@ -211,15 +221,12 @@ class sr_poll(sr_instances):
 
         self.msg = sr_message(self)
 
-        self.msg.exchange = self.exchange
+        self.msg.exchange = self.post_exchange
         self.msg.headers  = {}
 
         # =============
         # posting
         # =============
-
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
 
         self.post_hc   = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
@@ -371,10 +378,10 @@ class sr_poll(sr_instances):
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
           "\nAMQP broker settings:\n" +
-          "\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
+          "\tpost_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>\n" +
           "\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) \n" +
           "\nAMQP Queue bindings:\n" +
-          "\texchange      <name>         (default: xreport for feeders, xs_<user>)\n" +
+          "\tpost_exchange      <name>         (default: xreport for feeders, xs_<user>)\n" +
           "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.report)\n" +
           "\tsubtopic      <amqp pattern> (MANDATORY)\n" +
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
@@ -513,11 +520,14 @@ class sr_poll(sr_instances):
     def overwrite_defaults(self):
 
         # overwrite defaults
-        # default broker, exchange, destination None
+        # default post_broker, post_exchange, destination None
+
+        self.post_broker    = None
+        self.post_exchange  = None
+        self.destination    = None
 
         self.broker         = None
         self.exchange       = None
-        self.destination    = None
 
         # Set minimum permissions to something that might work most of the time.
         self.chmod = 0o400
@@ -527,9 +537,6 @@ class sr_poll(sr_instances):
         self.cache       = None
         self.caching     = 1200
         self.cache_stat  = True
-
-        # heartbeat to clean/save cache
-
         self.execfile("on_heartbeat",'heartbeat_cache')
         self.on_heartbeat_list.append(self.on_heartbeat)
 
@@ -549,14 +556,15 @@ class sr_poll(sr_instances):
         self.sumflg         = 'z,d'
 
 
-    def post(self,exchange,baseurl,relpath,to_clusters,partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
+    def post(self,post_exchange,post_base_url,post_relpath,to_clusters, \
+                  partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
 
-        self.msg.exchange = exchange
+        self.msg.exchange = post_exchange
         
-        self.msg.set_topic(self.topic_prefix,relpath)
+        self.msg.set_topic(self.topic_prefix,post_relpath)
         if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
 
-        self.msg.set_notice(baseurl,relpath)
+        self.msg.set_notice(post_base_url,post_relpath)
 
         # set message headers
         self.msg.headers = {}
@@ -578,7 +586,7 @@ class sr_poll(sr_instances):
         # cache testing
         # ========================================
 
-        if not self.cache.check(sumstr,relpath,partstr):
+        if not self.cache.check(sumstr,post_relpath,partstr):
             self.msg.report_publish(304,'Not modified')
             self.logger.debug("Ignored %s" % (self.msg.notice))
             return False
@@ -686,7 +694,7 @@ class sr_poll(sr_instances):
                 desc         = desclst[remote_file]
                 ssiz         = desc.split()[4]
 
-                self.relpath = self.destDir + '/'+ remote_file
+                self.post_relpath = self.destDir + '/'+ remote_file
 
                 self.sumstr  = self.sumflg
                 self.partstr = None
@@ -708,7 +716,7 @@ class sr_poll(sr_instances):
                 if this_rename != None and this_rename[-1] == '/' :
                    this_rename += remote_file
                 
-                ok = self.post(self.exchange,self.baseurl,self.relpath,self.to_clusters, \
+                ok = self.post(self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters, \
                                self.partstr,self.sumstr,this_rename)
 
                 if ok : npost += 1
@@ -829,9 +837,6 @@ class sr_poll(sr_instances):
 
         # on posting host
 
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
-
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
         self.post_hc.set_url(self.post_broker)
@@ -846,9 +851,6 @@ class sr_poll(sr_instances):
         self.logger.info("%s %s declare" % (self.program_name,self.config_name) )
 
         # on posting host
-
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
@@ -883,9 +885,6 @@ class sr_poll(sr_instances):
         self.logger.info("%s %s setup" % (self.program_name,self.config_name) )
 
         # on posting host
-
-        self.post_broker   = self.broker
-        self.post_exchange = self.exchange
 
         self.post_hc  = HostConnect( self.logger )
         self.post_hc.set_pika(self.use_pika)
