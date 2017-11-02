@@ -917,6 +917,8 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->topics=NULL;
   sr_cfg->url=NULL;
 
+  sr_cfg->statehost='0';
+
   /* FIXME: should probably do this at some point.
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
   sr_config_read( sr_cfg, p );
@@ -1059,7 +1061,6 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
 
   d   = NULL;
   val = NULL;
-  printf(" statehost = %c\n",sr_cfg->statehost);
   if ( sr_cfg->statehost != '0' ) {
      val = local_fqdn();
 
@@ -1121,7 +1122,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   // logfn
   if ( val ) {
      sprintf( p, "%s/.cache/sarra/%s/log/sr_%s_%s_%03d.log", getenv("HOME"), 
-         sr_cfg->progname, val, sr_cfg->configname, sr_cfg->instance );
+         val, sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
   }
   else {
      sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
