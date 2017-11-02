@@ -224,16 +224,11 @@ class sr_post(sr_config):
            self.logger.info("posting cache was reset...")
            os._exit(0)
 
-        if self.caching :
-           self.logger.debug("sr_post cache_load")
-           self.cache.open()
-
     def lock_unset(self):
         #self.logger.debug("sr_post lock_unset")
         if self.caching :
            self.logger.debug("sr_post cache_close")
            self.cache.save()
-           self.cache.close()
 
     def move(self,src,dst):
         self.logger.warning("file moved support not implemented. Event ignored.")
