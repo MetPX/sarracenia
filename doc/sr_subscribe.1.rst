@@ -557,7 +557,7 @@ and under which name.
 - **delete    <boolean>>       (default: False)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: false)**
-- **document_root <path>       (default: /)**
+- **base_dir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
 - **inplace       <boolean>        (default: true)**
@@ -693,7 +693,7 @@ in Sarracenia are in UTC.
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
 
-**document_root** supplies the directory path that, when combined with the relative
+**base_dir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
 The defaults is None which means that the path in the notification is the absolute one.
 
@@ -965,7 +965,7 @@ the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]            (default: post)**
- - **[-pdr|--post_document_root <path>]     (optional)**
+ - **[-pbd|--post_base_dir <path>]     (optional)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_url          <url>          (MANDATORY)**
@@ -987,12 +987,12 @@ optimized by only sending parts which have changed.
 The *outlet* option, implemented only in *sr_cpump*, allows the final output
 to be other than a post.  See `sr_cpump(1) <sr_cpump.html>`_ for details.
 
-The *post_document_root* option supplies the directory path that, when combined (or found) 
+The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
 The post document root part of the path will be removed from the posted announcement.
 for sftp: url's it can be appropriate to specify a path relative to a user account.
 Example of that usage would be:  -pdr ~user  -url sftp:user@host
-for file: url's, document_root is usually not appropriate.  To post an absolute path,
+for file: url's, base_dir is usually not appropriate.  To post an absolute path,
 omit the -dr setting, and just specify the complete path as an argument.
 
 The **url** option sets how to get the file... it defines the protocol,

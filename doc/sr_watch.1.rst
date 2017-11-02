@@ -14,7 +14,7 @@ watch a directory and post messages when files in it change
 SYNOPSIS
 ========
 
-**sr_watch** [ *-u|--url url* ] [ *-b|--broker broker_url* ]...[ *-p|--path* ] [reload|restart|start|status|stop] [path]
+**sr_watch** [ *-pbu|--post_base_url url* ] [ *-pb|--post_broker broker_url* ]...[ *-p|--path* ] [reload|restart|start|status|stop] [path]
 
 DESCRIPTION
 ===========
@@ -106,7 +106,7 @@ Another example watching a file::
  sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -b amqp://broker.com -action start
 
 By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the document_root and relative path of the source url to obtain the local file path).
+(concatenating the base_dir and relative path of the source url to obtain the local file path).
 If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
 
@@ -118,7 +118,7 @@ An example checking a directory::
  sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -b amqp://broker.com -action start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
-(concatenating the document_root and relative path of the source url to obtain the directory path).
+(concatenating the base_dir and relative path of the source url to obtain the directory path).
 If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' 
 (default credentials) and sends the post to exchange 'amq.topic' (default exchange)
@@ -169,9 +169,9 @@ for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses 
 In force_polling mode, assume that directories empty themselves, so that every file in each *path*
 should be posted at every polling pass, instead of just new ones.
 
-**[-dr|--document_root <path>]**
+**[-pbd|--post_base_dir <path>]**
 
-The  *document_root*  option supplies the directory path that,
+The  *base_dir*  option supplies the directory path that,
 when combined with the relative one from  *source url* , 
 gives the local absolute path to the data file to be posted.
 .fi
@@ -241,7 +241,7 @@ Logfile will rotate at 'midnight' and kept for an history of 5 files.
 **[-p|--path path]**
 
 **sr_post** evaluates the filesystem path from the **path** option 
-and possibly the **document_root** if the option is used.
+and possibly the **post_base_dir** if the option is used.
 
 If a path defines a file this file is watched.
 
@@ -254,7 +254,7 @@ watches it(them) recursively until all the tree is scanned.
 
 The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
-the *document_root* present and needed.
+the *post_base_dir* present and needed.
 
 **[-rn|--rename <path>]**
 
@@ -297,7 +297,7 @@ The **url** option sets the protocol, credentials, host and port under
 which the product can be fetched.
 
 The AMQP announcememet is made of the tree fields, the announcement time,
-this **url** value and the given **path** to which was withdrawn the *document_root*
+this **url** value and the given **path** to which was withdrawn the *post_base_dir*
 if necessary.
 
 If the concatenation of the two last fields of the announcement that defines
