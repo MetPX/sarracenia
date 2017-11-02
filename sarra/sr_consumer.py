@@ -205,7 +205,7 @@ class sr_consumer:
 
         # queue path
 
-        self.queuepath = self.parent.user_cache_dir + os.sep + queuefile
+        self.queuepath = self.parent.user_cache_dir + os.sep + queuefile + '.qname'
 
         if os.path.isfile(self.queuepath) :
            f = open(self.queuepath)
