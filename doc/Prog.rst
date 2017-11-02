@@ -404,7 +404,6 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'do_poll': None,
   'message_ttl': None,
   'user_scripts_dir': '/local/home/peter/.config/sarra/scripts',
-  'recursive': False,
   'appname': 'sarra',
   'debug': False,
   'chmod': 775,

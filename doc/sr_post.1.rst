@@ -195,11 +195,6 @@ If a path defines a file, this file is announced.
 If a path defines a directory, then all files in that directory are
 announced... 
 
-If this path defines a directory and the option **recursive** is true,
-then all files in that directory are posted. Should **sr_post** find
-one (or more) directory(ies), it scans it(them) and posts announcements
-until the entire tree is scanned.
-
 The AMQP announcements are made of the three fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn from
 the *document_root*, present and needed.
@@ -208,12 +203,6 @@ the *document_root*, present and needed.
 
 The pipe option is for sr_post to read the names of the files to post from standard input to read from
 redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
-
-**[-rec|--recursive <boolean>]**
-
-The recursive default is False when the **path** given (possibly combined with **document_root**)
-describes one or several directories.  If **recursive** is True, the directory tree is scanned down and all subtree
-files are posted.
 
 **[--reset]**
 

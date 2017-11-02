@@ -76,7 +76,8 @@ sr_subscribe start cfile_f44 > /dev/null 2>&1
 
 rm /tmp/libsrshim.log.tmp 2> /dev/null
 export SR_POST_CONFIG="${CONFDIR}/cpost/veille_f34.conf"
-export LD_PRELOAD=${tstdir}/../c/libsrshim.so.1.0.0
+#export LD_PRELOAD=${tstdir}/../c/libsrshim.so.1.0.0
+export LD_PRELOAD=libsrshim.so.1.0.0
 
 # copy 
 
