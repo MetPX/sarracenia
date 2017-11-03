@@ -220,7 +220,7 @@ class sr_consumer:
            # make a symlink old -> new (2 reasons)
            #  -  keeps old file as a mean to go back with version
            #  -  modification to new or old (reset) is preserved in both files
-           os.link(self.queuepath,self.old_queuepath)
+           os.symlink(self.queuepath,self.old_queuepath)
            # during the transition both should be available is we go back
 
         # get rid up to the next line
