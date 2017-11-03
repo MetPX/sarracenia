@@ -115,6 +115,13 @@ int main(int argc, char **argv)
         exit(0);
   }
   
+  if ( !strcmp( sr_cfg.action, "edit" ))
+  {
+        sr_config_edit( &sr_cfg );
+        exit(0);
+  }
+
+
   if ( !strcmp( sr_cfg.action, "list" ))
   {
         sr_config_list( &sr_cfg );
@@ -126,6 +133,14 @@ int main(int argc, char **argv)
      log_msg( LOG_ERROR, "failed to finalize configuration\n");
      return(1); 
   }
+
+  if ( !strcmp( sr_cfg.action, "log" ))
+  {
+        sr_config_log( &sr_cfg );
+        exit(0);
+  }
+
+
   
     // Check if already running. (conflict in use of state files.)
 

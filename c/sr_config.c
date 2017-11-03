@@ -54,10 +54,12 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
         || !strcmp( option, "cleanup" ) 
         || !strcmp( option, "declare" ) 
         || !strcmp( option, "disable" )
+        || !strcmp( option, "edit" )
         || !strcmp( option, "enable" )
         || !strcmp( option, "foreground" ) 
         || !strcmp( option, "help" )
         || !strcmp( option, "list" )
+        || !strcmp( option, "log" )
         || !strcmp( option, "status" )
         || !strcmp( option, "stop" ) 
         || !strcmp( option, "reload" ) 
@@ -922,6 +924,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->url=NULL;
 
   sr_cfg->statehost='0';
+  sr_cfg->statehostval=NULL;
 
   /* FIXME: should probably do this at some point.
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
@@ -1076,6 +1079,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
         }
      }
   }
+  if (val) 
+     sr_cfg->statehostval = strdup(val);
 
   // if the state directory is missing, build it.
   if (val) {
@@ -1471,37 +1476,38 @@ void cp( const char * s, const char *d )
 
 }
 
-void sr_config_remove_one( struct sr_config_t *sr_cfg, const char *one )
+char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *one )
 {
-  char oldp[256];
+  static char oldp[256];
 
   if ( one ) 
   {
      sprintf( oldp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
         sr_cfg->progname, one ) ;
-     if ( !access( oldp, R_OK ) ) unlink( oldp );
+     if ( !access( oldp, R_OK ) ) return( oldp );
      else 
      {
         sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
             sr_cfg->progname, one ) ;
 
-        if ( !access( oldp, R_OK ) ) unlink( oldp );
+        if ( !access( oldp, R_OK ) ) return( oldp );
         else
         {
             sprintf( oldp, "%s/.config/sarra/%s/%s", getenv("HOME"),
                  sr_cfg->progname, one ) ;
-            if ( !access( oldp, R_OK ) ) unlink( oldp );
+            if ( !access( oldp, R_OK ) ) return( oldp );
             else 
             {
                 sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
                        sr_cfg->progname, one ) ;
-                if ( !access( oldp, R_OK ) ) unlink( oldp );
+                if ( !access( oldp, R_OK ) ) return( oldp );
                 else log_msg(LOG_ERROR, "config %s not found.\n", one  );
             }
         }
 
      }
   } 
+  return(NULL);
 }
 
 void sr_config_add_one( struct sr_config_t *sr_cfg, const char *original_one )
@@ -1550,15 +1556,74 @@ void sr_config_add( struct sr_config_t *sr_cfg )
      sr_config_add_one( sr_cfg, path->path );
 }
 
+void sr_config_edit( struct sr_config_t *sr_cfg )
+{
+  char *one;
+  char *editor;
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->paths->path );
+
+  editor = getenv( "EDITOR" );
+  if (!editor) editor="/usr/bin/vi";
+
+  fprintf( stderr, "editor=%s looked up: %s, one=%s\n", editor, sr_cfg->paths->path, one );
+
+  execlp( editor, editor, one, NULL );
+}
+
+void sr_config_log( struct sr_config_t *sr_cfg )
+{
+  char p[256];  
+
+  if (sr_cfg->statehost == '0' ) 
+  {
+     sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  } else {
+     sprintf( p, "%s/.cache/sarra/%s/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->statehostval, sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  }
+
+  execlp( "/usr/bin/tail", "tail", "-f", p, NULL );
+}
 
 void sr_config_remove( struct sr_config_t *sr_cfg )
 {
-  sr_config_remove_one( sr_cfg, sr_cfg->configname );
+  char *one;
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  if (one) unlink(one);
+
   for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
-     sr_config_remove_one( sr_cfg, path->path );
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+     if (one) unlink(one);
+  }
 }
 
+void sr_config_disable( struct sr_config_t *sr_cfg )
+{
+  char *one;
+  char newp[256];
 
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  if (one) 
+  {
+     sprintf( newp, "%s.off", one );
+     rename( one, newp );
+  }
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+     if (one)
+     {
+         sprintf( newp, "%s.off", one );
+         rename( one, newp );
+     }
+  }
+}
+
+/*
 void sr_config_disable( struct sr_config_t *sr_cfg )
 {
   char oldp[256];
@@ -1585,6 +1650,7 @@ void sr_config_disable( struct sr_config_t *sr_cfg )
      else log_msg(LOG_ERROR, "config %s not enabled.\n", path->path );
   }
 }
+ */
 
 void sr_config_enable( struct sr_config_t *sr_cfg )
 {

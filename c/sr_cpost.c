@@ -506,7 +506,7 @@ int main(int argc, char **argv)
     {
           if ( !strcmp( sr_cfg.action,"foreground") || !strcmp( sr_cfg.action, "enable" ) ||
                !strcmp( sr_cfg.action, "disable" ) || !strcmp( sr_cfg.action, "add" ) ||
-               !strcmp( sr_cfg.action, "remove" )
+               !strcmp( sr_cfg.action, "remove" ) || !strcmp( sr_cfg.action, "edit" )
              )
                sr_add_path(&sr_cfg, argv[i]);
           else 
@@ -539,6 +539,12 @@ int main(int argc, char **argv)
         exit(0);
     }
 
+    if ( !strcmp( sr_cfg.action, "edit" ))
+    {
+        sr_config_edit( &sr_cfg );
+        exit(0);
+    }
+
     if ( !strcmp( sr_cfg.action, "list" ))
     {
         sr_config_list( &sr_cfg );
@@ -549,6 +555,12 @@ int main(int argc, char **argv)
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
         sr_config_free(&sr_cfg);
         return(1);
+    }
+
+    if ( !strcmp( sr_cfg.action, "log" ))
+    {
+        sr_config_log( &sr_cfg );
+        exit(0);
     }
 
     // Check if already running. (conflict in use of state files.)
