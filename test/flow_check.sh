@@ -120,12 +120,8 @@ function countall {
 
   countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow01="${tot}"
-   
-  if [ ${totwinnow00} -gt ${totwinnow01} ]; then
-       totwinnow=$(( ${totwinnow00} *2 ))
-  else
-       totwinnow=$(( ${totwinnow01} *2 ))
-  fi
+
+  totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
   countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
   totmsgt="${tot}"
