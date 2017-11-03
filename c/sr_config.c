@@ -50,19 +50,21 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *p;
    struct sr_path_t *n;
 
-   if ( !strcmp( option, "start" ) 
+   if (    !strcmp( option, "add" )
+        || !strcmp( option, "cleanup" ) 
+        || !strcmp( option, "declare" ) 
         || !strcmp( option, "disable" )
         || !strcmp( option, "enable" )
+        || !strcmp( option, "foreground" ) 
         || !strcmp( option, "help" )
         || !strcmp( option, "list" )
         || !strcmp( option, "status" )
         || !strcmp( option, "stop" ) 
-        || !strcmp( option, "foreground" ) 
         || !strcmp( option, "reload" ) 
+        || !strcmp( option, "remove" )
         || !strcmp( option, "restart" ) 
         || !strcmp( option, "setup" ) 
-        || !strcmp( option, "cleanup" ) 
-        || !strcmp( option, "declare" ) 
+        || !strcmp( option, "start" ) 
       )
    {
       if (sr_cfg->action) free(sr_cfg->action);
@@ -1441,6 +1443,121 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
     return(1); // Success! ready to continue!
 
 }
+
+void cp( const char * s, const char *d ) 
+{
+   FILE *sfd=NULL;
+   FILE *dfd=NULL;
+   char buf[1024];
+
+   if ( ! ( sfd=fopen(s,"r") ) ) 
+   {
+     log_msg(LOG_ERROR, "opening config to read %s failed.\n", s );
+     return;
+   }   
+
+   if ( ! ( dfd=fopen(d,"w+") ) ) 
+   {
+     log_msg(LOG_ERROR, "opening config to write %s failed.\n", d );
+     return;
+   }   
+
+   while( NULL != fgets( buf, 1024, sfd ) ) 
+   {
+        fputs( buf, dfd ); 
+   }
+   fclose(sfd);
+   fclose(dfd);
+
+}
+
+void sr_config_remove_one( struct sr_config_t *sr_cfg, const char *one )
+{
+  char oldp[256];
+
+  if ( one ) 
+  {
+     sprintf( oldp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
+        sr_cfg->progname, one ) ;
+     if ( !access( oldp, R_OK ) ) unlink( oldp );
+     else 
+     {
+        sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+            sr_cfg->progname, one ) ;
+
+        if ( !access( oldp, R_OK ) ) unlink( oldp );
+        else
+        {
+            sprintf( oldp, "%s/.config/sarra/%s/%s", getenv("HOME"),
+                 sr_cfg->progname, one ) ;
+            if ( !access( oldp, R_OK ) ) unlink( oldp );
+            else 
+            {
+                sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+                       sr_cfg->progname, one ) ;
+                if ( !access( oldp, R_OK ) ) unlink( oldp );
+                else log_msg(LOG_ERROR, "config %s not found.\n", one  );
+            }
+        }
+
+     }
+  } 
+}
+
+void sr_config_add_one( struct sr_config_t *sr_cfg, const char *original_one )
+{
+  char oldp[256];
+  char newp[256];
+  char one[256];
+  int  len_one;
+
+  if ( original_one ) 
+  {
+     strcpy( one, original_one );
+     len_one = strlen(original_one) -5 ; 
+     if ( !strcmp(&(one[len_one]), ".conf") ) one[len_one]='\0';
+     else
+     {
+         len_one++; 
+         if ( !strcmp(&(one[len_one]), ".inc") ) one[len_one]='\0';
+     }
+     sprintf( oldp, "%s.inc", one ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
+        sr_cfg->progname, one ) ;
+     if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+     else 
+     {
+        sprintf( oldp, "%s.conf", one ) ;
+        sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+            sr_cfg->progname, one ) ;
+
+        if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+        else
+        {
+            sprintf( oldp, "%s", one ) ;
+            if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+            else log_msg(LOG_ERROR, "config %s not found.\n", one  );
+        }
+
+     }
+  } 
+}
+
+void sr_config_add( struct sr_config_t *sr_cfg )
+{
+  sr_config_add_one( sr_cfg, sr_cfg->configname );
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+     sr_config_add_one( sr_cfg, path->path );
+}
+
+
+void sr_config_remove( struct sr_config_t *sr_cfg )
+{
+  sr_config_remove_one( sr_cfg, sr_cfg->configname );
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+     sr_config_remove_one( sr_cfg, path->path );
+}
+
 
 void sr_config_disable( struct sr_config_t *sr_cfg )
 {

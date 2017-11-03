@@ -505,11 +505,18 @@ int main(int argc, char **argv)
     for (; i < argc; i++ )
     {
           if ( !strcmp( sr_cfg.action,"foreground") || !strcmp( sr_cfg.action, "enable" ) ||
-               !strcmp( sr_cfg.action, "disable" ) 
+               !strcmp( sr_cfg.action, "disable" ) || !strcmp( sr_cfg.action, "add" ) ||
+               !strcmp( sr_cfg.action, "remove" )
              )
                sr_add_path(&sr_cfg, argv[i]);
           else 
                sr_config_read(&sr_cfg, argv[i] );
+    }
+
+    if ( !strcmp( sr_cfg.action, "add" ))
+    {
+        sr_config_add( &sr_cfg );
+        exit(0);
     }
 
     if ( !strcmp( sr_cfg.action, "enable" ))
@@ -519,6 +526,12 @@ int main(int argc, char **argv)
     }
 
     if ( !strcmp(sr_cfg.action, "help") || sr_cfg.help ) usage();
+
+    if ( !strcmp( sr_cfg.action, "remove" ))
+    {
+        sr_config_remove( &sr_cfg );
+        exit(0);
+    }
 
     if ( !strcmp( sr_cfg.action, "disable" ))
     {

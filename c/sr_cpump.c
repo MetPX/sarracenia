@@ -84,6 +84,12 @@ int main(int argc, char **argv)
         sr_add_path(&sr_cfg, argv[i]);
   }
 
+  if ( !strcmp( sr_cfg.action, "add" ))
+  {
+        sr_config_add( &sr_cfg );
+        exit(0);
+  }
+  
   if ( !strcmp( sr_cfg.action, "enable" ))
   {
         sr_config_enable( &sr_cfg );
@@ -100,6 +106,12 @@ int main(int argc, char **argv)
   if ( !strcmp( sr_cfg.action, "disable" ))
   {
         sr_config_disable( &sr_cfg );
+        exit(0);
+  }
+
+  if ( !strcmp( sr_cfg.action, "remove" ))
+  {
+        sr_config_remove( &sr_cfg );
         exit(0);
   }
   

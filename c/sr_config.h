@@ -234,6 +234,10 @@ int sr_config_startstop( struct sr_config_t *sr_cfg);
 
  */
 
+void sr_config_add( struct sr_config_t *sr_cfg );
+
+void sr_config_remove( struct sr_config_t *sr_cfg );
+
 void sr_config_disable( struct sr_config_t *sr_cfg );
 
 void sr_config_enable( struct sr_config_t *sr_cfg );
