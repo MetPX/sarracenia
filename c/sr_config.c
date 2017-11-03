@@ -1476,32 +1476,54 @@ void cp( const char * s, const char *d )
 
 }
 
-char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *one )
+char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *original_one )
 {
   static char oldp[256];
+  char one[256];
+  int  len_one;
 
-  if ( one ) 
+  //fprintf( stderr, " find_one, original_one: %s\n", original_one );
+  if ( original_one ) 
   {
+
+     strcpy( one, original_one );
+     len_one = strlen(original_one) -5 ; 
+     if ( !strcmp(&(one[len_one]), ".conf") ) one[len_one]='\0';
+     else
+     {
+         len_one++; 
+         if ( !strcmp(&(one[len_one]), ".inc") ) one[len_one]='\0';
+     }
+     //fprintf( stderr, " find_one, one: %s\n", one );
+
      sprintf( oldp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
         sr_cfg->progname, one ) ;
      if ( !access( oldp, R_OK ) ) return( oldp );
      else 
      {
+        //fprintf(stderr, "not %s\n", oldp );
+
         sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
             sr_cfg->progname, one ) ;
 
         if ( !access( oldp, R_OK ) ) return( oldp );
         else
         {
+            //fprintf(stderr, "not %s\n", oldp );
             sprintf( oldp, "%s/.config/sarra/%s/%s", getenv("HOME"),
                  sr_cfg->progname, one ) ;
             if ( !access( oldp, R_OK ) ) return( oldp );
             else 
             {
+                //fprintf(stderr, "not %s\n", oldp );
                 sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
                        sr_cfg->progname, one ) ;
                 if ( !access( oldp, R_OK ) ) return( oldp );
-                else log_msg(LOG_ERROR, "config %s not found.\n", one  );
+                else 
+                {
+                   log_msg(LOG_ERROR, "config %s not found.\n", one  );
+                   //fprintf(stderr, "not %s\n", oldp );
+                }
             }
         }
 
@@ -1566,8 +1588,6 @@ void sr_config_edit( struct sr_config_t *sr_cfg )
   editor = getenv( "EDITOR" );
   if (!editor) editor="/usr/bin/vi";
 
-  fprintf( stderr, "editor=%s looked up: %s, one=%s\n", editor, sr_cfg->paths->path, one );
-
   execlp( editor, editor, one, NULL );
 }
 
@@ -1609,79 +1629,61 @@ void sr_config_disable( struct sr_config_t *sr_cfg )
   one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
   if (one) 
   {
-     sprintf( newp, "%s.off", one );
-     rename( one, newp );
+     if (!strcmp( &(one[strlen(one)-4]),".off"))
+     {
+         log_msg(LOG_INFO, "config %s already disabled.\n", one );
+     } else {
+         sprintf( newp, "%s.off", one );
+         rename( one, newp );
+     }
   }
   for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
   {
      one = sr_config_find_one_config( sr_cfg, path->path );
      if (one)
      {
-         sprintf( newp, "%s.off", one );
-         rename( one, newp );
+         if (!strcmp( &(one[strlen(one)-4]),".off"))
+         {
+            log_msg(LOG_INFO, "config %s already disabled.\n", one );
+         } else {
+            sprintf( newp, "%s.off", one );
+            rename( one, newp );
+         }
      }
   }
 }
 
-/*
-void sr_config_disable( struct sr_config_t *sr_cfg )
-{
-  char oldp[256];
-  char newp[256];
-  struct sr_path_t  *path;
-
-  if ( sr_cfg->configname ) 
-  {
-     sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
-        sr_cfg->progname, sr_cfg->configname ) ;
-     sprintf( newp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
-        sr_cfg->progname, sr_cfg->configname ) ;
-     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
-     else log_msg(LOG_ERROR, "config %s not enabled.\n", sr_cfg->configname );
-  } 
-
-  for ( path=sr_cfg->paths; path ; path=path->next ) 
-  {  
-     sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
-        sr_cfg->progname, path->path ) ;
-     sprintf( newp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
-        sr_cfg->progname, path->path ) ;
-     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
-     else log_msg(LOG_ERROR, "config %s not enabled.\n", path->path );
-  }
-}
- */
-
 void sr_config_enable( struct sr_config_t *sr_cfg )
 {
-  char oldp[256];
+  char *one;
   char newp[256];
-  struct sr_path_t  *path;
 
-  if ( sr_cfg->configname ) 
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+fprintf( stderr, "enable, one=%s\n", one);
+  if (one) 
   {
-     sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
-        sr_cfg->progname, sr_cfg->configname ) ;
-     sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
-        sr_cfg->progname, sr_cfg->configname ) ;
-     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
-     else 
-         log_msg(LOG_ERROR, "config %s not disabled.\n", sr_cfg->configname );
+     strcpy( newp, one );
+     if (!strcmp( &(newp[strlen(newp)-4]),".off"))
+     {     
+         newp[strlen(newp)-4]='\0';
+         rename( one, newp );
+     }
   }
-
-  for ( path=sr_cfg->paths; path ; path=path->next ) 
-  {  
-     sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
-        sr_cfg->progname, path->path ) ;
-     sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
-        sr_cfg->progname, path->path ) ;
-     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
-     else log_msg(LOG_ERROR, "config %s not disabled.\n", path->path );
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+fprintf( stderr, "disable, one=%s\n", one);
+     if (one)
+     {
+         strcpy( newp, one );
+         if (!strcmp( &(newp[strlen(newp)-4]),".off"))
+         {     
+             newp[strlen(newp)-4]='\0';
+             rename( one, newp );
+         }
+     }
   }
 }
-
-
-
 
 
 void sr_config_list( struct sr_config_t *sr_cfg )
