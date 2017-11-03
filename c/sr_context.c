@@ -21,12 +21,6 @@
   file to use.
 
  
- limitations:
-    - Doesn't support document_root, absolute paths posted.
-    - Doesn't support cache.
-    - does support csv for url, to allow load spreading.
-    - seems to be about 30x faster than python version.
-
  */
 
 #include <stdlib.h>
@@ -223,7 +217,7 @@ struct sr_context *sr_context_init_config(struct sr_config_t *sr_cfg)
   // FIXME: if prog is post, then only post_broker is OK.
   // sr_c->exchange = sr_cfg->exchange ;
   
-  sr_c->url = sr_cfg->url;
+  sr_c->post_base_url = sr_cfg->post_base_url;
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {

@@ -451,6 +451,8 @@ void usage()
      fprintf( stderr, "\t\t>1 explicit chunk size  (can use (M/K/G[B] suffixes: eg. 50M -> 50 megabytes (base 2) ).\n" );
      fprintf( stderr, "\tpath <path> - a file/directory to post. (also on end of command line.) MANDATORY\n" );
      fprintf( stderr, "\tpipe <boolean> - accept file names to post from stdin (default: off).\n" );
+     fprintf( stderr, "\tpost_base_url <url>[,<url>]... - retrieval base url in the posted files.\n" );
+     fprintf( stderr, "\t\t(a comma separated list of urls will result in alternation among multiple file postings.)\n" );
      fprintf( stderr, "\trealpath <boolean> - resolve paths before posting (default: off)\n" );
      fprintf( stderr, "\trecursive <boolean> - walk subdirectories (default: off)\n" );
      fprintf( stderr, "\tsum <algo> - how to set fingerprint for posts: (default: s)\n" );
@@ -463,9 +465,6 @@ void usage()
      fprintf( stderr, "\t\tsuppress duplicate announcements < *cache* seconds apart.  \"on\" means 15 minute caching (on=900).\n" );
      fprintf( stderr, "\ttopic_prefix <string> - AMQP topic prefix (default: v02.post )\n" );
      fprintf( stderr, "\tto <destination> - clusters pump network should forward to (default: broker).\n" );
-     fprintf( stderr, "\turl <url>[,<url>]... - retrieval base url in the posted files.\n" );
-     fprintf( stderr, "\t\t(a comma separated list of urls will result in alternation among multiple file postings.)\n" );
-
      fprintf( stderr, "\t<paths> - list of files and/or directories to post (same as *path* option.)\n\n" );
      fprintf( stderr, "This is a limited C implementation of sr_post(1), see man page for details\n\n" );
      fprintf( stderr, "does not support plugins. main difference: specifying sleep makes it act like sr_watch\n\n" );
@@ -570,7 +569,7 @@ int main(int argc, char **argv)
 
     sr_post_init( sr_c );
 
-    if ( ! sr_c->cfg->url )
+    if ( ! sr_c->cfg->post_base_url )
     {
        log_msg( LOG_ERROR, "URL setting missing\n");
        return(0);

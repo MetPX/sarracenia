@@ -608,8 +608,12 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->directory = strdup(argument);
       return(2);
 
-  } else if ( !strcmp( option, "document_root" )|| !strcmp( option, "dr") ) {
-      sr_cfg->documentroot = strdup(argument);
+  } else if ( !strcmp( option, "post_document_root" )|| !strcmp( option, "pdr") ||
+              !strcmp( option, "document_root" )|| !strcmp( option, "dr") ) {
+      log_msg( LOG_WARNING, "please replace (deprecated) [post_]document_root with base_dir: %s.\n", argument );
+      sr_cfg->post_base_dir = strdup(argument);
+  } else if ( !strcmp( option, "base_dir" )|| !strcmp( option, "bd") ) {
+      sr_cfg->post_base_dir = strdup(argument);
       return(2);
 
   } else if ( !strcmp( option, "durable" ) ) {
@@ -766,7 +770,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       };
       val = StringIsTrue(argument);
       if ( ! val ) {
-         sr_cfg->statehost = '0';
+         sr_cfg->statehost = 's';
       };
       return(1+(val&1));
 
@@ -782,7 +786,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "url" ) || !strcmp( option, "u" ) ) {
-      sr_cfg->url = strdup(argument);
+      log_msg( LOG_WARNING, "please replace (deprecated) url with post_base_url: %s.\n", argument );
+      sr_cfg->post_base_url = strdup(argument);
+      return(2);
+  } else if ( !strcmp( option, "post_base_url" ) || !strcmp( option, "pu" ) ) {
+      sr_cfg->post_base_url = strdup(argument);
       return(2);
 
   } else {
@@ -809,7 +817,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->action) free(sr_cfg->action);
   if (sr_cfg->configname) free(sr_cfg->configname);
   if (sr_cfg->directory) free(sr_cfg->directory);
-  if (sr_cfg->documentroot) free(sr_cfg->documentroot);
+  if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
@@ -818,7 +826,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
   if (sr_cfg->progname) free(sr_cfg->progname);
   if (sr_cfg->to) free(sr_cfg->to);
-  if (sr_cfg->url) free(sr_cfg->url);
+  if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
 
   //broker_free(sr_cfg->broker);
   broker_free(sr_cfg->post_broker);
@@ -873,7 +881,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->debug=0;
   sr_cfg->delete=0;
   sr_cfg->directory=NULL;
-  sr_cfg->documentroot=NULL;
+  sr_cfg->post_base_dir=NULL;
   sr_cfg->durable=1;
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->expire=3*60*1000 ;
@@ -909,12 +917,13 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->sleep=0.0;
   sr_cfg->heartbeat=300.0;
   sr_cfg->help=0;
+  sr_cfg->statehost='0';
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
   sr_cfg->user_headers=NULL; 
   strcpy( sr_cfg->topic_prefix, "v02.post" );
   sr_cfg->topics=NULL;
-  sr_cfg->url=NULL;
+  sr_cfg->post_base_url=NULL;
 
   /* FIXME: should probably do this at some point.
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
@@ -1157,6 +1166,7 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   {
       if ( !(sr_cfg->post_broker) ) 
       {
+          log_msg( LOG_WARNING, "please replace broker with post_broker\n" );
           sr_cfg->post_broker  = sr_cfg->broker ;
           sr_cfg->broker  =  NULL ;
       }

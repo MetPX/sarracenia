@@ -105,7 +105,7 @@ struct sr_config_t {
   int                 debug;
   int                 delete;
   char               *directory;
-  char               *documentroot;
+  char               *post_base_dir;
   char                statehost;  // '0','s','f' meaning no, short fqdn
   int                 durable;
   sr_event_t          events;
@@ -141,7 +141,7 @@ struct sr_config_t {
   char               *to;
   struct sr_topic_t  *topics;
   char                topic_prefix[AMQP_MAX_SS];
-  char               *url;
+  char               *post_base_url;
   struct sr_header_t *user_headers;
   
 };

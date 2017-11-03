@@ -21,12 +21,6 @@
   file to use.
 
  
- limitations:
-    - Doesn't support document_root, absolute paths posted.
-    - Doesn't support cache.
-    - does support csv for url, to allow load spreading.
-    - seems to be about 30x faster than python version.
-
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -279,13 +273,13 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   *c='\0';
   //strcpy( m->path, fn );
 
-  if (sr_c->cfg->documentroot) 
+  if (sr_c->cfg->post_base_dir) 
   {
-      drfound = strstr(fn, sr_c->cfg->documentroot ); 
+      drfound = strstr(fn, sr_c->cfg->post_base_dir ); 
    
       if (drfound) 
       {
-          drfound += strlen(sr_c->cfg->documentroot) ; 
+          drfound += strlen(sr_c->cfg->post_base_dir) ; 
           strcpy( m->path, drfound );
       } 
   } 
@@ -401,7 +395,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
   strcpy( m.to_clusters, sr_c->cfg->to );
   strcpy( m.from_cluster, sr_c->cfg->post_broker->hostname );
   strcpy( m.source,  sr_c->cfg->post_broker->user );
-  set_url( m.url, sr_c->cfg->url );
+  set_url( m.url, sr_c->cfg->post_base_url );
   m.user_headers = sr_c->cfg->user_headers;
 
   // report...

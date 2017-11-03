@@ -21,12 +21,6 @@
   file to use.
 
  
- limitations:
-    - Doesn't support document_root, absolute paths posted.
-    - Doesn't support cache.
-    - does support csv for url, to allow load spreading.
-    - seems to be about 30x faster than python version.
-
  */
 #include <stdlib.h>
 #include <stdio.h>
