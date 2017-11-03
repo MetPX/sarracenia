@@ -234,6 +234,10 @@ int sr_config_startstop( struct sr_config_t *sr_cfg);
 
  */
 
+void sr_config_disable( struct sr_config_t *sr_cfg );
+
+void sr_config_enable( struct sr_config_t *sr_cfg );
+
 void sr_config_list( struct sr_config_t *sr_cfg );
 /* list the available configurations for the given progname */
 

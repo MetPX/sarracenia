@@ -51,6 +51,8 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *n;
 
    if ( !strcmp( option, "start" ) 
+        || !strcmp( option, "disable" )
+        || !strcmp( option, "enable" )
         || !strcmp( option, "help" )
         || !strcmp( option, "list" )
         || !strcmp( option, "status" )
@@ -1440,6 +1442,64 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
 
 }
 
+void sr_config_disable( struct sr_config_t *sr_cfg )
+{
+  char oldp[256];
+  char newp[256];
+  struct sr_path_t  *path;
+
+  if ( sr_cfg->configname ) 
+  {
+     sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+        sr_cfg->progname, sr_cfg->configname ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+        sr_cfg->progname, sr_cfg->configname ) ;
+     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
+     else log_msg(LOG_ERROR, "config %s not enabled.\n", sr_cfg->configname );
+  } 
+
+  for ( path=sr_cfg->paths; path ; path=path->next ) 
+  {  
+     sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+        sr_cfg->progname, path->path ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+        sr_cfg->progname, path->path ) ;
+     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
+     else log_msg(LOG_ERROR, "config %s not enabled.\n", path->path );
+  }
+}
+
+void sr_config_enable( struct sr_config_t *sr_cfg )
+{
+  char oldp[256];
+  char newp[256];
+  struct sr_path_t  *path;
+
+  if ( sr_cfg->configname ) 
+  {
+     sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+        sr_cfg->progname, sr_cfg->configname ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+        sr_cfg->progname, sr_cfg->configname ) ;
+     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
+     else 
+         log_msg(LOG_ERROR, "config %s not disabled.\n", sr_cfg->configname );
+  }
+
+  for ( path=sr_cfg->paths; path ; path=path->next ) 
+  {  
+     sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+        sr_cfg->progname, path->path ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+        sr_cfg->progname, path->path ) ;
+     if ( !access( oldp, R_OK ) ) rename( oldp, newp );
+     else log_msg(LOG_ERROR, "config %s not disabled.\n", path->path );
+  }
+}
+
+
+
+
 
 void sr_config_list( struct sr_config_t *sr_cfg )
 {
@@ -1448,6 +1508,7 @@ void sr_config_list( struct sr_config_t *sr_cfg )
   struct dirent *d;
   char *s;
   int l;
+  int enabled;
   
   sprintf( p, "%s/.config/sarra/%s", getenv("HOME"), sr_cfg->progname ) ;
   
@@ -1462,10 +1523,18 @@ void sr_config_list( struct sr_config_t *sr_cfg )
        {
            s = &(d->d_name[l]);
            if (strcmp(s,".conf"))
-              continue;
+           {
+              s++;
+              if (strcmp(s,".off"))
+                  continue;
+              enabled=0;
+              s-=5;
+           } else {
+              enabled=1;
+           }
            *s='\0';
        }
-       fprintf( stdout, "\t%s\n" , d->d_name );
+       fprintf( stdout, "\t%-20s (%s)\n" , d->d_name, enabled?"enabled":"disabled" );
   }
   closedir(cld);
 }

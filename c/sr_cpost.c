@@ -504,14 +504,27 @@ int main(int argc, char **argv)
 
     for (; i < argc; i++ )
     {
-          if ( !strcmp(sr_cfg.action,"foreground") )
+          if ( !strcmp( sr_cfg.action,"foreground") || !strcmp( sr_cfg.action, "enable" ) ||
+               !strcmp( sr_cfg.action, "disable" ) 
+             )
                sr_add_path(&sr_cfg, argv[i]);
-          else
+          else 
                sr_config_read(&sr_cfg, argv[i] );
+    }
 
+    if ( !strcmp( sr_cfg.action, "enable" ))
+    {
+        sr_config_enable( &sr_cfg );
+        exit(0);
     }
 
     if ( !strcmp(sr_cfg.action, "help") || sr_cfg.help ) usage();
+
+    if ( !strcmp( sr_cfg.action, "disable" ))
+    {
+        sr_config_disable( &sr_cfg );
+        exit(0);
+    }
 
     if ( !strcmp( sr_cfg.action, "list" ))
     {

@@ -83,6 +83,13 @@ int main(int argc, char **argv)
   {
         sr_add_path(&sr_cfg, argv[i]);
   }
+
+  if ( !strcmp( sr_cfg.action, "enable" ))
+  {
+        sr_config_enable( &sr_cfg );
+        exit(0);
+  }
+  
   if ( sr_cfg.paths )
   {
         sr_config_read(&sr_cfg, sr_cfg.paths->path );
@@ -90,6 +97,12 @@ int main(int argc, char **argv)
 
   if ( sr_cfg.help ) usage();
 
+  if ( !strcmp( sr_cfg.action, "disable" ))
+  {
+        sr_config_disable( &sr_cfg );
+        exit(0);
+  }
+  
   if ( !strcmp( sr_cfg.action, "list" ))
   {
         sr_config_list( &sr_cfg );
