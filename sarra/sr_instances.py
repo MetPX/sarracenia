@@ -127,7 +127,7 @@ class sr_instances(sr_config):
         else :
            self.logger.error("action unknown %s" % action)
            self.help()
-           os_.exit(1)
+           os._exit(1)
 
     def exec_action_on_all(self,action):
         if   action == 'start'      : pass # todo
