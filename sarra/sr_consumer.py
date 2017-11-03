@@ -215,12 +215,6 @@ class sr_consumer:
         if os.path.isfile(self.old_queuepath) and not os.path.isfile(self.queuepath) :
            # hardlink (copy of old)
            os.link(self.old_queuepath,self.queuepath)
-           # getrid of old temporarely
-           os.unlink(self.old_queuepath)
-           # make a symlink old -> new (2 reasons)
-           #  -  keeps old file as a mean to go back with version
-           #  -  modification to new or old (reset) is preserved in both files
-           os.symlink(self.queuepath,self.old_queuepath)
            # during the transition both should be available is we go back
 
         # get rid up to the next line
