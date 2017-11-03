@@ -906,27 +906,9 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     poll = sr_poll(config,args)
-
-    if old :
-       poll.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : poll.foreground_parent()
-    elif action == 'reload'     : poll.reload_parent()
-    elif action == 'restart'    : poll.restart_parent()
-    elif action == 'start'      : poll.start_parent()
-    elif action == 'stop'       : poll.stop_parent()
-    elif action == 'status'     : poll.status_parent()
-
-    elif action == 'cleanup'    : poll.cleanup()
-    elif action == 'declare'    : poll.declare()
-    elif action == 'setup'      : poll.setup()
-    else :
-           poll.logger.error("action unknown %s" % action)
-           poll.help()
-           os._exit(1)
+    poll.exec_action(action,old)
 
     os._exit(0)
-
 
 # =========================================
 # direct invocation

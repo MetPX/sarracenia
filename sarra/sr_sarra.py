@@ -208,24 +208,7 @@ def main():
 
     sarra = sr_sarra(config,args)
 
-    if old :
-       sarra.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : sarra.foreground_parent()
-    elif action == 'reload'     : sarra.reload_parent()
-    elif action == 'restart'    : sarra.restart_parent()
-    elif action == 'start'      : sarra.start_parent()
-    elif action == 'stop'       : sarra.stop_parent()
-    elif action == 'status'     : sarra.status_parent()
-
-    elif action == 'cleanup'    : sarra.cleanup()
-    elif action == 'declare'    : sarra.declare()
-    elif action == 'setup'      : sarra.setup()
-
-    else :
-           sarra.logger.error("action unknown %s" % action)
-           self.help()
-           os._exit(1)
+    sarra.exec_action(action,old)
 
     os._exit(0)
 

@@ -80,6 +80,69 @@ class sr_instances(sr_config):
 
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
+
+    def exec_action(self,action,old=False):
+
+        if old :
+           self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+
+        # no config file given
+
+        if self.config_name == None:
+           if   action == 'stop'     : self.exec_action_on_all(action)
+           elif action == 'start'    : self.exec_action_on_all(action)
+           else :
+                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+           os._exit(0)
+
+        # a config file that does not exists
+
+        if not os.path.isfile(self.user_config) :
+           if   action == 'edit'    : self.exec_action_on_config(action)
+           else :
+                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+           os._exit(0)
+
+        # a config file exists
+
+        if   action == 'foreground' : self.foreground_parent()
+        elif action == 'reload'     : self.reload_parent()
+        elif action == 'restart'    : self.restart_parent()
+        elif action == 'start'      : self.start_parent()
+        elif action == 'stop'       : self.stop_parent()
+        elif action == 'status'     : self.status_parent()
+
+        elif action == 'cleanup'    : self.cleanup()
+        elif action == 'declare'    : self.declare()
+        elif action == 'setup'      : self.setup()
+
+        elif action == 'add'        : self.exec_action_on_config(action)
+        elif action == 'disable'    : self.exec_action_on_config(action)
+        elif action == 'edit'       : self.exec_action_on_config(action)
+        elif action == 'enable'     : self.exec_action_on_config(action)
+        elif action == 'list'       : self.exec_action_on_config(action)
+        elif action == 'log'        : self.exec_action_on_config(action)
+        elif action == 'remove'     : self.exec_action_on_config(action)
+
+        else :
+           self.logger.error("action unknown %s" % action)
+           self.help()
+           os_.exit(1)
+
+    def exec_action_on_all(self,action):
+        if   action == 'start'      : pass # todo
+        elif action == 'stop'       : pass # todo
+
+    def exec_action_on_config(self,action):
+
+        if   action == 'add'        : pass # todo
+        elif action == 'disable'    : pass # todo
+        elif action == 'edit'       : pass # todo
+        elif action == 'enable'     : pass # todo
+        elif action == 'list'       : pass # todo
+        elif action == 'log'        : pass # todo
+        elif action == 'remove'     : pass # todo
+
     
     def file_get_int(self,path):
         i = None
