@@ -1334,6 +1334,10 @@ ROLES
 
 *of interest only to administrators*
 
+Administrative options are set using::
+
+  sr_subscribe edit admin
+
 The *feeder* option specifies the account used by default system transfers for components such as
 sr_shovel, sr_sarra and sr_sender (when posting).
 
@@ -1379,7 +1383,11 @@ already correct.
 CONFIGURATION FILES
 -------------------
 
-The configuration file for an sr_subscribe configuration called *myflow*
+While one can manage configuration files using the *add*, *remove*,
+*list*, *edit*, *disable*, and *enable* actions, one can also do all
+of the same activities manually by manipulating files in the settings
+directory.  The configuration files for an sr_subscribe configuration 
+called *myflow* would be here:
 
  - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) 
 

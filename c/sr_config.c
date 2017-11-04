@@ -1497,7 +1497,7 @@ void cp( const char * s, const char *d )
 
 }
 
-char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *original_one )
+char* sr_config_find_one( struct sr_config_t *sr_cfg, const char *original_one )
 {
   static char oldp[256];
   char one[256];
@@ -1519,6 +1519,11 @@ char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *origina
      if (!strcmp(one,"default"))
      {
          sprintf( oldp, "%s/.config/sarra/default.conf", getenv("HOME") );
+         return(oldp);
+     }
+     if (!strcmp(one,"admin"))
+     {
+         sprintf( oldp, "%s/.config/sarra/admin.conf", getenv("HOME") );
          return(oldp);
      }
      if (!strcmp(one,"credentials"))
@@ -1614,7 +1619,7 @@ void sr_config_edit( struct sr_config_t *sr_cfg )
   char *one;
   char *editor;
 
-  one = sr_config_find_one_config( sr_cfg, sr_cfg->paths->path );
+  one = sr_config_find_one( sr_cfg, sr_cfg->paths->path );
 
   editor = getenv( "EDITOR" );
   if (!editor) editor="/usr/bin/vi";
@@ -1642,12 +1647,12 @@ void sr_config_remove( struct sr_config_t *sr_cfg )
 {
   char *one;
 
-  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  one = sr_config_find_one( sr_cfg, sr_cfg->configname );
   if (one) unlink(one);
 
   for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
   {
-     one = sr_config_find_one_config( sr_cfg, path->path );
+     one = sr_config_find_one( sr_cfg, path->path );
      if (one) unlink(one);
   }
 }
@@ -1657,7 +1662,7 @@ void sr_config_disable( struct sr_config_t *sr_cfg )
   char *one;
   char newp[256];
 
-  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  one = sr_config_find_one( sr_cfg, sr_cfg->configname );
   if (one) 
   {
      if (!strcmp( &(one[strlen(one)-4]),".off"))
@@ -1670,7 +1675,7 @@ void sr_config_disable( struct sr_config_t *sr_cfg )
   }
   for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
   {
-     one = sr_config_find_one_config( sr_cfg, path->path );
+     one = sr_config_find_one( sr_cfg, path->path );
      if (one)
      {
          if (!strcmp( &(one[strlen(one)-4]),".off"))
@@ -1689,7 +1694,7 @@ void sr_config_enable( struct sr_config_t *sr_cfg )
   char *one;
   char newp[256];
 
-  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  one = sr_config_find_one( sr_cfg, sr_cfg->configname );
 fprintf( stderr, "enable, one=%s\n", one);
   if (one) 
   {
@@ -1702,7 +1707,7 @@ fprintf( stderr, "enable, one=%s\n", one);
   }
   for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
   {
-     one = sr_config_find_one_config( sr_cfg, path->path );
+     one = sr_config_find_one( sr_cfg, path->path );
 fprintf( stderr, "disable, one=%s\n", one);
      if (one)
      {

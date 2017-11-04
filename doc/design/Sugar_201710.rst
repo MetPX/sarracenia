@@ -99,6 +99,12 @@ additional *actions* component x::
 
         default     -- edits default.conf
         credentials -- edits credentials.conf
+        admin       -- edits admin.conf
+
+        admin.conf should be automagically sourced, like default.conf by sr_audit.
+        don't think anyone else should use it.
+        likely *declare* *admin* *feeder* stuff should go there rather than default.conf.
+
 
   log                      exec tail -f of the log file of the config file...
                           if instances >1  warn monitoring is easier with sr_report.
