@@ -1730,10 +1730,16 @@ void sr_config_list( struct sr_config_t *sr_cfg )
            if (strcmp(s,".conf"))
            {
               s++;
-              if (strcmp(s,".off"))
-                  continue;
-              enabled=0;
-              s-=5;
+              if (!strcmp(s,".inc"))
+              {
+                  enabled=0;
+                  s+=4;
+              } else {
+                  if (strcmp(s,".off"))
+                      continue;
+                  enabled=0;
+                  s-=5;
+              }
            } else {
               enabled=1;
            }
