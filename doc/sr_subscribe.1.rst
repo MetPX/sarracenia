@@ -18,7 +18,7 @@ SYNOPSIS
 
  **sr_subscribe** foreground|start|stop|restart|reload|status configfile
 
- **sr_subscribe** cleanup|declare|setup configfile
+ **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
 
  (formerly **dd_subscribe** )
 
@@ -58,18 +58,25 @@ followed by an a configuration file.
 
 When any component is invoked, an operation and a configuration file are specified. The operation is one of:
 
- - foreground:  run a single instance in the foreground logging to stderr
+ - foreground: run a single instance in the foreground logging to stderr
  - restart: stop and then start the configuration.
  - start:  start the configuration running
  - status: check if the configuration is running.
  - stop: stop the configuration from running
 
 The remaining operations manage the resources (exchanges,queues) used by the component on
-the rabbitmq server.
+the rabbitmq server, or manage the configurations.
 
  - cleanup:  deletes the component's resources on the server
  - declare:  creates the component's resources on the server
  - setup:    like declare, additionnaly does queue bindings
+ - add:      Add to the list of available configurations.
+ - list:     List all the configurations available.
+ - edit:     modify an existing configuration.
+ - remove:   Remove a configuration
+ - disable:  mark a configuration as ineligible to run. 
+ - enable:   mark a configuration as eligible to run. 
+
 
 For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with
 the dd configuration as a single foreground instance.
@@ -84,11 +91,17 @@ The actions **cleanup**, **declare**, **setup** can be used to manage resources 
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
 the resources. **setup** creates and additionally binds the queues.
 
+The **add, remove, list, edit, enable & disable** actions are used to manage the list 
+of configurations.  One can see all of the configurations available using the **list**
+action.  using the **edit** option, one can work on a particular configuarion.
+A *disabled* configuration will not be started or restarted by the **start**,  
+**foreground**, or **restart** actions. It can be used to set aside a configuration
+temporarily.
 
 Documentation
 -------------
 
-When the command line is invoked with either the *help* action, or *-h* *-help* op
+When the command line is invoked with either the *help* action, or *-help* op
 **help** has a component print a list of valid options. While the manual pages provide
 reference material, that is the ability to locate specific information quickly, it
 is not meant as a starting point for using the package.  There guides available
@@ -113,40 +126,38 @@ and contributors:
 There are also other manual pages available here: `See Also`_
 
 
-CONFIGURATION FILES
--------------------
+Configurations
+--------------
 
-The configuration file for an sr_subscribe configuration called *myflow*
+If one has a ready made configuration called *xvan_f14.conf*, it can be 
+added to the list of known ones with::
 
- - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) 
+  sr_subscribe add xvan_f14
 
+Each configuration file manages the consumers for a single queue on
+the broker. To view the available configurations, use::
 
- - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
-   C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
+  blacklab% sr_subscribe list
 
- - MAC: FIXME.
+  blacklab% /sr_cpump list
+  Configurations available for sr_cpump:
+    t_no_large_files.inc (disabled)
+    xvan_f15             (enabled)
+    xvan_f14             (enabled)
+    pelle_dd2_f05        (enabled)
+    pelle_dd1_f04        (enabled)
+  blacklab%
 
-The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
-are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+one can then modify it using::
 
-One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
-individual configuration files can be placed in any directory and invoked with the 
-complete path.   When components are invoked, the provided file is interpreted as a 
-file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
-component will look in the component's config directory ( **config_dir** / **component** )
-for a matching .conf file.
+  sr_subscribe edit myconfig
 
-If it is still not found, it will look for it in the site config dir
-(linux: /usr/share/default/sarra/**component**).
+(The edit command uses the EDITOR environment variable, if present.)
+Once satisfied, one can start the the configuration running::
 
-Finally, if the user has set option **remote_config** to True and if he has
-configured web sites where configurations can be found (option **remote_config_url**),
-The program will try to download the named file from each site until it finds one.
-If successful, the file is downloaded to **config_dir/Downloads** and interpreted
-by the program from there.  There is a similar process for all *plugins* that can
-be interpreted and executed within sarracenia components.  Components will first
-look in the *plugins* directory in the users config tree, then in the site
-directory, then in the sarracenia package itself, and finally it will look remotely.
+  sr_subscibe start myconfig
+
+What goes into the files? See next section:
 
 
 Option Syntax
@@ -224,25 +235,34 @@ sequence #2::
    will it match something like .gif2 ? is there an assumed .* at the end?
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
+accept .* (which accepts everything) is encountered before the reject statement, 
+so the reject has no effect.
 
 Several options that need to be reused in different config file can be grouped in a file.
 In each config where the options subset should appear, the user would then use :
 
   - **--include <includeConfigPath>**
 
-The includeConfigPath would normally reside under the same config dir of its master configs.
-There is no restriction, any option  can be placed in a config file included. The user must
-be aware that, for many options, several declarations means overwriting their values.
+The includeConfigPath would normally reside under the same config dir of its
+master configs. There is no restriction, any option can be placed in a config file
+included. The user must be aware that, for many options, several declarations
+means overwriting their values.
 
     
 LOG FILES
 ---------
 
-As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) one normally examines its log
-file to find out how processing is going.  The log files are placed, as per the  XDG Open Directory Specification,
-There will be a log file for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
+As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) 
+one normally examines its log file to find out how processing is going.  When only
+a single instance is running, one can normally view the log of the running process
+like so::
+
+   sr_subscribe log *myconfig*
+
+Where *myconfig* is the name of the running configuration.  Log files 
+are placed, as per the XDG Open Directory Specification, There will be a log file 
+for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
 
    linux in linux: ~/.cache/sarra/log/sr_subscribe_myflow_0001.log
    Windows: FIXME? dunno.
@@ -253,8 +273,13 @@ One can override placement on linux by setting the XDG_CACHE_HOME environment va
 CREDENTIALS
 -----------
 
-One normally does not specify passwords in configuration files.  Rather they are placed in the credentials file.
-For every url specified that requires a password, one places a matching entry in credentials.conf.
+One normally does not specify passwords in configuration files.  Rather they are placed 
+in the credentials file::
+
+   sr_subscribe edit credentials
+
+For every url specified that requires a password, one places 
+a matching entry in credentials.conf.
 The broker option sets all the credential information to connect to the  **RabbitMQ** server 
 
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
@@ -298,20 +323,22 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.html>`_ messages, 
-announcing the availability of a file by publishing it´s URL ( or a part of a file ), but 
-there are also `sr_report(7) <sr_report.7.html>`_ messages which can be processed using the 
-same tools.  AMQP messages are published to an exchange on a broker (AMQP server.)  The 
-exchange delivers messages to queues.  To receive messages, one must provide the credentials 
-to connect to the broker (AMQP message pump).  Once connected, a consumer needs to create a 
-queue to hold pending messages.  The consumer must then bind the queue to one or more exchanges 
-so that they put messages in its queue.
+AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.html>`_ 
+messages, announcing the availability of a file by publishing it´s URL ( or a part 
+of a file ), but there are also `sr_report(7) <sr_report.7.html>`_ messages which 
+can be processed using the same tools. AMQP messages are published to an exchange 
+on a broker (AMQP server.) The exchange delivers messages to queues. To receive 
+messages, one must provide the credentials to connect to the broker (AMQP message 
+pump). Once connected, a consumer needs to create a queue to hold pending messages.
+The consumer must then bind the queue to one or more exchanges so that they put 
+messages in its queue.
 
 Once the bindings are set, the program can receive messages. When a message is received,
 further filtering is possible using regular expression onto the AMQP messages.
 After a message passes this selection process, and other internal validation, the
-component can run an **on_message** plugin script to perform additional message processing.
-If this plugin returns False, the message is discarded. If True, processing continues.
+component can run an **on_message** plugin script to perform additional message 
+processing. If this plugin returns False, the message is discarded. If True, 
+processing continues.
 
 The following sections explains all the options to set this "consuming" part of
 sarracenia programs.
@@ -1348,6 +1375,41 @@ User credentials are placed in the credentials files, and *sr_audit* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
 
+
+CONFIGURATION FILES
+-------------------
+
+The configuration file for an sr_subscribe configuration called *myflow*
+
+ - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) 
+
+
+ - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
+
+ - MAC: FIXME.
+
+The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
+are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+
+One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
+individual configuration files can be placed in any directory and invoked with the 
+complete path.   When components are invoked, the provided file is interpreted as a 
+file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
+component will look in the component's config directory ( **config_dir** / **component** )
+for a matching .conf file.
+
+If it is still not found, it will look for it in the site config dir
+(linux: /usr/share/default/sarra/**component**).
+
+Finally, if the user has set option **remote_config** to True and if he has
+configured web sites where configurations can be found (option **remote_config_url**),
+The program will try to download the named file from each site until it finds one.
+If successful, the file is downloaded to **config_dir/Downloads** and interpreted
+by the program from there.  There is a similar process for all *plugins* that can
+be interpreted and executed within sarracenia components.  Components will first
+look in the *plugins* directory in the users config tree, then in the site
+directory, then in the sarracenia package itself, and finally it will look remotely.
 
 
 

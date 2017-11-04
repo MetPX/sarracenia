@@ -103,13 +103,16 @@ First initialize the credentials storage file::
 
 Then a configuration to obtain these files will look like so::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% cat >dd_swob.conf <<EOT
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
   # write all SWOBS into the current working directory.
   EOT
+
+  blacklab% sr_subscribe add dd_swob.conf
+
 
 On the first line, *broker* indicates where to connect to get the
 stream of notifications. The term *broker* is taken from AMQP (http://www.amqp.org), 
@@ -132,7 +135,7 @@ subscriber.
 
 Let´s start up a subscriber (assume the config file was called dd_swob.conf)::
 
-  blacklab% sr_subscribe start ../dd_swob.conf 
+  blacklab% sr_subscribe start dd_swob
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
   2015-12-03 06:53:35,269 [INFO] instances 1 
   2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
@@ -165,6 +168,10 @@ posted on the AMQP broker there.  If we take a look at the swob file created, it
 immediately gives an indication of whether it succeeded in connecting to the broker::
 
   blacklab% tail ~/.cache/sarra/sr_subscribe_dd_swob_0001.log
+
+  *or*
+
+  blacklab% sr_subscribe log dd_swob
   
   2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
   2015-12-03 17:32:01,834 [INFO] user_config = 1 ../dd_swob.conf
@@ -215,8 +222,9 @@ Giving all the information contained in the notification.  Here is a failure::
   2015-12-03 17:32:30,786 [ERROR] Download failed http://dd2.weather.gc.ca/observations/swob-ml/20151203/CXFB/2015-12-03-2200-CXFB-AUTO-swob.xml
   2015-12-03 17:32:30,787 [ERROR] Server couldn't fulfill the request. Error code: 404, Not Found
 
-Note that this message is not always a failure, as sr_subscribe retries a few times before giving up.
-In any event, after a few minutes, Here is what the current directory looks like::
+Note that this message is not always a failure, as sr_subscribe retries 
+a few times before giving up. In any event, after a few minutes, Here is what 
+the current directory looks like::
 
   blacklab% ls -al | tail
   -rw-rw-rw-  1 peter peter   7875 Dec  3 17:36 2015-12-03-2236-CL3D-AUTO-minute-swob.xml
@@ -236,36 +244,39 @@ Server Side Resources Allocated for Subscribers
 -----------------------------------------------
 
 Every configuration results in corresponding resources being declared on the broker.
-When changing *subtopic* or *queue* settings, or when one expects to not use a configuration for
-an extended period of time, it is best to::
+When changing *subtopic* or *queue* settings, or when one expects to not use 
+a configuration for an extended period of time, it is best to::
 
   sr_subscribe cleanup CMC.conf
 
 which will de-allocate the queue (and it's bindings) on the server.
 
-Why? Whenever a subscriber is started, a queue is created on the data pump, with the topic bindings
-set by the configuration file. If the subscriber is stopped, the queue keeps getting messages
-as defined by subtopic selection, and when the subscriber starts up again, the queued messages
-are forwarded to the client. So when the *subtopic* option is changed, since it is already 
-defined on the server, one ends up adding a binding rather than replacing it.  For example,
-if one has a subtopic that contains SATELLITE, and then stops the subscriber, edit the file
-and now the topic contains only RADAR, when the subscriber is restarted, not only will all the
-queued satellite files be sent to the consumer, but the RADAR is added to the bindings, rather
-than replacing them, so the subscriber will get bothe SATELLITE and RADAR data even though
-the configuration no longer contains the former.
+Why? Whenever a subscriber is started, a queue is created on the data pump, with 
+the topic bindings set by the configuration file. If the subscriber is stopped, 
+the queue keeps getting messages as defined by subtopic selection, and when the 
+subscriber starts up again, the queued messages are forwarded to the client. 
+So when the *subtopic* option is changed, since it is already defined on the 
+server, one ends up adding a binding rather than replacing it.  For example,
+if one has a subtopic that contains SATELLITE, and then stops the subscriber, 
+edit the file and now the topic contains only RADAR, when the subscriber is 
+restarted, not only will all the queued satellite files be sent to the consumer, 
+but the RADAR is added to the bindings, rather than replacing them, so the 
+subscriber will get bothe SATELLITE and RADAR data even though the configuration 
+no longer contains the former.
 
-Also, if one is experimenting, and a queue is to be stopped for a very long time, it may accumulate
-a large number of messages. The total number of messages on a data pump has an effect on the
-pump performance for all users. It is therefore advisable to have the pump de-allocate resources
-when they will not be needed for an extended periods, or when experimenting with different settings.
+Also, if one is experimenting, and a queue is to be stopped for a very long 
+time, it may accumulate a large number of messages. The total number of messages 
+on a data pump has an effect on the pump performance for all users. It is therefore 
+advisable to have the pump de-allocate resources when they will not be needed 
+for an extended periods, or when experimenting with different settings.
 
 
 Working with Multiple Configurations
 -------------------------------------
 
-Place all configuration files, with the .conf suffix, in a standard directory: ~/.config/sarra/subscribe/
-For example, if there are two files in that directory:  CMC.conf and NWS.conf,
-one could then run:: 
+Place all configuration files, with the .conf suffix, in a standard 
+directory: ~/.config/sarra/subscribe/ For example, if there are two files in 
+that directory: CMC.conf and NWS.conf, one could then run:: 
 
   peter@idefix:~/test$ sr_subscribe start CMC.conf 
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
@@ -278,9 +289,10 @@ one could then run::
   2016-01-14 18:13:01,427 [INFO] sr_subscribe CMC 0006 starting
   peter@idefix:~/test$ 
 
-and the configuration in the directory would be invoked.  Also, one can use by using 
-the sr command to start/stop multiple configurations at once.  The sr command will go through the 
-default directories and start up all the configurations it finds::
+and the configuration in the directory would be invoked. Also, one can use by
+using the sr command to start/stop multiple configurations at once. The sr 
+command will go through the default directories and start up all the 
+configurations it finds::
 
   peter@idefix:~/test$ sr start
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
@@ -295,35 +307,36 @@ default directories and start up all the configurations it finds::
   2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0003 starting
   peter@idefix:~/test$ 
 
-will start up some sr_subscribe processes as configured by CMC.conf and others to match NWS.conf.
-sr stop will also do what you would expect.  As will sr status.  
+will start up some sr_subscribe processes as configured by CMC.conf and others 
+to match NWS.conf. Sr stop will also do what you would expect. As will sr status.  
 
 
 High Priority Delivery
 ----------------------
 
-While the Sarracenia protocol does not provide explicit prioritization, the use of
-multiple queues provides similar benefits.  Each configuration results 
-in a queue declaraton on the server side.  Group products at like priority into 
-a queue by selecting them using a common configuration.  The smaller the groupings, 
+While the Sarracenia protocol does not provide explicit prioritization, the use
+of multiple queues provides similar benefits. Each configuration results
+in a queue declaraton on the server side. Group products at like priority into
+a queue by selecting them using a common configuration. The smaller the groupings,
 the lower the delay of processing. While all queues are processed at the same priority,
 data passes though shorter queues more quickly. One can summarize with:
 
   **Use Multiple Configurations to Prioritize**
 
 To make the advice concrete, take the example of the Environment Canada data 
-mart ( dd.weather.gc.ca ), which distributes gridded binaries, GOES satellite imagery, many 
-thousands of city forecasts, observations, RADAR products, etc...  For real-time weather, warnings 
-and RADAR data are the highest priority. At certain times of the day, or in cases of backlogs, 
-many hundreds of thousands of products can delay receipt of high priority products
-if only a single queue is used.  
+mart ( dd.weather.gc.ca ), which distributes gridded binaries, GOES satellite 
+imagery, many thousands of city forecasts, observations, RADAR products, etc...  
+For real-time weather, warnings and RADAR data are the highest priority. At certain 
+times of the day, or in cases of backlogs, many hundreds of thousands of products 
+can delay receipt of high priority products if only a single queue is used.  
 
 To ensure prompt processing of data in this case, define one configuration to subscribe
 to weather warnings (which are a very small number of products), a second for the RADARS
-(a larger but still relatively small group), and a third (largest grouping) for all the other data. 
-Each configuration will use a separate queue.  Warnings will be processed fastest, RADARS will queue
-up against each other and so experience some more delay, and other products will share a single
-queue and be subject to more delay in cases of backlog.
+(a larger but still relatively small group), and a third (largest grouping) for all
+the other data. Each configuration will use a separate queue. Warnings will be
+processed fastest, RADARS will queue up against each other and so experience some
+more delay, and other products will share a single queue and be subject to more
+delay in cases of backlog.
 
 
 
@@ -338,10 +351,10 @@ Refining Selection
 
 The *accept* option applies on the sr_subscriber processes themselves,
 providing regular expression based filtering of the notifications which are transferred.  
-In contrast to operating on the topic (a transformed version of the path), *accept* operates 
-on the actual path (well, URL), indicating what files within the notification stream 
-received should actually be downloaded.  Look in the *Downloads* line of the log file 
-for examples of this transformed path.
+In contrast to operating on the topic (a transformed version of the path), *accept* 
+operates on the actual path (well, URL), indicating what files within the 
+notification stream received should actually be downloaded. Look in the *Downloads* 
+line of the log file for examples of this transformed path.
 
 .. Note:: Brief Introduction to Regular Expressions
 
@@ -365,9 +378,9 @@ for examples of this transformed path.
   - https://en.wikipedia.org/wiki/Regular_expression
   - http://www.regular-expressions.info/ 
 
-This is a different language than what is used in the subtopics, because the simpler language
-in the subtopic directives comes from the AMQP specification.  We are not able to provide
-full regular expressions for topic filtering.
+This is a different language than what is used in the subtopics, because the 
+simpler language in the subtopic directives comes from the AMQP specification.
+We are not able to provide full regular expressions for topic filtering.
 
 
 back to sample configuration files:
@@ -388,15 +401,15 @@ This configuration, from the subscriber point of view, will likely deliver
 the same data as the previous example. However, the default subtopic being 
 a wildcard means that the server will transfer all notifications for the 
 server (likely millions of them) that will be discarded by the subscriber 
-process applying the accept clause.  It will consume a lot more CPU and 
-bandwidth on both server and client.  One should choose appropriate subtopics 
+process applying the accept clause. It will consume a lot more CPU and 
+bandwidth on both server and client. One should choose appropriate subtopics 
 to minimize the notifications that will be transferred only to be discarded.
 The *accept* (and *reject*) patterns is used to further refine *subtopic* rather 
 than replace it.
 
 By default, the files downloaded will be placed in the current working
-directory when sr_subscribe was started.  This can be overridden using
-the *directory* option
+directory when sr_subscribe was started. This can be overridden using
+the *directory* option.
 
 If downloading a directory tree, and the intent is to mirror the tree, 
 then the option mirror should be set::
@@ -522,32 +535,34 @@ changed since the last poll::
      find . -newer .last_poll -print | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something
   done
 
-All of these methods have in common that one walks a file hierarchy every so often, polling
-each directory by reading it's entirety to find new entries.  There is a natural maximum rate 
-one can poll a directory tree, and there is good deal of overhead to walking trees, especially 
-when they are large and deep.  To avoid polling, one can use the inotifywait command::
+All of these methods have in common that one walks a file hierarchy every so often, 
+polling each directory by reading it's entirety to find new entries.  There is a 
+natural maximum rate one can poll a directory tree, and there is good deal of 
+overhead to walking trees, especially when they are large and deep. To avoid 
+polling, one can use the inotifywait command::
 
   inotifywait -r `pwd` | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something 
 
 On a truly local file system, inotifywait is a lot more efficient than polling methods, 
 but the efficiency of inotify might not be all that different from polling on remote
-directories (where, in some cases it is actually implemented by polling under the covers.)
-There is also a limit to the number of things that can be watched this way on a system as a whole
-and the process of scanning a large directory tree to start up an inotifywait can be quite
-significant.
+directories (where, in some cases it is actually implemented by polling under the 
+covers.) There is also a limit to the number of things that can be watched this 
+way on a system as a whole and the process of scanning a large directory tree to 
+start up an inotifywait can be quite significant.
 
-Regardless of the method used, the principle behind Basic File Reception is that sr_subscribe
-writes the file to a directory, and an independent process does i/o to find the new file.
-It is worth noting that it would be more efficient, in terms of cpu and i/o of the system,  
-if sr_subscribe would directly inform the processing software that the file has arrived.
+Regardless of the method used, the principle behind Basic File Reception is that 
+sr_subscribe writes the file to a directory, and an independent process does i/o to 
+find the new file. It is worth noting that it would be more efficient, in terms 
+of cpu and i/o of the system, if sr_subscribe would directly inform the processing 
+software that the file has arrived.
 
 
 Plugins
 -------
 
 Default file processing is often fine, but there are also pre-built customizations that
-can be used to change processing done by components.  The list of pre-built plugins is
-in a 'plugins' directory wherever the package is installed.  here is a sample list:
+can be used to change processing done by components. The list of pre-built plugins is
+in a 'plugins' directory wherever the package is installed. Here is a sample list:
 
 +-----------------------------+---------------------------------------------------------+
 |destfn_sample                | sample destfn_script to rename files when delivering.   |
@@ -601,7 +616,7 @@ When plugins have options, the options must be placed before the plugin declarat
 in the configuration file.
 
 Plugins are all written in python, and users can create their own and place them
-in ~/.config/sarra/plugins.  For information on creating new custom plugins, see
+in ~/.config/sarra/plugins. For information on creating new custom plugins, see
 The `Sarracenia Programing Guide <Prog.html>`_
 
 
@@ -609,13 +624,14 @@ The `Sarracenia Programing Guide <Prog.html>`_
 Better File Reception
 ---------------------
 
-If, instead of data processors looking at a directory with an independent process every second 
-to see if new files have arrived, there were a process to directly tell those processes the 
-names of files which have arrived, processing could be done far more quickly and efficiently.
+If, instead of data processors looking at a directory with an independent process 
+every second to see if new files have arrived, there were a process to directly 
+tell those processes the names of files which have arrived, processing could be 
+done far more quickly and efficiently.
 
-The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by writing the names 
-of files downloaded to a named pipe.  setting this up required two lines in an sr_subscribe
-configuration file::
+The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by 
+writing the names of files downloaded to a named pipe. Setting this up required 
+two lines in an sr_subscribe configuration file::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
@@ -631,16 +647,17 @@ configuration file::
   # a pipe named '.rxpipe' in the current working directory.
   EOT
 
-With the *on_file* option, one can specify a processing option such as rxpipe.  With rxpipe, 
-every time a file transfer has completed and is ready for post-processing, its name is written 
-to the linux pipe (named .rxpipe) in the current working directory.  So the code for post-processing 
-becomes::
+With the *on_file* option, one can specify a processing option such as rxpipe.  
+With rxpipe, every time a file transfer has completed and is ready for 
+post-processing, its name is written to the linux pipe (named .rxpipe) in the 
+current working directory.  The code for post-processing becomes::
 
   tail -f  /home/peter/test/.rxpipe
 
-No listing of directories is needed, no filtering out of working files by the user is required, and 
-ingestion of partial files is completely avoided.  A downstream process is only given files that
-have been successfully downloaded, and typically much faster than polling methods allow.
+No listing of directories is needed, no filtering out of working files by the user 
+is required, and ingestion of partial files is completely avoided. A downstream 
+process is only given files that have been successfully downloaded, and typically 
+much faster than polling methods allow.
 
 .. NOTE::
    In the case where a large number of sr_subscribe instances are working
@@ -709,11 +726,11 @@ Gives lines in the log like so::
 Partial File Updates
 --------------------
 
-When files are large, they are divided into parts.  Each part is transferred
-separately by sr_sarracenia.  So when a large file is updated, new part
-notifications (posts) are created.  sr_subscribe will check if the file on 
+When files are large, they are divided into parts. Each part is transferred
+separately by sr_sarracenia. So when a large file is updated, new part
+notifications (posts) are created. sr_subscribe will check if the file on 
 disk matches the new part by checksumming the local data and comparing
-that to the post.  If they do not match, then the new part of the file
+that to the post. If they do not match, then the new part of the file
 will be downloaded.
 
 
@@ -723,19 +740,19 @@ Redundant File Reception
 In environments where high reliability is required, multiple servers
 are often configured to provide services. The Sarracenia approach to
 high availability is ´Active-Active´ in that all sources are online
-and producing data in parallel.  Each source publishes data,
+and producing data in parallel. Each source publishes data,
 and consumers obtain it from the first source that makes it availble,
 using checksums to determine whether the given datum has been obtained
 or not.
 
 This filtering requires implementation of a local dataless pump with 
-sr_winnow.  See the Administrator Guide for more information.
+sr_winnow. See the Administrator Guide for more information.
 
 More Information
 ----------------
 
 The `sr_subscribe(1) <sr_subscribe.1.html>`_ is the definitive source of reference
-information for configuration options.   For additional information,
+information for configuration options. For additional information,
 consult: `Sarracenia Documentation <http://metpx.sf.net/sarra-e-docs.html>`_
 
 
