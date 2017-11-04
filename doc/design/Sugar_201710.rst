@@ -97,6 +97,9 @@ additional *actions* component x::
 
   edit                     call up $EDITOR on the config file.
 
+        default     -- edits default.conf
+        credentials -- edits credentials.conf
+
   log                      exec tail -f of the log file of the config file...
                           if instances >1  warn monitoring is easier with sr_report.
                           if an instance is specified, then tail -f of that instance's log
