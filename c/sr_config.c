@@ -1505,6 +1505,16 @@ char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *origina
          if ( !strcmp(&(one[len_one]), ".inc") ) one[len_one]='\0';
      }
      //fprintf( stderr, " find_one, one: %s\n", one );
+     if (!strcmp(one,"default"))
+     {
+         sprintf( oldp, "%s/.config/sarra/default.conf", getenv("HOME") );
+         return(oldp);
+     }
+     if (!strcmp(one,"credentials"))
+     {
+         sprintf( oldp, "%s/.config/sarra/credentials.conf", getenv("HOME") );
+         return(oldp);
+     }
 
      sprintf( oldp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
         sr_cfg->progname, one ) ;
