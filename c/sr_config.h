@@ -190,12 +190,17 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname);
 
   */
 
-int sr_config_read( struct sr_config_t *sr_cfg, char *filename );
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort );
 
 /* 
    sr_config_read:
    read an sr configuration file, initialize the struct sr_config_t 
+
    return 1 on success, 0 on failure.
+
+   if *abort* is non-zero, then rather than returning a status, the routine 
+   causes the program to exit.
+
  */
 
 int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer );

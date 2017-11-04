@@ -509,7 +509,7 @@ int main(int argc, char **argv)
              )
                sr_add_path(&sr_cfg, argv[i]);
           else 
-               sr_config_read(&sr_cfg, argv[i] );
+               sr_config_read(&sr_cfg, argv[i], 1 );
     }
 
     if ( !strcmp( sr_cfg.action, "add" ))

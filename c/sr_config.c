@@ -594,7 +594,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
-      val = sr_config_read( sr_cfg, argument );
+      val = sr_config_read( sr_cfg, argument, 1 );
       if (val < 0 ) return(-1);
       return(2);
 
@@ -875,6 +875,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
 void sr_config_init( struct sr_config_t *sr_cfg, const char *progname ) 
 {
   char *c;
+  char p[256];
 
   sr_credentials_init();
   sr_cfg->action=strdup("foreground");
@@ -935,13 +936,12 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->statehost='0';
   sr_cfg->statehostval=NULL;
 
-  /* FIXME: should probably do this at some point.
+  /* FIXME: should probably do this at some point.  */
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
-  sr_config_read( sr_cfg, p );
-   */
+  sr_config_read( sr_cfg, p, 0 );
 }
 
-int sr_config_read( struct sr_config_t *sr_cfg, char *filename ) 
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort ) 
 /* 
   search for the given configuration 
   return 1 if it was found and read int, 0 otherwise.
@@ -1025,7 +1025,9 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename )
   if ( f==NULL ) 
   {
           log_msg( LOG_CRITICAL, "error: failed to find configuration: %s\n", filename );
-          exit(0);
+          if (abort)
+              exit(0);
+          return(1);
   }
 
   while ( fgets(token_line,TOKMAX,f) != NULL ) 

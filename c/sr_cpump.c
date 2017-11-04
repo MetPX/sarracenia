@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   
   if ( sr_cfg.paths )
   {
-        sr_config_read(&sr_cfg, sr_cfg.paths->path );
+        sr_config_read(&sr_cfg, sr_cfg.paths->path, 1 );
   }
 
   if ( sr_cfg.help ) usage();
