@@ -83,12 +83,44 @@ int main(int argc, char **argv)
   {
         sr_add_path(&sr_cfg, argv[i]);
   }
+
+  if ( !strcmp( sr_cfg.action, "add" ))
+  {
+        sr_config_add( &sr_cfg );
+        exit(0);
+  }
+  
+  if ( !strcmp( sr_cfg.action, "enable" ))
+  {
+        sr_config_enable( &sr_cfg );
+        exit(0);
+  }
+  
   if ( sr_cfg.paths )
   {
         sr_config_read(&sr_cfg, sr_cfg.paths->path );
   }
 
   if ( sr_cfg.help ) usage();
+
+  if ( !strcmp( sr_cfg.action, "disable" ))
+  {
+        sr_config_disable( &sr_cfg );
+        exit(0);
+  }
+
+  if ( !strcmp( sr_cfg.action, "remove" ))
+  {
+        sr_config_remove( &sr_cfg );
+        exit(0);
+  }
+  
+  if ( !strcmp( sr_cfg.action, "edit" ))
+  {
+        sr_config_edit( &sr_cfg );
+        exit(0);
+  }
+
 
   if ( !strcmp( sr_cfg.action, "list" ))
   {
@@ -101,6 +133,14 @@ int main(int argc, char **argv)
      log_msg( LOG_ERROR, "failed to finalize configuration\n");
      return(1); 
   }
+
+  if ( !strcmp( sr_cfg.action, "log" ))
+  {
+        sr_config_log( &sr_cfg );
+        exit(0);
+  }
+
+
   
     // Check if already running. (conflict in use of state files.)
 

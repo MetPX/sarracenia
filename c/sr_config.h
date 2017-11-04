@@ -107,6 +107,7 @@ struct sr_config_t {
   char               *directory;
   char               *post_base_dir;
   char                statehost;  // '0','s','f' meaning no, short fqdn
+  char               *statehostval;  // actual hostname resulting from statehost.
   int                 durable;
   sr_event_t          events;
   char                *exchange;
@@ -233,6 +234,20 @@ int sr_config_startstop( struct sr_config_t *sr_cfg);
       return config_is_running?0:-1
 
  */
+
+void sr_config_add( struct sr_config_t *sr_cfg );
+
+void sr_config_disable( struct sr_config_t *sr_cfg );
+
+void sr_config_edit( struct sr_config_t *sr_cfg );
+
+void sr_config_enable( struct sr_config_t *sr_cfg );
+
+void sr_config_log( struct sr_config_t *sr_cfg );
+
+void sr_config_remove( struct sr_config_t *sr_cfg );
+
+
 
 void sr_config_list( struct sr_config_t *sr_cfg );
 /* list the available configurations for the given progname */

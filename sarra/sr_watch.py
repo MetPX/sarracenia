@@ -504,19 +504,7 @@ def main():
 
     watch.event_handler(MyEventHandler())
 
-    if   action == 'foreground' : watch.foreground_parent()
-    elif action == 'reload'     : watch.reload_parent()
-    elif action == 'restart'    : watch.restart_parent()
-    elif action == 'start'      : watch.start_parent()
-    elif action == 'stop'       : watch.stop_parent()
-    elif action == 'status'     : watch.status_parent()
-
-    elif action == 'cleanup'    : watch.cleanup()
-    elif action == 'declare'    : watch.declare()
-    elif action == 'setup'      : watch.setup()
-    else :
-        watch.logger.error("action unknown %s" % action)
-        os._exit(1)
+    watch.exec_action(action,old)
 
     os._exit(0)
 

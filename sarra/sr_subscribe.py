@@ -1756,35 +1756,7 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     subscribe = sr_subscribe(config,args)
-
-    if action == None:
-       subscribe.logger.error("sr_subscribe requires an action")
-       subscribe.logger.error("Use 'sr_subscribe -help' for details")
-       sys.exit(1)
-
-    if subscribe.config_name == None or not os.path.isfile(subscribe.user_config) :
-       subscribe.logger.error("sr_subscribe requires a configuration file")
-       subscribe.logger.error("Use 'sr_subscribe -help' for details")
-       sys.exit(1)
-
-    if old :
-       subscribe.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : subscribe.foreground_parent()
-    elif action == 'reload'     : subscribe.reload_parent()
-    elif action == 'restart'    : subscribe.restart_parent()
-    elif action == 'start'      : subscribe.start_parent()
-    elif action == 'stop'       : subscribe.stop_parent()
-    elif action == 'status'     : subscribe.status_parent()
-
-    elif action == 'cleanup'    : subscribe.cleanup()
-    elif action == 'declare'    : subscribe.declare()
-    elif action == 'setup'      : subscribe.setup()
-
-    else :
-           subscribe.logger.error("action unknown %s" % action)
-           subscribe.help()
-           os_.exit(1)
+    subscribe.exec_action(action,old)
 
     os._exit(0)
 

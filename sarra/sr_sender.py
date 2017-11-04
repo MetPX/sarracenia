@@ -308,24 +308,7 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     sender = sr_sender(config,args)
-
-    if old:
-       sender.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : sender.foreground_parent()
-    elif action == 'reload'     : sender.reload_parent()
-    elif action == 'restart'    : sender.restart_parent()
-    elif action == 'start'      : sender.start_parent()
-    elif action == 'stop'       : sender.stop_parent()
-    elif action == 'status'     : sender.status_parent()
-
-    elif action == 'cleanup'    : sender.cleanup()
-    elif action == 'declare'    : sender.declare()
-    elif action == 'setup'      : sender.setup()
-
-    else :
-           sender.logger.error("action unknown %s" % action)
-           os._exit(1)
+    sender.exec_action(action,old)
 
     os._exit(0)
 

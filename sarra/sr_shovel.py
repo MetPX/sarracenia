@@ -170,25 +170,7 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     shovel = sr_shovel(config,args)
-
-    if old :
-       shovel.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : shovel.foreground_parent()
-    elif action == 'reload'     : shovel.reload_parent()
-    elif action == 'restart'    : shovel.restart_parent()
-    elif action == 'start'      : shovel.start_parent()
-    elif action == 'stop'       : shovel.stop_parent()
-    elif action == 'status'     : shovel.status_parent()
-
-    elif action == 'cleanup'    : shovel.cleanup()
-    elif action == 'declare'    : shovel.declare()
-    elif action == 'setup'      : shovel.setup()
-
-    else :
-           shovel.logger.error("action unknown %s" % action)
-           shovel.help()
-           os._exit(1)
+    shovel.exec_action(action,old)
 
     os._exit(0)
 

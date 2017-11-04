@@ -50,17 +50,23 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    struct sr_path_t *p;
    struct sr_path_t *n;
 
-   if ( !strcmp( option, "start" ) 
-        || !strcmp( option, "help" )
-        || !strcmp( option, "list" )
-        || !strcmp( option, "status" )
-        || !strcmp( option, "stop" ) 
-        || !strcmp( option, "foreground" ) 
-        || !strcmp( option, "reload" ) 
-        || !strcmp( option, "restart" ) 
-        || !strcmp( option, "setup" ) 
+   if (    !strcmp( option, "add" )
         || !strcmp( option, "cleanup" ) 
         || !strcmp( option, "declare" ) 
+        || !strcmp( option, "disable" )
+        || !strcmp( option, "edit" )
+        || !strcmp( option, "enable" )
+        || !strcmp( option, "foreground" ) 
+        || !strcmp( option, "help" )
+        || !strcmp( option, "list" )
+        || !strcmp( option, "log" )
+        || !strcmp( option, "status" )
+        || !strcmp( option, "stop" ) 
+        || !strcmp( option, "reload" ) 
+        || !strcmp( option, "remove" )
+        || !strcmp( option, "restart" ) 
+        || !strcmp( option, "setup" ) 
+        || !strcmp( option, "start" ) 
       )
    {
       if (sr_cfg->action) free(sr_cfg->action);
@@ -927,6 +933,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->post_base_url=NULL;
 
   sr_cfg->statehost='0';
+  sr_cfg->statehostval=NULL;
 
   /* FIXME: should probably do this at some point.
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
@@ -1081,6 +1088,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
         }
      }
   }
+  if (val) 
+     sr_cfg->statehostval = strdup(val);
 
   // if the state directory is missing, build it.
   if (val) {
@@ -1450,6 +1459,242 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
 
 }
 
+void cp( const char * s, const char *d ) 
+{
+   FILE *sfd=NULL;
+   FILE *dfd=NULL;
+   char buf[1024];
+
+   if ( ! ( sfd=fopen(s,"r") ) ) 
+   {
+     log_msg(LOG_ERROR, "opening config to read %s failed.\n", s );
+     return;
+   }   
+
+   if ( ! ( dfd=fopen(d,"w+") ) ) 
+   {
+     log_msg(LOG_ERROR, "opening config to write %s failed.\n", d );
+     return;
+   }   
+
+   while( NULL != fgets( buf, 1024, sfd ) ) 
+   {
+        fputs( buf, dfd ); 
+   }
+   fclose(sfd);
+   fclose(dfd);
+
+}
+
+char* sr_config_find_one_config( struct sr_config_t *sr_cfg, const char *original_one )
+{
+  static char oldp[256];
+  char one[256];
+  int  len_one;
+
+  //fprintf( stderr, " find_one, original_one: %s\n", original_one );
+  if ( original_one ) 
+  {
+
+     strcpy( one, original_one );
+     len_one = strlen(original_one) -5 ; 
+     if ( !strcmp(&(one[len_one]), ".conf") ) one[len_one]='\0';
+     else
+     {
+         len_one++; 
+         if ( !strcmp(&(one[len_one]), ".inc") ) one[len_one]='\0';
+     }
+     //fprintf( stderr, " find_one, one: %s\n", one );
+
+     sprintf( oldp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
+        sr_cfg->progname, one ) ;
+     if ( !access( oldp, R_OK ) ) return( oldp );
+     else 
+     {
+        //fprintf(stderr, "not %s\n", oldp );
+
+        sprintf( oldp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+            sr_cfg->progname, one ) ;
+
+        if ( !access( oldp, R_OK ) ) return( oldp );
+        else
+        {
+            //fprintf(stderr, "not %s\n", oldp );
+            sprintf( oldp, "%s/.config/sarra/%s/%s", getenv("HOME"),
+                 sr_cfg->progname, one ) ;
+            if ( !access( oldp, R_OK ) ) return( oldp );
+            else 
+            {
+                //fprintf(stderr, "not %s\n", oldp );
+                sprintf( oldp, "%s/.config/sarra/%s/%s.conf.off", getenv("HOME"), 
+                       sr_cfg->progname, one ) ;
+                if ( !access( oldp, R_OK ) ) return( oldp );
+                else 
+                {
+                   log_msg(LOG_ERROR, "config %s not found.\n", one  );
+                   //fprintf(stderr, "not %s\n", oldp );
+                }
+            }
+        }
+
+     }
+  } 
+  return(NULL);
+}
+
+void sr_config_add_one( struct sr_config_t *sr_cfg, const char *original_one )
+{
+  char oldp[256];
+  char newp[256];
+  char one[256];
+  int  len_one;
+
+  if ( original_one ) 
+  {
+     strcpy( one, original_one );
+     len_one = strlen(original_one) -5 ; 
+     if ( !strcmp(&(one[len_one]), ".conf") ) one[len_one]='\0';
+     else
+     {
+         len_one++; 
+         if ( !strcmp(&(one[len_one]), ".inc") ) one[len_one]='\0';
+     }
+     sprintf( oldp, "%s.inc", one ) ;
+     sprintf( newp, "%s/.config/sarra/%s/%s.inc", getenv("HOME"), 
+        sr_cfg->progname, one ) ;
+     if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+     else 
+     {
+        sprintf( oldp, "%s.conf", one ) ;
+        sprintf( newp, "%s/.config/sarra/%s/%s.conf", getenv("HOME"), 
+            sr_cfg->progname, one ) ;
+
+        if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+        else
+        {
+            sprintf( oldp, "%s", one ) ;
+            if ( !access( oldp, R_OK ) ) cp( oldp, newp );
+            else log_msg(LOG_ERROR, "config %s not found.\n", one  );
+        }
+
+     }
+  } 
+}
+
+void sr_config_add( struct sr_config_t *sr_cfg )
+{
+  sr_config_add_one( sr_cfg, sr_cfg->configname );
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+     sr_config_add_one( sr_cfg, path->path );
+}
+
+void sr_config_edit( struct sr_config_t *sr_cfg )
+{
+  char *one;
+  char *editor;
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->paths->path );
+
+  editor = getenv( "EDITOR" );
+  if (!editor) editor="/usr/bin/vi";
+
+  execlp( editor, editor, one, NULL );
+}
+
+void sr_config_log( struct sr_config_t *sr_cfg )
+{
+  char p[256];  
+
+  if (sr_cfg->statehost == '0' ) 
+  {
+     sprintf( p, "%s/.cache/sarra/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  } else {
+     sprintf( p, "%s/.cache/sarra/%s/log/sr_%s_%s_%03d.log", getenv("HOME"), 
+         sr_cfg->statehostval, sr_cfg->progname, sr_cfg->configname, sr_cfg->instance );
+  }
+
+  execlp( "/usr/bin/tail", "tail", "-f", p, NULL );
+}
+
+void sr_config_remove( struct sr_config_t *sr_cfg )
+{
+  char *one;
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  if (one) unlink(one);
+
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+     if (one) unlink(one);
+  }
+}
+
+void sr_config_disable( struct sr_config_t *sr_cfg )
+{
+  char *one;
+  char newp[256];
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+  if (one) 
+  {
+     if (!strcmp( &(one[strlen(one)-4]),".off"))
+     {
+         log_msg(LOG_INFO, "config %s already disabled.\n", one );
+     } else {
+         sprintf( newp, "%s.off", one );
+         rename( one, newp );
+     }
+  }
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+     if (one)
+     {
+         if (!strcmp( &(one[strlen(one)-4]),".off"))
+         {
+            log_msg(LOG_INFO, "config %s already disabled.\n", one );
+         } else {
+            sprintf( newp, "%s.off", one );
+            rename( one, newp );
+         }
+     }
+  }
+}
+
+void sr_config_enable( struct sr_config_t *sr_cfg )
+{
+  char *one;
+  char newp[256];
+
+  one = sr_config_find_one_config( sr_cfg, sr_cfg->configname );
+fprintf( stderr, "enable, one=%s\n", one);
+  if (one) 
+  {
+     strcpy( newp, one );
+     if (!strcmp( &(newp[strlen(newp)-4]),".off"))
+     {     
+         newp[strlen(newp)-4]='\0';
+         rename( one, newp );
+     }
+  }
+  for (struct sr_path_t *path=sr_cfg->paths; path ; path=path->next ) 
+  {
+     one = sr_config_find_one_config( sr_cfg, path->path );
+fprintf( stderr, "disable, one=%s\n", one);
+     if (one)
+     {
+         strcpy( newp, one );
+         if (!strcmp( &(newp[strlen(newp)-4]),".off"))
+         {     
+             newp[strlen(newp)-4]='\0';
+             rename( one, newp );
+         }
+     }
+  }
+}
+
 
 void sr_config_list( struct sr_config_t *sr_cfg )
 {
@@ -1458,6 +1703,7 @@ void sr_config_list( struct sr_config_t *sr_cfg )
   struct dirent *d;
   char *s;
   int l;
+  int enabled;
   
   sprintf( p, "%s/.config/sarra/%s", getenv("HOME"), sr_cfg->progname ) ;
   
@@ -1472,10 +1718,18 @@ void sr_config_list( struct sr_config_t *sr_cfg )
        {
            s = &(d->d_name[l]);
            if (strcmp(s,".conf"))
-              continue;
+           {
+              s++;
+              if (strcmp(s,".off"))
+                  continue;
+              enabled=0;
+              s-=5;
+           } else {
+              enabled=1;
+           }
            *s='\0';
        }
-       fprintf( stdout, "\t%s\n" , d->d_name );
+       fprintf( stdout, "\t%-20s (%s)\n" , d->d_name, enabled?"enabled":"disabled" );
   }
   closedir(cld);
 }

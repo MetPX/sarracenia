@@ -212,14 +212,10 @@ class sr_consumer:
         # transition old queuepath to new queuepath...
 
         self.old_queuepath = self.parent.user_cache_dir + os.sep + queuefile
-        if os.path.isfile(self.old_queuepath) :
-           f = open(self.old_queuepath)
-           self.queue_name = f.read()
-           f.close()
-           f = open(self.queuepath,'w')
-           f.write(self.queue_name)
-           f.close()
-           os.unlink(self.old_queuepath)
+        if os.path.isfile(self.old_queuepath) and not os.path.isfile(self.queuepath) :
+           # hardlink (copy of old)
+           os.link(self.old_queuepath,self.queuepath)
+           # during the transition both should be available is we go back
 
         # get rid up to the next line
         # ====================================================

@@ -80,6 +80,148 @@ class sr_instances(sr_config):
 
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
+
+    def exec_action(self,action,old=False):
+
+        if old :
+           self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+
+        # no config file given
+
+        if self.config_name == None:
+           if   action == 'list'     : self.exec_action_on_all(action)
+           elif action == 'restart'  : self.exec_action_on_all(action)
+           elif action == 'reload'   : self.exec_action_on_all(action)
+           elif action == 'start'    : self.exec_action_on_all(action)
+           elif action == 'stop'     : self.exec_action_on_all(action)
+           elif action == 'status'   : self.exec_action_on_all(action)
+           else :
+                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+           os._exit(0)
+
+        # a config file that does not exists
+
+        if not os.path.isfile(self.user_config) :
+           if   action == 'edit'    : self.exec_action_on_config(action)
+           else :
+                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+           os._exit(0)
+
+        # a config file exists
+
+        if   action == 'foreground' : self.foreground_parent()
+        elif action == 'reload'     : self.reload_parent()
+        elif action == 'restart'    : self.restart_parent()
+        elif action == 'start'      : self.start_parent()
+        elif action == 'stop'       : self.stop_parent()
+        elif action == 'status'     : self.status_parent()
+
+        elif action == 'cleanup'    : self.cleanup()
+        elif action == 'declare'    : self.declare()
+        elif action == 'setup'      : self.setup()
+
+        elif action == 'add'        : self.exec_action_on_config(action)
+        elif action == 'disable'    : self.exec_action_on_config(action)
+        elif action == 'edit'       : self.exec_action_on_config(action)
+        elif action == 'enable'     : self.exec_action_on_config(action)
+        elif action == 'list'       : self.exec_action_on_config(action)
+        elif action == 'log'        : self.exec_action_on_config(action)
+        elif action == 'remove'     : self.exec_action_on_config(action)
+
+        else :
+           self.logger.error("action unknown %s" % action)
+           self.help()
+           os._exit(1)
+
+    def exec_action_on_all(self,action):
+
+        configdir = self.user_config_dir + os.sep + self.program_dir
+
+        if not os.path.isdir(configdir)      : return
+
+        for confname in os.listdir(configdir):
+            if action == 'list': print("%s" % confname)
+            else:                subprocess.check_call([self.program_name, action, confname] )
+
+
+    # MG FIXME first shot
+    # a lot of things should be verified
+    # instead we log when something wrong
+    #
+    # ex.: add     : config does not end with .conf
+    #      disable : program is running
+    #      edit    : EDITOR variable exists
+    #      enable  : .off file exists
+    #      list    : add include files at the end
+    #      log     : probably need to configure -n for tail
+    #      remove  : program is running
+
+    def exec_action_on_config(self,action):
+        self.logger.debug("exec_action_on_config %s" % action)
+        
+        usr_dir = self.config_dir
+        usr_fil = self.user_config
+
+        ext     = '.conf'
+        if self.user_config[-4:] == '.inc' : ext = ''
+
+        def_dir = self.user_config_dir + os.sep + self.program_dir
+        def_fil = def_dir + os.sep + self.config_name + ext
+
+        if   action == 'add'        :
+             try   : os.link(usr_fil,def_fil)
+             except: self.logger.error("cound not add %s to %s" % (self.config_name + ext,def_dir))
+
+        elif action == 'disable'    :
+             src   = def_fil.replace('.off','')
+             dst   = src + '.off'
+             try   : os.rename(src,dst)
+             except: self.logger.error("cound not disable %s" % src )
+
+        elif action == 'edit'       :
+             try   : subprocess.check_call([ os.environ.get('EDITOR'), def_fil] )
+             except: self.logger.error("problem editor %s file %s" % (os.environ.get('EDITOR'), def_fil))
+
+        elif action == 'enable'     :
+             dst   = def_fil.replace('.off','')
+             src   = dst + '.off'
+             try   : os.rename(src,dst)
+             except: self.logger.error("cound not enable %s " % src )
+
+        elif action == 'list'       : 
+             try   : subprocess.check_call([ 'cat', usr_fil ] )
+             except: self.logger.error("could not cat %s" % usr_fil )
+
+        elif action == 'log' and ext == '.conf' :
+
+
+             if self.nbr_instances == 1 :
+                self.build_instance(1)
+                print("\ntail -f %s\n" % self.logpath)
+                try   : subprocess.check_call([ 'tail', '-f', self.logpath] )
+                except: self.logger.info("stop (or error?)")
+                return
+
+             if self.no > 0 :
+                self.build_instance(self.no)
+                print("\ntail -f %s\n" % self.logpath)
+                try   : subprocess.check_call([ 'tail', '-f', self.logpath] )
+                except: self.logger.info("stop (or error?)")
+                return
+
+             no=1
+             while no <= self.nbr_instances :
+                   self.build_instance(no)
+                   print("\ntail -f %s\n" % self.logpath)
+                   if not os.path.isfile(self.logpath) : continue
+                   try   : subprocess.check_call( [ 'tail', '-n10', self.logpath] )
+                   except: self.logger.error("could not tail -n 10 %s" % self.logpath)
+                   no = no + 1
+
+        elif action == 'remove'     : 
+             try   : os.unlink(def_fil)
+             except: self.logger.error("could not remove %s" % self.logpath)
+
     
     def file_get_int(self,path):
         i = None

@@ -145,24 +145,7 @@ def main():
     args,action,config,old = startup_args(sys.argv)
 
     winnow = sr_winnow(config,args)
-
-    if old :
-       winnow.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
-
-    if   action == 'foreground' : winnow.foreground_parent()
-    elif action == 'reload'     : winnow.reload_parent()
-    elif action == 'restart'    : winnow.restart_parent()
-    elif action == 'start'      : winnow.start_parent()
-    elif action == 'stop'       : winnow.stop_parent()
-    elif action == 'status'     : winnow.status_parent()
-
-    elif action == 'cleanup'    : winnow.cleanup()
-    elif action == 'declare'    : winnow.declare()
-    elif action == 'setup'      : winnow.setup()
-
-    else :
-           winnow.logger.error("action unknown %s" % action)
-           os._exit(1)
+    winnow.exec_action(action,old)
 
     os._exit(0)
 
