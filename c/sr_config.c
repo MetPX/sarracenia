@@ -1708,12 +1708,15 @@ fprintf( stderr, "disable, one=%s\n", one);
 
 void sr_config_list( struct sr_config_t *sr_cfg )
 {
-  char p[256];
+  char p[1024];
   DIR *cld;
+  FILE *f;
   struct dirent *d;
   char *s;
   int l;
   int enabled;
+  int pidstat;
+  pid_t pid;
   
   sprintf( p, "%s/.config/sarra/%s", getenv("HOME"), sr_cfg->progname ) ;
   
@@ -1722,6 +1725,9 @@ void sr_config_list( struct sr_config_t *sr_cfg )
   while ( ( d = readdir(cld)) ) 
   {
        if ( d->d_name[0] == '.' ) continue;
+
+
+       
        l = strlen(d->d_name);
        l -=5;
        if ( l > 0 ) 
@@ -1745,7 +1751,21 @@ void sr_config_list( struct sr_config_t *sr_cfg )
            }
            *s='\0';
        }
-       fprintf( stdout, "\t%-20s (%s)\n" , d->d_name, enabled?"enabled":"disabled" );
+
+       sprintf( p, "%s/.cache/sarra/%s/%s/i001.pid", getenv("HOME"), sr_cfg->progname,
+          d->d_name ) ;
+       f = fopen(p,"r");
+       if ( f ) // read the pid from the file.
+       {
+            fgets(p,PATH_MAX,f);
+            pid=atoi(p);
+            fclose(f);
+            pidstat = kill(pid,0);
+       } else {
+            pidstat=99;
+       }
+       fprintf( stdout, "\t%-20s (%s,%s)\n" , d->d_name, pidstat?"stopped":"running",
+            enabled?"enabled":"disabled" );
   }
   closedir(cld);
 }
