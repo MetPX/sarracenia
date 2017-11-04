@@ -54,7 +54,7 @@ void srshim_initialize(const char* progname)
      if ( config_read == 0 ) 
      {
        sr_config_init(&sr_cfg,progname);
-       config_read = sr_config_read(&sr_cfg,setstr,1);
+       config_read = sr_config_read(&sr_cfg,setstr,1,1);
        if (!config_read) return;
      }
      if ( !sr_config_finalize( &sr_cfg, 0 )) return;

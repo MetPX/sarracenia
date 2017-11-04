@@ -190,7 +190,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname);
 
   */
 
-int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort );
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int master );
 
 /* 
    sr_config_read:
@@ -200,6 +200,10 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort );
 
    if *abort* is non-zero, then rather than returning a status, the routine 
    causes the program to exit.
+
+   if *master* is set, then the file being read is a potential master configuration, that
+   is a named configuration file that will correspond to a running process.
+   if *master* is 0, then the file being read is only an include file.
 
  */
 

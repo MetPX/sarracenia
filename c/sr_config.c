@@ -594,7 +594,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
-      val = sr_config_read( sr_cfg, argument, 1 );
+      val = sr_config_read( sr_cfg, argument, 1, 1 );
       if (val < 0 ) return(-1);
       return(2);
 
@@ -937,14 +937,20 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->statehostval=NULL;
 
   /* FIXME: should probably do this at some point.  */
+  
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
-  sr_config_read( sr_cfg, p, 0 );
+  sr_config_read( sr_cfg, p, 0, 0 );
+   
 }
 
-int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort ) 
+int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int master ) 
 /* 
   search for the given configuration 
   return 1 if it was found and read int, 0 otherwise.
+
+  if abort is set, then if a problem is found panic and exit.
+ 
+  if master is set, then try to set configuration name.
 
  */
 {
@@ -958,7 +964,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort )
   int ret;
 
   /* set config name */
-  if (! config_depth ) 
+  if (master && ! config_depth ) 
   {
       strcpy(p,filename);
       c=strrchr(p, '/' );
@@ -1373,8 +1379,11 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
     struct timespec tsleep;
     int ret;
 
-    // Check if already running. (conflict in use of state files.)
+    // "default" cannot run.
+    if (!strcmp(sr_cfg->configname,"default")) return(0);
+    
 
+    // Check if already running. (conflict in use of state files.)
     if (sr_cfg->pid > 0) // there should be one running already.
     {
         ret=kill(sr_cfg->pid,0);

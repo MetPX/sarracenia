@@ -26,7 +26,7 @@ int main( int argc, char *const *argv ) {
 
   sr_cfg.progname = strdup("cpump");
   sr_config_init( &sr_cfg, argv[0] );
-  ret = sr_config_read( &sr_cfg, argv[1], 0 );
+  ret = sr_config_read( &sr_cfg, argv[1], 0, 1 );
   if (!ret) {
      fprintf(stderr, "failed to read config %s\n", argv[1] );
      exit(1);
