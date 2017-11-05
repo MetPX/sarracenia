@@ -1576,11 +1576,11 @@ class sr_config:
                          self.post_document_root = words1
                      n = 2
 
-                elif words0 in ['post_exchange','pe']: # See: sr_sarra,sender,shovel,winnow 
+                elif words0 in ['post_exchange','pe','px']: # See: sr_sarra,sender,shovel,winnow 
                      self.post_exchange = words1
                      n = 2
 
-                elif words0 in ['post_exchange_split','pes']: # sr_config.7, sr_shovel.1
+                elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1
                      self.post_exchange_split = int(words1)
                      n = 2
 
