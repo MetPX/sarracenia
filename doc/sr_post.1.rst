@@ -27,17 +27,17 @@ In contrast to most other sarracenia components that act as daemons,
 sr_post is a one shot invocation which posts and exits.
 Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
 
-To consume announcements and download the file.  To make files available 
-to subscribers, **sr_post** sends the announcements to an AMQP server, 
-also called a broker.  
+To make files available to subscribers, **sr_post** sends the announcements 
+to an AMQP server, also called a broker.  
 
 This manual page is primarily concerned with the python implementation,
 but there is also an implementation in C, which works nearly identically,
-except for the lack of plugins.  Differences:
+Differences:
 
+ - plugins are not supported in the C implementation.
  - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
- - *sleep* option, used only in the C implementation, transforms sr_cpost into something
-   that works like `sr_watch(1) <sr_watch.1.html>`_. 
+ - when the *sleep* option ( used only in the C implementation) is set to > 0,
+   it transforms sr_cpost into a daemon that works like `sr_watch(1) <sr_watch.1.html>`_.  
 
 
 Mandatory Settings

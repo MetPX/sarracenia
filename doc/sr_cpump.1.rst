@@ -27,8 +27,8 @@ with some limitations.
  - runs as only a single instance (no multiple instances.) 
  - does not support any plugins.
  - does not support vip for high availability.
- - different regular expression library:  POSIX vs. python.
- - does not support regex for the strip command (no non-greedy regex, which is key for this use case.)
+ - different regular expression library: POSIX vs. python.
+ - does not support regex for the strip command (no non-greedy regex)
 
 It can therefore act as a drop-in replacement for:
 
@@ -65,7 +65,10 @@ by simply <ctrl-c> on linux or use other means send SIGINT or SIGTERM to the pro
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
+the resources. **setup** creates and additionally does the bindings of queues.
+
+The actions **add**, **remove**, **edit**, **list**, **enable**, **disable** act
+on configurations.
 
 CONFIGURATION
 =============
