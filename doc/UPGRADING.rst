@@ -35,14 +35,30 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+
+**CHANGE**: change document_root -> base_dir (same for post_ variations.) The code still
+understands the old values, but you will see a warning message advising you to change it.
+
+**CHANGE**: URL option to post_base_url option.  will still understand old values, but warning will 
+result.
+
+**CHANGE**: use post_ versions in sr_post, so now it is post_base_url, post_base_dir, post_exchange
+Again, code still understands previous settings, but will warn.
+  
+**CHANGE**: now prefers to use pika library if available, but falls back to amqplib library
+available on older OS's.  amqplib will be deprecated over time.
+
+
 2.17.10a3
 ---------
+
+**BUGS**: switched to using pika for amqp library, which isn't available < ubuntu 16.04.
+    do not install on systems where pika not available.
 
 **CHANGE**: sr_sender now includes by default: on_message msg_2localfile, so that change
 from previous versions @ 2.17.10 no longer required.
 
 **ACTION**: must run sr_audit --reset --users foreground to correct permissions, since it was broken in previous release.  
-
 
 Many issues resolved closer to usable.
 
