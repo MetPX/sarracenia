@@ -10,8 +10,8 @@ import re
 class Http2Local(object):
 
     def __init__(self,parent) :
-        if hasattr(parent, 'document_root'):
-           parent.ldocroot = parent.document_root
+        if hasattr(parent, 'base_dir'):
+           parent.ldocroot = parent.base_dir
 
         if hasattr(parent, 'msg_2http_root'):
            parent.ldocroot = parent.msg_2http_root[0]
@@ -30,7 +30,7 @@ class Http2Local(object):
         m.urlstr = parent.hurlre.sub( m.savedurl, m.urlstr )
         m.url = urllib.parse.urlparse( m.urlstr )
         m.set_notice_url(m.url)
-        l.debug( "msg_2http doc_root=%s " % ( parent.document_root ) )
+        l.debug( "msg_2http base_dir=%s " % ( parent.base_dir ) )
         l.info( "msg_2http output: urlstr: %s"  % m.urlstr )
         return True
 

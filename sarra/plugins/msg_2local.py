@@ -7,7 +7,7 @@
    
   Normal usage:
 
-  document_root /var/www/html
+  base_dir /var/www/html
 
                url is http://localhost/<date>/<src>/input/file.txt
 
@@ -37,7 +37,7 @@
 
   The easiest way is to set msg_2local_url as follows:
 
-  document_root /home/user/www
+  base_dir /home/user/www
   msg_2local_url (https://hostname/~user/)
 
   the parentheses around the URL set the value of to be put in m.savedurl that
@@ -51,8 +51,8 @@ import re
 class Http2Local(object):
 
     def __init__(self,parent) :
-        if hasattr(parent, 'document_root'):
-           parent.ldocroot = parent.document_root 
+        if hasattr(parent, 'base_dir'):
+           parent.ldocroot = parent.base_dir 
 
         if hasattr(parent, 'msg_2local_root'):
            parent.ldocroot = parent.msg_2local_root[0]
@@ -74,7 +74,7 @@ class Http2Local(object):
         m.savedurl = parent.lurlre.match( m.urlstr ).group(1)
         m.urlstr = 'file:/%s' % parent.lurlre.sub( parent.ldocroot + '/', m.urlstr )
 
-        l.error( "doc_root=%s " % ( parent.document_root ) )
+        l.error( "doc_root=%s " % ( parent.base_dir ) )
         l.error( "output: urlstr: %s saved url: %s"  % (m.urlstr, m.savedurl) )
 
         return True

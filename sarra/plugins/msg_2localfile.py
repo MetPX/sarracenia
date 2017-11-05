@@ -20,15 +20,15 @@
   parent.msg.saved_relpath = parent.msg.relpath
 
   We will than turned them into an absolute File Url
-  (Note if a document_root was set it prefix the relpath)
+  (Note if a base_dir was set it prefix the relpath)
 
   parent.msg.baseurl = 'file:'
-  parent.msg.relpath = [document_root] + parent.msg.relpath
+  parent.msg.relpath = [base_dir] + parent.msg.relpath
 
 
   Example 
 
-  document_root /var/www/html
+  base_dir /var/www/html
 
   message notice  20171003131233.494 http://localhost /20171003/CMOE/productx.gif
 
@@ -49,8 +49,8 @@
 
        parent.msg.baseurl = 'file:'
 
-       if parent.document_root :
-          parent.msg.relpath = parent.document_root + '/' + parent.msg.relpath
+       if parent.base_dir :
+          parent.msg.relpath = parent.base_dir + '/' + parent.msg.relpath
           parent.msg.relpath = parent.msg.relpath.replace('//','/')
 
 
@@ -77,8 +77,8 @@
   if ok :
      parent.msg.baseurl = parent.msg.saved_baseurl
      parent.msg.relpath = new_path
-     if parent.document_root :
-        parent.msg.relpath = new_path.replace(parent.document_root,'',1)
+     if parent.base_dir :
+        parent.msg.relpath = new_path.replace(parent.base_dir,'',1)
 
   else :
      parent.logger.error(...
@@ -106,8 +106,8 @@ class Msg_2LocalFile():
 
         m.baseurl = 'file:'
        
-        if parent.document_root and not m.relpath.startswith(parent.document_root) :
-           m.relpath = parent.document_root + '/' + m.relpath
+        if parent.base_dir and not m.relpath.startswith(parent.base_dir) :
+           m.relpath = parent.base_dir + '/' + m.relpath
            m.relpath.replace('//','/')
 
         return True
