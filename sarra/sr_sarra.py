@@ -12,7 +12,6 @@
 #               another sarracenia server or from user posting (sr_post/sr_watch)
 #               and reannounce the product on the current server
 #
-#
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Mon Sep 25 20:45 UTC 2017
@@ -50,12 +49,14 @@
 #                         = subdirectory from mirror option  OR
 #                           message.headers['rename'] ...
 #                           can be trimmed by option  strip
+#
 # post_broker             = where sarra is running (manager)
 # post_exchange           = xpublic
 # post_message            = same as incoming message
 #                           message.headers['source']  is set from source_user
 #                           message.headers['cluster'] is set from option cluster from default.conf
 #                           message is built from url option give
+#
 # report_exchange         = xreport
 #
 #
@@ -74,8 +75,6 @@
 #
 #
 #============================================================
-
-#
 
 import os,sys,time
 
@@ -102,6 +101,16 @@ class sr_sarra(sr_subscribe):
            self.help()
            sys.exit(1)
 
+        # verify post_base_dir
+
+        if self.post_base_dir == None :
+           if self.post_document_root != None :
+              self.post_base_dir = self.post_document_root
+              self.logger.warning("use post_base_dir instead of post_document_root")
+           elif self.document_root != None :
+              self.post_base_dir = self.document_root
+              self.logger.warning("use post_base_dir instead of document_root")
+
         # bindings should be defined 
 
         if self.bindings == []  :
@@ -118,11 +127,6 @@ class sr_sarra(sr_subscribe):
         # ===========================================================
         # some sr_subscribe options reset to match sr_sarra behavior
         # ===========================================================
-
-        # standard post_document_root fallback from sr_subscribe
-
-        if self.post_document_root == None :
-           self.post_document_root = self.document_root
 
         # currentDir is post_document_root if unset
 
