@@ -119,10 +119,9 @@ class sr_sender(sr_subscribe):
                  self.post_base_dir = self.document_root
                  self.logger.warning("use post_base_dir instead of defaulting to document_root")
 
-           # verify post_base_url
-
-           if self.post_base_url == None :
-              self.logger.error("post_base_url required")
+           # verify post_base_url (not mandatory...)
+           #if self.post_base_url == None :
+           #   self.logger.error("post_base_url required")
 
         # caching
 
