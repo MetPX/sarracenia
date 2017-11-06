@@ -6,6 +6,29 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* sr_subscribe bug fix for SOURCE 
+* sr_subscribe add module __on_file__
+* sr_sender    as flow test demonstrate, option post_base_url is not mandatory
+* sr_instances propagate action and permits edition of general files (admin,defaults,credentials)
+* sr_instances adds actions : add, disable, edit, enable, list, log, remove
+* sr_instances calls configure before build_parent to have all options set
+* sr_post/sr_watch get rid of useless lock stuff... fixed cache problems
+* sr_poll      able to use standard sr_file...
+* sr_(s)ftp/http  when preserve_mode is true... bug fix on setting value of mode
+* sr_file     adding some support for polling (standardisation)
+* sr_consumer file queuename ends with .qname and link to old file (to preserve version compat)
+* sr_config   late of user_log_dir and user_cache_dir to insert hostname if statehost is True
+* sr_config   statehost inserts hostname in user_cache_dir and user_log_dir
+* sr_config   module declare_option  makes program know about plugin options
+*             so program would warn only on real unknown or erronous options
+* sr_config   withdrawal of recursive option, set to True everywhere applicable
+* sr_config   log setup easier, supports loglevel none meaning no logs
+* sr_amqp.py  when using pika, no log if delete_queue and queue not found
+* sr_amqp.py  option use_pika to use or not pika when available
+* sr_amqp.py  mixing amqplib and pika depending of availability
+* sr_*        withdraw msg.headers['filename'],  msg.headers['flow']
+* sr_*        reenforcement of base_dir, post_broker, post_exchange, post_base_dir, post_base_url
+
 **2.17.10a4**
 
 * C: msg pretty printer now includes user defined headers.
