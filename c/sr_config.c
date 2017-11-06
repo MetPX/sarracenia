@@ -280,6 +280,16 @@ struct sr_broker_t *broker_uri_parse( char *src )
     return(b);
 } 
 
+void broker_free( struct sr_broker_t *b ) 
+{
+     if (!b) return;
+     if (b->hostname) free(b->hostname);
+     if (b->user) free(b->user);
+     if (b->password) free(b->password);
+     if (b->exchange) free(b->exchange);
+     free(b);
+}
+
 struct sr_header_t* sr_headers_copy( struct sr_header_t* o)
 /* return a linked list of headers that is a deep copy
    of the original.
@@ -509,7 +519,6 @@ char *subarg( struct sr_config_t *sr_cfg, char *arg )
 }
 
 
-
 char token_line[TOKMAX];
 
 // OPTIS - Option Is ... the option string matches x.
@@ -567,6 +576,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   } else if ( !strcmp( option, "broker" ) || !strcmp( option, "b") ) 
   {
+      if (sr_cfg->broker) broker_free(sr_cfg->broker);
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
       {
@@ -611,14 +621,17 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(1+(val&1));
 
   } else if ( !strcmp( option, "directory" ) ) {
+      if (sr_cfg->directory) free(sr_cfg->directory);
       sr_cfg->directory = strdup(argument);
       return(2);
 
   } else if ( !strcmp( option, "post_document_root" )|| !strcmp( option, "pdr") ||
               !strcmp( option, "document_root" )|| !strcmp( option, "dr") ) {
       log_msg( LOG_WARNING, "please replace (deprecated) [post_]document_root with base_dir: %s.\n", argument );
+      if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
       sr_cfg->post_base_dir = strdup(argument);
   } else if ( !strcmp( option, "base_dir" )|| !strcmp( option, "bd") ) {
+      if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
       sr_cfg->post_base_dir = strdup(argument);
       return(2);
 
@@ -632,6 +645,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "exchange" ) || !strcmp( option, "ex") ) {
+      if (sr_cfg->exchange) free(sr_cfg->exchange);
       sr_cfg->exchange = strdup(argument);
       return(2);
 
@@ -727,6 +741,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   } else if ( !strcmp( option, "post_broker" ) || !strcmp( option, "pb") ) 
   {
+      if (sr_cfg->post_broker) broker_free(sr_cfg->post_broker);
       brokerstr = sr_credentials_fetch(argument); 
       if ( brokerstr == NULL ) 
       {
@@ -739,6 +754,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "post_exchange" ) || !strcmp( option, "px") ) {
+      if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
       sr_cfg->post_exchange = strdup(argument);
       return(2);
 
@@ -785,6 +801,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->sumalgo = argument[0];
       return(2);
   } else if ( !strcmp( option, "to" ) ) {
+      if (sr_cfg->to) free(sr_cfg->to);
       sr_cfg->to = strdup(argument);
       return(2);
 
@@ -794,9 +811,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
 
   } else if ( !strcmp( option, "url" ) || !strcmp( option, "u" ) ) {
       log_msg( LOG_WARNING, "please replace (deprecated) url with post_base_url: %s.\n", argument );
+      if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
       sr_cfg->post_base_url = strdup(argument);
       return(2);
   } else if ( !strcmp( option, "post_base_url" ) || !strcmp( option, "pu" ) ) {
+      if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
       sr_cfg->post_base_url = strdup(argument);
       return(2);
 
@@ -804,16 +823,6 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       log_msg( LOG_INFO, "info: %s option not implemented, ignored.\n", option );
   } 
   return(1);
-}
-
-void broker_free( struct sr_broker_t *b ) 
-{
-     if (!b) return;
-     if (b->hostname) free(b->hostname);
-     if (b->user) free(b->user);
-     if (b->password) free(b->password);
-     if (b->exchange) free(b->exchange);
-     free(b);
 }
 
 
@@ -835,8 +844,10 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
 
-  //broker_free(sr_cfg->broker);
-  broker_free(sr_cfg->post_broker);
+  if (sr_cfg->broker) broker_free(sr_cfg->broker);
+  sr_cfg->broker=NULL;
+  if (sr_cfg->post_broker) broker_free(sr_cfg->post_broker);
+  sr_cfg->post_broker=NULL;
 
   while (sr_cfg->masks)
   {
