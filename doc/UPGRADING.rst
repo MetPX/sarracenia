@@ -3,10 +3,13 @@
  UPGRADE GUIDE
 ---------------
 
-This file documents changes in behaviour to provide guidance to those upgrading from a previous version.
-While configuration language stability is an important goal, on occasion changes cannot be avoided.  
-This file does not document new features, but only changes that cause concern during upgrades.
-The notices take the form:
+This file documents changes in behaviour to provide guidance to those upgrading 
+from a previous version.  To upgrade across several versions, one needs to start
+at the version after the one installed, and heed all notifications for interim
+versions.  While configuration language stability is an important 
+goal, on occasion changes cannot be avoided. This file does not document new 
+features, but only changes that cause concern during upgrades.  The notices 
+take the form:
 
 **CHANGE**
    indicates where configurations files must be changed to get the same behviour as prior to release.
@@ -36,17 +39,17 @@ git origin/master branch
 ------------------------
 
 
-**CHANGE**: change document_root -> base_dir (same for post_ variations.) The code still
+*SHOULD*: change document_root -> base_dir (same for post_ variations.) The code still
 understands the old values, but you will see a warning message advising you to change it.
 
-**CHANGE**: URL option to post_base_url option.  will still understand old values, but warning will 
-result.
+*SHOULD*: URL option to post_base_url option.  will still understand old values, but 
+warning will result.
 
-**CHANGE**: use post_ versions in sr_post, so now it is post_base_url, post_base_dir, post_exchange
-Again, code still understands previous settings, but will warn.
+*SHOULD*: use post_ versions in sr_post, so now it is post_base_url, post_base_dir, 
+post_exchange Again, code still understands previous settings, but will warn.
   
-**CHANGE**: now prefers to use pika library if available, but falls back to amqplib library
-available on older OS's.  amqplib will be deprecated over time.
+*NOTICE*: now prefers to use pika library if available, but falls back to amqplib 
+library available on older OS's.  amqplib will be deprecated over time.
 
 
 2.17.10a3
