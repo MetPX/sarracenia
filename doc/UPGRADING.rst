@@ -38,6 +38,8 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.11a1
+---------
 
 *SHOULD*: change document_root -> base_dir (same for post_ variations.) The code still
 understands the old values, but you will see a warning message advising you to change it.
