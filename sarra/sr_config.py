@@ -59,7 +59,7 @@ except :
 
 class sr_config:
 
-    def __init__(self,config=None,args=None):
+    def __init__(self,config=None,args=None,action=None):
         if '-V' in sys.argv :
            print("Version %s" % sarra.__version__ )
            os._exit(0)
@@ -74,6 +74,8 @@ class sr_config:
         # user_cache_dir  = ~/.cache/sarra
         # user_log_dir    = ~/.cache/sarra/var/log
         # user_config_dir = ~/.config/sarra
+
+        self.action           = action
          
         self.appname          = 'sarra'
         self.appauthor        = 'science.gc.ca'
@@ -247,8 +249,10 @@ class sr_config:
     def config(self,path):
         self.logger.debug("sr_config config component is: %s" % self.program_name )
         self.logger.debug("sr_config %s" % path)
+        self.logger.debug("action    %s" % self.action)
 
-        if path == None : return
+        if path        == None  : return
+        if self.action == 'edit': return
 
         try:
             f = open(path, 'r')
@@ -404,8 +408,6 @@ class sr_config:
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
-
-        self.action               = None
 
         # IN BIG DEBUG
         #self.debug = True
@@ -692,13 +694,19 @@ class sr_config:
         self.logger.debug("defconf = %s\n" % defconf)
 
         if os.path.isfile(defconf) : 
-           #user_config      = self.user_config
-           #self.user_config = defconf
            config_dir       = self.config_dir
            self.config_dir  = ''
            self.config(defconf)
            self.config_dir  = config_dir
-           #self.user_config = user_config
+
+        adminconf   = self.user_config_dir + os.sep + 'admin.conf'
+        self.logger.debug("adminconf = %s\n" % adminconf)
+
+        if os.path.isfile(adminconf) : 
+           config_dir       = self.config_dir
+           self.config_dir  = ''
+           self.config(adminconf)
+           self.config_dir  = config_dir
 
     def has_vip(self): 
 
