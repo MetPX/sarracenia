@@ -43,13 +43,13 @@ except :
 
 class sr_instances(sr_config):
 
-    def __init__(self,config=None,args=None):
+    def __init__(self,config=None,args=None,action=None):
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
         if _platform != 'win32':
             signal.signal(signal.SIGHUP, self.reload_signal)
 
-        sr_config.__init__(self,config,args)
+        sr_config.__init__(self,config,args,action)
         self.cwd = os.getcwd()
         self.configure()
         self.build_parent()
@@ -143,6 +143,12 @@ class sr_instances(sr_config):
             if action == 'list': print("%s" % confname)
             else:                subprocess.check_call([self.program_name, action, confname] )
 
+        if action == 'list':
+           print(".."+os.sep)
+           print("admin.conf")
+           print("credentials.conf")
+           print("default.conf")
+
 
     # MG FIXME first shot
     # a lot of things should be verified
@@ -169,7 +175,7 @@ class sr_instances(sr_config):
         def_fil = def_dir + os.sep + self.config_name + ext
 
         if   action == 'add'        :
-             try   : os.link(usr_fil,def_fil)
+             try   : os.rename(usr_fil,def_fil)
              except: self.logger.error("cound not add %s to %s" % (self.config_name + ext,def_dir))
 
         elif action == 'disable'    :
@@ -179,6 +185,8 @@ class sr_instances(sr_config):
              except: self.logger.error("cound not disable %s" % src )
 
         elif action == 'edit'       :
+             if self.config_name in ['admin','default','credentials'] :
+                def_fil = def_dir + os.sep + '..' + os.sep + self.config_name + ext
              try   : subprocess.check_call([ os.environ.get('EDITOR'), def_fil] )
              except: self.logger.error("problem editor %s file %s" % (os.environ.get('EDITOR'), def_fil))
 
