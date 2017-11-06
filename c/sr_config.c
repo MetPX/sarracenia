@@ -767,11 +767,12 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       sr_cfg->realpath = val&2;
       return(1+(val&1));
 
+  /*
   } else if ( !strcmp( option, "recursive" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->recursive = val&2;
       return(1+(val&1));
-
+   */
   } else if ( !strcmp( option, "sleep" ) ) {
       sr_cfg->sleep = atof(argument);
       return(2);
