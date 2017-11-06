@@ -98,14 +98,31 @@ class sr_sender(sr_subscribe):
         self.use_pattern          = self.masks != []
         self.accept_unmatch       = self.masks == []
 
-
         # posting... discard not permitted
 
-        if self.post_broker :
-           if self.post_document_root == None :
-              self.post_document_root = self.document_root
-           if self.post_exchange      == None :
-              self.post_exchange      = self.exchange
+        if self.post_broker != None :
+
+           # enforcing post_exchange
+
+           if self.post_exchange == None :
+              if self.exchange   != None :
+                 self.post_exchange = self.exchange
+                 self.logger.warning("use post_exchange to set exchange")
+
+           # verify post_base_dir
+
+           if self.post_base_dir == None :
+              if self.post_document_root != None :
+                 self.post_base_dir = self.post_document_root
+                 self.logger.warning("use post_base_dir instead of post_document_root")
+              elif self.document_root != None :
+                 self.post_base_dir = self.document_root
+                 self.logger.warning("use post_base_dir instead of defaulting to document_root")
+
+           # verify post_base_url
+
+           if self.post_base_url == None :
+              self.logger.error("post_base_url required")
 
         # caching
 
