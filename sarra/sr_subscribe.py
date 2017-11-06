@@ -65,8 +65,8 @@ except :
 
 class sr_subscribe(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_instances.__init__(self,config,args,action)
 
     def check(self):
         self.logger.debug("%s check" % self.program_name)
@@ -83,10 +83,15 @@ class sr_subscribe(sr_instances):
         self.use_pattern          = True
         self.accept_unmatch       = self.masks == []
 
-        # posting... discard not permitted
+        # verify post_base_dir
 
-        if self.post_document_root == None :
-           self.post_document_root = self.document_root
+        if self.post_base_dir == None :
+           if self.post_document_root != None :
+              self.post_base_dir = self.post_document_root
+              self.logger.warning("use post_base_dir instead of post_document_root")
+           elif self.document_root != None :
+              self.post_base_dir = self.document_root
+              self.logger.warning("use post_base_dir instead of document_root")
 
         # impacting other settings
 
@@ -401,7 +406,7 @@ class sr_subscribe(sr_instances):
         print("\nMessage targeted (filtering):")
 
         if self.program_name in ['sr_sarra','sr_subscribe']:
-           print("\tdirectory <path>     target directory (post_document_root/directory/\"file settings\"")
+           print("\tdirectory <path>     target directory (post_base_dir/directory/\"file settings\"")
            print("\t * accept/reject following a directory option determine what is placed under it")
            print("\t\t(default currentdir/\"file settings\"")
 
@@ -417,13 +422,13 @@ class sr_subscribe(sr_instances):
 
         if self.program_name in ['sr_sarra','sr_subscribe'] :
            print("\nFile download settings:")
-           print("\tdocument_root        <document_root> (MANDATORY)")
            print("\tinplace              <boolean>       (default False)")
            print("\toverwrite            <boolean>       (default False)")
            print("\tflatten   <string>   filename= message relpath replacing '/' by *flatten*(default:'/')")
            print("\tinflight  <.string>  suffix (or prefix) on filename during downloads (default: .tmp)\n")
            print("\tmirror    <boolean>  same directory tree as message relpath or flat. (default: True)")
            print("\tstrip     <count>    nb. of directories to remove from message relpath. (default: 0)")
+           print("\tbase_dir             <base_dir>      (if file is local and msg_2localfile.py is used)")
            print("\tdo_download          <script>        (default None)")
            print("\ton_file              <script>        (default None)")
            print("\n\tif the download of the url received in the amqp message needs credentials")
@@ -446,8 +451,8 @@ class sr_subscribe(sr_instances):
         else :
            print("\tpost_exchange        <name>          (MANDATORY)")
 
-        print("\tpost_document_root   <name>          (default document_root)")
-        print("\turl                  <url>      post message: base_url         (MANDATORY)")
+        print("\tpost_base_dir        <name>          (default None)")
+        print("\tpost_base_url        <url>      post message: base_url         (MANDATORY)")
         print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
         if self.program_name == 'sr_sarra' :
            print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
@@ -525,7 +530,7 @@ class sr_subscribe(sr_instances):
            if self.new_dir != val_new_dir or self.new_file != val_new_file :
               if self.new_relpath == val_new_relpath :
                  relpath = self.new_dir + '/' + self.new_file
-                 if self.post_document_root : relpath = relpath.replace(self.post_document_root,'',1)
+                 if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
                  self.new_relpath = relpath
               # to do it once (per plugin changes)
               val_new_dir     = self.new_dir
@@ -597,7 +602,7 @@ class sr_subscribe(sr_instances):
            if self.new_dir != val_new_dir or self.new_file != val_new_file :
               if self.new_relpath == val_new_relpath :
                  relpath = self.new_dir + '/' + self.new_file
-                 if self.post_document_root : relpath = relpath.replace(self.post_document_root,'',1)
+                 if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
                  self.new_relpath = relpath
 
         return True
@@ -1041,7 +1046,7 @@ class sr_subscribe(sr_instances):
 
         #=================================
         # prepare download 
-        # the document_root should exists : it the starting point of the downloads
+        # the post_base_dir should exists : it the starting point of the downloads
         # make sure local directory where the file will be downloaded exists
         #=================================
         # Caveat, where the local directory has sundew substitutions, it is normal for 
@@ -1049,9 +1054,9 @@ class sr_subscribe(sr_instances):
         # FIXME: should we remove the substitutions and check the root of the root?
         #=================================
 
-        if self.document_root and not '{' in self.document_root :
-           if not os.path.isdir(self.document_root) :
-              self.logger.error("directory %s does not exist" % self.document_root)
+        if self.post_base_dir and not '{' in self.post_base_dir :
+           if not os.path.isdir(self.post_base_dir) :
+              self.logger.error("directory %s does not exist" % self.post_base_dir)
               return False
 
         # pass no warning it may already exists
@@ -1355,11 +1360,19 @@ class sr_subscribe(sr_instances):
 
         new_dir = cdir
 
+        if '${BD}' in cdir and self.base_dir != None :
+           new_dir = new_dir.replace('${BD}',self.base_dir)
+
+        if '${PBD}' in cdir and self.post_base_dir != None :
+           new_dir = new_dir.replace('${PBD}',self.post_base_dir)
+
         if '${DR}' in cdir and self.document_root != None :
+           self.logger.warning("DR = document_root should be replaced by BD for base_dir")
            new_dir = new_dir.replace('${DR}',self.document_root)
 
-        if '${PDR}' in cdir and self.post_document_root != None :
-           new_dir = new_dir.replace('${PDR}',self.post_document_root)
+        if '${PDR}' in cdir and self.post_base_dir != None :
+           self.logger.warning("PDR = post_document_root should be replaced by PBD for post_base_dir")
+           new_dir = new_dir.replace('${PDR}',self.post_base_dir)
 
         if '${YYYYMMDD}' in cdir :
            YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
@@ -1383,8 +1396,8 @@ class sr_subscribe(sr_instances):
 
     def set_new(self):
 
-        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s dr=%s msg.relpath=%s" %  \
-             ( self.strip, self.mirror, self.flatten, self.document_root, self.msg.relpath ) ) 
+        self.logger.debug("set_new strip=%s, mirror=%s flatten=%s pbd=%s msg.relpath=%s" %  \
+             ( self.strip, self.mirror, self.flatten, self.post_base_dir, self.msg.relpath ) ) 
 
         # relative path by default mirror 
 
@@ -1466,8 +1479,8 @@ class sr_subscribe(sr_instances):
         # reset relpath from new_dir
 
         relpath = new_dir + '/' + filename
-        if self.post_document_root :
-           relpath = relpath.replace(self.post_document_root, '')
+        if self.post_base_dir :
+           relpath = relpath.replace(self.post_base_dir, '')
 
         # set the results for the new file (downloading or sending)
 
@@ -1482,8 +1495,8 @@ class sr_subscribe(sr_instances):
         self.new_file    = filename
         self.new_relpath = os.path.normpath(relpath)
 
-        if self.post_broker and self.url :
-           self.new_baseurl = self.url.geturl()
+        if self.post_broker and self.post_base_url :
+           self.new_baseurl = self.post_base_url
 
         #self.logger.debug("new_dir     = %s" % self.new_dir)
         #self.logger.debug("new_file    = %s" % self.new_file)
@@ -1755,7 +1768,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    subscribe = sr_subscribe(config,args)
+    subscribe = sr_subscribe(config,args,action)
     subscribe.exec_action(action,old)
 
     os._exit(0)
