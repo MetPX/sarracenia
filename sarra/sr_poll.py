@@ -112,6 +112,8 @@ class sr_poll(sr_instances):
 
     def check(self):
 
+        if self.config_name == None : return
+
         # enforcing post_broker
 
         if self.post_broker == None :

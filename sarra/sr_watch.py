@@ -96,6 +96,9 @@ class sr_watch(sr_instances):
         
         
     def check(self):
+
+        if self.config_name == None : return
+
         self.nbr_instances  = 1
         self.accept_unmatch = True
         self.post = sr_post(self.user_config,self.user_args)
@@ -322,6 +325,11 @@ def main():
 
     if old :
        watch.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+
+    if action in ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] :
+       watch.exec_action(action,old)
+       os._exit(0)
+
 
     # =========================================
     # setup watchdog

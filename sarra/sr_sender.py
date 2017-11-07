@@ -87,6 +87,8 @@ class sr_sender(sr_subscribe):
     def check(self):
         self.connected     = False 
 
+        if self.config_name == None : return
+
         # fallback bindings to "all"
 
         if self.bindings == []  :

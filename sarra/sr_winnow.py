@@ -46,6 +46,8 @@ class sr_winnow(sr_subscribe):
 
     def check(self):
 
+        if self.config_name == None : return
+
         # no queue name allowed
 
         if self.queue_name == None:

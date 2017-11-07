@@ -70,6 +70,8 @@ class sr_shovel(sr_subscribe):
 
     def check(self):
 
+        if self.config_name == None : return
+
         if self.broker == None :
            self.logger.error("no broker given")
            self.help()

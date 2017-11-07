@@ -48,14 +48,16 @@ except :
 
 class sr_report(sr_subscribe):
 
-    def __init__(self,config=None,args=None):
+    def __init__(self,config=None,args=None,action=None):
         #start debug before it is set by args or config option
         #self.debug = True
         #self.setlog()
-        sr_subscribe.__init__(self,config,args)
+        sr_subscribe.__init__(self,config,args,action)
 
     def check(self):
         self.logger.debug("%s check" % self.program_name)
+        if self.config_name == None : return
+
         self.nbr_instances = 1
         self.reportback    = False
         self.notify_only   = True
@@ -124,25 +126,12 @@ def main():
           args.extend(sys.argv[1:])
           args.remove(action)
 
-    srreport = sr_report(config,args)
+    srreport = sr_report(config,args,action)
 
     if old :
        srreport.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
-    if   action == 'foreground': srreport.foreground_parent()
-    elif action == 'reload'    : srreport.reload_parent()
-    elif action == 'restart'   : srreport.restart_parent()
-    elif action == 'start'     : srreport.start_parent()
-    elif action == 'stop'      : srreport.stop_parent()
-    elif action == 'status'    : srreport.status_parent()
-
-    elif action == 'cleanup'   : srreport.cleanup()
-    elif action == 'declare'   : srreport.declare()
-    elif action == 'setup'     : srreport.setup()
-
-    else :
-           srlog.logger.error("action unknown %s" % action)
-           os._exit(1)
+    srreport.exec_action(action,old)
 
     os._exit(0)
 

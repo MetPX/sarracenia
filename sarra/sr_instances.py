@@ -140,8 +140,8 @@ class sr_instances(sr_config):
         if not os.path.isdir(configdir)      : return
 
         for confname in os.listdir(configdir):
-            if action == 'list': print("%s" % confname)
-            else:                subprocess.check_call([self.program_name, action, confname] )
+            if action == 'list'     : print("%s" % confname)
+            elif '.conf' in confname: subprocess.check_call([self.program_name, action, confname] )
 
         if action == 'list':
            print(".."+os.sep)
