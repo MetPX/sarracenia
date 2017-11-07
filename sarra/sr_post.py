@@ -46,19 +46,22 @@ try :
          from sr_amqp          import *
          from sr_cache         import *
          from sr_config        import *
+         from sr_instances     import *
          from sr_message       import *
          from sr_util          import *
 except :
-         from sarra.sr_amqp    import *
-         from sarra.sr_cache   import *
-         from sarra.sr_config  import *
-         from sarra.sr_message import *
-         from sarra.sr_util    import *
+         from sarra.sr_amqp      import *
+         from sarra.sr_cache     import *
+         from sarra.sr_config    import *
+         from sarra.sr_instances import *
+         from sarra.sr_message   import *
+         from sarra.sr_util     import *
 
-class sr_post(sr_config):
+class sr_post(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_config.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        self.instances = 1
+        sr_instances.__init__(self,config,args,action)
         self.configure()
         self.in_error  = False
         self.recursive = True
@@ -879,7 +882,7 @@ def main():
 
     # unsupported action in python (but supported in sr_cpost)
     if action in ['start', 'stop', 'status', 'restart', 'reload' ]:
-         post = sr_post(config,args)
+         post = sr_post(config,args,action)
          cfg  = config
          if config : cfg = os.path.basename(config)
          post.logger.info("%s %s %s (unimplemented in python)" % (post.program_name,cfg,action))
@@ -887,7 +890,13 @@ def main():
 
     # supported actions in both
     elif action in ['cleanup','declare','setup' ] :
-         post = sr_post(config,args)
+         post = sr_post(config,args,action)
+
+    # extended actions 
+    elif action in ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] :
+         post = sr_post(config,args,action)
+         post.exec_action(action,False)
+
 
     # default case in python
     else:

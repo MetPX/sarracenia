@@ -41,8 +41,8 @@ except :
 
 class sr_winnow(sr_subscribe):
 
-    def __init__(self,config=None,args=None):
-        sr_subscribe.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_subscribe.__init__(self,config,args,action)
 
     def check(self):
 
@@ -144,7 +144,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    winnow = sr_winnow(config,args)
+    winnow = sr_winnow(config,args,action)
     winnow.exec_action(action,old)
 
     os._exit(0)

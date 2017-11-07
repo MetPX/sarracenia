@@ -76,8 +76,8 @@ pol = {}
 
 class sr_watch(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_instances.__init__(self,config,args,action)
         self.recursive      = True
         self.last_heartbeat = time.time()
 
@@ -318,7 +318,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    watch = sr_watch(config,args)
+    watch = sr_watch(config,args,action)
 
     if old :
        watch.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])

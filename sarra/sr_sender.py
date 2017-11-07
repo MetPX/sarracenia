@@ -77,8 +77,8 @@ except :
 
 class sr_sender(sr_subscribe):
 
-    def __init__(self,config=None,args=None):
-        sr_subscribe.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_subscribe.__init__(self,config,args,action)
         self.sleep_connect_try_interval_min=0.01
         self.sleep_connect_try_interval_max=30
         self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
@@ -323,7 +323,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    sender = sr_sender(config,args)
+    sender = sr_sender(config,args,action)
     sender.exec_action(action,old)
 
     os._exit(0)

@@ -86,8 +86,8 @@ except :
 
 class sr_sarra(sr_subscribe):
 
-    def __init__(self,config=None,args=None):
-        sr_subscribe.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_subscribe.__init__(self,config,args,action)
 
     def check(self):
 
@@ -210,8 +210,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    sarra = sr_sarra(config,args)
-
+    sarra = sr_sarra(config,args,action)
     sarra.exec_action(action,old)
 
     os._exit(0)
