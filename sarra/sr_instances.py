@@ -146,7 +146,11 @@ class sr_instances(sr_config):
 
         for confname in os.listdir(configdir):
             if action == 'list'     : print("%s" % confname)
-            elif '.conf' in confname: subprocess.check_call([self.program_name, action, confname] )
+            else:
+                  try   :
+                          if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
+                  except: pass
+
 
 
     # MG FIXME first shot
