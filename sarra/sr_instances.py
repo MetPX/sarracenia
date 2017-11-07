@@ -139,15 +139,14 @@ class sr_instances(sr_config):
 
         if not os.path.isdir(configdir)      : return
 
+        if action == 'list':
+           print("admin.conf")
+           print("credentials.conf")
+           print("default.conf\n")
+
         for confname in os.listdir(configdir):
             if action == 'list'     : print("%s" % confname)
             elif '.conf' in confname: subprocess.check_call([self.program_name, action, confname] )
-
-        if action == 'list':
-           print(".."+os.sep)
-           print("admin.conf")
-           print("credentials.conf")
-           print("default.conf")
 
 
     # MG FIXME first shot

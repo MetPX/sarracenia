@@ -896,7 +896,7 @@ def main():
     elif action in ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] :
          post = sr_post(config,args,action)
          post.exec_action(action,False)
-
+         os._exit(0)
 
     # default case in python
     else:

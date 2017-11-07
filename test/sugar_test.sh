@@ -59,7 +59,7 @@ touch aaa.conf
 sr_cpump    $action aaa.conf 2> /dev/null;
 ls -al $CONFDIR/cpump/aaa.*;
 
-    for PGM in poll report sarra sender shovel subscribe watch winnow; do
+    for PGM in poll post report sarra sender shovel subscribe watch winnow; do
 
         touch aaa.conf
         sr_$PGM    $action aaa.conf
@@ -76,7 +76,7 @@ echo "======================================================="
 sr_cpost     remove aaa.conf
 sr_cpump     remove aaa.conf
 sr_poll      remove aaa.conf
-#sr_post      remove aaa.conf
+sr_post      remove aaa.conf
 sr_report    remove aaa.conf
 sr_sarra     remove aaa.conf
 sr_sender    remove aaa.conf
