@@ -38,7 +38,7 @@ if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  test users for each role: tsource, tsub, tfeed, bunnymaster (admin)
  need to be created before this script can be run.
  rabbitmq-server needs to be installed on localhost with admin account set and
- manually setup "$CONFDIR"/default.conf, something like this:
+ manually setup "$CONFDIR"/admin.conf, something like this:
 
 cluster localhost
 gateway_for alta,cluster1,cluster2
