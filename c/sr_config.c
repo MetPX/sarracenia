@@ -630,7 +630,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       log_msg( LOG_WARNING, "please replace (deprecated) [post_]document_root with base_dir: %s.\n", argument );
       if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
       sr_cfg->post_base_dir = strdup(argument);
-  } else if ( !strcmp( option, "base_dir" )|| !strcmp( option, "bd") ) {
+  } else if ( !strcmp( option, "post_base_dir" )|| !strcmp( option, "pbd") ) {
       if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
       sr_cfg->post_base_dir = strdup(argument);
       return(2);
@@ -1042,9 +1042,11 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int m
 
   if ( f==NULL ) 
   {
-          log_msg( LOG_CRITICAL, "error: failed to find configuration: %s\n", filename );
           if (abort)
+          {
+              log_msg( LOG_CRITICAL, "error: failed to find configuration: %s\n", filename );
               exit(0);
+          }
           return(1);
   }
 
@@ -1218,8 +1220,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   }
 
   // FIXME: if prog is post, then only post_broker is OK.
-  log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d recursive=%s follow_symlinks=%s sleep=%g heartbeat=%g cache=%g cache_file=%s\n",
-          sr_cfg->progname, sr_cfg->action, log_level, sr_cfg->recursive?"on":"off", sr_cfg->follow_symlinks?"yes":"no", 
+  log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d follow_symlinks=%s sleep=%g heartbeat=%g cache=%g cache_file=%s\n",
+          sr_cfg->progname, sr_cfg->action, log_level, sr_cfg->follow_symlinks?"yes":"no", 
           sr_cfg->sleep, sr_cfg->heartbeat, sr_cfg->cache, sr_cfg->cachep?p:"off" );
 
   if  ( !strcmp(sr_cfg->progname,"post") || !strcmp(sr_cfg->progname,"cpost") ) 

@@ -19,6 +19,8 @@ class Transformer(object):
 
     def __init__(self,parent):
 
+        parent.declare_option('msg_by_source')
+
         if not hasattr(parent,'msg_by_source'):
            parent.logger.info("msg_by_source setting mandatory")
            return

@@ -294,7 +294,7 @@ admin
   The administrator runs sr_audit to create/delete
   exchanges, users, or clean unused queues... etc.
 
-Example of a complete valid default.conf, for a host named *blacklab* ::
+Example of a complete valid admin.conf, for a host named *blacklab* ::
 
   cluster blacklab
   admin amqps://hbic@blacklab/
@@ -333,7 +333,7 @@ access only their own resources (exchange and queues).
 
 The administrative user name is an installation choice, and exactly as for any other
 user, the configuration files are placed under ~/.config/sarra/, with the
-defaults under default.conf, and the configurations for components under
+defaults under admin.conf, and the configurations for components under
 directories named after each component. In the component directories,
 Configuration files have the .conf suffix.
 
@@ -355,7 +355,7 @@ to set up, and all of them may need to run at once. To do so easily, one can inv
 
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
 There are two users/roles that need to be set to use a pump. They are the admin and feeder options.
-They are set in ~/.config/sarra/default.conf like so::
+They are set in ~/.config/sarra/admin.conf like so::
 
   feeder amqp://pumpUser@localhost/
   admin  amqps://adminUser@boule.example.com/
@@ -663,10 +663,10 @@ access is needed, so the user is added to the sudo group::
   root@boule:~# mkdir ~sarra/.config
   root@boule:~# mkdir ~sarra/.config/sarra
 
-first need entries in the credentials.conf and default.conf files::
+first need entries in the credentials.conf and admin.conf files::
 
   root@boule:~# echo "amqps://bunnymaster:MaestroDelConejito@boule.example.com/" >~sarra/.config/sarra/credentials.conf
-  root@boule:~# echo "admin amqps://bunnymaster@boule.example.com/" >~sarra/.config/sarra/default.conf
+  root@boule:~# echo "admin amqps://bunnymaster@boule.example.com/" >~sarra/.config/sarra/admin.conf
   root@boule:~# chown -R sarra.sarra ~sarra/.config
   root@boule:~# passwd sarra
   Enter new UNIX password:
@@ -729,13 +729,13 @@ the credentials file .config/sarra/credentials.conf ::
 Note that the feeder credentials are presented twice, once to allow un-encrypted access via
 localhost, and a second time to permit access over TLS, potentially from other hosts (necessary
 when a broker is operating in a cluster, with feeder processes running on multiple transport
-engine nodes.) Next step is to put roles in .config/sarra/default.conf ::
+engine nodes.) Next step is to put roles in .config/sarra/admin.conf ::
 
  admin  amqps://root@boule.example.com/
  feeder amqp://feeder@localhost/
 
 Specify all knows users that you want to implement with their roles
-in the file  .config/sarra/default.conf ::
+in the file  .config/sarra/admin.conf ::
 
  declare subscriber anonymous
  declare source peter
@@ -766,9 +766,9 @@ Sample run::
 
 The *sr_audit* program:
 
-- uses the *admin* account from .config/sarra/default.conf to authenticate to broker.
+- uses the *admin* account from .config/sarra/admin.conf to authenticate to broker.
 - creates exchanges *xpublic* and *xreport* if they don't exist.
-- reads roles from .config/sarra/default.conf
+- reads roles from .config/sarra/admin.conf
 - obtains a list of users and exchanges on the pump
 - for each user in a *declare* option::
 
@@ -844,7 +844,7 @@ In short, here are the permissions and exchanges *sr_audit* manages::
                       have all permissions on queue named   q_<brokerUser>*
 
 
-To add Alice using sr_audit, one would add the following to ~/.config/sarra/default.conf ::
+To add Alice using sr_audit, one would add the following to ~/.config/sarra/admin.conf ::
 
   declare source Alice
 
@@ -853,7 +853,7 @@ then run::
 
   sr_audit --users foreground
 
-To remove users, just remove *declare source Alice* from the default.conf file, and run::
+To remove users, just remove *declare source Alice* from the admin.conf file, and run::
 
   sr_audit --users foreground
 
@@ -1153,7 +1153,7 @@ where the +1 can be replaced by the number of days to retain. ( would have prefe
 use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
 
 Note that the logs will clean up themselves, by default after 5 days they will be discarded.
-Can shorten to a single day by adding *logrotate 1* to default.conf.
+Can shorten to a single day by adding *logrotate 1d* to default.conf.
 
 Startup
 ~~~~~~~
