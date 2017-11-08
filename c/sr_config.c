@@ -1752,12 +1752,13 @@ void sr_config_list( struct sr_config_t *sr_cfg )
   
   fprintf( stdout, "Configurations available for sr_%s:\n", sr_cfg->progname );
   cld = opendir( p );
-  while ( ( d = readdir(cld)) ) 
+
+  if (!cld) return;
+
+  while ( (d = readdir(cld)) ) 
   {
        if ( d->d_name[0] == '.' ) continue;
 
-
-       
        l = strlen(d->d_name);
        l -=5;
        if ( l > 0 ) 
