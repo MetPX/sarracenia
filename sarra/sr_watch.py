@@ -101,6 +101,7 @@ class sr_watch(sr_instances):
 
         self.nbr_instances  = 1
         self.accept_unmatch = True
+
         self.post = sr_post(self.user_config,self.user_args)
         self.post.program_name = 'sr_watch'
         self.post.logger       = self.logger
@@ -114,6 +115,7 @@ class sr_watch(sr_instances):
         self.post.follow_symlinks = self.follow_symlinks
         self.post.force_polling   = self.force_polling
         self.post.check()
+
         if self.reset :
            self.post.cache.close(unlink=True)
            self.post.setup()
@@ -147,28 +149,6 @@ class sr_watch(sr_instances):
            if not plugin(self): return False
 
         return True
-
-    def validate_cache(self):
-        self.cache_file  = self.user_cache_dir
-        self.cache_file += '/' + self.watch_path.replace('/','_')
-        self.cache_file += '_%d' % self.blocksize
-        self.cache = shelve.open(self.cache_file)
-        current_pid = os.getpid()
-        k_pid = "pid"
-
-        if "pid" in self.cache:
-            if not self.cache[k_pid] == current_pid:
-                if psutil.pid_exists(self.cache[k_pid]):
-                    self.logger.error("Another sr_watch instance with same configuration is already running.")
-                    os._exit(1)
-                else:
-                    self.logger.debug("Reusing cache with pid=%s" % str(current_pid))
-                    self.cache["pid"] = current_pid
-        else:
-            self.logger.debug("Creating new cache with pid=%s" % str(current_pid))
-            self.cache["pid"] = current_pid
-        self.cache.close()
-
 
     def priming_walk(self,p):
         """
@@ -238,7 +218,6 @@ class sr_watch(sr_instances):
                   ( self.partflg, self.sumflg, self.caching ))
             self.logger.info("sr_watch realpath=%s follow_links=%s force_polling=%s"  % \
                   ( self.post.realpath, self.follow_symlinks, self.force_polling ) )
-            self.validate_cache()
             self.post.connect()
 
             # amqp resources
