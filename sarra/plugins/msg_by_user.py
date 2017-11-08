@@ -19,6 +19,8 @@ class Transformer(object):
 
     def __init__(self,parent):
 
+        parent.declare_option('msg_by_user')
+
         if not hasattr(parent,'msg_by_user'):
            parent.logger.info("msg_by_user setting mandatory")
            return
