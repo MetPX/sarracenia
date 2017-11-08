@@ -611,8 +611,8 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
   } else if ( !strcmp( option, "debug" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->debug = val&2;
-      sr_cfg->logseverity=99;
-      log_level=99;
+      sr_cfg->logseverity=255;
+      log_level=255;
       return(1+(val&1));
 
   } else if ( !strcmp( option, "delete" ) ) {
