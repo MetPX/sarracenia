@@ -313,13 +313,13 @@ class Consumer:
        if not self.hc.asleep :
               try :
                       if self.hc.use_pika :
-                           self.logger.debug("consume PIKA is used")
+                           #self.logger.debug("consume PIKA is used")
                            method_frame, properties, body = self.channel.basic_get(queuename)
                            if method_frame and properties and body :
                               self.for_pika_msg.pika_to_amqplib(method_frame, properties, body )
                               msg = self.for_pika_msg
                       else:
-                              self.logger.debug("consume AMQPLIB is used")
+                              #self.logger.debug("consume AMQPLIB is used")
                               msg = self.channel.basic_get(queuename)
               except :
                      (stype, value, tb) = sys.exc_info()
