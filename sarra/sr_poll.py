@@ -97,8 +97,8 @@ except :
 
 class sr_poll(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_instances.__init__(self,config,args,action)
 
     def cd(self, path):
         try   :
@@ -111,6 +111,8 @@ class sr_poll(sr_instances):
         return False
 
     def check(self):
+
+        if self.config_name == None : return
 
         # enforcing post_broker
 
@@ -905,7 +907,7 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    poll = sr_poll(config,args)
+    poll = sr_poll(config,args,action)
     poll.exec_action(action,old)
 
     os._exit(0)

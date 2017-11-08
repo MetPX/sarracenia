@@ -41,8 +41,12 @@ git origin/master branch
 2.17.11a1
 ---------
 
+
 *SHOULD*: change document_root -> base_dir (same for post_ variations.) The code still
 understands the old values, but you will see a warning message advising you to change it.
+
+*SHOULD*: change ${PDR} -> ${PBD} to mirror above change. There will be no visible
+effect of this, but at some future release, PDR will be dropped.
 
 *SHOULD*: URL option to post_base_url option.  will still understand old values, but 
 warning will result.

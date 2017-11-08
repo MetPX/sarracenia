@@ -32,7 +32,7 @@ EOF
 
 eval `application_dirs`
 
-if [ ! -f "$CONFDIR"/default.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
+if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  cat <<EOT
  ERROR:
  test users for each role: tsource, tsub, tfeed, bunnymaster (admin)

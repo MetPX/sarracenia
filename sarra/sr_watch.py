@@ -76,8 +76,8 @@ pol = {}
 
 class sr_watch(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
+    def __init__(self,config=None,args=None,action=None):
+        sr_instances.__init__(self,config,args,action)
         self.recursive      = True
         self.last_heartbeat = time.time()
 
@@ -96,6 +96,9 @@ class sr_watch(sr_instances):
         
         
     def check(self):
+
+        if self.config_name == None : return
+
         self.nbr_instances  = 1
         self.accept_unmatch = True
         self.post = sr_post(self.user_config,self.user_args)
@@ -318,10 +321,15 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
 
-    watch = sr_watch(config,args)
+    watch = sr_watch(config,args,action)
 
     if old :
        watch.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+
+    if action in ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] :
+       watch.exec_action(action,old)
+       os._exit(0)
+
 
     # =========================================
     # setup watchdog

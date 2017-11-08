@@ -358,7 +358,8 @@ class sr_config:
 
         # verify / complete settings
 
-        self.check()
+        if not self.action in ['add','disable','edit','enable','list','log','remove' ]  :
+           self.check()
 
         # check extended options
 

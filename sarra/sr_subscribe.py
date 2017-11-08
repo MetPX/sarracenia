@@ -1448,7 +1448,8 @@ class sr_subscribe(sr_instances):
            token[-1] = [filename]
 
         if self.currentFileOption != None :
-           filename  = self.sundew_getDestInfos(filename)
+           try   :  filename  = self.sundew_getDestInfos(filename)
+           except:  self.logger.error("problem with accept file option %s" % self.currentFileOption )
            token[-1] = [filename]
 
         # not mirroring

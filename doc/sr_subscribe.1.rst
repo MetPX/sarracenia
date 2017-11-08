@@ -708,7 +708,7 @@ option, with the use of *${..}* notation::
 
    SOURCE   - the amqp user that injected data (taken from the message.)
    DR       - the document root 
-   PDR      - the post document root 
+   PBD      - the post base dir
    YYYYMMDD - the current daily timestamp.
    HH       - the current hourly timestamp.
    *var*    - any environment variable.
@@ -765,7 +765,7 @@ It is commonly combined with::
 
        *mirror true*
        *source_from_exchange true*
-       *directory ${PDR}/${YYYYMMDD}/${SOURCE}*
+       *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
   
 To have data arrive in the standard format tree.
 
