@@ -948,8 +948,15 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->statehost='0';
   sr_cfg->statehostval=NULL;
 
-  /* FIXME: should probably do this at some point.  */
+  sprintf( p, "%s/.config", getenv("HOME") );
+  if (access(p, R_OK )) mkdir(p,0700);
   
+  sprintf( p, "%s/.config/sarra", getenv("HOME") );
+  if (access(p, R_OK )) mkdir(p,0700);
+  
+  sprintf( p, "%s/.config/sarra/%s", getenv("HOME"), progname );
+  if (access(p, R_OK )) mkdir(p,0700);
+
   sprintf( p, "%s/.config/sarra/default.conf", getenv("HOME") );
   sr_config_read( sr_cfg, p, 0, 0 );
    
