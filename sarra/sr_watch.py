@@ -383,7 +383,9 @@ def main():
                    if e not in [ 'delete', '*move*' ] and isinstance(watch.inflight,int):  
                       # sometime the file vanished at this point... if so skip it
                       try   : age = time.time() - os.stat(f)[stat.ST_MTIME] 
-                      except: continue
+                      except: 
+                              done += [ idx ]
+                              continue
                       if age < watch.inflight :
                           self.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
                           continue
@@ -430,8 +432,11 @@ def main():
                        self.logger.debug("event_wakeup calling do_post ! " )
                        self.do_post(f.replace( os.sep + '.' + os.sep, os.sep), e, k, v)
                        done += [ idx ]
+
+                   # MG skipped events will never get processed... get rid of them
                    else:
                        self.logger.debug("event_wakeup SKIPPING %s of %s (%s,%s)" % (e, f, k, v) )
+                       done += [ idx ]
 
                self.logger.debug("event_wakeup done: %s " % done )
                done.reverse()
