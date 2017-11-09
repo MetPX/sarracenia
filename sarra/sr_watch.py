@@ -381,7 +381,9 @@ def main():
                    self.logger.debug("event_wakeup looking at %s of %s (%s,%s) " % (e, f, k,v) )
                    # waiting for file to be unmodified for 'inflight' seconds...
                    if e not in [ 'delete', '*move*' ] and isinstance(watch.inflight,int):  
-                      age = time.time() - os.stat(f)[stat.ST_MTIME] 
+                      # sometime the file vanished at this point... if so skip it
+                      try   : age = time.time() - os.stat(f)[stat.ST_MTIME] 
+                      except: continue
                       if age < watch.inflight :
                           self.logger.debug("event_wakeup: %d vs. (inflight setting) %d seconds old. Too New!" % ( age, watch.inflight) )
                           continue
