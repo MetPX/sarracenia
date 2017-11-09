@@ -1083,9 +1083,6 @@ class sr_subscribe(sr_instances):
 
         if need_download :
 
-           # some process may not compute onfly_checksum ...
-           self.msg.onfly_checksum = self.msg.checksum 
-
            # make x attempts to download
            i  = 0
            while i < self.attempts : 
