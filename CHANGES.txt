@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: fixed: build configuration directories if missing (used to segfault.)
+* C: fixed: *debug* setting misinterpreted.
+* C: fixed: option base_dir, should have been post_base_dir
+* sr_watch remnants of old cache code causing problems, removed.
+* documentation improvements.
+* fixed: list,get,remove,edit,log not working for other than subscribe.
+* excessive debug messaging removed.
+
+
 **2.17.11a1**
 
 * sr_subscribe bug fix for SOURCE 
