@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.11a2
+---------
+
+*NOTICE*: bugfixes only. No changes needed vs. 11a1.
+
+
 2.17.11a1
 ---------
 
