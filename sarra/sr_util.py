@@ -165,101 +165,68 @@ def startup_args(sys_argv):
     config  = None
     old     = False
 
-    largv   = len(sys_argv)
-
     # work with a copy
 
     argv = []
     argv.extend(sys_argv)
+    largv = len(argv)
 
     # program
 
     if largv < 2 : return (args,action,config,old)
 
-    # program action
+    # look for an action
+
+    last = largv-1
+    for idx,A in enumerate(argv):
+        a = A.lower()
+        if a in actions :
+          action = a
+          if idx == last  : old = True
+          break
+
+    # action preceeded by '-a' or '-action'
+
+    if action != None :
+       if argv[idx-1].lower() in [ '-a','-action' ] :
+          old   = False
+          argv.pop(idx-1)
+       argv.remove(a)
+
+    # program action?
 
     if largv < 3 :
-       if argv[-1] in actions : action = argv[-1]
-       if argv[-1].lower().strip('-') in ['h','help'] : args = [ argv[-1] ]
+       if a.strip('-') in ['h','help'] : args = [ argv[-1] ]
        return (args,action,config,old)
-
-    # check for action and config flags
-
-    flagA   = False
-    flagC   = False
-
-    # program [... -[a|action] action...]
-
-    idx = -1
-    try    : idx = argv.index('-a')
-    except :
-             try    : idx    = argv.index('-action')
-             except : pass
-    if idx > -1 and idx < largv-2 :
-       flagA  = True
-       action = argv[idx+1]
-       # strip action from args
-       cmd    = ' '.join(argv)
-       cmd    = cmd.replace(argv[idx] + ' ' + action, '')
-       argv   = cmd.split()
-       largv  = len(argv)
 
     # program [... -[c|config] config...]
 
-    idx = -1
+    idx   = -1
+    largv = len(argv)
     try    : idx = argv.index('-c')
     except :
              try    : idx = argv.index('-config')
              except : pass
     if idx > -1 and idx < largv-2 :
        config = argv[idx+1]
-       flagC  = True
-       # strip config from args
-       cmd    = ' '.join(argv)
-       cmd    = cmd.replace(argv[idx] + ' ' + config, '')
-       argv   = cmd.split()
-       largv  = len(argv)
+       argv.pop(idx+1)
+       argv.pop(idx)
+       largv = len(argv)
 
-    # got both flags
-    # program [... -[a|action] action... -[c|config] config...]
- 
-    if flagA and flagC :
+    # if we have a config we are done
+
+    if config != None :
        args = argv[1:]
        return (args,action,config,old)
 
-    # action found... but not config
-    # program [... -[a|action] action...] config
+    # program [...] action config
+    # program [...] config action
+    # program [...] -a action [...] config
+    # if action was present it was removed with its [-a|-action]
+    # so the config must be last arg
 
-    if flagA :
-       args   = argv[1:-1]
-       config = argv[-1]
-       return (args,action,config,old)
-
-    # config found... but not action
-    # program [... -[c|config] config...] action
-
-    if flagC :
-       args   = argv[1:-1]
-       action = argv[-1]
-       return (args,action,config,old)
-
-    # positional arguments 
-
-    # tolerate old : program [args] config action
-
-    if argv[-1] in actions :
-       action = argv[-1]
-       config = argv[-2]
-       args   = argv[1:-2]
-       old    = True
-       return (args,action,config,old)
-
-    # program [args] action config
-
-    action = argv[-2]
+    args   = argv[1:-1]
     config = argv[-1]
-    args   = argv[1:-2]
-
     return (args,action,config,old)
 
 """
