@@ -1538,7 +1538,8 @@ class sr_config:
                 # adding paths in command line might be a mess...
                 elif words0 in ['path','p']: # See: sr_post.1, sr_watch.1
                      n  = 1
-                     dr = self.document_root
+                     pbd = self.post_base_dir
+
                      for w in words[1:]:
 
                          # stop if next option
@@ -1548,7 +1549,7 @@ class sr_config:
                          # adding path (cannot check if it exists we may post a delete)
                          try:
                                  path = w
-                                 if dr and not dr in w: path = dr + os.sep + w
+                                 if pbd and not pbd in w: path = pbd + os.sep + w
 
                                  path = os.path.abspath(path)
                                  if self.realpath:
