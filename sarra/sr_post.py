@@ -38,15 +38,9 @@
 #
 #============================================================
 
-
-#============================================================
-# DECLARE TRICK for false self.poster
+import json,os,random,sys,time
 
 from collections import *
-
-#============================================================
-
-import json,os,random,sys,time
 
 from watchdog.observers         import Observer
 from watchdog.observers.polling import PollingObserver
@@ -80,9 +74,6 @@ class SimpleEventHandler(PatternMatchingEventHandler):
 
 class sr_post(sr_instances):
 
-    def __init__(self,config=None,args=None,action=None):
-        sr_instances.__init__(self,config,args,action)
-
     # =============
     # check 
     # =============
@@ -107,18 +98,14 @@ class sr_post(sr_instances):
         if self.post_exchange == None :
            self.post_exchange = 'xs_%s' % self.post_broker.username
 
-        if self.post_base_url == None :
-           self.logger.error("post_base_url required")
+        if   self.post_base_url == None :
+             self.logger.error("post_base_url required")
+        elif self.post_base_url.startswith('file:') :
+             self.post_base_url = 'file:'
 
         # accept whatever not rejected
 
         self.accept_unmatch = True
-
-        # sr_watch requieres a sleep > 0
-
-        if self.program_name == 'watch' :
-           if self.sleep <= 0  : self.sleep = 0.1
-           if not self.caching : self.caching = 300
 
         # caching
 
@@ -154,7 +141,7 @@ class sr_post(sr_instances):
            self.cache.save()
            self.cache.close()
 
-        if self.program_name == 'watch' :
+        if self.sleep > 0 and len(self.obs_watched):
            for ow in self.obs_watched:
                self.observer.unschedule(ow)
            self.observer.stop()
@@ -234,36 +221,40 @@ class sr_post(sr_instances):
         print("-rr : reconnect between chunks\n")
 
     # =============
+    # on_add     (for SimpleEventHandler module)
+    # =============
+
+    def on_add(self, event, src, dst):
+        self.logger.debug("%s %s %s" % ( event, src, dst ) )
+        self.new_events['%s %s'%(src,dst)] = ( event, src, dst )
+
+    # =============
     # on_created (for SimpleEventHandler)
     # =============
 
     def on_created(self, event):
-        self.logger.debug("on_created %s" % event.src_path)
-        self.new_events.append( ( 'create', event.src_path, None ) )
+        self.on_add( 'create', event.src_path, None )
 
     # =============
     # on_deleted (for SimpleEventHandler)
     # =============
 
     def on_deleted(self, event):
-        self.logger.debug("on_deleted %s" % event.src_path)
-        self.new_events.append( ( 'delete', event.src_path, None ) )
+        self.on_add( 'delete', event.src_path, None )
 
     # =============
     # on_modified (for SimpleEventHandler)
     # =============
 
     def on_modified(self, event):
-        self.logger.debug("on_modified %s" % event.src_path)
-        self.new_events.append(  ( 'modify', event.src_path, None ))
+        self.on_add( 'modify', event.src_path, None )
 
     # =============
     # on_moved (for SimpleEventHandler)
     # =============
 
     def on_moved(self, event):
-        self.logger.debug("on_moved %s %s" % ( event.src_path, event.dest_path ) )
-        self.new_events.append( ( 'move',      event.src_path, event.dest_path ) )
+        self.on_add( 'move', event.src_path, event.dest_path )
 
     # =============
     # __on_post__ posting of message
@@ -308,13 +299,12 @@ class sr_post(sr_instances):
         self.post_hc       = None
         self.cache         = None
 
-        self.obs_watched   = None
+        self.obs_watched   = []
         self.watch_handler = None
 
         self.inl           = []
-        self.new_events    = []
-        self.left_events   = []
-        self.moving_dir    = []
+        self.new_events    = OrderedDict()
+        self.left_events   = OrderedDict()
 
         self.blocksize     = 200 * 1024 * 1024
 
@@ -327,18 +317,18 @@ class sr_post(sr_instances):
 
         if not isinstance(self.inflight,int):
            self.logger.debug("ok inflight unused")
-           return True
+           return False
 
         if lstat == None :
            self.logger.debug("ok lstat None")
-           return True
+           return False
 
         age = time.time() - lstat[stat.ST_MTIME]
         if age < self.inflight :
            self.logger.debug("%d vs (inflight setting) %d seconds. Too New!" % (age,self.inflight) )
-           return False
+           return True
 
-        return True
+        return False
 
     # =============
     # path renamed
@@ -397,6 +387,9 @@ class sr_post(sr_instances):
     def post_delete(self, path, key=None, value=None):
         self.logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
 
+        # post_init (message)
+        self.post_init(path,None)
+
         # sumstr
         hash   = sha512()
         hash.update(bytes(os.path.basename(path), encoding='utf-8'))
@@ -448,6 +441,9 @@ class sr_post(sr_instances):
 
         if blksz > 0 and blksz < fsiz :
            return self.post_file_in_parts(path,lstat)
+
+        # post_init (message)
+        self.post_init(path,lstat)
 
         # partstr
 
@@ -510,6 +506,9 @@ class sr_post(sr_instances):
 
     def post_file_in_parts(self, path, lstat):
         self.logger.debug("post_file_in_parts %s" % path )
+
+        # post_init (message)
+        self.post_init(path,lstat)
 
         # check the value of blocksize
 
@@ -594,6 +593,9 @@ class sr_post(sr_instances):
     def post_file_part(self, path, lstat):
         self.logger.debug("post_file_part %s" % path )
 
+        # post_init (message)
+        self.post_init(path,lstat)
+
         # verify suffix
 
         ok,log_msg,suffix,partstr,sumstr = self.msg.verify_part_suffix(path)
@@ -673,8 +675,11 @@ class sr_post(sr_instances):
     # post_link
     # =============
 
-    def post_link(self, path, key=None, value=None ):
+    def post_link(self, path, lstat, key=None, value=None ):
         self.logger.debug("post_link %s" % path )
+
+        # post_init (message)
+        self.post_init(path,lstat)
 
         # resolve link
 
@@ -721,8 +726,18 @@ class sr_post(sr_instances):
     def post_move(self, src, dst ):
         self.logger.debug("post_move %s %s" % (src,dst) )
 
+        # watchdog funny ./ added at end of directory path ... removed
+
+        src = src.replace(os.sep + '.' + os.sep, os.sep )
+        dst = dst.replace(os.sep + '.' + os.sep, os.sep )
+
+        # accept this file
+
+
         if not os.path.isdir(dst) :
-           ok = self.post_delete(src, 'newname', dst)
+           if not self.path_rejected(src):  ok = self.post_delete(src, 'newname', dst)
+
+           if self.path_rejected(dst): return True
            if os.path.isfile(dst) : self.post_file  (dst, os.stat(dst), 'oldname', src)
            if os.path.islink(dst) : self.post_link  (dst, os.stat(dst), 'oldname', src)
            return True
@@ -750,15 +765,13 @@ class sr_post(sr_instances):
         # path deleted
 
         if lstat == None :
-           self.post_init(path,lstat)
            ok = self.post_delete(path)
            return True
 
         # path is a link
 
         if os.path.islink(path):
-           self.post_init(path,lstat)
-           ok = self.post_link(path)
+           ok = self.post_link(path,lstat)
 
            if self.follow_symlinks :
               link  = os.readlink(path)
@@ -773,7 +786,6 @@ class sr_post(sr_instances):
         # path is a file
 
         if os.path.isfile(path):
-           self.post_init(path,lstat)
            ok = self.post_file(path,lstat)
            return done
 
@@ -879,14 +891,14 @@ class sr_post(sr_instances):
 
         # pile up left events to process
 
-        self.left_events.extend(self.new_events)
-        self.new_events = []
+        self.left_events.update(self.new_events)
+        self.new_events = OrderedDict()
 
         # work with a copy events and keep done events (to delete them)
 
         self.done_events = []
-        self.cur_events  = []
-        self.cur_events.extend(self.left_events)
+        self.cur_events  = OrderedDict()
+        self.cur_events.update(self.left_events)
 
         # nothing to do
 
@@ -894,17 +906,11 @@ class sr_post(sr_instances):
 
         # loop on all events
 
-        for idx,tup in enumerate(self.cur_events):
-
-            event, src, dst = tup
+        for key in self.cur_events:
+            event, src, dst = self.cur_events[key]
             done = self.process_event( event, src, dst )
-            if done : self.done_events += [idx] 
+            if done : self.left_events.pop(key) 
 
-        # loop on reverse done events
-
-        self.done_events.reverse()
-        for idx in self.done_events:
-            del self.left_events[idx]
 
     # =============
     # walk
@@ -990,16 +996,14 @@ class sr_post(sr_instances):
                self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
 
                # add path created
-               tup  = ( p, 'create', None )
-               self.new_events.append( tup )
+               self.on_add( 'create', p, None )
                return True
 
         else:
             self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
 
             # add path created
-            tup  = ( p, 'create', None )
-            self.new_events.append( tup )
+            self.on_add( 'create', p, None )
             return True
 
         return True
@@ -1162,20 +1166,24 @@ class sr_post(sr_instances):
     # =============
       
     def run(self):
-            self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
-                  ( self.program_name, self.partflg, self.sumflg, self.caching ))
-            self.logger.info("%s realpath=%s follow_links=%s force_polling=%s"  % \
-                  ( self.program_name, self.realpath, self.follow_symlinks, self.force_polling ) )
+        self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
+              ( self.program_name, self.partflg, self.sumflg, self.caching ))
+        self.logger.info("%s realpath=%s follow_links=%s force_polling=%s"  % \
+              ( self.program_name, self.realpath, self.follow_symlinks, self.force_polling ) )
 
-            self.connect()
+        self.connect()
 
-            if self.sleep > 0 : 
-                   for d in self.postpath :
-                       self.watch_dir(d)
-                   self.watch_loop()
-            else:
-                   for d in self.postpath :
-                       self.post1file(d)
+        pbd = self.post_base_dir
+
+        for d in self.postpath :
+            self.logger.info("postpath = %s" % d)
+            if pbd and not d.startswith(pbd) : d = pbd + os.sep + d
+            if self.sleep > 0 : self.watch_dir(d)
+            else:               self.post1file(d,os.stat(d))
+
+        if self.sleep > 0 : self.watch_loop()
+
+        self.close()
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )
