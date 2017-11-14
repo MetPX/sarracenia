@@ -210,7 +210,7 @@ function do_sr_post {
 
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
-   ls $srpostdir > $srpostlstfile_new
+   ls $srpostdir/* > $srpostlstfile_new
    # Obtain file listing delta
    srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
 
@@ -219,7 +219,7 @@ function do_sr_post {
    fi
 
    #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-   sr_post -c "$CONFDIR"/post/test2_f61.conf  $srpostdelta >> $srpostlogfile 2>&1
+   sr_post -c "$CONFDIR"/post/test2_f61.conf -p $srpostdelta >> $srpostlogfile 2>&1
 
    cp -p $srpostlstfile_new $srpostlstfile_old
 
