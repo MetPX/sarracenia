@@ -73,7 +73,7 @@ find . -type f -print | grep MOVE | xargs -n1 rm 2> /dev/null
 sr_watch stop    ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
 sr_watch cleanup ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
 sr_watch setup   ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_watch -debug --recursive start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+sr_watch -debug start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
 sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
 
 # copy 
