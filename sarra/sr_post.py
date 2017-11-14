@@ -387,6 +387,10 @@ class sr_post(sr_instances):
     def post_delete(self, path, key=None, value=None):
         self.logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
 
+        # accept this file
+
+        if self.path_rejected (path): return False
+
         # post_init (message)
         self.post_init(path,None)
 
@@ -404,7 +408,7 @@ class sr_post(sr_instances):
            self.cache.delete_path(path)  # dont keep delete in cache
            if not new_post :
               self.logger.debug("already posted as deleted %s %s"%(path,sumstr))
-              return True
+              return False
 
         # completing headers
 
@@ -412,7 +416,7 @@ class sr_post(sr_instances):
 
         # used when moving a file
 
-        if key != None : self.msg.headers['key'] = value
+        if key != None : self.msg.headers[key] = value
 
         # post message
 
@@ -426,6 +430,10 @@ class sr_post(sr_instances):
 
     def post_file(self, path, lstat, key=None, value=None):
         self.logger.debug("post_file %s" % path )
+
+        # accept this file
+
+        if self.path_rejected(path): return False
 
         # check if it is a part file
 
@@ -492,7 +500,7 @@ class sr_post(sr_instances):
 
         # used when moving a file
 
-        if key != None : self.msg.headers['key'] = value
+        if key != None : self.msg.headers[key] = value
 
         # post message
 
@@ -675,11 +683,15 @@ class sr_post(sr_instances):
     # post_link
     # =============
 
-    def post_link(self, path, lstat, key=None, value=None ):
+    def post_link(self, path, key=None, value=None ):
         self.logger.debug("post_link %s" % path )
 
+        # accept this file
+
+        if self.path_rejected (path): return False
+
         # post_init (message)
-        self.post_init(path,lstat)
+        self.post_init(path,None)
 
         # resolve link
 
@@ -702,7 +714,7 @@ class sr_post(sr_instances):
            self.cache.delete_path(path)  # dont keep link in cache
            if not new_post :
               self.logger.debug("already posted as a link %s %s"%(path,sumstr))
-              return True
+              return False
 
         # complete headers
 
@@ -711,7 +723,7 @@ class sr_post(sr_instances):
 
         # used when moving a file
 
-        if key != None : self.msg.headers['key'] = value
+        if key != None : self.msg.headers[key] = value
 
         # post message
 
@@ -731,18 +743,35 @@ class sr_post(sr_instances):
         src = src.replace(os.sep + '.' + os.sep, os.sep )
         dst = dst.replace(os.sep + '.' + os.sep, os.sep )
 
-        # accept this file
+        if os.path.islink(dst) and self.realpath:
+           dst = os.path.realpath(dst)
 
+        # file
 
-        if not os.path.isdir(dst) :
-           if not self.path_rejected(src):  ok = self.post_delete(src, 'newname', dst)
-
-           if self.path_rejected(dst): return True
-           if os.path.isfile(dst) : self.post_file  (dst, os.stat(dst), 'oldname', src)
-           if os.path.islink(dst) : self.post_link  (dst, os.stat(dst), 'oldname', src)
+        if os.path.isfile(dst) :
+           ok = self.post_delete(src,               'newname', dst)
+           ok = self.post_file  (dst, os.stat(dst), 'oldname', src)
            return True
 
-        self.walk_move(src,dst)
+        # link
+
+        if os.path.islink(dst) :
+           ok = self.post_delete(src, 'newname', dst)
+           ok = self.post_link  (dst, 'oldname', src)
+           return True
+
+        # directory
+
+        for x in os.listdir(dst):
+
+            dst_x = dst + os.sep + x
+            src_x = src + os.sep + x
+
+            ok = self.post_move(src_x,dst_x)
+
+        # directory list to delete at end
+
+        self.move_dir_lst.append( (src,dst) )
 
         return True
 
@@ -758,29 +787,27 @@ class sr_post(sr_instances):
 
         path = path.replace(os.sep + '.' + os.sep, os.sep )
 
-        # accept this file
-
-        if self.path_rejected (path): return False
-
-        # path deleted
-
-        if lstat == None :
-           ok = self.post_delete(path)
-           return True
-
         # path is a link
 
         if os.path.islink(path):
-           ok = self.post_link(path,lstat)
+           ok = self.post_link(path)
 
            if self.follow_symlinks :
               link  = os.readlink(path)
               try   : rpath = os.path.realpath(link)
               except: return done
 
-              if os.path.exists(rpath):
-                 ok = self.post1file(rpath,os.stat(rpath))
+              lstat = None
+              if os.path.exists(rpath) : lstat = os.stat(rpath)
 
+              ok = self.post1file(rpath,lstat)
+
+           return done
+
+        # path deleted
+
+        if lstat == None :
+           ok = self.post_delete(path)
            return done
 
         # path is a file
@@ -789,9 +816,7 @@ class sr_post(sr_instances):
            ok = self.post_file(path,lstat)
            return done
 
-        # at this point it is a directory
-
-        self.walk(path)
+        # at this point it is a create,modify directory
 
         return done
 
@@ -808,6 +833,7 @@ class sr_post(sr_instances):
 
         for tup in self.move_dir_lst :
             src, dst = tup
+            self.logger.debug("deleting moved directory %s" % src )
             ok = self.post_delete(src, 'newname', dst)
 
         return True
@@ -823,27 +849,43 @@ class sr_post(sr_instances):
         done  = True
         later = False
 
-        # lstat if src
-
-        try   : lstat = os.stat(src)
-        except: lstat = None
-
-        # create or modify
-
-        if event in [ 'create', 'modify'] :
-           if not os.path.exists(src):       return done
-           if self.path_inflight(src,lstat): return later
-           ok = self.post1file(src,lstat)
-
         # delete
 
         if event == 'delete' :
-           ok = self.post1file(src,lstat)
+           ok = self.post1file(src,None)
+           return done
 
         # move
 
         if event == 'move' :
            ok = self.post1move(src,dst)
+           return done
+
+        # create or modify
+
+        # directory : skipped, its content is watched
+
+        if os.path.isdir(src): return done
+
+        # link ( os.path.exists = false, lstat = None )
+
+        if os.path.islink(src):
+           ok = self.post1file(src,None)
+           return done
+
+        # file : must exists
+        #       (may have been deleted since event caught)
+
+        if not os.path.exists(src) : return done
+
+        # file : must be old enough
+
+        lstat = os.stat(src)
+        if self.path_inflight(src,lstat): return later
+
+        # post it
+
+        ok = self.post1file(src,lstat)
 
         return done
 
@@ -936,33 +978,6 @@ class sr_post(sr_instances):
             self.post1file(path,os.stat(path))
 
     # =============
-    # walk_move
-    # =============
-
-    def walk_move(self, src, dst):
-        self.logger.debug("walk_move %s %s" % (src,dst) )
-
-        # how to proceed with symlink
-
-        if os.path.islink(dst) and self.realpath :
-           dst = os.path.realpath(dst)
-
-        self.move_dir_lst.append( (src,dst) )
-
-        # walk destination dir 
-
-        for x in os.listdir(dst):
-
-            dst_x = dst + os.sep + x
-            src_x = src + os.sep + x
-
-            if os.path.isdir(dst_x):
-               self.walk_move(src_x,dst_x)
-               continue
-
-            ok = self.post_move(src_x,dst_x)
-
-    # =============
     # original walk_priming
     # =============
 
@@ -1030,6 +1045,7 @@ class sr_post(sr_instances):
         self.logger.info("sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
         self.logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.post_exchange))
+        self.walk(sld)
 
 
     # =============
@@ -1278,6 +1294,8 @@ class sr_post(sr_instances):
 def main():
 
     args,action,config,old = startup_args(sys.argv)
+
+    if action == None : action = 'foreground'
 
     post = sr_post(config,args,action)
     post.exec_action(action,old)
