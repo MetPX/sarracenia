@@ -45,9 +45,6 @@ except :
 
 class sr_watch(sr_post):
 
-    def __init__(self,config=None,args=None,action=None):
-        sr_post.__init__(self,config,args,action)
-
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
