@@ -41,11 +41,21 @@ git origin/master branch
 2.17.11a2
 ---------
 
+**BUGS**: ugly log message from syntax error in where:
+Message: '%s does not have vip=%s, is sleeping'
+Arguments: (('sr_winnow', '192.168.xx.yy'),)
+shows up when using VIP. fills log with garbage.
+
 *NOTICE*: bugfixes only. No changes needed vs. 11a1.
 
 
 2.17.11a1
 ---------
+
+**BUGS**: ugly log message from syntax error in where:
+Message: '%s does not have vip=%s, is sleeping'
+Arguments: (('sr_winnow', '192.168.xx.yy'),)
+shows up when using VIP. fills log with garbage. 
 
 
 *SHOULD*: change document_root -> base_dir (same for post_ variations.) The code still
