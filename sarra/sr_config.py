@@ -2026,13 +2026,13 @@ class sr_config:
                 return local_file
 
             except urllib.error.HTTPError as e:
-                self.logger.error('Download failed: %s', url)                    
-                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
+                self.logger.error('Download failed: %s' % url)                    
+                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
             except urllib.error.URLError as e:
-                self.logger.error('Download failed: %s', url)                                    
-                self.logger.error('Failed to reach server. Reason: %s', e.reason)            
+                self.logger.error('Download failed: %s' % url)                                    
+                self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
             except:
-                self.logger.error('Download failed: %s', url )
+                self.logger.error('Download failed: %s' % url )
                 self.logger.error('Uexpected error')              
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))

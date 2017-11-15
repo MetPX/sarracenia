@@ -1323,12 +1323,12 @@ class sr_subscribe(sr_instances):
                       if self.vip :
                          #  is it sleeping ?
                          if not self.has_vip() :
-                            self.logger.debug("%s does not have vip=%s, is sleeping", \
+                            self.logger.debug("%s does not have vip=%s, is sleeping" %\
                                              (self.program_name,self.vip))
                             time.sleep(5)
                             continue
                          else:
-                            self.logger.debug("%s is active on vip=%s", (self.program_name,self.vip))
+                            self.logger.debug("%s is active on vip=%s" % (self.program_name,self.vip))
 
 
                       #  heartbeat

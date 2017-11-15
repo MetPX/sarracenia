@@ -310,11 +310,11 @@ class sr_http():
 
         except urllib.error.HTTPError as e:
                self.logger.error('Download failed %s ' % self.urlstr)
-               self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s', e.code, e.reason)
+               self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
                raise
         except urllib.error.URLError as e:
                self.logger.error('Download failed %s ' % self.urlstr)
-               self.logger.error('Failed to reach server. Reason: %s', e.reason)
+               self.logger.error('Failed to reach server. Reason: %s' % e.reason)
                raise
         except:
                (stype, svalue, tb) = sys.exc_info()
