@@ -86,6 +86,12 @@ class sr_instances(sr_config):
         if old :
            self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
 
+        # sr_post special case : may not have config_name
+
+        if self.program_name == 'sr_post' and action == 'foreground' :
+           self.foreground_parent()
+           return
+
         # no config file given
 
         if self.config_name == None:
