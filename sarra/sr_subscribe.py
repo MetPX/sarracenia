@@ -269,9 +269,9 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __do_tasks__(self):
-        self.logger.debug("%s __do_tasks__" % self.program_name)
+        #self.logger.debug("%s __do_tasks__" % self.program_name)
 
-        # invoke on_post when provided
+        # invoke do_tasks when provided
 
         for plugin in self.do_task_list:
            if not plugin(self): return False
@@ -283,7 +283,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def get_source_from_exchange(self,exchange):
-        self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
+        #self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
 
         source = None
         if len(exchange) < 4 or not exchange.startswith('xs_') : return source
@@ -482,7 +482,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __on_file__(self):
-        self.logger.debug("%s __on_file__" % self.program_name)
+        #self.logger.debug("%s __on_file__" % self.program_name)
 
         # keep current value of these variables
 
@@ -613,7 +613,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __on_post__(self):
-        self.logger.debug("%s __on_post_" % self.program_name)
+        #self.logger.debug("%s __on_post__" % self.program_name)
 
         self.msg.local_file = self.new_file # FIXME, remove in 2018
 
@@ -721,7 +721,7 @@ class sr_subscribe(sr_instances):
 
         if self.notify_only :
            if self.post_broker :
-              self.logger.debug("notify_only post")
+              #self.logger.debug("notify_only post")
               ok = self.__on_post__()
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            return True
@@ -771,11 +771,11 @@ class sr_subscribe(sr_instances):
            else:
               urlstr = w_msg.urlstr
 
-           self.logger.debug("determine_move_file, path being matched: %s " % ( urlstr )  )
+           #self.logger.debug("determine_move_file, path being matched: %s " % ( urlstr )  )
 
 
            if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
-              self.logger.debug("Rejected by accept/reject options")
+              #self.logger.debug("Rejected by accept/reject options")
               return None,None,None
 
         # get a copy of received message
@@ -818,7 +818,7 @@ class sr_subscribe(sr_instances):
         if found and name == 'oldname' :
     
            if not os.path.exists(self.new_file):
-              self.logger.debug("move: oldname not found %s" % self.new_file)
+              #self.logger.debug("move: oldname not found %s" % self.new_file)
               self.new_dir  = None
               self.new_file = None
 
@@ -847,7 +847,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def doit_download(self,parent=None):
-        self.logger.debug("%s doit_download" % self.program_name)
+        #self.logger.debug("%s doit_download" % self.program_name)
 
         """
         FIXME: 201612-PAS There is perhaps several bug here:
@@ -1316,23 +1316,31 @@ class sr_subscribe(sr_instances):
 
         # processing messages
 
+        if self.vip : last = not self.has_vip()
+
         while True :
               try  :
-                      # if vip provided, check if has vip
 
+                      #  heartbeat (may be used to check if program is alive if not "has_vip")
+                      ok = self.heartbeat_check()
+
+                      # if vip provided, check if has vip
                       if self.vip :
-                         #  is it sleeping ?
-                         if not self.has_vip() :
-                            self.logger.debug("%s does not have vip=%s, is sleeping" %\
-                                             (self.program_name,self.vip))
+                         has_vip = self.has_vip()
+
+                         #  sleeping
+                         if not has_vip :
+                            if last != has_vip:
+                               last  = has_vip
+                               self.logger.debug("%s does not have vip=%s, is sleeping" %\
+                                                (self.program_name,self.vip))
                             time.sleep(5)
                             continue
-                         else:
+
+                         #  active
+                         if last != has_vip:
+                            last  = has_vip
                             self.logger.debug("%s is active on vip=%s" % (self.program_name,self.vip))
-
-
-                      #  heartbeat
-                      ok = self.heartbeat_check()
 
                       #  consume message
                       ok, self.msg = self.consumer.consume()
