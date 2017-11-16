@@ -81,7 +81,7 @@ class sr_post(sr_instances):
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
-        if self.config_name == None : return
+        if self.config_name == None and self.action != 'foreground' : return
 
         # singleton
 
@@ -131,7 +131,7 @@ class sr_post(sr_instances):
     # =============
 
     def close(self):
-        self.logger.debug("sr_post close")
+        self.logger.debug("%s close" % self.program_name)
 
         if self.post_hc :
            self.post_hc.close()
@@ -151,7 +151,7 @@ class sr_post(sr_instances):
     # =============
 
     def connect(self):
-        self.logger.debug("sr_post connect")
+        self.logger.debug("%s connect" % self.program_name)
 
         # =============
         # create message if needed
@@ -163,9 +163,13 @@ class sr_post(sr_instances):
         # posting 
         # =============
 
+        loop = True
+        if self.sleep <= 0 : loop = False
+
         self.post_hc = HostConnect( logger = self.logger )
         self.post_hc.set_pika( self.use_pika )
         self.post_hc.set_url( self.post_broker )
+        self.post_hc.loop = loop
         self.post_hc.connect()
 
         self.publisher = Publisher(self.post_hc)
@@ -225,7 +229,7 @@ class sr_post(sr_instances):
     # =============
 
     def on_add(self, event, src, dst):
-        self.logger.debug("%s %s %s" % ( event, src, dst ) )
+        #self.logger.debug("%s %s %s" % ( event, src, dst ) )
         self.new_events['%s %s'%(src,dst)] = ( event, src, dst )
 
     # =============
@@ -261,7 +265,7 @@ class sr_post(sr_instances):
     # =============
 
     def __on_post__(self):
-        self.logger.debug("%s __on_post_" % self.program_name)
+        #self.logger.debug("%s __on_post__" % self.program_name)
 
         # invoke on_post when provided
 
@@ -313,14 +317,14 @@ class sr_post(sr_instances):
     # =============
 
     def path_inflight(self,path,lstat):
-        self.logger.debug("path_inflight %s" % path )
+        #self.logger.debug("path_inflight %s" % path )
 
         if not isinstance(self.inflight,int):
-           self.logger.debug("ok inflight unused")
+           #self.logger.debug("ok inflight unused")
            return False
 
         if lstat == None :
-           self.logger.debug("ok lstat None")
+           #self.logger.debug("ok lstat None")
            return False
 
         age = time.time() - lstat[stat.ST_MTIME]
@@ -364,10 +368,9 @@ class sr_post(sr_instances):
     # =============
 
     def path_rejected(self,path):
+        #self.logger.debug("path_rejected %s" % path )
 
         if self.masks == [] : return False
-
-        self.logger.debug("path_accepted %s" % path )
 
         self.post_relpath = path
         if self.post_base_dir : self.post_relpath = path.replace(self.post_base_dir, '')
@@ -385,7 +388,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_delete(self, path, key=None, value=None):
-        self.logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
+        #self.logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
 
         # accept this file
 
@@ -429,7 +432,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_file(self, path, lstat, key=None, value=None):
-        self.logger.debug("post_file %s" % path )
+        #self.logger.debug("post_file %s" % path )
 
         # accept this file
 
@@ -459,18 +462,22 @@ class sr_post(sr_instances):
 
         # sumstr
 
-        if self.sumflg[:2] == 'z,' and len(self.sumflg) > 2 :
-           sumstr = self.sumflg
+        sumflg = self.sumflg
+
+        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+           sumstr = sumflg
 
         else:
 
-           self.set_sumalgo(self.sumflg)
+           if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+
+           self.set_sumalgo(sumflg)
            sumalgo = self.sumalgo
            sumalgo.set_path(path)
 
            # compute checksum
 
-           if self.sumflg in ['d','s'] :
+           if sumflg in ['d','s'] :
 
               fp = open(path,'rb')
               i  = 0
@@ -484,14 +491,16 @@ class sr_post(sr_instances):
            # setting sumstr
 
            checksum = sumalgo.get_value()
-           sumstr   = '%s,%s' % (self.sumflg,checksum)
+           sumstr   = '%s,%s' % (sumflg,checksum)
 
         # caching
 
         if self.caching :
            new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
            if new_post : self.logger.info("caching %s"% path)
-           else        : return False
+           else        : 
+                         self.logger.debug("already posted %s"% path)
+                         return False
 
         # complete  message
 
@@ -513,7 +522,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_file_in_parts(self, path, lstat):
-        self.logger.debug("post_file_in_parts %s" % path )
+        #self.logger.debug("post_file_in_parts %s" % path )
 
         # post_init (message)
         self.post_init(path,lstat)
@@ -529,20 +538,32 @@ class sr_post(sr_instances):
         remainder   =     fsiz%chunksize
         if remainder > 0 : block_count = block_count + 1
 
-        # info setup
+        # default sumstr
 
-        if self.sumflg[:2] == 'z,' :
-           sumstr = self.sumflg
-
-        else:
-           self.set_sumalgo(self.sumflg)
-           sumalgo = self.sumalgo
-           sumalgo.set_path(path)
+        sumstr = self.sumflg
 
         # loop on chunks
 
         i = 0
+        #self.logger.debug("block_count = %d" % block_count)
         while i < block_count :
+
+              # setting sumalgo for that part
+
+              sumflg = self.sumflg
+
+              if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+                 sumstr = sumflg
+
+              else:
+                 sumflg = self.sumflg
+                 if not self.sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+                 self.set_sumalgo(sumflg)
+                 sumalgo = self.sumalgo
+                 sumalgo.set_path(path)
+
+              # compute block stuff
+
               current_block = i
 
               offset = current_block * chunksize
@@ -581,7 +602,9 @@ class sr_post(sr_instances):
               if self.caching :
                  new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
                  if new_post : self.logger.info("caching %s (%s)"% (path,partstr) )
-                 else        : continue
+                 else        :
+                               self.logger.debug("already posted %s (%s)"%(path,partstr) )
+                               continue
 
               # complete  message
 
@@ -592,6 +615,10 @@ class sr_post(sr_instances):
 
               ok = self.__on_post__()
 
+              # increment count
+
+              i = i + 1
+
         return True
 
     # =============
@@ -599,7 +626,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_file_part(self, path, lstat):
-        self.logger.debug("post_file_part %s" % path )
+        #self.logger.debug("post_file_part %s" % path )
 
         # post_init (message)
         self.post_init(path,lstat)
@@ -624,7 +651,9 @@ class sr_post(sr_instances):
         if self.caching :
            new_post = self.cache.check(str(sumstr),path,partstr)
            if new_post : self.logger.info("caching %s"% path)
-           else        : return False
+           else        : 
+                         self.logger.debug("already posted %s"% path)
+                         return False
 
         # complete  message
 
@@ -684,7 +713,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_link(self, path, key=None, value=None ):
-        self.logger.debug("post_link %s" % path )
+        #self.logger.debug("post_link %s" % path )
 
         # accept this file
 
@@ -736,7 +765,7 @@ class sr_post(sr_instances):
     # =============
 
     def post_move(self, src, dst ):
-        self.logger.debug("post_move %s %s" % (src,dst) )
+        #self.logger.debug("post_move %s %s" % (src,dst) )
 
         # watchdog funny ./ added at end of directory path ... removed
 
@@ -825,7 +854,7 @@ class sr_post(sr_instances):
     # =============
 
     def post1move(self, src, dst ):
-        self.logger.debug("post1move %s %s" % (src,dst) )
+        #self.logger.debug("post1move %s %s" % (src,dst) )
 
         self.move_dir_lst = []
 
@@ -833,7 +862,7 @@ class sr_post(sr_instances):
 
         for tup in self.move_dir_lst :
             src, dst = tup
-            self.logger.debug("deleting moved directory %s" % src )
+            #self.logger.debug("deleting moved directory %s" % src )
             ok = self.post_delete(src, 'newname', dst)
 
         return True
@@ -843,8 +872,7 @@ class sr_post(sr_instances):
     # =============
 
     def process_event(self, event, src, dst ):
-
-        self.logger.debug("process_event %s %s %s " % (event,src,dst) )
+        #self.logger.debug("process_event %s %s %s " % (event,src,dst) )
 
         done  = True
         later = False
@@ -915,7 +943,7 @@ class sr_post(sr_instances):
     # =============
 
     def wakeup(self):
-        self.logger.debug("wakeup")
+        #self.logger.debug("wakeup")
 
         # FIXME: Tiny potential for events to be dropped during copy.
         #     these lists might need to be replaced with watchdog event queues.
@@ -996,10 +1024,11 @@ class sr_post(sr_instances):
         else:
             d=p
 
-        fs = os.stat(d)
-        dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
-        if dir_dev_id in self.inl:
-              return True
+        try :
+                 fs = os.stat(d)
+                 dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+                 if dir_dev_id in self.inl: return True
+        except:  self.logger.warning("could not stat %s" % d)
 
         if os.access( d , os.R_OK|os.X_OK ): 
            try:
@@ -1028,7 +1057,7 @@ class sr_post(sr_instances):
     # =============
 
     def watch_dir(self, sld ):
-        self.logger.debug("watch_setup %s" % sld )
+        self.logger.debug("watch_dir %s" % sld )
 
         if self.force_polling :
            self.logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
@@ -1107,7 +1136,8 @@ class sr_post(sr_instances):
                       partstr=None,sumstr=None,rename=None,filename=None, \
                       mtime=None,atime=None,mode=None,link=None):
 
-        self.logger.warning("instead of using self.poster.post(post_exchange,url... use self.post(post_exchange,post_base_url,post_relpath...")
+        self.logger.warning("deprecated use of self.poster.post(post_exchange,url...")
+        self.logger.warning("should be using self.post1file or self.post_file...")
 
         post_relpath  = url.path
         urlstr        = url.geturl()
@@ -1189,15 +1219,30 @@ class sr_post(sr_instances):
 
         self.connect()
 
+        if self.reset and self.caching :
+           self.cache.close(unlink=True)
+           self.cache.open()
+
         pbd = self.post_base_dir
 
         for d in self.postpath :
-            self.logger.info("postpath = %s" % d)
+            self.logger.debug("postpath = %s" % d)
             if pbd and not d.startswith(pbd) : d = pbd + os.sep + d
-            if self.sleep > 0 : self.watch_dir(d)
-            else:               self.post1file(d,os.stat(d))
 
-        if self.sleep > 0 : self.watch_loop()
+            if self.sleep > 0 : 
+               self.watch_dir(d)
+               continue
+
+            if   os.path.isdir(d) :
+                 self.walk(d)
+            elif os.path.islink(d):
+                 self.post1file(d,None)
+            elif os.path.isfile(d):
+                 self.post1file(d,os.stat(d))
+            else: 
+                 self.logger.error("could not post %s (exists %s)" % (d,os.path.exists(d)) )
+
+        if self.sleep > 0: self.watch_loop()
 
         self.close()
 
@@ -1291,13 +1336,104 @@ class sr_post(sr_instances):
 # MAIN
 # ===================================
 
+class Silent_Logger:
+      def silence(self,str):
+          pass
+      def __init__(self):
+          self.debug   = self.silence
+          self.error   = self.silence
+          self.info    = self.silence
+          self.warning = self.silence
+
 def main():
+
+    # try the normal sarra arguments parsing
 
     args,action,config,old = startup_args(sys.argv)
 
+    # verification: action
+
     if action == None : action = 'foreground'
 
+    # verification: config
+
+    post        = sr_post(None,None,None)
+    logger      = post.logger
+    post.logger = Silent_Logger()
+
+    config_ok, user_config = post.config_path(post.program_dir,config)
+
+    # user_config is wrong
+
+    if not config_ok :
+
+       # if specifically set... exit
+       cidx   = -99
+       try    : cidx = sys.argv.index('-c')
+       except :
+                try    : cidx = sys.argv.index('-config')
+                except : pass
+       if cidx > 0 :
+          logger.error("config file %s" % config)
+          os._exit(1)
+
+       # parsing incorrect, put it back in args
+       args.append(config)
+       config = None
+    
+    # if the config is ok, we parse it
+
+    if config_ok: post.config(user_config)
+
+    # verification : args
+
+    post.args(args)
+
+    # if we found something to post we are done
+
+    if len(post.postpath) > 0 :
+       post = sr_post(config,args,action)
+       post.exec_action(action,old)
+       os._exit(0)
+
+    # still no posting path... should we have
+       
+    pidx   = -99
+    try    : pidx = sys.argv.index('-p')
+    except :
+             try    : pidx = sys.argv.index('-path')
+             except : pass
+    if pidx > 0 :
+       logger.error("problem posting path not found")
+       os._exit(1)
+
+    # loop from last arg to front and build postpath
+ 
+    postpath = []
+    pbd      = post.post_base_dir
+    i        = len(sys.argv)-1
+
+    while i > 0 :
+        arg   = sys.argv[i]
+        value = '%s' % arg
+        i     = i - 1
+        if pbd and not pbd in value : value = pbd + os.sep + value
+        if os.path.exists(value) or os.path.islink(value):
+           postpath.append(value)
+           args.remove(arg)
+           continue
+        break
+
+    # add what we found
+
+    if len(postpath) > 0 :
+       args.append('-p')
+       args.extend(postpath)
+
+    # try normal execution
+
     post = sr_post(config,args,action)
+
     post.exec_action(action,old)
 
     os._exit(0)
