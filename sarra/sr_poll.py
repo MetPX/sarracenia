@@ -451,10 +451,11 @@ class sr_poll(sr_instances):
                                new_ls[f] = self.line
                            break
 
-                if matched:
-                    self.logger.debug("lsdir: accept line: %s" % self.line)
-                else:
-                    self.logger.debug("lsdir: rejected line: %s" % self.line)
+                # debug for developper
+                #if matched:
+                #    self.logger.debug("lsdir: accept line: %s" % self.line)
+                #else:
+                #    self.logger.debug("lsdir: rejected line: %s" % self.line)
 
             self.ls = new_ls
             return True
@@ -656,7 +657,7 @@ class sr_poll(sr_instances):
             ok = self.lsdir()
             if not ok : continue
 
-            self.logger.debug("post_new_urls: back from lsdir ok sleeping=%s #files: %d" % ( self.sleeping, len(self.ls.keys())) )
+            #self.logger.debug("post_new_urls: back from lsdir ok sleeping=%s #files: %d" % ( self.sleeping, len(self.ls.keys())) )
 
             # if we are sleeping and we are here it is because
             # this pull is retrieving difference between directory content
@@ -666,7 +667,7 @@ class sr_poll(sr_instances):
                ok = self.write_ls_file(self.lspath)
                continue
 
-            self.logger.debug("post_new_urls: not sleeping " )
+            #self.logger.debug("post_new_urls: not sleeping " )
 
             # get the file list from the ls
             
@@ -731,8 +732,9 @@ class sr_poll(sr_instances):
         try   : self.dest.close()
         except: pass
 
-        if self.sleeping:
-           self.logger.info("oh! we are sleeping...")
+        #dev logging
+        #if self.sleeping:
+        #   self.logger.info("oh! we are sleeping...")
 
         return npost > 0
 
@@ -790,18 +792,27 @@ class sr_poll(sr_instances):
 
         # do pulls instructions
 
+        if self.vip : last = self.has_vip()
+
         while True :
 
-              # log that we are waking up
+              #  heartbeat (may be used to check if program is alive if not "has_vip")
+              ok = self.heartbeat_check()
+
+              # if vip provided, check if has vip
+              if self.vip :
+                 self.sleeping = not self.has_vip()
+
+                 #  sleeping
+                 if self.sleeping:
+                    if not last: self.logger.info("%s is sleeping without vip=%s"% (self.program_name,self.vip))
+                 #  active
+                 else:
+                    if last:     self.logger.info("%s is active on vip=%s"%        (self.program_name,self.vip))
+
+                 last  = self.sleeping
 
               self.logger.info("poll %s is waking up" % self.config_name )
-
-              self.sleeping = not self.has_vip()
-
-              if self.sleeping :
-                 self.logger.debug("poll is sleeping ")
-              else :
-                 self.logger.debug("poll is NOT sleeping ")
 
               # if pull is sleeping and we delete files... nothing to do
               # if we don't delete files, we will keep the directory state
