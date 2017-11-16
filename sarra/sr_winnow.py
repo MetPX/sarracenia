@@ -79,8 +79,8 @@ class sr_winnow(sr_subscribe):
         if not self.post_broker : self.post_broker = self.broker
 
         # no vip given... so should not matter ?
-        if self.vip == None and self.interface == None :
-           self.logger.debug("both vip and interface missing... standalone mode")
+        if self.vip == None :
+           self.logger.debug("vip missing... standalone mode")
 
         # bindings should be defined 
 
