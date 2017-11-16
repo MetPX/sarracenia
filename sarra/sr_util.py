@@ -74,7 +74,7 @@ class checksum_0(object):
       Trivial minimalist checksumming algorithm, returns 0 for any file.
       """
       def __init__(self):
-          self.value = '0'
+          self.value = '%d' % random.randint(0,100)
 
       def get_value(self):
           return self.value
