@@ -812,7 +812,7 @@ class sr_poll(sr_instances):
 
                  last  = self.sleeping
 
-              if not self.sleeping: self.logger.info("poll %s is waking up" % self.config_name )
+              if not self.sleeping: self.logger.debug("poll %s is waking up" % self.config_name )
 
               # if pull is sleeping and we delete files... nothing to do
               # if we don't delete files, we will keep the directory state
