@@ -465,7 +465,12 @@ class sr_config:
           
         # amqp
 
-        self.use_pika             = 'pika' in sys.modules
+        # some fix requiered with pika so not the default for now
+        #self.use_pika             = 'pika' in sys.modules
+
+        # use pika only if amqplib is not available
+        self.use_pika              = not 'amqplib' in sys.modules
+
 
         # cache
         self.cache                = None
