@@ -6,6 +6,18 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* sr_post -p|-path optional ending arguments are postpaths
+* sr_config  by default use_pika only if amqplib not available
+* sr_poll  vip written once, heartbeat_check before vip check
+* sr_instances sr_post foreground as a special case (no config)
+* sr_subscribe heartbeat_check before vip checking
+* sr_util startup_args generalized/simplified 
+* sr_util sumflg 0,random(0,100)
+* sr_watch merged into sr_post (inherited from sr_post now)
+* sr_watch post directory content at startup (if not cached)
+* sr_subscribe  revert onfly_checksum set to message checksum in case unset
+
+
 **2.17.11a2**
 
 * C: fixed: build configuration directories if missing (used to segfault.)
