@@ -272,7 +272,17 @@ class sr_post(sr_instances):
         for plugin in self.on_post_list:
            if not plugin(self): return False
 
-        ok = self.msg.publish( )
+        ok = True
+
+        if   self.outlet == 'json' :
+             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
+             self.logger.info("%s" % json_line )
+
+        elif self.outlet == 'url'  :
+             self.logger.info("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+
+        else :
+             ok = self.msg.publish( )
 
         return ok
 

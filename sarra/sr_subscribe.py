@@ -625,10 +625,19 @@ class sr_subscribe(sr_instances):
                 self.logger.warning("on_post plugins should replace self.msg.local_file, by self.new_file" )
                 self.new_file = self.msg.local_file
 
-        ok = self.msg.publish( )
+        ok = True
+
+        if   self.outlet == 'json' :
+             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
+             self.logger.info("%s" % json_line )
+
+        elif self.outlet == 'url'  :
+             self.logger.info("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+
+        else :
+             ok = self.msg.publish( )
 
         return ok
-
 
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)

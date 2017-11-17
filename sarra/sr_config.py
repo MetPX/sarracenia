@@ -531,6 +531,7 @@ class sr_config:
         self.gateway_for          = []
         self.mirror               = False
 
+        self.outlet               = 'post'
         self.partflg              = '0'
         self.pipe                 = False
         self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
@@ -1526,6 +1527,14 @@ class sr_config:
                         self.on_watch_list.append(self.on_watch)
                      n = 2
 
+                elif words0 == 'outlet' : # MG FIXME to be documented
+                     value = words1.lower()
+                     if value in ['post','json','url']:
+                           self.outlet = value
+                     else:
+                           self.logger.error("outlet set to %s ignored" % value )
+                     n = 2
+
                 elif words0 in ['overwrite','o'] : # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.overwrite = True
@@ -2384,6 +2393,33 @@ def self_test():
     opt1 = "post_base_url file://toto"
     cfg.option(opt1.split())
 
+    if cfg.outlet != 'post' :
+       cfg.logger.error(" default error outlet = %s" % self.outlet)
+       failed = True
+
+    opt1 = "outlet json"
+    cfg.option(opt1.split())
+    if cfg.outlet != 'json' :
+       cfg.logger.error("outlet json")
+       failed = True
+
+    opt1 = "outlet url"
+    cfg.option(opt1.split())
+    if cfg.outlet != 'url' :
+       cfg.logger.error("outlet json")
+       failed = True
+
+    opt1 = "outlet post"
+    cfg.option(opt1.split())
+    if cfg.outlet != 'post' :
+       cfg.logger.error("outlet post")
+       failed = True
+
+    #opt1 = "outlet toto"
+    #cfg.option(opt1.split())
+    #if cfg.outlet != 'post' :
+    #   cfg.logger.error("outlet toto")
+    #   failed = True
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
