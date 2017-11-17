@@ -38,6 +38,19 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.11a3
+---------
+
+*NOTICE*: fix for message bug in 11a2. 
+
+*NOTICE*: now prefers amqplib (reverted from preference for pika in 11a1 and 2.) use_pika yes to force usage.
+
+*NOTICE*: sr_watch/sr_post/sr_poll now merged, so sr_watch start will now post whole tree, rather than just differences.
+Use of *suppress_duplicates* now encouraged with sr_watch.
+
+*NOTICE*: no other changes...
+
+
 2.17.11a2
 ---------
 

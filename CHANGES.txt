@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.11a3**
+
 * sr_post -p|-path optional ending arguments are postpaths
 * sr_config  by default use_pika only if amqplib not available
 * sr_poll  vip written once, heartbeat_check before vip check
