@@ -276,10 +276,10 @@ class sr_post(sr_instances):
 
         if   self.outlet == 'json' :
              json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-             self.logger.info("%s" % json_line )
+             print("%s" % json_line )
 
         elif self.outlet == 'url'  :
-             self.logger.info("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
         else :
              ok = self.msg.publish( )
