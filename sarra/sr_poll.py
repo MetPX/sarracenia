@@ -77,28 +77,23 @@ from collections import *
 #============================================================
 
 try :    
-         from sr_amqp           import *
          from sr_cache          import *
          from sr_file           import *
          from sr_ftp            import *
          from sr_http           import *
-         from sr_instances      import *
          from sr_message        import *
+         from sr_post           import *
          from sr_util           import *
 except : 
-         from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
          from sarra.sr_file      import *
          from sarra.sr_ftp       import *
          from sarra.sr_http      import *
-         from sarra.sr_instances import *
          from sarra.sr_message   import *
+         from sarra.sr_post      import *
          from sarra.sr_util      import *
 
-class sr_poll(sr_instances):
-
-    def __init__(self,config=None,args=None,action=None):
-        sr_instances.__init__(self,config,args,action)
+class sr_poll(sr_post):
 
     def cd(self, path):
         try   :
@@ -114,33 +109,6 @@ class sr_poll(sr_instances):
 
         if self.config_name == None : return
 
-        # enforcing post_broker
-
-        if self.post_broker == None :
-           if self.broker   != None :
-              self.post_broker = self.broker
-              self.logger.warning("use post_broker to set broker")
-
-        # enforcing post_exchange
-
-        if self.post_exchange == None :
-           if self.exchange   != None :
-              self.post_exchange = self.exchange
-              self.logger.warning("use post_exchange to set exchange")
-
-        if self.post_exchange  == None :
-           self.post_exchange   = 'xs_%s' % self.post_broker.username
-
-        # force 1 instance
-        self.nbr_instances = 1
-        self.sleeping      = False
-        self.connected     = False 
-
-        # to clusters required
-
-        if self.to_clusters == None:
-           self.to_clusters = self.post_broker.hostname
-
         # check destination
 
         self.details = None
@@ -155,6 +123,14 @@ class sr_poll(sr_instances):
         self.post_base_url = self.details.url.geturl()
         if self.post_base_url[-1] != '/' : self.post_base_url += '/'
         if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
+
+        sr_post.check(self)
+
+        # force 1 instance
+        self.nbr_instances = 1
+
+        self.sleeping      = False
+        self.connected     = False 
 
         # check sumflg should start with z,
 
@@ -173,92 +149,6 @@ class sr_poll(sr_instances):
             if not maskDir in self.pulls :
                self.pulls[maskDir] = []
             self.pulls[maskDir].append(mask)
-
-        # =============
-        # cache
-        # =============
-
-        self.cache = sr_cache(self)
-        self.cache.open()
-
-        # ========================================
-        # BEGIN TRICK for false self.poster
-
-        addmodule = namedtuple('AddModule', ['post'])
-        self.poster = addmodule(self.post_url)
-
-        if self.poster.post == self.post_url :
-           self.logger.debug("MY POSTER TRICK DID WORK !!!")
-
-    def post_url(self,exchange,url,to_clusters,partstr=None,sumstr=None,rename=None,filename=None,mtime=None,atime=None,mode=None,link=None):
-        self.logger.warning("instead of using self.poster.post(exchange,url... use self.post(post_exchange,post_base_url,post_relpath...")
-
-        urlstr  = url.geturl()
-        post_relpath = url.path
-
-        post_base_url = urlstr.replace(post_relpath,'')
-        if post_base_url[-1] != '/' : post_base_url += '/'
-        if post_base_url.startswith('file:'): post_base_url = 'file:'
-
-        return self.post(post_exchange,post_base_url,post_relpath,to_clusters,partstr,sumstr,rename,mtime,atime,mode,link)
-
-    # ENDOF TRICK for false self.poster
-    # ========================================
-
-
-    def close(self):
-        self.post_hc.close()
-
-        if self.cache  :
-           self.cache.save()
-           self.cache.close()
-
-        self.connected = False 
-
-    def connect(self):
-
-        # =============
-        # create message
-        # =============
-
-        self.msg = sr_message(self)
-
-        self.msg.exchange = self.post_exchange
-        self.msg.headers  = {}
-
-        # =============
-        # posting
-        # =============
-
-        self.post_hc   = HostConnect( self.logger )
-        self.post_hc.set_pika(self.use_pika)
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-        self.publisher = Publisher(self.post_hc)
-        self.publisher.build()
-
-        self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
-                        (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
-
-        # =============
-        # setup message publish
-        # =============
-
-        self.msg.user                 = self.post_broker.username
-        self.msg.publisher            = self.publisher
-        self.msg.pub_exchange         = self.post_exchange
-        self.msg.post_exchange_split  = self.post_exchange_split
-
-        self.logger.info("Output AMQP exchange(%s)" % self.msg.pub_exchange )
-
-        self.connected        = True 
-
-        # =============
-        # amqp resources
-        # =============
-       
-        self.declare_exchanges()
-           
 
     # =============
     # default_poll
@@ -521,30 +411,14 @@ class sr_poll(sr_instances):
         return defval
 
     def overwrite_defaults(self):
-
-        # overwrite defaults
-        # default post_broker, post_exchange, destination None
-
-        self.post_broker    = None
-        self.post_exchange  = None
-        self.destination    = None
-
-        self.broker         = None
-        self.exchange       = None
+        sr_post.overwrite_defaults(self)
 
         # Set minimum permissions to something that might work most of the time.
         self.chmod = 0o400
 
         # cache initialisation
 
-        self.cache       = None
         self.caching     = 1200
-        self.cache_stat  = True
-        self.execfile("on_heartbeat",'heartbeat_cache')
-        self.on_heartbeat_list.append(self.on_heartbeat)
-
-        #chmod sets a mask used by line_mode plugin to determine the permission 
-        # bits which must be set in order for a file to be posted.
 
         # Should there be accept/reject option used unmatch are accepted
 
@@ -762,26 +636,6 @@ class sr_poll(sr_instances):
 
         return False
 
-    # =============
-    # __on_post__ posting of message
-    # =============
-
-    def __on_post__(self):
-
-        # invoke on_post when provided
-
-        #if self.on_post :
-        #   ok = self.on_post(self)
-        #   if not ok: return ok
-        for plugin in self.on_post_list :
-           if not plugin(self): return False
-
-        # should always be ok
-
-        ok = self.msg.publish( )
-
-        return ok
-
     def run(self):
 
         self.logger.info("sr_poll run")
@@ -829,86 +683,6 @@ class sr_poll(sr_instances):
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)
-
-    def reload(self):
-        self.logger.info("%s reload" % self.program_name)
-        self.close()
-        self.configure()
-        self.run()
-
-    def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
-        self.run()
-
-    def stop(self):
-        self.logger.info("%s stop" % self.program_name)
-        self.close()
-        os._exit(0)
-
-    def cleanup(self):
-        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name) )
-
-        # on posting host
-
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_pika(self.use_pika)
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-        self.declare_exchanges(cleanup=True)
-
-        self.cache.close(unlink=True)
-
-        self.close()
-
-    def declare(self):
-        self.logger.info("%s %s declare" % (self.program_name,self.config_name) )
-
-        # on posting host
-
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_pika(self.use_pika)
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-
-        # declare posting exchange(s)
-       
-        self.declare_exchanges()
-
-        self.close()
-
-    def declare_exchanges(self, cleanup=False):
-
-        # define post exchange (splitted ?)
-
-        exchanges = []
-
-        if self.post_exchange_split != 0 :
-           for n in list(range(self.post_exchange_split)) :
-               exchanges.append(self.post_exchange + "%02d" % n )
-        else :
-               exchanges.append(self.post_exchange)
-
-        # do exchange setup
-              
-        for x in exchanges :
-            if cleanup: self.post_hc.exchange_delete(x)
-            else      : self.post_hc.exchange_declare(x)
-
-    def setup(self):
-        self.logger.info("%s %s setup" % (self.program_name,self.config_name) )
-
-        # on posting host
-
-        self.post_hc  = HostConnect( self.logger )
-        self.post_hc.set_pika(self.use_pika)
-        self.post_hc.set_url(self.post_broker)
-        self.post_hc.connect()
-       
-        # declare posting exchange(s)
-       
-        self.declare_exchanges()
-
-        self.close()
 
 # ===================================
 # MAIN
