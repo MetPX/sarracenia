@@ -135,12 +135,11 @@ class HostConnect:
                self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" % (self.protocol,self.user,host,self.vhost,self.ssl))
                if self.use_pika:
                       self.logger.debug("PIKA is used")
+                      logger = logging.getLogger('pika')
+                      logger.setLevel(logging.CRITICAL)
                       credentials = pika.PlainCredentials(self.user, self.password)
                       parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
                       self.connection = pika.BlockingConnection(parameters)
-                      logger = logging.getLogger('pika')
-                      if self.logger.level != logging.DEBUG : logger.setLevel(logging.CRITICAL)
-                      else:                                   logger.setLevel(logging.WARNING)
                else:
                       self.logger.debug("AMQPLIB is used")
                       self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
