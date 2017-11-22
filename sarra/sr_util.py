@@ -36,9 +36,31 @@ from hashlib import md5
 from hashlib import sha512
 
 import calendar,datetime
-import os,random,time,stat,sys
+import os,random,time,signal,stat,sys
 import urllib
 import urllib.parse
+
+#============================================================
+# sigalarm
+#============================================================
+
+class TimeoutException(Exception):
+    """timeout exception"""
+    pass
+
+# alarm_cancel
+def alarm_cancel():
+    signal.alarm(0)
+
+# alarm_raise
+def alarm_raise(n, f):
+    raise TimeoutException("signal alarm timed out")
+
+# alarm_set
+def alarm_set(time):
+    signal.signal(signal.SIGALRM, alarm_raise)
+    signal.alarm(time)
+
 
 """
 
@@ -197,7 +219,7 @@ def startup_args(sys_argv):
 
     if largv < 3 :
        if a.strip('-') in ['h','help'] : args = [ argv[-1] ]
-       return (args,action,config,old)
+       return (args,action,config,False)
 
     # program [... -[c|config] config...]
 
@@ -212,6 +234,7 @@ def startup_args(sys_argv):
        argv.pop(idx+1)
        argv.pop(idx)
        largv = len(argv)
+       old   = False
 
     # if we have a config we are done
 
@@ -302,7 +325,8 @@ def self_test():
         chk0.update(chunk)
     f.close()
 
-    if chk0.get_value() != '0' :
+    v = int(chk0.get_value())
+    if v < 0 or v > 99 :
           print("test checksum_0 Failed")
           status = 1
       
@@ -437,6 +461,31 @@ def self_test():
 
     if status < 3 : print("test timeflt2str timestr2flt : OK")
 
+    # ===================================
+    # TESTING alarm
+    # ===================================
+
+    try: 
+            status = 4
+            alarm_set(1)
+            time.sleep(2)
+    except: status = 0
+
+    if status == 4 : print("test alarm_set 1 NOT OK")
+
+    try: 
+            status = 0
+            alarm_set(2)
+            time.sleep(1)
+            alarm_cancel()
+            time.sleep(1)
+    except: status = 4
+
+    if status == 4 : print("test alarm_cancel 2 NOT OK")
+
+    if status < 4 : print("test alarm: OK")
+
+
     return status
 
 # ===================================
@@ -454,4 +503,3 @@ def main():
 
 if __name__=="__main__":
    main()
-
