@@ -118,7 +118,7 @@ class sr_winnow(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = True
+        if self.reportback == None : self.reportback = False
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_winnow put them HERE

@@ -654,8 +654,6 @@ class sr_subscribe(sr_instances):
         self.post_broker    = None
         self.post_exchange  = None
 
-        self.reportback     = False
-
     # =============
     # process message  
     # =============

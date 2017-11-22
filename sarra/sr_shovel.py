@@ -121,7 +121,7 @@ class sr_shovel(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = True
+        if self.reportback == None : self.reportback = False
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_shovel put them HERE
