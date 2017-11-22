@@ -36,7 +36,7 @@ from hashlib import md5
 from hashlib import sha512
 
 import calendar,datetime
-import os,random,time,signal,stat,sys
+import os,random,signal,stat,sys,time
 import urllib
 import urllib.parse
 
@@ -60,7 +60,6 @@ def alarm_raise(n, f):
 def alarm_set(time):
     signal.signal(signal.SIGALRM, alarm_raise)
     signal.alarm(time)
-
 
 """
 
@@ -172,6 +171,177 @@ class checksum_n(object):
       def set_path(self,path):
           filename   = os.path.basename(path)
           self.value = md5(bytes(filename,'utf-8')).hexdigest()
+
+# =========================================
+# sr_proto : one place for throttle, onfly checksum, buffer io timeout
+# =========================================
+
+class sr_proto():
+    def __init__(self, parent) :
+        parent.logger.debug("sr_proto __init__")
+
+        self.logger = parent.logger
+        self.parent = parent 
+
+        self.init()
+
+    # init
+    def init(self):
+        self.logger.debug("sr_proto init")
+
+        self.sumalgo   = None
+        self.checksum  = None
+        self.fpos      = 0
+
+        self.bufsize   = self.parent.bufsize
+        self.kbytes_ps = self.parent.kbytes_ps
+        self.bytes_ps  = self.kbytes_ps * 1024
+        self.tbytes    = 0
+        self.tbegin    = time.time()
+        self.timeout   = self.parent.timeout
+
+        # sigalarm timeout: worst speed set to 30 secs for 8K
+
+        min_speed_8k = 30.0 / 8192
+
+        # if throttling is set, consider half its speed
+
+        if self.bytes_ps > 0 :
+           half_throttle = self.bytes_ps * 0.5
+           if half_throttle < min_speed_8k : min_speed_8k = half_throttle
+
+        # compute a iotime
+
+        self.iotime = 3 + int( self.bufsize * min_speed_8k + 0.9 )
+
+        # timeout can be used to overwrite out iotime
+
+        if self.timeout > self.iotime: self.iotime = self.timeout
+
+        self.logger.debug("iotime %d" % self.iotime)
+
+    # read_write
+    def read_write(self, src, dst, length=0, iotime=0, sumalgo=None, bytes_ps=0):
+        self.logger.debug("sr_proto read_write")
+
+        # reset speed
+
+        self.tbytes   = 0.0
+        self.tbegin   = time.time()
+
+        # length = 0, transfer entire remote file to local file
+
+        if length == 0 :
+           while True :
+                 if iotime : alarm_set(iotime)
+                 chunk = src.read(self.bufsize)
+                 if chunk  : dst.write(chunk)
+                 alarm_cancel()
+                 if not chunk : break
+                 if sumalgo     : sumalgo.update(chunk)
+                 if bytes_ps > 0: self.throttle(chunk)
+           return
+
+        # exact length to be transfered
+
+        nc = int(length/self.bufsize)
+        r  = length%self.bufsize
+
+        # read/write bufsize "nc" times
+
+        i  = 0
+        while i < nc :
+              if iotime : alarm_set(iotime)
+              chunk = src.read(self.bufsize)
+              if chunk : dst.write(chunk)
+              alarm_cancel()
+              if not chunk : break
+              if sumalgo     : sumalgo.update(chunk)
+              if bytes_ps > 0: self.throttle(chunk)
+              i = i + 1
+
+        # remaining
+
+        if r > 0 :
+           if iotime : alarm_set(iotime)
+           chunk = src.read(r)
+           dst.write(chunk)
+           alarm_cancel()
+           if sumalgo     : sumalgo.update(chunk)
+           if bytes_ps > 0: self.throttle(chunk)
+
+    # read_writelocal
+    def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
+        self.logger.debug("sr_proto read_writelocal")
+
+        # reset ckecksum, fpos
+
+        self.checksum = None
+        self.fpos     = 0
+
+        # local_file has to exists
+
+        if not os.path.isfile(local_file) :
+           dst = open(local_file,'w')
+           dst.close()
+
+        # local_file opening and seeking if needed
+
+        dst = open(local_file,'r+b')
+        if local_offset != 0 : dst.seek(local_offset,0)
+
+        # initialize sumalgo
+
+        if self.sumalgo : self.sumalgo.set_path(src_path)
+
+        # copy source to destination
+
+        self.read_write( src, dst, length, self.iotime, self.sumalgo, self.bytes_ps )
+
+        # finalize local file pointer
+
+        dst.flush()
+        os.fsync(dst)
+
+        self.fpos = dst.tell()
+
+        dst.close()
+
+        # finalize checksum
+
+        if self.sumalgo : self.checksum = self.sumalgo.get_value()
+
+    # readlocal_write
+    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None):
+        self.logger.debug("sr_proto readlocal_write")
+
+        # local_file opening and seeking if needed
+
+        src = open(local_file,'r+b')
+        if local_offset != 0 : src.seek(local_offset,0)
+
+        # copy source to destination
+
+        self.read_write( src, dst, length, self.iotime, None, self.bytes_ps)
+
+        # finalize local file pointer
+
+        src.close()
+
+    # set_sumalgo
+    def set_sumalgo(self,sumalgo) :
+        self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+        self.sumalgo = sumalgo
+
+    # throttle
+    def throttle(self,buf) :
+        self.logger.debug("sr_proto throttle")
+        self.tbytes = self.tbytes + len(buf)
+        span  = self.tbytes / self.bytes_ps
+        rspan = time.time() - self.tbegin
+        if span > rspan :
+           stime = span-rspan
+           time.sleep(span-rspan)
 
 # ===================================
 # startup args parsing
@@ -485,7 +655,6 @@ def self_test():
 
     if status < 4 : print("test alarm: OK")
 
-
     return status
 
 # ===================================
@@ -503,3 +672,4 @@ def main():
 
 if __name__=="__main__":
    main()
+
