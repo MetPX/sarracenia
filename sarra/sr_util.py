@@ -177,8 +177,9 @@ class checksum_n(object):
 # =========================================
 
 class sr_proto():
+
     def __init__(self, parent) :
-        parent.logger.debug("sr_proto __init__")
+        #parent.logger.debug("sr_proto __init__")
 
         self.logger = parent.logger
         self.parent = parent 
@@ -187,7 +188,7 @@ class sr_proto():
 
     # init
     def init(self):
-        self.logger.debug("sr_proto init")
+        #self.logger.debug("sr_proto init")
 
         self.sumalgo   = None
         self.checksum  = None
@@ -210,19 +211,21 @@ class sr_proto():
            half_throttle = self.bytes_ps * 0.5
            if half_throttle < min_speed_8k : min_speed_8k = half_throttle
 
-        # compute a iotime
+        # compute a iotime : minimum is 30 secs
 
         self.iotime = 3 + int( self.bufsize * min_speed_8k + 0.9 )
 
+        if self.iotime < 30 : self.iotime = 30
+
         # timeout can be used to overwrite out iotime
 
-        if self.timeout > self.iotime: self.iotime = self.timeout
+        if self.timeout and self.timeout > self.iotime: self.iotime = self.timeout
 
         self.logger.debug("iotime %d" % self.iotime)
 
     # read_write
-    def read_write(self, src, dst, length=0, iotime=0, sumalgo=None, bytes_ps=0):
-        self.logger.debug("sr_proto read_write")
+    def read_write(self, src, dst, length=0):
+        #self.logger.debug("sr_proto read_write")
 
         # reset speed
 
@@ -233,13 +236,13 @@ class sr_proto():
 
         if length == 0 :
            while True :
-                 if iotime : alarm_set(iotime)
+                 if self.iotime: alarm_set(self.iotime)
                  chunk = src.read(self.bufsize)
                  if chunk  : dst.write(chunk)
                  alarm_cancel()
                  if not chunk : break
-                 if sumalgo     : sumalgo.update(chunk)
-                 if bytes_ps > 0: self.throttle(chunk)
+                 if self.sumalgo  : self.sumalgo.update(chunk)
+                 if self.kbytes_ps: self.throttle(chunk)
            return
 
         # exact length to be transfered
@@ -251,28 +254,28 @@ class sr_proto():
 
         i  = 0
         while i < nc :
-              if iotime : alarm_set(iotime)
+              if self.iotime : alarm_set(self.iotime)
               chunk = src.read(self.bufsize)
               if chunk : dst.write(chunk)
               alarm_cancel()
               if not chunk : break
-              if sumalgo     : sumalgo.update(chunk)
-              if bytes_ps > 0: self.throttle(chunk)
+              if self.sumalgo  : self.sumalgo.update(chunk)
+              if self.kbytes_ps: self.throttle(chunk)
               i = i + 1
 
         # remaining
 
         if r > 0 :
-           if iotime : alarm_set(iotime)
+           if self.iotime : alarm_set(self.iotime)
            chunk = src.read(r)
            dst.write(chunk)
            alarm_cancel()
-           if sumalgo     : sumalgo.update(chunk)
-           if bytes_ps > 0: self.throttle(chunk)
+           if self.sumalgo  : self.sumalgo.update(chunk)
+           if self.kbytes_ps: self.throttle(chunk)
 
     # read_writelocal
     def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
-        self.logger.debug("sr_proto read_writelocal")
+        #self.logger.debug("sr_proto read_writelocal")
 
         # reset ckecksum, fpos
 
@@ -296,7 +299,7 @@ class sr_proto():
 
         # copy source to destination
 
-        self.read_write( src, dst, length, self.iotime, self.sumalgo, self.bytes_ps )
+        self.read_write( src, dst, length)
 
         # finalize local file pointer
 
@@ -312,25 +315,43 @@ class sr_proto():
         if self.sumalgo : self.checksum = self.sumalgo.get_value()
 
     # readlocal_write
-    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None):
-        self.logger.debug("sr_proto readlocal_write")
+    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None ):
+        #self.logger.debug("sr_proto readlocal_write")
+
+        # reset ckecksum, fpos
+
+        self.checksum = None
 
         # local_file opening and seeking if needed
 
         src = open(local_file,'r+b')
         if local_offset != 0 : src.seek(local_offset,0)
 
+        # initialize sumalgo
+
+        if self.sumalgo : self.sumalgo.set_path(src_path)
+
         # copy source to destination
 
-        self.read_write( src, dst, length, self.iotime, None, self.bytes_ps)
+        self.read_write( src, dst, length )
 
         # finalize local file pointer
 
         src.close()
 
+        # finalize checksum
+
+        if self.sumalgo : self.checksum = self.sumalgo.get_value()
+
+    # set_iotime : bypass automated computation of iotime
+    def set_iotime(self,iotime) :
+        self.logger.debug("sr_proto set_iotime %s" % iotime)
+        if iotime < 1 : iotime = 1
+        self.iotime = iotime
+
     # set_sumalgo
     def set_sumalgo(self,sumalgo) :
-        self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+        #self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
 
     # throttle
@@ -342,6 +363,39 @@ class sr_proto():
         if span > rspan :
            stime = span-rspan
            time.sleep(span-rspan)
+
+# =========================================
+# sr_transport : one place for upload/download common stuff
+# =========================================
+
+class sr_transport():
+
+    def __init__(self) :
+        pass
+
+    # set_local_file_attributes
+    def set_local_file_attributes(self,proto,local_file, msg) :
+        #self.logger.debug("sr_transport set_local_file_attributes %s" % local_file)
+
+        hdr  = msg.headers
+
+        mode = 0
+        if self.parent.preserve_mode and 'mode' in hdr :
+           try   : mode = int( hdr['mode'], base=8)
+           except: mode = 0
+           if mode > 0 : os.chmod( local_file, mode )
+
+        if mode == 0 and  self.parent.chmod !=0 : 
+           os.chmod( local_file, self.parent.chmod )
+
+        if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
+           mtime = timestr2flt( hdr[ 'mtime' ] )
+           atime = mtime
+           if 'atime' in hdr and hdr['atime'] :
+               atime  =  timestr2flt( hdr[ 'atime' ] )
+           os.utime( local_file, (atime, mtime))
+
+        # truncate stuff ?
 
 # ===================================
 # startup args parsing
