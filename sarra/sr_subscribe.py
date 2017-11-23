@@ -520,7 +520,7 @@ class sr_subscribe(sr_instances):
 
            # sender
            if self.remote_file != self.new_file : #FIXME: remove in 2018
-              logger.warning("on_file plugin should be updated: replace parent.remote_file, by parent.new_file")
+              self.logger.warning("on_file plugin should be updated: replace parent.remote_file, by parent.new_file")
               self.new_file = self.remote_file
 
            # this code should not be removed ... necessary when the plugin changed something
@@ -594,7 +594,7 @@ class sr_subscribe(sr_instances):
                
            # sender
            if self.remote_file != self.new_file : #FIXME: remove in 2018
-              logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
+              self.logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
               self.new_file = self.remote_file
 
            # if differences with new_dir/new_file... reset new_relpath
