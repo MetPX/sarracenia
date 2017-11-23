@@ -14,7 +14,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Dec 30 11:34:07 EST 2015
+#  Last Changed   : Nov 23 21:12:24 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,11 @@
 #
 
 import ftplib,os,sys,time
+
+try :
+         from sr_util            import *
+except :
+         from sarra.sr_util      import *
 
 #============================================================
 # ftp protocol in sarracenia supports/uses :
@@ -55,13 +60,10 @@ import ftplib,os,sys,time
 # FTP : no remote file seek... so 'I' part impossible
 #
 
-class sr_ftp():
+class sr_ftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_ftp __init__")
-
-        self.logger = parent.logger
-        self.parent = parent 
-
+        sr_proto.__init__(self,parent)
         self.init()
  
     # cd
@@ -140,12 +142,6 @@ class sr_ftp():
 
         if not self.credentials() : return False
 
-        self.bufsize   = 8192
-        self.kbytes_ps = 0
-
-        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
-        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
-
         try:
                 expire  = -999
                 if self.parent.timeout : expire = self.parent.timeout
@@ -216,61 +212,25 @@ class sr_ftp():
         self.logger.debug( "sr_ftp rm %s" % path)
         self.ftp.delete(path)
 
-    # fwrite
-    def fpwrite(self, chunk):
-        self.fp.write(chunk)
-        if self.chk : self.chk.update(chunk)
-        if self.cb  : self.cb(chunk)
-
-    # fwritel
-    def fpwritel(self, chunk):
-        self.fp.write(chunk)
-        if self.chk : self.chk.update( bytes(chunk,'utf-8') )
-        if self.cb  : self.cb(chunk)
- 
     # get
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
         self.logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
 
-        # on fly checksum 
+        # open local file
+        dst = self.local_write_open(local_file, local_offset)
 
-        self.checksum = None
-        self.chk      = self.sumalgo
-        if self.chk   : self.chk.set_path(remote_file)
+        # initialize sumalgo
+        if self.sumalgo : self.sumalgo.set_path(remote_file)
 
-        # throttling 
+        # download
+        self.write_chunk_init(dst)
+        if self.binary : self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk, self.bufsize )
+        else           : self.ftp.retrlines ('RETR ' + remote_file, self.write_chunk )
+        rw_length = self.write_chunk_end()
 
-        self.cb = None
+        # close
+        self.local_write_close(dst)
 
-        if self.kbytes_ps > 0.0 :
-           self.cb = self.throttle
-           self.tbytes   = 0.0
-           self.tbegin   = time.time()
-           self.bytes_ps = self.kbytes_ps * 1024.0
-
-        if not os.path.isfile(local_file) :
-           fp = open(local_file,'w')
-           fp.close()
-
-        # fixme : get throttled.... instead of fp.write... call get_throttle(buf) which calls fp.write
-        if self.binary :
-           self.fp = open(local_file,'r+b')
-           if local_offset != 0 : self.fp.seek(local_offset,0)
-           self.ftp.retrbinary('RETR ' + remote_file, self.fpwrite, self.bufsize )
-           self.fp.flush()
-           os.fsync(self.fp)
-           self.fpos = self.fp.tell()
-           self.fp.close()
-        else :
-           self.fp = open(local_file,'r+')
-           if local_offset != 0 : self.fp.seek(local_offset,0)
-           self.ftp.retrlines ('RETR ' + remote_file, self.fpwritel )
-           self.fp.flush()
-           os.fsync(self.fp)
-           self.fpos = self.fp.tell()
-           self.fp.close()
-
-        if self.chk : self.checksum = self.chk.get_value()
 
     # getcwd
     def getcwd(self):
@@ -279,19 +239,13 @@ class sr_ftp():
     # init
     def init(self):
         self.logger.debug("sr_ftp init")
+        sr_proto.init(self)
+
         self.connected   = False 
         self.ftp         = None
         self.details     = None
 
         self.batch       = 0
-        self.sumalgo     = None
-        self.checksum    = None
-        self.fpos        = 0
-
-        self.support_delete   = True
-        self.support_download = True
-        self.support_inplace  = False
-        self.support_send     = True
 
     # ls
     def ls(self):
@@ -331,42 +285,18 @@ class sr_ftp():
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
         self.logger.debug("sr_ftp put %s %s" % (local_file,remote_file))
-        cb        = None
 
-        if self.kbytes_ps > 0.0 :
-           cb = self.throttle
-           self.tbytes   = 0.0
-           self.tbegin   = time.time()
-           self.bytes_ps = self.kbytes_ps * 1024.0
+        # open 
+        src = self.local_read_open(local_file, local_offset)
 
-        if self.binary :
-           fp = open(local_file, 'rb')
-           if local_offset != 0 : fp.seek(local_offset,0)
-           self.ftp.storbinary("STOR " + remote_file, fp, self.bufsize, cb)
-           fp.close()
-        else :
-           fp=open(local_file,'rb')
-           if local_offset != 0 : fp.seek(local_offset,0)
-           self.ftp.storlines ("STOR " + remote_file, fp, cb)
-           fp.close()
+        # upload
+        self.write_chunk_init(None)
+        if self.binary : self.ftp.storbinary("STOR " + remote_file, src, self.bufsize, self.write_chunk)
+        else           : self.ftp.storlines ("STOR " + remote_file, src, self.write_chunk)
+        rw_length = self.write_chunk_end()
 
-        try:
-           # chmod remote_file if needed.
-
-           mod = 0
-           h   = msg.headers
-           if self.parent.preserve_mode and 'mode' in h :
-              try   : mod = int( h['mode'], base=8)
-              except: mod = 0
-              if mod > 0 : self.chmod( mod , remote_file )
-
-           if mod == 0 and self.parent.chmod != 0:
-              self.chmod(self.parent.chmod, remote_file )
-
-           # no support in ftp for utime.
-
-        except:
-            pass
+        # close 
+        self.local_read_close(src)
 
     # rename
     def rename(self,remote_old,remote_new) :
@@ -377,20 +307,6 @@ class sr_ftp():
     def rmdir(self, path):
         self.logger.debug("sr_ftp rmdir %s" % path)
         self.ftp.rmd(path)
-
-    # set_sumalgo checksum algorithm
-    def set_sumalgo(self,sumalgo) :
-        self.logger.debug("sr_ftp set_sumalgo %s" % sumalgo)
-        self.sumalgo = sumalgo
-
-    # throttle
-    def throttle(self,buf) :
-        self.logger.debug("sr_ftp throttle")
-        self.tbytes = self.tbytes + len(buf)
-        span  = self.tbytes / self.bytes_ps
-        rspan = time.time() - self.tbegin
-        if span > rspan :
-           time.sleep(span-rspan)
 
     # umask
     def umask(self) :
@@ -404,7 +320,7 @@ class sr_ftp():
 #
 #============================================================
 
-class ftp_transport():
+class ftp_transport(sr_transport):
     def __init__(self) :
         self.ftp   = None
         self.cdir  = None
@@ -449,7 +365,7 @@ class ftp_transport():
                    self.cdir = None
 
                 # for generalization purpose
-                if not ftp.support_inplace and msg.partflg == 'i':
+                if not hasattr(ftp,'seek') and msg.partflg == 'i':
                    self.logger.error("ftp, inplace part file not supported")
                    msg.report_publish(499,'ftp does not support partitioned file transfers')
                    return False
@@ -493,20 +409,7 @@ class ftp_transport():
 
                 # fix permission 
 
-                mod = 0
-                h   = msg.headers
-                if self.parent.preserve_mode and 'mode' in h :
-                   try   : mod = int( h['mode'], base=8)
-                   except: mod = 0
-                   if mod > 0 : os.chmod(parent.new_file, mod )
-
-                if mod == 0 and self.parent.chmod != 0:
-                   os.chmod(parent.new_file, self.parent.chmod )
-
-                # fix time 
-
-                if self.parent.preserve_time and 'mtime' in h and h['mtime']:
-                   os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
+                self.set_local_file_attributes(parent.new_file,msg)
 
                 # fix message if no partflg (means file size unknown until now)
 
@@ -517,7 +420,7 @@ class ftp_transport():
 
                 msg.onfly_checksum = ftp.checksum
     
-                if parent.delete and ftp.support_delete :
+                if parent.delete and hasattr(ftp,'delete') :
                    try   :
                            ftp.delete(remote_file)
                            msg.logger.debug ('file  deleted on remote site %s' % remote_file)
@@ -617,11 +520,10 @@ class ftp_transport():
                    ftp.umask()
                    ftp.put(local_file, parent.new_file)
     
-                try   : 
-                   if parent.chmod != 0:
-                       ftp.chmod(parent.chmod,parent.new_file)
-                except: pass
-    
+                # fix permission 
+
+                self.set_remote_file_attributes(ftp,parent.new_file,msg)
+
                 msg.report_publish(201,'Delivered')
     
                 return True
@@ -666,8 +568,8 @@ class test_logger:
           self.error   = print
           self.info    = print
           self.warning = print
-          self.debug   = self.silence
-          self.info    = self.silence
+          #self.debug   = self.silence
+          #self.info    = self.silence
 
 
 def self_test():
@@ -694,14 +596,8 @@ def self_test():
     #cfg.kbytes_ps = 0.0001
     cfg.kbytes_ps = 0.01
 
-    support_inplace = True
-
     try:
            ftp = sr_ftp(cfg)
-           support_download = ftp.support_download
-           support_inplace  = ftp.support_inplace
-           support_send     = ftp.support_send
-           support_delete   = ftp.support_delete
            ftp.connect()
            ftp.mkdir("tztz")
            ftp.chmod(0o775,"tztz")
@@ -713,7 +609,7 @@ def self_test():
            f.write(b"3\n")
            f.close()
        
-           if support_send :
+           if hasattr(ftp,'put') :
               ftp.put("aaa", "bbb")
               ls = ftp.ls()
               logger.info("ls = %s" % ls )
@@ -726,7 +622,7 @@ def self_test():
               ls = ftp.ls()
               logger.info("ls = %s" % ls )
        
-           if support_inplace :
+           if hasattr(ftp,'seek') :
               ftp.get("ccc", "bbb",0,0,6)
               f = open("bbb","rb")
               data = f.read()
@@ -759,7 +655,7 @@ def self_test():
            cfg.inflight    = None
        
 
-           if support_download :
+           if hasattr(ftp,'get') :
               dldr = ftp_transport()
               dldr.download(cfg)
               logger.debug("checksum = %s" % msg.onfly_checksum)
@@ -780,7 +676,7 @@ def self_test():
               dldr.close()
               dldr.close()
     
-           if support_send :
+           if hasattr(ftp,'put') :
               dldr = ftp_transport()
               cfg.local_file    = "bbb"
               cfg.local_path    = "./bbb"
@@ -793,10 +689,10 @@ def self_test():
               cfg.chmod         = 0o775
               cfg.inflight      = None
               dldr.send(cfg)
-              if support_delete : dldr.ftp.delete("ddd")
+              if hasattr(ftp,'delete') : dldr.ftp.delete("ddd")
               cfg.inflight        = '.'
               dldr.send(cfg)
-              if support_delete : dldr.ftp.delete("ddd")
+              if hasattr(ftp,'delete') : dldr.ftp.delete("ddd")
               cfg.inflight        = '.tmp'
               dldr.send(cfg)
               dldr.send(cfg)
@@ -820,7 +716,7 @@ def self_test():
               ftp.rmdir("tztz")
               ftp.close()
 
-           if support_inplace :
+           if hasattr(ftp,'seek') :
               ftp = sr_ftp(cfg)
               ftp.connect()
               ftp.put("aaa","bbb",0,0,2)
