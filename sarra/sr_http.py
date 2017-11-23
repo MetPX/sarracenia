@@ -14,8 +14,7 @@
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Jun Hu         - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Feb  4 13:59:22 EST 2016
+#  Last Changed   : Nov 23 15:30:22 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -36,35 +35,31 @@
 
 import os, urllib.request, urllib.error, sys
 
+try :
+         from sr_util            import *
+except :
+         from sarra.sr_util      import *
+
 #============================================================
 # http protocol in sarracenia supports/uses :
 #
 # connect
 # close
 #
-# if a source    : get    (remote,local)
-#                  ls     ()
-#                  cd     (dir)
+# get    (remote,local)
+# ls     ()
+# cd     (dir)
 #
-# *** will never support source part:
-#                  delete (path)
+# check_is_connected()
+# getcwd()
 #
-# *** will never support sender part:
-#                  put    (local,remote)
-#                  cd     (dir)
-#                  mkdir  (dir)
-#                  umask  ()
-#                  chmod  (perm)
-#                  rename (old,new)
-#                  symlink(link,path)
+# credentials()
 
-class sr_http():
+class sr_http(sr_proto):
+
     def __init__(self, parent) :
         parent.logger.debug("sr_http __init__")
-
-        self.logger      = parent.logger
-        self.parent      = parent
-
+        sr_proto.__init__(self,parent)
         self.init()
 
     # cd
@@ -100,12 +95,6 @@ class sr_http():
 
         if not self.credentials() : return False
 
-        self.kbytes_ps = 0
-        self.bufsize   = 8192
-
-        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
-        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
-
         return True
 
     # credentials...
@@ -131,85 +120,33 @@ class sr_http():
 
         return False
 
-    # delete
-    def delete(self, path):
-        self.logger.debug( "sr_http delete %s not supported" % path)
-
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
         self.logger.debug( "sr_http get %s %s %d" % (remote_file,local_file,local_offset))
         self.logger.debug( "sr_http self.path %s" % self.path)
 
         # open self.http
 
+        alarm_set(3*self.iotime)
         url = self.destination + '/' + self.path + '/' + remote_file
         ok  = self.__open__(url, remote_offset, length )
+        alarm_cancel()
         if not ok : return False
 
-        # on fly checksum 
+        # read from self.http write to local_file
 
-        chk           = self.sumalgo
-        self.checksum = None
-
-        # throttle 
-
-        cb = None
-
-        if self.kbytes_ps > 0.0 :
-           cb = self.throttle
-           d1,d2,d3,d4,now = os.times()
-           self.tbytes     = 0.0
-           self.tbegin     = now + 0.0
-           self.bytes_ps   = self.kbytes_ps * 1024.0
-
-        if not os.path.isfile(local_file) :
-           fp = open(local_file,'w')
-           fp.close
-
-        fp = open(local_file,'r+b')
-        if local_offset != 0 : fp.seek(local_offset,0)
-
-
-        if chk : chk.set_path(remote_file)
-
-        # should not worry about length...
-        # http provides exact data
-
-        while True:
-              chunk = self.http.read(self.bufsize)
-              if not chunk: break
-              fp.write(chunk)
-              if chk : chk.update(chunk)
-              if cb  : cb(chunk)
-
-        fp.flush()
-        os.fsync(fp)
-        self.fpos = fp.tell()
-        # if new version of file replaces longer previous version.
-        # FIXME  this truncate code makes no sense...  
-        if self.fpos >= filesize:
-           fp.truncate()
-
-        fp.close()
-
-        if chk : self.checksum = chk.get_value()
+        rw_length = self.read_writelocal(remote_file, self.http, local_file, local_offset, length)
 
         return True
 
-    # getcwd
-    def getcwd(self):
-        return self.cwd
-
     # init
     def init(self):
+        sr_proto.init(self)
         self.logger.debug("sr_http init")
         self.connected   = False
         self.http        = None
         self.details     = None
-
-        self.sumalgo     = None
-        self.checksum    = None
-        self.fpos        = 0
+        self.seek        = True
 
         self.urlstr      = ''
         self.path        = ''
@@ -217,11 +154,6 @@ class sr_http():
 
         self.data        = ''
         self.entries     = {}
-
-        self.support_delete   = False
-        self.support_download = True
-        self.support_inplace  = True
-        self.support_send     = False
 
    # ls
     def ls(self):
@@ -260,10 +192,6 @@ class sr_http():
                 self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
 
         return self.entries
-
-    # mkdir
-    def mkdir(self, remote_dir):
-        self.logger.debug( "sr_http mkdir %s not supported" % remote_dir)
 
     # open
     def __open__(self, path, remote_offset=0, length=0):
@@ -324,44 +252,13 @@ class sr_http():
 
         return False
 
-    # put
-    def put(self, local_file, remote_file, local_offset = 0, remote_offset = 0, length = 0):
-        self.logger.debug( "sr_http put %s %s not supported" % (local_file,remote_file))
-
-    # rename
-    def rename(self,remote_old,remote_new) :
-        self.logger.debug( "sr_http rename %s %s not supported" % (remote_old,remote_new))
-
-    # rmdir
-    def rmdir(self, path):
-        self.logger.debug( "sr_http rmdir %s not supported" % path)
-
-    # set_sumalgo
-    def set_sumalgo(self,sumalgo) :
-        self.logger.debug("sr_http set_sumalgo %s" % sumalgo)
-        self.sumalgo = sumalgo
-
-    # throttle
-    def throttle(self,buf) :
-        self.logger.debug("sr_http throttle")
-        self.tbytes = self.tbytes + len(buf)
-        span = self.tbytes / self.bytes_ps
-        d1,d2,d3,d4,now = os.times()
-        rspan = now - self.tbegin
-        if span > rspan :
-           time.sleep(span-rspan)
-
-    # umask
-    def umask(self) :
-        self.logger.debug("sr_http umask %s unsupported")
-
 #============================================================
 #
 # wrapping of downloads using sr_http in http_transport
 #
 #============================================================
 
-class http_transport():
+class http_transport(sr_transport):
     def __init__(self) :
         self.http     = None
         self.cdir     = None
@@ -405,12 +302,14 @@ class http_transport():
                    self.http = http
 
                 # for generalization purpose
-                if not http.support_inplace and msg.partflg == 'i':
+                if not hasattr(http,'seek') and msg.partflg == 'i':
                    self.logger.error("http, inplace part file not supported")
                    msg.report_publish(499,'http does not support partitioned file transfers')
                    return False
                 
-                if http.cwd != cdir :
+                cwd = None
+                if hasattr(http,'getcwd') : cwd = http.getcwd()
+                if cwd != cdir :
                    self.logger.debug("http_transport download cd to %s" %cdir)
                    http.cd(cdir)
     
@@ -432,36 +331,26 @@ class http_transport():
                 http.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
-                   http.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   http.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length)
 
                 elif parent.inflight == '.' :
                    new_lock = '.' + parent.new_file
-                   http.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   http.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                    os.rename(new_lock, parent.new_file)
                       
                 elif parent.inflight[0] == '.' :
                    new_lock  = parent.new_file + parent.inflight
-                   http.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   http.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                    os.rename(new_lock, parent.new_file)
 
+
+                msg.onfly_checksum = http.checksum
+
                 # fix permission 
 
-                mod = 0
-                h   = msg.headers
-                if self.parent.preserve_mode and 'mode' in h :
-                   try   : mod = int( h['mode'], base=8)
-                   except: mod = 0
-                   if mod > 0 : os.chmod(parent.new_file, mod )
-
-                if mod == 0 and self.parent.chmod != 0:
-                   os.chmod(parent.new_file, self.parent.chmod )
-
-                # fix time 
-
-                if self.parent.preserve_time and 'mtime' in h and h[ 'mtime' ] :
-                   os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
+                self.set_local_file_attributes(parent.new_file,msg)
 
                 # fix message if no partflg (means file size unknown until now)
 
@@ -469,10 +358,8 @@ class http_transport():
                    msg.set_parts(partflg='1',chunksize=http.fpos)
     
                 msg.report_publish(201,'Downloaded')
-
-                msg.onfly_checksum = http.checksum
     
-                if parent.delete and http.support_delete :
+                if parent.delete and hasattr(http,'delete') :
                    try   :
                            http.delete(remote_file)
                            msg.logger.debug ('file  deleted on remote site %s' % remote_file)
@@ -545,7 +432,6 @@ def self_test():
     cfg.message_ttl    = 30
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
-    cfg.queue_name     = "cmc.sr_http.test"
     cfg.kbytes_ps      = 0
     cfg.reset          = False
     cfg.timeout        = 10.0
@@ -554,8 +440,13 @@ def self_test():
     cfg.option( opt1.split()  )
     opt2 = "heartbeat 1"
     cfg.option( opt2.split()  )
+    opt1 = 'use_pika true'
+    cfg.option( opt1.split()  )
 
     consumer = sr_consumer(cfg)
+    consumer.cleanup()
+    consumer.declare()
+    consumer.setup()
 
     i = 0
     while True :
@@ -654,5 +545,3 @@ def main():
 
 if __name__=="__main__":
    main()
-
-
