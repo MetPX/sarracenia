@@ -122,7 +122,8 @@ class checksum_d(object):
           return self.value
 
       def update(self,chunk):
-          self.filehash.update(chunk)
+          if type(chunk) == bytes : self.filehash.update(chunk)
+          else                    : self.filehash.update(bytes(chunk,'utf-8'))
 
       def set_path(self,path):
           self.filehash = md5()
@@ -143,7 +144,8 @@ class checksum_s(object):
           return self.value
 
       def update(self,chunk):
-          self.filehash.update(chunk)
+          if type(chunk) == bytes : self.filehash.update(chunk)
+          else                    : self.filehash.update(bytes(chunk,'utf-8'))
 
       def set_path(self,path):
           self.filehash = sha512()
@@ -223,59 +225,54 @@ class sr_proto():
 
         self.logger.debug("iotime %d" % self.iotime)
 
-    # read_write
-    def read_write(self, src, dst, length=0):
-        #self.logger.debug("sr_proto read_write")
+    # local_read_close
+    def local_read_close(self, src ):
+        #self.logger.debug("sr_proto local_read_close")
 
-        # reset speed
+        src.close()
 
-        self.tbytes   = 0.0
-        self.tbegin   = time.time()
+        # finalize checksum
 
-        # length = 0, transfer entire remote file to local file
+        if self.sumalgo : self.checksum = self.sumalgo.get_value()
 
-        if length == 0 :
-           while True :
-                 if self.iotime: alarm_set(self.iotime)
-                 chunk = src.read(self.bufsize)
-                 if chunk  : dst.write(chunk)
-                 alarm_cancel()
-                 if not chunk : break
-                 if self.sumalgo  : self.sumalgo.update(chunk)
-                 if self.kbytes_ps: self.throttle(chunk)
-           return
+    # local_read_open
+    def local_read_open(self, local_file, local_offset=0 ):
+        #self.logger.debug("sr_proto local_read_open")
 
-        # exact length to be transfered
+        self.checksum = None
 
-        nc = int(length/self.bufsize)
-        r  = length%self.bufsize
+        # local_file opening and seeking if needed
 
-        # read/write bufsize "nc" times
+        src = open(local_file,'r+b')
+        if local_offset != 0 : src.seek(local_offset,0)
 
-        i  = 0
-        while i < nc :
-              if self.iotime : alarm_set(self.iotime)
-              chunk = src.read(self.bufsize)
-              if chunk : dst.write(chunk)
-              alarm_cancel()
-              if not chunk : break
-              if self.sumalgo  : self.sumalgo.update(chunk)
-              if self.kbytes_ps: self.throttle(chunk)
-              i = i + 1
+        # initialize sumalgo
 
-        # remaining
+        if self.sumalgo : self.sumalgo.set_path(local_file)
 
-        if r > 0 :
-           if self.iotime : alarm_set(self.iotime)
-           chunk = src.read(r)
-           dst.write(chunk)
-           alarm_cancel()
-           if self.sumalgo  : self.sumalgo.update(chunk)
-           if self.kbytes_ps: self.throttle(chunk)
+        return src
 
-    # read_writelocal
-    def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
-        #self.logger.debug("sr_proto read_writelocal")
+    # local_write_close
+    def local_write_close(self, dst):
+
+        # flush sync (make sure all io done)
+
+        dst.flush()
+        os.fsync(dst)
+
+        # flush,sync, remember current position, truncate = no sparce, close
+
+        self.fpos = dst.tell()
+        dst.truncate()
+        dst.close()
+
+        # finalize checksum
+
+        if self.sumalgo : self.checksum = self.sumalgo.get_value()
+
+    # local_write_open
+    def local_write_open(self, local_file, local_offset=0):
+        #self.logger.debug("sr_proto local_write_open")
 
         # reset ckecksum, fpos
 
@@ -293,55 +290,113 @@ class sr_proto():
         dst = open(local_file,'r+b')
         if local_offset != 0 : dst.seek(local_offset,0)
 
+        return dst
+
+    # read_write
+    def read_write(self, src, dst, length=0):
+        #self.logger.debug("sr_proto read_write")
+
+        # reset speed
+
+        rw_length     = 0
+        self.tbytes   = 0.0
+        self.tbegin   = time.time()
+
+        # length = 0, transfer entire remote file to local file
+
+        if length == 0 :
+           while True :
+                 if self.iotime: alarm_set(self.iotime)
+                 chunk = src.read(self.bufsize)
+                 if chunk :
+                    dst.write(chunk)
+                    rw_length += len(chunk)
+                 alarm_cancel()
+                 if not chunk : break
+                 if self.sumalgo  : self.sumalgo.update(chunk)
+                 if self.kbytes_ps: self.throttle(chunk)
+           return rw_length
+
+        # exact length to be transfered
+
+        nc = int(length/self.bufsize)
+        r  = length%self.bufsize
+
+        # read/write bufsize "nc" times
+
+        i  = 0
+        while i < nc :
+              if self.iotime : alarm_set(self.iotime)
+              chunk = src.read(self.bufsize)
+              if chunk :
+                 rw_length += len(chunk)
+                 dst.write(chunk)
+              alarm_cancel()
+              if not chunk : break
+              if self.sumalgo  : self.sumalgo.update(chunk)
+              if self.kbytes_ps: self.throttle(chunk)
+              i = i + 1
+
+        # remaining
+
+        if r > 0 :
+           if self.iotime : alarm_set(self.iotime)
+           chunk = src.read(r)
+           if chunk :
+              rw_length += len(chunk)
+              dst.write(chunk)
+           alarm_cancel()
+           if self.sumalgo  : self.sumalgo.update(chunk)
+           if self.kbytes_ps: self.throttle(chunk)
+
+        return rw_length
+
+    # read_writelocal
+    def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
+        #self.logger.debug("sr_proto read_writelocal")
+
+        # open
+        dst = self.local_write_open(local_file, local_offset)
+
         # initialize sumalgo
 
         if self.sumalgo : self.sumalgo.set_path(src_path)
 
         # copy source to destination
 
-        self.read_write( src, dst, length)
+        rw_length = self.read_write( src, dst, length)
 
-        # finalize local file pointer
+        # close
+        self.local_write_close( dst )
 
-        dst.flush()
-        os.fsync(dst)
+        # warn if length mismatch
 
-        self.fpos = dst.tell()
+        if length != 0 and rw_length != length :
+           self.logger.error("mismatched length %d %d" % (length,rw_length))
 
-        dst.close()
-
-        # finalize checksum
-
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        return rw_length
 
     # readlocal_write
     def readlocal_write(self, local_file, local_offset=0, length=0, dst=None ):
         #self.logger.debug("sr_proto readlocal_write")
 
-        # reset ckecksum, fpos
-
-        self.checksum = None
-
-        # local_file opening and seeking if needed
-
-        src = open(local_file,'r+b')
-        if local_offset != 0 : src.seek(local_offset,0)
-
-        # initialize sumalgo
-
-        if self.sumalgo : self.sumalgo.set_path(src_path)
+        # open
+        src = self.local_read_open(local_file, local_offset)
 
         # copy source to destination
 
-        self.read_write( src, dst, length )
+        rw_length = self.read_write( src, dst, length )
 
-        # finalize local file pointer
+        # close
 
-        src.close()
+        self.local_read_close(src)
 
-        # finalize checksum
+        # warn if length mismatch
 
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        if length != 0 and rw_length != length :
+           self.logger.error("mismatched length %d %d" % (length,rw_length))
+
+        return rw_length
 
     # set_iotime : bypass automated computation of iotime
     def set_iotime(self,iotime) :
@@ -364,6 +419,29 @@ class sr_proto():
            stime = span-rspan
            time.sleep(span-rspan)
 
+    # write_chunk
+    def write_chunk(self,chunk):
+        if self.chunk_iow : self.chunk_iow.write(chunk)
+        self.rw_length += len(chunk)
+        alarm_cancel()
+        if self.sumalgo  : self.sumalgo.update(chunk)
+        if self.kbytes_ps: self.throttle(chunk)
+        if self.iotime   : alarm_set(self.iotime)
+
+    # write_chunk_end
+    def write_chunk_end(self):
+        alarm_cancel()
+        self.chunk_iow = None
+        return self.rw_length
+
+    # write_chunk_init
+    def write_chunk_init(self,proto):
+        self.chunk_iow = proto
+        self.tbytes    = 0.0
+        self.tbegin    = time.time()
+        self.rw_length = 0
+        if self.iotime : alarm_set(self.iotime)
+
 # =========================================
 # sr_transport : one place for upload/download common stuff
 # =========================================
@@ -374,7 +452,7 @@ class sr_transport():
         pass
 
     # set_local_file_attributes
-    def set_local_file_attributes(self,proto,local_file, msg) :
+    def set_local_file_attributes(self,local_file, msg) :
         #self.logger.debug("sr_transport set_local_file_attributes %s" % local_file)
 
         hdr  = msg.headers
@@ -395,7 +473,29 @@ class sr_transport():
                atime  =  timestr2flt( hdr[ 'atime' ] )
            os.utime( local_file, (atime, mtime))
 
-        # truncate stuff ?
+    # set_remote_file_attributes
+    def set_remote_file_attributes(self,proto, remote_file, msg) :
+        #self.logger.debug("sr_transport set_remote_file_attributes %s" % remote_file)
+
+        hdr  = msg.headers
+
+        if hasattr(proto,'chmod') :
+           mode = 0
+           if self.parent.preserve_mode and 'mode' in hdr :
+              try   : mode = int( hdr['mode'], base=8)
+              except: mode = 0
+              if mode > 0 : proto.chmod( mode, remote_file )
+
+           if mode == 0 and  self.parent.chmod !=0 : 
+              proto.chmod( self.parent.chmod, remote_file )
+
+        if hasattr(proto,'chmod') :
+           if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
+              mtime = timestr2flt( hdr[ 'mtime' ] )
+              atime = mtime
+              if 'atime' in hdr and hdr['atime'] :
+                  atime  =  timestr2flt( hdr[ 'atime' ] )
+              proto.utime( remote_file, (atime, mtime))
 
 # ===================================
 # startup args parsing
