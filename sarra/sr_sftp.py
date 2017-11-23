@@ -13,7 +13,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Aug  9 12:34:52 UTC 2017
+#  Last Changed   : Nov 23 21:08:09 UTC 2017
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,11 @@
 
 import paramiko, os,sys,time
 from   paramiko import *
+
+try :
+         from sr_util            import *
+except :
+         from sarra.sr_util      import *
 
 #============================================================
 # sftp protocol in sarracenia supports/uses :
@@ -65,12 +70,10 @@ from   paramiko import *
 #     opt   parent.kbytes_ps
 #     opt   parent.bufsize
 
-class sr_sftp():
+class sr_sftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_sftp __init__")
-
-        self.logger      = parent.logger
-        self.parent      = parent 
+        sr_proto.__init__(self,parent)
 
         self.init()
 
@@ -169,12 +172,6 @@ class sr_sftp():
 
         if not self.credentials() : return False
 
-        self.kbytes_ps = 0
-        self.bufsize   = 8192
-
-        if hasattr(self.parent,'kbytes_ps') : self.kbytes_ps = self.parent.kbytes_ps
-        if hasattr(self.parent,'bufsize')   : self.bufsize   = self.parent.bufsize
-
         try:
 
                 logger = logging.getLogger('paramiko')
@@ -268,86 +265,26 @@ class sr_sftp():
         self.sftp.symlink(link, path)
 
     # get 
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ) :
         self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
 
-        # on fly checksum 
+        # read : remote file open, seek if needed
 
-        chk           = self.sumalgo
-        self.checksum = None
-
-        # throttle 
-
-        cb = None
-        if self.kbytes_ps > 0.0 :
-           cb            = self.throttle
-           self.tbytes   = 0.0
-           self.tbegin   = time.time()
-           self.bytes_ps = self.kbytes_ps * 1024.0
-
-        # needed ... to open r+b file need to exist
-        if not os.path.isfile(local_file) :
-           fp = open(local_file,'w')
-           fp.close()
-
-        fp = open(local_file,'r+b')
-        if local_offset != 0 : fp.seek(local_offset,0)
-
+        alarm_set(2*self.iotime)
         rfp = self.sftp.file(remote_file,'rb',self.bufsize)
         if remote_offset != 0 : rfp.seek(remote_offset,0)
+        rfp.settimeout(1.0*self.iotime)
+        alarm_cancel()
 
-        # get a certain length in file
+        # read from rfp and write to local_file
 
-        if chk : chk.set_path(remote_file)
+        rw_length = self.read_writelocal(remote_file, rfp, local_file, local_offset, length)
 
-        if length != 0 :
+        # close
 
-           nc = int(length/self.bufsize)
-           r  = length%self.bufsize
-
-           # read/write bufsize "nc" times
-           i  = 0
-           while i < nc :
-                 chunk = rfp.read(self.bufsize)
-                 if not chunk : break
-                 fp.write(chunk)
-                 if chk : chk.update(chunk)
-                 if cb  : cb(chunk)
-                 i = i + 1
-
-           # remaining
-           if r > 0 :
-              chunk = rfp.read(r)
-              fp.write(chunk)
-              if chk : chk.update(chunk)
-              if cb  : cb(chunk)
-
-
-        # get entire file
-
-        else :
-
-           while True :
-                 chunk = rfp.read(self.bufsize)
-                 if not chunk : break
-                 fp.write(chunk)
-                 if chk : chk.update(chunk)
-                 if cb  : cb(chunk)
- 
-        fp.flush()
-        os.fsync(fp)
-        self.fpos = fp.tell()
-
-        # MG FIXME... this makes no sense
-        if filesize != None and self.fpos >= filesize :
-           fp.truncate(filesize) 
-
+        alarm_set(self.iotime)
         rfp.close()
-        fp.close()
-
-        if chk : self.checksum = chk.get_value()
-
-
+        alarm_cancel()
 
     # getcwd
     def getcwd(self):
@@ -356,19 +293,13 @@ class sr_sftp():
     # init
     def init(self):
         self.logger.debug("sr_sftp init")
+        sr_proto.init(self)
         self.connected   = False 
         self.sftp        = None
         self.ssh         = None
+        self.seek        = True
 
         self.batch       = 0
-        self.sumalgo     = None
-        self.checksum    = None
-        self.fpos        = 0
-
-        self.support_delete   = True
-        self.support_download = True
-        self.support_inplace  = True
-        self.support_send     = True
 
     # ls
     def ls(self):
@@ -408,65 +339,44 @@ class sr_sftp():
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
 
     # put
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
-        if length == 0 :
-           self.sftp.put(local_file,remote_file)
-           return
+        # this cannot be used : no throttling, no timeout on buffer ... etc
+        #if length == 0 :
+        #   self.sftp.put(local_file,remote_file)
+        #   return
 
-        cb        = None
+        # write : remote file open, seek if needed
 
-        if self.kbytes_ps > 0.0 :
-           cb  = self.throttle
-           now = time.time()
-           self.tbytes     = 0.0
-           self.tbegin     = now + 0.0
-           self.bytes_ps   = self.kbytes_ps * 1024.0
+        alarm_set(self.iotime)
+        try   : self.sftp.stat(remote_file)
+        except: 
+                rfp = self.sftp.file(remote_file,'wb',self.bufsize)
+                rfp.settimeout(1.0*self.iotime)
+                rfp.close()
+        alarm_cancel()
 
-        if not os.path.isfile(local_file) :
-           fp = open(local_file,'w')
-           fp.close()
-
-        fp = open(local_file,'rb')
-        if local_offset != 0 : fp.seek(local_offset,0)
-
-        rfp = self.sftp.file(remote_file,'wb',self.bufsize)
+        alarm_set(2*self.iotime)
+        rfp = self.sftp.file(remote_file,'r+b',self.bufsize)
+        rfp.settimeout(1.0*self.iotime)
         if remote_offset != 0 : rfp.seek(remote_offset,0)
+        alarm_cancel()
 
-        nc = int(length/self.bufsize)
-        r  = length%self.bufsize
+        # read from local_file and write to rfp
 
-        # read/write bufsize "nc" times
-        i  = 0
-        while i < nc :
-              chunk = fp.read(self.bufsize)
-              rfp.write(chunk)
-              if cb : cb(chunk)
-              i = i + 1
+        rw_length = self.readlocal_write( local_file, local_offset, length, rfp )
 
-        # remaining
-        if r > 0 :
-           chunk = fp.read(r)
-           rfp.write(chunk)
-           if cb : cb(chunk)
+        # no sparse file... truncate where we are at
 
-        fp.close()
+        alarm_set(self.iotime)
+        self.fpos = remote_offset + rw_length
+        rfp.truncate(self.fpos)
 
-        # MG FIXME... this makes no sense
-        if filesize != None and rfp.tell() >= filesize:
-           rfp.truncate(filesize)
-
-        msg = self.parent.msg
-        if self.parent.preserve_mode and 'mode' in msg.headers :
-           rfp.chmod( int(msg.headers['mode'], base=8) )
-        elif self.parent.chmod !=0 : 
-           rfp.chmod( self.parent.chmod )
-
-        if self.parent.preserve_time and 'mtime' in msg.headers and msg.headers['mtime'] :
-           rfp.utime( ( timestr2flt( msg.headers['atime']), timestr2flt( msg.headers[ 'mtime' ] ))) 
+        # close
 
         rfp.close()
+        alarm_cancel()
 
     # rename
     def rename(self,remote_old,remote_new) :
@@ -480,20 +390,10 @@ class sr_sftp():
         self.logger.debug("sr_sftp rmdir %s " % path)
         self.sftp.rmdir(path)
 
-    # set_sumalgo checksum algorithm
-    def set_sumalgo(self,sumalgo) :
-        self.logger.debug("sr_sftp set_sumalgo %s" % sumalgo)
-        self.sumalgo = sumalgo
-
-    # throttle
-    def throttle(self,buf) :
-        self.logger.debug("sr_sftp throttle")
-        self.tbytes = self.tbytes + len(buf)
-        span  = self.tbytes / self.bytes_ps
-        rspan = time.time() - self.tbegin
-        if span > rspan :
-           time.sleep(span-rspan)
-
+    # utime
+    def utime(self,path,tup) :
+        self.logger.debug("sr_sftp utime %s %s " % (path,tup))
+        self.sftp.utime(path,tup)
 
 #============================================================
 #
@@ -501,7 +401,7 @@ class sr_sftp():
 #
 #============================================================
 
-class sftp_transport():
+class sftp_transport(sr_transport):
     def __init__(self) :
         self.sftp     = None
         self.cdir     = None
@@ -546,7 +446,7 @@ class sftp_transport():
                    self.cdir = None
 
                 # for generalization purpose
-                if not sftp.support_inplace and msg.partflg == 'i':
+                if not hasattr(sftp,'seek') and msg.partflg == 'i':
                    self.logger.error("sftp, inplace part file not supported")
                    msg.report_publish(499,'sftp does not support partitioned file transfers')
                    return False
@@ -574,36 +474,23 @@ class sftp_transport():
                 sftp.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
-                   sftp.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   sftp.get(remote_file,parent.new_file,remote_offset,msg.local_offset,msg.length)
 
                 elif parent.inflight == '.' :
                    new_lock = '.' + parent.new_file
-                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                    os.rename(new_lock, parent.new_file)
                       
                 elif parent.inflight[0] == '.' :
                    new_lock  = parent.new_file + parent.inflight
-                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length,msg.filesize)
+                   sftp.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(parent.new_file) : os.remove(parent.new_file)
                    os.rename(new_lock, parent.new_file)
 
                 # fix permission 
 
-                mod = 0
-                h   = msg.headers
-                if self.parent.preserve_mode and 'mode' in h :
-                   try   : mod = int( h['mode'], base=8)
-                   except: mod = 0
-                   if mod > 0 : os.chmod(parent.new_file, mod )
-
-                if mod == 0 and self.parent.chmod != 0:
-                   os.chmod(parent.new_file, self.parent.chmod )
-
-                # fix time 
-
-                if self.parent.preserve_time and 'mtime' in h:
-                   os.utime(parent.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] ))) 
+                self.set_local_file_attributes(parent.new_file,msg)
 
                 # fix message if no partflg (means file size unknown until now)
 
@@ -614,7 +501,7 @@ class sftp_transport():
 
                 msg.onfly_checksum = sftp.checksum
     
-                if parent.delete and sftp.support_delete :
+                if parent.delete and hasattr(sftp,'delete') :
                    try   :
                            sftp.delete(remote_file)
                            msg.logger.debug ('file  deleted on remote site %s' % remote_file)
@@ -705,24 +592,20 @@ class sftp_transport():
                     (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
     
                 if parent.inflight == None or msg.partflg == 'i' :
-                   sftp.put(local_file, parent.new_file, offset, offset, msg.length, msg.filesize)
+                   sftp.put(local_file, parent.new_file, offset, offset, msg.length)
                 elif parent.inflight == '.' :
                    new_lock = '.'  + parent.new_file
-                   sftp.put(local_file, new_lock, filesize=msg.filesize)
+                   sftp.put(local_file, new_lock )
                    sftp.rename(new_lock, parent.new_file)
                 elif parent.inflight[0] == '.' :
                    new_lock = parent.new_file + parent.inflight
-                   sftp.put(local_file, new_lock, filesize=msg.filesize)
+                   sftp.put(local_file, new_lock )
                    sftp.rename(new_lock, parent.new_file)
-    
-                try   : 
-                   if ( 'mode' in msg.headers ) and parent.preserve_mode:
-                      sftp.chmod( int( msg.headers['mode'], base=8),parent.new_file)
-                   elif parent.chmod != 0:
-                      sftp.chmod(parent.chmod,parent.new_file)
 
-                except: pass
-    
+                # fix permission 
+
+                self.set_remote_file_attributes(sftp,parent.new_file,msg)
+
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
     
@@ -798,15 +681,10 @@ def self_test():
     # 1 bytes par 5 secs
     #cfg.kbytes_ps = 0.0001
     cfg.kbytes_ps = 0.01
-
-    support_inplace = True
+    cfg.chmod_dir = 0o775
 
     try:
            sftp = sr_sftp(cfg)
-           support_download = sftp.support_download
-           support_inplace  = sftp.support_inplace
-           support_send     = sftp.support_send
-           support_delete   = sftp.support_delete
            sftp.connect()
            sftp.mkdir("tztz")
            sftp.chmod(0o775,"tztz")
@@ -818,7 +696,7 @@ def self_test():
            f.write(b"3\n")
            f.close()
        
-           if support_send :
+           if hasattr(sftp,'put') :
               sftp.put("aaa", "bbb")
               ls = sftp.ls()
               logger.info("ls = %s" % ls )
@@ -831,7 +709,7 @@ def self_test():
               ls = sftp.ls()
               logger.info("ls = %s" % ls )
        
-           if support_inplace :
+           if hasattr(sftp,'seek') :
               sftp.get("ccc", "bbb",0,0,6)
               f = open("bbb","rb")
               data = f.read()
@@ -863,8 +741,7 @@ def self_test():
            cfg.batch   = 5
            cfg.inflight    = None
        
-
-           if support_download :
+           if hasattr(sftp,'get') :
               dldr = sftp_transport()
               dldr.download(cfg)
               logger.debug("checksum = %s" % msg.onfly_checksum)
@@ -885,7 +762,7 @@ def self_test():
               dldr.close()
               dldr.close()
     
-           if support_send :
+           if hasattr(sftp,'put') :
               dldr = sftp_transport()
               cfg.local_file    = "bbb"
               cfg.local_path    = "./bbb"
@@ -898,10 +775,10 @@ def self_test():
               cfg.chmod         = 0o775
               cfg.inflight      = None
               dldr.send(cfg)
-              if support_delete : dldr.sftp.delete("ddd")
+              if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")
               cfg.inflight        = '.'
               dldr.send(cfg)
-              if support_delete : dldr.sftp.delete("ddd")
+              if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")
               cfg.inflight        = '.tmp'
               dldr.send(cfg)
               dldr.send(cfg)
@@ -925,38 +802,39 @@ def self_test():
               sftp.rmdir("tztz")
               sftp.close()
 
-           if support_inplace :
+           if hasattr(sftp,'seek') :
+              
+              pwd = os.getcwd()
+
               sftp = sr_sftp(cfg)
               sftp.connect()
+              sftp.cd(pwd)
+
+              sftp.set_sumalgo(cfg.sumalgo)
               sftp.put("aaa","bbb",0,0,2)
-              sftp.put("aaa","bbb",2,4,2)
-              sftp.put("aaa","bbb",4,2,2)
-              sftp.get("bbb","bbb",2,2,2)
-              sftp.delete("bbb")
+              sftp.get("aaa","bbb",2,2,2)
+              sftp.put("aaa","bbb",4,4,2)
+
               f = open("bbb","rb")
               data = f.read()
               f.close()
-       
-              if data != b"1\n3\n3\n" :
-                 logger.error("sr_sftp TEST FAILED ")
+
+              if data != b"1\n2\n3\n" :
+                 logger.error("ICI")
+                 logger.error("sr_file TEST FAILED ")
                  sys.exit(1)
-       
+
+              sftp.delete("bbb")
+              sftp.delete("aaa")
+
               sftp.close()
 
-           #opt1 = "destination sftp://mgtest"
-           #cfg.option( opt1.split()  )
-           #sftp.connect()
-           #sftp.ls()
-           #sftp.close()
 
     except:
            (stype, svalue, tb) = sys.exc_info()
            logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
            logger.error("sr_sftp TEST FAILED")
            sys.exit(2)
-
-    os.unlink('aaa')
-    os.unlink('bbb')
 
     print("sr_sftp TEST PASSED")
     sys.exit(0)
