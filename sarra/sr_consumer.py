@@ -136,21 +136,22 @@ class sr_consumer:
         self.raw_msg = self.consumer.consume(self.queue_name)
         if self.raw_msg == None : return False, self.msg
 
-        if self.save:
-           self.logger.debug("save mode active")
-
         # make use it as a sr_message
 
         try :
                  self.msg.from_amqplib(self.raw_msg)
                  self.logger.debug("notice %s " % self.msg.notice)
-                 self.logger.debug("urlstr %s " % self.msg.urlstr)
+                 if self.msg.urlstr:
+                    self.logger.debug("urlstr %s " % self.msg.urlstr)
         except :
                  (stype, svalue, tb) = sys.exc_info()
                  self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
                  self.logger.error("malformed message %s"% vars(self.raw_msg))
                  return None, None
 
+        # special case : pulse
+
+        if self.msg.isPulse : return True,self.msg
 
         # make use of accept/reject
         if self.use_pattern :
