@@ -593,7 +593,7 @@ class sr_subscribe(sr_instances):
                  self.new_baseurl = urlstr.replace(self.new_relpath,'')
                
            # sender
-           if self.remote_file != self.new_file : #FIXME: remove in 2018
+           if self.remote_file != val_new_file : #FIXME: remove in 2018
               self.logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
               self.new_file = self.remote_file
 
@@ -733,6 +733,12 @@ class sr_subscribe(sr_instances):
               #self.logger.debug("notify_only post")
               ok = self.__on_post__()
               if ok and self.reportback : self.msg.report_publish(201,'Published')
+           else:
+              if   self.outlet == 'json' :
+                   json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
+                   print("%s" % json_line )
+              elif self.outlet == 'url'  :
+                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
            return True
 
         #=================================
@@ -971,12 +977,18 @@ class sr_subscribe(sr_instances):
                           need_download = False
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
+                          self.msg.set_topic('v02.post',self.new_relpath)
+                          self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+                          self.msg.headers['oldname'] = oldname
                           if self.post_broker :
-                             self.msg.set_topic('v02.post',self.new_relpath)
-                             self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
-                             self.msg.headers['oldname'] = oldname
                              ok = self.__on_post__()
                              if ok and self.reportback : self.msg.report_publish(201,'Published')
+                          else:
+                             if   self.outlet == 'json' :
+                                  json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
+                                  print("%s" % json_line )
+                             elif self.outlet == 'url'  :
+                                  print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
                           return True
 
                  self.logger.debug("could not move %s to %s (hardlink)" % (oldpath,newpath))
@@ -1006,12 +1018,18 @@ class sr_subscribe(sr_instances):
                self.logger.error("remove %s failed." % self.new_file )
                if self.reportback: self.msg.report_publish(500, 'remove failed')
 
+           self.msg.set_topic('v02.post',self.new_relpath)
+           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+           if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
            if self.post_broker :
-              self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
-              if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
               ok = self.__on_post__()
               if ok and self.reportback : self.msg.report_publish(201,'Published')
+           else:
+              if   self.outlet == 'json' :
+                   json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
+                   print("%s" % json_line )
+              elif self.outlet == 'url'  :
+                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
            return True
 
@@ -1045,11 +1063,18 @@ class sr_subscribe(sr_instances):
                self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
-           if ok and self.post_broker :
+           if ok :
               self.msg.set_topic('v02.post',self.new_relpath)
               self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
-              ok = self.__on_post__()
-              if ok and self.reportback : self.msg.report_publish(201,'Published')
+              if self.post_broker :
+                 ok = self.__on_post__()
+                 if ok and self.reportback : self.msg.report_publish(201,'Published')
+              else:
+                 if   self.outlet == 'json' :
+                      json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
+                      print("%s" % json_line )
+                 elif self.outlet == 'url'  :
+                      print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
            return True
 
@@ -1206,12 +1231,18 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
+        self.msg.set_topic('v02.post',self.new_relpath)
+        self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+        if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
         if self.post_broker :
-           self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
-           if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
            ok = self.__on_post__()
            if ok and self.reportback: self.msg.report_publish(201,'Published')
+        else:
+           if   self.outlet == 'json' :
+                json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
+                print("%s" % json_line )
+           elif self.outlet == 'url'  :
+                print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
         #=================================
         # if we processed a file we are done
@@ -1354,6 +1385,10 @@ class sr_subscribe(sr_instances):
                       #  consume message
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
+
+                      #  pulse message, go on to the next
+
+                      if self.msg.isPulse : continue
 
                       #  in save mode
 
