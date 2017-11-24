@@ -78,6 +78,10 @@ class sr_message():
         self.add_headers   = self.parent.headers_to_add
         self.del_headers   = self.parent.headers_to_del
 
+        self.isPulse         = False
+        self.pulse_count     = 0
+        self.pulse_frequence = 0
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -155,6 +159,33 @@ class sr_message():
            self.notice    = msg.body
 
            if type(msg.body) == bytes: self.notice = msg.body.decode("utf-8")
+
+        # pulse message... parse it
+        # exchange='v02.pulse'
+        # notice='epoch_time.msec a_pulse message to log'
+        # headers['frequence'] = 'seconds_in_integer'
+
+        self.isPulse = False
+        if self.topic == 'v02.pulse':
+           self.urlstr  = None
+           self.isPulse = True
+           self.pulse_count += 1
+
+           # parse pulse notice
+           token     = self.notice.split(' ')
+           self.time = token[0]
+           self.set_msg_time()
+
+           # pulse message ?
+           if len(token) > 1 :
+              pulse_message = ' '.join(token[1:])
+              self.logger.warning("pulse message = %s" % pulse_message)
+
+           if 'frequence' in self.headers :
+              try   : self.pulse_frequence = int(self.headers['frequence'])
+              except: self.pulse_frequence = 0
+
+           return
 
         # retransmission case :
         # topic is name of the queue...
