@@ -15,7 +15,7 @@ class Html_parser():
     def handle_starttag(self, tag, attrs):
         for attr in attrs:
             c,n = attr
-            if c == "href" and n[-1] != '/':
+            if c == "href":
                self.myfname = n.strip().strip('\t')
 
     def handle_data(self, data):
@@ -36,7 +36,10 @@ class Html_parser():
 
         mysize = words[-1]
 
-        self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + self.myfname
+        if self.myfname[-1] != '/':
+              self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + self.myfname
+        else:
+              self.entries[self.myfname] = 'drwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + self.myfname
 
         self.myfname = None
 
