@@ -84,7 +84,7 @@ class POLL_SCRIPT(object):
           self.last_pulse_message = pulse_message
         
        msg.headers = {}
-       msg.headers['pulse'] = '%d' % parent.sleep
+       msg.headers['frequence'] = '%d' % parent.sleep
        msg.trim_headers()
 
        # pulse on all exchanges
@@ -104,7 +104,7 @@ class POLL_SCRIPT(object):
            if exchange[0:3] == 'xl_': continue
            if exchange[0:3] == 'xr_': continue
            ex.append(exchange)
-           msg.exchange = exchange
+           msg.pub_exchange = exchange
            msg.publish()
 
        if pulse_message :
