@@ -368,11 +368,11 @@ class Publisher:
    def publish(self,exchange_name,exchange_key,message,mheaders):
        try :
               if self.hc.use_pika :
-                     self.logger.debug("publish PIKA is used")
+                     #self.logger.debug("publish PIKA is used")
                      properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
                      self.channel.basic_publish(exchange_name, exchange_key, message, properties, True )
               else:
-                     self.logger.debug("publish AMQPLIB is used")
+                     #self.logger.debug("publish AMQPLIB is used")
                      msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
                      self.channel.basic_publish(msg, exchange_name, exchange_key )
                      self.channel.tx_commit()
@@ -445,7 +445,7 @@ class Queue:
        # create queue
        try:
            if self.hc.use_pika:
-                  self.logger.debug("queue_declare PIKA is used")
+                  #self.logger.debug("queue_declare PIKA is used")
                   q_dclr_ok = self.channel.queue_declare( self.name,
                                        passive=False, durable=self.durable, exclusive=False,
                                        auto_delete=self.auto_delete,
@@ -456,7 +456,7 @@ class Queue:
                   self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
 
            else:
-                  self.logger.debug("queue_declare AMQPLIB is used")
+                  #self.logger.debug("queue_declare AMQPLIB is used")
                   self.qname, msg_count, consumer_count = \
                       self.channel.queue_declare( self.name,
                                           passive=False, durable=self.durable, exclusive=False,
@@ -469,8 +469,22 @@ class Queue:
               self.logger.error("Type: %s, Value: %s" %  (stype, svalue))
 
        # queue bindings
+       exchange_ok = None
        for exchange_name,exchange_key in self.bindings:
            self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name,exchange_key))
+           try:
+              self.bind(exchange_name, exchange_key )
+              exchange_ok = exchange_name
+           except : 
+              self.logger.error( "bind queue: %s to exchange: %s with key: %s failed.." % \
+                                 (self.name,exchange_name, exchange_key ) )
+              self.logger.error( "Permission issue with %s@%s or exchange %s not found." % \
+                                 (self.hc.user,self.hc.host,exchange_name ) )
+
+       # always allow pulse binding... use last exchange_name
+       if exchange_ok :
+           exchange_key = 'v02.pulse'
+           self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (exchange_name,exchange_key))
            try:
               self.bind(exchange_name, exchange_key )
            except : 
@@ -478,5 +492,7 @@ class Queue:
                                  (self.name,exchange_name, exchange_key ) )
               self.logger.error( "Permission issue with %s@%s or exchange %s not found." % \
                                  (self.hc.user,self.hc.host,exchange_name ) )
+       else:
+           self.logger.warning( "this process will not receive pulse message")
 
        self.logger.debug("queue build done")
