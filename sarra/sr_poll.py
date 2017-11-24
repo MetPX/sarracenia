@@ -333,6 +333,10 @@ class sr_poll(sr_post):
                         if not ok: break
       
                 if ok:
+                    if self.line[0] == 'd' :
+                       self.logger.debug("directory %s skipped" % f)
+                       continue
+
                     for mask in self.pulllst :
                        pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
                        if mask_regexp.match(f):
