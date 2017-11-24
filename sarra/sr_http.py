@@ -127,10 +127,13 @@ class sr_http(sr_proto):
 
         # open self.http
 
-        alarm_set(3*self.iotime)
         url = self.destination + '/' + self.path + '/' + remote_file
+
+        # alarm default 3*iotime = 100 sec to connect
+        alarm_set(3*self.iotime)
         ok  = self.__open__(url, remote_offset, length )
         alarm_cancel()
+
         if not ok : return False
 
         # read from self.http write to local_file
@@ -164,7 +167,12 @@ class sr_http(sr_proto):
         self.entries = {}
 
         url = self.destination + '/' + self.path
+
+        # alarm default 3*iotime around 100 sec to connect
+        alarm_set(3*self.iotime)
         ok  = self.__open__( url )
+        alarm_cancel()
+
         if not ok : return self.entries
 
         # get html page for directory
@@ -172,7 +180,9 @@ class sr_http(sr_proto):
         try :
                  dbuf = None
                  while  True:
+                        alarm_set(self.iotime)
                         chunk = self.http.read(self.bufsize)
+                        alarm_cancel()
                         if not chunk: break
                         if dbuf : dbuf += chunk
                         else    : dbuf  = chunk
