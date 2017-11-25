@@ -25,7 +25,7 @@ and reposts the notifications, suppressing the redundant ones by comparing their
 fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
 in the `sr_post(7) <sr_post.7.html>`_ man page.
 
-**sr_winnow** is an `sr_subscribe(7) <sr_subscribe.1.html>`_ with the following options forced::
+**sr_winnow** is an `sr_subscribe(1) <sr_subscribe.1.html>`_ with the following options forced::
 
    no-download True  
    suppress_duplicates on
@@ -61,11 +61,11 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first.
+`sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
-See `sr_subscribe(7) <sr_subscribe.7.html>`_  for more details.
+See `sr_subscribe(1) <sr_subscribe.1.html>`_  for more details.
 
  
 DEPRECATED

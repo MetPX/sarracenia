@@ -41,7 +41,7 @@ All sr\_ tools store all sensitive authentication info in the credentials.conf f
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_subscribe(7) credentials <sr_subscribe.7.html/#credentials>`_
+For more details, see: `sr_subscribe(1) credentials <sr_subscribe.1.html/#credentials>`_
 
 Mandatory Settings
 ------------------
@@ -129,7 +129,7 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr_subscribe(7) <sr_subscribe.7.html>`_ manual page for a detailed description of
+Please refer to the `sr_subscribe(1) <sr_subscribe.1.html>`_ manual page for a detailed description of
 common settings, and methods of specifying them.
 
 **[--blocksize <value>]**
@@ -404,7 +404,7 @@ that is big enough.  More kernel memory will be allocated for this, no other eff
 SEE ALSO
 ========
 
-`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 

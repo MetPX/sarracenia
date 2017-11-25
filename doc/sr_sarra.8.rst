@@ -70,7 +70,7 @@ user exchange.
 SEE ALSO
 ========
 
-`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

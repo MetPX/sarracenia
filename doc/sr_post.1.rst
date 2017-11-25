@@ -109,7 +109,7 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr_subscribe(7) <sr_subscribe.7.html>`_ manual page for a detailed description of 
+Please refer to the `sr_subscribe(1) <sr_subscribe.1.html>`_ manual page for a detailed description of 
 common settings, and methods of specifying them.
 
 **[-c|--config <configfile>]**
@@ -350,8 +350,6 @@ can see how the algorithm works.
 
 SEE ALSO
 ========
-
-`sr_subscribe(7) <sr_subscribe.7.html>`_ - the format of configurations for MetPX-Sarracenia.
 
 `sr_report(7) <sr_report.7.html>`_ - the format of report messages.
 

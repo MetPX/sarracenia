@@ -323,6 +323,12 @@ in messages when appropriate.   Headers are a mandatory element included in late
  +-----------+---------------------------------------------------------------------+
  |     s     | checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +-----------+---------------------------------------------------------------------+
+ |     z     | checksum on download, with algorithm as argument                    |
+ |           | example:  z,d means download, applying d checksum, and advertise    |
+ |           | with that calculated checksum when propagating further.             |
+ |           | Used with sr_pooll of remotes sites, where checksums not initially  |
+ |           | available.                                                          |
+ +-----------+---------------------------------------------------------------------+
  |  *<name>* | checksum with a some other algorithm, named *<name>*                |
  |           | *<name>* should be *registered* in the data pumping network.        |
  |           | registered means that all downstream subscribers can obtain the     |

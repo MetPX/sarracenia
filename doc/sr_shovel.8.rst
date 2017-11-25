@@ -52,7 +52,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(7) <sr_subscribe.7.html>`_  page which should be read first. 
+`sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first. 
 It fully explains the option configuration language, and how to find 
 the option settings.
 
