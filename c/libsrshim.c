@@ -310,15 +310,15 @@ int renameorlink(int olddirfd, const char *oldpath, int newdirfd, const char *ne
        }
     }
 
-    srshim_initialize("post");
-
-    if (!sr_c) return(status);
-
     if (status) 
     {
          if ( getenv("SRSHIMDEBUG")) fprintf( stderr, "SRSHIMDEBUG renameorlink %s %s failed, no post\n", oldpath, newpath );
          return(status);
     }
+
+    srshim_initialize("post");
+
+    if (!sr_c) return(status);
 
     if ( olddirfd == AT_FDCWD ) 
     {
