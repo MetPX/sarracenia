@@ -71,7 +71,7 @@ All sr\_ tools store all sensitive authentication info in the credentials.conf f
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
 to thins such as private keys, or FTP modes.
 
-For more details, see: `sr_subscribe(1) <sr_subscribe.1.html/#credentials>`__
+For more details, see: `sr_subscribe(1) <sr_subscribe.1.html#credentials>`__
 
 
 VIP, INTERFACE 
