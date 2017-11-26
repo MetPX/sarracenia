@@ -101,7 +101,7 @@ with Sarracenia. AMQP is a vast and interesting topic in it's own right. No atte
 made to explain all of it here. This section just provides a little context, and introduces
 only background concepts needed to understand and/or use Sarracenia. For more information
 on AMQP itself, a set of links is maintained at
-the `Metpx web site <http://metpx.sourceforge.net/#amqp>`_ but a search engine
+the `Metpx web site <http://metpx.sourceforge.net/sarra-e.html#amqp>`_ but a search engine
 will also reveal a wealth of material.
 
 .. image:: AMQP4Sarra.svg
