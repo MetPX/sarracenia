@@ -36,10 +36,12 @@ try :
          from sr_amqp           import *
          from sr_config         import *
          from sr_message        import *
+         from sr_util           import *
 except : 
          from sarra.sr_amqp     import *
          from sarra.sr_config   import *
          from sarra.sr_message  import *
+         from sarra.sr_util     import *
 
 # class sr_consumer
 
@@ -151,7 +153,13 @@ class sr_consumer:
 
         # special case : pulse
 
-        if self.msg.isPulse : return True,self.msg
+        if self.msg.isPulse :
+           self.parent.pulse_count += 1
+           return True,self.msg
+
+        # normal message
+
+        self.parent.message_count += 1
 
         # make use of accept/reject
         if self.use_pattern :
@@ -169,6 +177,17 @@ class sr_consumer:
               return False,self.msg
 
         return True,self.msg
+
+    def isAlive(self):
+        if not hasattr(self,'consumer') : return False
+        if self.consumer.channel == None: return False
+        alarm_set(20)
+        try   : self.consumer.channel.basic_qos(0,self.consumer.prefetch,False)
+        except: 
+                alarm_cancel()
+                return False
+        alarm_cancel()
+        return True
 
     def queue_declare(self,build=False):
         self.logger.debug("sr_consumer queue_declare")
