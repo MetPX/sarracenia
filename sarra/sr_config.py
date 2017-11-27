@@ -486,6 +486,10 @@ class sr_config:
         self.post_base_dir        = None
         self.post_base_url        = None
 
+        # pulse  
+
+        self.pulse_message        = None
+
         # deprecated set
         self.document_root        = None
         self.post_document_root   = None
@@ -1627,6 +1631,10 @@ class sr_config:
                      else :
                         self.preserve_time = self.isTrue(words[1])
                         n = 2
+
+                elif words0 == 'pulse_message' : # MG to be documented
+                     self.pulse_message = words1
+                     n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
                      if (words1 is None) or words[0][0:1] == '-' : 
