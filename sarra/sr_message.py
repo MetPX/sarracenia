@@ -52,6 +52,7 @@ class sr_message():
 
         self.bufsize       = parent.bufsize
 
+        self.message_ttl   = 0
         self.exchange      = None
         self.report_exchange  = 'xreport'
         self.report_publisher = None
@@ -79,8 +80,6 @@ class sr_message():
         self.del_headers   = self.parent.headers_to_del
 
         self.isPulse         = False
-        self.pulse_count     = 0
-        self.pulse_frequence = 0
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -163,27 +162,31 @@ class sr_message():
         # pulse message... parse it
         # exchange='v02.pulse'
         # notice='epoch_time.msec a_pulse message to log'
-        # headers['frequence'] = 'seconds_in_integer'
+        # headers['frequency'] = 'seconds_in_integer'
 
         self.isPulse = False
-        if self.topic == 'v02.pulse':
+        if self.topic.startswith('v02.pulse'):
            self.urlstr  = None
            self.isPulse = True
-           self.pulse_count += 1
 
            # parse pulse notice
            token     = self.notice.split(' ')
            self.time = token[0]
            self.set_msg_time()
 
-           # pulse message ?
-           if len(token) > 1 :
+           # pulse message
+           if self.topic == 'v02.pulse.message':
               pulse_message = ' '.join(token[1:])
               self.logger.warning("pulse message = %s" % pulse_message)
+              return
 
-           if 'frequence' in self.headers :
-              try   : self.pulse_frequence = int(self.headers['frequence'])
-              except: self.pulse_frequence = 0
+           # normal pulse
+           if not hasattr(self.parent,'pulse_count') :
+              self.parent.pulse_count = 0
+
+           self.pulse_count            += 1
+           # not sure usefull yet
+           #self.parent.pulse_frequency = int(self.headers['frequency'])
 
            return
 
@@ -378,7 +381,7 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers)
+           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
 
