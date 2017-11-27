@@ -365,15 +365,23 @@ class Publisher:
        if self.hc.use_pika :  self.channel.confirm_delivery()
        else:                  self.channel.tx_select()
        
-   def publish(self,exchange_name,exchange_key,message,mheaders):
+   def publish(self,exchange_name,exchange_key,message,mheaders,mexp=0):
        try :
               if self.hc.use_pika :
                      #self.logger.debug("publish PIKA is used")
-                     properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
+                     if mexp :
+                        expms = '%s' % mexp
+                        properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders,expiration=expms)
+                     else:
+                        properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
                      self.channel.basic_publish(exchange_name, exchange_key, message, properties, True )
               else:
                      #self.logger.debug("publish AMQPLIB is used")
-                     msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
+                     if mexp :
+                        expms = '%s' % mexp
+                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders,expiration=expms)
+                     else:
+                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
                      self.channel.basic_publish(msg, exchange_name, exchange_key )
                      self.channel.tx_commit()
               return True
