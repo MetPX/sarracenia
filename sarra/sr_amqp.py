@@ -275,6 +275,7 @@ class Consumer:
       self.hc       = hostconnect
       self.logger   = self.hc.logger
       self.prefetch = 20
+      self.channel  = None
 
       self.exchange_type = 'topic'
 
