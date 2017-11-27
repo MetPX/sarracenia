@@ -927,6 +927,78 @@ class sr_post(sr_instances):
 
         return done
 
+    def post_pulse(self):
+        self.logger.info("post_pulse message")
+
+        self.connect()
+
+        # build message
+
+        self.msg.topic    = 'v02.pulse'
+
+        self.msg.set_time()
+        self.msg.notice  = '%s' % self.msg.time
+
+        if self.pulse_message : 
+           self.msg.topic  += '.message'
+           self.msg.notice += ' ' + self.pulse_message
+        else:
+           self.msg.topic  += '.tick'
+        
+        self.msg.headers = {}
+        self.msg.trim_headers()
+
+        # pulse on all exchanges
+        # because of its topic, it should not impact any process
+        # that does not consider topic v02.pulse
+
+        lst_dict = self.rabbitmqadmin("list exchanges name")
+
+        ex = []
+        for edict in lst_dict :
+            exchange = edict['name']
+            if exchange == ''        : continue
+            if exchange[0] != 'x'    : continue
+            if exchange == 'xreport' : continue
+            # deprecated exchanges
+            if exchange == 'xlog'    : continue
+            if exchange[0:3] == 'xl_': continue
+            if exchange[0:3] == 'xr_': continue
+            ex.append(exchange)
+            self.msg.pub_exchange = exchange
+            self.msg.message_ttl  = self.message_ttl
+            self.logger.info("message_ttl=%d" % self.message_ttl)
+            self.msg.publish()
+
+        self.close()
+
+    # from sr_audit.py
+    def rabbitmqadmin(self,options):
+        try   : from sr_rabbit       import exec_rabbitmqadmin
+        except: from sarra.sr_rabbit import exec_rabbitmqadmin
+
+        self.logger.debug("sr_audit rabbitmqadmin %s" % options)
+        try :
+                 (status, answer) = exec_rabbitmqadmin(self.post_broker,options,self.logger)
+                 if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
+                    self.logger.error("rabbitmqadmin invocation failed")
+                    return []
+
+                 if answer == None or len(answer) == 0 : return []
+
+                 lst = []
+                 try    : lst = eval(answer)
+                 except : pass
+
+                 return lst
+
+        except :
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("rabbimtqadmin "+ options)
+        return []
+
+
     # =============
     # set_blocksize ... directly from c code
     # =============
@@ -1398,6 +1470,13 @@ def main():
     # verification : args
 
     post.args(args)
+
+    # are we posting a pulse message
+
+    if post.pulse_message != None :
+       post = sr_post(config,args,action)
+       post.post_pulse()
+       os._exit(0)
 
     # if we found something to post we are done
 
