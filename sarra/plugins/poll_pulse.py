@@ -31,6 +31,10 @@ class POLL_SCRIPT(object):
 
        if parent.sleep == 0 : parent.sleep = 120
 
+       # message_ttl if not set is 2 * sleep
+
+       if not parent.message_ttl : parent.message_ttl = int(parent.sleep * 1000)
+
        # pulse 
 
        parent.post_pulse()
