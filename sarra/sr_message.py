@@ -180,12 +180,7 @@ class sr_message():
               self.logger.warning("pulse message = %s" % pulse_message)
               return
 
-           # normal pulse
-           if not hasattr(self.parent,'pulse_count') :
-              self.parent.pulse_count = 0
-
-           self.pulse_count            += 1
-           # not sure usefull yet
+           # not sure if usefull yet
            #self.parent.pulse_frequency = int(self.headers['frequency'])
 
            return
