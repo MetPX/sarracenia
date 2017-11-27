@@ -483,7 +483,7 @@ class Queue:
 
        # always allow pulse binding... use last exchange_name
        if exchange_ok :
-           exchange_key = 'v02.pulse'
+           exchange_key = 'v02.pulse.#'
            self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (exchange_name,exchange_key))
            try:
               self.bind(exchange_name, exchange_key )
