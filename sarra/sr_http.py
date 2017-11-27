@@ -129,10 +129,7 @@ class sr_http(sr_proto):
 
         url = self.destination + '/' + self.path + '/' + remote_file
 
-        # alarm default 3*iotime = 100 sec to connect
-        alarm_set(3*self.iotime)
         ok  = self.__open__(url, remote_offset, length )
-        alarm_cancel()
 
         if not ok : return False
 
@@ -168,10 +165,7 @@ class sr_http(sr_proto):
 
         url = self.destination + '/' + self.path
 
-        # alarm default 3*iotime around 100 sec to connect
-        alarm_set(3*self.iotime)
         ok  = self.__open__( url )
-        alarm_cancel()
 
         if not ok : return self.entries
 
@@ -212,6 +206,9 @@ class sr_http(sr_proto):
         self.req       = None
         self.urlstr    = path
 
+        # timeout alarm 100 secs to connect
+        alarm_set(100)
+
         try:
                 # when credentials are needed.
                 if self.user != None :                          
@@ -244,22 +241,28 @@ class sr_http(sr_proto):
 
                 self.connected = True
 
+                alarm_cancel()
+
                 return True
 
         except urllib.error.HTTPError as e:
                self.logger.error('Download failed %s ' % self.urlstr)
                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
+               alarm_cancel()
                raise
         except urllib.error.URLError as e:
                self.logger.error('Download failed %s ' % self.urlstr)
                self.logger.error('Failed to reach server. Reason: %s' % e.reason)
+               alarm_cancel()
                raise
         except:
                (stype, svalue, tb) = sys.exc_info()
                self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
                self.logger.warning("Unable to open %s" % self.urlstr)
+               alarm_cancel()
                raise
 
+        alarm_cancel()
         return False
 
 #============================================================

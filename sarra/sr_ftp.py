@@ -64,25 +64,34 @@ class sr_ftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_ftp __init__")
         sr_proto.__init__(self,parent)
+        # ftp command times out after 20 secs
+        # this setting is different from the computed iotime (sr_proto)
+        self.cmd_timeout = 20
         self.init()
  
     # cd
     def cd(self, path):
         self.logger.debug("sr_ftp cd %s" % path)
+
+        alarm_set(self.cmd_timeout)
         self.ftp.cwd(self.originalDir)
         self.ftp.cwd(path)
         self.pwd = path
+        alarm_cancel()
 
     def cd_forced(self,perm,path) :
         self.logger.debug("sr_ftp cd_forced %d %s" % (perm,path))
 
         # try to go directly to path
 
+        alarm_set(self.cmd_timeout)
         self.ftp.cwd(self.originalDir)
         try   :
                 self.ftp.cwd(path)
+                alarm_cancel()
                 return
         except: pass
+        alarm_cancel()
 
         # need to create subdir
 
@@ -93,14 +102,19 @@ class sr_ftp(sr_proto):
             if d == ''   : continue
             # try to go directly to subdir
             try   :
+                    alarm_set(self.cmd_timeout)
                     self.ftp.cwd(d)
+                    alarm_cancel()
                     continue
             except: pass
 
-            # create and go to subdir
-            self.ftp.mkd(d)
-            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
+            # mkdir d
+            self.mkdir(d)
+
+            # cd d
+            alarm_set(self.cmd_timeout)
             self.ftp.cwd(d)
+            alarm_cancel()
 
     # check_is_connected
 
@@ -124,14 +138,23 @@ class sr_ftp(sr_proto):
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
+        alarm_set(self.cmd_timeout)
         self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
+        alarm_cancel()
 
     # close
     def close(self):
         self.logger.debug("sr_ftp close")
-        try:    self.ftp.quit()
-        except: pass
+
+        old_ftp = self.ftp
+
         self.init()
+
+        try:
+                alarm_set(self.cmd_timeout)
+                old_ftp.quit()
+        except: pass
+        alarm_cancel()
 
     # connect...
     def connect(self):
@@ -142,6 +165,9 @@ class sr_ftp(sr_proto):
 
         if not self.credentials() : return False
 
+
+        # timeout alarm 100 secs to connect
+        alarm_set(100)
         try:
                 expire  = -999
                 if self.parent.timeout : expire = self.parent.timeout
@@ -173,11 +199,14 @@ class sr_ftp(sr_proto):
 
                 self.ftp = ftp
 
+                alarm_cancel()
                 return True
 
         except:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (self.host,self.user, stype,svalue))
+
+        alarm_cancel()
         return False
 
     # credentials...
@@ -210,7 +239,9 @@ class sr_ftp(sr_proto):
     # delete
     def delete(self, path):
         self.logger.debug( "sr_ftp rm %s" % path)
+        alarm_set(self.cmd_timeout)
         self.ftp.delete(path)
+        alarm_cancel()
 
     # get
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
@@ -234,7 +265,10 @@ class sr_ftp(sr_proto):
 
     # getcwd
     def getcwd(self):
-        return self.ftp.pwd()
+        alarm_set(self.cmd_timeout)
+        pwd = self.ftp.pwd()
+        alarm_cancel()
+        return pwd
 
     # init
     def init(self):
@@ -251,13 +285,18 @@ class sr_ftp(sr_proto):
     def ls(self):
         self.logger.debug("sr_ftp ls")
         self.entries = {}
+        # 30 secs for next line
+        alarm_set(30)
         self.ftp.retrlines('LIST',self.line_callback )
+        alarm_cancel()
         self.logger.debug("sr_ftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
     def line_callback(self,iline):
         self.logger.debug("sr_ftp line_callback %s" % iline)
+
+        alarm_cancel()
 
         oline  = iline
         oline  = oline.strip('\n')
@@ -275,12 +314,17 @@ class sr_ftp(sr_proto):
 
         self.entries[fil] = line
 
+        alarm_set(self.cmd_timeout)
+
     # mkdir
     def mkdir(self, remote_dir):
         self.logger.debug("sr_ftp mkdir %s" % remote_dir)
+        alarm_set(self.cmd_timeout)
         self.ftp.mkd(remote_dir)
+        alarm_cancel()
+        alarm_set(self.cmd_timeout)
         self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.parent.chmod_dir) + ' ' + remote_dir)
-#        self.ftp.chmod(self.parent.chmod_dir,remote_dir)
+        alarm_cancel()
 
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
@@ -301,17 +345,23 @@ class sr_ftp(sr_proto):
     # rename
     def rename(self,remote_old,remote_new) :
         self.logger.debug("sr_ftp rename %s %s" % (remote_old,remote_new))
+        alarm_set(self.cmd_timeout)
         self.ftp.rename(remote_old,remote_new)
+        alarm_cancel()
 
     # rmdir
     def rmdir(self, path):
         self.logger.debug("sr_ftp rmdir %s" % path)
+        alarm_set(self.cmd_timeout)
         self.ftp.rmd(path)
+        alarm_cancel()
 
     # umask
     def umask(self) :
         self.logger.debug("sr_ftp umask")
+        alarm_set(self.cmd_timeout)
         self.ftp.voidcmd('SITE UMASK 777')
+        alarm_cancel()
 
 
 #============================================================

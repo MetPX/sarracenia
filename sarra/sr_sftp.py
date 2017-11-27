@@ -75,6 +75,10 @@ class sr_sftp(sr_proto):
         parent.logger.debug("sr_sftp __init__")
         sr_proto.__init__(self,parent)
 
+        # sftp command times out after 20 secs
+        # this setting is different from the computed iotime (sr_proto)
+        self.cmd_timeout = 20
+
         self.init()
 
         self.ssh_config  = None
@@ -94,9 +98,11 @@ class sr_sftp(sr_proto):
     # cd
     def cd(self, path):
         self.logger.debug("sr_sftp cd %s" % path)
+        alarm_set(self.cmd_timeout)
         self.sftp.chdir(self.originalDir)
         self.sftp.chdir(path)
         self.pwd = path
+        alarm_cancel()
 
     # cd forced
     def cd_forced(self,perm,path) :
@@ -104,11 +110,14 @@ class sr_sftp(sr_proto):
 
         # try to go directly to path
 
+        alarm_set(self.cmd_timeout)
         self.sftp.chdir(self.originalDir)
         try   :
                 self.sftp.chdir(path)
+                alarm_cancel()
                 return
         except: pass
+        alarm_cancel()
 
         # need to create subdir
 
@@ -119,13 +128,17 @@ class sr_sftp(sr_proto):
             if d == ''   : continue
             # try to go directly to subdir
             try   :
+                    alarm_set(self.cmd_timeout)
                     self.sftp.chdir(d)
+                    alarm_cancel()
                     continue
             except: pass
 
             # create and go to subdir
+            alarm_set(self.cmd_timeout)
             self.sftp.mkdir(d,self.parent.chmod_dir)
             self.sftp.chdir(d)
+            alarm_cancel()
 
     def check_is_connected(self):
         self.logger.debug("sr_sftp check_is_connected")
@@ -147,18 +160,25 @@ class sr_sftp(sr_proto):
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_sftp chmod %s %s" % ( "{0:o}".format(perm),path))
+        alarm_set(self.cmd_timeout)
         self.sftp.chmod(path,perm)
+        alarm_cancel()
 
     # close
     def close(self):
         self.logger.debug("sr_sftp close")
 
-        try   : self.sftp.close()
-        except: pass
-        try   : self.ssh.close()
-        except: pass
+        old_sftp = self.sftp
+        old_ssh  = self.ssh
 
         self.init()
+
+        alarm_set(self.cmd_timeout)
+        try   : old_sftp.close()
+        except: pass
+        try   : old_ssh.close()
+        except: pass
+        alarm_cancel()
 
     # connect...
     def connect(self):
@@ -172,6 +192,7 @@ class sr_sftp(sr_proto):
 
         if not self.credentials() : return False
 
+        alarm_set(100)
         try:
 
                 logger = logging.getLogger('paramiko')
@@ -199,11 +220,14 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
+                alarm_cancel()
                 return True
 
         except:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (self.host,self.user, stype,svalue))
+
+        alarm_cancel()
         return False
 
     # credentials...
@@ -257,12 +281,16 @@ class sr_sftp(sr_proto):
     # delete
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
+        alarm_set(self.cmd_timeout)
         self.sftp.remove(path)
+        alarm_cancel()
 
     # symlink
     def symlink(self, link, path):
         self.logger.debug("sr_sftp symlink %s %s" % (link, path) )
+        alarm_set(self.cmd_timeout)
         self.sftp.symlink(link, path)
+        alarm_cancel()
 
     # get 
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ) :
@@ -288,7 +316,10 @@ class sr_sftp(sr_proto):
 
     # getcwd
     def getcwd(self):
-        return self.sftp.getcwd()
+        alarm_set(self.cmd_timeout)
+        cwd =  self.sftp.getcwd()
+        alarm_cancel()
+        return cwd
 
     # init
     def init(self):
@@ -305,7 +336,10 @@ class sr_sftp(sr_proto):
     def ls(self):
         self.logger.debug("sr_sftp ls")
         self.entries  = {}
+        # no clue how much an ls can take... make it 5 mins
+        alarm_set( 300 )
         dir_attr = self.sftp.listdir_attr()
+        alarm_cancel()
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
             line = attr.__str__()
@@ -336,7 +370,9 @@ class sr_sftp(sr_proto):
     # mkdir
     def mkdir(self, remote_dir):
         self.logger.debug("sr_sftp mkdir %s" % remote_dir)
+        alarm_set(self.cmd_timeout)
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
+        alarm_cancel()
 
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
@@ -381,19 +417,25 @@ class sr_sftp(sr_proto):
     # rename
     def rename(self,remote_old,remote_new) :
         self.logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
+        alarm_set(self.cmd_timeout)
         try    : self.sftp.remove(remote_new)
         except : pass
         self.sftp.rename(remote_old,remote_new)
+        alarm_cancel()
 
     # rmdir
     def rmdir(self,path) :
         self.logger.debug("sr_sftp rmdir %s " % path)
+        alarm_set(self.cmd_timeout)
         self.sftp.rmdir(path)
+        alarm_cancel()
 
     # utime
     def utime(self,path,tup) :
         self.logger.debug("sr_sftp utime %s %s " % (path,tup))
+        alarm_set(self.cmd_timeout)
         self.sftp.utime(path,tup)
+        alarm_cancel()
 
 #============================================================
 #
