@@ -481,6 +481,11 @@ class sr_config:
         self.save_fp              = None
         self.save_count           = 1
 
+        # counter
+
+        self.message_count        = 0
+        self.pulse_count          = 0
+
         # new set
         self.base_dir             = None
         self.post_base_dir        = None
