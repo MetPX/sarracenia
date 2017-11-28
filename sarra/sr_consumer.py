@@ -58,6 +58,9 @@ class sr_consumer:
         self.accept_unmatch = parent.accept_unmatch
         self.save = False
 
+        self.iotime = 30
+        if self.parent.timeout and self.parent.timeout > 30 : self.iotime = int(self.parent.timeout)
+
         self.build_connection()
         self.build_consumer()
         self.build_queue()
@@ -181,7 +184,7 @@ class sr_consumer:
     def isAlive(self):
         if not hasattr(self,'consumer') : return False
         if self.consumer.channel == None: return False
-        alarm_set(20)
+        alarm_set(self.iotime)
         try   : self.consumer.channel.basic_qos(0,self.consumer.prefetch,False)
         except: 
                 alarm_cancel()
