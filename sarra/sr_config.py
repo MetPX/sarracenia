@@ -454,14 +454,14 @@ class sr_config:
         self.set_passwords        = True
 
         self.use_pattern          = False    # accept if No pattern matching
-        self.accept_unmatch       = False    # accept if No pattern matching
+        self.accept_unmatch       = None     # default changes depending on program
         self.masks                = []       # All the masks (accept and reject)
         self.currentPattern       = None     # defaults to all
         self.currentDir           = os.getcwd()   # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.report_exchange      = 'xreport'
+        self.report_exchange      = None
           
         # amqp
 
