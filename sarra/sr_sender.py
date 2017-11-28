@@ -96,13 +96,6 @@ class sr_sender(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # accept/reject
-
-        self.use_pattern = self.masks != []
-
-        if self.accept_unmatch == None : 
-           self.accept_unmatch = False
-
         # posting... discard not permitted
 
         if self.post_broker != None :
@@ -125,8 +118,8 @@ class sr_sender(sr_subscribe):
                  self.logger.warning("use post_base_dir instead of defaulting to document_root")
 
            # verify post_base_url (not mandatory...)
-           #if self.post_base_url == None :
-           #   self.logger.error("post_base_url required")
+           if self.post_base_url == None :
+              self.post_base_url = self.destination
 
         # caching
 
@@ -137,9 +130,8 @@ class sr_sender(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = True
-        if self.reportback and not self.report_exchange:
-           self.report_exchange = 'xreport'
+        if self.reportback :
+           if not self.report_exchange: self.report_exchange = 'xreport'
 
         # no queue name allowed... force this one
 
@@ -250,6 +242,10 @@ class sr_sender(sr_subscribe):
         # never discard
 
         self.discard = False
+
+        # dont accept unmatch by default
+
+        self.accept_unmatch = False
 
 
 
