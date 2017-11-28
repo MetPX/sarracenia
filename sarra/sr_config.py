@@ -1062,6 +1062,10 @@ class sr_config:
                                self.caching = int(self.duration_from_str(words1,'s'))
                                if self.caching <= 0 : self.caching = False
                         n = 2
+                     if self.caching and not hasattr(self,'heartbeat_cache_installed') :
+                        self.execfile("on_heartbeat",'heartbeat_cache')
+                        self.on_heartbeat_list.append(self.on_heartbeat)
+                        self.heartbeat_cache_installed = True
 
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 
