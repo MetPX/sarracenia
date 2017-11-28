@@ -453,7 +453,6 @@ class sr_config:
         self.max_queue_size       = 25000
         self.set_passwords        = True
 
-        self.use_pattern          = False    # accept if No pattern matching
         self.accept_unmatch       = None     # default changes depending on program
         self.masks                = []       # All the masks (accept and reject)
         self.currentPattern       = None     # defaults to all
