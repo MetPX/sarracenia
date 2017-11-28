@@ -142,7 +142,6 @@ class sr_shovel(sr_subscribe):
         # FIX ME  report_exchange set to NONE
         # instead of xreport and make it mandatory perhaps ?
         # since it can be xreport or xs_remotepumpUsername ?
-        self.report_exchange = 'xreport'
 
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are

@@ -54,7 +54,7 @@ class sr_message():
 
         self.message_ttl   = 0
         self.exchange      = None
-        self.report_exchange  = 'xreport'
+        self.report_exchange  = parent.report_exchange
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
