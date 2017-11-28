@@ -124,12 +124,12 @@ class sr_poll(sr_post):
         if self.post_base_url[-1] != '/' : self.post_base_url += '/'
         if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
 
-        if self.accept_unmatch == None : self.accept_unmatch = False
+        if self.accept_unmatch == None :
+           self.accept_unmatch = False
+           # if no accept/reject options ... accepts everything
+           if self.masks == [] : self.accept_unmatch = True
 
         sr_post.check(self)
-
-        # force 1 instance
-        self.nbr_instances = 1
 
         self.sleeping      = False
         self.connected     = False 
@@ -419,10 +419,6 @@ class sr_poll(sr_post):
 
         self.caching     = 1200
 
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = None
-
         # set parts to '1' so we always announce download the entire file
 
         self.parts          = '1'
@@ -463,7 +459,6 @@ class sr_poll(sr_post):
         # ========================================
 
         if not self.cache.check(sumstr,post_relpath,partstr):
-            self.msg.report_publish(304,'Not modified')
             self.logger.debug("Ignored %s" % (self.msg.notice))
             return False
 
