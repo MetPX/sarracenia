@@ -132,13 +132,6 @@ class sr_poll(sr_post):
         self.sleeping      = False
         self.connected     = False 
 
-        # check sumflg should start with z,
-
-        if len(self.sumflg) < 2 or self.sumflg[:2] != 'z,' :
-           self.logger.error("sum should start with z,  ex.: z,d\n")
-           self.help()
-           sys.exit(1)
-
         # rebuild mask as pulls instructions
         # pulls[directory] = [mask1,mask2...]
 
@@ -572,10 +565,21 @@ class sr_poll(sr_post):
                     if mask_regexp.match(remote_file) and accepting :
                        FileOption = maskFileOption
 
-                desc         = desclst[remote_file]
-                ssiz         = desc.split()[4]
+                path = self.destDir + '/'+ remote_file
+
+                # posting a localfile
+                if self.post_base_url.startswith('file:') :
+                   if os.path.isfile(path)   :
+                      try   : lstat = os.stat(path)
+                      except: lstat = None
+                      ok    = self.post1file(path,lstat)
+                      if ok : npost += 1
+                      continue
 
                 self.post_relpath = self.destDir + '/'+ remote_file
+
+                desc         = desclst[remote_file]
+                ssiz         = desc.split()[4]
 
                 self.sumstr  = self.sumflg
                 self.partstr = None
