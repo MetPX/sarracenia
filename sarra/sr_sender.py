@@ -102,8 +102,6 @@ class sr_sender(sr_subscribe):
 
         if self.accept_unmatch == None : 
            self.accept_unmatch = False
-           # if no accept/reject options ... accepts everything
-           if self.masks == [] : self.accept_unmatch = True
 
         # posting... discard not permitted
 

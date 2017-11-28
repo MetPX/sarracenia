@@ -126,8 +126,6 @@ class sr_poll(sr_post):
 
         if self.accept_unmatch == None :
            self.accept_unmatch = False
-           # if no accept/reject options ... accepts everything
-           if self.masks == [] : self.accept_unmatch = True
 
         sr_post.check(self)
 
