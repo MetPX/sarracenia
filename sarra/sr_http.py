@@ -206,8 +206,7 @@ class sr_http(sr_proto):
         self.req       = None
         self.urlstr    = path
 
-        # timeout alarm 100 secs to connect
-        alarm_set(100)
+        alarm_set(3*self.iotime)
 
         try:
                 # when credentials are needed.
