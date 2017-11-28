@@ -85,7 +85,8 @@ class sr_post(sr_instances):
 
         # singleton
 
-        self.nbr_instances = 1
+        if self.nbr_instances != 1 :
+           self.logger.error("number of instance must be one")
 
         # ===============
         # FIXME remove 2018 :  temporary checks and fake subclass
@@ -113,8 +114,6 @@ class sr_post(sr_instances):
            self.cache      = sr_cache(self)
            self.cache_stat = True
            self.cache.open()
-           self.execfile("on_heartbeat",'heartbeat_cache')
-           self.on_heartbeat_list.append(self.on_heartbeat)
 
         # permanent message headers fields
 
@@ -325,8 +324,6 @@ class sr_post(sr_instances):
         self.left_events   = OrderedDict()
 
         self.blocksize     = 200 * 1024 * 1024
-
-        self.accept_unmatch= None
 
     # =============
     # path inflight
