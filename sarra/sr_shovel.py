@@ -94,10 +94,6 @@ class sr_shovel(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # accept/reject
-        self.use_pattern          = self.masks != []
-        if self.accept_unmatch == None : self.accept_unmatch = True
-
         # make a single list for clusters that we accept message for
 
         #self.accept_msg_for_clusters      = [ self.cluster ]
@@ -123,8 +119,8 @@ class sr_shovel(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = False
-        if self.reportback and not self.report_exchange: self.report_exchange = 'xreport'
+        if self.reportback :
+           if not self.report_exchange: self.report_exchange = 'xreport'
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_shovel put them HERE
@@ -161,7 +157,8 @@ class sr_shovel(sr_subscribe):
         # ===========================================================
 
         self.notify_only = True
-        self.reportback  = None
+
+        self.accept_unmatch = True
 
 # ===================================
 # MAIN
