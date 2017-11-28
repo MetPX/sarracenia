@@ -58,8 +58,8 @@ class sr_winnow(sr_subscribe):
         # need to work with a single cache.
 
         if self.nbr_instances != 1 :
-           self.logger.warning("Only one instance allowed... set to 1")
-           self.nbr_instances = 1
+           self.logger.error("Only one instance allowed... set to 1")
+           os._exit(1)
 
         # exchange must be provided 
         if self.exchange == None:
@@ -90,12 +90,14 @@ class sr_winnow(sr_subscribe):
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # accept/reject
-        self.use_pattern          = self.masks != []
-        self.accept_unmatch       = True
+        self.use_pattern = self.masks != []
+        if self.accept_unmatch == None : self.accept_unmatch = True
 
         # caching must be "on" ( entry cleanup default to 20 mins old )
 
-        if not self.caching : self.caching = 1200
+        if not self.caching : 
+           self.logger.error("caching turned off... exitting")
+           sys.exit(1)
 
         self.cache      = sr_cache(self)
         self.cache_stat = True
@@ -107,16 +109,20 @@ class sr_winnow(sr_subscribe):
 
         # set notify_only : no download
 
-        self.notify_only = True
+        if not self.notify_only :
+           self.logger.error("winnow notify_only turned off")
+           sys.exit(1)
 
         # we dont save nor restore
 
-        self.save    = False
-        self.restore = False
+        if self.save or self.restore :
+           self.logger.error("winnow no save/restore support")
+           sys.exit(1)
 
         # default reportback if unset
 
         if self.reportback == None : self.reportback = False
+        if self.reportback and not self.report_exchange: self.report_exchange = 'xreport'
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_winnow put them HERE
@@ -134,7 +140,12 @@ class sr_winnow(sr_subscribe):
         # some sr_subscribe options reset to understand user sr_winnow setup
         # ===========================================================
 
-        self.reportback = None
+        self.caching     = 1200
+        self.notify_only = True
+        self.reportback  = None
+
+        self.save        = False
+        self.restore     = False
 
 # ===================================
 # MAIN
