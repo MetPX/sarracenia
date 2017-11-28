@@ -32,7 +32,7 @@ class Heartbeat_Pulse(object):
            if parent.message_count <= self.last_message_count:
               if parent.pulse_count <=  self.last_pulse_count:
                  if parent.consumer.isAlive() :
-                    self.logger.debug("has no message and no pulse but is alive")
+                    self.logger.info("received neither message nor pulse, but confirmed broker connection remains alive")
                  else:
                     self.logger.warning("connection problem...reconnecting")
                     parent.close()
