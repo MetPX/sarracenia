@@ -86,17 +86,12 @@ class sr_report(sr_subscribe):
                   e = self.exchange
                self.bindings[i] = (e,k)
 
-        # pattern must be used
-        # if unset we will accept unmatched... so everything
-
-        self.use_pattern          = self.masks != []
-        self.accept_unmatch       = self.masks == []
-
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)
         self.broker               = None
         self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
+        self.accept_unmatch       = True
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
