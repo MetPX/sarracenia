@@ -38,6 +38,10 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+
+*NOTICE*: Generally fixes to recover when operations do not complete.  Pulse & timers.
+
+
 2.17.11a3
 ---------
 
