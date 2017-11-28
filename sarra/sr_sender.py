@@ -131,8 +131,6 @@ class sr_sender(sr_subscribe):
            self.cache      = sr_cache(self)
            self.cache_stat = True
            self.cache.open()
-           self.execfile("on_heartbeat",'heartbeat_cache')
-           self.on_heartbeat_list.append(self.on_heartbeat)
 
         # reporting (by default suppose we are on pump so xreport)
 

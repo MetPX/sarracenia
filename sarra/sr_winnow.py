@@ -100,8 +100,6 @@ class sr_winnow(sr_subscribe):
         self.cache      = sr_cache(self)
         self.cache_stat = True
         self.cache.open()
-        self.execfile("on_heartbeat",'heartbeat_cache')
-        self.on_heartbeat_list.append(self.on_heartbeat)
 
         # ===========================================================
         # some sr_subscribe options reset to match sr_winnow behavior
