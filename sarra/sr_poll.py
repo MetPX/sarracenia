@@ -124,9 +124,6 @@ class sr_poll(sr_post):
         if self.post_base_url[-1] != '/' : self.post_base_url += '/'
         if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
 
-        if self.accept_unmatch == None :
-           self.accept_unmatch = False
-
         sr_post.check(self)
 
         self.sleeping      = False
@@ -424,6 +421,8 @@ class sr_poll(sr_post):
         # need to compute checksum with d algo... in sarra
 
         self.sumflg         = 'z,d'
+
+        self.accept_unmatch = False
 
 
     def post(self,post_exchange,post_base_url,post_relpath,to_clusters, \
