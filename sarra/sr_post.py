@@ -103,9 +103,9 @@ class sr_post(sr_instances):
         elif self.post_base_url.startswith('file:') :
              self.post_base_url = 'file:'
 
-        # accept whatever not rejected
+        # if accept_unmatch was not set, accept whatever not rejected
 
-        self.accept_unmatch = True
+        if self.accept_unmatch == None : self.accept_unmatch = True
 
         # caching
 
@@ -325,6 +325,8 @@ class sr_post(sr_instances):
         self.left_events   = OrderedDict()
 
         self.blocksize     = 200 * 1024 * 1024
+
+        self.accept_unmatch= None
 
     # =============
     # path inflight
