@@ -124,6 +124,8 @@ class sr_poll(sr_post):
         if self.post_base_url[-1] != '/' : self.post_base_url += '/'
         if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
 
+        if self.accept_unmatch == None : self.accept_unmatch = False
+
         sr_post.check(self)
 
         # force 1 instance
@@ -419,7 +421,7 @@ class sr_poll(sr_post):
 
         # Should there be accept/reject option used unmatch are accepted
 
-        self.accept_unmatch = False
+        self.accept_unmatch = None
 
         # set parts to '1' so we always announce download the entire file
 
