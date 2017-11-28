@@ -365,7 +365,19 @@ class Publisher:
        self.channel = self.hc.new_channel()
        if self.hc.use_pika :  self.channel.confirm_delivery()
        else:                  self.channel.tx_select()
-       
+
+   def isAlive(self):
+       if not hasattr(self,'channel') : return False
+       alarm_set(20)
+       try:
+               if self.hc.use_pika: self.channel.confirm_delivery()
+               else:                self.channel.tx_select()
+       except:
+               alarm_cancel()
+               return False
+       alarm_cancel()
+       return True
+
    def publish(self,exchange_name,exchange_key,message,mheaders,mexp=0):
        try :
               if self.hc.use_pika :
