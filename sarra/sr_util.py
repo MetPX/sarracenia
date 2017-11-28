@@ -484,10 +484,13 @@ class sr_transport():
            if self.parent.preserve_mode and 'mode' in hdr :
               try   : mode = int( hdr['mode'], base=8)
               except: mode = 0
-              if mode > 0 : proto.chmod( mode, remote_file )
+              if mode > 0 :
+                 try   : proto.chmod( mode, remote_file )
+                 except: pass
 
            if mode == 0 and  self.parent.chmod !=0 : 
-              proto.chmod( self.parent.chmod, remote_file )
+              try   : proto.chmod( self.parent.chmod, remote_file )
+              except: pass
 
         if hasattr(proto,'chmod') :
            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
@@ -495,7 +498,8 @@ class sr_transport():
               atime = mtime
               if 'atime' in hdr and hdr['atime'] :
                   atime  =  timestr2flt( hdr[ 'atime' ] )
-              proto.utime( remote_file, (atime, mtime))
+              try   : proto.utime( remote_file, (atime, mtime))
+              except: pass
 
 # ===================================
 # startup args parsing
