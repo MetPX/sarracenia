@@ -137,20 +137,26 @@ class sr_sarra(sr_subscribe):
 
         # always download ...
 
-        self.notify_only = False
+        if self.notify_only :
+           self.logger.error("sarra notify_only True")
+           os._exit(1)
 
         # we dont save nor restore
 
-        self.save    = False
-        self.restore = False
+        if self.save or self.restore :
+           self.logger.error("winnow no save/restore support")
+           sys.exit(1)
 
-        # never discard
+        # we dont discard
 
-        self.discard = False
+        if self.discard :
+           self.logger.error("winnow discart True")
+           sys.exit(1)
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = False
+        if self.reportback :
+           if not self.report_exchange: self.report_exchange = 'xreport'
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
@@ -185,10 +191,6 @@ class sr_sarra(sr_subscribe):
         if hasattr(self,'manager'):
            self.post_broker = self.manager
 
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = True
-
         # most of the time we want to mirror product directory and share queue
 
         self.mirror         = True
@@ -201,7 +203,12 @@ class sr_sarra(sr_subscribe):
         # some sr_subscribe options reset to understand user sr_sarra setup
         # ===========================================================
 
-        self.reportback = None
+        self.discard     = False
+        self.notify_only = False
+        self.restore     = False
+        self.save        = False
+
+        self.accept_unmatch = True
 
 
 # ===================================
