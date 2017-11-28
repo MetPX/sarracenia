@@ -742,12 +742,12 @@ class sr_config:
         for mask in self.masks:
             self.logger.debug(mask)
             pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            self.currentPattern    = pattern
+            self.currentDir        = maskDir
+            self.currentFileOption = maskFileOption
+            self.currentRegexp     = mask_regexp
             if mask_regexp.match(chaine) :
                if not accepting : return False
-               self.currentPattern    = pattern
-               self.currentDir        = maskDir
-               self.currentFileOption = maskFileOption
-               self.currentRegexp     = mask_regexp
                return True
 
         return accept_unmatch
