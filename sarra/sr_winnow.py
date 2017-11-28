@@ -89,10 +89,6 @@ class sr_winnow(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # accept/reject
-        self.use_pattern = self.masks != []
-        if self.accept_unmatch == None : self.accept_unmatch = True
-
         # caching must be "on" ( entry cleanup default to 20 mins old )
 
         if not self.caching : 
@@ -121,8 +117,8 @@ class sr_winnow(sr_subscribe):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = False
-        if self.reportback and not self.report_exchange: self.report_exchange = 'xreport'
+        if self.reportback :
+           if not self.report_exchange: self.report_exchange = 'xreport'
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_winnow put them HERE
@@ -142,7 +138,8 @@ class sr_winnow(sr_subscribe):
 
         self.caching     = 1200
         self.notify_only = True
-        self.reportback  = None
+
+        self.accept_unmatch = True
 
         self.save        = False
         self.restore     = False
