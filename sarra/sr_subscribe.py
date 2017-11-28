@@ -80,8 +80,12 @@ class sr_subscribe(sr_instances):
         # pattern must be used
         # if unset we will accept unmatched... so everything
 
-        self.use_pattern          = True
-        self.accept_unmatch       = self.masks == []
+        self.use_pattern = self.masks != []
+
+        if self.accept_unmatch == None :
+           self.accept_unmatch = False
+           # if no accept/reject options ... accepts everything
+           if self.masks == [] : self.accept_unmatch = True
 
         # verify post_base_dir
 
@@ -106,9 +110,10 @@ class sr_subscribe(sr_instances):
            self.cache_stat = True
            self.cache.open()
 
-        # reporting
+        # default reportback if unset
 
-        if self.reportback :
+        if self.reportback == None : self.reportback = False
+        if self.reportback and not self.report_exchange:
            self.report_exchange = 'xs_' + self.broker.username
 
         # do_task should have doit_download for now... make it a plugin later
