@@ -19,29 +19,44 @@ class Heartbeat_Pulse(object):
     def __init__(self,parent):
         self.last_time          = time.time()
         self.last_message_count = parent.message_count
+        self.last_publish_count = parent.publish_count
         self.last_pulse_count   = parent.pulse_count
           
     def perform(self,parent):
         self.logger     = parent.logger
         self.logger.debug("heartbeat_pulse_check")
 
-        # something wrong ?
+        # something wrong when consuming ?
 
-        if parent.message_count <= self.last_message_count:
-           if parent.pulse_count <=  self.last_pulse_count:
-              self.logger.warning("No message received, no pulse received")
-              self.logger.warning("Reconnecting")
-              if hasattr(parent,'consumer') :
+        if hasattr(parent,'consumer') :
+           if parent.message_count <= self.last_message_count:
+              if parent.pulse_count <=  self.last_pulse_count:
                  if parent.consumer.isAlive() :
-                    self.logger.warning("has no message and no pulse but is alive")
+                    self.logger.debug("has no message and no pulse but is alive")
                  else:
+                    self.logger.warning("connection problem...reconnecting")
                     parent.close()
                     parent.connect()
 
-        # keep these value
-        self.last_message_count = parent.message_count
-        self.last_pulse_count   = parent.pulse_count
+           # keep these counts
+           self.last_message_count = parent.message_count
+           self.last_pulse_count   = parent.pulse_count
            
+
+        # something wrong when publishing ?
+
+        if hasattr(parent,'publisher') :
+           if parent.publish_count <= self.last_publish_count:
+              if parent.publisher.isAlive() :
+                 self.logger.debug("has not published but is alive")
+              else:
+                 self.logger.warning("connection problem...reconnecting")
+                 parent.close()
+                 parent.connect()
+
+           # keep the count
+           self.last_publish_count = parent.publish_count
+
         return True
 
 heartbeat_pulse = Heartbeat_Pulse(self)
