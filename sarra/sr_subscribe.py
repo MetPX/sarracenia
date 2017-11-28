@@ -77,13 +77,6 @@ class sr_subscribe(sr_instances):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # pattern must be used
-        # if unset we will accept unmatched... so everything
-
-        self.use_pattern = self.masks != []
-
-        if self.accept_unmatch == None :
-           self.accept_unmatch = False
 
         # verify post_base_dir
 
@@ -110,9 +103,8 @@ class sr_subscribe(sr_instances):
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = False
-        if self.reportback and not self.report_exchange:
-           self.report_exchange = 'xs_' + self.broker.username
+        if self.reportback :
+           if not self.report_exchange: self.report_exchange = 'xs_' + self.broker.username
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
@@ -649,7 +641,6 @@ class sr_subscribe(sr_instances):
 
         # special settings for sr_subscribe
 
-        self.accept_unmatch = False
         self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
         self.exchange       = 'xpublic'
         self.inplace        = True
@@ -658,6 +649,8 @@ class sr_subscribe(sr_instances):
 
         self.post_broker    = None
         self.post_exchange  = None
+
+        self.accept_unmatch = False
 
     # =============
     # process message  
