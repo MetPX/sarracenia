@@ -221,7 +221,7 @@ class sr_proto():
 
         # timeout can be used to overwrite out iotime
 
-        if self.timeout and self.timeout > self.iotime: self.iotime = self.timeout
+        if self.timeout and self.timeout > self.iotime: self.iotime = int(self.timeout)
 
         self.logger.debug("iotime %d" % self.iotime)
 
