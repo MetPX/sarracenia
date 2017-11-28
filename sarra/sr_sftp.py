@@ -77,7 +77,6 @@ class sr_sftp(sr_proto):
 
         # sftp command times out after 20 secs
         # this setting is different from the computed iotime (sr_proto)
-        self.cmd_timeout = 20
 
         self.init()
 
@@ -98,7 +97,7 @@ class sr_sftp(sr_proto):
     # cd
     def cd(self, path):
         self.logger.debug("sr_sftp cd %s" % path)
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.chdir(self.originalDir)
         self.sftp.chdir(path)
         self.pwd = path
@@ -110,7 +109,7 @@ class sr_sftp(sr_proto):
 
         # try to go directly to path
 
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.chdir(self.originalDir)
         try   :
                 self.sftp.chdir(path)
@@ -128,14 +127,14 @@ class sr_sftp(sr_proto):
             if d == ''   : continue
             # try to go directly to subdir
             try   :
-                    alarm_set(self.cmd_timeout)
+                    alarm_set(self.iotime)
                     self.sftp.chdir(d)
                     alarm_cancel()
                     continue
             except: pass
 
             # create and go to subdir
-            alarm_set(self.cmd_timeout)
+            alarm_set(self.iotime)
             self.sftp.mkdir(d,self.parent.chmod_dir)
             self.sftp.chdir(d)
             alarm_cancel()
@@ -160,7 +159,7 @@ class sr_sftp(sr_proto):
     # chmod
     def chmod(self,perm,path):
         self.logger.debug("sr_sftp chmod %s %s" % ( "{0:o}".format(perm),path))
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.chmod(path,perm)
         alarm_cancel()
 
@@ -173,7 +172,7 @@ class sr_sftp(sr_proto):
 
         self.init()
 
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         try   : old_sftp.close()
         except: pass
         try   : old_ssh.close()
@@ -192,7 +191,7 @@ class sr_sftp(sr_proto):
 
         if not self.credentials() : return False
 
-        alarm_set(100)
+        alarm_set(3*self.iotime)
         try:
 
                 logger = logging.getLogger('paramiko')
@@ -281,14 +280,14 @@ class sr_sftp(sr_proto):
     # delete
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.remove(path)
         alarm_cancel()
 
     # symlink
     def symlink(self, link, path):
         self.logger.debug("sr_sftp symlink %s %s" % (link, path) )
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.symlink(link, path)
         alarm_cancel()
 
@@ -316,7 +315,7 @@ class sr_sftp(sr_proto):
 
     # getcwd
     def getcwd(self):
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         cwd =  self.sftp.getcwd()
         alarm_cancel()
         return cwd
@@ -336,8 +335,8 @@ class sr_sftp(sr_proto):
     def ls(self):
         self.logger.debug("sr_sftp ls")
         self.entries  = {}
-        # no clue how much an ls can take... make it 5 mins
-        alarm_set( 300 )
+        # iotime is at least 30 secs, say we wait for max 5 mins
+        alarm_set( 10 * self.iotime )
         dir_attr = self.sftp.listdir_attr()
         alarm_cancel()
         for index in range(len(dir_attr)):
@@ -370,7 +369,7 @@ class sr_sftp(sr_proto):
     # mkdir
     def mkdir(self, remote_dir):
         self.logger.debug("sr_sftp mkdir %s" % remote_dir)
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.mkdir(remote_dir,self.parent.chmod_dir)
         alarm_cancel()
 
@@ -417,7 +416,7 @@ class sr_sftp(sr_proto):
     # rename
     def rename(self,remote_old,remote_new) :
         self.logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         try    : self.sftp.remove(remote_new)
         except : pass
         self.sftp.rename(remote_old,remote_new)
@@ -426,14 +425,14 @@ class sr_sftp(sr_proto):
     # rmdir
     def rmdir(self,path) :
         self.logger.debug("sr_sftp rmdir %s " % path)
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.rmdir(path)
         alarm_cancel()
 
     # utime
     def utime(self,path,tup) :
         self.logger.debug("sr_sftp utime %s %s " % (path,tup))
-        alarm_set(self.cmd_timeout)
+        alarm_set(self.iotime)
         self.sftp.utime(path,tup)
         alarm_cancel()
 
@@ -630,9 +629,6 @@ class sftp_transport(sr_transport):
     
                 #upload file
     
-                msg.logger.info('Sends: %s %s into %s/%s %d-%d' % 
-                    (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
-    
                 if parent.inflight == None or msg.partflg == 'i' :
                    sftp.put(local_file, parent.new_file, offset, offset, msg.length)
                 elif parent.inflight == '.' :
@@ -647,6 +643,9 @@ class sftp_transport(sr_transport):
                 # fix permission 
 
                 self.set_remote_file_attributes(sftp,parent.new_file,msg)
+    
+                msg.logger.info('Sends: %s %s into %s/%s %d-%d' % 
+                    (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
 
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
