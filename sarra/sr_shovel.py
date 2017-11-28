@@ -96,7 +96,7 @@ class sr_shovel(sr_subscribe):
 
         # accept/reject
         self.use_pattern          = self.masks != []
-        self.accept_unmatch       = self.masks == []
+        if self.accept_unmatch == None : self.accept_unmatch = True
 
         # make a single list for clusters that we accept message for
 
@@ -115,13 +115,16 @@ class sr_shovel(sr_subscribe):
         # some sr_subscribe options reset to match sr_shovel behavior
         # ===========================================================
 
-        # the message is consumed and posted
+        # the message is consumed and posted (no download)
 
-        self.notify_only = True
+        if not self.notify_only :
+           self.logger.error("sr_shovel works with notify_only True")
+           sys.exit(1)
 
         # default reportback if unset
 
         if self.reportback == None : self.reportback = False
+        if self.reportback and not self.report_exchange: self.report_exchange = 'xreport'
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_shovel put them HERE
@@ -153,15 +156,12 @@ class sr_shovel(sr_subscribe):
         if hasattr(self,'manager'):
            self.post_broker = self.manager
 
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = True
-        
         # ===========================================================
         # some sr_subscribe options reset to understand user sr_shovel setup
         # ===========================================================
 
-        self.reportback = None
+        self.notify_only = True
+        self.reportback  = None
 
 # ===================================
 # MAIN
