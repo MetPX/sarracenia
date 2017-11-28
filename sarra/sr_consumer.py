@@ -179,6 +179,9 @@ class sr_consumer:
               self.logger.debug("Rejected by accept/reject options")
               return False,self.msg
 
+        elif not self.accept_unmatch :
+              return False,self.msg
+
         return True,self.msg
 
     def isAlive(self):
