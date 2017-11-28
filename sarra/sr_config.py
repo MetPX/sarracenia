@@ -484,6 +484,7 @@ class sr_config:
         # counter
 
         self.message_count        = 0
+        self.publish_count        = 0
         self.pulse_count          = 0
 
         # new set

@@ -637,6 +637,10 @@ class sr_subscribe(sr_instances):
         else :
              ok = self.msg.publish( )
 
+        # publish counter
+
+        self.publish_count += 1
+
         return ok
 
     def overwrite_defaults(self):

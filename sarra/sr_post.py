@@ -284,6 +284,10 @@ class sr_post(sr_instances):
         else :
              ok = self.msg.publish( )
 
+        # publish counter
+
+        self.publish_count += 1
+
         return ok
 
     # =============
