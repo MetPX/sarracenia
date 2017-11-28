@@ -97,8 +97,13 @@ class sr_sender(sr_subscribe):
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # accept/reject
-        self.use_pattern          = self.masks != []
-        self.accept_unmatch       = self.masks == []
+
+        self.use_pattern = self.masks != []
+
+        if self.accept_unmatch == None : 
+           self.accept_unmatch = False
+           # if no accept/reject options ... accepts everything
+           if self.masks == [] : self.accept_unmatch = True
 
         # posting... discard not permitted
 
@@ -132,11 +137,11 @@ class sr_sender(sr_subscribe):
            self.cache_stat = True
            self.cache.open()
 
-        # reporting (by default suppose we are on pump so xreport)
+        # default reportback if unset
 
-        if self.reportback :
-           if self.report_exchange == None :
-              self.report_exchange = 'xreport'
+        if self.reportback == None : self.reportback = True
+        if self.reportback and not self.report_exchange:
+           self.report_exchange = 'xreport'
 
         # no queue name allowed... force this one
 
@@ -171,15 +176,15 @@ class sr_sender(sr_subscribe):
 
         # always sends ...
 
-        self.notify_only = False
+        if self.notify_only :
+           self.logger.error("sender notify_only True\n")
+           sys.exit(1)
 
         # never discard
 
-        self.discard = False
-
-        # default reportback if unset
-
-        if self.reportback == None : self.reportback = True
+        if self.discard :
+           self.logger.error("sender discard True\n")
+           sys.exit(1)
 
 
     # =============
@@ -235,14 +240,19 @@ class sr_sender(sr_subscribe):
 
         self.mirror      = True
 
-        # Should there be accept/reject option used unmatch are accepted
-
-        self.accept_unmatch = True
-
         # add msg_2localfile to the on_message_list at the beginning
 
         self.execfile("on_message",'msg_2localfile')
         self.on_message_list.insert(0,self.on_message )
+
+        # always sends ...
+
+        self.notify_only = False
+
+        # never discard
+
+        self.discard = False
+
 
 
     # =============
