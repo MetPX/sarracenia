@@ -162,7 +162,6 @@ class sr_message():
         # pulse message... parse it
         # exchange='v02.pulse'
         # notice='epoch_time.msec a_pulse message to log'
-        # headers['frequency'] = 'seconds_in_integer'
 
         self.isPulse = False
         if self.topic.startswith('v02.pulse'):
@@ -179,9 +178,6 @@ class sr_message():
               pulse_message = ' '.join(token[1:])
               self.logger.warning("pulse message = %s" % pulse_message)
               return
-
-           # not sure if usefull yet
-           #self.parent.pulse_frequency = int(self.headers['frequency'])
 
            return
 
