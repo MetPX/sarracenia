@@ -776,6 +776,8 @@ class sr_subscribe(sr_instances):
         w_msg.parse_v02_post()
 
         # make use of accept/reject on working message
+        self.use_pattern = self.masks != []
+
         if self.use_pattern :
 
            # Adjust url to account for sundew extension if present, and files do not already include the names.
@@ -789,6 +791,9 @@ class sr_subscribe(sr_instances):
 
            if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
               #self.logger.debug("Rejected by accept/reject options")
+              return None,None,None
+
+        elif not self.accept_unmatch :
               return None,None,None
 
         # get a copy of received message
