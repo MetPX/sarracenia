@@ -1121,6 +1121,8 @@ class sr_subscribe(sr_instances):
 
         if need_download :
 
+           self.msg.onfly_checksum = None
+
            # make x attempts to download
            i  = 0
            while i < self.attempts : 
@@ -1133,23 +1135,27 @@ class sr_subscribe(sr_instances):
            # after download we dont propagate renaming... once used get rid of it
            if 'rename'  in self.msg.headers : del self.msg.headers['rename']
 
-           # after download : setting of sum for 'z' flag ...
+           # if an onfly_checksum was computed
 
-           if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-              self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
-              if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+           if self.msg.onfly_checksum :
 
-           # onfly checksum is different from the message ???
-           if not self.msg.onfly_checksum == self.msg.checksum :
-              self.logger.warning("onfly_checksum %s differ from message %s" %
-                                 (self.msg.onfly_checksum, self.msg.checksum))
+                # after download : setting of sum for 'z' flag ...
 
-              # force onfly checksum  in message
+                if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
+                   self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
+                   if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
-              if self.recompute_chksum :
-                 #self.msg.compute_local_checksum()
-                 self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
-                 if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+                # onfly checksum is different from the message ???
+                if not self.msg.onfly_checksum == self.msg.checksum :
+                   self.logger.warning("onfly_checksum %s differ from message %s" %
+                                      (self.msg.onfly_checksum, self.msg.checksum))
+
+                   # force onfly checksum  in message
+
+                   if self.recompute_chksum :
+                      #self.msg.compute_local_checksum()
+                      self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
+                      if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
 
            # if the part should have been inplace... but could not
