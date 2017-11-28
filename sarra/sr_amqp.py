@@ -360,6 +360,7 @@ class Publisher:
        self.hc     = hostconnect
        self.logger = self.hc.logger
        self.hc.add_build(self.build)
+       self.iotime = 30
 
    def build(self):
        self.channel = self.hc.new_channel()
@@ -368,7 +369,7 @@ class Publisher:
 
    def isAlive(self):
        if not hasattr(self,'channel') : return False
-       alarm_set(20)
+       alarm_set(self.iotime)
        try:
                if self.hc.use_pika: self.channel.confirm_delivery()
                else:                self.channel.tx_select()
