@@ -89,16 +89,6 @@ class sr_winnow(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # caching must be "on" ( entry cleanup default to 20 mins old )
-
-        if not self.caching : 
-           self.logger.error("caching turned off... exitting")
-           sys.exit(1)
-
-        self.cache      = sr_cache(self)
-        self.cache_stat = True
-        self.cache.open()
-
         # ===========================================================
         # some sr_subscribe options reset to match sr_winnow behavior
         # ===========================================================
@@ -115,10 +105,14 @@ class sr_winnow(sr_subscribe):
            self.logger.error("winnow no save/restore support")
            sys.exit(1)
 
-        # default reportback if unset
+        # caching must be "on" ( entry cleanup default to 20 mins old )
 
-        if self.reportback :
-           if not self.report_exchange: self.report_exchange = 'xreport'
+        if not self.caching : 
+           self.logger.error("caching turned off... exiting")
+           sys.exit(1)
+
+        self.cache = sr_cache(self)
+        self.cache.open()
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_winnow put them HERE
@@ -127,8 +121,6 @@ class sr_winnow(sr_subscribe):
 
         # default broker : manager
 
-        self.broker      = None
-        self.post_broker = None
         if hasattr(self,'manager'):
            self.broker   = self.manager
 
@@ -136,7 +128,12 @@ class sr_winnow(sr_subscribe):
         # some sr_subscribe options reset to understand user sr_winnow setup
         # ===========================================================
 
-        self.caching     = 1200
+        self.caching    = 1200
+        self.cache_stat = True
+        self.execfile("on_heartbeat",'heartbeat_cache')
+        self.on_heartbeat_list.append(self.on_heartbeat)
+        self.heartbeat_cache_installed = True
+
         self.notify_only = True
 
         self.accept_unmatch = True
