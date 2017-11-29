@@ -107,10 +107,17 @@ class sr_ftp(sr_proto):
                     continue
             except: pass
 
-            # mkdir d
-            self.mkdir(d)
+            # create
+            alarm_set(self.iotime)
+            self.ftp.mkd(d)
+            alarm_cancel()
 
-            # cd d
+            # chmod
+            alarm_set(self.iotime)
+            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
+            alarm_cancel()
+
+            # cd
             alarm_set(self.iotime)
             self.ftp.cwd(d)
             alarm_cancel()
@@ -569,7 +576,7 @@ class ftp_transport(sr_transport):
 
                 self.set_remote_file_attributes(ftp,parent.new_file,msg)
     
-                msg.logger.info('Sent: %s %s into %s/%s %d-%d' % 
+                msg.logger.debug('Sent: %s %s into %s/%s %d-%d' % 
                     (parent.local_file,str_range,parent.new_dir,parent.new_file,offset,offset+msg.length-1))
 
                 msg.report_publish(201,'Delivered')
@@ -616,8 +623,8 @@ class test_logger:
           self.error   = print
           self.info    = print
           self.warning = print
-          #self.debug   = self.silence
-          #self.info    = self.silence
+          self.debug   = self.silence
+          self.info    = self.silence
 
 
 def self_test():

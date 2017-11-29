@@ -77,7 +77,7 @@ class sr_audit(sr_instances):
         else:
            declare += ' tags="" '
 
-        dummy = self.rabbitmqadmin( declare )
+        dummy = run_rabbitmqadmin( self.admin,declare,self.logger )
 
         # admin and feeder gets the same permissions
 
@@ -87,7 +87,8 @@ class sr_audit(sr_instances):
            w="write=.*"
            r="read=.*"
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'feeder',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
+           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
+           dummy = run_rabbitmqadmin( self.admin,declare,self.logger)
            return
 
         # source
@@ -97,7 +98,8 @@ class sr_audit(sr_instances):
            w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
            r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
+           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
+           dummy = run_rabbitmqadmin( self.admin,declare,self.logger)
            # setting up default exchanges for a source
            self.hc.exchange_declare('xs_%s'%u)
            self.hc.exchange_declare('xr_%s'%u)
@@ -116,7 +118,8 @@ class sr_audit(sr_instances):
         #   w="write='^q_%s.*|^xs_%s$|xlog|xreport|^cmc.*$'"%(u,u)
         #   r="read='^q_%s.*|^xr_%s$|xlog|xpublic|^cmc.*$'"%(u,u)
         #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-        #   dummy = self.rabbitmqadmin("declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r))
+        #   declare = "declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r)
+        #   dummy = rabbitmqadmin( self.admin,declare,self.logger)
         #   return
 
         # subscribe
@@ -126,7 +129,8 @@ class sr_audit(sr_instances):
            w="write='^q_%s.*|^xs_%s$'"%(u,u)
            r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
-           dummy = self.rabbitmqadmin("declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r))
+           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
+           dummy = run_rabbitmqadmin( self.admin,declare,self.logger )
            # setting up default exchanges for a subscriber
            self.hc.exchange_declare('xs_%s'%u)
            self.hc.exchange_declare('xr_%s'%u)
@@ -209,33 +213,12 @@ class sr_audit(sr_instances):
 
     def delete_user(self,u):
         self.logger.info("deleting user %s" % u)
-        dummy = self.rabbitmqadmin("delete user name='%s'"%u)
+        delete = "delete user name='%s'"%u
+        dummy  = run_rabbitmqadmin( self.admin,delete,self.logger )
 
     def overwrite_defaults(self):
         self.logger.debug("sr_audit overwrite_defaults")
         self.sleep = 60
-
-    def rabbitmqadmin(self,options):
-        self.logger.debug("sr_audit rabbitmqadmin %s" % options)
-        try :
-                 (status, answer) = exec_rabbitmqadmin(self.admin,options,self.logger)
-                 if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
-                    self.logger.error("rabbitmqadmin invocation failed")
-                    return []
-
-                 if answer == None or len(answer) == 0 : return []
-
-                 lst = []
-                 try    : lst = eval(answer)
-                 except : pass
-
-                 return lst
-
-        except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("rabbimtqadmin "+ options)
-        return []
 
     def run_sr_setup(self):
         self.logger.debug("setting up exchanges and queues from all config")
@@ -247,7 +230,8 @@ class sr_audit(sr_instances):
 
         # get exchanges name (a list of dictionnaries)
 
-        lst_dict = self.rabbitmqadmin("list exchanges name")
+        listdict = "list exchanges name"
+        lst_dict = run_rabbitmqadmin( self.admin,listdict,self.logger )
 
         # loop build list of exchanges of interest
         # empty or rabbitmq-server defaults 'amq.' are taken off
@@ -346,6 +330,42 @@ class sr_audit(sr_instances):
             else:
                self.logger.info("noticed exchange %s leaving alone." % e)
 
+    def verify_pulse(self):
+        """
+           Each pump should have a poll process that pulse a message to keep alive consuming processes
+        """
+        self.logger.info("sr_audit pulse configuration")
+
+        if not self.admin :
+           self.logger.warning("No pulse if no admin user set ")
+           return 
+
+        admin = self.admin.geturl()
+
+        # remove the password from the URL...
+        colon = admin.index(':',6)
+        ampersand = admin.index('@',8)
+        admin = admin[0:colon] + admin[ampersand:]
+
+        self.logger.info("sr_audit pumps using account: %s for pulse" % admin )
+
+        # poll directory must exists
+        try    : os.makedirs(self.user_config_dir + "/poll", 0o775,True)
+        except : pass
+
+        cfn = self.user_config_dir + "/poll/pulse.conf"
+        self.logger.info("sr_audit pulse configuration %s" % cfn )
+        if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
+           self.logger.info("creating %s" % cfn ) 
+           cf=open(cfn,'w')
+           cf.write( '# Initial pulse emitting configuration, by sr_audit, tune to taste. \n')
+           cf.write( '# To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
+           cf.write( '# To suppress pulsing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
+           cf.write( 'post_broker %s\n' % admin )
+           cf.write( 'do_poll poll_pulse\n' )
+           cf.close()
+
+
     def verify_report_routing(self):
         """
            Each subscriber writes reports to xs_<user>.  These reports need to get back to sources.
@@ -421,7 +441,8 @@ class sr_audit(sr_instances):
 
         # get users name (a list of dictionnaries)
 
-        lst_dict = self.rabbitmqadmin("list users name")
+        listuser = "list users name"
+        lst_dict = run_rabbitmqadmin( self.admin,listuser,self.logger )
         self.logger.info("sr_audit verify_users, defined: %s" % lst_dict )
 
         user_lst = []
@@ -481,7 +502,8 @@ class sr_audit(sr_instances):
     def verify_queues(self):
         self.logger.debug("sr_audit verify_queues")
 
-        lst_dict = self.rabbitmqadmin("list queues name messages state")
+        listq    = "list queues name messages state"
+        lst_dict = run_rabbitmqadmin( self.admin,listq,self.logger )
         self.logger.debug("lst_dict = %s" % lst_dict)
 
         for edict in lst_dict :
@@ -561,7 +583,8 @@ class sr_audit(sr_instances):
 
         # verify admin user works
         else:
-           lst = self.rabbitmqadmin("list users name")
+           listu = "list users name"
+           lst   = run_rabbitmqadmin( self.admin,listu,self.logger )
            if lst != [] :
               self.logger.info("**** admin account verified *****")
               self.logger.info("admin %s"   % self.admin.geturl())
@@ -701,6 +724,8 @@ class sr_audit(sr_instances):
                       if self.users_flag : 
                           # create report shovel configs first
                           self.verify_report_routing()
+                          # create pulse configs
+                          self.verify_pulse()
                           # verify users from default/credentials
                           self.verify_users()
                           # verify overall exchanges (once everything created)

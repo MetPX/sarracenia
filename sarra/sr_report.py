@@ -88,7 +88,6 @@ class sr_report(sr_subscribe):
 
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)
-        self.broker               = None
         self.topic_prefix         = 'v02.report'
         self.subtopic             = '#'
         self.accept_unmatch       = True

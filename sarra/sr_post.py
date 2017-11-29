@@ -51,12 +51,14 @@ try :
          from sr_cache           import *
          from sr_instances       import *
          from sr_message         import *
+         from sr_rabbit          import *
          from sr_util            import *
 except : 
          from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
          from sarra.sr_instances import *
          from sarra.sr_message   import *
+         from sarra.sr_rabbit    import *
          from sarra.sr_util      import *
 
 #============================================================
@@ -145,6 +147,9 @@ class sr_post(sr_instances):
                self.observer.unschedule(ow)
            self.observer.stop()
 
+        if self.restore_queue != None :
+           self.publisher.restore_clear()
+
     # =============
     # connect 
     # =============
@@ -193,6 +198,15 @@ class sr_post(sr_instances):
         # =============
 
         self.declare_exchanges()
+
+        # =============
+        # retransmit/restore_queue
+        # =============
+
+        if self.restore_queue != None :
+           self.publisher.restore_set(self)
+           self.msg.pub_exchange        = self.publisher.restore_exchange
+           self.msg.post_exchange_split = 0
 
     # =============
     # help
@@ -280,7 +294,7 @@ class sr_post(sr_instances):
         elif self.outlet == 'url'  :
              print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
-        else :
+        else:
              ok = self.msg.publish( )
 
         # publish counter
@@ -309,12 +323,7 @@ class sr_post(sr_instances):
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)
 
-        self.post_broker   = None
-        self.post_exchange = None
-        self.post_base_url = None
-
         self.post_hc       = None
-        self.cache         = None
 
         self.obs_watched   = []
         self.watch_handler = None
@@ -955,7 +964,7 @@ class sr_post(sr_instances):
         # because of its topic, it should not impact any process
         # that does not consider topic v02.pulse
 
-        lst_dict = self.rabbitmqadmin("list exchanges name")
+        lst_dict = run_rabbitmqadmin(self.post_broker,"list exchanges name",self.logger)
 
         ex = []
         for edict in lst_dict :
@@ -970,37 +979,9 @@ class sr_post(sr_instances):
             ex.append(exchange)
             self.msg.pub_exchange = exchange
             self.msg.message_ttl  = self.message_ttl
-            self.logger.info("message_ttl=%d" % self.message_ttl)
             self.msg.publish()
 
         self.close()
-
-    # from sr_audit.py
-    def rabbitmqadmin(self,options):
-        try   : from sr_rabbit       import exec_rabbitmqadmin
-        except: from sarra.sr_rabbit import exec_rabbitmqadmin
-
-        self.logger.debug("sr_audit rabbitmqadmin %s" % options)
-        try :
-                 (status, answer) = exec_rabbitmqadmin(self.post_broker,options,self.logger)
-                 if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
-                    self.logger.error("rabbitmqadmin invocation failed")
-                    return []
-
-                 if answer == None or len(answer) == 0 : return []
-
-                 lst = []
-                 try    : lst = eval(answer)
-                 except : pass
-
-                 return lst
-
-        except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("rabbimtqadmin "+ options)
-        return []
-
 
     # =============
     # set_blocksize ... directly from c code
@@ -1512,7 +1493,7 @@ def main():
         if pbd and not pbd in value : value = pbd + os.sep + value
         if os.path.exists(value) or os.path.islink(value):
            postpath.append(value)
-           args.remove(arg)
+           if arg in args : args.remove(arg)
            continue
         break
 

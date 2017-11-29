@@ -190,5 +190,25 @@ if __name__ == "__main__":
     print( "permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" % ( u , up['queues'], up['exchanges'], up['bindings'] ) )
     #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
+def run_rabbitmqadmin(url,options,logger):
 
+    logger.debug("sr_rabbit run_rabbitmqadmin %s" % options)
+    try :
+             (status, answer) = exec_rabbitmqadmin(url,options,logger)
+             if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
+                logger.error("run_rabbitmqadmin invocation failed")
+                return []
 
+             if answer == None or len(answer) == 0 : return []
+
+             lst = []
+             try    : lst = eval(answer)
+             except : pass
+
+             return lst
+
+    except :
+            (stype, svalue, tb) = sys.exc_info()
+            logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+            logger.error("run_rabbimtqadmin "+ options)
+    return []

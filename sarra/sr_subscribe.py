@@ -101,10 +101,10 @@ class sr_subscribe(sr_instances):
            self.cache_stat = True
            self.cache.open()
 
-        # default reportback if unset
+        # reporting
 
-        if self.reportback :
-           if not self.report_exchange: self.report_exchange = 'xs_' + self.broker.username
+        if self.report_exchange == None :
+           self.report_exchange = 'xs_' + self.broker.username
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
@@ -647,10 +647,8 @@ class sr_subscribe(sr_instances):
         self.inflight       = '.tmp'
         self.mirror         = False
 
-        self.post_broker    = None
-        self.post_exchange  = None
-
-        self.accept_unmatch = False
+        self.accept_unmatch  = False
+        self.report_exchange = None
 
     # =============
     # process message  
@@ -1141,7 +1139,7 @@ class sr_subscribe(sr_instances):
                 # after download : setting of sum for 'z' flag ...
 
                 if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-                   self.msg.set_sum(self.msg.checksum,self.msg.onfly_checksum)
+                   self.msg.set_sum(self.msg.sumflg[2],self.msg.onfly_checksum)
                    if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
                 # onfly checksum is different from the message ???

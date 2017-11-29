@@ -94,13 +94,6 @@ class sr_shovel(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-        # make a single list for clusters that we accept message for
-
-        #self.accept_msg_for_clusters      = [ self.cluster ]
-        #self.accept_msg_for_clusters.extend ( self.cluster_aliases )
-        #self.accept_msg_for_clusters.extend ( self.gateway_for  )
-        #self.logger.debug("accept_msg_for_clusters %s "% self.accept_msg_for_clusters)
-
         # default queue name if not given
 
         if self.queue_name == None :
@@ -117,11 +110,6 @@ class sr_shovel(sr_subscribe):
            self.logger.error("sr_shovel works with notify_only True")
            sys.exit(1)
 
-        # default reportback if unset
-
-        if self.reportback :
-           if not self.report_exchange: self.report_exchange = 'xreport'
-
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_shovel put them HERE
 
@@ -135,8 +123,6 @@ class sr_shovel(sr_subscribe):
 
         # default broker and exchange None
 
-        self.broker       = None
-        self.exchange     = None
         self.topic_prefix = None
 
         # FIX ME  report_exchange set to NONE
@@ -146,8 +132,6 @@ class sr_shovel(sr_subscribe):
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are
 
-        self.post_broker    = None
-        self.post_exchange  = None
         if hasattr(self,'manager'):
            self.post_broker = self.manager
 
@@ -155,8 +139,7 @@ class sr_shovel(sr_subscribe):
         # some sr_subscribe options reset to understand user sr_shovel setup
         # ===========================================================
 
-        self.notify_only = True
-
+        self.notify_only    = True
         self.accept_unmatch = True
 
 # ===================================

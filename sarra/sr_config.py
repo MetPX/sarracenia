@@ -436,7 +436,7 @@ class sr_config:
 
         # consumer
         self.attempts             = 3   # number of times to attempt downloads.
-        self.broker               = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.broker               = None
         self.bindings             = []
         self.exchange             = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
@@ -460,7 +460,7 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.report_exchange      = None
+        self.report_exchange      = 'xreport'
           
         # amqp
 
@@ -543,7 +543,7 @@ class sr_config:
         self.outlet               = 'post'
         self.partflg              = '0'
         self.pipe                 = False
-        self.post_broker          = urllib.parse.urlparse('amqp://guest:guest@localhost/')
+        self.post_broker          = None
         self.post_exchange        = None
         self.post_exchange_split  = 0
         self.preserve_mode        = True
@@ -1354,7 +1354,7 @@ class sr_config:
                         self.restore = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['restore_to_queue', 'restore2queue', 'r2q', 'rq']: 
+                elif words0 in ['restore_to_queue', 'restore2queue', 'r2q', 'rq', 'post_queue']: 
                      # FIXME: should be in: sr_shovel.1
                      self.restore_queue = words1
                      n = 2

@@ -416,11 +416,11 @@ class sr_poll(sr_post):
 
         # set parts to '1' so we always announce download the entire file
 
-        self.parts          = '1'
+        self.parts       = '1'
 
         # need to compute checksum with d algo... in sarra
 
-        self.sumflg         = 'z,d'
+        self.sumflg      = 'z,d'
 
         self.accept_unmatch = False
 

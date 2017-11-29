@@ -128,11 +128,6 @@ class sr_sender(sr_subscribe):
            self.cache_stat = True
            self.cache.open()
 
-        # default reportback if unset
-
-        if self.reportback :
-           if not self.report_exchange: self.report_exchange = 'xreport'
-
         # no queue name allowed... force this one
 
         if self.queue_name == None :
@@ -216,7 +211,6 @@ class sr_sender(sr_subscribe):
         # a destination must be provided
 
         self.destination    = None
-        self.post_broker    = None
         self.currentDir     = None
         self.currentPattern = None
 

@@ -144,19 +144,18 @@ class sr_sarra(sr_subscribe):
         # we dont save nor restore
 
         if self.save or self.restore :
-           self.logger.error("winnow no save/restore support")
+           self.logger.error("sarra no save/restore support")
            sys.exit(1)
 
         # we dont discard
 
         if self.discard :
-           self.logger.error("winnow discart True")
+           self.logger.error("sarra discard True")
            sys.exit(1)
 
         # default reportback if unset
 
-        if self.reportback :
-           if not self.report_exchange: self.report_exchange = 'xreport'
+        if self.reportback == None : self.reportback = False
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
@@ -175,18 +174,15 @@ class sr_sarra(sr_subscribe):
         # or it consumes message from another pump
         # we cannot define a default broker exchange
 
-        # default broker and exchange None
 
-        self.broker   = None
-        self.exchange = None
         # FIX ME  report_exchange set to NONE
         # instead of xreport and make it mandatory perhaps ?
         # since it can be xreport or xs_remotepumpUsername ?
+        # default broker and exchange None
 
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are
 
-        self.post_broker    = None
         self.post_exchange  = 'xpublic'
         if hasattr(self,'manager'):
            self.post_broker = self.manager
@@ -199,6 +195,7 @@ class sr_sarra(sr_subscribe):
 
         self.currentDir     = None
 
+
         # ===========================================================
         # some sr_subscribe options reset to understand user sr_sarra setup
         # ===========================================================
@@ -208,7 +205,10 @@ class sr_sarra(sr_subscribe):
         self.restore     = False
         self.save        = False
 
+        self.reportback  = None
+
         self.accept_unmatch = True
+
 
 
 # ===================================
