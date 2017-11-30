@@ -107,67 +107,81 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
   amqp_channel_open_ok_t *open_status;
   amqp_tx_select_ok_t *select_status;
 
-  broker->conn = amqp_new_connection();
-
-  if ( broker->ssl ) {
-     broker->socket = amqp_ssl_socket_new(broker->conn);
-     if (!(broker->socket)) {
-        log_msg(  LOG_ERROR, "failed to create SSL amqp client socket.\n" );
-        return(NULL);
-     }
-
-     amqp_ssl_socket_set_verify_peer(broker->socket, 0);
-     amqp_ssl_socket_set_verify_hostname(broker->socket, 0);
-
-  } else {
-     broker->socket = amqp_tcp_socket_new(broker->conn);
-     if (!(broker->socket)) {
-        log_msg(  LOG_ERROR, "failed to create AMQP client socket. \n" );
-        return(NULL);
-     }
-  }
-
-  status = amqp_socket_open(broker->socket, broker->hostname, broker->port);
-  if (status < 0) {
-    sr_amqp_error_print(status, "failed opening AMQP socket");
-    return(NULL);
-  }
   if ( !(broker->password) ) {
     log_msg(  LOG_ERROR, "No broker password found.\n" );
     return(NULL);
   }
 
-  reply = amqp_login(broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, broker->user, broker->password);
-  if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-    sr_amqp_reply_print(reply, "failed AMQP login");
-    return(NULL);
-  }
 
-  open_status = amqp_channel_open(broker->conn, 1);
-  if (open_status == NULL ) {
-    log_msg( LOG_ERROR, "failed AMQP amqp_channel_open\n");
-    return(NULL);
-  }
+  while(1) {
+     broker->conn = amqp_new_connection();
 
-  reply = amqp_get_rpc_reply(broker->conn);
-  if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-    sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
-    return(NULL);
-  }
+     if ( broker->ssl ) {
+        broker->socket = amqp_ssl_socket_new(broker->conn);
+        if (!(broker->socket)) {
+           log_msg(  LOG_ERROR, "failed to create SSL amqp client socket.\n" );
+           goto have_connection;
+        }
 
-  select_status = amqp_tx_select(broker->conn, 1);
-  if (select_status == NULL ) {
-    log_msg( LOG_ERROR, "failed AMQP amqp_tx_select\n");
-    reply = amqp_get_rpc_reply(broker->conn);
-    if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-        sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
-    return(NULL);
-  }
-    return(NULL);
-  }
+        amqp_ssl_socket_set_verify_peer(broker->socket, 0);
+        amqp_ssl_socket_set_verify_hostname(broker->socket, 0);
 
+     } else {
+        broker->socket = amqp_tcp_socket_new(broker->conn);
+        if (!(broker->socket)) {
+           log_msg(  LOG_ERROR, "failed to create AMQP client socket. \n" );
+           goto have_connection;
+        }
+     }
 
+     status = amqp_socket_open(broker->socket, broker->hostname, broker->port);
+     if (status < 0) {
+       sr_amqp_error_print(status, "failed opening AMQP socket");
+       goto have_socket;
+     }
+     reply = amqp_login(broker->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, broker->user, broker->password);
+     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+       sr_amqp_reply_print(reply, "failed AMQP login");
+       goto have_socket;
+     }
+
+     open_status = amqp_channel_open(broker->conn, 1);
+     if (open_status == NULL ) {
+       log_msg( LOG_ERROR, "failed AMQP amqp_channel_open\n");
+       goto have_channel;
+     }
+
+     reply = amqp_get_rpc_reply(broker->conn);
+     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+       sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+       goto have_channel;
+     }
+
+     select_status = amqp_tx_select(broker->conn, 1);
+     if (select_status == NULL ) {
+       log_msg( LOG_ERROR, "failed AMQP amqp_tx_select\n");
+       reply = amqp_get_rpc_reply(broker->conn);
+       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+           sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+           goto have_channel;
+       }
+       goto have_channel;
+     }
   return(broker);
+
+  have_channel:
+      reply = amqp_channel_close(broker->conn, 1, AMQP_REPLY_SUCCESS);
+
+  have_socket:
+      reply = amqp_connection_close(broker->conn, AMQP_REPLY_SUCCESS);
+
+  have_connection:
+      status = amqp_destroy_connection(broker->conn);
+
+  sleep(1);
+  log_msg( LOG_INFO, "retry connect.");
+ 
+  }
 }
 
 
