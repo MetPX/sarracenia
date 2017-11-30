@@ -431,14 +431,14 @@ class Publisher:
        try   :
               self.restore_queue      = parent.restore_queue
               self.restore_exchange   = parent.post_exchange 
-              self.restore_exchange  += '.%s.%s.restore.' % (self.program_name,config)
+              self.restore_exchange  += '.%s.%s.restore.' % (parent.program_name,parent.config_name)
               self.restore_exchange  += str(random.randint(0,100000000)).zfill(8)
               self.channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
               self.channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
        except:
               (etype, evalue, tb) = sys.exc_info()
               self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
-              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,restore_queue))
+              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,self.restore_queue))
               os._exit(1)
 
 # ==========
