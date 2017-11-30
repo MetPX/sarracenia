@@ -281,10 +281,7 @@ class Consumer:
 
       self.hc.add_build(self.build)
 
-      # truncated exponential backoff for consume...
-      self.sleep_max  = 1
-      self.sleep_min = 0.01
-      self.sleep_now = self.sleep_min
+      self.retry_msg = Message(self.logger)
 
       self.for_pika_msg  = None
       if self.hc.use_pika :
@@ -332,21 +329,7 @@ class Consumer:
        else:
               time.sleep(5)
 
-       # when no message sleep for 1 sec. (value taken from old metpx)
-       # *** value 0.01 was tested and would simply raise cpu usage of broker
-       # to unacceptable level with very fews processes (~20) trying to consume messages
-       # remember that instances and broker sharing messages add up to a lot of consumers
-
-       if msg == None : 
-          #self.logger.debug(" no messages received, sleep %5.2fs" % self.sleep_now)
-          time.sleep(self.sleep_now)
-          self.sleep_now = self.sleep_now * 2
-          if self.sleep_now > self.sleep_max : 
-                 self.sleep_now = self.sleep_max
-
-       if msg != None :
-          self.sleep_now = self.sleep_min 
-          #self.logger.debug("--------------> GOT")
+       if msg != None : msg.isRetry = False
 
        return msg
 
