@@ -221,30 +221,48 @@ class sr_subscribe(sr_instances):
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
+        user_plugin = False
+
         try :
                 if   self.msg.url.scheme == 'http' :
                      if not hasattr(self,'http_link') :
                         self.http_link = http_transport()
-                     return self.http_link.download(self)
+                     ok = self.http_link.download(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 elif self.msg.url.scheme == 'ftp' :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
-                     return self.ftp_link.download(self)
+                     ok = self.ftp_link.download(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 elif self.msg.url.scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
-                     return self.sftp_link.download(self)
+                     ok = self.sftp_link.download(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 elif self.msg.url.scheme == 'file' :
-                     return file_process(self)
+                     ok = file_process(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 # user defined download scripts
+                # MG FIXME ... let the plugin developper deal with retry ?
+                #              because it might just discard products
+                #              where we would automatically add to the retry msg
 
                 elif self.do_download :
+                     user_plugin = True
                      return self.do_download(self)
 
         except :
@@ -253,6 +271,9 @@ class sr_subscribe(sr_instances):
                 if self.reportback: 
                    self.msg.report_publish(503,"Unable to process")
                 self.logger.error("%s: Could not download" % self.program_name)
+
+        # put to retry list
+        if not user_plugin : self.consumer.msg_to_retry()
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
@@ -656,7 +677,8 @@ class sr_subscribe(sr_instances):
 
     def process_message(self):
 
-        self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
+        if self.msg.isRetry:self.logger.debug("Retrying notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
+        else               :self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
 
         #=================================
         # complete the message (source,from_cluster,to_clusters)
@@ -712,7 +734,7 @@ class sr_subscribe(sr_instances):
         # if caching is set
         #=================================
 
-        if self.caching :
+        if self.caching and not self.msg.isRetry :
            new_msg = self.cache.check_msg(self.msg)
 
            if not new_msg :
@@ -1124,13 +1146,8 @@ class sr_subscribe(sr_instances):
 
            if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
 
-           # make x attempts to download
-           i  = 0
-           while i < self.attempts : 
-                 ok = self.__do_download__()
-                 if ok : break
-                 i = i + 1
-           # could not download
+           # try to download
+           ok = self.__do_download__()
            if not ok : return False
 
            # after download we dont propagate renaming... once used get rid of it
@@ -1311,6 +1328,7 @@ class sr_subscribe(sr_instances):
              for json_line in fp:
 
                  count += 1
+                 self.msg.isRetry  = False
                  self.msg.exchange = 'save'
                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
                  self.msg.from_amqplib()
