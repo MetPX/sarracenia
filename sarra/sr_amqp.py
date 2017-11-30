@@ -39,7 +39,7 @@ except: pass
 try   : import pika
 except: pass
 
-import logging, sys, time
+import logging, os, random, sys, time
 
 
 # ==========
