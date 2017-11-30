@@ -52,6 +52,10 @@ class sr_consumer:
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
 
+        self.retry_fp       = None
+        self.retry_addmode  = False
+        self.retry_getmode  = False
+
         if admin : return
 
         self.use_pattern    = parent.masks != []
@@ -60,6 +64,12 @@ class sr_consumer:
 
         self.iotime = 30
         if self.parent.timeout and self.parent.timeout > 30 : self.iotime = int(self.parent.timeout)
+
+        # truncated exponential backoff for consume...
+
+        self.sleep_max = 1
+        self.sleep_min = 0.01
+        self.sleep_now = self.sleep_min
 
         self.build_connection()
         self.build_consumer()
@@ -89,24 +99,7 @@ class sr_consumer:
 
         self.consumer.build()
 
-    def publish_back(self):
-        self.logger.debug("sr_consumer publish_back")
-
-        self.publisher = Publisher(self.hc)
-        self.publisher.build()
-
-        return self.publisher
-
-    def get_message(self):
-        self.logger.debug("sr_consumer get_message")
-
-        if not hasattr(self.parent,'msg'):
-           self.parent.msg = sr_message(self.parent)
-
-        self.raw_msg  = None
-        self.msg      = self.parent.msg
-        self.msg.user = self.broker.username
-
+        self.retry_msg = self.consumer.retry_msg
     def build_queue(self):
         self.logger.debug("sr_consumer build_queue")
 
@@ -135,13 +128,33 @@ class sr_consumer:
     def consume(self):
 
         # acknowledge last message... we are done with it since asking for a new one
-        if self.raw_msg != None : self.consumer.ack(self.raw_msg)
+        if self.raw_msg != None and not self.raw_msg.isRetry : self.consumer.ack(self.raw_msg)
 
         # consume a new one
         self.raw_msg = self.consumer.consume(self.queue_name)
-        if self.raw_msg == None : return False, self.msg
+
+        # if no message from queue, perhaps we have message to retry
+
+        if self.raw_msg == None : self.raw_msg = self.retry_get()
+
+        # when no message sleep for 1 sec. (value taken from old metpx)
+        # *** value 0.01 was tested and would simply raise cpu usage of broker
+        # to unacceptable level with very fews processes (~20) trying to consume messages
+        # remember that instances and broker sharing messages add up to a lot of consumers
+
+        if self.raw_msg == None :
+           time.sleep(self.sleep_now)
+           self.sleep_now = self.sleep_now * 2
+           if self.sleep_now > self.sleep_max : 
+                  self.sleep_now = self.sleep_max
+           return False, self.msg
+
+        # we have a message, reset timer  (original or retry)
+
+        self.sleep_now = self.sleep_min 
 
         # make use it as a sr_message
+        # dont bother with retry... were good to be kept
 
         try :
                  self.msg.from_amqplib(self.raw_msg)
@@ -162,9 +175,10 @@ class sr_consumer:
 
         # normal message
 
-        self.parent.message_count += 1
+        if not self.raw_msg.isRetry : self.parent.message_count += 1
 
         # make use of accept/reject
+        # dont bother with retry... were good to be kept
         if self.use_pattern :
 
            # Adjust url to account for sundew extension if present, and files do not already include the names.
@@ -182,7 +196,19 @@ class sr_consumer:
         elif not self.accept_unmatch :
               return False,self.msg
 
+        # note that it is a retry or not in sr_message
+
         return True,self.msg
+
+    def get_message(self):
+        self.logger.debug("sr_consumer get_message")
+
+        if not hasattr(self.parent,'msg'):
+           self.parent.msg = sr_message(self.parent)
+
+        self.raw_msg  = None
+        self.msg      = self.parent.msg
+        self.msg.user = self.broker.username
 
     def isAlive(self):
         if not hasattr(self,'consumer') : return False
@@ -194,6 +220,56 @@ class sr_consumer:
                 return False
         alarm_cancel()
         return True
+
+    def msg_to_retry(self):
+
+        if self.raw_msg == None : return
+
+        if self.raw_msg.isRetry : return
+
+        if self.retry_getmode :
+           self.retry_getmode = False
+           self.retry_rewrite()
+
+        self.retry_addmode = True
+        
+        if not os.path.isfile(self.parent.retry_path) :
+           self.retry_fp = None
+           fp = open(self.parent.retry_path,'w')
+           fp.close()
+
+        if self.retry_fp == None :
+           self.retry_fp  = open(self.parent.retry_path,'r+b')
+
+        topic   = self.raw_msg.delivery_info['routing_key']
+        headers = self.raw_msg.properties['application_headers']
+        notice  = self.raw_msg.body
+
+        if type(self.raw_msg.body) == bytes: notice = self.raw_msg.body.decode("utf-8")
+
+        json_line = json.dumps( [ msg.topic, msg.headers, msg.notice ], sort_keys=True ) + '\n' 
+
+        self.retry_fp.seek(0,2)
+        self.retry_fp.write( json_line )
+        self.retry_fp.flush()
+        os.fsync(self.retry_fp)
+
+    def msg_worked(self):
+        if not self.raw_msg.isRetry : return
+        # comment this message not to reprocess again
+        self.retry_fp.seek(self.retry_bol,0)
+        self.retry_fp.write('//')
+        self.retry_fp.seek(self.retry_eol,0)
+        self.retry_fp.flush()
+        os.fsync(self.retry_fp)
+
+    def publish_back(self):
+        self.logger.debug("sr_consumer publish_back")
+
+        self.publisher = Publisher(self.hc)
+        self.publisher.build()
+
+        return self.publisher
 
     def queue_declare(self,build=False):
         self.logger.debug("sr_consumer queue_declare")
@@ -265,6 +341,103 @@ class sr_consumer:
         f.write(self.queue_name)
         f.close()
 
+    def retry_close(self):
+        if self.retry_fp == None : return
+        try:    
+                self.retry_fp.flush()
+                os.fsync(self.retry_fp)
+                self.retry_fp.close()
+        except: pass
+        self.retry_fp = None
+
+    def retry_get(self):
+
+        if self.retry_addmode :
+           self.retry_close()
+           self.retry_addmode = False
+
+        self.retry_getmode = True
+
+        # open (might already be open)
+
+        self.retry_fp  = self.retry_open_rw()
+        if self.retry_fp == None : return None
+
+        # get next json_line
+
+        self.retry_bol = self.retry_fp.tell()
+        while True :
+              json_line = self.retry_fp.readline()
+              if not json_line : 
+                 self.retry_rewrite()
+                 return self.retry_get()
+              self.retry_eol = self.retry_fp.tell()
+              break
+
+        # from json_line make a raw_msg
+
+        topic, headers, notice = json.loads(json_line)
+
+        self.retry_msg.delivery_info['exchange']         = self.parent.exchange
+        self.retry_msg.delivery_info['routing_key']      = topic
+        self.retry_msg.properties['application_headers'] = headers
+        self.retry_msg.body                              = notice
+        self.retry_msg.isRetry                           = True
+
+        self.retry_getmode = True
+
+        return self.retry_msg
+
+    def retry_open_rw(self):
+
+        if not os.path.isfile(self.parent.retry_path) : return None
+
+        if self.retry_fp != None : return self.retry_fp
+
+        try   : fp = open(self.parent.retry_path,'r+b')
+        except: return None
+
+        return fp
+
+    def retry_rewrite(self):
+
+        if not os.path.isfile(self.parent.retry_path) : return None
+
+        if self.retry_fp == None :
+           try   : self.retry_fp = open(self.parent.retry_path,'r+b')
+           except: return
+
+        try   : self.retry_fp.seek(0,0)
+        except: return
+
+        tmp_path = self.parent.retry_path + '.tmp'
+        try:    os.unlink(tmp_path)
+        except: pass
+
+        count = 0
+        fp    = open(tmp_path,'w')
+        while True :
+              try:    json_line = self.retry_fp.readline()
+              except: json_line = None
+              if not json_line             : break
+              if json_line.startswith('//'): continue
+              fp.write(json_line)
+              count += 1
+        fp.close()
+
+        self.retry_fp.close()
+        self.retry_fp = None
+        try:    os.unlink(self.parent.retry_path)
+        except: pass
+
+        if count == 0 :
+           try:    os.unlink(tmp_path)
+           except: pass
+           return
+
+        os.rename(tmp_path,self.parent.retry_path)
+
+         
     def set_queue_name(self):
 
         self.broker       = self.parent.broker
@@ -335,6 +508,7 @@ def self_test():
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None
+    cfg.retry_path     = '/tmp/retry'
     cfg.option( opt1.split()  )
     cfg.option( opt2.split()  )
 
