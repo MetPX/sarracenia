@@ -815,7 +815,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
       sr_cfg->post_base_url = strdup(argument);
       return(2);
-  } else if ( !strcmp( option, "post_base_url" ) || !strcmp( option, "pu" ) ) {
+  } else if ( !strcmp( option, "post_base_url" ) || !strcmp( option, "pbu" ) ) {
       if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
       sr_cfg->post_base_url = strdup(argument);
       return(2);

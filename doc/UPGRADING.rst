@@ -45,6 +45,8 @@ git origin/master branch
 2.17.11a3
 ---------
 
+**BUG**: sr_post sometimes requires -p (-path) option before file names, where it didn't before.
+
 *NOTICE*: fix for message bug in 11a2. 
 
 *NOTICE*: now prefers amqplib (reverted from preference for pika in 11a1 and 2.) use_pika yes to force usage.

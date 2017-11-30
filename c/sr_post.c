@@ -187,7 +187,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
        amqp_header_add( "link", m->link );
     }
 
-    amqp_header_add( "sum", sr_hash2sumstr((unsigned char*)(m->sum)) );
+    amqp_header_add( "sum", m->sum );
 
     if ( m->to_clusters && m->to_clusters[0] )
         amqp_header_add( "to_clusters", m->to_clusters );
