@@ -39,7 +39,7 @@ except: pass
 try   : import pika
 except: pass
 
-import logging, sys, time
+import logging, os, random, sys, time
 
 
 # ==========
@@ -281,10 +281,7 @@ class Consumer:
 
       self.hc.add_build(self.build)
 
-      # truncated exponential backoff for consume...
-      self.sleep_max  = 1
-      self.sleep_min = 0.01
-      self.sleep_now = self.sleep_min
+      self.retry_msg = Message(self.logger)
 
       self.for_pika_msg  = None
       if self.hc.use_pika :
@@ -332,21 +329,7 @@ class Consumer:
        else:
               time.sleep(5)
 
-       # when no message sleep for 1 sec. (value taken from old metpx)
-       # *** value 0.01 was tested and would simply raise cpu usage of broker
-       # to unacceptable level with very fews processes (~20) trying to consume messages
-       # remember that instances and broker sharing messages add up to a lot of consumers
-
-       if msg == None : 
-          #self.logger.debug(" no messages received, sleep %5.2fs" % self.sleep_now)
-          time.sleep(self.sleep_now)
-          self.sleep_now = self.sleep_now * 2
-          if self.sleep_now > self.sleep_max : 
-                 self.sleep_now = self.sleep_max
-
-       if msg != None :
-          self.sleep_now = self.sleep_min 
-          #self.logger.debug("--------------> GOT")
+       if msg != None : msg.isRetry = False
 
        return msg
 
@@ -431,14 +414,14 @@ class Publisher:
        try   :
               self.restore_queue      = parent.restore_queue
               self.restore_exchange   = parent.post_exchange 
-              self.restore_exchange  += '.%s.%s.restore.' % (self.program_name,config)
+              self.restore_exchange  += '.%s.%s.restore.' % (parent.program_name,parent.config_name)
               self.restore_exchange  += str(random.randint(0,100000000)).zfill(8)
               self.channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
               self.channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
        except:
               (etype, evalue, tb) = sys.exc_info()
               self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
-              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,restore_queue))
+              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,self.restore_queue))
               os._exit(1)
 
 # ==========
