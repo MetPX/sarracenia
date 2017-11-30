@@ -156,6 +156,7 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.headers   = msg.properties['application_headers']
            self.notice    = msg.body
+           self.isRetry   = msg.isRetry
 
            if type(msg.body) == bytes: self.notice = msg.body.decode("utf-8")
 
