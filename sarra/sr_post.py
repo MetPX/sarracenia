@@ -1493,7 +1493,8 @@ def main():
         if pbd and not pbd in value : value = pbd + os.sep + value
         if os.path.exists(value) or os.path.islink(value):
            postpath.append(value)
-           if arg in args : args.remove(arg)
+           try:    args.remove(arg)
+           except: pass
            continue
         break
 
