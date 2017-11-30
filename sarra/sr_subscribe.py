@@ -1120,6 +1120,10 @@ class sr_subscribe(sr_instances):
 
            self.msg.onfly_checksum = None
 
+           # skip checksum computation for sumflg = '0'
+
+           if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
+
            # make x attempts to download
            i  = 0
            while i < self.attempts : 
