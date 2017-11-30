@@ -1290,18 +1290,10 @@ class sr_subscribe(sr_instances):
          
         # restore_queue setup
 
-        if self.restore_queue != None:
-           user    = self.broker.username
-           config  = self.config_name
-           channel = self.post_hc.channel
-
-           # create temporary exchange to publish only to restore_queue.
-
-           self.restore_exchange = 'xs_%s.%s.%s.restore' % (user,self.program_name,config)
-           self.msg.pub_exchange =  self.restore_exchange
+        if self.restore_queue != None :
+           self.publisher.restore_set(self)
+           self.msg.pub_exchange        = self.publisher.restore_exchange
            self.msg.post_exchange_split = 0
-           channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
-           channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
 
         # display restore message count
 
@@ -1335,9 +1327,8 @@ class sr_subscribe(sr_instances):
 
         # only if restoring from a restore_queue : cleanup and exit
 
-        if self.restore_queue != None:
-           self.post_hc.channel.queue_unbind( self.restore_queue, self.restore_exchange, '#' )
-           self.cleanup()
+        if self.restore_queue != None :
+           self.publisher.restore_clear()
            os._exit(0)
 
 
