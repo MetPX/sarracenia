@@ -98,7 +98,7 @@ class checksum_0(object):
           self.value = '0'
 
       def get_value(self):
-          self.value = '%d' % random.randint(0,100)
+          self.value = '%.4d' % random.randint(0,9999)
           return self.value
 
       def update(self,chunk):
