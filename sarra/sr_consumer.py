@@ -30,7 +30,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import os,sys,random,time
+import os,json,sys,random,time
 
 try :    
          from sr_amqp           import *
@@ -226,6 +226,7 @@ class sr_consumer:
         if self.raw_msg == None : return
 
         if self.raw_msg.isRetry : return
+        self.logger.info("added to the retry list")
 
         if self.retry_getmode :
            self.retry_getmode = False
@@ -239,20 +240,21 @@ class sr_consumer:
            fp.close()
 
         if self.retry_fp == None :
-           self.retry_fp  = open(self.parent.retry_path,'r+b')
+           self.retry_fp  = open(self.parent.retry_path,'r+')
 
         topic   = self.raw_msg.delivery_info['routing_key']
         headers = self.raw_msg.properties['application_headers']
         notice  = self.raw_msg.body
 
-        if type(self.raw_msg.body) == bytes: notice = self.raw_msg.body.decode("utf-8")
+        if type(notice) == bytes: notice = notice.decode("utf-8")
 
-        json_line = json.dumps( [ msg.topic, msg.headers, msg.notice ], sort_keys=True ) + '\n' 
+        json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
 
         self.retry_fp.seek(0,2)
         self.retry_fp.write( json_line )
         self.retry_fp.flush()
         os.fsync(self.retry_fp)
+        self.logger.info("confirmed added to the retry list %s" % notice)
 
     def msg_worked(self):
         if not self.raw_msg.isRetry : return
@@ -394,17 +396,18 @@ class sr_consumer:
 
         if self.retry_fp != None : return self.retry_fp
 
-        try   : fp = open(self.parent.retry_path,'r+b')
+        try   : fp = open(self.parent.retry_path,'r+')
         except: return None
 
         return fp
 
     def retry_rewrite(self):
+        self.logger.debug("retry_rewrite begin")
 
-        if not os.path.isfile(self.parent.retry_path) : return None
+        if not os.path.isfile(self.parent.retry_path) : return
 
         if self.retry_fp == None :
-           try   : self.retry_fp = open(self.parent.retry_path,'r+b')
+           try   : self.retry_fp = open(self.parent.retry_path,'r+')
            except: return
 
         try   : self.retry_fp.seek(0,0)
@@ -424,6 +427,7 @@ class sr_consumer:
               fp.write(json_line)
               count += 1
         fp.close()
+        self.logger.info("rewrote %d retries" % count)
 
         self.retry_fp.close()
         self.retry_fp = None
