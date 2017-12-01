@@ -63,6 +63,8 @@ class Msg_Total(object):
         logger = parent.logger
         msg    = parent.msg
 
+        if msg.isRetry : return True
+
         import calendar
         import humanize
         import datetime
