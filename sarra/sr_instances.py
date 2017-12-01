@@ -267,7 +267,7 @@ class sr_instances(sr_config):
     def foreground_parent(self):
         self.logger.debug("sr_instances foreground_parent")
         self.nbr_instances = 0
-        self.save_path     = self.user_cache_dir + os.sep + self.basic_name + '_0000.save'
+        self.build_instance(0)
         self.logpath       = None
         self.setlog()
         self.start()
