@@ -18,6 +18,7 @@ lists all changes between versions.
 * documentation bugfix: invalid links to sr_subscribe.7 corrected to sr_subscribe.1
 * testing added cases to simulate communications problems, such as message corruption.
 * bugfix: SENDER=X, filename would be =X, instead of X.
+* bugfix: sender used to print "Sends:" before sending a file, now prints "Sent:" afterward.
 * retry logic changed. Now write to a retry queue file, and try again when there is a lapse.
   so it doesn't get "stuck" on old files, but keeps sending new stuff. catches up gradually.
 * timeouts for many parts of transfer processing added.
