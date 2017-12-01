@@ -80,6 +80,7 @@ class sr_message():
         self.del_headers   = self.parent.headers_to_del
 
         self.isPulse         = False
+        self.isRetry         = False
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -158,7 +159,7 @@ class sr_message():
            self.notice    = msg.body
            self.isRetry   = msg.isRetry
 
-           if type(msg.body) == bytes: self.notice = msg.body.decode("utf-8")
+           if type(self.notice) == bytes: self.notice = self.notice.decode("utf-8")
 
         # pulse message... parse it
         # exchange='v02.pulse'
