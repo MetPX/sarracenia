@@ -838,7 +838,7 @@ class sr_config:
                     destFileName = headParts[0] 
             elif spec == 'SENDER' and 'SENDER=' in filename:
                  i = filename.find('SENDER=')
-                 if i >= 0 : destFileName = filename[i+6:].split(':')[0]
+                 if i >= 0 : destFileName = filename[i+7:].split(':')[0]
                  if destFileName[-1] == ':' : destFileName = destFileName[:-1]
             elif spec == 'NONE':
                  if 'SENDER=' in filename:
