@@ -182,26 +182,37 @@ class sr_sender(sr_subscribe):
 
         try : 
                 if   self.do_send :
-                     return self.do_send(self)
+                     ok = self.do_send(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 elif self.details.url.scheme in ['ftp','ftps']  :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
-                     return self.ftp_link.send(self)
+                     ok = self.ftp_link.send(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
                 elif self.details.url.scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
-                     return self.sftp_link.send(self)
-
+                     ok = self.sftp_link.send(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
                     self.msg.report_publish(503,"Unable to process")
                 self.logger.error("Could not send")
+
+        # something went wrong
+        self.consumer.msg_to_retry()
 
         if self.reportback:
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
