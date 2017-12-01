@@ -221,8 +221,6 @@ class sr_subscribe(sr_instances):
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
-        user_plugin = False
-
         try :
                 if   self.msg.url.scheme == 'http' :
                      if not hasattr(self,'http_link') :
@@ -257,13 +255,12 @@ class sr_subscribe(sr_instances):
                      return ok
 
                 # user defined download scripts
-                # MG FIXME ... let the plugin developper deal with retry ?
-                #              because it might just discard products
-                #              where we would automatically add to the retry msg
 
                 elif self.do_download :
-                     user_plugin = True
-                     return self.do_download(self)
+                     ok = self.do_download(self)
+                     if ok : self.consumer.msg_worked()
+                     else  : self.consumer.msg_to_retry()
+                     return ok
 
         except :
                 (stype, svalue, tb) = sys.exc_info()
@@ -273,7 +270,7 @@ class sr_subscribe(sr_instances):
                 self.logger.error("%s: Could not download" % self.program_name)
 
         # put to retry list
-        if not user_plugin : self.consumer.msg_to_retry()
+        self.consumer.msg_to_retry()
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
@@ -677,7 +674,7 @@ class sr_subscribe(sr_instances):
 
     def process_message(self):
 
-        if self.msg.isRetry:self.logger.debug("Retrying notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
+        if self.msg.isRetry:self.logger.info ("Retrying notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
         else               :self.logger.debug("Received notice  %s %s%s" % tuple(self.msg.notice.split()[0:3]) )
 
         #=================================
@@ -1328,10 +1325,10 @@ class sr_subscribe(sr_instances):
              for json_line in fp:
 
                  count += 1
-                 self.msg.isRetry  = False
                  self.msg.exchange = 'save'
                  self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
                  self.msg.from_amqplib()
+                 self.msg.isRetry  = False
                  self.logger.info("%s restoring message %d of %d: topic: %s" %
                                  (self.program_name,  count,total, self.msg.topic) )
                  ok = self.process_message()
