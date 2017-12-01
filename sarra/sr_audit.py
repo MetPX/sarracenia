@@ -362,6 +362,7 @@ class sr_audit(sr_instances):
            cf.write( '# To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
            cf.write( '# To suppress pulsing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
            cf.write( 'post_broker %s\n' % admin )
+           cf.write( 'post_exchange xpublic\n')
            cf.write( 'do_poll poll_pulse\n' )
            cf.close()
 
