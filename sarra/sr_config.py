@@ -414,6 +414,7 @@ class sr_config:
         #self.debug = True
         self.debug                = False
 
+        self.retry_mode           = True
         self.remote_config        = False
         self.remote_config_url    = []
 
@@ -1725,6 +1726,14 @@ class sr_config:
                         self.reset = self.isTrue(words[1])
                         n = 2
 
+                elif words0 in ['retry_mode']:  # See: sr_consumer.1
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.retry_mode = True
+                        n = 1
+                     else :
+                        self.retry_mode = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
                      item = words[1].lower()
                      if words0 in [ 'role' ]:
@@ -2437,6 +2446,17 @@ def self_test():
     #if cfg.outlet != 'post' :
     #   cfg.logger.error("outlet toto")
     #   failed = True
+
+    if not cfg.retry_mode :
+       cfg.logger.error("retry_mode default")
+       failed = True
+
+    opt1 = "retry_mode false"
+    cfg.option(opt1.split())
+    if cfg.retry_mode :
+       cfg.logger.error("retry_mode not off")
+       failed = True
+
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
