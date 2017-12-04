@@ -175,6 +175,31 @@ class checksum_n(object):
           filename   = os.path.basename(path)
           self.value = md5(bytes(filename,'utf-8')).hexdigest()
 
+
+# ===================================
+# checksum_N class
+# ===================================
+
+class checksum_N(object):
+      """
+      look at C code for more details
+      Did this just as a quick shot... not convinced it is ok
+      Still put a test below... Use with care
+      """
+      def __init__(self):
+          self.value = '0'
+
+      def get_value(self):
+          return self.value
+
+      def update(self,chunk):
+          pass
+
+      def set_path(self,filename,partstr):
+          self.filehash = sha512()
+          self.filehash.update(bytes(filename+partstr,'utf-8'))
+          self.value = self.filehash.hexdigest()
+
 # =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
@@ -655,7 +680,7 @@ def self_test():
     f.close()
 
     v = int(chk0.get_value())
-    if v < 0 or v > 99 :
+    if v < 0 or v > 9999 :
           print("test checksum_0 Failed")
           status = 1
       
@@ -685,8 +710,24 @@ def self_test():
         chkn.update(chunk)
     f.close()
 
+    v=chkn.get_value()
+
     if chkn.get_value() != 'fd6b0296fe95e19fcef6f21f77efdfed' :
           print("test checksum_n Failed")
+          status = 1
+
+    # checksum_N
+
+    chkN = checksum_N()
+    chkN.set_path(tmpfilname,'i,1,256,1,0,0')
+    v = chkN.get_value()
+  
+    # this should do nothing
+    chunk = 'aaa'
+    chkN.update(chunk)
+
+    if chkN.get_value() != 'a0847ab809f83cb573b76671bb500a430372d2e3d5bce4c4cd663c4ea1b5c40f5eda439c09c7776ff19e3cc30459acc2a387cf10d056296b9dc03a6556da291f' :
+          print("test checksum_N Failed")
           status = 1
 
     # checksum_s
