@@ -217,6 +217,8 @@ class sr_sender(sr_subscribe):
         if self.reportback:
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
 
+        return False
+
     def overwrite_defaults(self):
 
         # a destination must be provided
@@ -310,6 +312,8 @@ class sr_sender(sr_subscribe):
                    time.sleep(self.sleep_connect_try_interval)       
                    if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
                         self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
+
+              if not ok: return False
 
         #=================================
         # publish our sending
