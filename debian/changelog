@@ -1,3 +1,27 @@
+metpx-sarracenia (2.17.12a1) unstable; urgency=medium
+
+  * bugfix: sr_post sometimes required -p. It shouldn't.
+  * Semantics of *accept_unmatch* changed. 
+  * bugfix: report_exchange option was ignored and overridden.
+  * undocumented, and unused option 'use_pattern' withdrawn.
+  * heartbeat_cache plugin added in option parsing rather than forced at end.
+  * sr_poll now supports sum algorithms other than z to support polling of local files.
+  * documentation bugfix: invalid links to sr_subscribe.7 corrected to sr_subscribe.1
+  * testing added cases to simulate communications problems, such as message corruption.
+  * bugfix: SENDER=X, filename would be =X, instead of X.
+  * bugfix: sender used to print "Sends:" before sending a file, now prints "Sent:" afterward.
+  * retry logic changed. Now write to a retry queue file, and try again when there is a gap. So it doesn't get "stuck" on old files, but keeps sending new stuff, catching up gradually.
+  * timeouts for many parts of transfer processing added.
+  * transfer code consolidated into one location rather that repeating in each protocol.
+  * *Pulse* messages added, to ensure connection stays live.
+  * some round-tripping added in heartbeat processing to ensure connection remains live.
+  * C: fixed: was putting wrong checksum in posted messages.
+  * C: now retries connection to broker forever (used to give up after one try.)
+  * C: bugfix: pbu synonym for post_base_url, was not accepted, corrected.
+  * C: fixed when renaming across file systems, it would fail, rather than copying the file.
+
+ -- Peter Silva <peter@idefix>  Mon, 04 Dec 2017 17:45:52 -0500
+
 metpx-sarracenia (2.17.11a3) unstable; urgency=medium
 
   * sr_post -p|-path optional ending arguments are postpaths
