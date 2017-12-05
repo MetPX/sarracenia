@@ -153,84 +153,92 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     signed int status;
     struct sr_header_t *uh;
 
-    strcpy( message_body, m->datestamp);
-    strcat( message_body, " " );
-    strcat( message_body, m->url );
-    strcat( message_body, " " );
-    strcat( message_body, m->path );
-    strcat( message_body, " \n" );
- 
-    header_reset();
-
-    if ( m->from_cluster && m->from_cluster[0] )
-        amqp_header_add( "from_cluster", m->from_cluster );
-
-    if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+    while(1) 
     {
-       amqp_header_add( "parts", sr_message_partstr(m) );
-
-       if ( m->atime && m->atime[0] )
-           amqp_header_add( "atime", m->atime );
-
-       if ( m->mode > 0 ) 
-       {
-           sprintf( smallbuf, "%04o", m->mode );
-           amqp_header_add( "mode", smallbuf );
-       }
-
-       if ( m->mtime && m->mtime[0] )
-           amqp_header_add( "mtime", m->mtime );
-    }
-
-    if ( m->sum[0] == 'L' )
-    {
-       amqp_header_add( "link", m->link );
-    }
-
-    amqp_header_add( "sum", m->sum );
-
-    if ( m->to_clusters && m->to_clusters[0] )
-        amqp_header_add( "to_clusters", m->to_clusters );
-
-    for( uh=m->user_headers; uh ; uh=uh->next )
-        amqp_header_add(uh->key, uh->value);
-
-    table.num_entries = hdrcnt;
-    table.entries=headers;
-
-    props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
-    props.content_type = amqp_cstring_bytes("text/plain");
-    props.delivery_mode = 2; /* persistent delivery mode */
-    props.headers = table;
-
-    strcpy( thisexchange, sr_c->cfg->post_broker->exchange );
-
-    if ( sr_c->cfg->post_broker->exchange_split > 0 ) 
-    { 
-        sprintf( strchr( thisexchange, '\0' ), "%02d", m->sum[ get_sumhashlen(m->sum[0])-1 ] % sr_c->cfg->post_broker->exchange_split ); 
-    }
-    status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(thisexchange), 
-              amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
-
-
-    if ( status < 0 ) 
-    {
-        log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
+        strcpy( message_body, m->datestamp);
+        strcat( message_body, " " );
+        strcat( message_body, m->url );
+        strcat( message_body, " " );
+        strcat( message_body, m->path );
+        strcat( message_body, " \n" );
+     
+        header_reset();
+    
+        if ( m->from_cluster && m->from_cluster[0] )
+            amqp_header_add( "from_cluster", m->from_cluster );
+    
+        if (( m->sum[0] != 'R' ) && ( m->sum[0] != 'L' ))
+        {
+           amqp_header_add( "parts", sr_message_partstr(m) );
+    
+           if ( m->atime && m->atime[0] )
+               amqp_header_add( "atime", m->atime );
+    
+           if ( m->mode > 0 ) 
+           {
+               sprintf( smallbuf, "%04o", m->mode );
+               amqp_header_add( "mode", smallbuf );
+           }
+    
+           if ( m->mtime && m->mtime[0] )
+               amqp_header_add( "mtime", m->mtime );
+        }
+    
+        if ( m->sum[0] == 'L' )
+        {
+           amqp_header_add( "link", m->link );
+        }
+    
+        amqp_header_add( "sum", m->sum );
+    
+        if ( m->to_clusters && m->to_clusters[0] )
+            amqp_header_add( "to_clusters", m->to_clusters );
+    
+        for( uh=m->user_headers; uh ; uh=uh->next )
+            amqp_header_add(uh->key, uh->value);
+    
+        table.num_entries = hdrcnt;
+        table.entries=headers;
+    
+        props._flags = AMQP_BASIC_HEADERS_FLAG | AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+        props.content_type = amqp_cstring_bytes("text/plain");
+        props.delivery_mode = 2; /* persistent delivery mode */
+        props.headers = table;
+    
+        strcpy( thisexchange, sr_c->cfg->post_broker->exchange );
+    
+        if ( sr_c->cfg->post_broker->exchange_split > 0 ) 
+        { 
+            sprintf( strchr( thisexchange, '\0' ), "%02d", m->sum[ get_sumhashlen(m->sum[0])-1 ] % sr_c->cfg->post_broker->exchange_split ); 
+        }
+        status = amqp_basic_publish(sr_c->cfg->post_broker->conn, 1, amqp_cstring_bytes(thisexchange), 
+                  amqp_cstring_bytes(m->routing_key), 0, 0, &props, amqp_cstring_bytes(message_body));
+    
+    
+        if ( status < 0 ) 
+        {
+            log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
+            goto restart;
+        }
+    
+        commit_status = amqp_tx_commit( sr_c->cfg->post_broker->conn, 1 );
+        if ( ! commit_status )
+        {
+           log_msg( LOG_ERROR, "broker failed to acknowledge publish event\n"  );
+           reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
+           if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
+               sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+           }
+           goto restart;
+        }
+        log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
         return;
-    }
+    
+restart:
+        sr_context_close(sr_c);
+        sr_context_connect(sr_c);
 
-    commit_status = amqp_tx_commit( sr_c->cfg->post_broker->conn, 1 );
-    if ( ! commit_status )
-    {
-       log_msg( LOG_ERROR, "broker failed to acknowledge publish event\n"  );
-       reply = amqp_get_rpc_reply(sr_c->cfg->post_broker->conn);
-       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-           sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
-       }
-       return;
     }
-    log_msg( LOG_INFO, "published: %s\n", sr_message_2log(m) );
-
 }
 
 int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct stat *sb, struct sr_message_t *m ) 
@@ -409,7 +417,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
            if ( sr_c->cfg->cache > 0 ) 
            { 
                status = sr_cache_check( sr_c->cfg->cachep, m.sum[0], (unsigned char*)(m.sum), m.path, sr_message_partstr(&m) ); 
-               log_msg( LOG_DEBUG, "post_message cache_check: %s\n", status?"not found":"already there, no post" );
+               log_msg( LOG_DEBUG, "sr_post cache_check: %s\n", status?"not found":"already there, no post" );
                if (!status) continue; // cache hit.
            }
           sr_post_message( sr_c, &m );
