@@ -6,6 +6,13 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.12a2**
+
+* bugfix: sr_watch was ignoring event option.
+* C: added recovery code after posting errors.
+* heartbeat_memory plugin added by default to control runaway memory leaks.
+* support added to python for N checksum (already in C version.)
+
 **2.17.12a1**
 
 * bugfix: sr_post sometimes required -p.  It shouldn't.
