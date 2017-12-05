@@ -14,7 +14,7 @@ class Post_Log(object):
     def perform(self,parent):
 
         msg = parent.msg
-        parent.logger.info("post_log notice=%s %s%s headers=%s" % \
+        parent.logger.info("post_log notice=%s %s %s headers=%s" % \
             tuple( msg.notice.split()[0:3] + [ msg.headers ] ) )
 
         return True
