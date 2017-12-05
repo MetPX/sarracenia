@@ -16,7 +16,7 @@ class Heartbeat_Memory(object):
         import psutil
         self.logger = parent.logger
 
-        self.logger.info("heartbeat_memory")
+        self.logger.debug("heartbeat_memory")
 
         if parent.message_count < 100 : return True
 
@@ -29,7 +29,6 @@ class Heartbeat_Memory(object):
 
         if self.threshold == 0 :
            self.threshold = 10 * mem.vms
-           self.threshold = 1 * mem.vms + 1000
            self.logger.info("memory threshold set to %d" % self.threshold)
            return True
 
@@ -41,17 +40,13 @@ class Heartbeat_Memory(object):
         import subprocess
         cmd = []
         cmd.append(parent.program_name)
-
-        if parent.instance > 0 :
-           cmd.append("--no")
-           cmd.append("%d" % parent.instance)
-
         if parent.user_args and len(parent.user_args) > 0: cmd.extend(parent.user_args)
         if parent.user_config: cmd.append( parent.user_config )
 
         cmd.append('restart')
 
-        parent.logger.info("restart with %s" % cmd)
+        parent.logger.info("leak detected")
+        parent.logger.info("restarting with %s" % cmd)
         subprocess.check_call( cmd )
 
         return
