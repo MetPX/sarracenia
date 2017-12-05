@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import psutil,subprocess
-
 """
   default on_heartbeat handler that restarts program 
   when detecting a memory leak... Memory threshold is
@@ -11,11 +9,14 @@ import psutil,subprocess
 
 class Heartbeat_Memory(object): 
 
-    def __init__(self,parent):
+    def __init__(self):
         self.threshold  = 0
           
     def perform(self,parent):
-        self.logger     = parent.logger
+        import psutil
+        self.logger = parent.logger
+
+        self.logger.info("heartbeat_memory")
 
         if parent.message_count < 100 : return True
 
@@ -28,14 +29,16 @@ class Heartbeat_Memory(object):
 
         if self.threshold == 0 :
            self.threshold = 10 * mem.vms
+           self.threshold = 1 * mem.vms + 1000
            self.logger.info("memory threshold set to %d" % self.threshold)
            return True
 
-        if mem.vms > self.threshold : self.restart()
+        if mem.vms > self.threshold : self.restart(parent)
 
         return True
 
     def restart(self,parent):
+        import subprocess
         cmd = []
         cmd.append(parent.program_name)
 
@@ -43,14 +46,15 @@ class Heartbeat_Memory(object):
            cmd.append("--no")
            cmd.append("%d" % parent.instance)
 
-        if parent.user_args  and len(parent.user_args) > 0 : cmd.extend(parent.user_args)
+        if parent.user_args and len(parent.user_args) > 0: cmd.extend(parent.user_args)
         if parent.user_config: cmd.append( parent.user_config )
 
         cmd.append('restart')
 
-        parent.logger.debug("restart with %s" % cmd)
+        parent.logger.info("restart with %s" % cmd)
         subprocess.check_call( cmd )
+
         return
 
-heartbeat_memory = Heartbeat_Memory()
+heartbeat_memory  = Heartbeat_Memory()
 self.on_heartbeat = heartbeat_memory.perform
