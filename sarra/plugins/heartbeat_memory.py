@@ -7,16 +7,32 @@
 
 class Heartbeat_Memory(object): 
 
-    def __init__(self):
+    def __init__(self,parent):
+
         self.threshold  = 0
+
+        # make parent know about these possible options
+
+        parent.declare_option('heartbeat_memory_max')
+
           
     def perform(self,parent):
         import psutil
         self.logger = parent.logger
 
+        # get set value
+
+        if hasattr(parent,'heartbeat_memory_max'):
+            if type(parent.heartbeat_memory_max) is list:
+               maxstr = parent.heartbeat_memory_max[0]
+            else:
+               maxstr = parent.heartbeat_memory_max
+            self.threshold  = parent.chunksize_from_str(maxstr)
+            self.logger.info("memory threshold set to %d" % self.threshold)
+
         self.logger.debug("heartbeat_memory")
 
-        if parent.message_count < 100 : return True
+        if self.threshold == 0 and parent.message_count < 100 : return True
 
         # from doc memory_full_info()  # "real" USS memory usage (Linux, OSX, Win only)
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
@@ -49,5 +65,5 @@ class Heartbeat_Memory(object):
 
         return
 
-heartbeat_memory  = Heartbeat_Memory()
+heartbeat_memory  = Heartbeat_Memory(self)
 self.on_heartbeat = heartbeat_memory.perform
