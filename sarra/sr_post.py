@@ -127,6 +127,10 @@ class sr_post(sr_instances):
         try   : self.inflight = int(self.inflight)
         except: pass
 
+        # merge these 2 events
+
+        self.create_modify = 'create' in self.events  or  'modify' in self.events
+
     # =============
     # close 
     # =============
@@ -903,13 +907,15 @@ class sr_post(sr_instances):
         # delete
 
         if event == 'delete' :
-           ok = self.post1file(src,None)
+           if event in self.events:
+              ok = self.post1file(src,None)
            return done
 
         # move
 
-        if event == 'move' :
-           ok = self.post1move(src,dst)
+        if event == 'move':
+           if self.create_modify:
+              ok = self.post1move(src,dst)
            return done
 
         # create or modify
@@ -920,8 +926,9 @@ class sr_post(sr_instances):
 
         # link ( os.path.exists = false, lstat = None )
 
-        if os.path.islink(src):
-           ok = self.post1file(src,None)
+        if os.path.islink(src) :
+           if 'link' in self.events :
+              ok = self.post1file(src,None)
            return done
 
         # file : must exists
@@ -936,7 +943,8 @@ class sr_post(sr_instances):
 
         # post it
 
-        ok = self.post1file(src,lstat)
+        if self.create_modify :
+           ok = self.post1file(src,lstat)
 
         return done
 
