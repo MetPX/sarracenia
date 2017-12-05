@@ -38,6 +38,13 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*NOTICE*: added heartbeat_memory to default plugins, so components periodically restart when leaking.
+*NOTICE*: fixed bug sr_post/sr_watch does not apply *events* option (posts all events regardless.)
+
+2.17.12a1
+---------
+
+**BUG**: sr_post/sr_watch does not apply *events* option (posts all events regardless.)
 
 *CHANGE*: accept_unmatch now always honoured. Formerly was set by presence/absence of
 accept/reject clauses. Now, by default, a file with no accept/reject clauses will 
@@ -48,7 +55,6 @@ configuration that have no accept and or reject clauses, one must add
 *accept_unmatch*
 
 to the end of the configuration file to have it behave the same as prior versions.
-
 
 
 *NOTICE*: Generally fixes to recover when operations do not complete.  Pulse & timers.

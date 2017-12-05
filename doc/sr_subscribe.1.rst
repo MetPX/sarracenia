@@ -823,6 +823,19 @@ the checksums with MD5.   There are also cases, where, for various reasons, the 
 checksums are simply wrong, and should be overridden for downstream consumers.
 
 
+ERROR RECOVERY
+--------------
+
+Errors can happen at many times:
+ 
+* Establishing a connection to the broker.
+* losing a connection to the broker
+* establishing a connection to the file server for a file (for download or upload.)
+* losing a connection to the server.
+* during data transfer.
+ 
+Earlier versions of sarracenia had only the *attempts* option.   
+
 
 
 EXAMPLES

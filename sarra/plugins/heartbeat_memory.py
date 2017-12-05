@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 
 """
-  default on_heartbeat handler that restarts program 
-  when detecting a memory leak... Memory threshold is
-  set to 2 x the program memory size when 100 files
-  were processed 
+  default on_heartbeat handler that restarts program when detecting a memory leak... 
+  Memory threshold is set to 10 x the program memory size after 100 files have been processed 
 """
 
 class Heartbeat_Memory(object): 
