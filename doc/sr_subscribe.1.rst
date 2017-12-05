@@ -594,14 +594,20 @@ and under which name.
 - **overwrite <boolean>        (default: true)** 
 - **recompute_chksum <boolean> (default: False)**
 - **reject    <regexp pattern> (optional)** 
+- **retry    <boolean>         (default: True)** 
 - **source_from_exchange  <boolean> (default: False)**
 - **strip     <count|regexp>   (default: 0)**
 - **suppress_duplicates   <off|on|999>     (default: off)**
 - **timeout     <float>         (default: 0)**
 
 
-The **attempts** option indicates how many times to attempt downloading the data 
-before giving up.  The default of 3 should be appropriate in most cases.
+When the **retry** option is false, the **attempts** option indicates how many times to 
+attempt downloading the data before giving up.  The default of 3 should be appropriate 
+in most cases. However, by default **retry** is True, so this value has no effect.
+
+When The **retry** option is set, a failure to download (or send, in a sender) will
+cause the message to be added to a queue file for later retry.  When there are
+no messages ready to consume from the AMQP queue, the retry queue will be queried.
 
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download attempt.

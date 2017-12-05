@@ -183,16 +183,18 @@ class sr_sender(sr_subscribe):
         try : 
                 if   self.do_send :
                      ok = self.do_send(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.details.url.scheme in ['ftp','ftps']  :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.send(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.details.url.scheme == 'sftp' :
@@ -201,8 +203,9 @@ class sr_sender(sr_subscribe):
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
                      ok = self.sftp_link.send(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
         except :
                 (stype, svalue, tb) = sys.exc_info()
@@ -212,10 +215,13 @@ class sr_sender(sr_subscribe):
                 self.logger.error("Could not send")
 
         # something went wrong
-        self.consumer.msg_to_retry()
+
+        if self.retry_mode : self.consumer.msg_to_retry()
 
         if self.reportback:
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+
+        return False
 
     def overwrite_defaults(self):
 
@@ -310,6 +316,8 @@ class sr_sender(sr_subscribe):
                    time.sleep(self.sleep_connect_try_interval)       
                    if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
                         self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
+
+              if self.retry_mode and not ok : return False
 
         #=================================
         # publish our sending

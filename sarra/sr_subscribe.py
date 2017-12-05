@@ -226,16 +226,18 @@ class sr_subscribe(sr_instances):
                      if not hasattr(self,'http_link') :
                         self.http_link = http_transport()
                      ok = self.http_link.download(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'ftp' :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.download(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'sftp' :
@@ -244,22 +246,25 @@ class sr_subscribe(sr_instances):
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
                      ok = self.sftp_link.download(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'file' :
                      ok = file_process(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 # user defined download scripts
 
                 elif self.do_download :
                      ok = self.do_download(self)
-                     if ok : self.consumer.msg_worked()
-                     else  : self.consumer.msg_to_retry()
+                     if self.retry_mode :
+                          if ok : self.consumer.msg_worked()
+                          else  : self.consumer.msg_to_retry()
                      return ok
 
         except :
@@ -270,10 +275,14 @@ class sr_subscribe(sr_instances):
                 self.logger.error("%s: Could not download" % self.program_name)
 
         # put to retry list
-        self.consumer.msg_to_retry()
+
+        if self.retry_mode: self.consumer.msg_to_retry()
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+
+        return False
+
 
     # =============
     # __do_tasks__ (download, or send, or convert)
@@ -1143,9 +1152,24 @@ class sr_subscribe(sr_instances):
 
            if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
 
-           # try to download
-           ok = self.__do_download__()
-           if not ok : return False
+           # old way... retry_mode False
+
+           if not self.retry_mode :
+              i  = 0
+              while i < self.attempts :
+                    ok = self.__do_download__()
+                    if ok : break
+                    i = i + 1
+              # could not download
+              if not ok : return False
+
+           # retry_mode True (default!?)
+
+           else :
+
+              # try to download
+              ok = self.__do_download__()
+              if not ok : return False
 
            # after download we dont propagate renaming... once used get rid of it
            if 'rename'  in self.msg.headers : del self.msg.headers['rename']

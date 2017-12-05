@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.12a1**
+
 * bugfix: sr_post sometimes required -p.  It shouldn't.
 * Semantics of *accept_unmatch* changed. Before the option was ignored, and set based
   on the existenceof accept/reject clauses. This caused some strange behaviours.

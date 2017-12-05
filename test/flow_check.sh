@@ -409,10 +409,10 @@ echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log | wc -l
 # MG shows errors in logs if any
 
 echo
-NERROR=`grep ERROR "$LOGDIR"/*.log | grep -v ftps | wc -l`
+NERROR=`grep ERROR "$LOGDIR"/*.log | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
    fcel=flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*.log | grep -v ftps | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   grep ERROR "$LOGDIR"/*.log | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel

@@ -377,6 +377,7 @@ class sr_post(sr_instances):
            strip = self.strip
            if path[0] == '/' : strip = strip + 1
            # if we strip too much... keep the filename
+           token = path.split('/')
            try :   token   = token[strip:]
            except: token   = [os.path.basename(path)]
            newname = os.sep+os.sep.join(token)

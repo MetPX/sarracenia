@@ -39,6 +39,18 @@ git origin/master branch
 ------------------------
 
 
+*CHANGE*: accept_unmatch now always honoured. Formerly was set by presence/absence of
+accept/reject clauses. Now, by default, a file with no accept/reject clauses will 
+reject all files in subscribe and sender configurations, and accept all files in all 
+other components (post, poll, sarra, shovel, winnow)  For Subscribe and sender 
+configuration that have no accept and or reject clauses, one must add
+
+*accept_unmatch*
+
+to the end of the configuration file to have it behave the same as prior versions.
+
+
+
 *NOTICE*: Generally fixes to recover when operations do not complete.  Pulse & timers.
 
 
