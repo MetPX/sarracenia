@@ -1,3 +1,12 @@
+metpx-sarracenia (2.17.12a2) unstable; urgency=medium
+
+  * bugfix: sr_watch was ignoring event option.
+  * C: added recovery code after posting errors.
+  * heartbeat_memory plugin added by default to control runaway memory leaks.
+  * support added to python for N checksum (already in C version.)
+
+ -- Peter Silva <peter@idefix>  Tue, 05 Dec 2017 18:01:18 -0500
+
 metpx-sarracenia (2.17.12a1) unstable; urgency=medium
 
   * bugfix: sr_post sometimes required -p. It shouldn't.
