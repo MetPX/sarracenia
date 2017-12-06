@@ -6,9 +6,11 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.12a4**
+* added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
+
 **2.17.12a3**
 
-* added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
 * added retry_ttl to have retry queue give up eventually.
 * changed behaviour to try *attempts* times before putting in the retry queue
 * buffering changed from 8K to 1M (awful performance regression due to timeouts on small bufs.)

@@ -38,11 +38,16 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.12a4
+---------
+
+*NOTICE*: fix for 12a2 bug, that caused retries without sleeping. now it does exponential backoff.
+
+
 2.17.12a3
 ---------
 
 *NOTICE*: added retry_ttl to age files in retry_queue so they eventually age out.
-*NOTICE*: fix for 12a2 bug.
 
 2.17.12a2
 ---------
