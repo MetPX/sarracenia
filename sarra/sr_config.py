@@ -415,6 +415,8 @@ class sr_config:
         self.debug                = False
 
         self.retry_mode           = True
+        self.retry_ttl            = self.duration_from_str('2D',setting_units='s')
+
         self.remote_config        = False
         self.remote_config_url    = []
 
@@ -1736,6 +1738,13 @@ class sr_config:
                         self.retry_mode = self.isTrue(words[1])
                         n = 2
 
+                elif words0 in ['retry_ttl']:  # FIXME to be documented
+                     if    words1.lower() == 'none' :
+                           self.retry_ttl = None
+                     else:
+                           self.retry_ttl = int(self.duration_from_str(words1,'s'))
+                     n = 2
+
                 elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
                      item = words[1].lower()
                      if words0 in [ 'role' ]:
@@ -2457,6 +2466,18 @@ def self_test():
     cfg.option(opt1.split())
     if cfg.retry_mode :
        cfg.logger.error("retry_mode not off")
+       failed = True
+
+    opt1 = "retry_ttl none"
+    cfg.option(opt1.split())
+    if cfg.retry_ttl :
+       cfg.logger.error("retry_ttl not none")
+       failed = True
+
+    opt1 = "retry_ttl 1D"
+    cfg.option(opt1.split())
+    if cfg.retry_ttl != 86400 :
+       cfg.logger.error("retry_ttl not properly set to 1D %d" % cfg.retry_ttl)
        failed = True
 
 
