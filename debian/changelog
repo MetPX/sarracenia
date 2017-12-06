@@ -1,6 +1,11 @@
-metpx-sarracenia (2.17.12a3) unstable; urgency=medium
+metpx-sarracenia (2.17.12a4) unstable; urgency=medium
 
   * added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
+
+ -- Peter Silva <peter@idefix>  Wed, 06 Dec 2017 17:28:56 -0500
+
+metpx-sarracenia (2.17.12a3) unstable; urgency=medium
+
   * added retry_ttl to have retry queue give up eventually.
   * changed behaviour to try *attempts* times before putting in the retry queue
   * buffering changed from 8K to 1M (awful performance regression due to timeouts on small bufs.)
