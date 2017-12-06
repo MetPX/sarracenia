@@ -229,25 +229,9 @@ class sr_proto():
         self.tbegin    = time.time()
         self.timeout   = self.parent.timeout
 
-        # sigalarm timeout: worst speed set to 30 secs for 8K
+        self.iotime    = 30
 
-        min_speed_8k = 30.0 / 8192
-
-        # if throttling is set, consider half its speed
-
-        if self.bytes_ps > 0 :
-           half_throttle = self.bytes_ps * 0.5
-           if half_throttle < min_speed_8k : min_speed_8k = half_throttle
-
-        # compute a iotime : minimum is 30 secs
-
-        self.iotime = 3 + int( self.bufsize * min_speed_8k + 0.9 )
-
-        if self.iotime < 30 : self.iotime = 30
-
-        # timeout can be used to overwrite out iotime
-
-        if self.timeout and self.timeout > self.iotime: self.iotime = int(self.timeout)
+        if self.timeout > self.iotime: self.iotime = int(self.timeout)
 
         self.logger.debug("iotime %d" % self.iotime)
 
