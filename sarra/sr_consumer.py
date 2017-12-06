@@ -63,7 +63,7 @@ class sr_consumer:
         self.save = False
 
         self.iotime = 30
-        if self.parent.timeout and self.parent.timeout > 30 : self.iotime = int(self.parent.timeout)
+        if self.parent.timeout : self.iotime = int(self.parent.timeout)
 
         # truncated exponential backoff for consume...
 
