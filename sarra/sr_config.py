@@ -427,7 +427,9 @@ class sr_config:
         self.logrotate            = 5
         self.report_daemons          = False
 
-        self.bufsize              = 8192
+        self.bufsize              = self.chunksize_from_str('1M')
+        self.timeout              = self.duration_from_str('5m',setting_units='s')
+
         self.kbytes_ps            = 0
 
         self.sumalgo              = None
@@ -568,7 +570,6 @@ class sr_config:
         self.source               = None
         self.source_from_exchange = False
 
-        self.timeout              = None
         self.users                = {}
         self.users_flag           = False
 
