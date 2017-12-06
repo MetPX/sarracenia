@@ -298,8 +298,17 @@ class sr_sender(sr_subscribe):
         i  = 0
         while i < self.attempts :
               ok = self.__do_send__()
-              if ok : break
-              i = i + 1
+              if ok :
+                  self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
+                  break
+              else:
+                  #========================
+                  # Connection failed.  increment interval, sleep and try again
+                  #========================
+                  time.sleep(self.sleep_connect_try_interval)       
+                  if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
+                       self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
+                  i = i + 1
 
         # if retry mode... do retry stuff
         if self.retry_mode :
