@@ -9,11 +9,13 @@ class Heartbeat_Memory(object):
 
     def __init__(self,parent):
 
-        self.threshold  = 0
+        self.threshold  = None
+        self.file_count = None
 
         # make parent know about these possible options
 
         parent.declare_option('heartbeat_memory_max')
+        parent.declare_option('heartbeat_memory_baseline_file')
 
           
     def perform(self,parent):
@@ -22,17 +24,27 @@ class Heartbeat_Memory(object):
 
         # get set value
 
-        if hasattr(parent,'heartbeat_memory_max'):
-            if type(parent.heartbeat_memory_max) is list:
-               maxstr = parent.heartbeat_memory_max[0]
-            else:
-               maxstr = parent.heartbeat_memory_max
-            self.threshold  = parent.chunksize_from_str(maxstr)
-            self.logger.info("memory threshold set to %d" % self.threshold)
+        if self.threshold == None :
+           if hasattr(parent,'heartbeat_memory_max'):
+              if type(parent.heartbeat_memory_max) is list:
+                 maxstr = parent.heartbeat_memory_max[0]
+              else:
+                 maxstr = parent.heartbeat_memory_max
+              self.threshold  = parent.chunksize_from_str(maxstr)
+              self.logger.info("memory threshold set to %d" % self.threshold)
+
+        if self.file_count == None:
+           if hasattr(parent,'heartbeat_memory_baseline_file'):
+              if type(parent.heartbeat_memory_baseline_file) is list:
+                 self.file_count = int(parent.heartbeat_memory_baseline_file[0])
+              else:
+                 self.file_count = int(parent.heartbeat_memory_baseline_file)
+              self.logger.info("memory baseline_file set to %d" % self.file_count)
+           if self.file_count == None: self.file_count = 100
 
         self.logger.debug("heartbeat_memory")
 
-        if self.threshold == 0 and parent.message_count < 100 : return True
+        if parent.message_count < self.file_count : return True
 
         # from doc memory_full_info()  # "real" USS memory usage (Linux, OSX, Win only)
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
@@ -41,7 +53,7 @@ class Heartbeat_Memory(object):
         p = psutil.Process(parent.pid)
         mem = p.memory_info()
 
-        if self.threshold == 0 :
+        if self.threshold == None :
            self.threshold = 10 * mem.vms
            self.logger.info("memory threshold set to %d" % self.threshold)
            return True
@@ -54,7 +66,7 @@ class Heartbeat_Memory(object):
         import subprocess
         cmd = []
         cmd.append(parent.program_name)
-        if parent.user_args and len(parent.user_args) > 0: cmd.extend(parent.user_args)
+        if parent.user_args and len(parent.user_args) > 0 : cmd.extend(parent.user_args)
         if parent.user_config: cmd.append( parent.user_config )
 
         cmd.append('restart')
