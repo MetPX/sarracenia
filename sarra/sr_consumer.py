@@ -137,6 +137,24 @@ class sr_consumer:
 
         if self.raw_msg == None : self.raw_msg = self.retry_get()
 
+        # check if retry message expiry
+
+        if self.raw_msg != None and self.raw_msg.isRetry:
+           notice   = self.raw_msg.body
+           if type(notice) == bytes: notice = notice.decode("utf-8")
+           nparts   = notice.split()
+           tparts   = nparts[0].split('.')
+           ts       = time.strptime(tparts[0], "%Y%m%d%H%M%S" )
+           ep_msg   = calendar.timegm(ts)
+           msg_time = ep_msg + int(tparts[1]) / 1000.0
+
+           msg_age  = time.time() - msg_time
+           if msg_age > self.parent.retry_ttl :
+              self.logger.info("expired retry message skipped %s" % notice)
+              self.msg_worked()
+              return False, self.msg
+
+
         # when no message sleep for 1 sec. (value taken from old metpx)
         # *** value 0.01 was tested and would simply raise cpu usage of broker
         # to unacceptable level with very fews processes (~20) trying to consume messages
