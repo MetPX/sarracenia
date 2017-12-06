@@ -38,13 +38,28 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.12a3
+---------
+
+*NOTICE*: added retry_ttl to age files in retry_queue so they eventually age out.
+*NOTICE*: fix for 12a2 bug.
+
+2.17.12a2
+---------
+
+**BUG**: sr_sender retry connection no sleep interval, hammers server, fills logs rapidly.
+
 *NOTICE*: added heartbeat_memory to default plugins, so components periodically restart when leaking.
 *NOTICE*: fixed bug sr_post/sr_watch does not apply *events* option (posts all events regardless.)
+*NOTICE*: fixed bug performance regression by switching to 1Mbyte buffers, and fixed timers.
+
 
 2.17.12a1
 ---------
 
 **BUG**: sr_post/sr_watch does not apply *events* option (posts all events regardless.)
+
+**BUG**: performance regression caused by timeouts added changing buffering to use 8K ones.
 
 *CHANGE*: accept_unmatch now always honoured. Formerly was set by presence/absence of
 accept/reject clauses. Now, by default, a file with no accept/reject clauses will 

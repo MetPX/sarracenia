@@ -595,22 +595,28 @@ and under which name.
 - **recompute_chksum <boolean> (default: False)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: True)** 
+- **retry_ttl    <duration>         (default: 2d)** 
 - **source_from_exchange  <boolean> (default: False)**
 - **strip     <count|regexp>   (default: 0)**
 - **suppress_duplicates   <off|on|999>     (default: off)**
 - **timeout     <float>         (default: 0)**
 
 
-When the **retry** option is false, the **attempts** option indicates how many times to 
+The **attempts** option indicates how many times to 
 attempt downloading the data before giving up.  The default of 3 should be appropriate 
-in most cases. However, by default **retry** is True, so this value has no effect.
+in most cases.  When the **retry** option is false, the file is then dropped immediately.
 
-When The **retry** option is set, a failure to download (or send, in a sender) will
-cause the message to be added to a queue file for later retry.  When there are
-no messages ready to consume from the AMQP queue, the retry queue will be queried.
+When The **retry** option is set (default), a failure to download after prescribed number
+of **attempts** (or send, in a sender) will cause the message to be added to a queue file 
+for later retry.  When there are no messages ready to consume from the AMQP queue, 
+the retry queue will be queried.
+
+The **retry_ttl** (retry time to live) option indicates how long to keep trying to send 
+a file before it is aged out of a the queue.  Default is two days.  If a file has not 
+been transferred after two days of attempts, it is discarded.
 
 The **timeout** option, sets the number of seconds to wait before aborting a
-connection or download attempt.
+connection or download transfer (applied per buffer during transfer.)
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.) The value can be a file name suffix, which is 
