@@ -77,7 +77,6 @@ class sr_subscribe(sr_instances):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
-
         # verify post_base_dir
 
         if self.post_base_dir == None :
@@ -200,7 +199,6 @@ class sr_subscribe(sr_instances):
            self.logger.info("Output AMQP broker(%s) user(%s) vhost(%s)" % \
                            (self.post_broker.hostname,self.post_broker.username,self.post_broker.path) )
 
-
            # publisher
 
            self.publisher = Publisher(self.post_hc)
@@ -226,18 +224,12 @@ class sr_subscribe(sr_instances):
                      if not hasattr(self,'http_link') :
                         self.http_link = http_transport()
                      ok = self.http_link.download(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'ftp' :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.download(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'sftp' :
@@ -246,25 +238,16 @@ class sr_subscribe(sr_instances):
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
                      ok = self.sftp_link.download(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.msg.url.scheme == 'file' :
                      ok = file_process(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 # user defined download scripts
 
                 elif self.do_download :
                      ok = self.do_download(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
         except :
@@ -273,10 +256,6 @@ class sr_subscribe(sr_instances):
                 if self.reportback: 
                    self.msg.report_publish(503,"Unable to process")
                 self.logger.error("%s: Could not download" % self.program_name)
-
-        # put to retry list
-
-        if self.retry_mode: self.consumer.msg_to_retry()
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
@@ -1152,24 +1131,22 @@ class sr_subscribe(sr_instances):
 
            if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
 
-           # old way... retry_mode False
+           # N attempts to download
 
-           if not self.retry_mode :
-              i  = 0
-              while i < self.attempts :
-                    ok = self.__do_download__()
-                    if ok : break
-                    i = i + 1
-              # could not download
-              if not ok : return False
+           i  = 0
+           while i < self.attempts :
+                 ok = self.__do_download__()
+                 if ok : break
+                 i = i + 1
 
-           # retry_mode True (default!?)
+           # if retry mode... do retry stuff
+           if self.retry_mode :
+              if ok : self.consumer.msg_worked()
+              else  : self.consumer.msg_to_retry()
 
-           else :
+           # could not download ...
 
-              # try to download
-              ok = self.__do_download__()
-              if not ok : return False
+           if not ok: return False
 
            # after download we dont propagate renaming... once used get rid of it
            if 'rename'  in self.msg.headers : del self.msg.headers['rename']
