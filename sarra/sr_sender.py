@@ -183,18 +183,12 @@ class sr_sender(sr_subscribe):
         try : 
                 if   self.do_send :
                      ok = self.do_send(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.details.url.scheme in ['ftp','ftps']  :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.send(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
 
                 elif self.details.url.scheme == 'sftp' :
@@ -203,9 +197,6 @@ class sr_sender(sr_subscribe):
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
                      ok = self.sftp_link.send(self)
-                     if self.retry_mode :
-                          if ok : self.consumer.msg_worked()
-                          else  : self.consumer.msg_to_retry()
                      return ok
         except :
                 (stype, svalue, tb) = sys.exc_info()
@@ -215,8 +206,6 @@ class sr_sender(sr_subscribe):
                 self.logger.error("Could not send")
 
         # something went wrong
-
-        if self.retry_mode : self.consumer.msg_to_retry()
 
         if self.reportback:
            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
@@ -304,20 +293,37 @@ class sr_sender(sr_subscribe):
         # proceed to send :  has to work
         #=================================
 
-        while True : 
-              ok =self.__do_send__()
-              if ok :
-                   self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
-                   break
-              else:
-                   #========================
-                   # Connection failed.  increment interval, sleep and try again
-                   #========================
-                   time.sleep(self.sleep_connect_try_interval)       
-                   if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
-                        self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
+        # N attempts to send
 
-              if self.retry_mode and not ok : return False
+        i  = 0
+        while i < self.attempts :
+              ok = self.__do_send__()
+              if ok : break
+              i = i + 1
+
+        # if retry mode... do retry stuff
+        if self.retry_mode :
+           if ok : self.consumer.msg_worked()
+           else  : self.consumer.msg_to_retry()
+
+        # could not download ...
+
+        if not ok: return False
+
+        # OLD SENDING KEPT AS REFERENCE
+        #ok =self.__do_send__()
+        #if ok :
+        #     self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
+        #     break
+        #else:
+        #     #========================
+        #     # Connection failed.  increment interval, sleep and try again
+        #     #========================
+        #     time.sleep(self.sleep_connect_try_interval)       
+        #     if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
+        #          self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
+        #
+        #if self.retry_mode and not ok : return False
 
         #=================================
         # publish our sending
