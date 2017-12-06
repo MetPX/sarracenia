@@ -346,8 +346,9 @@ class sr_instances(sr_config):
 
         cmd = []
         cmd.append(sys.argv[0])
-        cmd.append("--no")
-        cmd.append("%d" % self.instance)
+        if not self.user_args or not "--no" in self.user_args :
+           cmd.append("--no")
+           cmd.append("%d" % self.instance)
         if self.user_args   != None : cmd.extend(self.user_args)
         cmd.append("start")
         if self.user_config != None : cmd.append(self.user_config)
