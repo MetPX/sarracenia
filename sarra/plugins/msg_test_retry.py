@@ -30,8 +30,8 @@ class Msg_test_retry():
 
         if self.msg_baseurl_good == None: self.msg_baseurl_good = m.baseurl
 
-        # 50% chance for retry message to recover (will try later)
-        if m.isRetry and random.randint(0,2) :
+        # retry message : recover it
+        if m.isRetry :
            parent.destination = self.destination
            ok, parent.details = parent.credentials.get(self.destination)
            m.set_notice(self.msg_baseurl_good,m.relpath,m.time)
