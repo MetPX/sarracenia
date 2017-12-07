@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* msg_delay plugin to delay messages for a specified interval.
+* C: added exponential backoff to retry, avoid hammering servers when they're sick.
+
 **2.17.12a4**
 * added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
 

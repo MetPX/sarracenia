@@ -106,6 +106,7 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
   amqp_rpc_reply_t reply;
   amqp_channel_open_ok_t *open_status;
   amqp_tx_select_ok_t *select_status;
+  time_t to_sleep=1;
 
   if ( !(broker->password) ) {
     log_msg(  LOG_ERROR, "No broker password found.\n" );
@@ -178,8 +179,9 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
   have_connection:
       status = amqp_destroy_connection(broker->conn);
 
-  sleep(1);
-  log_msg( LOG_INFO, "retry connect.");
+  sleep(to_sleep);
+  log_msg( LOG_INFO, "context_connect slept %d seconds, trying again now.", to_sleep );
+  if (to_sleep < 60) to_sleep<<=1;
  
   }
 }
