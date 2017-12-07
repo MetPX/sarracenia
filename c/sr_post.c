@@ -152,6 +152,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     amqp_rpc_reply_t reply;
     signed int status;
     struct sr_header_t *uh;
+    time_t to_sleep = 1;
 
     while(1) 
     {
@@ -236,6 +237,9 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     
 restart:
         sr_context_close(sr_c);
+        sleep(to_sleep);
+        if (to_sleep < 60) to_sleep<<=1;
+        log_msg( LOG_WARNING, "publish failed. Slept: %d seconds. Retrying...\n", to_sleep );
         sr_context_connect(sr_c);
 
     }
@@ -247,7 +251,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
  */
 {
   char  *drfound;
-    char  fn[PATH_MAXNUL];
+  char  fn[PATH_MAXNUL];
   char *c, *d;
   int lasti;
   int   linklen;
