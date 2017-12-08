@@ -200,6 +200,11 @@ echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 
 sr start
+
+sr_subscribe stop fclean
+sr_subscribe cleanup fclean
+sr_subscribe remove fclean
+
 ret=$?
 
 count_of_checks=$((${count_of_checks}+1))
