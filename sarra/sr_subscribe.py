@@ -1133,11 +1133,15 @@ class sr_subscribe(sr_instances):
 
            # N attempts to download
 
-           i  = 0
-           while i < self.attempts :
+           i  = 1
+           while i <= self.attempts :
                  ok = self.__do_download__()
                  if ok : break
                  i = i + 1
+                 if i < 6 :
+                    time.sleep(1<<i) 
+                 else:
+                    time.sleep(60) 
 
            # if retry mode... do retry stuff
            if self.retry_mode :
