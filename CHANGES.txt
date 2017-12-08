@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: implemented *source* option
+* C: corrected picking of "main file" for configuration name.
+
 **2.17.12a5**
 
 * added exponential backoff to download failures.
