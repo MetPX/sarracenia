@@ -139,6 +139,7 @@ struct sr_config_t {
   int                 recursive;
   float               sleep;
   char                sumalgo; // checksum algorithm to use.
+  char               *source;
   char               *to;
   struct sr_topic_t  *topics;
   char                topic_prefix[AMQP_MAX_SS];

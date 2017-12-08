@@ -777,6 +777,11 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
       sr_cfg->sleep = atof(argument);
       return(2);
 
+  } else if ( !strcmp( option, "source" ) ) {
+      if (sr_cfg->source) free(sr_cfg->source);
+      sr_cfg->source = strdup(argument);
+      return(2);
+
   } else if ( !strcmp( option, "subtopic" ) || !strcmp( option, "sub") ) {
       sr_add_topic( sr_cfg, argument );
       return(2);
@@ -801,6 +806,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
   } else if ( !strcmp( option, "sum" ) ) {
       sr_cfg->sumalgo = argument[0];
       return(2);
+
   } else if ( !strcmp( option, "to" ) ) {
       if (sr_cfg->to) free(sr_cfg->to);
       sr_cfg->to = strdup(argument);
@@ -842,6 +848,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->pidfile) free(sr_cfg->pidfile);
   if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
   if (sr_cfg->progname) free(sr_cfg->progname);
+  if (sr_cfg->source) free(sr_cfg->source);
   if (sr_cfg->to) free(sr_cfg->to);
   if (sr_cfg->post_base_url) free(sr_cfg->post_base_url);
 
@@ -937,6 +944,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->sleep=0.0;
   sr_cfg->heartbeat=300.0;
   sr_cfg->help=0;
+  sr_cfg->source=NULL;
   sr_cfg->statehost='0';
   sr_cfg->sumalgo='s';
   sr_cfg->to=NULL;
@@ -1266,6 +1274,12 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
       }
       sr_cfg->post_broker->exchange_split= sr_cfg->post_exchange_split;
     
+      if ( sr_cfg->source == NULL ) 
+      {
+          log_msg( LOG_DEBUG, "setting source: %s\n", sr_cfg->post_broker->user );
+          sr_cfg->source = strdup(sr_cfg->post_broker->user ) ;
+      }
+
       if ( sr_cfg->to == NULL ) 
       {
           log_msg( LOG_DEBUG, "setting to_cluster: %s\n", sr_cfg->post_broker->hostname );
