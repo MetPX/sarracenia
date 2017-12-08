@@ -523,7 +523,7 @@ char token_line[TOKMAX];
 
 // OPTIS - Option Is ... the option string matches x.
 
-int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg) 
+int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, int master) 
 /*
    
    returns 
@@ -604,7 +604,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg)
       return(2);
 
   } else if ( !strcmp( option, "config" ) || !strcmp(option,"include" ) || !strcmp(option, "c") ) {
-      val = sr_config_read( sr_cfg, argument, 1, 1 );
+      val = sr_config_read( sr_cfg, argument, 1, master );
       if (val < 0 ) return(-1);
       return(2);
 
@@ -1019,7 +1019,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int m
   f = fopen( p, "r" );
   if ( f == NULL )  // drop the suffix
   {
-      log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
+      log_msg( LOG_DEBUG, "sr_config_read 1 failed to open: %s\n", p );
       plen=strlen(p);
       p[plen-5]='\0';
       plen -= 5; 
@@ -1027,7 +1027,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int m
   }
   if ( f == NULL ) 
   {
-     log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
+     log_msg( LOG_DEBUG, "sr_config_read 2 failed to open: %s\n", p );
 
      if (*filename != '/')  /* relative path, with or without suffix */
      { 
@@ -1037,7 +1037,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int m
      }
      if ( f == NULL ) 
      {
-         log_msg( LOG_DEBUG, "sr_config_read failed to open: %s\n", p );
+         log_msg( LOG_DEBUG, "sr_config_read 3 failed to open: %s\n", p );
          if ( strcmp(&(p[plen-5]), ".conf") ) 
          {
              strcat(p,".conf");
@@ -1069,7 +1069,7 @@ int sr_config_read( struct sr_config_t *sr_cfg, char *filename, int abort, int m
      option   = strtok(token_line," \t\n");
      argument = strtok(NULL," \t\n");
 
-     ret = sr_config_parse_option(sr_cfg, option,argument);
+     ret = sr_config_parse_option(sr_cfg, option,argument,master);
      if (ret < 0) return(0);
 
   };

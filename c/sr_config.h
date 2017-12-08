@@ -154,7 +154,7 @@ struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* cha
   */
 
 
-int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument );
+int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument, int master );
  /* 
     update sr_cfg with the option setting (and it's argument) given
     return the number of arguments consumed:  0, 1, or 2.
