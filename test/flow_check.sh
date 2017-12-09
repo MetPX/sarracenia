@@ -345,11 +345,14 @@ calcres ${totshortened} ${totfilet} \
 
 calcres ${totfilet} ${totmsgt} "count of downloads by subscribe t_f30 (${totfilet}) and messages received (${totmsgt}) should be about the same" 
 
-while ! calcres ${totfilet} ${totwatch}  "downloads by subscribe t_f30 (${totfilet}) and files posted by sr_watch (${totwatch}) should be about the same" retry ; do
+t3=$(( ${totfilet}*2 ))
+
+while ! calcres ${t3} ${totwatch}  "double the downloads by subscribe t_f30 (${t3}) and files posted (add+remove) by sr_watch (${totwatch}) should be about the same" retry ; do
     printf "info: retrying... waiting for totwatch to catchup\n"
     sleep 30
     oldtotwatch=${totwatch}
     countall
+    t3=$(( ${totfilet}*2 ))
     if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
        printf "error: giving up on this test\n"
        tno=$((${tno}+1))
@@ -359,21 +362,21 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
-DR="`cat $tstdir/.httpdocroot`"
-good_files=0
-all_files=0
-cd $DR
-echo "" >bad_file.list
-for i in `ls sent_by_tsource2send/` ; do
-    if cmp downloaded_by_sub_t/$i sent_by_tsource2send/$i >& /dev/null ; then
-       good_files=$((${good_files}+1))
-    else
-       echo $i >>bad_file.list
-    fi
-    all_files=$((${all_files}+1))
-done
-
-tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
+# FIXME replace this with something linked into the fclean subscribers.
+#DR="`cat $tstdir/.httpdocroot`"
+#good_files=0
+#all_files=0
+#cd $DR
+#echo "" >bad_file.list
+#for i in `ls sent_by_tsource2send/` ; do
+#    if cmp downloaded_by_sub_t/$i sent_by_tsource2send/$i >& /dev/null ; then
+#       good_files=$((${good_files}+1))
+#    else
+#       echo $i >>bad_file.list
+#    fi
+#    all_files=$((${all_files}+1))
+#done
+#tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
 
 tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
@@ -392,8 +395,10 @@ if [ "$C_ALSO" ]; then
 
   totcvan=$(( ${totcvan14p} + ${totcvan15p} ))
   calcres  ${totcvan} ${totcdnld} "cdnld_f21 subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
-  calcres  ${totcveille} ${totcdnld} "veille_f34 should post the same number of files ($totcveille) that subscribe cdnld_f21 downloaded ($totcdnld)"
-  calcres  ${totcveille} ${totcfile} "veille_f34 should post the same number of files ($totcveille) that subscribe cfile_f44 downloaded ($totcfile)"
+  t4=$(( ${totcdnld}*2 ))
+  calcres  ${totcveille} ${t4} "veille_f34 should post double the files ($totcveille) that subscribe cdnld_f21 downloaded ($totcdnld)"
+  t5=$(( ${totcfile}*2 ))
+  calcres  ${totcveille} ${t5} "veille_f34 should post double the files ($totcveille) that subscribe cfile_f44 downloaded ($totcfile)"
 
 fi
 

@@ -201,9 +201,9 @@ echo $testdocroot >.httpdocroot
 
 sr start
 
-sr_subscribe stop fclean
-sr_subscribe cleanup fclean
-sr_subscribe remove fclean
+#sr_subscribe stop fclean
+#sr_subscribe cleanup fclean
+#sr_subscribe remove fclean
 
 ret=$?
 

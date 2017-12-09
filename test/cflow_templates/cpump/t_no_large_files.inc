@@ -8,7 +8,7 @@ reject .*/\.tar
 # GRIB files will overwhelm a small server.
 reject .*/grib2/.*
 # large netcdf files as well.
-reject .*/model_giops/.*
+reject .*model_giops.*
 # radar imagery
 reject .*/GIF/.*
 
