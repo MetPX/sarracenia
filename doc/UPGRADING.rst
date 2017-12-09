@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.12a5
+---------
+
+*NOTICE*: found additional cases of 12a2 bug, fixed.
+
+
 2.17.12a4
 ---------
 

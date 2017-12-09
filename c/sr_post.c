@@ -406,7 +406,7 @@ void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb )
 
   strcpy( m.to_clusters, sr_c->cfg->to );
   strcpy( m.from_cluster, sr_c->cfg->post_broker->hostname );
-  strcpy( m.source,  sr_c->cfg->post_broker->user );
+  strcpy( m.source,  sr_c->cfg->source );
   set_url( m.url, sr_c->cfg->post_base_url );
   m.user_headers = sr_c->cfg->user_headers;
 

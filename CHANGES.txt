@@ -6,7 +6,13 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* msg_delay plugin to delay messages for a specified interval.
+* C: implemented *source* option
+* C: corrected picking of "main file" for configuration name.
+
+**2.17.12a5**
+
+* added exponential backoff to download failures.
+* inactive work committed for long lasting flow tests (deletion while in progress.)
 * C: added exponential backoff to retry, avoid hammering servers when they're sick.
 
 **2.17.12a4**
