@@ -15,10 +15,15 @@ class Msg_Delete(object):
  
         import os
         msg = parent.msg
-        #parent.logger.info("msg_delete received: %s %s%s topic=%s lag=%g %s" % \
-        #   tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
-        parent.logger.info("msg_delete: %s/%s" % (msg.new_dir, msg.new_file))
-        os.unlink( "%s/%s" % (msg.new_dir, msg.new_file) )
+
+        f="%s/%s" % (msg.new_dir, msg.new_file) 
+        parent.logger.info("msg_delete: %s" % f)
+        try:
+            if os.path.exists(f):
+                os.unlink( f );
+        except:
+            pass
+
         return True
 
 msg_delete = Msg_Delete(self)

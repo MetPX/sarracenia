@@ -25,7 +25,7 @@ class Msg_FDelay(object):
 
           
     def perform(self,parent):
-        import calendar
+        import os,calendar
 
         msg = parent.msg
         mt=msg.time
@@ -41,7 +41,12 @@ class Msg_FDelay(object):
             parent.logger.info("msg_fdelay message not old enough, sleeping for %d seconds" %  (parent.msg_fdelay - lag) )
             time.sleep( parent.msg_fdelay - lag )
 
-        filetime=os.stat( "%s/%s" % ( msg.new_dir, msg.new_file ) )[8]
+        
+        f= "%s/%s" % ( msg.new_dir, msg.new_file )
+        if not os.path.exists(f):
+             return True
+
+        filetime=os.stat( f )[8]
         now=time.time()
         lag=now-filetime
         if lag < parent.msg_fdelay :

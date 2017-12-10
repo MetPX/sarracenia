@@ -189,6 +189,12 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
   totcfile="${tot}"
 
+  audit_state="`grep auditflow $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $5; };'`"
+  audit_t1="`grep auditflow $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $12; };'`"
+  audit_t2="`grep auditflow $LOGDIR/sr_subscribe_fclean_0002.log | tail -1 | awk ' { print $12; };'`"
+  audit_t3="`grep auditflow $LOGDIR/sr_subscribe_fclean_0003.log | tail -1 | awk ' { print $12; };'`"
+  audit_t4="`grep auditflow $LOGDIR/sr_subscribe_fclean_0004.log | tail -1 | awk ' { print $12; };'`"
+  audit_t5="`grep auditflow $LOGDIR/sr_subscribe_fclean_0005.log | tail -1 | awk ' { print $12; };'`"
 }
 
 # sr_post initial start
@@ -266,7 +272,7 @@ while [ $totsarra -lt $smin ]; do
 
    countall
 
-   printf  "sample now %6d \r"  $totsarra
+   printf  "sample now %6d %s \r"  $totsarra "$audit_state"
 
 done
 printf  "\nSufficient!\n" 
@@ -362,25 +368,15 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
-# FIXME replace this with something linked into the fclean subscribers.
-#DR="`cat $tstdir/.httpdocroot`"
-#good_files=0
-#all_files=0
-#cd $DR
-#echo "" >bad_file.list
-#for i in `ls sent_by_tsource2send/` ; do
-#    if cmp downloaded_by_sub_t/$i sent_by_tsource2send/$i >& /dev/null ; then
-#       good_files=$((${good_files}+1))
-#    else
-#       echo $i >>bad_file.list
-#    fi
-#    all_files=$((${all_files}+1))
-#done
-#tallyres $good_files $all_files "files sent with identical content to those downloaded by subscribe"
+
+calcres ${audit_t1} ${audit_t2} "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
+calcres ${audit_t2} ${audit_t3} "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
+calcres ${audit_t3} ${audit_t4} "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
+calcres ${audit_t4} ${audit_t5} "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
 
 tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
-calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
+tallyres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
@@ -395,10 +391,9 @@ if [ "$C_ALSO" ]; then
 
   totcvan=$(( ${totcvan14p} + ${totcvan15p} ))
   calcres  ${totcvan} ${totcdnld} "cdnld_f21 subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
-  t4=$(( ${totcdnld}*2 ))
-  calcres  ${totcveille} ${t4} "veille_f34 should post double the files ($totcveille) that subscribe cdnld_f21 downloaded ($totcdnld)"
-  t5=$(( ${totcfile}*2 ))
-  calcres  ${totcveille} ${t5} "veille_f34 should post double the files ($totcveille) that subscribe cfile_f44 downloaded ($totcfile)"
+  t5=$(( $totcveille / 2 ))
+  calcres  ${t5} ${totcdnld} "veille_f34 should post twice as many files ($totcveille) as subscribe cdnld_f21 downloaded ($totcdnld)"
+  calcres  ${t5} ${totcfile} "veille_f34 should post twice as many files ($totcveille) as subscribe cfile_f44 downloaded ($totcfile)"
 
 fi
 

@@ -170,11 +170,11 @@ sr_audit --users foreground
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 if [ "$C_ALSO" ]; then
-   qchk 15 "queues existing after 1st audit" "show overview" 
-   xchk 31 "exchanges for flow test created."
+   qchk 17 "queues existing after 1st audit" "show overview" 
+   xchk 32 "exchanges for flow test created."
 else
-   qchk 11 "queues existing after 1st audit" "show overview" 
-   xchk 27 "exchanges for flow test created."
+   qchk 12 "queues existing after 1st audit" "show overview" 
+   xchk 28 "exchanges for flow test created."
 fi
 
 if [ "$1" = "declare" ]; then
