@@ -24,7 +24,7 @@ class Heartbeat_Cache(object):
            now       = time.time()
            new_count = parent.cache.count
 
-           self.logger.info("cache was %d, but since %f sec, increased up to %d, now saved %d entries" % 
+           self.logger.info("heartbeat_cache was %d, but since %f sec, increased up to %d, now saved %d entries" % 
                            ( self.last_count, now-self.last_time, count, new_count))
 
            self.last_time  = now
@@ -33,7 +33,7 @@ class Heartbeat_Cache(object):
         else :
 
            parent.cache.save()
-           self.logger.info("cache saved (%d)" % len(parent.cache.cache_dict))
+           self.logger.info("heartbeat_cache saved (%d)" % len(parent.cache.cache_dict))
 
         return True
 

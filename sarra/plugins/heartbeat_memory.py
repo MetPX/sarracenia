@@ -16,8 +16,8 @@ class Heartbeat_Memory(object):
 
         parent.declare_option('heartbeat_memory_max')
         parent.declare_option('heartbeat_memory_baseline_file')
-
           
+
     def perform(self,parent):
         import psutil
         self.logger = parent.logger
@@ -31,7 +31,7 @@ class Heartbeat_Memory(object):
               else:
                  maxstr = parent.heartbeat_memory_max
               self.threshold  = parent.chunksize_from_str(maxstr)
-              self.logger.info("memory threshold set to %d" % self.threshold)
+              self.logger.info("heartbeat_memory threshold set to %d" % self.threshold)
 
         if self.file_count == None:
            if hasattr(parent,'heartbeat_memory_baseline_file'):
@@ -39,7 +39,7 @@ class Heartbeat_Memory(object):
                  self.file_count = int(parent.heartbeat_memory_baseline_file[0])
               else:
                  self.file_count = int(parent.heartbeat_memory_baseline_file)
-              self.logger.info("memory baseline_file set to %d" % self.file_count)
+              self.logger.info("heartbeat_memory baseline_file set to %d" % self.file_count)
            if self.file_count == None: self.file_count = 100
 
         self.logger.debug("heartbeat_memory")
@@ -55,11 +55,12 @@ class Heartbeat_Memory(object):
 
         if self.threshold == None :
            self.threshold = 10 * mem.vms
-           self.logger.info("memory threshold set to %d" % self.threshold)
+           self.logger.info("heartbeat_memory threshold set to %d" % self.threshold)
            return True
 
         if mem.vms > self.threshold : self.restart(parent)
 
+        parent.logger.info("hearbeat_memory, current usage: %d Will trigger restart if it exceeds threshold: %d " % ( mem.vms, self.threshold ) )
         return True
 
     def restart(self,parent):

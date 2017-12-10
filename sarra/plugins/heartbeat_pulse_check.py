@@ -24,7 +24,8 @@ class Heartbeat_Pulse(object):
           
     def perform(self,parent):
         self.logger     = parent.logger
-        self.logger.debug("heartbeat_pulse_check")
+        self.logger.info( "heartbeat_pulse_check message_count %d publish_count %d " %  \
+            ( parent.message_count, parent.publish_count ) )
 
         # something wrong when consuming ?
 
