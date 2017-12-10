@@ -87,6 +87,12 @@ class sr_shovel(sr_subscribe):
            self.help()
            sys.exit(1)
 
+        # caching 
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           self.cache.open()
+
         # bindings should be defined 
 
         if self.bindings == []  :
