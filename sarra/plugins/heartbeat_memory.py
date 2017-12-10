@@ -2,7 +2,7 @@
 
 """
   default on_heartbeat handler that restarts program when detecting a memory leak... 
-  Memory threshold is set to 10 x the program memory size after 100 files have been processed 
+  Memory threshold is set to 5 x the program memory size after 100 files have been processed 
 """
 
 class Heartbeat_Memory(object): 
@@ -19,7 +19,7 @@ class Heartbeat_Memory(object):
           
 
     def perform(self,parent):
-        import psutil
+        import psutil,humanize
         self.logger = parent.logger
 
         # get set value
@@ -31,7 +31,7 @@ class Heartbeat_Memory(object):
               else:
                  maxstr = parent.heartbeat_memory_max
               self.threshold  = parent.chunksize_from_str(maxstr)
-              self.logger.info("heartbeat_memory threshold set to %d" % self.threshold)
+              self.logger.info("heartbeat_memory threshold set to %s" % humanize.naturalsize(self.threshold,binary=True) )
 
         if self.file_count == None:
            if hasattr(parent,'heartbeat_memory_baseline_file'):
@@ -44,7 +44,12 @@ class Heartbeat_Memory(object):
 
         self.logger.debug("heartbeat_memory")
 
-        if parent.message_count < self.file_count : return True
+        if self.threshold == None :
+
+            if ( parent.publish_count < self.file_count ) and ( parent.message_count < self.file_count ): 
+                self.logger.info("heartbeat_memory accumulating count (%d or %d of %d so far) before measuring memory use" \
+                      % ( parent.publish_count, parent.message_count, self.file_count) )
+                return True
 
         # from doc memory_full_info()  # "real" USS memory usage (Linux, OSX, Win only)
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
@@ -54,13 +59,14 @@ class Heartbeat_Memory(object):
         mem = p.memory_info()
 
         if self.threshold == None :
-           self.threshold = 10 * mem.vms
-           self.logger.info("heartbeat_memory threshold set to %d" % self.threshold)
-           return True
+           self.threshold = 5 * mem.vms
+           self.logger.info("heartbeat_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
+
+        parent.logger.info( "heartbeat_memory, current usage: %s trigger restart if increases past: %s " % \
+            ( humanize.naturalsize(mem.vms,binary=True), humanize.naturalsize(self.threshold,binary=True) ) )
 
         if mem.vms > self.threshold : self.restart(parent)
 
-        parent.logger.info("hearbeat_memory, current usage: %d Will trigger restart if it exceeds threshold: %d " % ( mem.vms, self.threshold ) )
         return True
 
     def restart(self,parent):
@@ -72,8 +78,7 @@ class Heartbeat_Memory(object):
 
         cmd.append('restart')
 
-        parent.logger.info("leak detected")
-        parent.logger.info("restarting with %s" % cmd)
+        parent.logger.info("heartbeat_memory triggering %s" % cmd)
         subprocess.check_call( cmd )
 
         return

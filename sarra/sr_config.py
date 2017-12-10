@@ -1731,7 +1731,7 @@ class sr_config:
                         self.reset = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['retry_mode']:  # See: sr_consumer.1
+                elif words0 in [ 'retry', 'retry_mode']:  # See: sr_consumer.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.retry_mode = True
                         n = 1

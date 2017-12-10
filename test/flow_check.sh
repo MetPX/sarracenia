@@ -50,8 +50,13 @@ function calcres {
    # 4 - will retry flag.
    #
 
-
+   
    tno=$((${tno}+1))
+
+   if [ ! "${1}" -o ! "${2}" ]; then
+      printf "test %2d FAILURE: blank results! ${3}\n" ${tno}
+      return 2
+   fi
    if [ "${1}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
       return 2
@@ -189,12 +194,12 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
   totcfile="${tot}"
 
-  audit_state="`grep auditflow $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $5; };'`"
-  audit_t1="`grep auditflow $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $12; };'`"
-  audit_t2="`grep auditflow $LOGDIR/sr_subscribe_fclean_0002.log | tail -1 | awk ' { print $12; };'`"
-  audit_t3="`grep auditflow $LOGDIR/sr_subscribe_fclean_0003.log | tail -1 | awk ' { print $12; };'`"
-  audit_t4="`grep auditflow $LOGDIR/sr_subscribe_fclean_0004.log | tail -1 | awk ' { print $12; };'`"
-  audit_t5="`grep auditflow $LOGDIR/sr_subscribe_fclean_0005.log | tail -1 | awk ' { print $12; };'`"
+  audit_state="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $5; };'`"
+  audit_t1="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $12; };'`"
+  audit_t2="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0002.log | tail -1 | awk ' { print $12; };'`"
+  audit_t3="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0003.log | tail -1 | awk ' { print $12; };'`"
+  audit_t4="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0004.log | tail -1 | awk ' { print $12; };'`"
+  audit_t5="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0005.log | tail -1 | awk ' { print $12; };'`"
 }
 
 # sr_post initial start
@@ -369,10 +374,10 @@ done
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
 
-calcres ${audit_t1} ${audit_t2} "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
-calcres ${audit_t2} ${audit_t3} "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
-calcres ${audit_t3} ${audit_t4} "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
-calcres ${audit_t4} ${audit_t5} "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
+calcres "${audit_t1}" "${audit_t2}" "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
+calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
+calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
+calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
 
 tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 

@@ -14,7 +14,7 @@ class Heartbeat_Cache(object):
         self.logger     = parent.logger
 
         if not hasattr(parent,"cache") :
-           self.logger.error( "heartbeat_cache with no cache" )
+           self.logger.info( "heartbeat_cache: off " )
            return True
 
         if parent.cache_stat :
@@ -24,7 +24,7 @@ class Heartbeat_Cache(object):
            now       = time.time()
            new_count = parent.cache.count
 
-           self.logger.info("heartbeat_cache was %d, but since %f sec, increased up to %d, now saved %d entries" % 
+           self.logger.info("heartbeat_cache was %d, but since %5.2f sec, increased up to %d, now saved %d entries" % 
                            ( self.last_count, now-self.last_time, count, new_count))
 
            self.last_time  = now

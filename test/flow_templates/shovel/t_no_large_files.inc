@@ -19,3 +19,4 @@ reject .*/GIF/.*
 reject .*citypage.*
 reject .*marine_weather.*
 reject .*hydrometric.*
+reject .*observations/xml.*
