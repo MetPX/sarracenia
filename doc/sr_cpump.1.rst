@@ -20,6 +20,11 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+**NOTE**::
+
+   While sr_cpump appears to work fine, it causes strange things on the broker, so use
+   outside of a development environment is discouraged until that issue is resolved.
+ 
 **sr_cpump** is an alternate implementation of `sr_subscribe(7) <sr_subscribe.1.html>`_ 
 with some limitations.  
 

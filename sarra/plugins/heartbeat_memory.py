@@ -1,8 +1,34 @@
 #!/usr/bin/python3
 
 """
-  default on_heartbeat handler that restarts program when detecting a memory leak... 
-  Memory threshold is set to 5 x the program memory size after 100 files have been processed 
+default on_heartbeat handler that restarts components to deal with memory leaks.
+
+One can specify a specific memory limit with the *heartbeat_memory_max* setting.
+By default, there is no specific memory limit. The program first processes *heartbeat_memory_baseline_file*
+(default 100) numer of items (messages in for subscribers, messages posted for posting programs). Once that 
+number of files has been processed, the amount of memory in use is determined, and the memory max threshold is set 
+to *memory_multiplier* times (default 5) that. If memory use ever exceeds the max, then the plugin triggers a restart,
+which should reduce the memory consumption.
+
+options:
+
+heartbeat_memory_max - hard code a maximum memory consumption to tolerate.
+
+If there is no max given, then
+
+heartbeat_memory_max will be set to:  <baseline_memory> * <multiplier>
+
+ the following options will have an effect:
+
+heartbeat_memory_baseline_files (default: 100)
+
+  how many files to process before measuring to establish the baseline memory usage.
+
+heartbeat_memory_multiplier (default: 5)
+
+  how much you want to allow the component to grow before you call it a memory leak.
+  It could be normal for memory usage to grow, especially if plugins store data in memory.
+  
 """
 
 class Heartbeat_Memory(object): 
@@ -16,6 +42,7 @@ class Heartbeat_Memory(object):
 
         parent.declare_option('heartbeat_memory_max')
         parent.declare_option('heartbeat_memory_baseline_file')
+        parent.declare_option('heartbeat_memory_multiplier')
           
 
     def perform(self,parent):
@@ -25,6 +52,13 @@ class Heartbeat_Memory(object):
         # get set value
 
         if self.threshold == None :
+           memmul=5
+           if hasattr(parent,'heartbeat_memory_multiplier'):
+              if type(parent.heartbeat_memory_max) is list:
+                  memmul = parent.heartbeat_memory_multiplier[0]
+              else:
+                  memmul = parent.heartbeat_memory_multiplier
+
            if hasattr(parent,'heartbeat_memory_max'):
               if type(parent.heartbeat_memory_max) is list:
                  maxstr = parent.heartbeat_memory_max[0]
@@ -59,7 +93,7 @@ class Heartbeat_Memory(object):
         mem = p.memory_info()
 
         if self.threshold == None :
-           self.threshold = 5 * mem.vms
+           self.threshold = int(memmul * mem.vms)
            self.logger.info("heartbeat_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
 
         parent.logger.info( "heartbeat_memory, current usage: %s trigger restart if increases past: %s " % \
