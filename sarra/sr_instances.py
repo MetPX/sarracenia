@@ -140,6 +140,27 @@ class sr_instances(sr_config):
            self.help()
            os._exit(1)
 
+    def print_plugins(self):
+       
+       print( ' system plugins: ' )
+       i=1
+       for p in os.listdir( self.package_dir + os.sep + 'plugins'  ):
+           if p == '__init__.py' : continue
+           print( "%20s " % p, end=''  )
+           if ( i%4 ) == 0: print('')
+           i+=1
+
+       if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
+ 
+       i=1
+       print( '\n\nuser plugins: ' )
+       for p in os.listdir(  self.user_config_dir + os.sep + 'plugins' ):
+           print( "%20s " % p , end='' )
+           if ( i%4 ) == 0: print('')
+           i+=1
+
+       print( '\n' )
+
     def exec_action_on_all(self,action):
 
         configdir = self.user_config_dir + os.sep + self.program_dir
@@ -147,16 +168,20 @@ class sr_instances(sr_config):
         if not os.path.isdir(configdir)      : return
 
         if action == 'list':
-           print("admin.conf")
-           print("credentials.conf")
-           print("default.conf\n")
+           self.print_plugins()
+           print("general:\n%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
 
+        i=1
+        print("\ncomponent configurations:" )
         for confname in os.listdir(configdir):
-            if action == 'list'     : print("%s" % confname)
+            if action == 'list' : 
+                print( "%20s" % confname, end='')
+                if i%4 == 0: print('')
+                i+=1
             else:
-                  try   :
-                          if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
-                  except: pass
+                try: 
+                   if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
+                except: pass
 
 
 
@@ -181,7 +206,12 @@ class sr_instances(sr_config):
         ext     = '.conf'
         if self.user_config[-4:] == '.inc' : ext = ''
 
-        def_dir = self.user_config_dir + os.sep + self.program_dir
+        if self.user_config[-3:] == '.py' : 
+           ext = ''
+           def_dir = self.user_config_dir + os.sep + 'plugins'
+        else:
+           def_dir = self.user_config_dir + os.sep + self.program_dir
+
         def_fil = def_dir + os.sep + self.config_name + ext
 
         if   action == 'add'        :
