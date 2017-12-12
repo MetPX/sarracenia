@@ -700,11 +700,11 @@ class sr_config:
         # invoke on_hearbeat when provided
         for plugin in self.on_heartbeat_list:
             try: 
-                plugin(self):
+                plugin(self)
             except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error( "plugin %s, execution failed." %s plugin )
+                self.logger.error( "plugin %s, execution failed." % plugin )
            #if not plugin(self): return False
 
         return True
