@@ -379,9 +379,9 @@ calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 ($
 calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
 calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
 
-tallyres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
+calcres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
-tallyres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
+calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
