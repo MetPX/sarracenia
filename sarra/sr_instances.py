@@ -50,6 +50,10 @@ class sr_instances(sr_config):
             signal.signal(signal.SIGHUP, self.reload_signal)
 
         sr_config.__init__(self,config,args,action)
+
+        if (( action == 'list' ) or ( action == 'edit' )) and (( config != None ) and ( config[-3:] == '.py' )):
+            return
+
         self.cwd = os.getcwd()
         self.configure()
         self.build_parent()
@@ -94,6 +98,10 @@ class sr_instances(sr_config):
            return
 
         # no config file given
+        if ((action == 'list') or (action == 'edit')) and ((self.user_config != None) and (self.user_config[-3:] == '.py')):
+           self.config_name=os.path.basename(self.user_config)
+           self.exec_action_on_config(action)
+           os._exit(0)
 
         if self.config_name == None:
            if   action == 'list'     : self.exec_action_on_all(action)
@@ -142,7 +150,7 @@ class sr_instances(sr_config):
 
     def print_plugins(self):
        
-       print( ' system plugins: ' )
+       print( ' system plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
        i=1
        for p in os.listdir( self.package_dir + os.sep + 'plugins'  ):
            if p == '__init__.py' : continue
@@ -153,7 +161,7 @@ class sr_instances(sr_config):
        if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
  
        i=1
-       print( '\n\nuser plugins: ' )
+       print( '\n\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
        for p in os.listdir(  self.user_config_dir + os.sep + 'plugins' ):
            print( "%20s " % p , end='' )
            if ( i%4 ) == 0: print('')
@@ -168,14 +176,15 @@ class sr_instances(sr_config):
         if not os.path.isdir(configdir)      : return
 
         if action == 'list':
-           self.print_plugins()
-           print("general:\n%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
+            self.print_plugins()
+            print( "general: ( %s ) " % self.user_config_dir )
+            print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
 
+        print("\ncomponent configurations: ( %s )" % configdir )
         i=1
-        print("\ncomponent configurations:" )
         for confname in os.listdir(configdir):
             if action == 'list' : 
-                print( "%20s" % confname, end='')
+                print( "%20s " % confname )
                 if i%4 == 0: print('')
                 i+=1
             else:
@@ -237,8 +246,11 @@ class sr_instances(sr_config):
              except: self.logger.error("cound not enable %s " % src )
 
         elif action == 'list'       : 
-             try   : subprocess.check_call([ 'cat', usr_fil ] )
-             except: self.logger.error("could not cat %s" % usr_fil )
+             cmd = os.environ.get('PAGER')
+             if cmd == None:
+                 cmd="more"
+             try   : subprocess.check_call([ cmd, usr_fil ] )
+             except: self.logger.error("could not %s %s" % ( cmd, usr_fil ) )
 
         elif action == 'log' and ext == '.conf' :
 

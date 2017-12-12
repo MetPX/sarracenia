@@ -161,17 +161,30 @@ class sr_config:
         # config might be None ... in some program or if we simply instantiate a class
         # but if it is not... it better be an existing file
 
+        # keep a list of extended options
+
+        self.extended_options = []
+        self.known_options    = []
+
+        # check arguments
+
+        if args == [] : args = None
+        self.user_args       = args
+
         if config != None :
-           cdir = os.path.dirname(config)
-           if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
-           self.config_name = re.sub(r'(\.conf)','',os.path.basename(config))
-           ok, self.user_config = self.config_path(self.program_dir,config)
-           if ok :
-              cdir = os.path.dirname(self.user_config)
-              if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
-           self.logger.debug("sr_config config_dir   %s " % self.config_dir  ) 
-           self.logger.debug("sr_config config_name  %s " % self.config_name ) 
-           self.logger.debug("sr_config user_config  %s " % self.user_config ) 
+           if ( ( self.action == 'list' ) or ( self.action == 'edit' ) ) and ( config[-3:] == '.py' ) :
+               ok, self.user_config = self.config_path( 'plugins', config )
+           else:
+               cdir = os.path.dirname(config)
+               if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
+               self.config_name = re.sub(r'(\.conf)','',os.path.basename(config))
+               ok, self.user_config = self.config_path(self.program_dir,config)
+               if ok :
+                  cdir = os.path.dirname(self.user_config)
+                  if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
+               self.logger.debug("sr_config config_dir   %s " % self.config_dir  ) 
+               self.logger.debug("sr_config config_name  %s " % self.config_name ) 
+               self.logger.debug("sr_config user_config  %s " % self.user_config ) 
 
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
@@ -180,16 +193,6 @@ class sr_config:
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
 
-        # keep a list of extended options
-
-        self.extended_options = []
-        self.known_options    = []
-
-
-        # check arguments
-
-        if args == [] : args = None
-        self.user_args       = args
 
     def args(self,args):
         """
@@ -346,6 +349,9 @@ class sr_config:
         self.general()
 
         self.overwrite_defaults()
+
+        if self.action in [ 'edit', 'list' ]:
+            return
 
         # load/reload all config settings
 
