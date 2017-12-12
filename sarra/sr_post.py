@@ -1025,10 +1025,6 @@ class sr_post(sr_instances):
         #     left for later work. PS-20170105
         #     more details: https://github.com/gorakhargosh/watchdog/issues/392
 
-        # heartbeat
-
-        self.heartbeat_check()
-
         # on_watch 
 
         ok = self.__on_watch__()
@@ -1055,6 +1051,10 @@ class sr_post(sr_instances):
             event, src, dst = self.cur_events[key]
             done = self.process_event( event, src, dst )
             if done : self.left_events.pop(key) 
+
+        # heartbeat
+        self.heartbeat_check()
+
 
 
     # =============

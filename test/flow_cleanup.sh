@@ -23,9 +23,7 @@ eval `application_dirs`
 
 sr stop
 
-sr_cpump cleanup pelle_dd1_f04 &
-sr_cpump cleanup pelle_dd2_f05 &
-sr cleanup &
+sr cleanup 
 
 echo extra lines for the sr_cpump cleanup hanging
 sleep 10

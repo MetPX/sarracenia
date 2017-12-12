@@ -43,42 +43,34 @@ class Heartbeat_Memory(object):
         parent.declare_option('heartbeat_memory_max')
         parent.declare_option('heartbeat_memory_baseline_file')
         parent.declare_option('heartbeat_memory_multiplier')
-          
+
 
     def perform(self,parent):
         import psutil,humanize
         self.logger = parent.logger
 
-        # get set value
-
-        if self.threshold == None :
-           memmul=5
-           if hasattr(parent,'heartbeat_memory_multiplier'):
-              if type(parent.heartbeat_memory_max) is list:
-                  memmul = parent.heartbeat_memory_multiplier[0]
-              else:
-                  memmul = parent.heartbeat_memory_multiplier
-
-           if hasattr(parent,'heartbeat_memory_max'):
-              if type(parent.heartbeat_memory_max) is list:
-                 maxstr = parent.heartbeat_memory_max[0]
-              else:
-                 maxstr = parent.heartbeat_memory_max
-              self.threshold  = parent.chunksize_from_str(maxstr)
-              self.logger.info("heartbeat_memory threshold set to %s" % humanize.naturalsize(self.threshold,binary=True) )
-
         if self.file_count == None:
-           if hasattr(parent,'heartbeat_memory_baseline_file'):
-              if type(parent.heartbeat_memory_baseline_file) is list:
-                 self.file_count = int(parent.heartbeat_memory_baseline_file[0])
-              else:
-                 self.file_count = int(parent.heartbeat_memory_baseline_file)
-              self.logger.info("heartbeat_memory baseline_file set to %d" % self.file_count)
-           if self.file_count == None: self.file_count = 100
-
-        self.logger.debug("heartbeat_memory")
+            if hasattr(parent,'heartbeat_memory_baseline_file'):
+                if type(parent.heartbeat_memory_baseline_file) is list:
+                    self.file_count = int(parent.heartbeat_memory_baseline_file[0])
+                else:
+                    self.file_count = int(parent.heartbeat_memory_baseline_file)
+            else:
+                self.file_count = 100
 
         if self.threshold == None :
+            if hasattr(parent,'heartbeat_memory_multiplier'):
+                if type(parent.heartbeat_memory_multiplier) is list:
+                     parent.heartbeat_memory_multiplier = parent.heartbeat_memory_multiplier[0]
+                parent.heartbeat_memory_multiplier = float( parent.heartbeat_memory_multiplier )
+            else:
+                parent.heartbeat_memory_multiplier = 5
+    
+            if hasattr(parent,'heartbeat_memory_max'):
+                if type(parent.heartbeat_memory_max) is list:
+                    parent.heartbeat_memory_max = parent.heartbeat_memory_max[0]
+    
+                self.threshold  = parent.chunksize_from_str(parent.heartbeat_memory_max)
 
             if ( parent.publish_count < self.file_count ) and ( parent.message_count < self.file_count ): 
                 self.logger.info("heartbeat_memory accumulating count (%d or %d of %d so far) before measuring memory use" \
@@ -89,11 +81,11 @@ class Heartbeat_Memory(object):
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
         #          data=5967872, dirty=0, uss=6545408, pss=6872064, swap=0)
 
-        p = psutil.Process(parent.pid)
+        p = psutil.Process()
         mem = p.memory_info()
 
         if self.threshold == None :
-           self.threshold = int(memmul * mem.vms)
+           self.threshold = int(parent.heartbeat_memory_multiplier * mem.vms)
            self.logger.info("heartbeat_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
 
         parent.logger.info( "heartbeat_memory, current usage: %s trigger restart if increases past: %s " % \
