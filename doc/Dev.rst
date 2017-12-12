@@ -165,8 +165,7 @@ A typical development workflow will be::
    rm directories with state (indicated by flow_cleanup.sh)
    ./flow_setup.sh  ; *starts the flows*
    ./flow_check.sh  ; *checks the flows*
-   ./cpost_test.sh  ; *checks the c posting flow*
-   ./libsrshim_test.sh  ; *checks libc shim library*
+   ./flow_cleanup.sh  ; *cleans up the flows*
    
 One can then study the results, and determing the next cycle of modifications to make.
 The rest of this section documents these steps in much more detail.  
@@ -174,7 +173,7 @@ Before one can run the flow_test, some pre-requisites must be taken care of.
 
    
 
-local installation on Workstation
+Local Installation on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The flow_test invokes the version of metpx-sarracenia that is installed on the system,
@@ -199,7 +198,7 @@ or one can use debian packaging::
 which accomplishes the same thing using debian packaging.
 
 
-Install servers on Workstation
+Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install a minimal localhost broker, configure test users.
@@ -243,8 +242,8 @@ with credentials stored for localhost::
     suite.
 
 
-Setup the flow_test Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Setup Flow Test Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One part of the flow test runs an ftp server.  Need the following package for that::
 
@@ -323,11 +322,27 @@ installed, it will be used as default. If you have both amqplib and pika install
 To use or not pika. Should you set  use_pika to True and python3-pika not installed, the programs will fall back to
 amqplib.  The developpers should test both API until we are totally migrated to PIKA.
 
+Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
+tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
+that have been posted by sr_watch to the files created by downloading from it.  As the *sample now* count proceeds,
+it prints "OK" if the files downloaded are identical to the ones posted by sr_watch.   The addition of fclean and
+the corresponding cfclean for the cflow_test, are broken.  The default setup which uses *fclean* and *cfclean* ensures
+that only a few minutes worth of disk space is used at a given time, and allows for much longer tests.
 
-C Flow tests
-~~~~~~~~~~~~
+By default, the flow_test is only 1000 files, but one can ask it to run longer, like so::
 
-After the initial flow tests are run, one could continue to specifically test the c implementation, like so::
+ ./flow_check.sh 50000
+
+To accumulate fifty thousand files before ending the test.  This allows testing of long term performance, especially
+memory usage over time, and the housekeeping functions of on_heartbeat processing.
+
+
+C Checks
+~~~~~~~~
+
+These won't work while *clean*  is active. need to turn it off ( *sr_subscribe stop fclean* ) just after *./flow_setup.sh*
+then let the *./flow_check.sh* run to completion.  After the initial flow tests are run, one could continue to specifically 
+test the c implementation, like so::
 
     blacklab% ./cpost_check.sh
     checking sr_cpost copy
@@ -428,7 +443,7 @@ Flow Cleanup
 
 When done testing, run::
 
-  . ./flow_cleanup.sh
+  ./flow_cleanup.sh
 
 Which will kill the running web server, and delete all local queues.
 This also needs to be done between each run of the flow test.
