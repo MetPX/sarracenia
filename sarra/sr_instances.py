@@ -354,8 +354,12 @@ class sr_instances(sr_config):
         if self.user_config != None : cmd.append(self.user_config)
      
         self.logger.info("%s starting" % self.instance_str)
-        self.logger.debug(" cmd = %s" % cmd)
-        if self.debug :
+        self.logger.debug("cmd = %s" % cmd)
+        """
+        PS-20171212-do not know why this if statement is here, but it means debug output doesn't go to the log.
+         so I commented it out.  If it ever turns out there is a case we need it... will look again.
+        """ 
+        if 0 : #self.debug :
            pid = subprocess.Popen(cmd)
         else :
            pid = subprocess.Popen(cmd,shell=False,\
