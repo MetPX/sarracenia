@@ -615,6 +615,8 @@ class sr_config:
         self.on_heartbeat_list    = [self.on_heartbeat]
         self.execfile("on_heartbeat",'heartbeat_memory')
         self.on_heartbeat_list.append(self.on_heartbeat)
+        self.execfile("on_heartbeat",'heartbeat_pulse')
+        self.on_heartbeat_list.append(self.on_heartbeat)
 
         self.execfile("on_html_page",'html_page')
         self.on_html_page_list    = [self.on_html_page]

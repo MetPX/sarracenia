@@ -829,23 +829,58 @@ the checksums with MD5.   There are also cases, where, for various reasons, the 
 checksums are simply wrong, and should be overridden for downstream consumers.
 
 
+PERIODIC PROCESSING
+===================
+
+Most processing occurs on receipt of a message, but there is some periodic maintenance
+work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
+configured *on_heartbeat* plugins are run. By default there are three present::
+
+  heartbeat_log - prints "heartbeat" in the log.
+  heartbeat_cache - ages out old entries in the cache, to minimize its size.
+  heartbeat_memory - checks the process memory usage, and restart if too big.
+  heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+
+The log will contain messages from all three plugins every heartbeat interval, and
+if additional periodic processing is needed, the user can add configure addition
+plugins to run with the *on_heartbeat* option. 
+
 ERROR RECOVERY
---------------
+==============
 
-Errors can happen at many times:
+The tools are meant to work well un-attended, and so when transient errors occur, they do
+their best to recover elegantly.  There are timeouts on all operations, and when a failure
+is detected, the problem is noted for retry.  Errors can happen at many times:
  
-* Establishing a connection to the broker.
-* losing a connection to the broker
-* establishing a connection to the file server for a file (for download or upload.)
-* losing a connection to the server.
-* during data transfer.
+ * Establishing a connection to the broker.
+ * losing a connection to the broker
+ * establishing a connection to the file server for a file (for download or upload.)
+ * losing a connection to the server.
+ * during data transfer.
  
-Earlier versions of sarracenia had only the *attempts* option.   
+Initially, the programs try to download (or send) a file a fixed number (*attempts*, default: 3) times.
+If all three attempts to process the file are unsuccessful, then the file is placed in an instance's
+retry file. The program then continues processing of new items. When there are no new items to
+process, the program looks for a file to process in the retry queue.  It then checks if the file
+is so old that it is beyond the *retry_expire* (default: 2 days.) If the file is not expired, then
+it triggers a new round of attempts at processing the file. If the attempts fail, it goes back
+on the retry queue.
 
+This algorithm ensures that programs do not get stuck on a single bad product that prevents
+the rest of the queue from being processed, and allows for reasonable, gradual recovery of 
+service, allowing fresh data to flow preferentially, and sending old data opportunistically
+in gaps.
+
+While fast processing of good data is very desirable, it is important to slow down when errors
+start occurring. Often errors are load related, and retrying quickly will just make it worse.
+Sarracenia uses exponential back-off in many points to avoid overloading a server when there
+are errors. The back-off can accumulate to the point where retries could be separated by a minute
+or two. Once the server begins responding normally again, the programs will return to normal
+processing speed.
 
 
 EXAMPLES
---------
+========
 
 Here is a short complete example configuration file:: 
 
@@ -868,7 +903,7 @@ A variety of example configuration files are available here:
 
 
 QUEUES and MULTIPLE STREAMS
----------------------------
+===========================
 
 When executed,  **sr_subscribe**  chooses a queue name, which it writes
 to a file named after the configuration file given as an argument to sr_subscribe**
@@ -897,7 +932,7 @@ and that download stream can be multi-streamed as well.
 
 
 REPORTING
----------
+=========
 
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :

@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* Normally stderr is redirected to logs, but when debug was set it wasn't. Now it always goes to logs.
+* added messages so heartbeat processing is visible.
+* sr_shovel would freak out if cache was set. fixed.
+* fixed heartbeat_memory so it works in sr_watch.
 * C: implemented *source* option
 * C: corrected picking of "main file" for configuration name.
 
