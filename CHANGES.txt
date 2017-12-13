@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* python option 'headers' = C 'header', removed the 's' from python one.  Similary added 'expiry' as synonym for 'expire'
 * C: realpath only applied if an absolute path was supplied, now works for relative ones also.
 * heartbeat_memory uses psutil.memory_info, on python 3.4 (in ubuntu 14.04) that routine is called get_memory_info.
   added an if statement so it works for all cases.
