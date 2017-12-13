@@ -7,7 +7,7 @@ One can specify a specific memory limit with the *heartbeat_memory_max* setting.
 By default, there is no specific memory limit. The program first processes *heartbeat_memory_baseline_file*
 (default 100) numer of items (messages in for subscribers, messages posted for posting programs). Once that 
 number of files has been processed, the amount of memory in use is determined, and the memory max threshold is set 
-to *memory_multiplier* times (default 5) that. If memory use ever exceeds the max, then the plugin triggers a restart,
+to *memory_multiplier* times (default 3) that. If memory use ever exceeds the max, then the plugin triggers a restart,
 which should reduce the memory consumption.
 
 options:
@@ -24,7 +24,7 @@ heartbeat_memory_baseline_files (default: 100)
 
   how many files to process before measuring to establish the baseline memory usage.
 
-heartbeat_memory_multiplier (default: 5)
+heartbeat_memory_multiplier (default: 3)
 
   how much you want to allow the component to grow before you call it a memory leak.
   It could be normal for memory usage to grow, especially if plugins store data in memory.
@@ -64,7 +64,7 @@ class Heartbeat_Memory(object):
                      parent.heartbeat_memory_multiplier = parent.heartbeat_memory_multiplier[0]
                 parent.heartbeat_memory_multiplier = float( parent.heartbeat_memory_multiplier )
             else:
-                parent.heartbeat_memory_multiplier = 5
+                parent.heartbeat_memory_multiplier = 3
     
             if hasattr(parent,'heartbeat_memory_max'):
                 if type(parent.heartbeat_memory_max) is list:

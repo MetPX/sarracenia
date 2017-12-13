@@ -29,6 +29,7 @@ class Heartbeat_Pulse(object):
         self.last_pulse_count   = parent.pulse_count
           
     def perform(self,parent):
+
         self.logger     = parent.logger
         self.logger.info( "heartbeat_pulse message_count %d publish_count %d " %  \
             ( parent.message_count, parent.publish_count ) )
@@ -49,7 +50,6 @@ class Heartbeat_Pulse(object):
            self.last_message_count = parent.message_count
            self.last_pulse_count   = parent.pulse_count
            
-
         # something wrong when publishing ?
 
         if hasattr(parent,'publisher') :

@@ -41,6 +41,12 @@ except: pass
 
 import logging, os, random, sys, time
 
+try :    
+         from sr_util            import *
+except : 
+         from sarra.sr_util      import *
+
+
 
 # ==========
 # message to mimic amqplib from pika

@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* list categorizes configuration files.
+* list now prints the directories containing configuration files for each category.
+* list prints plugins available also, and listing a particular plugin works now as well.
+* list now uses a PAGER, if configured, and *more* by default, rather than cat.
 * Normally stderr is redirected to logs, but when debug was set it wasn't. Now it always goes to logs.
 * added messages so heartbeat processing is visible.
 * sr_shovel would freak out if cache was set. fixed.
