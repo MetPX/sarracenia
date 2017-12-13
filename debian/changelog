@@ -1,3 +1,19 @@
+metpx-sarracenia (2.17.12a6) unstable; urgency=medium
+
+  * heartbeat processing surrounded by exception to avoid cpu-hang on bad script. 
+  * list categorizes configuration files.
+  * list now prints the directories containing configuration files for each category.
+  * list prints plugins available also, and listing a particular plugin works now as well.
+  * list now uses a PAGER, if configured, and *more* by default, rather than cat.
+  * Normally stderr is redirected to logs, but when debug was set it wasn't. Now it always goes to logs.
+  * added messages so heartbeat processing is visible.
+  * sr_shovel would freak out if cache was set. fixed.
+  * fixed heartbeat_memory so it works in sr_watch.
+  * C: implemented *source* option
+  * C: corrected picking of "main file" for configuration name.
+
+ -- Peter Silva <peter@blacklab>  Tue, 12 Dec 2017 21:19:37 -0500
+
 metpx-sarracenia (2.17.12a5) unstable; urgency=medium
 
   * added exponential backoff to downloads 
