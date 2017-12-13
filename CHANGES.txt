@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.17.12a6**
+
+* heartbeat processing surrounded by exception to avoid cpu-hang when plug has an error.
 * list categorizes configuration files.
 * list now prints the directories containing configuration files for each category.
 * list prints plugins available also, and listing a particular plugin works now as well.

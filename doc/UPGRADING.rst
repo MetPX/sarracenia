@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.17.12a6
+---------
+
+*NOTICE*: heartbeat processing now works correctly.
+*NOTICE*: more cases of same bug fixed.
+
 2.17.12a5
 ---------
 

@@ -834,12 +834,12 @@ PERIODIC PROCESSING
 
 Most processing occurs on receipt of a message, but there is some periodic maintenance
 work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
-configured *on_heartbeat* plugins are run. By default there are three present::
+configured *on_heartbeat* plugins are run. By default there are three present:
 
-  heartbeat_log - prints "heartbeat" in the log.
-  heartbeat_cache - ages out old entries in the cache, to minimize its size.
-  heartbeat_memory - checks the process memory usage, and restart if too big.
-  heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * heartbeat_log - prints "heartbeat" in the log.
+ * heartbeat_cache - ages out old entries in the cache, to minimize its size.
+ * heartbeat_memory - checks the process memory usage, and restart if too big.
+ * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
 
 The log will contain messages from all three plugins every heartbeat interval, and
 if additional periodic processing is needed, the user can add configure addition
