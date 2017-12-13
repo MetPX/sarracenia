@@ -82,7 +82,10 @@ class Heartbeat_Memory(object):
         #          data=5967872, dirty=0, uss=6545408, pss=6872064, swap=0)
 
         p = psutil.Process()
-        mem = p.memory_info()
+        if hasattr(p,'memory_info'):
+           mem = p.memory_info()
+        else:
+           mem = p.get_memory_info()
 
         if self.threshold == None :
            self.threshold = int(parent.heartbeat_memory_multiplier * mem.vms)
