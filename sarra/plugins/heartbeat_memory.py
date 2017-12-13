@@ -49,6 +49,12 @@ class Heartbeat_Memory(object):
         import psutil,humanize
         self.logger = parent.logger
 
+        p = psutil.Process()
+        if hasattr(p,'memory_info'):
+           mem = p.memory_info()
+        else:
+           mem = p.get_memory_info()
+
         if self.file_count == None:
             if hasattr(parent,'heartbeat_memory_baseline_file'):
                 if type(parent.heartbeat_memory_baseline_file) is list:
@@ -73,19 +79,13 @@ class Heartbeat_Memory(object):
                 self.threshold  = parent.chunksize_from_str(parent.heartbeat_memory_max)
 
             if ( parent.publish_count < self.file_count ) and ( parent.message_count < self.file_count ): 
-                self.logger.info("heartbeat_memory accumulating count (%d or %d of %d so far) before measuring memory use" \
-                      % ( parent.publish_count, parent.message_count, self.file_count) )
+                self.logger.info("heartbeat_memory current usage: %s, accumulating count (%d or %d of %d so far) before setting threshold" \
+                      % ( humanize.naturalsize(mem.vms,binary=True), parent.publish_count, parent.message_count, self.file_count) )
                 return True
 
         # from doc memory_full_info()  # "real" USS memory usage (Linux, OSX, Win only)
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
         #          data=5967872, dirty=0, uss=6545408, pss=6872064, swap=0)
-
-        p = psutil.Process()
-        if hasattr(p,'memory_info'):
-           mem = p.memory_info()
-        else:
-           mem = p.get_memory_info()
 
         if self.threshold == None :
            self.threshold = int(parent.heartbeat_memory_multiplier * mem.vms)
