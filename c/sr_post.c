@@ -260,19 +260,30 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
    
     if (*pathspec != '/' ) // need absolute path.
     { 
-        getcwd( fn, PATH_MAX);
-        strcat( fn, "/" );
-        strcat( fn, pathspec);
+        getcwd( linkstr, PATH_MAX);
+        strcat( linkstr, "/" );
+        strcat( linkstr, pathspec);
+
+        if ( sr_c->cfg->realpath ) 
+        {
+            log_msg( LOG_DEBUG, "applying realpath to relpath %s\n", pathspec );
+            realpath( linkstr, fn );
+        } else
+            strcpy( fn, pathspec );
+        linkstr[0]='\0';
+
     } else {
         if ( sr_c->cfg->realpath ) 
+        {
+            log_msg( LOG_DEBUG, "applying realpath to abspath %s\n", pathspec );
             realpath( pathspec, fn );
-        else
+        } else
             strcpy( fn, pathspec );
     }
 
   if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
   {
-     log_msg( LOG_DEBUG, "sr_%s file2message called with: %s sb=%p islnk=%d, isdir=%d, isreg=%d\n", 
+     log_msg( LOG_DEBUG, "sr_%s file2message start with: %s sb=%p islnk=%d, isdir=%d, isreg=%d\n", 
          sr_c->cfg->progname, fn, sb, sb?S_ISLNK(sb->st_mode):0, sb?S_ISDIR(sb->st_mode):0,sb?S_ISREG(sb->st_mode):0 );
   }
   if ( sb && S_ISDIR(sb->st_mode) ) return(0); // cannot post directories.
