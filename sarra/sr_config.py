@@ -1254,7 +1254,7 @@ class sr_config:
                      self.exchange = words1
                      n = 2
 
-                elif words0 == 'expire' : # See: sr_config.7 ++ everywhere fixme?
+                elif words0 in [ 'expire', 'expiry' ]: # See: sr_config.7 ++ everywhere fixme?
                      if    words1.lower() == 'none' :
                            self.expire = None
                      else:
@@ -1288,7 +1288,7 @@ class sr_config:
                         self.force_polling = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['headers']: # See: sr_config.7
+                elif words0 in ['header']: # See: sr_config.7
                      kvlist = words1.split('=')
                      key    = kvlist[0]
                      value  = kvlist[1]
