@@ -172,13 +172,12 @@ so the sr_post command will look like this::
 If you find you are using the same arguments all the time,
 it might be convenient to store them in a central configuration::
 
-  blacklab% cat >~/.config/sarra/default.conf <<EOT
+  blacklab% sr_post edit default.conf 
 
   broker amqps://rnd@ddsr.cmc.ec.gc.ca/
   to DDIEDM,DDIDOR,ARCHPC
   url sftp://peter@grumpy
 
-  EOT
 
 So now the command line for sr_post is just the url to for ddsr to retrieve the
 file on grumpy::
@@ -229,13 +228,11 @@ on the pump, for forwarding to the other pump destinations.
 
 Similar to sr_subscribe, one can also place configuration files in an sr_post specific directory::
 
-  blacklab% cat >~/.config/sarra/sr_post/dissem.conf <<EOT
+  blacklab% sr_post edit dissem.conf
 
   broker amqps://rnd@ddsr.cmc.ec.gc.ca/
   to DDIEDM,DDIDOR,ARCHPC
   url sftp://peter@grumpy
-
-  EOT
 
 and then::
 
@@ -282,14 +279,13 @@ is called *blacklab*, and the user on the server is *peter* running as peter on 
 a directory is created under /var/www/project/outgoing, that is writable by peter,
 which results in a configuration like so::
 
-  cat >>~/.config/sarra/watch/project.conf <<EOT
+  sr_watch edit project.conf 
 
   broker amqp://feeder@localhost/
   url http://blacklab/
   document_root /var/www/project/outgoing
   to blacklab
 
-  EOT
 
 then a watch is started::
 

@@ -5,8 +5,12 @@
 
   As file_check re-reads the entire file, re-calculates from scratch, which is very inefficient 
   compared to part_check which takes care of checksum calc done as the files are downloaded.
+  NOTE: it also deletes the downloaded file after checking!
 
+STATUS:
   This is more for debugging, internal testing, and reference.
+  20171212: not sure if it has been fixed after the local->new transition.
+
 """
 import os,stat,time
 from hashlib import md5

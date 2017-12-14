@@ -871,7 +871,7 @@ try a subscription to an upstream pump::
   sarra@boule:~$ cd ~/.config/sarra/
   sarra@boule:~/.config/sarra$ mkdir subscribe
   sarra@boule:~/.config/sarra$ cd subscribe
-  sarra@boule:~/.config/sarra/subscribe$  cat >dd.conf <<EOT
+  sarra@boule:~/.config/sarra/subscribe$ sr_subscribe edit dd.conf 
   broker amqp://anonymous@dd.weather.gc.ca/
 
   mirror True
@@ -883,7 +883,6 @@ try a subscription to an upstream pump::
   reject .*/grib2/.*
 
   accept .*
-  EOT
 
 add the password for the upstream pump to credentials.conf ::
 

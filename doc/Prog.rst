@@ -206,7 +206,7 @@ Better File Reception
 For example, rather than using the file system, sr_subscribe could indicates when each file is ready
 by writing to a named pipe::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit dd_swob.conf 
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -219,7 +219,6 @@ by writing to a named pipe::
   accept .*
   # rxpipe is a builtin on_file script which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
-  EOT
 
 With the *on_file* option, one can specify a processing option such as rxpipe.  With rxpipe,
 every time a file transfer has completed and is ready for post-processing, its name is written
@@ -687,7 +686,7 @@ the file might be available without downloading.  So just
 obtaining the file notification and transforming it into a
 local file is sufficient::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit dd_swob.conf 
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#

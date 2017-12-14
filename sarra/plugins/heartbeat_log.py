@@ -10,7 +10,7 @@ class Heartbeat_Log(object):
         parent.logger.debug( "heartbeat_log initialized" )
           
     def perform(self,parent):
-        parent.logger.info("heartbeat")
+        parent.logger.info("heartbeat. Sarracenia version is: %s \n" % sarra.__version__ )
         return True
 
 heartbeat_log = Heartbeat_Log(self)

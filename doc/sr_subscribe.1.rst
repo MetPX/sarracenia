@@ -861,7 +861,7 @@ is detected, the problem is noted for retry.  Errors can happen at many times:
 Initially, the programs try to download (or send) a file a fixed number (*attempts*, default: 3) times.
 If all three attempts to process the file are unsuccessful, then the file is placed in an instance's
 retry file. The program then continues processing of new items. When there are no new items to
-process, the program looks for a file to process in the retry queue.  It then checks if the file
+process, the program looks for a file to process in the retry queue. It then checks if the file
 is so old that it is beyond the *retry_expire* (default: 2 days.) If the file is not expired, then
 it triggers a new round of attempts at processing the file. If the attempts fail, it goes back
 on the retry queue.
@@ -869,7 +869,7 @@ on the retry queue.
 This algorithm ensures that programs do not get stuck on a single bad product that prevents
 the rest of the queue from being processed, and allows for reasonable, gradual recovery of 
 service, allowing fresh data to flow preferentially, and sending old data opportunistically
-in gaps.
+when there are gaps.
 
 While fast processing of good data is very desirable, it is important to slow down when errors
 start occurring. Often errors are load related, and retrying quickly will just make it worse.

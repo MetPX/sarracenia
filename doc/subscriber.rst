@@ -86,6 +86,86 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
+If the package is installed on your computer, you should be able to list
+the available configurations with *sr_subscribe list* ::
+
+    blacklab% sr_subscribe list
+     system plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
+      heartbeat_pulse.py          post_log.py       download_cp.py msg_replace_new_dir.py 
+    msg_filter_wmo2msc.py        msg_delete.py    msg_test_retry.py      msg_skip_old.py 
+           part_check.py msg_sundew_pxroute.py           msg_log.py       poll_script.py 
+      msg_to_clusters.py  part_clamav_scan.py         html_page.py     msg_hour_tree.py 
+     heartbeat_memory.py     msg_print_lag.py        post_total.py     download_wget.py 
+     msg_from_cluster.py       download_dd.py          msg_save.py    msg_2localfile.py 
+           msg_speedo.py     destfn_sample.py          line_log.py     post_override.py 
+             __pycache__          file_log.py        msg_2local.py         line_mode.py 
+          msg_by_user.py         msg_total.py      download_scp.py       file_rxpipe.py 
+           msg_fdelay.py     heartbeat_log.py        poll_pulse.py       msg_renamer.py 
+             file_age.py         msg_2http.py    post_hour_tree.py   msg_rename4jicc.py 
+            msg_delay.py    msg_rename_dmf.py        file_total.py          msg_dump.py 
+        msg_by_source.py      msg_download.py        file_check.py   post_rate_limit.py 
+      heartbeat_cache.py msg_rename_whatfn.py         watch_log.py 
+    
+    user plugins: ( /home/peter/.config/sarra/plugins ) 
+       msg_auditcflow.py         destfn_am.py       msg_tarpush.py         destfn_nz.py 
+      heartbeat_pulse.py         post_long.py     msg_auditflow.py 
+    
+    general: ( /home/peter/.config/sarra ) 
+              admin.conf     credentials.conf         default.conf
+    
+    user configurations: ( /home/peter/.config/sarra/subscribe )
+             fclean.conf 
+          r_ftp_f70.conf 
+          cdnld_f21.conf 
+         u_sftp_f60.conf 
+    
+          cfile_f44.conf 
+            cfclean.conf 
+              q_f71.conf 
+              t_f30.conf 
+
+    blacklab% 
+
+Each section of the listing shows the contents of the directory shown in parentheses.  One can
+just edit the files in the directories directly, or modify them otherwise, as the list command is
+only for convenience.  There are four sections:
+
+ * system plugins:  python routines one can call from subscriber configuration. 
+ * user plugins:    user written python routines of the same type.
+ * general:  configuration files that are referenced by other configuration files.
+ * user configurations: these are the ones set by the user and most often of interest.
+
+To view a particular configuration, give sr_subscribe list the file as an argument example::
+
+    blacklab% sr_subscribe list msg_log.py
+    #!/usr/bin/python3
+    
+    """
+      the default on_msg handler for sr_log.
+      prints a simple notice.
+    
+    """
+    
+    class Msg_Log(object): 
+    
+        def __init__(self,parent):
+            parent.logger.debug("msg_log initialized")
+              
+        def perform(self,parent):
+            msg = parent.msg
+            parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
+               tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+            return True
+    
+    msg_log = Msg_Log(self)
+    
+    self.on_message = msg_log.perform
+    
+    blacklab% 
+
+The plugins start with descriptive documentation. 
+
+
 A First Example
 ---------------
 
@@ -95,24 +175,36 @@ Regardless of the tree, one can browse it to find the data of interest.
 On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
 to find the tree of all the weather observations in SWOB format
 recently issued by any Environment Canada forecast office.
+
+
 First initialize the credentials storage file::
 
-  blacklab% cat >>~/.config/sarra/credentials.conf <<EOT
+  blacklab% sr_subscribe edit credentials.conf
+
   amqp://anonymous:anonymous@dd.weather.gc.ca
-  EOT
 
-Then a configuration to obtain these files will look like so::
+The *edit* command just calls up the user's configured editor
+on the file to be created in the right place.  To create
+a configuration to obtain the swob files::
 
-  blacklab% cat >dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit swob.conf
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
-  # write all SWOBS into the current working directory.
-  EOT
 
-  blacklab% sr_subscribe add dd_swob.conf
+  blacklab% 
+  blacklab% sr_subscribe status swob
+  2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 0001 is stopped
+  blacklab% 
 
+NOTE:
+
+  The above will write the files in the current working directory, and they will arrive quickly.
+  It might be bettter to make a dedicated directory and use the *directory* option to place the files there.
+  for example:  
+  mkdir /tmp/swob_downloads
+  *directory /tmp/swob_downloads*
 
 On the first line, *broker* indicates where to connect to get the
 stream of notifications. The term *broker* is taken from AMQP (http://www.amqp.org), 
@@ -207,6 +299,8 @@ sr_subscribe will find it without having to give the full path.
 
    on Windows:  C:\\\\Users\\\\peter\\AppData\\\\Local\\\\science.gc.ca\\sarra
 
+   Use *sr_subscribe list* to learn where the configuration files are stored.
+
 A normal download looks like this::
 
   2015-12-03 17:32:15,031 [INFO] Received topic   v02.post.observations.swob-ml.20151203.CMED
@@ -247,7 +341,7 @@ Every configuration results in corresponding resources being declared on the bro
 When changing *subtopic* or *queue* settings, or when one expects to not use 
 a configuration for an extended period of time, it is best to::
 
-  sr_subscribe cleanup CMC.conf
+  sr_subscribe cleanup swob.conf
 
 which will de-allocate the queue (and it's bindings) on the server.
 
@@ -387,7 +481,7 @@ back to sample configuration files:
 
 Note the following::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit swob
 
   broker amqp://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
@@ -395,7 +489,6 @@ Note the following::
   #write all SWOBS into the current working directory
   #BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE
   #     NOT having a "subtopic" and filtering with "accept" MEANS EXCESSIVE NOTIFICATIONS are processed.
-  EOT
 
 This configuration, from the subscriber point of view, will likely deliver
 the same data as the previous example. However, the default subtopic being 
@@ -414,7 +507,7 @@ the *directory* option.
 If downloading a directory tree, and the intent is to mirror the tree, 
 then the option mirror should be set::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit swob
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -424,7 +517,6 @@ then the option mirror should be set::
   #
   # instead of writing to current working directory, write to /tmp.
   # in /tmp. Mirror: create a hierarchy like the one on the source server.
-  EOT
 
 One can also intersperse *directory* and *accept/reject* directives to build
 an arbitrarily different hierarchy from what was on the source data pump.
@@ -432,7 +524,7 @@ The configuration file is read from top to bottom, so then sr_subscribe
 finds a ''directory'' option setting, only the ''accept'' clauses after
 it will cause files to be placed relative to that directory::
 
-  blacklab% cat >../ddi_ninjo_part1.conf <<EOT
+  blacklab% sr_subscribe edit ddi_ninjo_part1.conf 
 
   broker amqp://ddi.cmc.ec.gc.ca/
   subtopic ec.ops.*.*.ninjo-a.#
@@ -450,8 +542,6 @@ it will cause files to be placed relative to that directory::
 
   directory /tmp/apps/ninjo/import/point/scit_tracker/in
   accept .*~~TRACKER,TRACK_MAXR.*
-
-  EOT
 
 In the above example, ninjo-station catalog data is placed in the
 catalog_common/in directory, rather than in the point data 
@@ -562,63 +652,73 @@ Plugins
 
 Default file processing is often fine, but there are also pre-built customizations that
 can be used to change processing done by components. The list of pre-built plugins is
-in a 'plugins' directory wherever the package is installed. Here is a sample list:
+in a 'plugins' directory wherever the package is installed (viewable with *sr_subscribe list*)
+sample output::
 
-+-----------------------------+---------------------------------------------------------+
-|destfn_sample                | sample destfn_script to rename files when delivering.   |
-+-----------------------------+---------------------------------------------------------+
-|file_check                   | Check file attributes to verify download correct.       |
-+-----------------------------+---------------------------------------------------------+
-|file_log                     | Print a log message when a file is downloaded.          |
-+-----------------------------+---------------------------------------------------------+
-|file_rxpipe                  | Set your own process to read the files named from a     |
-|                             | named pipe.  Setting:                                   |
-|                             | file_rxpipe_name /tmp/file_names                        |
-|                             | then use tail -f /tmp/file_names to read them.          |
-+-----------------------------+---------------------------------------------------------+
-|file_quiet                   | Do nothing when a file is downloaded.                   |
-+-----------------------------+---------------------------------------------------------+
-|msg_skip_old                 | When consumption is lagging too far behind, drop old    |
-|                             | messages to catch up. Options:                          |
-|                             | msg_skip_threshold 20                                   |
-|                             | means discard messages older than 20 seconds.           |
-+-----------------------------+---------------------------------------------------------+
-|msg_log                      | Print a log message for each announcement received.     |
-+-----------------------------+---------------------------------------------------------+
-|msg_print_lag                | Print how far behind current consumption is.            |
-+-----------------------------+---------------------------------------------------------+
-|msg_quiet                    | Do nothing when an announcement is received.            |
-+-----------------------------+---------------------------------------------------------+
-|msg_renamer                  | Adjust Messages so they download to different names.    |
-+-----------------------------+---------------------------------------------------------+
-|msg_speedo                   | print statistics, rather than per file messages.        |
-+-----------------------------+---------------------------------------------------------+
-|msg_sundew                   | apply the sundew Bulletin routing method. Options:      |
-|                             | msg_pxrouting <filename>                                |
-|                             | msg_pxclient  <name of client>                          |
-|                             | Apply Sundew routing table by client.                   |
-+-----------------------------+---------------------------------------------------------+
-|part_clamav_scan             | Run ClamAV Anti-virus scan on a file part. Options:     |
-|                             | part_clamav_maxblock <number>                           |
-|                             | if set, then only scan the first <number> blocks.       |
-|                             | default, scan all.                                      |
-+-----------------------------+---------------------------------------------------------+
-|post_override.py             | Change headers in an announcement to be posted.         |
-|                             | Options:                                                |
-|                             | post_override <hdr> <value>                             |
-|                             | Set message header to the given value, overriding       |
-|                             | content, or creating new header if not present.         |
-+-----------------------------+---------------------------------------------------------+
+    blacklab% sr_subscribe list
+     system plugins: ( /home/peter/src/sarracenia/sarra/plugins ) 
+     heartbeat_memory.py         msg_2http.py          line_log.py      download_scp.py 
+             file_log.py     msg_hour_tree.py         msg_delay.py        post_total.py 
+             file_age.py         html_page.py           msg_log.py     heartbeat_log.py 
+             msg_dump.py    msg_rename_dmf.py       file_rxpipe.py         msg_total.py 
+        post_override.py  part_clamav_scan.py    post_hour_tree.py   msg_to_clusters.py 
+           msg_delete.py       download_cp.py        msg_2local.py      msg_download.py 
+        msg_print_lag.py     destfn_sample.py       download_dd.py msg_replace_new_dir.py 
+     msg_from_cluster.py   post_rate_limit.py     msg_by_source.py        msg_speedo.py 
+            line_mode.py          post_log.py        file_total.py   msg_rename4jicc.py 
+           file_check.py        msg_fdelay.py   heartbeat_pulse.py        poll_pulse.py 
+    msg_rename_whatfn.py       poll_script.py        part_check.py      msg_skip_old.py 
+      heartbeat_cache.py    msg_test_retry.py     download_wget.py       msg_renamer.py 
+             msg_save.py msg_filter_wmo2msc.py         watch_log.py    msg_2localfile.py 
+    msg_sundew_pxroute.py       msg_by_user.py 
+    
+    user plugins: ( /home/peter/.config/sarra/plugins ) 
+       msg_auditcflow.py         destfn_am.py       msg_tarpush.py         destfn_nz.py 
+      heartbeat_pulse.py         post_long.py     msg_auditflow.py 
+    
+    general: ( /home/peter/.config/sarra ) 
+              admin.conf     credentials.conf         default.conf
+    
+    user configurations: ( /home/peter/.config/sarra/subscribe )
+             fclean.conf 
+          r_ftp_f70.conf 
+          cdnld_f21.conf 
+               swob.conf 
+    
+         u_sftp_f60.conf 
+          cfile_f44.conf 
+            cfclean.conf 
+              q_f71.conf 
+    
+              t_f30.conf 
+    blacklab% 
 
 For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
-to be used with on_file. Msg\_ plugins are to be used with on_message, etc...
+to be used with *on_file*, *Msg\_* plugins are to be used with on_message, etc...
 When plugins have options, the options must be placed before the plugin declaration
 in the configuration file.
 
-Plugins are all written in python, and users can create their own and place them
-in ~/.config/sarra/plugins. For information on creating new custom plugins, see
-The `Sarracenia Programing Guide <Prog.html>`_
+Plugins are all written in python, and users can create their own and create them
+with *sr_subscribe edit myplugin.py* (or just place them directly in ~/.config/sarra/plugins. 
+For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.html>`_  
 
+
+to recap:
+
+* To view the plugins currently available on the system  *sr_subscribe list*
+* To view the contents a plugin: *sr_subscribe list <plugin>*
+* the beginning of the plugin describes it's function and settings.
+* plugins can have option settings, just like built-in ones.
+* to set them, place the options in the configuration file before the plugin call itself.
+* to make your own new plugin: *sr_subscribe edit <plugin>.py*
+
+example::
+
+  msg_total_interval 5
+  on_message msg_total
+
+The *msg_total* plugin is invoked whenever a message is received, and the *msg_total_interval*
+option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
 
 
 Better File Reception
@@ -633,7 +733,7 @@ The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by
 writing the names of files downloaded to a named pipe. Setting this up required 
 two lines in an sr_subscribe configuration file::
 
-  blacklab% cat >../dd_swob.conf <<EOT
+  blacklab% sr_subscribe edit swob 
 
   broker amqp://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -643,9 +743,8 @@ two lines in an sr_subscribe configuration file::
   directory /tmp
   mirror True
   accept .*
-  # rxpipe is a builtin on_file script which writes the name of the file received to
+  # rxpipe is a builtin on_file plugin which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
-  EOT
 
 With the *on_file* option, one can specify a processing option such as rxpipe.  
 With rxpipe, every time a file transfer has completed and is ready for 
