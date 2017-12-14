@@ -179,12 +179,12 @@ class sr_instances(sr_config):
             self.print_plugins()
             print( "general: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
-            print("\ncomponent configurations: ( %s )" % configdir )
+            print("\nuser configurations: ( %s )" % configdir )
 
         i=1
         for confname in os.listdir(configdir):
             if action == 'list' : 
-                print( "%20s " % confname )
+                print( "%20s " % confname, end='' )
                 if i%4 == 0: print('')
                 i+=1
             else:
