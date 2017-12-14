@@ -73,27 +73,28 @@ void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
       sr_cfg->action = strdup(option);
       return;
    }
-   //if ( !strcmp( sr_cfg->action,"foreground" )  &&  // posting a file...
-   //     ( !strcmp( sr_cfg->progname,"post") || !strcmp( sr_cfg->progname,"cpost") ) )
-   //{
-       p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
-       if (p == NULL)
-       {
-           log_msg(LOG_ERROR, "malloc of path failed!\n" );
-           return;
-       }
-       p->next = NULL;
+   p =  (struct sr_path_t *)malloc(sizeof (struct sr_path_t));
+   if (p == NULL)
+   {
+       log_msg(LOG_ERROR, "malloc of path failed!\n" );
+       return;
+   }
+   p->next = NULL;
+
+   if ( sr_cfg->realpath ) 
+   {
+       realpath(option, p->path );
+   } else
        strcpy(p->path, option );
     
-       if ( ! sr_cfg->paths )
-       {
-           sr_cfg->paths = p;
-       } else {
-           n=sr_cfg->paths;
-           while( n->next ) n=n->next;
-           n->next = p;
-       }
-   //}
+   if ( ! sr_cfg->paths )
+   {
+       sr_cfg->paths = p;
+   } else {
+       n=sr_cfg->paths;
+       while( n->next ) n=n->next;
+       n->next = p;
+   }
 }
 
 void sr_add_topic( struct sr_config_t *sr_cfg, const char* sub )
