@@ -217,6 +217,11 @@ what the subscribers will use to download the product.
 The pipe option is for sr_post to read the names of the files to post from standard input to read from
 redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
 
+**[--pulse_message <message>]**
+
+Administrator option to send a message to all subscribers.  Similar to "wall" functionality.
+When this option is set, a pulse message is sent, ignoring any topic settings or files given as arguments.
+
 **[--reset]**
 
   When one has used **--cache** this option will get rid of the
