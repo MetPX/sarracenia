@@ -1485,17 +1485,27 @@ directory, then in the sarracenia package itself, and finally it will look remot
 SEE ALSO
 --------
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+
+`sr_shovel(1) <sr_shovel.1.html>`_ - process messages (no downloading.)
+
+`sr_winnow(1) <sr_winnow.1.html>`_ - a shovel with cache on, to winnow wheat from chaff.
+
+`sr_sender(1) <sr_sender.1.html>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
 
 `sr_report(1) <sr_report.1.html>`_ - process report messages.
 
 `sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_watch(1) <sr_watch.1.html>`_ - post that loops, watching over directories.
 
 `sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+
+`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+
+`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+
+`sr_pulse(7) <sr_pulse.7.html>`_ - The format of pulse messages.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 

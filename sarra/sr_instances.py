@@ -179,6 +179,7 @@ class sr_instances(sr_config):
             self.print_plugins()
             print( "general: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
+            print("\nfor sample configurations visit: ( %s )" % "https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/" )
             print("\nuser configurations: ( %s )" % configdir )
 
         i=1
