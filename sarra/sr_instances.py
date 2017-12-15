@@ -158,6 +158,14 @@ class sr_instances(sr_config):
            if ( i%4 ) == 0: print('')
            i+=1
 
+       d = self.package_dir + os.sep + 'examples' +os.sep + self.program_dir
+       print( '\n\nconfiguration examples: ( %s ) ' %  d  )
+       i=1
+       for p in os.listdir( d ):
+           print( "%20s " % p, end=''  )
+           if ( i%4 ) == 0: print('')
+           i+=1
+
        if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
  
        i=1
@@ -167,7 +175,9 @@ class sr_instances(sr_config):
            if ( i%4 ) == 0: print('')
            i+=1
 
+      
        print( '\n' )
+
 
     def exec_action_on_all(self,action):
 
@@ -179,7 +189,6 @@ class sr_instances(sr_config):
             self.print_plugins()
             print( "general: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
-            print("\nfor sample configurations visit: ( %s )" % "https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/" )
             print("\nuser configurations: ( %s )" % configdir )
 
         i=1

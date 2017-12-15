@@ -30,7 +30,8 @@ setup(
     license='GPLv2',
     author='Shared Services Canada, Supercomputing, Data Interchange',
     author_email='Peter.Silva@canada.ca',
-    packages=find_packages(),
+    packages=find_packages() ,
+    package_data={ 'sarra': [ 'examples/*/*' ] },
     entry_points={
         "console_scripts":[
               "sr_audit=sarra.sr_audit:main",
@@ -69,4 +70,5 @@ setup(
     "netifaces", 
     "humanize",
     "psutil" ],
+    
 )
