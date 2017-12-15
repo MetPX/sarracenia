@@ -432,6 +432,37 @@ processed fastest, RADARS will queue up against each other and so experience som
 more delay, and other products will share a single queue and be subject to more
 delay in cases of backlog.
 
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/cap.conf::
+
+  broker amqp://dd.weather.gc.ca/
+  mirror
+  directory /data/web
+  subtopic alerts.cap.#
+  accept .*
+
+
+
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/all_but_cap.conf::
+
+  broker amqp://dd.weather.gc.ca/
+
+  subtopic #
+
+  reject .*alerts/cap.*
+
+  mirror
+  directory /data/web
+
+  accept .*
+
+
+Where you want the mirror of the data mart to start at /data/web (presumably there is a web
+server configured do display that directory.)  Likely, the *all_but_cap* configuration 
+will experience a lot of queueing, as there is a lot of data to download.  The *cap.conf* is 
+only subscribed to weather warnings in Common Alerting Protocol format, so there will be
+little to no queueing for that configuration.
+
+
 
 
 Refining Selection
