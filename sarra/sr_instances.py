@@ -223,7 +223,7 @@ class sr_instances(sr_config):
     #      remove  : program is running
 
     def exec_action_on_config(self,action):
-        self.logger.info("exec_action_on_config %s, config_dir=%s, user_config=%s" % ( action, self.config_dir, self.user_config ) )
+        self.logger.debug("exec_action_on_config %s, config_dir=%s, user_config=%s" % ( action, self.config_dir, self.user_config ) )
         
         usr_dir = self.config_dir
         usr_fil = self.user_config

@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* enable wasn't working.
 * list now includes sample configurations, if available.
 * change retry_ttl to default to the value of 'expire'.  Can still override.
 * C: realpath wasn't properly applied in shim library cases.
