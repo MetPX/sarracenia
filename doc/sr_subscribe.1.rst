@@ -595,7 +595,7 @@ and under which name.
 - **recompute_chksum <boolean> (default: False)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: True)** 
-- **retry_ttl    <duration>         (default: 2d)** 
+- **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: False)**
 - **strip     <count|regexp>   (default: 0)**
 - **suppress_duplicates   <off|on|999>     (default: off)**

@@ -100,6 +100,12 @@ class sr_subscribe(sr_instances):
            self.cache_stat = True
            self.cache.open()
 
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttle = None
+
         # reporting
 
         if self.report_exchange == None :

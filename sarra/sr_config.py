@@ -421,7 +421,7 @@ class sr_config:
         self.debug                = False
 
         self.retry_mode           = True
-        self.retry_ttl            = self.duration_from_str('2D',setting_units='s')
+        self.retry_ttl            = None
 
         self.remote_config        = False
         self.remote_config_url    = []
@@ -1754,10 +1754,7 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['retry_ttl']:  # FIXME to be documented
-                     if    words1.lower() == 'none' :
-                           self.retry_ttl = None
-                     else:
-                           self.retry_ttl = int(self.duration_from_str(words1,'s'))
+                     self.retry_ttl = int(self.duration_from_str(words1,'s'))
                      n = 2
 
                 elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1

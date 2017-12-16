@@ -159,12 +159,13 @@ class sr_instances(sr_config):
            i+=1
 
        d = self.package_dir + os.sep + 'examples' +os.sep + self.program_dir
-       print( '\n\nconfiguration examples: ( %s ) ' %  d  )
-       i=1
-       for p in os.listdir( d ):
-           print( "%20s " % p, end=''  )
-           if ( i%4 ) == 0: print('')
-           i+=1
+       if os.path.isdir(d):
+           i=1
+           print( '\n\nconfiguration examples: ( %s ) ' %  d  )
+           for p in os.listdir( d ):
+               print( "%20s " % p, end=''  )
+               if ( i%4 ) == 0: print('')
+               i+=1
 
        if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
  
