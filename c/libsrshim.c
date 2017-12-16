@@ -66,7 +66,7 @@ void srshim_initialize(const char* progname)
 }
 
 
-void srshim_realpost(const char *fn) 
+void srshim_realpost(const char *path) 
 /*
   post using initialize sr_ context.
 
@@ -74,9 +74,38 @@ void srshim_realpost(const char *fn)
 {
   struct sr_mask_t *mask; 
   struct stat sb;
+  int statres;
+  char *s;
+  char rn[PATH_MAX+1];
+  char fn[PATH_MAX+1];
 
-  if (!fn || !sr_c) return;
+  if (!path || !sr_c) return;
  
+  statres = lstat( path, &sb ) ;
+
+  if (sr_cfg.realpath)
+  {
+      if (!statres) 
+      {
+          realpath( path, fn );
+      } else {
+          /* If the stat failed, assume ENOENT (normal for removal or move), do realpath the directory containing the entry.
+             then add the filename onto the that.
+           */
+          strcpy( rn, path );
+          s=rindex( rn, '/' );
+          *s='\0';
+          s++;
+          if ( realpath( rn, fn ) );
+              strcat( fn, "/" );
+              strcat( fn, s );
+          } else {
+              strcpy( fn, path );
+          }
+      }
+  } else {
+      strcpy( fn, path );
+  }
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
@@ -86,7 +115,7 @@ void srshim_realpost(const char *fn)
       return;
   }
 
-  if ( lstat( fn, &sb ) ) 
+  if ( statres ) 
       sr_post( sr_c, fn, NULL );
   else 
       sr_post( sr_c, fn, &sb );

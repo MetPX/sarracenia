@@ -267,9 +267,11 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
         if ( sr_c->cfg->realpath ) 
         {
             log_msg( LOG_DEBUG, "applying realpath to relpath %s\n", pathspec );
-            realpath( linkstr, fn );
+            if ( !realpath( linkstr, fn ) ) {
+                 strcpy( fn, linkstr );
+            }
         } else
-            strcpy( fn, pathspec );
+            strcpy( fn, linkstr );
         linkstr[0]='\0';
 
     } else {
@@ -480,7 +482,7 @@ void sr_post_rename_dir(struct sr_context *sr_c, const char *oldname, const char
   closedir(dir);
 }
 
-void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *newname)
+void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
 /*
    assume actual rename is completed, so newname exists.
  */
@@ -488,7 +490,26 @@ void sr_post_rename(struct sr_context *sr_c, const char *oldname, const char *ne
   struct stat sb;
   struct sr_header_t first_user_header;
   struct sr_mask_t *mask;
+  char *s;
+  char oldname[PATH_MAX];
+  char newname[PATH_MAX];
 
+  if (sr_c->cfg->realpath) {
+     strcpy( newname, o );
+     s=rindex( newname, '/' );
+     *s='\0';
+     s++;
+     realpath( newname, oldname );
+     strcat( oldname, "/" );
+     strcat( oldname, s );
+     log_msg( LOG_DEBUG, "applying realpath to old: %s -> %s\n", o, oldname );
+
+     realpath( n, newname);
+     log_msg( LOG_DEBUG, "applying realpath to new: %s -> %s\n", n, newname );
+  } else {
+     strcpy( oldname, o );
+     strcpy( newname, n );
+  }
       
   log_msg( LOG_DEBUG, "sr_%s starting rename: %s %s \n", sr_c->cfg->progname, oldname, newname );
 
