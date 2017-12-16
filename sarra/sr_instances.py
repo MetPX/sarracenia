@@ -89,7 +89,7 @@ class sr_instances(sr_config):
     def exec_action(self,action,old=False):
 
         if old :
-           self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+           self.logger.warning("Should invoke 3: %s [args] action config" % sys.argv[0])
 
         # sr_post special case : may not have config_name
 
@@ -111,7 +111,11 @@ class sr_instances(sr_config):
            elif action == 'stop'     : self.exec_action_on_all(action)
            elif action == 'status'   : self.exec_action_on_all(action)
            else :
-                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+                self.logger.warning("Should invoke 4: %s [args] action config" % sys.argv[0])
+           os._exit(0)
+
+        elif action == 'enable'     : 
+           self.exec_action_on_config(action)
            os._exit(0)
 
         # a config file that does not exists
@@ -119,7 +123,7 @@ class sr_instances(sr_config):
         if not os.path.isfile(self.user_config) :
            if   action == 'edit'    : self.exec_action_on_config(action)
            else :
-                self.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+                self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
 
         # a config file exists
@@ -219,7 +223,7 @@ class sr_instances(sr_config):
     #      remove  : program is running
 
     def exec_action_on_config(self,action):
-        self.logger.debug("exec_action_on_config %s" % action)
+        self.logger.info("exec_action_on_config %s, config_dir=%s, user_config=%s" % ( action, self.config_dir, self.user_config ) )
         
         usr_dir = self.config_dir
         usr_fil = self.user_config
@@ -252,10 +256,14 @@ class sr_instances(sr_config):
              except: self.logger.error("problem editor %s file %s" % (os.environ.get('EDITOR'), def_fil))
 
         elif action == 'enable'     :
-             dst   = def_fil.replace('.off','')
-             src   = dst + '.off'
-             try   : os.rename(src,dst)
-             except: self.logger.error("cound not enable %s " % src )
+             if  os.path.isfile( self.user_config ):
+                 self.logger.info('%s already enabled' % self.user_config )
+
+             else:
+                 dst   = def_fil.replace('.off','')
+                 src   = dst + '.off'
+                 try   : os.rename(src,dst)
+                 except: self.logger.error("cound not enable %s " % src )
 
         elif action == 'list'       : 
              cmd = os.environ.get('PAGER')

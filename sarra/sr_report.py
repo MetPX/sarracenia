@@ -123,7 +123,7 @@ def main():
     srreport = sr_report(config,args,action)
 
     if old :
-       srreport.logger.warning("Should invoke : %s [args] action config" % sys.argv[0])
+       srreport.logger.warning("Should invoke 2: %s [args] action config" % sys.argv[0])
 
     srreport.exec_action(action,old)
 
