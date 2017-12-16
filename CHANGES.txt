@@ -6,14 +6,16 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* python option 'headers' = C 'header', removed the 's' from python one.  Similary added 'expiry' as synonym for 'expire'
+* C: realpath wasn't properly applied in shim library cases.
+* removed 's' from the 'headers' option in python, to match C.
+* python added 'expiry' as synonym for 'expire', to match C.
 * C: realpath only applied if an absolute path was supplied, now works for relative ones also.
 * heartbeat_memory uses psutil.memory_info, on python 3.4 (in ubuntu 14.04) that routine is called get_memory_info.
   added an if statement so it works for all cases.
 
 **2.17.12a6**
 
-* heartbeat processing surrounded by exception to avoid cpu-hang when plug has an error.
+* heartbeat processing surrounded by exception to avoid cpu-hang when plugin has an error.
 * list categorizes configuration files.
 * list now prints the directories containing configuration files for each category.
 * list prints plugins available also, and listing a particular plugin works now as well.
