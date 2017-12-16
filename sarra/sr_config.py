@@ -255,7 +255,7 @@ class sr_config:
         self.logger.debug("action    %s" % self.action)
 
         if path        == None  : return
-        if self.action == 'edit': return
+        if self.action in [ 'edit', 'add', 'enable' ]: return
 
         try:
             f = open(path, 'r')
@@ -267,7 +267,7 @@ class sr_config:
 
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error("1 Type: %s, Value: %s" % (stype, svalue))
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
         self.logger.debug("config_path = %s %s" % (subdir,config))
@@ -324,8 +324,11 @@ class sr_config:
 
         # return bad file ... 
         if mandatory :
-          if subdir == 'plugins' :     self.logger.error("script not found %s" % config)
-          elif self.action != 'edit' : self.logger.error("file not found %s" % config)
+          if subdir == 'plugins' :     
+              self.logger.error("script not found %s" % config)
+          elif self.action not in [ 'edit', 'enable', 'add' ] : 
+              self.logger.error("file not found %s" % config)
+
           if config == None : return False,None
           #os._exit(1)
 
@@ -686,7 +689,7 @@ class sr_config:
             exec(compile(open(script).read(), script, 'exec'))
         except : 
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error("2 Type: %s, Value: %s" % (stype, svalue))
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
 
         if getattr(self,opname) is None:
@@ -709,7 +712,7 @@ class sr_config:
                 plugin(self)
             except:
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("3 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error( "plugin %s, execution failed." % plugin )
            #if not plugin(self): return False
 
@@ -1903,7 +1906,7 @@ class sr_config:
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("4 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error("problem evaluating option %s" % words[0])
 
         if needexit :
@@ -2060,7 +2063,7 @@ class sr_config:
                  return True
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("5 Type: %s, Value: %s" % (stype, svalue))
                  self.logger.error("sum invalid (%s)" % self.sumflg)
                  return False
         return False
@@ -2098,7 +2101,7 @@ class sr_config:
                 self.logger.error('Download failed: %s' % url )
                 self.logger.error('Uexpected error')              
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("6 Type: %s, Value: %s,  ..." % (stype, svalue))
 
         return None
 

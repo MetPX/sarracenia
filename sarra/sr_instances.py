@@ -36,6 +36,8 @@
 import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
 
+from shutil import copyfile
+
 try :
          from sr_config      import *
 except :
@@ -114,7 +116,7 @@ class sr_instances(sr_config):
                 self.logger.warning("Should invoke 4: %s [args] action config" % sys.argv[0])
            os._exit(0)
 
-        elif action == 'enable'     : 
+        elif action in [ 'add', 'enable', 'remove' ]: 
            self.exec_action_on_config(action)
            os._exit(0)
 
@@ -154,7 +156,7 @@ class sr_instances(sr_config):
 
     def print_plugins(self):
        
-       print( ' system plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
+       print( ' packaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
        i=1
        for p in os.listdir( self.package_dir + os.sep + 'plugins'  ):
            if p == '__init__.py' : continue
@@ -229,19 +231,31 @@ class sr_instances(sr_config):
         usr_fil = self.user_config
 
         ext     = '.conf'
+
+        sampledir = self.package_dir + os.sep + 'examples' + os.sep + self.program_dir
+
         if self.user_config[-4:] == '.inc' : ext = ''
 
         if self.user_config[-3:] == '.py' : 
            ext = ''
            def_dir = self.user_config_dir + os.sep + 'plugins'
+           sampledir = self.package_dir + os.sep + 'plugins'
+
         else:
            def_dir = self.user_config_dir + os.sep + self.program_dir
 
         def_fil = def_dir + os.sep + self.config_name + ext
 
-        if   action == 'add'        :
-             try   : os.rename(usr_fil,def_fil)
-             except: self.logger.error("cound not add %s to %s" % (self.config_name + ext,def_dir))
+        self.logger.debug("exec_action_on_config %s, def_dir=%s, def_fil=%s sampledir=%s" % ( action, def_dir, def_fil, sampledir ) )
+
+        if   action == 'add' :
+             if not os.path.isfile(usr_fil):
+                if os.path.isfile(sampledir + os.sep + usr_fil):
+                    copyfile(sampledir + os.sep + usr_fil, def_fil)
+                else:
+                    self.logger.error("could not add %s to %s" % (self.user_config, def_dir))
+             else:
+                copyfile(usr_fil,def_fil)
 
         elif action == 'disable'    :
              src   = def_fil.replace('.off','')

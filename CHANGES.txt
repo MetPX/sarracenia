@@ -6,8 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* enable wasn't working.
-* list now includes sample configurations, if available.
+* made 'add' look in sample directories.
+* 'enable' and 'remove' weren't working.
+* 'list' now includes sample configurations, if available.
 * change retry_ttl to default to the value of 'expire'.  Can still override.
 * C: realpath wasn't properly applied in shim library cases.
 * removed 's' from the 'headers' option in python, to match C.
