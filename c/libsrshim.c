@@ -96,7 +96,8 @@ void srshim_realpost(const char *path)
           s=rindex( rn, '/' );
           *s='\0';
           s++;
-          if ( realpath( rn, fn ) );
+          if ( realpath( rn, fn ) )
+          {
               strcat( fn, "/" );
               strcat( fn, s );
           } else {
