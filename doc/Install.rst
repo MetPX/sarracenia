@@ -18,16 +18,23 @@ Revision Record
 Client Installation
 -------------------
 
-The package is built for python version 3.4 or higher.  On systems where
-they are available, debian packages are recommended.
-These can be obtained from the launchpad repository.
-If you cannot use debian packages, then consider pip packages avialable from PyPI.
-In both cases, the other python packages (or dependencies) needed
+The package is built for python version 3.4 or higher. On systems where
+they are available, debian packages are recommended. These can be obtained from the 
+launchpad repository. If you cannot use debian packages, then consider pip packages 
+avialable from PyPI. In both cases, the other python packages (or dependencies) needed
 will be installed by the package manager automatically.
 
 
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
+
+  sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+  sudo apt-get update
+  sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
+  sudo apt-get install python3-paramiko   # adds SFTP support.
+
 
 On Ubuntu 12.04::
 
@@ -45,14 +52,6 @@ On Ubuntu 12.04::
    Later versions of paramiko require the cryptography module, which
    doesn't build on python-3.2, so need to use an older version of paramiko
    which uses pyCrypto, and that does build on 3.2.
-
-
-On Ubuntu 14.04/16.04::
-
-  sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
-  sudo apt-get update
-  sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
-  sudo apt-get install python3-paramiko   # adds SFTP support.
 
 
 
