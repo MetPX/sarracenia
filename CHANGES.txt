@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* c: segault in mv if there's no slashes in the source path, oops!
+* added identifiers to differentiate all the Type: messages from exceptions.
+
 **2.17.12a7**
 
 * C: added SR_CONFIG_EXAMPLES environment variable.

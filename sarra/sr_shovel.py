@@ -110,6 +110,14 @@ class sr_shovel(sr_subscribe):
         # some sr_subscribe options reset to match sr_shovel behavior
         # ===========================================================
 
+
+        # retry_ttl setup.
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttle = None
+
         # the message is consumed and posted (no download)
 
         if not self.notify_only :

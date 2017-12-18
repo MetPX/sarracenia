@@ -93,6 +93,14 @@ class sr_winnow(sr_subscribe):
         # some sr_subscribe options reset to match sr_winnow behavior
         # ===========================================================
 
+
+        # retry_ttl setup.
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttle = None
+
         # set notify_only : no download
 
         if not self.notify_only :

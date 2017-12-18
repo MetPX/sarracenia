@@ -69,6 +69,13 @@ class sr_report(sr_subscribe):
 
         username = self.broker.username
 
+        # retry_ttl setup.
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttle = None
+
         if self.exchange == None:
            self.exchange = 'xs_' + username
            if username in self.users.keys():

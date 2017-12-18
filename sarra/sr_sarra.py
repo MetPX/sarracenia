@@ -153,6 +153,14 @@ class sr_sarra(sr_subscribe):
            self.logger.error("sarra discard True")
            sys.exit(1)
 
+        # retry_ttl setup.
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttle = None
+
+
         # default reportback if unset
 
         if self.reportback == None : self.reportback = False
