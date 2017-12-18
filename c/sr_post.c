@@ -497,8 +497,13 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   if (sr_c->cfg->realpath) {
      strcpy( newname, o );
      s=rindex( newname, '/' );
-     *s='\0';
-     s++;
+     if (s) 
+     {
+        *s='\0';
+        s++;
+     } else {
+        s=newname;
+     }
      realpath( newname, oldname );
      strcat( oldname, "/" );
      strcat( oldname, s );
