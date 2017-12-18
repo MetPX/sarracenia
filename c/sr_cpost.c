@@ -492,7 +492,9 @@ int main(int argc, char **argv)
         if (argv[i][0] == '-') 
            consume = sr_config_parse_option( &sr_cfg, 
                   &(argv[i][ (argv[i][1] == '-' )?2:1 ]),  /* skip second hyphen if necessary */
-                    argv[i+1], 1 );
+                    argv[i+1], 
+                  (argc>i+2)?argv[i+2]:NULL, 
+                  1 );
         else
             break;
         if (consume < 0) return(1);

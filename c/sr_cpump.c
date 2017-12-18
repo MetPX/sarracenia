@@ -72,7 +72,9 @@ int main(int argc, char **argv)
       if (argv[i][0] == '-') 
          consume = sr_config_parse_option( &sr_cfg, 
               &(argv[i][ (argv[i][1] == '-' )?2:1 ]),  /* skip second hyphen if necessary */
-              argv[i+1], 1 );
+              argv[i+1], 
+              (argc>i+2)?argv[i+2]:NULL, 
+              1 );
       else
           break;
       if (!consume) break;
@@ -96,6 +98,18 @@ int main(int argc, char **argv)
         exit(0);
   }
   
+  if ( !strcmp( sr_cfg.action, "remove" ))
+  {
+        sr_config_remove( &sr_cfg );
+        exit(0);
+  }
+  
+  if ( !strcmp( sr_cfg.action, "disable" ))
+  {
+        sr_config_disable( &sr_cfg );
+        exit(0);
+  }
+
   if ( sr_cfg.paths )
   {
         sr_config_read(&sr_cfg, sr_cfg.paths->path, 1, 1 );
@@ -103,18 +117,6 @@ int main(int argc, char **argv)
 
   if ( sr_cfg.help ) usage();
 
-  if ( !strcmp( sr_cfg.action, "disable" ))
-  {
-        sr_config_disable( &sr_cfg );
-        exit(0);
-  }
-
-  if ( !strcmp( sr_cfg.action, "remove" ))
-  {
-        sr_config_remove( &sr_cfg );
-        exit(0);
-  }
-  
   if ( !strcmp( sr_cfg.action, "edit" ))
   {
         sr_config_edit( &sr_cfg );
@@ -140,8 +142,6 @@ int main(int argc, char **argv)
         exit(0);
   }
 
-
-  
     // Check if already running. (conflict in use of state files.)
 
     ret = sr_config_startstop( &sr_cfg );

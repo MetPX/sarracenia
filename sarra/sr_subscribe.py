@@ -656,6 +656,8 @@ class sr_subscribe(sr_instances):
         self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
         self.exchange       = 'xpublic'
         self.inplace        = True
+        self.subtopic       = '#'
+
         self.inflight       = '.tmp'
         self.mirror         = False
 

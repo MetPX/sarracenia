@@ -31,7 +31,7 @@ class Heartbeat_Pulse(object):
     def perform(self,parent):
 
         self.logger     = parent.logger
-        self.logger.info( "heartbeat_pulse message_count %d publish_count %d " %  \
+        self.logger.info( "hb_pulse message_count %d publish_count %d " %  \
             ( parent.message_count, parent.publish_count ) )
 
         # something wrong when consuming ?
@@ -40,9 +40,9 @@ class Heartbeat_Pulse(object):
            if parent.message_count <= self.last_message_count:
               if parent.pulse_count <=  self.last_pulse_count:
                  if parent.consumer.isAlive() :
-                    self.logger.info("heartbeat_pulse received neither message nor pulse, but confirmed broker connection remains alive")
+                    self.logger.info("hb_pulse received neither message nor pulse, but confirmed broker connection remains alive")
                  else:
-                    self.logger.warning("heartbeat_pulse no pulse, and no connection... reconnecting")
+                    self.logger.warning("hb_pulse no pulse, and no connection... reconnecting")
                     parent.close()
                     parent.connect()
 
@@ -55,9 +55,9 @@ class Heartbeat_Pulse(object):
         if hasattr(parent,'publisher') :
            if parent.publish_count <= self.last_publish_count:
               if parent.publisher.isAlive() :
-                 self.logger.debug("heartbeat_pulse no messages receive but still connected.")
+                 self.logger.debug("hb_pulse no messages receive but still connected.")
               else:
-                 self.logger.warning("heartbeat_pulse connection problem...reconnecting")
+                 self.logger.warning("hb_pulse connection problem...reconnecting")
                  parent.close()
                  parent.connect()
 
@@ -66,7 +66,7 @@ class Heartbeat_Pulse(object):
 
         return True
 
-heartbeat_pulse = Heartbeat_Pulse(self)
+hb_pulse = Heartbeat_Pulse(self)
 
-self.on_heartbeat = heartbeat_pulse.perform
+self.on_heartbeat = hb_pulse.perform
 

@@ -28,7 +28,11 @@ char *sr_credentials_fetch( char *s )
   char *start = sr_credentials;
   char *end = sr_credentials;
   char *result = NULL;
-  int slen=strlen(s);
+  int slen;
+
+   if (!s) return(NULL);
+
+   slen=strlen(s);
 
   //fprintf(stderr, "\nfetching: %s\n", s );
 

@@ -37,11 +37,12 @@ if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  ERROR:
  test users for each role: tsource, tsub, tfeed, bunnymaster (admin)
  need to be created before this script can be run.
- rabbitmq-server needs to be installed on localhost with admin account set and
- manually setup "$CONFDIR"/admin.conf, something like this:
+ rabbitmq-server needs to be installed on a machine (FLOWBROKER) with admin account set and
+ manually setup in "$CONFDIR"/admin.conf, something like this:
 
-cluster localhost
-gateway_for alta,cluster1,cluster2
+declare env FLOWBROKER=localhost
+declare env SFTPUSER="`whoami`"
+declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 
 broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
@@ -92,26 +93,13 @@ done
 
 mkdir -p "$CONFDIR" 2> /dev/null
 
+flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
+flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
-for d in poll cpost cpump post report sarra sender shovel subscribe watch winnow ; do
-   if [ ! -d "$CONFDIR"/$d ]; then
-      mkdir "$CONFDIR"/$d
-   fi
-done
+echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh -x
 
-templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
-
-if [ "$C_ALSO" ]; then
-    c_templates="`ls cflow_templates/*/*.conf cflow_templates/*/*.inc`"
-    templates="$templates $c_templates"
-    echo "as sr_cpost is available, adding C implementation tests as as well"
-fi
-
-for cf in ${templates}; do
-    echo "installing $cf"
-    newcf="`echo $cf | sed 's+.*flow_templates\/++'`"
-    sed 's+SFTPUSER+'"${sftpuser}"'+g; s+HOST+'"${testhost}"'+g; s+TESTDOCROOT+'"${testdocroot}"'+g; s+HOME+'"${HOME}"'+g' <${cf} >"$CONFDIR"/${newcf}
-done
+# sr_post "add" doesn't. so a little help:
+cp ../sarra/examples/post/*f[0-9][0-9].conf ~/.config/sarra/post
 
 
 passed_checks=0

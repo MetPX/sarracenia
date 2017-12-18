@@ -109,21 +109,10 @@ def main():
 
     # config is optional so check the argument
 
-    if config != None:
-       cfg = sr_config()
-       cfg.defaults()
-       cfg.general()
-       ok,config = cfg.config_path('report',config,mandatory=False)
-       if not ok :
-          config = None
-          args   = []
-          args.extend(sys.argv[1:])
-          args.remove(action)
+
+    args,action,config,old = startup_args(sys.argv)
 
     srreport = sr_report(config,args,action)
-
-    if old :
-       srreport.logger.warning("Should invoke 2: %s [args] action config" % sys.argv[0])
 
     srreport.exec_action(action,old)
 

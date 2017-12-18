@@ -130,7 +130,7 @@ class sr_winnow(sr_subscribe):
 
         self.caching    = 1200
         self.cache_stat = True
-        self.execfile("on_heartbeat",'heartbeat_cache')
+        self.execfile("on_heartbeat",'hb_cache')
         self.on_heartbeat_list.append(self.on_heartbeat)
         self.heartbeat_cache_installed = True
 

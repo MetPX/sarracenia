@@ -28,6 +28,10 @@ adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); p
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
 
+httpdocroot=`cat $tstdir/.httpdocroot`
+
+
+
 function countthem {
    if [ ! "${1}" ]; then
       tot=0
@@ -117,13 +121,13 @@ function tallyres {
 
 function countall {
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
+  countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
   totsarra="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow00_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow00="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
@@ -140,7 +144,7 @@ function countall {
   countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   totshovel2="${tot}"
 
-  countthem "`grep post_total "$LOGDIR"/sr_watch_sub_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
+  countthem "`grep post_total "$LOGDIR"/sr_watch_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
   totwatch="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log | wc -l`"
@@ -151,41 +155,41 @@ function countall {
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log | wc -l`"
   totsubq="${tot}"
-  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_test1_f62_000*.log | wc -l`"
+  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_000*.log | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_r_ftp_f70_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log | wc -l`"
   totsubr="${tot}"
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
-  countthem "`grep 'post_log notice' ~/sarra_devdocroot/srpostlogfile.log | wc -l`"
+  countthem "`grep 'post_log notice' $httpdocroot/srpostlogfile.log | wc -l`"
   totpost1="${tot}"
 
   if [ ! "$C_ALSO" ]; then
      return
   fi
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_001.log | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log | wc -l`"
   totcpelle04r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log | wc -l`"
   totcpelle04p="${tot}"
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_001.log | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log | wc -l`"
   totcpelle05r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log | wc -l`"
   totcpelle05p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_0001.log | wc -l`"
   totcvan14p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_0001.log | wc -l`"
   totcvan15p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_0001.log | wc -l`"
   totcveille="${tot}"
 
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_000*.log | wc -l`"
@@ -194,16 +198,16 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
   totcfile="${tot}"
 
-  audit_state="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $5; };'`"
-  audit_t1="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0001.log | tail -1 | awk ' { print $12; };'`"
-  audit_t2="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0002.log | tail -1 | awk ' { print $12; };'`"
-  audit_t3="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0003.log | tail -1 | awk ' { print $12; };'`"
-  audit_t4="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0004.log | tail -1 | awk ' { print $12; };'`"
-  audit_t5="`grep 'INFO\].*auditflow' $LOGDIR/sr_subscribe_fclean_0005.log | tail -1 | awk ' { print $12; };'`"
+  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $5; };'`"
+  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $12; };'`"
+  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log | tail -1 | awk ' { print $12; };'`"
+  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
+  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
+  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
 }
 
+
 # sr_post initial start
-httpdocroot=`cat $tstdir/.httpdocroot`
 srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
 srpostlstfile_new=$httpdocroot/srpostlstfile.new
 srpostlstfile_old=$httpdocroot/srpostlstfile.old
@@ -211,8 +215,6 @@ srpostlogfile=$httpdocroot/srpostlogfile.log
 
 touch ${srpostlogfile}
 echo > ${srpostlstfile_old}
-
-
 # sr_post call
 
 function do_sr_post {
@@ -358,7 +360,7 @@ calcres ${totfilet} ${totmsgt} "count of downloads by subscribe t_f30 (${totfile
 
 t3=$(( ${totfilet}*2 ))
 
-while ! calcres ${t3} ${totwatch}  "double the downloads by subscribe t_f30 (${t3}) and files posted (add+remove) by sr_watch (${totwatch}) should be about the same" retry ; do
+while ! calcres ${t3} ${totwatch}  "same downloads by subscribe t_f30 (${t3}) and files posted (add+remove) by sr_watch (${totwatch}) should be about the same" retry ; do
     printf "info: retrying... waiting for totwatch to catchup\n"
     sleep 30
     oldtotwatch=${totwatch}

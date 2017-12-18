@@ -3,8 +3,8 @@
 """
 default on_heartbeat handler that restarts components to deal with memory leaks.
 
-One can specify a specific memory limit with the *heartbeat_memory_max* setting.
-By default, there is no specific memory limit. The program first processes *heartbeat_memory_baseline_file*
+One can specify a specific memory limit with the *hb_memory_max* setting.
+By default, there is no specific memory limit. The program first processes *hb_memory_baseline_file*
 (default 100) numer of items (messages in for subscribers, messages posted for posting programs). Once that 
 number of files has been processed, the amount of memory in use is determined, and the memory max threshold is set 
 to *memory_multiplier* times (default 3) that. If memory use ever exceeds the max, then the plugin triggers a restart,
@@ -12,19 +12,19 @@ which should reduce the memory consumption.
 
 options:
 
-heartbeat_memory_max - hard code a maximum memory consumption to tolerate.
+hb_memory_max - hard code a maximum memory consumption to tolerate.
 
 If there is no max given, then
 
-heartbeat_memory_max will be set to:  <baseline_memory> * <multiplier>
+hb_memory_max will be set to:  <baseline_memory> * <multiplier>
 
  the following options will have an effect:
 
-heartbeat_memory_baseline_files (default: 100)
+hb_memory_baseline_files (default: 100)
 
   how many files to process before measuring to establish the baseline memory usage.
 
-heartbeat_memory_multiplier (default: 3)
+hb_memory_multiplier (default: 3)
 
   how much you want to allow the component to grow before you call it a memory leak.
   It could be normal for memory usage to grow, especially if plugins store data in memory.
@@ -40,9 +40,9 @@ class Heartbeat_Memory(object):
 
         # make parent know about these possible options
 
-        parent.declare_option('heartbeat_memory_max')
-        parent.declare_option('heartbeat_memory_baseline_file')
-        parent.declare_option('heartbeat_memory_multiplier')
+        parent.declare_option('hb_memory_max')
+        parent.declare_option('hb_memory_baseline_file')
+        parent.declare_option('hb_memory_multiplier')
 
 
     def perform(self,parent):
@@ -56,30 +56,30 @@ class Heartbeat_Memory(object):
            mem = p.get_memory_info()
 
         if self.file_count == None:
-            if hasattr(parent,'heartbeat_memory_baseline_file'):
-                if type(parent.heartbeat_memory_baseline_file) is list:
-                    self.file_count = int(parent.heartbeat_memory_baseline_file[0])
+            if hasattr(parent,'hb_memory_baseline_file'):
+                if type(parent.hb_memory_baseline_file) is list:
+                    self.file_count = int(parent.hb_memory_baseline_file[0])
                 else:
-                    self.file_count = int(parent.heartbeat_memory_baseline_file)
+                    self.file_count = int(parent.hb_memory_baseline_file)
             else:
                 self.file_count = 100
 
         if self.threshold == None :
-            if hasattr(parent,'heartbeat_memory_multiplier'):
-                if type(parent.heartbeat_memory_multiplier) is list:
-                     parent.heartbeat_memory_multiplier = parent.heartbeat_memory_multiplier[0]
-                parent.heartbeat_memory_multiplier = float( parent.heartbeat_memory_multiplier )
+            if hasattr(parent,'hb_memory_multiplier'):
+                if type(parent.hb_memory_multiplier) is list:
+                     parent.hb_memory_multiplier = parent.hb_memory_multiplier[0]
+                parent.hb_memory_multiplier = float( parent.hb_memory_multiplier )
             else:
-                parent.heartbeat_memory_multiplier = 3
+                parent.hb_memory_multiplier = 3
     
-            if hasattr(parent,'heartbeat_memory_max'):
-                if type(parent.heartbeat_memory_max) is list:
-                    parent.heartbeat_memory_max = parent.heartbeat_memory_max[0]
+            if hasattr(parent,'hb_memory_max'):
+                if type(parent.hb_memory_max) is list:
+                    parent.hb_memory_max = parent.hb_memory_max[0]
     
-                self.threshold  = parent.chunksize_from_str(parent.heartbeat_memory_max)
+                self.threshold  = parent.chunksize_from_str(parent.hb_memory_max)
 
             if ( parent.publish_count < self.file_count ) and ( parent.message_count < self.file_count ): 
-                self.logger.info("heartbeat_memory current usage: %s, accumulating count (%d or %d of %d so far) before setting threshold" \
+                self.logger.info("hb_memory current usage: %s, accumulating count (%d or %d of %d so far) before setting threshold" \
                       % ( humanize.naturalsize(mem.vms,binary=True), parent.publish_count, parent.message_count, self.file_count) )
                 return True
 
@@ -88,10 +88,10 @@ class Heartbeat_Memory(object):
         #          data=5967872, dirty=0, uss=6545408, pss=6872064, swap=0)
 
         if self.threshold == None :
-           self.threshold = int(parent.heartbeat_memory_multiplier * mem.vms)
-           self.logger.info("heartbeat_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
+           self.threshold = int(parent.hb_memory_multiplier * mem.vms)
+           self.logger.info("hb_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
 
-        parent.logger.info( "heartbeat_memory, current usage: %s trigger restart if increases past: %s " % \
+        parent.logger.info( "hb_memory, current usage: %s trigger restart if increases past: %s " % \
             ( humanize.naturalsize(mem.vms,binary=True), humanize.naturalsize(self.threshold,binary=True) ) )
 
         if mem.vms > self.threshold : self.restart(parent)
@@ -107,10 +107,10 @@ class Heartbeat_Memory(object):
 
         cmd.append('restart')
 
-        parent.logger.info("heartbeat_memory triggering %s" % cmd)
+        parent.logger.info("hb_memory triggering %s" % cmd)
         subprocess.check_call( cmd )
 
         return
 
-heartbeat_memory  = Heartbeat_Memory(self)
-self.on_heartbeat = heartbeat_memory.perform
+hb_memory  = Heartbeat_Memory(self)
+self.on_heartbeat = hb_memory.perform

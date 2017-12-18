@@ -36,9 +36,19 @@ if [ -f .httpserverpid ]; then
    if [ "`ps ax | awk ' $1 == '${httpserverpid}' { print $1; }; '`" ]; then
        kill $httpserverpid
        echo "web server stopped."
+       sleep 2
    else
        echo "no web server found running"
    fi
+   if [ "`netstat -an | grep LISTEN | grep 8000`" ]; then
+       pid="`ps ax | grep trivialserver.py | grep -v grep| awk '{print $1;};'`" 
+       echo "killing rogue web server found on port 8000 at pid=$pid"
+       if [ "$pid" ]; then
+          kill -9 $pid
+       else
+          echo "ERROR: could not find web server, but it's running. Look out!"
+       fi
+  fi
 fi
 
 echo "cleanup trivial ftp server... "
@@ -47,16 +57,24 @@ if [ -f .ftpserverpid ]; then
    if [ "`ps ax | awk ' $1 == '${ftpserverpid}' { print $1; }; '`" ]; then
        kill $ftpserverpid
        echo "ftp server stopped."
+       sleep 2
    else
-       echo "no ftp server found running"
+       echo "no properly started ftp server found running"
    fi
+   if [ "`netstat -an | grep LISTEN | grep 2121`" ]; then
+       pid="`ps ax | grep ftpdlib | grep -v grep| awk '{print $1;};'`" 
+       echo "killing rogue ftp server on port 2121 found at pid=$pid"
+       if [ "$pid" ]; then
+          kill -9 $pid
+       else
+          echo "ERROR: could not find FTP server, but it's running. Look out!"
+       fi
+  fi
 fi
 
 remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous"
 
 rm -f ${remove_if_present}
-
-C_ALSO="`which sr_cpost`"
 
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit; }; ' "$CONFDIR"/credentials.conf`"
@@ -75,37 +93,24 @@ for exchange in $exchanges_to_delete ; do
 done
 
  
-templates="`ls flow_templates/*/*.py flow_templates/*/*.conf flow_templates/*/*.inc`"
-c_templates="`ls cflow_templates/*/*.conf cflow_templates/*/*.inc`"
+flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
+flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
-if [ "$C_ALSO" ]; then
-  templates="$templates $c_templates"
-fi
+echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ remove +g' | sh -x
 
+echo "hoho 1"
 
-state_files=""
+echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log/g' | (cd $LOGDIR; sh -x )
 
-for cf in ${templates}; do
-    echo "removing $cf"
-    newcf="`echo $cf | sed 's+.*flow_templates\/++'`"
-    rm "$CONFDIR"/${newcf}
-    sd="`echo $newcf | sed 's+.conf$++'`"
-    state_files="${state_files} $CACHEDIR/${sd}"
-done
+echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh -x)
 
-#for cf in "$CONFDIR"/shovel/rr*.conf  ; do
-#    rm ${cf}
-#done
-
+rm $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse*
 
 httpdr=""
 if [ -f .httpdocroot ]; then
    httpdr="`cat .httpdocroot`"
-fi
-
-if [ "${LOGDIR}" -a "${state_files}" ]; then
-   set -x
-   rm -rf $httpdr $LOGDIR/* $CACHEDIR/watch/*/* ${state_files}
-   set +x
+   if [ "$httpdr" ]; then
+      rm -rf $httpdr
+   fi
 fi
 

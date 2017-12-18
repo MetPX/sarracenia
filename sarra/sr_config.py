@@ -255,7 +255,7 @@ class sr_config:
         self.logger.debug("action    %s" % self.action)
 
         if path        == None  : return
-        if self.action in [ 'edit', 'add', 'enable' ]: return
+        if self.action in [ 'edit', 'add', 'enable', 'remove' ]: return
 
         try:
             f = open(path, 'r')
@@ -620,11 +620,11 @@ class sr_config:
         self.execfile("on_post",'post_log')
         self.on_post_list = [ self.on_post ]
 
-        self.execfile("on_heartbeat",'heartbeat_log')
+        self.execfile("on_heartbeat",'hb_log')
         self.on_heartbeat_list    = [self.on_heartbeat]
-        self.execfile("on_heartbeat",'heartbeat_memory')
+        self.execfile("on_heartbeat",'hb_memory')
         self.on_heartbeat_list.append(self.on_heartbeat)
-        self.execfile("on_heartbeat",'heartbeat_pulse')
+        self.execfile("on_heartbeat",'hb_pulse')
         self.on_heartbeat_list.append(self.on_heartbeat)
 
         self.execfile("on_html_page",'html_page')
@@ -945,6 +945,34 @@ class sr_config:
 
         return defval
 
+    def varsub(self,word):
+
+        buser  = ''
+        config = ''
+        # options need to check if there
+        if hasattr(self,'broker') and self.broker  : buser  = self.broker.username
+        if self.config_name : config = self.config_name
+        result=word
+        if '$' in result :
+              result = result.replace('${HOSTNAME}',   self.hostname)
+              result = result.replace('${PROGRAM}',    self.program_name)
+              result = result.replace('${CONFIG}',     config)
+              result = result.replace('${BROKER_USER}',buser)
+
+        if '$' in result :
+              elst = []
+              plst = result.split('}')
+              for parts in plst :
+                  try:
+                          if '{' in parts : elst.append((parts.split('{'))[1])
+                  except: pass
+              for e in elst :
+                  try:    result = result.replace('${'+e+'}',os.environ.get(e))
+                  except: pass
+
+        return(result)
+
+
     def option(self,words):
         self.logger.debug("sr_config option %s" % words[0])
 
@@ -955,32 +983,15 @@ class sr_config:
         # value : variable substitutions
 
         words1 = None
+        words2 = None
         if len(words) > 1 :
-           buser  = ''
            config = ''
-           words1 = words[1]
+           words1 = self.varsub(words[1])
+           if len(words) > 2:
+              words2 = self.varsub(words[2])
 
-           if self.config_name : config = self.config_name
 
-           # options need to check if there
-           if hasattr(self,'broker') and self.broker  : buser  = self.broker.username
 
-           if '$' in words1 :
-              words1 = words1.replace('${HOSTNAME}',   self.hostname)
-              words1 = words1.replace('${PROGRAM}',    self.program_name)
-              words1 = words1.replace('${CONFIG}',     config)
-              words1 = words1.replace('${BROKER_USER}',buser)
-
-           if '$' in words1 :
-              elst = []
-              plst = words1.split('}')
-              for parts in plst :
-                  try:
-                          if '{' in parts : elst.append((parts.split('{'))[1])
-                  except: pass
-              for e in elst :
-                  try:    words1 = words1.replace('${'+e+'}',os.environ.get(e))
-                  except: pass
 
           
         # parsing
@@ -996,7 +1007,7 @@ class sr_config:
 
                      if len(words) > 2:
                         save_currentFileOption = self.currentFileOption
-                        self.currentFileOption = words[2]
+                        self.currentFileOption = words2
                         n = 3
                      
 
@@ -1085,7 +1096,7 @@ class sr_config:
                                if self.caching <= 0 : self.caching = False
                         n = 2
                      if self.caching and not hasattr(self,'heartbeat_cache_installed') :
-                        self.execfile("on_heartbeat",'heartbeat_cache')
+                        self.execfile("on_heartbeat",'hb_cache')
                         self.on_heartbeat_list.append(self.on_heartbeat)
                         self.heartbeat_cache_installed = True
 
@@ -1447,8 +1458,8 @@ class sr_config:
 
                 elif words0 == 'move': # See: sr_post.1
                      self.movepath = []
-                     self.movepath.append(words[1])
-                     self.movepath.append(words[2])
+                     self.movepath.append(words1)
+                     self.movepath.append(words2)
                      n = 3
 
                 # Internal use only: when instances>1 is used, and the instances are started
@@ -1476,7 +1487,7 @@ class sr_config:
 
                      n = 2
 
-                elif words0 == 'on_heartbeat': # See: sr_config.7, sr_sarra,shovel,subscribe
+                elif words0 in [ 'on_heartbeat', 'on_hb' ]: # See: sr_config.7, sr_sarra,shovel,subscribe
                      self.execfile("on_heartbeat",words1)
                      if ( self.on_heartbeat == None ):
                         if self.isNone(words1):
@@ -1514,7 +1525,7 @@ class sr_config:
 
                      n = 2
 
-                elif ( words0 == 'on_message' ) or ( words0 == 'on_msg' ) : # See: sr_config.1, others...
+                elif words0 in [ 'on_message',  'on_msg' ] : # See: sr_config.1, others...
                      self.execfile("on_message",words1)
                      if ( self.on_message == None ):
                         if self.isNone(words1):
@@ -1598,7 +1609,7 @@ class sr_config:
 
                          # adding path (cannot check if it exists we may post a delete)
                          try:
-                                 path = w
+                                 path = self.varsub(w)
                                  if pbd and not pbd in w: path = pbd + os.sep + w
 
                                  path = os.path.abspath(path)
@@ -1767,10 +1778,13 @@ class sr_config:
 
                      if item in [ 'source' , 'subscriber' ]:
                         roles  = item
-                        user   = words[2]
+                        user   = words2
                         self.users[user] = roles
                      elif item in [ 'exchange' ]:
-                        self.exchanges.append( words[2] )                                                
+                        self.exchanges.append( words2 )                                                
+                     elif item in [ 'env', 'envvar', 'var', 'value' ]:
+                        name, value = words2.split('=')
+                        os.environ[ name ] = value
                      n = 3
 
                 elif words0 == 'save' : # See: sr_config.7 
@@ -1892,7 +1906,7 @@ class sr_config:
                      #        dunno solution.  having it take all values allows options with > 1 word, which is very useful
                      #        see post_override plugin.
                      #
-                     value = ' '.join(words[1:])
+                     value = self.varsub(' '.join(words[1:]))
                      if not hasattr(self,words[0]):
                          self.logger.debug("unrecognized option %s %s" % (words[0],value))
                          setattr(self, words[0],[ value ])

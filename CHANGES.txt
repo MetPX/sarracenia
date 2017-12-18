@@ -6,6 +6,13 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: added SR_CONFIG_EXAMPLES environment variable.
+* C: change C to use four digit instance numbers to match python.
+* C: add *declare* option for variables. 
+* C: Remove *flow* option.
+* fixed: second field in options was not being checked for variable substitution.
+* fixed: remove did not work for disabled configurations.
+* added sr_pulse.7 man page.
 * made 'add' look in sample directories.
 * 'enable' and 'remove' weren't working.
 * 'list' now includes sample configurations, if available.

@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 
 """
-  default on_heartbeat handler logs that it was envoke
+  on_heartbeat handler that just prints a log message when it is invoked.
+
 """
 
 class Heartbeat_Log(object): 
 
     def __init__(self,parent):
-        parent.logger.debug( "heartbeat_log initialized" )
+        parent.logger.debug( "hb_log initialized" )
           
     def perform(self,parent):
         parent.logger.info("heartbeat. Sarracenia version is: %s \n" % sarra.__version__ )
         return True
 
-heartbeat_log = Heartbeat_Log(self)
+hb_log = Heartbeat_Log(self)
 
-self.on_heartbeat = heartbeat_log.perform
+self.on_heartbeat = hb_log.perform
 

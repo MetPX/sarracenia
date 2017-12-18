@@ -156,34 +156,35 @@ class sr_instances(sr_config):
 
     def print_plugins(self):
        
-       print( ' packaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
+       print( '\npackaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
        i=1
        for p in os.listdir( self.package_dir + os.sep + 'plugins'  ):
            if p == '__init__.py' : continue
            print( "%20s " % p, end=''  )
            if ( i%4 ) == 0: print('')
            i+=1
+       if ( i > 1 ) : print('')
 
        d = self.package_dir + os.sep + 'examples' +os.sep + self.program_dir
        if os.path.isdir(d):
            i=1
-           print( '\n\nconfiguration examples: ( %s ) ' %  d  )
+           print( '\nconfiguration examples: ( %s ) ' %  d  )
            for p in os.listdir( d ):
                print( "%20s " % p, end=''  )
                if ( i%4 ) == 0: print('')
                i+=1
 
+       if ( i > 1 ) : print('')
        if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
  
        i=1
-       print( '\n\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
+       print( '\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
        for p in os.listdir(  self.user_config_dir + os.sep + 'plugins' ):
            print( "%20s " % p , end='' )
            if ( i%4 ) == 0: print('')
            i+=1
-
+       if ( i > 1 ) : print('')
       
-       print( '\n' )
 
 
     def exec_action_on_all(self,action):
@@ -208,8 +209,8 @@ class sr_instances(sr_config):
                 try: 
                    if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
                 except: pass
-        if action == 'list':
-            print('\n')
+
+        if action == 'list': print('\n')
 
 
     # MG FIXME first shot
@@ -241,6 +242,9 @@ class sr_instances(sr_config):
            def_dir = self.user_config_dir + os.sep + 'plugins'
            sampledir = self.package_dir + os.sep + 'plugins'
 
+        elif self.user_config[-4:] == '.off':
+           ext = ''
+           def_dir = self.user_config_dir + os.sep + self.program_dir
         else:
            def_dir = self.user_config_dir + os.sep + self.program_dir
 
