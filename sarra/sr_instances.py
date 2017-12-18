@@ -36,7 +36,7 @@
 import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
 
-from shutil import copyfile
+from shutil import copyfile,get_terminal_size
 
 try :
          from sr_config      import *
@@ -157,32 +157,46 @@ class sr_instances(sr_config):
     def print_plugins(self):
        
        print( '\npackaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
-       i=1
-       for p in os.listdir( self.package_dir + os.sep + 'plugins'  ):
+       term = get_terminal_size((80,20))
+       i=0
+       for p in sorted( os.listdir( self.package_dir + os.sep + 'plugins'  )):
            if p == '__init__.py' : continue
+           if ( ((i+1)*21) >= term.columns ): 
+               print('')
+               i=1
+           else:
+               i+=1
+
            print( "%20s " % p, end=''  )
-           if ( i%4 ) == 0: print('')
-           i+=1
+
        if ( i > 1 ) : print('')
 
        d = self.package_dir + os.sep + 'examples' +os.sep + self.program_dir
        if os.path.isdir(d):
-           i=1
+           i=0
            print( '\nconfiguration examples: ( %s ) ' %  d  )
-           for p in os.listdir( d ):
+           for p in sorted( os.listdir( d )):
+               if ( ((i+1)*21) >= term.columns ): 
+                   print('')
+                   i=1
+               else:
+                   i+=1
+    
                print( "%20s " % p, end=''  )
-               if ( i%4 ) == 0: print('')
-               i+=1
 
        if ( i > 1 ) : print('')
        if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
  
-       i=1
+       i=0
        print( '\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
-       for p in os.listdir(  self.user_config_dir + os.sep + 'plugins' ):
+       for p in sorted( os.listdir(  self.user_config_dir + os.sep + 'plugins' )):
+           if ( ((i+1)*21) >= term.columns ): 
+               print('')
+               i=1
+           else:
+               i+=1
            print( "%20s " % p , end='' )
-           if ( i%4 ) == 0: print('')
-           i+=1
+
        if ( i > 1 ) : print('')
       
 
@@ -195,16 +209,20 @@ class sr_instances(sr_config):
 
         if action == 'list':
             self.print_plugins()
-            print( "general: ( %s ) " % self.user_config_dir )
+            print( "\ngeneral: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
             print("\nuser configurations: ( %s )" % configdir )
+            term = get_terminal_size((80,20))
 
-        i=1
-        for confname in os.listdir(configdir):
+        i=0
+        for confname in sorted( os.listdir(configdir) ):
             if action == 'list' : 
+                if ( ((i+1)*21) >= term.columns ): 
+                    print('')
+                    i=1
+                else:
+                    i+=1
                 print( "%20s " % confname, end='' )
-                if i%4 == 0: print('')
-                i+=1
             else:
                 try: 
                    if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
