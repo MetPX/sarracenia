@@ -1,3 +1,29 @@
+metpx-sarracenia (2.17.12a7) unstable; urgency=medium
+
+  * flow_test configurations now included in examples.
+  * flow_test now uses add/remove options for setup and teardown.
+  * C: added SR_CONFIG_EXAMPLES environment variable.
+  * C: change C to use four digit instance numbers to match python.
+  * C: add *declare* option for variables. 
+  * C: Remove *flow* option.
+  * fixed: second field in options was not being checked for variable substitution.
+  * fixed: remove did not work for disabled configurations.
+  * added sr_pulse.7 man page.
+  * made 'add' look in sample directories.
+  * 'enable' and 'remove' weren't working.
+  * 'list' now includes sample configurations, if available.
+  * change retry_ttl to default to the value of 'expire'.  Can still override.
+  * C: realpath wasn't properly applied in shim library cases.
+  * removed 's' from the 'headers' option in python, to match C.
+  * python added 'expiry' as synonym for 'expire', to match C.
+  * C: realpath only applied if an absolute path was supplied, now works for relative ones also.
+  * heartbeat_memory uses psutil.memory_info, on python 3.4 (in ubuntu 14.04) that routine is called get_memory_info.
+    added an if statement so it works for all cases.
+
+
+
+ -- Peter Silva <peter@blacklab>  Mon, 18 Dec 2017 13:15:10 -0500
+
 metpx-sarracenia (2.17.12a6) unstable; urgency=medium
 
   * heartbeat processing surrounded by exception to avoid cpu-hang on bad script. 
