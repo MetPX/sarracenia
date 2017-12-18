@@ -200,7 +200,7 @@ class sr_sender(sr_subscribe):
                      return ok
         except :
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Sender  Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sender/__do_send__  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
                     self.msg.report_publish(503,"Unable to process")
                 self.logger.error("Could not send")

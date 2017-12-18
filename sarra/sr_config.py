@@ -267,7 +267,7 @@ class sr_config:
 
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("1 Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error("sr_config/config 1 Type: %s, Value: %s" % (stype, svalue))
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
         self.logger.debug("config_path = %s %s" % (subdir,config))
@@ -689,7 +689,7 @@ class sr_config:
             exec(compile(open(script).read(), script, 'exec'))
         except : 
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("2 Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error("sr_config/execfile 2 Type: %s, Value: %s" % (stype, svalue))
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
 
         if getattr(self,opname) is None:
@@ -712,7 +712,7 @@ class sr_config:
                 plugin(self)
             except:
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("3 Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error( "plugin %s, execution failed." % plugin )
            #if not plugin(self): return False
 
@@ -1920,7 +1920,7 @@ class sr_config:
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("4 Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_config/option 4 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error("problem evaluating option %s" % words[0])
 
         if needexit :
@@ -2077,7 +2077,7 @@ class sr_config:
                  return True
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("5 Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sr_config/validate_sum 5 Type: %s, Value: %s" % (stype, svalue))
                  self.logger.error("sum invalid (%s)" % self.sumflg)
                  return False
         return False
@@ -2115,7 +2115,7 @@ class sr_config:
                 self.logger.error('Download failed: %s' % url )
                 self.logger.error('Uexpected error')              
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("6 Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_config/wget 6 Type: %s, Value: %s,  ..." % (stype, svalue))
 
         return None
 

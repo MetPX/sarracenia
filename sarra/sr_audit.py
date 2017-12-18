@@ -742,7 +742,7 @@ class sr_audit(sr_instances):
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                      self.logger.error("sr_audit/run Type: %s, Value: %s,  ..." % (stype, svalue))
 
               if self.users_flag or self.pump_flag :
                   return

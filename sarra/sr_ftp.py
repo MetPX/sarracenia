@@ -238,7 +238,7 @@ class sr_ftp(sr_proto):
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.error("sr_ftp/credentials (Type: %s, Value: %s)" % (stype ,svalue))
 
         return False
 
@@ -797,7 +797,7 @@ def self_test():
 
     except:
            (stype, svalue, tb) = sys.exc_info()
-           logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+           logger.error("sr_sftp/test (Type: %s, Value: %s)" % (stype ,svalue))
            logger.error("sr_ftp TEST FAILED")
            sys.exit(2)
 

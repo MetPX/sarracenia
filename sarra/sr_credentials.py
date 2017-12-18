@@ -222,7 +222,7 @@ class sr_credentials:
         
         except: 
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                self.logger.error("sr_credentials/parse Type: %s, Value: %s" % (stype, svalue))
                 self.logger.error("sr_credentials parse %s" % line)
 
 
@@ -242,7 +242,7 @@ class sr_credentials:
 
         except : 
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sr_credentials/read Type: %s, Value: %s" % (stype, svalue))
                  self.logger.error("sr_credentials read path = %s" % path)
 
         #self.logger.debug("credentials = %s\n" % self.credentials)

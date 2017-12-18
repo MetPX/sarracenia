@@ -116,7 +116,7 @@ class sr_http(sr_proto):
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("(Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.error("sr_http/credentials (Type: %s, Value: %s)" % (stype ,svalue))
 
         return False
 
@@ -193,7 +193,7 @@ class sr_http(sr_proto):
         except:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.warning("Unable to open %s" % self.urlstr)
-                self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.warning("sr_http/ls (Type: %s, Value: %s)" % (stype ,svalue))
 
         return self.entries
 
@@ -256,7 +256,7 @@ class sr_http(sr_proto):
                raise
         except:
                (stype, svalue, tb) = sys.exc_info()
-               self.logger.warning("(Type: %s, Value: %s)" % (stype ,svalue))
+               self.logger.warning("sr_http/__open__ (Type: %s, Value: %s)" % (stype ,svalue))
                self.logger.warning("Unable to open %s" % self.urlstr)
                alarm_cancel()
                raise
@@ -533,7 +533,7 @@ def self_test():
     except:
           logger.error("sr_http TEST FAILED")
           (stype, svalue, tb) = sys.exc_info()
-          logger.error('Unexpected error Type: %s, Value: %s' % (stype, svalue))
+          logger.error('sr_http/self_test Unexpected error Type: %s, Value: %s' % (stype, svalue))
           sys.exit(2)
 
     os.unlink(consumer.queuepath)

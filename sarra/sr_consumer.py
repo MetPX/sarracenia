@@ -181,7 +181,7 @@ class sr_consumer:
                     self.logger.debug("urlstr %s " % self.msg.urlstr)
         except :
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                 self.logger.error("sr_consumer/consume Type: %s, Value: %s,  ..." % (stype, svalue))
                  self.logger.error("malformed message %s"% vars(self.raw_msg))
                  return None, None
 

@@ -1431,7 +1431,7 @@ class sr_subscribe(sr_instances):
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                      self.logger.error("sr_subscribe/run Type: %s, Value: %s,  ..." % (stype, svalue))
 
 
     def save_message(self):

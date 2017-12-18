@@ -54,7 +54,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
            return subprocess.getstatusoutput(command)
     except :
            #(stype, svalue, tb) = sys.exc_info()
-           #print("Type: %s, Value: %s" % (stype, svalue))
+           #print("sr_rabbitmq/exec_rabbitmqadmin Type: %s, Value: %s" % (stype, svalue))
            pass
 
     return 0,None
@@ -209,6 +209,6 @@ def run_rabbitmqadmin(url,options,logger):
 
     except :
             (stype, svalue, tb) = sys.exc_info()
-            logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+            logger.error("sr_rabbit/run_rabbitmqadmin Type: %s, Value: %s,  ..." % (stype, svalue))
             logger.error("run_rabbimtqadmin "+ options)
     return []

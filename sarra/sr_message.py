@@ -821,7 +821,7 @@ class sr_message():
 
         except :
                  (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sr_message/verify_part_suffix Type: %s, Value: %s" % (stype, svalue))
                  return False,'incorrect extension',None,None,None
 
         return True,'ok',self.suffix,self.partstr,self.sumstr

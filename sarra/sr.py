@@ -130,7 +130,7 @@ def invoke(dirconf,pgm,confname,action):
 
     except :
              (stype, svalue, tb) = sys.exc_info()
-             print("Type: %s, Value: %s" % (stype, svalue))
+             print("sr/invoke Type: %s, Value: %s" % (stype, svalue))
 
 
 # check number of config files

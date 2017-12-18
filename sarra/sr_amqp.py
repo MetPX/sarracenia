@@ -70,7 +70,7 @@ class Message:
                self.properties['application_headers'] = properties.headers
        except:
                (stype, value, tb) = sys.exc_info()
-               self.logger.error("Type: %s, Value: %s" % (stype, value))
+               self.logger.error("sr_amqp/pika_to_amqplib Type: %s, Value: %s" % (stype, value))
                self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
 
 
@@ -326,7 +326,7 @@ class Consumer:
                               msg = self.channel.basic_get(queuename)
               except :
                      (stype, value, tb) = sys.exc_info()
-                     self.logger.error("Type: %s, Value: %s" % (stype, value))
+                     self.logger.error("sr_amqp/consume Type: %s, Value: %s" % (stype, value))
                      self.logger.error("Could not consume in queue %s" % queuename )
                      if self.hc.loop :
                         self.hc.reconnect()
@@ -393,7 +393,7 @@ class Publisher:
        except :
               if self.hc.loop :
                  (stype, value, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, value))
+                 self.logger.error("sr_amqp/publish: %s, Value: %s" % (stype, value))
                  self.logger.error("Sleeping 5 seconds ... and reconnecting")
                  time.sleep(5)
                  self.hc.reconnect()
@@ -401,7 +401,7 @@ class Publisher:
                  return self.publish(exchange_name,exchange_key,message,mheaders)
               else:
                  (etype, evalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
+                 self.logger.error("sr_amqp/publish 2 Type: %s, Value: %s" %  (etype, evalue))
                  self.logger.error("could not publish %s %s %s %s" % (exchange_name,exchange_key,message,mheaders))
                  return False
 
@@ -426,7 +426,7 @@ class Publisher:
               self.channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
        except:
               (etype, evalue, tb) = sys.exc_info()
-              self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
+              self.logger.error("sr_amqp/restore_set Type: %s, Value: %s" %  (etype, evalue))
               self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,self.restore_queue))
               os._exit(1)
 
@@ -503,7 +503,7 @@ class Queue:
        except : 
               self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
               (stype, svalue, tb) = sys.exc_info()
-              self.logger.error("Type: %s, Value: %s" %  (stype, svalue))
+              self.logger.error("sr_amqp/build Type: %s, Value: %s" %  (stype, svalue))
 
        # queue bindings
        exchange_ok = None

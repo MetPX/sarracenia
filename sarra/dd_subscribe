@@ -79,7 +79,7 @@ class MY_Message:
                self.properties['application_headers'] = properties.headers
        except:
                (stype, value, tb) = sys.exc_info()
-               self.logger.error("Type: %s, Value: %s" % (stype, value))
+               self.logger.error("pika_to_amqp_publish Type: %s, Value: %s" % (stype, value))
                self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
 
 
@@ -338,7 +338,7 @@ class Consumer:
                               msg = self.channel.basic_get(queuename)
               except :
                      (stype, value, tb) = sys.exc_info()
-                     self.logger.error("Type: %s, Value: %s" % (stype, value))
+                     self.logger.error("consume Type: %s, Value: %s" % (stype, value))
                      self.logger.error("Could not consume in queue %s" % queuename )
                      if self.hc.loop :
                         self.hc.reconnect()
@@ -396,7 +396,7 @@ class Publisher:
        except :
               if self.hc.loop :
                  (stype, value, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" % (stype, value))
+                 self.logger.error("publish Type: %s, Value: %s" % (stype, value))
                  self.logger.error("Sleeping 5 seconds ... and reconnecting")
                  time.sleep(5)
                  self.hc.reconnect()
@@ -404,7 +404,7 @@ class Publisher:
                  return self.publish(exchange_name,exchange_key,message,mheaders)
               else:
                  (etype, evalue, tb) = sys.exc_info()
-                 self.logger.error("Type: %s, Value: %s" %  (etype, evalue))
+                 self.logger.error("publish 2 Type: %s, Value: %s" %  (etype, evalue))
                  self.logger.error("could not publish %s %s %s %s" % (exchange_name,exchange_key,message,mheaders))
                  return False
 
@@ -482,7 +482,7 @@ class Queue:
        except : 
               self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
               (stype, svalue, tb) = sys.exc_info()
-              self.logger.error("Type: %s, Value: %s" %  (stype, svalue))
+              self.logger.error("build Type: %s, Value: %s" %  (stype, svalue))
 
        # queue bindings
        for exchange_name,exchange_key in self.bindings:

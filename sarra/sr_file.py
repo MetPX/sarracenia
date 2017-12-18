@@ -231,7 +231,7 @@ def file_insert_part(parent,msg,part_file):
 
     except :
              (stype, svalue, tb) = sys.exc_info()
-             msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
+             msg.logger.debug("sr_file/file_insert_part Type: %s, Value: %s,  ..." % (stype, svalue))
              msg.logger.debug("did not insert %s " % part_file)
              return False
 
@@ -327,7 +327,7 @@ def file_process( parent ) :
 
     except : 
              (stype, svalue, tb) = sys.exc_info()
-             msg.logger.debug("Type: %s, Value: %s,  ..." % (stype, svalue))
+             msg.logger.debug("sr_file/file_process Type: %s, Value: %s,  ..." % (stype, svalue))
 
     msg.report_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.relpath,msg.new_file))

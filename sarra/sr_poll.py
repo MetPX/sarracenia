@@ -102,7 +102,7 @@ class sr_poll(sr_post):
         except :
                   self.logger.warning("Could not cd to directory %s" % path )
                   (stype, svalue, tb) = sys.exc_info()
-                  self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
+                  self.logger.warning("sr_poll/cd Type: %s, Value: %s" % (stype ,svalue))
         return False
 
     def check(self):
@@ -346,7 +346,7 @@ class sr_poll(sr_post):
         except:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.warning("dest.lsdir: Could not ls directory %s" % self.destDir)
-            self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
+            self.logger.warning("sr_poll/lsdir Type: %s, Value: %s" % (stype ,svalue))
 
         return False
 
@@ -485,7 +485,7 @@ class sr_poll(sr_post):
              self.dest.connect()
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.warning(" Type: %s, Value: %s" % (stype ,svalue))
+            self.logger.warning("sr_poll/post_new_url Type: %s, Value: %s" % (stype ,svalue))
             self.logger.error("Unable to connect to %s. Type: %s, Value: %s" % (self.destination, stype ,svalue))
             self.logger.error("Sleeping 30 secs and retry")
             time.sleep(30)
@@ -681,7 +681,7 @@ class sr_poll(sr_post):
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                      self.logger.error("sr_poll/run Type: %s, Value: %s,  ..." % (stype, svalue))
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)
