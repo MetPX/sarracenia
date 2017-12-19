@@ -153,6 +153,7 @@ class sr_consumer:
               self.logger.info("expired retry message skipped %s" % notice)
               self.msg_worked()
               return False, self.msg
+           self.logger.info("message is %d seconds old, retry_ttl is %d" % (msg_age, self.parent.retry_ttl ) )
 
 
         # when no message sleep for 1 sec. (value taken from old metpx)
@@ -386,23 +387,28 @@ class sr_consumer:
         # get next json_line
 
         self.retry_bol = self.retry_fp.tell()
-        while True :
-              json_line = self.retry_fp.readline()
-              if not json_line : 
-                 self.retry_rewrite()
-                 return self.retry_get()
-              self.retry_eol = self.retry_fp.tell()
-              break
+        json_line = self.retry_fp.readline()
+        if not json_line : 
+            self.retry_rewrite()
+            return self.retry_get()
+        self.retry_eol = self.retry_fp.tell()
 
-        # from json_line make a raw_msg
-
-        topic, headers, notice = json.loads(json_line)
+        try:
+            topic, headers, notice = json.loads(json_line)
+        except:
+            self.logger.info("corrupted line in retry file: %s " % (json_line))
+            self.retry_fp.seek(self.retry_bol,0)
+            self.retry_fp.write('//')
+            self.retry_fp.seek(self.retry_eol,0)
+            self.retry_fp.flush()
+            os.fsync(self.retry_fp)
+            return None
 
         self.retry_msg.delivery_info['exchange']         = self.parent.exchange
         self.retry_msg.delivery_info['routing_key']      = topic
         self.retry_msg.properties['application_headers'] = headers
         self.retry_msg.body                              = notice
-        self.retry_msg.isRetry                           = True
+        self.retry_msg.isRetry = True
 
         self.retry_getmode = True
 
@@ -421,7 +427,7 @@ class sr_consumer:
 
     def retry_rewrite(self):
         self.logger.debug("retry_rewrite begin")
-
+        
         if not os.path.isfile(self.parent.retry_path) : return
 
         if self.retry_fp == None :
@@ -445,7 +451,6 @@ class sr_consumer:
               fp.write(json_line)
               count += 1
         fp.close()
-        self.logger.info("rewrote %d retries" % count)
 
         self.retry_fp.close()
         self.retry_fp = None
@@ -459,7 +464,18 @@ class sr_consumer:
 
         os.rename(tmp_path,self.parent.retry_path)
 
-         
+        if hasattr(self, 'last_retry_rewrite') and ( (time.time() - self.last_retry_rewrite) < 1) :
+           if ( self.rewrite_slowdown < 5 ):
+               self.rewrite_slowdown*=2;
+
+           self.logger.info("retry_rewrite rewrote %d entries, napping %g second" % (count, self.rewrite_slowdown) )
+           time.sleep(self.rewrite_slowdown)
+        else:
+           self.rewrite_slowdown = 0.01
+           self.logger.info("retry_rewrite rewrote %d retries" % count)
+
+        self.last_retry_rewrite=time.time()
+
     def set_queue_name(self):
 
         self.broker       = self.parent.broker
