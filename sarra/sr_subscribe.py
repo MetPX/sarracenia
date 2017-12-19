@@ -1388,6 +1388,7 @@ class sr_subscribe(sr_instances):
 
         if self.vip : last = not self.has_vip()
 
+        going_badly=0.01
         while True :
               try  :
 
@@ -1428,11 +1429,13 @@ class sr_subscribe(sr_instances):
 
                       #  process message (ok or not... go to the next)
                       ok = self.process_message()
+                      going_badly=0.01
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error("sr_subscribe/run Type: %s, Value: %s,  ..." % (stype, svalue))
-
+                      time.sleep(going_badly)
+                      if (going_badly < 5):  going_badly*=2 
 
     def save_message(self):
         self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
