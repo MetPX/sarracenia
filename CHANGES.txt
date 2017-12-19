@@ -6,7 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* added exponential backoff to main processing loop in sr_subscribe.
+* added exponential backoff on failure to main processing loop in sr_subscribe.
+* added exponential backoff to main retry loop in sr_consumer.
 * c: segault in mv if there's no slashes in the source path, oops!
 * added identifiers to differentiate all the Type: messages from exceptions.
 
