@@ -145,6 +145,20 @@ url:
   just output the retrieval URL to standard output.
 
 
+ENVIRONMENT VARIABLES
+=====================
+
+if the SR_CONFIG_EXAMPLES variable is set, then the *add* directive can be used
+to copy examples into the user's directory for use and/or customization.
+
+An entry in the ~/.config/sarra/default.conf (created via sr_subscribe edit default.conf )
+could be used to set the variable::
+
+  declare env SR_CONFIG_EXAMPLES=/usr/lib/python3/dist-packages/sarra/examples
+
+the value should be available from the output of a list command from the python
+implementation.
+
 SEE ALSO
 ========
 

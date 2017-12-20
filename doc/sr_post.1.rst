@@ -350,6 +350,19 @@ algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 5
 can see how the algorithm works.
 
 
+ENVIRONMENT VARIABLES
+=====================
+
+In the C implementation (sr_cpost), if the SR_CONFIG_EXAMPLES variable is set, then the *add* directive can be used
+to copy examples into the user's directory for use and/or customization.
+
+An entry in the ~/.config/sarra/default.conf (created via sr_subscribe edit default.conf )
+could be used to set the variable::
+
+  declare env SR_CONFIG_EXAMPLES=/usr/lib/python3/dist-packages/sarra/examples
+
+the value should be available from the output of a list command from the python
+implementation.
 
 
 

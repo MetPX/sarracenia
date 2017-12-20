@@ -86,8 +86,9 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
-If the package is installed on your computer, you should be able to list
-the available configurations with *sr_subscribe list* ::
+If the package installed on your computer is version 2.17.12a7 or higher, 
+a bit of discovery has been added to the application, and 
+you should be able to list the available configurations with *sr_subscribe list* ::
 
   blacklab% sr_subscribe list
   
