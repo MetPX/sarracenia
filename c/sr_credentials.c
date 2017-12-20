@@ -108,9 +108,14 @@ void sr_credentials_init() {
   //fprintf( stderr, "opening %s\n", cfnbuf );
 
   f = fopen( cfnbuf, "r" );
-  fread(sr_credentials, sb.st_size, 1, f );
-  sr_credentials[sb.st_size]='\0';
-  fclose(f);
+  if ( f != NULL )
+  {
+      fread(sr_credentials, sb.st_size, 1, f );
+      sr_credentials[sb.st_size]='\0';
+      fclose(f);
+  } else {
+      sr_credentials[0]='\0';
+  }
 
 }
 
