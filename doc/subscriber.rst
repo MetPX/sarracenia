@@ -89,42 +89,44 @@ staff, and the names are chosen to represent the origin of the data.
 If the package is installed on your computer, you should be able to list
 the available configurations with *sr_subscribe list* ::
 
-    blacklab% sr_subscribe list
-     system plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-      heartbeat_pulse.py          post_log.py       download_cp.py msg_replace_new_dir.py 
-    msg_filter_wmo2msc.py        msg_delete.py    msg_test_retry.py      msg_skip_old.py 
-           part_check.py msg_sundew_pxroute.py           msg_log.py       poll_script.py 
-      msg_to_clusters.py  part_clamav_scan.py         html_page.py     msg_hour_tree.py 
-     heartbeat_memory.py     msg_print_lag.py        post_total.py     download_wget.py 
-     msg_from_cluster.py       download_dd.py          msg_save.py    msg_2localfile.py 
-           msg_speedo.py     destfn_sample.py          line_log.py     post_override.py 
-             __pycache__          file_log.py        msg_2local.py         line_mode.py 
-          msg_by_user.py         msg_total.py      download_scp.py       file_rxpipe.py 
-           msg_fdelay.py     heartbeat_log.py        poll_pulse.py       msg_renamer.py 
-             file_age.py         msg_2http.py    post_hour_tree.py   msg_rename4jicc.py 
-            msg_delay.py    msg_rename_dmf.py        file_total.py          msg_dump.py 
-        msg_by_source.py      msg_download.py        file_check.py   post_rate_limit.py 
-      heartbeat_cache.py msg_rename_whatfn.py         watch_log.py 
-    
-    user plugins: ( /home/peter/.config/sarra/plugins ) 
-       msg_auditcflow.py         destfn_am.py       msg_tarpush.py         destfn_nz.py 
-      heartbeat_pulse.py         post_long.py     msg_auditflow.py 
-    
-    general: ( /home/peter/.config/sarra ) 
-              admin.conf     credentials.conf         default.conf
-    
-    user configurations: ( /home/peter/.config/sarra/subscribe )
-             fclean.conf 
-          r_ftp_f70.conf 
-          cdnld_f21.conf 
-         u_sftp_f60.conf 
-    
-          cfile_f44.conf 
-            cfclean.conf 
-              q_f71.conf 
-              t_f30.conf 
+  blacklab% sr_subscribe list
+  
+  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
+           __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
+       download_scp.py     download_wget.py          file_age.py        file_check.py 
+           file_log.py       file_rxpipe.py        file_total.py          hb_cache.py 
+             hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
+           line_log.py         line_mode.py         msg_2http.py        msg_2local.py 
+     msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py 
+          msg_delay.py        msg_delete.py      msg_download.py          msg_dump.py 
+         msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py     msg_hour_tree.py 
+            msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py 
+  msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
+       msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py 
+    msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py 
+         poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
+     post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
+          watch_log.py 
+  configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
+              all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
+              cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
+         citypage.conf           clean.conf       clean_f90.conf            cmml.conf 
+  cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
+            q_f71.conf           radar.conf            rdps.conf            swob.conf 
+            t_f30.conf      u_sftp_f60.conf 
+  
+  user plugins: ( /home/peter/.config/sarra/plugins ) 
+          destfn_am.py         destfn_nz.py       msg_tarpush.py 
+  
+  general: ( /home/peter/.config/sarra ) 
+            admin.conf     credentials.conf         default.conf
+  
+  user configurations: ( /home/peter/.config/sarra/subscribe )
+       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
+          ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
+  
+  blacklab% 
 
-    blacklab% 
 
 Each section of the listing shows the contents of the directory shown in parentheses.  One can
 just edit the files in the directories directly, or modify them otherwise, as the list command is
@@ -686,43 +688,43 @@ can be used to change processing done by components. The list of pre-built plugi
 in a 'plugins' directory wherever the package is installed (viewable with *sr_subscribe list*)
 sample output::
 
-    blacklab% sr_subscribe list
-     system plugins: ( /home/peter/src/sarracenia/sarra/plugins ) 
-     heartbeat_memory.py         msg_2http.py          line_log.py      download_scp.py 
-             file_log.py     msg_hour_tree.py         msg_delay.py        post_total.py 
-             file_age.py         html_page.py           msg_log.py     heartbeat_log.py 
-             msg_dump.py    msg_rename_dmf.py       file_rxpipe.py         msg_total.py 
-        post_override.py  part_clamav_scan.py    post_hour_tree.py   msg_to_clusters.py 
-           msg_delete.py       download_cp.py        msg_2local.py      msg_download.py 
-        msg_print_lag.py     destfn_sample.py       download_dd.py msg_replace_new_dir.py 
-     msg_from_cluster.py   post_rate_limit.py     msg_by_source.py        msg_speedo.py 
-            line_mode.py          post_log.py        file_total.py   msg_rename4jicc.py 
-           file_check.py        msg_fdelay.py   heartbeat_pulse.py        poll_pulse.py 
-    msg_rename_whatfn.py       poll_script.py        part_check.py      msg_skip_old.py 
-      heartbeat_cache.py    msg_test_retry.py     download_wget.py       msg_renamer.py 
-             msg_save.py msg_filter_wmo2msc.py         watch_log.py    msg_2localfile.py 
-    msg_sundew_pxroute.py       msg_by_user.py 
-    
-    user plugins: ( /home/peter/.config/sarra/plugins ) 
-       msg_auditcflow.py         destfn_am.py       msg_tarpush.py         destfn_nz.py 
-      heartbeat_pulse.py         post_long.py     msg_auditflow.py 
-    
-    general: ( /home/peter/.config/sarra ) 
-              admin.conf     credentials.conf         default.conf
-    
-    user configurations: ( /home/peter/.config/sarra/subscribe )
-             fclean.conf 
-          r_ftp_f70.conf 
-          cdnld_f21.conf 
-               swob.conf 
-    
-         u_sftp_f60.conf 
-          cfile_f44.conf 
-            cfclean.conf 
-              q_f71.conf 
-    
-              t_f30.conf 
-    blacklab% 
+   blacklab% sr_subscribe list
+   
+   packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
+            __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
+        download_scp.py     download_wget.py          file_age.py        file_check.py 
+            file_log.py       file_rxpipe.py        file_total.py          hb_cache.py 
+              hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
+            line_log.py         line_mode.py         msg_2http.py        msg_2local.py 
+      msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py 
+           msg_delay.py        msg_delete.py      msg_download.py          msg_dump.py 
+          msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py     msg_hour_tree.py 
+             msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py 
+   msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
+        msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py 
+     msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py 
+          poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
+      post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
+           watch_log.py 
+   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
+               all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
+               cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
+          citypage.conf           clean.conf       clean_f90.conf            cmml.conf 
+   cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
+             q_f71.conf           radar.conf            rdps.conf            swob.conf 
+             t_f30.conf      u_sftp_f60.conf 
+   
+   user plugins: ( /home/peter/.config/sarra/plugins ) 
+           destfn_am.py         destfn_nz.py       msg_tarpush.py 
+   
+   general: ( /home/peter/.config/sarra ) 
+             admin.conf     credentials.conf         default.conf
+   
+   user configurations: ( /home/peter/.config/sarra/subscribe )
+        cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
+           ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
+   
+   blacklab% 
 
 For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
 to be used with *on_file*, *Msg\_* plugins are to be used with on_message, etc...

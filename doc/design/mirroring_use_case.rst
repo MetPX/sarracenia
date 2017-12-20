@@ -1,29 +1,54 @@
 
+This is a first post on this topic giving background about the application of Sarracenia
+to mirroring a large tree. In November 2016, Environment and Climate Change Canada's (ECCC) 
+Meteorological Service of Canada (MSC), as part of a the High Performance Computing Replacement (HPCR) 
+project asked for very large directory trees to be mirrored in real-time. It was already known from 
+the outset that these trees would be too large to deal with using ordinary tools. It indeed took 
+about 15 months to explore the issue and arrive at an effective operational deployment.
 
-This is a first post on this topic giving background about the mirroring issue to explain the current status. In November 2016, ECCC asked for very large directory trees to be mirrored.  It was already known from the outset that these trees would be too large to deal with using ordinary tools. It has indeed been a nearly a year since we started on this effort. There are essentially three parts of the problem:
+It should be noted that the environment here is Canada's national weather centre, in other words
+a "production" numerical weather prediction suite, where models run 7/24 hours/day running
+different simulations (models of the atmosphere, and sometimes waterways and ocean, and the land
+under the atmosphere) either ingesting current observations aka *assimilation*, mapping them to a
+grid *analysis*, and then walking the grid forward in time *prediction/prognostic*. The forecasts
+follow a precise schedule throughout the 24hour cycle, and any delays have ripples, and considerable
+effort is expended to avoid interruptions and maintain that schedule.
+
+<insert system diagram here... show SC1,PPP1,SS1 <-> SC2,PPP2,SS2 >
+
+There is a pair of clusters running these simulations, one normally mostly working on operations,
+with the other as a *spare* (running research and development loads.)  When the primary fails,
+the intent is to run operations on the other supercomputer, using a *spare* disk to which all the
+live data has been mirrored.  As there are (nearly) always runs in progress, the directories never 
+stop being modified, and there is no maintenance period when one can catch up if one falls behind.
+
+There are essentially three parts of the problem:
  
-   -- obtain the list of files which are modified.
+   -- obtain the list of files which have been modified (recently.)
    -- copy them to the other cluster.
    -- aspirational deadline to deliver a mirrored file: five minutes.
  
-The actual trees to mirror are the following:
+The actual trees to mirror are the following::
  
-as037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
-policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
-policy_hall1_archive_dbase.conf:directory /fs/site1/ops/eccc/cmod/prod/archive.dbase
-policy_hall1_cmop.conf:directory /fs/site1/ops/eccc/cmod/cmop/data/maestro/smco500
-policy_hall1_daily_scores.conf:directory /fs/site1/ops/eccc/cmod/prod/daily_scores
-policy_hall1_hubs.conf:directory /fs/site1/ops/eccc/cmod/prod/hubs
-policy_hall1_products.conf:directory /fs/site1/ops/eccc/cmod/prod/products
-policy_hall1_stats.conf:directory /fs/site1/ops/eccc/cmod/prod/stats
-policy_hall1_version_control.conf:directory /fs/site1/ops/eccc/cmod/prod/version_control
-policy_hall1_work_ops.conf:directory /fs/site1/ops/eccc/cmod/prod/work_ops
-policy_hall1_work_par.conf:directory /fs/site1/ops/eccc/cmod/prod/work_par
-pas037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
+ pas037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
+ policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
+ policy_hall1_archive_dbase.conf:directory /fs/site1/ops/eccc/cmod/prod/archive.dbase
+ policy_hall1_cmop.conf:directory /fs/site1/ops/eccc/cmod/cmop/data/maestro/smco500
+ policy_hall1_daily_scores.conf:directory /fs/site1/ops/eccc/cmod/prod/daily_scores
+ policy_hall1_hubs.conf:directory /fs/site1/ops/eccc/cmod/prod/hubs
+ policy_hall1_products.conf:directory /fs/site1/ops/eccc/cmod/prod/products
+ policy_hall1_stats.conf:directory /fs/site1/ops/eccc/cmod/prod/stats
+ policy_hall1_version_control.conf:directory /fs/site1/ops/eccc/cmod/prod/version_control
+ policy_hall1_work_ops.conf:directory /fs/site1/ops/eccc/cmod/prod/work_ops
+ policy_hall1_work_par.conf:directory /fs/site1/ops/eccc/cmod/prod/work_par
+ pas037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
  
-The most efficient way to copy these trees, as was stated at the outset, would be for all of the jobs writing files in the trees to explicitly announce the files to be copied.  This would involve users modifying their jobs to include invocation of sr_post (a command which queues up file transfers for third parties to perform.)  ECCC set the additional constraint that modification of user jobs was not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the system without active user involvement.)
+Initially, we knew the number of files was large, but we had no knowledge of the actual amounts involved.
+Nor was that data even available until much later.
+
+The most efficient way to copy these trees, as was stated at the outset, would be for all of the jobs writing files in the trees to explicitly announce the files to be copied. This would involve users modifying their jobs to include invocation of sr_post (a command which queues up file transfers for third parties to perform.)  ECCC set the additional constraint that modification of user jobs was not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the system without active user involvement.)
  
-One could just scan at a higher level in order to scan a single parent directory, but the half-dozen sub-trees trees were picked in order to have smaller ones which worked more quickly, regardless of the method being used to obtain lists of new files.  What do we mean when we say these trees are too large? The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs. )  I ran rsync on the *hubs* directory, as just walking the tree once, without any file copying going on.  The walk of the tree, using rsync with checksumming disabled as an optimization, resulted in the log below:
+One could just scan at a higher level in order to scan a single parent directory, but the half-dozen sub-trees trees were picked in order to have smaller ones which worked more quickly, regardless of the method being used to obtain lists of new files. What do we mean when we say these trees are too large? The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs. ) rsync was run on the *hubs* directory, as just walking the tree once, without any file copying going on. The walk of the tree, using rsync with checksumming disabled as an optimization, resulted in the log below:
  
 pas037@eccc1-ppp1:~/test$ more tt_walk_hubs.log
 nohup: ignoring input
@@ -34,28 +59,58 @@ number of files examined is on the order of: rsync --dry-run --links -avi --size
 rsync end @ Sat Oct  7 20:06:31 GMT 2017
 pas037@eccc1-ppp1:~/test$
  
-A single pass took over five hours, to examine 27 million files. The maximum rate of running rsyncs, is thus on the order of once every six hours (to allow some time for copying) for this tree.   Note that any standard method of copying a directory tree requires traversing it, and that there is no reason to believe that any other tool such as find, dump, tar, tree, etc... would be significantly quicker than rsync. We need a faster method of knowing which files have been modified so that they can be copied.  
- 
-There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified.  By setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified in the tree.  This was the initial approach taken.  It turns out (last January), that INOTIFY is indeed a Linux feature, in that the INOTIFY events only propagate across a single erver.   With a cluster file system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written.   So rather than running a single daemon, we were faced with running around several hundred daemons (one per physical node), each monitoring the same set of 10's of millions of files.  
- 
-An alternate approach is, instead of running the modification detection at the Linux level, use the file system itself, which is database driven, to indicate which files had been modified. This is the GPFS-policy, where a query is run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per query.) combined with sr_poll.  
- 
-Over the winter, both of these methods were implemented. The Inotify based sr_watch was the fastest method (instantaneous), but the daemons were having stability and memory consumption problems, and they also took too long to startup ( requires an initial tree traversal.). While slower (taking longer to notice a file was modified), the GPFS policy had acceptable performance and was far more reliable than the parallel sr_watch method,and by the spring, with deployment expected for early July, needed to choose one to focus on. We chose the GPFS policy approach.
- 
-As the migration progressed, the file systems got more filled, and the GPFS-policy method got progressively slower.  Already in July, this was not an acceptable solution. At this point, the idea of intercepting jobs' file i/o calls with a shim library was introduced.  ECCC told SSC at the time, that having correct feeds, and having everything ready for transition was the priority, so the focus of efforts was in that direction until the migration was achieved in September.  In spite of being a lower priority over the summer, a C implementation of the sending portion of the sarra library was implemented along with a prototype shim library to call it.
- 
-It needs to be noted that while all of this work was progressing on the 'obtain the list of files to be copied' part of the problem, we were also working on the 'copy the files to the other side' part of the problem. Over the summer, results of performance tests and other considerations militated frequent changes in tactics.
- 
-Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different times, and many different criteria were considered (such as: impact on nfs nodes, protocol nodes, other nodes,  speed, system load,)  The final configuration selected of using cp  is not the fastest transfer method available (bbcp was) but it was chosen because it spread the load out better and resulted in more stable NFS and protocol nodes.  It looks like the 'copy the files to the other side' part of the problem is stable, and the impact on system stability has been minimized.
- 
-SSC fully appreciates that the mirroring between sites is not currently working, and that unless it works extremely well, it simply isn't usable by the ECCC.  While the transition occurred at the beginning of September, there were several weeks of intense effort to ensure that feeds were functional.  This work continues today as new issues are uncovered on a declining frequency. Work on libcshim started up again in mid-September, and with excellent technical co-operation from ECCC, we have been learning details of dynamic linking and kernel calls on linux, which has made the implementation much more elaborate than initially expected.  However, we now believe we are close to a point where we should make more rapid progress.   
- 
-While we hope to get to the libcshim approach in the next few weeks or at most a few months, in the mean-time, there are problems with the GPFS-policy approach that are being worked on as well:
- 
+A single pass took over five hours, to examine 27 million files, or examining about 1500 files per second. The maximum rate of running rsyncs on this tree is thus on the order of once every six hours (to allow some time for copying) for this tree. Note that any usual method of copying a directory tree requires traversing it, and that there is no reason to believe that any other tool such as find, dump, tar, tree, etc... would be significantly quicker than rsync. We need a faster method of knowing which files have been modified so that they can be copied.  
 
-    lack of transmission of symbolic links.  The GPFS policy currently does not identify symbolic links which appear, only regular files.  Naturally, they are not copied.
-    missing files:  Users have complained about missing files.
+There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified in the tree. This was the initial approach taken. It turns out (last January), that INOTIFY is indeed a Linux feature, in that the INOTIFY events only propagate across a single erver. With a cluster file system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather than running a single daemon, we were faced with running around several hundred daemons (one per physical node), each monitoring the same set of 10's of millions of files. Since the deamons were running on many nodes, the memory use rose into the terabyte range. 
+ 
+An alternate approach is, instead of running the modification detection at the Linux level, use the file system itself, which is database driven, to indicate which files had been modified. The HPC solution's main storage system uses IBM's General Parallel File System, or GPFS.  Using the *GPFS-policy* method, a query is run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per query.) combined with sr_poll to announce of files modified (and thus eligible for copying.)
+ 
+Over the winter 2016/2017, both of these methods were implemented. The Inotify based sr_watch was the fastest method (instantaneous), but the daemons were having stability and memory consumption problems, and they also took too long to startup ( requires an initial tree traversal, which takes the same time as the rsync). While slower (taking longer to notice a file was modified), the GPFS policy had *acceptable* performance and was far more reliable than the parallel sr_watch method,and by the spring, with deployment expected for early July 2017, the GPFS policy approach was selected.
+ 
+As the migration progressed, the file systems got more filled, and the GPFS-policy method got progressively slower. Already in July, this was not an acceptable solution. At this point, the idea of intercepting jobs' file i/o calls with a shim library was introduced. ECCC told SSC at the time, that having correct feeds, and having everything ready for transition was the priority, so the focus of efforts was in that direction until the migration was achieved in September. In spite of being a lower priority over the summer, a C implementation of the sending portion of the sarra library was implemented along with a prototype shim library to call it.
+ 
+It needs to be noted that while all of this work was progressing on the 'obtain the list of files to be copied' part of the problem, we were also working on the 'copy the files to the other side' part of the problem. Over the summer, results of performance tests and other considerations militated frequent changes in tactics. Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different methods ( rcp, scp, bbcp, sscp, cp, dd ) 
+and were all trialled to different degrees at different times. At this point several strengths of sarracenia were evident:
 
+* The separation of publishing from subscribing means that one can subscribe on the source node and push to the destination, or on the destination
+and pull from the source. It is easy to adapt for either approach. (ended up on destination protocol nodes, pulling from the source 
+* The separation of copying from the computational jobs means that the models run times are unaffected, as the i/o jobs are completely separate.
+* The ability to scale the number of workers to the performance needed.  (Eventually settled on 40 workers performing copies in parallel.)
+* The availability of plugins *download_cp*, *download_rcp*, *download_dd*, allow many different copy programs (and hence protocols) to be easily
+applied to the transfer problem.
+
+Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, transfer speed, load on PPP nodes,) The final configuration 
+selected of using *cp* (via the *download_cp* plugin) is not the fastest transfer method tested (*bbcp* was faster) but it was chosen because it 
+spread the load out better and resulted in more stable NFS and protocol nodes. The 'copy the files to the other side' part of the problem was 
+stable by the end of the summer of 2017, and the impact on system stability has been minimized.
  
-So there we have the status as of 2017/10/12.
- 
+Unfortunately, the mirroring between sites was not working. It was, in principle working with about a 10 minutes lag on the source files 
+system ( or about 30 times faster than an a naive rsync approach. ), but because the file selection part was only working in principle, with 
+many files missing in practice, it wasn't usable for it's intended purpose. The operational commissioning of the new solution (with mirroring 
+deferred.) occurred in September of 2017, and work on mirroring essentially stopped until October (because of activities related to 
+the commissioning work.)
+
+We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually an overlap
+of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one ended.) because there were 
+issues with files being missing in the copies. Even with this level of overlap, there were still missing files. At this point, in late
+November, early December, the libcshim was working well enough to be so encouraging that folks lost interest in the GPFS policy.  In contrast
+to an average of about 10 minutes delay starting a file copy with GPFS-policy queries, the libcshim approach has the copy initiated as soon
+as the file is closed on the source file system.
+
+It should be noted that when the work began, the python implementation of Sarracenia was a data distribution tool, with no support for mirroring.
+as the year progressed features:  symbolic link support, file attribute transportation, file removal support were added to the initial package.
+The idea of periodic processing (called heartbeats) was added, first to detect failures of clients (by seeing idle logs) but later to initiate
+garbage collection for the duplicates cache, memory use policing, and complex error recovery. The use case precipitated many improvements in
+the application, including a second implementation in C for environments where the requisit python3 environment was difficult to establish, or
+where efficiency was paramount (the libc-shim case.)
+
+The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
+A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
+on the destination.  Over a large number of samples, we get a quantification of how accurate the copy is.  The plugin for this comparison
+is still in development.
+
+In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs.) It is
+expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
+delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
+or 60 times faster than rsync.
+
