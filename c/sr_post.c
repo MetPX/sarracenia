@@ -501,12 +501,13 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
      {
         *s='\0';
         s++;
-     } else {
-        s=newname;
      }
-     realpath( newname, oldname );
-     strcat( oldname, "/" );
-     strcat( oldname, s );
+     realpath( newname, oldname ); // apply to directory, not final path entry.
+     if (s)
+     {
+        strcat( oldname, "/" );
+        strcat( oldname, s );
+     }
      log_msg( LOG_DEBUG, "applying realpath to old: %s -> %s\n", o, oldname );
 
      realpath( n, newname);
