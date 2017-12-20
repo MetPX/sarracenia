@@ -361,24 +361,24 @@ char *sr_time2str( struct timespec *tin )
    struct tm s;
    time_t when;
    struct timespec ts;
-   long msec;
+   long nsec;
 
    memset( &s, 0, sizeof(struct tm));
    memset( &ts, 0, sizeof(struct timespec));
 
    if ( tin ) {
      when = tin->tv_sec;
-     msec = tin->tv_nsec/1000000 ;
+     nsec = tin->tv_nsec ;
    } else {
      clock_gettime( CLOCK_REALTIME , &ts);
      when = ts.tv_sec;
-     msec = ts.tv_nsec/1e6 ;
+     nsec = ts.tv_nsec ;
    }
 
    gmtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */
-   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%03ld", s.tm_year+1900, s.tm_mon+1,
-        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, msec );
+   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%3ld", s.tm_year+1900, s.tm_mon+1,
+        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, nsec );
    return(time2str_result);
 }
 

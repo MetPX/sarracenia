@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: fix: segfault if credentials.conf is missing.
+
+**2.17.12a8**
+
 * added exponential backoff on failure to main processing loop in sr_subscribe.
 * added exponential backoff to main retry loop in sr_consumer.
 * now recovers from syntax errors in retry files (json.decode errors.)

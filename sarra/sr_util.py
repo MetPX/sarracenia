@@ -614,8 +614,8 @@ def startup_args(sys_argv):
 """
 
 def timeflt2str( f ):
-    msec = '.%d' % ((f%1)*1000)
-    s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + msec
+    nsec = '.%d' % ((f%1)*1e9)
+    s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + nsec
     return(s) 
     
 
