@@ -190,30 +190,36 @@ of communicating sequential processes. (in the `Hoare <http://dl.acm.org/citatio
 Why Not Just Use Rsync?
 -----------------------
 
-There are a number of tree replication tools that are widely used, why invent another?  Rsync and other tools are
-comparison based (dealing with a single Source and Destination)  Sarracenia, while it does not require or use multi-casting,
-is oriented towards a delivery to multiple receivers.  Where rsync synchronization is typically done by walking a
-large tree, that means that the synchronization interval is inherently limited to the frequency at which you can
-do the file tree walks (in large trees, that can be a long time.) Each file tree walk reads the entire tree
-in order to generate signatures, so supporting larger numbers of clients causes large overhead.  Sarracenia avoids
-file tree walks by having writers calculate the checksums once, and signal their activity directly to readers
-by messages, reducing overhead by orders of magnitude.  Lsync is a tool that leverages the INOTIFY features of
-Linux to achieve the same liveness, and it might be more suitable but it is obviously not portable. Doing this
-through the file system is thought to be cumbersome and less general than explicit middleware message passing,
-which also handles the logs in a straight-forward way.
+There are a number of tree replication tools that are widely used, why invent another?  
+RSync, for example is a fabulous tool, and we recommend it highly for many use cases.  but there are times
+when Sarracenia can go sixty times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
 
-One of the design goals of sarracenia is to be end-to-end.  Rsync is point-to-point,
-meaning it does not support the &quot;transitivity&quot; of transfers across multiple data pumps that
-is desired.  On the other hand, the first use case for Sarracenia is the distribution of
-new files.  Updates to files are not common, and so file deltas are not yet dealt with
-efficiently.  ZSync is much closer in spirit to this use case.  Sarracenia has a similar
+Rsync and other tools are comparison based (dealing with a single Source and Destination) Sarracenia, while it does 
+not require or use multi-casting, is oriented towards a delivery to multiple receivers, particularly when the source
+does not know who all the receivers are (pub/sub.) Where rsync synchronization is typically done by walking a 
+large tree, that means that the synchronization interval is inherently limited to the frequency at which you 
+can do the file tree walks (in large trees, that can be a long time.) Each file tree 
+walk reads the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
+large overhead. Sarracenia avoids file tree walks by having writers calculate the checksums once, and 
+signal their activity directly to readers by messages, reducing overhead by orders of magnitude.  Lsync 
+is a tool that leverages the INOTIFY features of Linux to achieve the same liveness, and it might be more 
+suitable but it is obviously not portable. Doing this through the file system is thought to be cumbersome 
+and less general than explicit middleware message passing, which also handles the logs in a straight-forward way.
+
+One of the design goals of sarracenia is to be end-to-end. Rsync is point-to-point,
+meaning it does not support the *transitivity* of transfers across multiple data pumps that
+is desired. On the other hand, the first use case for Sarracenia is the distribution of
+new files. Updates to files are not common, and so file deltas are not yet dealt with
+efficiently. ZSync is much closer in spirit to this use case. Sarracenia has a similar
 approach based on file partitions, but user settable to much larger than Zsync blocks, more
-amenable to accelleration.  Using an announcement per checksummed block allows transfers to be
-parallelized easily.   The use of the AMQP message bus also allows for system-wide
-monitoring to be straight-forward, and to integrate other features such as security
-scanning within the flow transparently.
+amenable to accelleration. Using an announcement per checksummed block allows transfers to be 
+parallelized easily. 
 
-Another consideration is that Sarracenia doesn't actually implement any transport.  It is completely agnostic 
+The use of the AMQP message bus also allows for completely flexible third party transfers to be configured
+and for system-wide monitoring to be straight-forward, and to easily integrate other features such as security
+scanning within the flow.
+
+Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
 to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
 with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
 The download_scp plugin, included with the package, shows the use of the built-in python transfer mechanisms, 
