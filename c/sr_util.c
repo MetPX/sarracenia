@@ -362,6 +362,8 @@ char *sr_time2str( struct timespec *tin )
    time_t when;
    struct timespec ts;
    long nsec;
+   char nsstr[30];
+   int nsl;
 
    memset( &s, 0, sizeof(struct tm));
    memset( &ts, 0, sizeof(struct timespec));
@@ -374,27 +376,57 @@ char *sr_time2str( struct timespec *tin )
      when = ts.tv_sec;
      nsec = ts.tv_nsec ;
    }
+   sprintf( nsstr, "%09ld", nsec );
+
+   // remove trailing 0's, not relevant after a decimal place.
+   nsl=strlen(nsstr)-1;
+   while ( nsstr[nsl] == '0' ) 
+   {
+       nsstr[nsl]='\0';
+       nsl--;
+   }
 
    gmtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */
-   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%09ld", s.tm_year+1900, s.tm_mon+1,
-        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, nsec );
+   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%s", s.tm_year+1900, s.tm_mon+1,
+        s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, nsstr );
    return(time2str_result);
+}
+
+int ipow(int base, int exp)
+/* all hail stack overflow: 
+   https://stackoverflow.com/questions/101439/the-most-efficient-way-to-implement-an-integer-based-power-function-powint-int
+ */
+{
+    int result = 1;
+    while (exp)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        base *= base;
+    }
+
+    return result;
 }
 
 struct timespec ts;
 
 struct timespec *sr_str2time( char *s )
-  /* inverse of above: convert 18 character string into a timespec.
+  /* inverse of above: convert SR_TIMESTRLEN character string into a timespec.
+    
    */
 {
   struct tm tm;
   memset( &tm, 0, sizeof(struct tm));
   memset( &ts, 0, sizeof(struct timespec));
+  int dl; // length of decimal string.
 
   strptime( s, "%Y%m%d%H%M%S", &tm);
   ts.tv_sec = timegm(&tm);
-  ts.tv_nsec = atof(s+14)*1e9;
+  
+  dl = strlen(s+15); // how many digits after decimal point?
+  ts.tv_nsec = atol(s+15) * ipow( 10, dl );
   return(&ts);
 }
 

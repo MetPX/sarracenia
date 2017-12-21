@@ -614,7 +614,7 @@ def startup_args(sys_argv):
 """
 
 def timeflt2str( f ):
-    nsec = '.%d' % ((f%1)*1e9)
+    nsec = ('%.9g' % (f%1))[1:]
     s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + nsec
     return(s) 
     
@@ -811,6 +811,8 @@ def self_test():
 
     if dflt != tflt or dstr != tstr :
           print("test timeflt2str timestr2flt : Failed")
+          print("expected: %g, got: %g" % ( tflt, dflt ) )
+          print("expected: %s, got: %s" % ( tstr, dstr ) )
           status = 3
 
     if status < 3 : print("test timeflt2str timestr2flt : OK")
