@@ -30,7 +30,7 @@ void log_cleanup();
 void daemonize(int close_stdout);
 // executed to go from a management instance to a daemon working instance.
 
-#define SR_TIMESTRLEN (19)
+#define SR_TIMESTRLEN (26)
 
 // Assumed longest possible hash. typeprefix + SHA512_DIGEST 
 #define SR_SUMHASHLEN (SHA512_DIGEST_LENGTH+1)

@@ -351,7 +351,7 @@ char *sr_hash2sumstr( const unsigned char *h )
   return(sumstr);
 }
 
-char time2str_result[19];
+static char time2str_result[SR_TIMESTRLEN];
 
 char *sr_time2str( struct timespec *tin ) 
 {
@@ -377,7 +377,7 @@ char *sr_time2str( struct timespec *tin )
 
    gmtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */
-   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%3ld", s.tm_year+1900, s.tm_mon+1,
+   sprintf( time2str_result, "%04d%02d%02d%02d%02d%02d.%09ld", s.tm_year+1900, s.tm_mon+1,
         s.tm_mday, s.tm_hour, s.tm_min, s.tm_sec, nsec );
    return(time2str_result);
 }
@@ -394,7 +394,7 @@ struct timespec *sr_str2time( char *s )
 
   strptime( s, "%Y%m%d%H%M%S", &tm);
   ts.tv_sec = timegm(&tm);
-  ts.tv_nsec = atof(s+14)*1.0e9;
+  ts.tv_nsec = atof(s+14)*1e9;
   return(&ts);
 }
 

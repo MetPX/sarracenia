@@ -288,7 +288,6 @@ struct sr_cache_entry_t *sr_cache_load( const char *fn)
        log_msg( LOG_DEBUG, "fields: sum=+%s+, timestr=+%s+, path=+%s+, partstr=+%s+\n", 
            sum, timestr, path, partstr );
        */
-       
        memcpy( key_val, sr_sumstr2hash(sum), SR_CACHEKEYSZ );
 
        HASH_FIND( hh, cache, key_val, SR_CACHEKEYSZ, c);
