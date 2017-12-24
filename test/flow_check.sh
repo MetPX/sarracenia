@@ -119,6 +119,26 @@ function tallyres {
 
 }
 
+function zerowanted {
+   # zerowanted - this value must be zero... checking for bad things.
+   # 
+   # logic:
+   # increment test number (tno)
+   # compare first and second totals, and report agreement if within 10% of one another.
+   # emit description based on agreement.  Arguments:
+   # 1 - value obtained 
+   # 2 - test description string.
+
+   tno=$((${tno}+1))
+
+   if [ "${1}" -gt 0 ]; then
+      printf "test %2d FAILURE: ${1} ${2}\n" ${tno}
+   else
+      printf "test %2d success: ${1} ${2}\n" ${tno}
+      passedno=$((${passedno}+1))
+   fi
+}
+
 function countall {
 
   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
@@ -204,6 +224,9 @@ function countall {
   audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
   audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
   audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
+
+  # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
+  missed_dispositions="`awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' | wc -l`"
 }
 
 
@@ -279,7 +302,7 @@ while [ $totsarra -lt $smin ]; do
 
    countall
 
-   printf  "sample now %6d %s \r"  $totsarra "$audit_state"
+   printf  "sample now %6d %s missed_dispositions=%d\r"  $totsarra "$audit_state" "$missed_dispositions"
 
 done
 printf  "\nSufficient!\n" 
@@ -375,7 +398,7 @@ done
 
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
-
+zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
 calcres "${audit_t1}" "${audit_t2}" "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
 calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
 calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."

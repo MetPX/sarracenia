@@ -801,12 +801,12 @@ class sr_subscribe(sr_instances):
 
            #self.logger.debug("determine_move_file, path being matched: %s " % ( urlstr )  )
 
-
            if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
-              #self.logger.debug("Rejected by accept/reject options")
+              self.logger.debug("Rejected by accept/reject options")
               return None,None,None
 
         elif not self.accept_unmatch :
+              #self.logger.debug("determine_move_file, un_match: %s " % ( urlstr )  )
               return None,None,None
 
         # get a copy of received message
@@ -819,6 +819,8 @@ class sr_subscribe(sr_instances):
         self.set_new()
         self.msg.set_new()
 
+        # invocation of _on_message processing for file that was moved.
+        self.logger.info("while processing file rename calling on_message for oldname %s (in case the name changes)" % ( self.msg.urlstr )  )
         ok = self.__on_message__()
         if not ok : return None,None,None
 
@@ -835,12 +837,17 @@ class sr_subscribe(sr_instances):
         try   : os.chdir(self.new_dir)
         except: found = False
 
+        if not found:
+           self.logger.warning("directory containing old file (%s) to be renamed is not present, so download required." % self.new_dir)
+           pass
+
         # if it is for 'newname' verify if the files are the same
 
         if found and name == 'newname' :
     
            if not self.overwrite and self.msg.partstr and self.msg.content_should_not_be_downloaded() :
               if self.reportback : self.msg.report_publish(304,'Not modified')
+              #self.logger.warning("not modified %s" % self.new_file)
               self.new_dir  = None
               self.new_file = None
 
@@ -849,7 +856,7 @@ class sr_subscribe(sr_instances):
         if found and name == 'oldname' :
     
            if not os.path.exists(self.new_file):
-              #self.logger.debug("move: oldname not found %s" % self.new_file)
+              self.logger.info("file to move %s not present in destination tree (download needed.)" % self.new_file)
               self.new_dir  = None
               self.new_file = None
 
@@ -870,7 +877,7 @@ class sr_subscribe(sr_instances):
         except: pass
 
         # return results
-
+        #self.logger.debug( "determine_move_file returning: %s %s %s" % ( tdir, tfile, trelp ))
         return tdir,tfile,trelp
 
     # =============
@@ -901,6 +908,7 @@ class sr_subscribe(sr_instances):
 
         newname = None
         if 'newname' in self.msg.headers :
+           #self.logger.warning("%s doit_download - newname=%s" % (self.program_name, self.msg.headers['newname']) )
            newname = self.msg.headers
 
            # it means that the message notice contains info about oldpath
@@ -926,7 +934,7 @@ class sr_subscribe(sr_instances):
                        #MG FIXME : except: return False  maybe ?
 
                     # move
-                    try   : 
+                    if True: #try   : 
                             # file link
                             if os.path.isfile(oldpath) or os.path.islink(oldpath) :
                                os.link(oldpath,newpath)
@@ -937,12 +945,14 @@ class sr_subscribe(sr_instances):
                                self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                             if self.reportback: self.msg.report_publish(201, 'moved')
                             need_download = False
-                    except: pass
+                    #except: pass
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
                  else : 
-                    self.logger.debug("could not move %s to %s (file exists)" % (oldpath,newpath))
+                    self.logger.warning("could not move %s to %s (file exists)" % (oldpath,newpath))
+              else:
+                    self.logger.debug("new file ready to move? (file exists)")
 
         #=================================
         # move event: case 2
@@ -954,6 +964,7 @@ class sr_subscribe(sr_instances):
 
         oldname = None
         if 'oldname' in self.msg.headers :
+           #self.logger.debug("%s doit_download - oldname=%s" % (self.program_name, self.msg.headers['oldname']) )
            oldname = self.msg.headers
 
            # set 'move to' file
@@ -964,7 +975,11 @@ class sr_subscribe(sr_instances):
            olddir,oldfile,oldrelp = self.determine_move_file('oldname',self.msg.headers['oldname'])
            if oldrelp != None : oldname = oldrelp
 
+           #self.logger.debug("%s doit_download - oldname=%s -back from determine_move... oldfile=%s" % \
+           #    (self.program_name, self.msg.headers['oldname'], oldfile) )
+
            if oldfile != None :
+              #self.logger.warning("%s doit_download 4" % (self.program_name) )
               oldpath = olddir + '/' + oldfile
 
               # oldfile exists: try to link it to newfile
@@ -979,17 +994,21 @@ class sr_subscribe(sr_instances):
 
                  # move
                  ok = True
-                 try   : 
+                 #self.logger.warning("%s doit_download - oldname=%s about to mv" % (self.program_name, self.msg.headers['oldname']) )
+                 if True : #try   : 
                          if os.path.isfile(oldpath) or os.path.islink(oldpath) :
                             os.link(oldpath,newpath)
                             self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
-                         if os.path.isdir( oldpath) : 
+                         elif os.path.isdir( oldpath) : 
                             os.rename(oldpath,newpath)
                             self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
+                         else:
+                            self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
                          need_download = False
-                 except: ok = False
+                 #except: ok = False
 
                  if ok  :
+                          self.logger.info("file moved %s to %s" % (oldpath,newpath) )
                           need_download = False
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
@@ -1008,8 +1027,9 @@ class sr_subscribe(sr_instances):
                           return True
 
                  self.logger.debug("could not move %s to %s (hardlink)" % (oldpath,newpath))
-                 self.logger.debug("newfile will be downloaded" % newpath)
-
+                 self.logger.info("newfile %s will be downloaded" % newpath)
+           else:
+                 self.logger.debug("oldfile is None, so newpath=%s will be downloaded." % (newpath) )
         #=================================
         # delete event, try to delete the local product given by message
         #=================================
@@ -1028,7 +1048,7 @@ class sr_subscribe(sr_instances):
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
                if os.path.isdir (path) : os.rmdir (path)
-               self.logger.debug("%s removed" % self.new_file)
+               self.logger.info("removed %s" % self.path)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
                self.logger.error("remove %s failed." % self.new_file )
@@ -1072,7 +1092,7 @@ class sr_subscribe(sr_instances):
                if os.path.islink(path) : os.unlink(path)
                if os.path.isdir (path) : os.rmdir (path)
                os.symlink( self.msg.headers[ 'link' ], path )
-               self.logger.debug("%s linked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.info("%s symlinked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201,'linked')
            except:
                ok = False
@@ -1433,7 +1453,8 @@ class sr_subscribe(sr_instances):
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("sr_subscribe/run Type: %s, Value: %s,  ..." % (stype, svalue))
+                      self.logger.error( "sr_subscribe/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
+                          (going_badly, stype, svalue) )
                       time.sleep(going_badly)
                       if (going_badly < 5):  going_badly*=2 
 
