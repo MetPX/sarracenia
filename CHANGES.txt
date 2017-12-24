@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* added info messages for cases where msg_received, but the log does not say what happenned (rename/link/mv cases.)
 * times used to be truncated to milliseconds, now the natural number of places after the decimal are retained.
 * C: fix: mv called from shim where no directory in old file name caused malformed *oldname* field in resulting post.
 * C: fix: segfault if credentials.conf is missing.
