@@ -139,32 +139,53 @@ function zerowanted {
    fi
 }
 
+function sumlogs {
+
+  pat="$1"
+  shift
+  tot=0
+  for l in $*; do
+     to_add="`grep $pat $l | tail -1 | awk ' { print $5; }; '`"
+     if [ "$to_add" ]; then
+          tot=$((${tot}+${to_add}))
+     fi
+  done
+}
+
 function countall {
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
+  #countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log 
   totsarra="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow00_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow00_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log 
   totwinnow00="${tot}"
 
   countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log 
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totmsgt="${tot}"
 
-  countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totfilet="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
   totshovel1="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
   totshovel2="${tot}"
 
-  countthem "`grep post_total "$LOGDIR"/sr_watch_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
+  #countthem "`grep post_total "$LOGDIR"/sr_watch_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
+  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
   totwatch="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log | wc -l`"
@@ -385,7 +406,7 @@ t3=$(( ${totfilet}*2 ))
 
 while ! calcres ${t3} ${totwatch}  "same downloads by subscribe t_f30 (${t3}) and files posted (add+remove) by sr_watch (${totwatch}) should be about the same" retry ; do
     printf "info: retrying... waiting for totwatch to catchup\n"
-    sleep 30
+    sleep 5
     oldtotwatch=${totwatch}
     countall
     t3=$(( ${totfilet}*2 ))
