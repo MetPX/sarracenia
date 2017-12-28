@@ -545,7 +545,7 @@ class sr_message():
 
     def set_msg_time(self):
         parts       = self.time.split('.')
-        ts          = time.strptime(parts[0], "%Y%m%d%H%M%S" )
+        ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + int(parts[1]) / 1000.0
 
