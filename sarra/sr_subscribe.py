@@ -731,7 +731,7 @@ class sr_subscribe(sr_instances):
            new_msg = self.cache.check_msg(self.msg)
 
            if not new_msg :
-              if self.reportback : self.msg.report_publish(304,'Not modified')
+              if self.reportback : self.msg.report_publish(304,'Not modified1')
               self.logger.info("Ignored %s not modified" % (self.msg.notice))
               return True
 
@@ -846,7 +846,7 @@ class sr_subscribe(sr_instances):
         if found and name == 'newname' :
     
            if not self.overwrite and self.msg.partstr and self.msg.content_should_not_be_downloaded() :
-              if self.reportback : self.msg.report_publish(304,'Not modified')
+              if self.reportback : self.msg.report_publish(304,'Not modified2')
               #self.logger.warning("not modified %s" % self.new_file)
               self.new_dir  = None
               self.new_file = None
@@ -1139,7 +1139,7 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
-           if self.reportback: self.msg.report_publish(304, 'not modified')
+           if self.reportback: self.msg.report_publish(304, 'not modified3')
            self.logger.debug("file not modified %s " % self.new_file)
 
            # if we are processing an entire file... we are done
