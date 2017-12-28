@@ -323,7 +323,7 @@ while [ $totsarra -lt $smin ]; do
 
    countall
 
-   printf  "sample now %6d %s missed_dispositions=%d\r"  $totsarra "$audit_state" "$missed_dispositions"
+   printf  "sample now %6d content_checks:%4s missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
 
 done
 printf  "\nSufficient!\n" 
@@ -343,7 +343,7 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
-        echo "Still $queued_msgcnt messages flowing, waiting..."
+        printf "Still %4s messages flowing, waiting...\r" "$queued_msgcnt"
         sleep 10
         queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    done
