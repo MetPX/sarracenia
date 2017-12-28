@@ -1042,16 +1042,17 @@ class sr_subscribe(sr_instances):
               self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
               return True
 
-           try : 
-               path = self.new_dir + os.sep + self.new_file
+           path = self.new_dir + os.sep + self.new_file
 
+           try : 
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
                if os.path.isdir (path) : os.rmdir (path)
-               self.logger.info("removed %s" % self.path)
+               self.logger.info("removed %s" % path)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               self.logger.error("remove %s failed." % self.new_file )
+               (stype, svalue, tb) = sys.exc_info()
+               self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
                if self.reportback: self.msg.report_publish(500, 'remove failed')
 
            self.msg.set_topic('v02.post',self.new_relpath)

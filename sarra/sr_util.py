@@ -382,7 +382,7 @@ class sr_proto():
         # warn if length mismatch
 
         if length != 0 and rw_length != length :
-           self.logger.error("util/writelocal mismatched file length. Message said to expect %d bytes.  Got %d bytes." % (length,rw_length))
+           self.logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
 
         return rw_length
 
@@ -404,7 +404,7 @@ class sr_proto():
         # warn if length mismatch
 
         if length != 0 and rw_length != length :
-           self.logger.error("util/readlocal mismatched file length. Message announced it as %d bytes, but wrote %d bytes " % (length,rw_length))
+           self.logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         return rw_length
 

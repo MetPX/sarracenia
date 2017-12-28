@@ -247,7 +247,10 @@ function countall {
   audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
-  missed_dispositions="`awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' | wc -l`"
+  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
+  missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
+
+  echo "missed dispositions is $missed_dispositions"
 }
 
 
@@ -458,6 +461,10 @@ echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f
 echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log | wc -l`
 
 # MG shows errors in logs if any
+
+if (("${missed_dispositions}">0)); then 
+   echo "Please review $LOGDIR/missed_dispositions.report" 
+fi
 
 echo
 NERROR=`grep ERROR "$LOGDIR"/*.log | grep -v ftps | grep -v retryhost | wc -l`
