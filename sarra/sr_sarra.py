@@ -182,13 +182,12 @@ class sr_sarra(sr_subscribe):
         # or it consumes message from another pump
         # we cannot define a default broker exchange
 
-
-        # FIX ME  report_exchange set to NONE
-        # instead of xreport and make it mandatory perhaps ?
         # since it can be xreport or xs_remotepumpUsername ?
         # default broker and exchange None
 
         # in most cases, sarra downloads and repost for itself.
+        self.inflight = None
+
         # default post_broker and post_exchange are
 
         self.post_exchange  = 'xpublic'

@@ -658,7 +658,6 @@ class sr_subscribe(sr_instances):
         self.inplace        = True
         self.subtopic       = '#'
 
-        self.inflight       = '.tmp'
         self.mirror         = False
 
         self.accept_unmatch  = False

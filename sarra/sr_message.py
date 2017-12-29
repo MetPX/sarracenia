@@ -484,11 +484,10 @@ class sr_message():
               self.target_relpath = self.new_relpath.replace(self.suffix,'')
               part_file    = self.new_file
               part_relpath = self.new_relpath
-
         
            # file insert inserts into file (maybe in file, maybe in part file)
 
-           if self.partflg == 'i' :
+           elif self.partflg == 'i' :
               self.target_file    = self.new_file
               self.target_relpath = self.new_relpath
               part_file           = self.new_file + self.suffix
