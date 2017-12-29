@@ -67,10 +67,6 @@ EOT
  exit 1
 fi
  
-# Determine whether we should be testing the C parts as well as the python implementation.
-C_ALSO="`which sr_cpost`" 
-echo "$C_ALSO"
-
 if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot
   cp -r testree/* $testdocroot
@@ -135,15 +131,22 @@ function xchk {
 # 1 - number of exchanges to expect.
 # 2 - Description string.
 #
-x_cnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges |wc -l`"
+exnow=$LOGDIR/flow_setup.exchanges.txt
+exex=flow_lists/exchanges_expected.txt
+rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges >$exnow
+
+x_cnt="`wc -l <$exnow`"
+expected_cnt="`wc -l <$exex`"
 # remove column header...
 x_cnt=$((${x_cnt}-1))
 
-if [ "$x_cnt" = $1 ]; then
-    echo "OK, as expected $1 $2" 
+if [ "$x_cnt" = $expected_cnt ]; then
+    echo "OK, as expected $expected_cnt $1" 
     passed_checks=$((${passed_checks}+1))
 else
-    echo "FAILED, expected $1, but there are $x_cnt $2"
+    echo "FAILED, expected $expected_cnt, but there are $x_cnt $1"
+    printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
+    printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
 fi
 
 count_of_checks=$((${count_of_checks}+1))
@@ -157,13 +160,8 @@ count_of_checks=$((${count_of_checks}+1))
 sr_audit --users foreground
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-if [ "$C_ALSO" ]; then
-   qchk 17 "queues existing after 1st audit" "show overview" 
-   xchk 32 "exchanges for flow test created."
-else
-   qchk 12 "queues existing after 1st audit" "show overview" 
-   xchk 28 "exchanges for flow test created."
-fi
+qchk 17 "queues existing after 1st audit" "show overview" 
+xchk "exchanges for flow test created."
 
 if [ "$1" = "declare" ]; then
    exit 0
