@@ -250,7 +250,6 @@ function countall {
   awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
   missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
 
-  echo "missed dispositions is $missed_dispositions"
 }
 
 
