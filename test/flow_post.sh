@@ -41,7 +41,7 @@ function do_sr_post {
    fi
 
    sr_post -c test2_f61.conf -p $srpostdelta 
-   LD_PRELOAD="/usr/lib/libsrshim.so.1" cp -p $srpostdelta  ${httpdocroot}/posted_by_shim
+   LD_PRELOAD="libsrshim.so.1" cp -p $srpostdelta  ${httpdocroot}/posted_by_shim
    
    cp -p $srpostlstfile_new $srpostlstfile_old
 
