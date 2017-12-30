@@ -131,7 +131,7 @@ function xchk {
 # 1 - number of exchanges to expect.
 # 2 - Description string.
 #
-exnow=$LOGDIR/flow_setup.exchanges.txt
+exnow=${LOGDIR}/flow_setup.exchanges.txt
 exex=flow_lists/exchanges_expected.txt
 rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges >$exnow
 
@@ -178,12 +178,16 @@ httpserverpid=$!
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
 
-
 cd $testrundir
+
+./flow_post.sh >${LOGDIR}/srposter.log 2>&1 &
+flowpostpid=$!
+
 
 echo $ftpserverpid >.ftpserverpid
 echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
+echo $flowpostpid >.flowpostpid
 
 sr start
 

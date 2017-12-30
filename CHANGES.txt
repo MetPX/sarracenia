@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* moved sr_poster code into flow_setup, so it is started at beginning instead of run in flow_check.
 * Corrected that *inflight* option was NONE on sender.  It was documented and intended to be '.tmp'.
   default is now: .tmp in all except sarra, where it is forced to NONE.
 * added info messages for cases where msg_received, but the log does not say what happenned (rename/link/mv cases.)

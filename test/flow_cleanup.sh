@@ -72,7 +72,22 @@ if [ -f .ftpserverpid ]; then
   fi
 fi
 
-remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous"
+echo "cleanup flow poster... "
+if [ -f .flowpostpid ]; then
+   flowpostpid="`cat .flowpostpid`"
+   if [ "`ps ax | awk ' $1 == '${flowpostpid}' { print $1; }; '`" ]; then
+       kill $flowpostpid
+       echo "flow poster stopped."
+       sleep 2
+   else
+       echo "no properly started flow poster found running"
+   fi
+fi
+
+
+
+
+remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous ${LOGDIR}/flow_setup.exchanges.txt ${LOGDIR}/missed_dispositions.report ${LOGDIR}/srposter.log"
 
 rm -f ${remove_if_present}
 
@@ -100,7 +115,7 @@ echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ rem
 
 echo "hoho 1"
 
-echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log/g' | (cd $LOGDIR; sh -x )
+echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log\*/g' | (cd $LOGDIR; sh -x )
 
 echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh -x)
 

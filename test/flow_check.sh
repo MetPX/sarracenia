@@ -205,7 +205,7 @@ function countall {
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
-  countthem "`grep 'post_log notice' $httpdocroot/srpostlogfile.log | wc -l`"
+  countthem "`grep 'post_log notice' $LOGDIR/srposter.log | wc -l`"
   totpost1="${tot}"
 
   if [ ! "$C_ALSO" ]; then
@@ -253,41 +253,6 @@ function countall {
 }
 
 
-# sr_post initial start
-srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
-srpostlstfile_new=$httpdocroot/srpostlstfile.new
-srpostlstfile_old=$httpdocroot/srpostlstfile.old
-srpostlogfile=$httpdocroot/srpostlogfile.log
-
-touch ${srpostlogfile}
-echo > ${srpostlstfile_old}
-# sr_post call
-
-function do_sr_post {
-
-   cd $srpostdir
-
-   # sr_post testing START
-   # TODO - consider if .httpdocroot ends with a '/' ?
-   ls $srpostdir/* > $srpostlstfile_new
-   # Obtain file listing delta
-   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
-
-   if [ "$srpostdelta" == "" ]; then
-      return
-   fi
-
-   #sr_post -b amqp://tsource@localhost/ -to ALL -ex xs_tsource_post -u sftp://peter@localhost -dr $srpostdir -p $srpostdelta >> $srpostlogfile 2>&1
-   sr_post -c "$CONFDIR"/post/test2_f61.conf -p $srpostdelta >> $srpostlogfile 2>&1
-
-   cp -p $srpostlstfile_new $srpostlstfile_old
-
-   do_sr_post
-
-}
-
-# sr_post initial end
-
 countall
 
 snum=1
@@ -319,10 +284,6 @@ while [ $totsarra -lt $smin ]; do
    fi
    sleep 10
 
-   # do sr_posting if requiered
-   do_sr_post
-
-
    countall
 
    printf  "sample now %6d content_checks:%4s missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
@@ -339,9 +300,7 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stoppe
          sr_cpump stop pelle_dd2_f05
    fi
 
-   # sleep a little more and then  do sr_posting if requiered
    sleep 10
-   do_sr_post
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
