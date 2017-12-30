@@ -21,16 +21,18 @@ EOF
 
 eval `application_dirs`
 
-sr stop
+echo "Stopping sr..."
+sr stop >$LOGDIR/sr_stop_f99.log 2>&1
 
-sr cleanup 
+echo "Cleanup sr... "
+sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
 
 echo extra lines for the sr_cpump cleanup hanging
 sleep 10
 killall sr_cpump
 echo remove these 2 when corrected
 
-echo "cleanup trivial http server... "
+echo "Cleanup trivial http server... "
 if [ -f .httpserverpid ]; then
    httpserverpid="`cat .httpserverpid`"
    if [ "`ps ax | awk ' $1 == '${httpserverpid}' { print $1; }; '`" ]; then
@@ -51,7 +53,7 @@ if [ -f .httpserverpid ]; then
   fi
 fi
 
-echo "cleanup trivial ftp server... "
+echo "Cleanup trivial ftp server... "
 if [ -f .ftpserverpid ]; then
    ftpserverpid="`cat .ftpserverpid`"
    if [ "`ps ax | awk ' $1 == '${ftpserverpid}' { print $1; }; '`" ]; then
@@ -72,7 +74,7 @@ if [ -f .ftpserverpid ]; then
   fi
 fi
 
-echo "cleanup flow poster... "
+echo "Cleanup flow poster... "
 if [ -f .flowpostpid ]; then
    flowpostpid="`cat .flowpostpid`"
    if [ "`ps ax | awk ' $1 == '${flowpostpid}' { print $1; }; '`" ]; then
@@ -97,35 +99,39 @@ adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); p
 queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' ( NR > 1 ) { print $1; }; '`"
 
 
+touch $LOGDIR/cleanup_f99.log
+echo "Deleting queues: $queues_to_delete"
 for q in $queues_to_delete; do
-    rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q
+    rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q >>$LOGDIR/cleanup_f99.log 2>&1
 done
 
 exchanges_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | awk ' ( $1 ~ /x.*/ ) { print $1; }; '`"
+echo "Deleting exchanges..."
 for exchange in $exchanges_to_delete ; do 
-   echo "deleting $exchange"
-   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} 
+   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} >>$LOGDIR/cleanup_f99.log 2>&1
 done
 
  
 flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
-echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ remove +g' | sh -x
+echo "Removing flow configs..."
+echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ remove +g' | sh
 
-echo "hoho 1"
+echo "Removing flow config logs..."
+echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log\*/g' | (cd $LOGDIR; sh )
 
-echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log\*/g' | (cd $LOGDIR; sh -x )
-
-echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh -x)
+echo "Removing flow cache/state files ..."
+echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh )
 
 rm $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse*
 
 httpdr=""
 if [ -f .httpdocroot ]; then
    httpdr="`cat .httpdocroot`"
-   if [ "$httpdr" ]; then
+   if [ "$httpdr" -a -d "$httpdr" ]; then
+      echo "Removing document root ( $httpdr )..."
       rm -rf $httpdr
    fi
 fi
-
+echo "Done!"

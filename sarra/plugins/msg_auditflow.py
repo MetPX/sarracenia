@@ -44,7 +44,7 @@ class Msg_AuditFlow(object):
             except:
                 parent.logger.error("msg_auditflow: compare failed: %s vs. %s " % ( a, b ) ) 
 
-        for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1" ]:
+        for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
             f= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
             parent.logger.info("msg_delete: %s" % f )
             os.unlink( f )

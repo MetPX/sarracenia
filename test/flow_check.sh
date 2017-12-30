@@ -208,6 +208,9 @@ function countall {
   countthem "`grep 'post_log notice' $LOGDIR/srposter.log | wc -l`"
   totpost1="${tot}"
 
+  countthem "`grep 'published: 2' $LOGDIR/srposter.log | wc -l`"
+  totshimpost1="${tot}"
+
   if [ ! "$C_ALSO" ]; then
      return
   fi
@@ -389,6 +392,9 @@ calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 ($
 calcres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
 
 calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
+
+calcres ${totpost1} ${totshimpost1} "posts test2_f61 ${totpost1} and shim_f63 ${totshimpost1} Should be the same."
+
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."

@@ -75,6 +75,7 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot/sent_by_tsource2send
   mkdir $testdocroot/recd_by_srpoll_test1
   mkdir $testdocroot/posted_by_srpost_test2
+  mkdir $testdocroot/posted_by_shim
   mkdir $testdocroot/cfr
   mkdir $testdocroot/cfile
 fi
@@ -92,7 +93,8 @@ mkdir -p "$CONFDIR" 2> /dev/null
 flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
-echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh -x
+echo "Adding flow test configurations..."
+echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh 
 
 # sr_post "add" doesn't. so a little help:
 cp ../sarra/examples/post/*f[0-9][0-9].conf ~/.config/sarra/post
@@ -133,7 +135,7 @@ function xchk {
 #
 exnow=${LOGDIR}/flow_setup.exchanges.txt
 exex=flow_lists/exchanges_expected.txt
-rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges >$exnow
+rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | sort >$exnow
 
 x_cnt="`wc -l <$exnow`"
 expected_cnt="`wc -l <$exex`"
@@ -157,7 +159,10 @@ count_of_checks=$((${count_of_checks}+1))
 #xchk 8 "only rabbitmq default systems exchanges should be present."
 
 # ensure users have exchanges:
-sr_audit --users foreground
+
+echo "Initializing with sr_audit... takes a minute or two"
+sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 qchk 17 "queues existing after 1st audit" "show overview" 
@@ -174,12 +179,14 @@ cd $testdocroot
 $testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
 httpserverpid=$!
 
+echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 # note, defaults to port 2121 so devs can start it.
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
 
 cd $testrundir
 
+echo "Starting flow_post on: $testdocroot, saving pid in .flowpostpid"
 ./flow_post.sh >${LOGDIR}/srposter.log 2>&1 &
 flowpostpid=$!
 
@@ -189,7 +196,9 @@ echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 echo $flowpostpid >.flowpostpid
 
-sr start
+echo "Starting up all components (sr start)..."
+sr start >$LOGDIR/sr_start_f00.log 2>&1
+echo "done."
 
 #sr_subscribe stop fclean
 #sr_subscribe cleanup fclean
