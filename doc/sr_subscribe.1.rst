@@ -619,16 +619,18 @@ The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer.)
 
 The  **inflight**  option sets how to ignore files when they are being transferred
-or (in mid-flight betweeen two systems.) The value can be a file name suffix, which is 
-appended to create a temporary name during the transfer.  If **inflight**  is set to **.**,
-then it is a prefix, to conform with the standard for "hidden" files on unix/linux.
-In either case, when the transfer is complete, the file is renamed to it's permanent name
-to allow further processing.
+or (in mid-flight betweeen two systems.) Incorrect setting of this option causes
+unreliable transfers, and care must be taken.  See `Delivery Completion`_ for more details.
+
+The value can be a file name suffix, which is appended to create a temporary name during 
+the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
+the standard for "hidden" files on unix/linux.  In either case, when the transfer is 
+complete, the file is renamed to it's permanent name to allow further processing.
 
 The  **inflight**  option can also be specified as a time interval, for example, 10 for
 10 seconds.  When set to a time interval, a reader of a file ensures that it waits until
-the file has not been modified in that interval.  So a file woll not be processed until
-it has stayed the same for at least 10 seconds.
+the file has not been modified in that interval. So a file woll not be processed until
+it has stayed the same for at least 10 seconds. 
 
 When the **delete** option is set, after a download has completed successfully, the subscriber
 will delete the file at the upstream source.  Default is false.
@@ -827,6 +829,90 @@ message for downstream consumers. On can also use this method to override checks
 For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
 the checksums with MD5.   There are also cases, where, for various reasons, the upstream
 checksums are simply wrong, and should be overridden for downstream consumers.
+
+
+Delivery Completion 
+-------------------
+
+Failing to properly set file completion protocols is a common source of intermittent and
+difficult to diagnose file transfer issues. In order for a reliable transfer, it is 
+critical that both the sender and receiver agree on how to represent a file that isn't complete.
+The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
+many protocols appropriate for different situations:
+
++-------------------------------------------------------------------------------------+
+|                                                                                     |
+|               Delivery Completion Protocols (in Order of Preference)                |
+|                                                                                     |
++-------------+---------------------------------------+-------------------------------+
+| Method      | Description                           | Application                   |
++=============+=======================================+===============================+
+|             |Files are just sent with right name.   |Sending to Sarracenia          |
+|   NONE      |Communicate end with posting           |post only sent afterward       |
+|             |(default on sr_sarra)                  |(Best when available)          |
++-------------+---------------------------------------+-------------------------------+
+|             |Files transferred with a *.tmp* suffix.|sending to Sundew              |
+| .tmp        |When complete, renamed without suffix. |(.tmp support built-in)        |
+| (Suffix)    |Actual suffix is settable.             |Sending to most other systems. |
+|             |(default on most components)           |(usually a good choice)        |
++-------------+---------------------------------------+-------------------------------+
+|             |files are 'hidden' by linux standard.  |Sending to systems that        |
+| .           |Prefix names with '.'                  |do not support suffix.         |
+| (Prefix)    |that need that. (compatibility)        |                               |
++-------------+---------------------------------------+-------------------------------+
+|             |Minimum age in seconds the file must   |Last choice, guarantees delay  |
+|  number     |be before the file is considered       |only if no other method works  |
+|  (mtime)    |complete.                              |Receiving from uncooperative   |
+|             |                                       |sources.                       |
+|             |                                       |(ok choice with PDS)           |
++-------------+---------------------------------------+-------------------------------+
+
+NOTES:
+ 
+  On versions of sr_sender prior to 2.18, the default was NONE, but was documented as '.tmp'
+  To ensure compatibility with later versions, it is likely better to explicitly write
+  the *inflight* setting.
+ 
+  *inflight* was renamed from the old *lock* option in January 2017. For compatibility with
+  older versions, can use *lock*, but name is deprecated.
+  
+  The old *PDS* software (which predates MetPX Sundew) only supports FTP. The completion protocol 
+  used by *PDS* was to send the file with permission 000 initially, and then chmod it to a 
+  readable file. This cannot be implemented with SFTP protocol, and is not supported at all
+  by Sarracenia.
+
+
+**Frequent Configuration Errors:**
+
+**Setting NONE when sending to Sundew.**
+
+   The proper setting here is '.tmp'.  Without it, almost all files will get through correctly,
+   but incomplete files will occasionally picked up by Sundew.  
+
+**Using mtime method to receive from Sundew or Sarracenia:**
+
+   Using mtime is last resort. This approach injects delay and should only be used when one 
+   has no influence to have the other end of the transfer use a better method. 
+ 
+   mtime is vulnerable to systems whose clocks differ (causing incomplete files to be picked up.)
+
+   mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a 
+   networking issue interrupting or delaying transfers. 
+
+
+**Setting NONE when delivering to non-Sarracenia destination.**
+
+   NONE is to be used when there is some other means to figure out if a file is delivered.
+   For example, when sending to another pump, the sender will inform the receiver that the
+   file is complete by posting the delivered file to that broker, so there is no danger
+   of it being picked up early.
+
+   When used in-appropriately, one will suffer occasionally incomplete files being
+   delivered.
+
+
+
+
 
 
 PERIODIC PROCESSING
