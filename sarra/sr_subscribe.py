@@ -68,6 +68,22 @@ class sr_subscribe(sr_instances):
     def __init__(self,config=None,args=None,action=None):
         sr_instances.__init__(self,config,args,action)
 
+    def log_settings(self):
+        self.logger.info( "%s (version: %s) settings:" % (self.program_name, sarra.__version__) )
+        self.logger.info( "inflight=%s events=%s use_pika=%s suppress_duplicates=%s retry_mode=%s retry_ttl=%s" % \
+           ( self.inflight, self.events, self.use_pika, self.cache, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "expire=%s reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
+           ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
+        self.logger.info( "heartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
+           ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
+        self.logger.info( "preserve_mode=%s preserve_time=%s realpath=%s default_mode_log=%03o discard=%s durable=%s" % \
+           ( self.preserve_mode, self.preserve_time, self.realpath, self.chmod_log, self.discard, self.durable ) )
+
+        if self.post_broker :
+            self.logger.info( "post_base_dir=%s post_base_url=%s base_dir=%s sum=%s blocksize=%s " % \
+               ( self.post_base_dir, self.post_base_url, self.base_dir, self.sumflg, self.blocksize ) )
+
+
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
@@ -121,6 +137,8 @@ class sr_subscribe(sr_instances):
 
         if not self.doit_download in self.do_task_list :
            self.do_task_list.insert(0,self.doit_download)
+
+        self.log_settings()
 
     def close(self):
         self.consumer.close()

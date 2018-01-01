@@ -173,6 +173,7 @@ class sr_sarra(sr_subscribe):
 
         # MG FIXME : I dont think I forgot anything but if some options need
         #            to be specifically set for sr_sarra put them HERE
+        self.log_settings()
 
     def overwrite_defaults(self):
 
