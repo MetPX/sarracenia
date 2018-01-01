@@ -10,7 +10,7 @@ lists all changes between versions.
 * flow_test: added some libcshim (via cp command) based posting (in c diagram.)
 * flow_test: moved sr_poster code into flow_setup, so it is started at beginning instead of run in flow_check.
 * Corrected that *inflight* option was NONE on sender.  It was documented and intended to be '.tmp'.
-  default is now: .tmp in all except sarra, where it is forced to NONE.
+  now it defaults to '.tmp' but if there is a post_broker, it defaults to NONE.
 * added info messages for cases where msg_received, but the log does not say what happenned (rename/link/mv cases.)
 * times used to be truncated to milliseconds, now the natural number of places after the decimal are retained.
 * C: fix: mv called from shim where no directory in old file name caused malformed *oldname* field in resulting post.

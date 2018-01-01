@@ -121,6 +121,13 @@ class sr_sender(sr_subscribe):
            if self.post_base_url == None :
               self.post_base_url = self.destination
 
+           # overwrite inflight to be None when posting to a broker.
+           if self.inflight == 'unspecified':
+              self.inflight=None
+        else:
+           if self.inflight == 'unspecified':
+              self.inflight='.tmp'
+           
         # caching
 
         if self.caching :

@@ -591,7 +591,7 @@ class sr_config:
 
         self.inplace              = False
 
-        self.inflight             = '.tmp'
+        self.inflight             = 'unspecified'
 
         self.notify_only          = False
 

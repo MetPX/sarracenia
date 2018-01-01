@@ -40,10 +40,10 @@ git origin/master branch
 
 *NOTICE*: The default for *inflight* was NONE in sr_sender, contrary to what was stated in the documentation and contrary to intent.
           This would cause deliveries using the sender to use the final name without a temporary one being chosen, causing many cases where
-          files which weren't complete being picked up, when relying on the default configuration.
+          files which weren't complete being picked up when relying on the default configuration.
 
-*CHANGE*: *inflight* for sender now defaults to '.tmp' as was intended, and is already documented.  If this behaviour is undesired,
-          one must add *inflight None* to the obtain the previous behaviour.
+*CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
+          one must add *inflight NONE* to the obtain the previous behaviour.
   
 
 2.17.12a6

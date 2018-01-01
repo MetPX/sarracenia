@@ -77,6 +77,11 @@ class sr_subscribe(sr_instances):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
+        # set inflight
+        if self.inflight == 'unspecified' :
+           if (self.post_broker != None ):  self.inflight=None
+           else: self.inflight='.tmp'
+
         # verify post_base_dir
 
         if self.post_base_dir == None :

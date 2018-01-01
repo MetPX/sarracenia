@@ -589,7 +589,7 @@ and under which name.
 - **heartbeat <count>                 (default: 300 seconds)**
 - **inplace       <boolean>        (default: true)**
 - **kbytes_ps <count>               (default: 0)**
-- **inflight  <string>         (default: .tmp)** 
+- **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
 - **mirror    <boolean>        (default: false)** 
 - **overwrite <boolean>        (default: true)** 
 - **recompute_chksum <boolean> (default: False)**
@@ -848,15 +848,17 @@ many protocols appropriate for different situations:
 | Method      | Description                           | Application                   |
 +=============+=======================================+===============================+
 |             |Files are just sent with right name.   |Sending to Sarracenia          |
-|   NONE      |Communicate end with posting           |post only sent afterward       |
-|             |(default on sr_sarra)                  |(Best when available)          |
+|   NONE      |Communicate end with posting.          |post only when file is complete|
+|             |Default on sr_sarra.                   |(Best when available)          |
+|             |Default on sr_subscribe and sender     |                               |
+|             |when post_broker is set.               |                               |
 +-------------+---------------------------------------+-------------------------------+
-|             |Files transferred with a *.tmp* suffix.|sending to Sundew              |
+|             |Files transferred with a *.tmp* suffix.|sending to most other systems  |
 | .tmp        |When complete, renamed without suffix. |(.tmp support built-in)        |
-| (Suffix)    |Actual suffix is settable.             |Sending to most other systems. |
-|             |(default on most components)           |(usually a good choice)        |
+| (Suffix)    |Actual suffix is settable.             |Use to send to Sundew          |
+|             |Default when no post_broker set.       |(usually a good choice)        |
 +-------------+---------------------------------------+-------------------------------+
-|             |files are 'hidden' by linux standard.  |Sending to systems that        |
+|             |Use Linux convention to *hide* files.  |Sending to systems that        |
 | .           |Prefix names with '.'                  |do not support suffix.         |
 | (Prefix)    |that need that. (compatibility)        |                               |
 +-------------+---------------------------------------+-------------------------------+
@@ -866,6 +868,10 @@ many protocols appropriate for different situations:
 |             |                                       |sources.                       |
 |             |                                       |(ok choice with PDS)           |
 +-------------+---------------------------------------+-------------------------------+
+
+By default ( when no *inflight* option is given ), if the post_broker is set, then a value of NONE
+is used because it is assumed that it is delivering to another broker. If no post_broker
+is set, the value of '.tmp' is assumed as the best option.
 
 NOTES:
  
