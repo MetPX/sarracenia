@@ -126,9 +126,9 @@ so that they can be copied.
 Detection Methods: Inotify, Policy, SHIM
 -----------------------------------------
 
-There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified in the tree. This was the initial approach taken. It turns out (last January), that INOTIFY is indeed a Linux feature, in that the INOTIFY events only propagate across a single erver. With a cluster file system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather than running a single daemon, we were faced with running around several hundred daemons (one per physical node), each monitoring the same set of 10's of millions of files. Since the deamons were running on many nodes, the memory use rose into the terabyte range. 
+There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified in the tree. This was the initial approach taken. It turns out (last January), that INOTIFY is indeed a Linux feature, in that the INOTIFY events only propagate across a single server. With a cluster file system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather than running a single daemon, we were faced with running several hundred daemons (one per physical node), each monitoring the same set of 10's of millions of files. Since the deamons were running on many nodes, the memory use rose into the terabyte range. 
  
-An alternate approach is, instead of running the modification detection at the Linux level, use the file system itself, which is database driven, to indicate which files had been modified. The HPC solution's main storage system uses IBM's General Parallel File System, or GPFS.  Using the *GPFS-policy* method, a query is run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per query.) combined with sr_poll to announce of files modified (and thus eligible for copying.)
+An alternate approach is, instead of running the modification detection at the Linux level, use the file system itself, which is database driven, to indicate which files had been modified. The HPC solution's main storage system uses IBM's General Parallel File System, or GPFS.  Using the *GPFS-policy* method, a query is run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per query.) combined with sr_poll to announce of files modified (and thus eligible for copying.) This is completely non-portable, but was expected to be much faster than file tree traversal.
  
 Over the winter 2016/2017, both of these methods were implemented. The Inotify based sr_watch was the fastest method (instantaneous), but the daemons were having stability and memory consumption problems, and they also took too long to startup ( requires an initial tree traversal, which takes the same time as the rsync). While slower (taking longer to notice a file was modified), the GPFS policy had *acceptable* performance and was far more reliable than the parallel sr_watch method,and by the spring, with deployment expected for early July 2017, the GPFS policy approach was selected.
  
@@ -153,13 +153,13 @@ strengths of sarracenia were evident:
 Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, transfer speed, load on PPP nodes,) The final configuration 
 selected of using *cp* (via the *download_cp* plugin) is not the fastest transfer method tested (*bbcp* was faster) but it was chosen because it 
 spread the load out better and resulted in more stable NFS and protocol nodes. The 'copy the files to the other side' part of the problem was 
-stable by the end of the summer of 2017, and the impact on system stability has been minimized.
+stable by the end of the summer of 2017, and the impact on system stability is minimized.
  
 Shim Library Necessary
 ----------------------
 
-Unfortunately, the mirroring between sites had with about a 10 minutes lag on the source files 
-system ( or about 30 times faster than an a naive rsync approach. ), and was only working in principle, with 
+Unfortunately, the mirroring between sites was running with about a 10 minutes lag on the source files 
+system ( about 30 times faster than a naive rsync approach. ), and was only working in principle, with 
 many files missing in practice, it wasn't usable for it's intended purpose. The operational commissioning of the new solution (with mirroring 
 deferred.) occurred in September of 2017, and work on mirroring essentially stopped until October (because of activities related to 
 the commissioning work.)
