@@ -835,41 +835,45 @@ Delivery Completion
 -------------------
 
 Failing to properly set file completion protocols is a common source of intermittent and
-difficult to diagnose file transfer issues. In order for a reliable transfer, it is 
+difficult to diagnose file transfer issues. For reliable file transfers, it is 
 critical that both the sender and receiver agree on how to represent a file that isn't complete.
 The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
 many protocols appropriate for different situations:
 
-+-------------------------------------------------------------------------------------+
-|                                                                                     |
-|               Delivery Completion Protocols (in Order of Preference)                |
-|                                                                                     |
-+-------------+---------------------------------------+-------------------------------+
-| Method      | Description                           | Application                   |
-+=============+=======================================+===============================+
-|             |Files are just sent with right name.   |Sending to Sarracenia, and     |
-|   NONE      |Communicate end with posting.          |post only when file is complete|
-|             |Default on sr_sarra.                   |(Best when available)          |
-|             |Default on sr_subscribe and sender     |                               |
-|             |when post_broker is set.               |                               |
-+-------------+---------------------------------------+-------------------------------+
-|             |Files transferred with a *.tmp* suffix.|sending to most other systems  |
-| .tmp        |When complete, renamed without suffix. |(.tmp support built-in)        |
-| (Suffix)    |Actual suffix is settable.             |Use to send to Sundew          |
-|             |Default when no post_broker set.       |(usually a good choice)        |
-|             |requires extra round trips for rename. |a little slower.               |
-+-------------+---------------------------------------+-------------------------------+
-|             |Use Linux convention to *hide* files.  |Sending to systems that        |
-| .           |Prefix names with '.'                  |do not support suffix.         |
-| (Prefix)    |that need that. (compatibility)        |                               |
-|             |same performance as Suffix method.     |sources.                       |
-+-------------+---------------------------------------+-------------------------------+
-|             |Minimum age in seconds the file must   |Last choice, guarantees delay  |
-|  number     |be before the file is considered       |only if no other method works  |
-|  (mtime)    |complete.                              |Receiving from uncooperative   |
-|             |                                       |sources.                       |
-|             |Imposes fixed delay in every transfer. |(ok choice with PDS)           |
-+-------------+---------------------------------------+-------------------------------+
++--------------------------------------------------------------------------------------------+
+|                                                                                            |
+|               Delivery Completion Protocols (in Order of Preference)                       |
+|                                                                                            |
++-------------+---------------------------------------+--------------------------------------+
+| Method      | Description                           | Application                          |
++=============+=======================================+======================================+
+|             |File sent with right name              |Sending to Sarracenia, and            |
+|   NONE      |Send `sr_post(7) <sr_post.7.html>`_    |post only when file is complete       |
+|             |by AMQP after file is complete.        |                                      |
+|             |                                       |(Best when available)                 |
+|             | - fewer round trips (no renames)      | - Default on sr_sarra.               |
+|             | - least overhead / highest speed      | - Default on sr_subscribe and sender |
+|             |                                       |   when post_broker is set.           |
++-------------+---------------------------------------+--------------------------------------+
+|             |Files transferred with a *.tmp* suffix.|sending to most other systems         |
+| .tmp        |When complete, renamed without suffix. |(.tmp support built-in)               |
+| (Suffix)    |Actual suffix is settable.             |Use to send to Sundew                 |
+|             |                                       |                                      |
+|             | - requires extra round trips for      |(usually a good choice)               |
+|             |   rename (a little slower)            | - default when no post broker set    |
++-------------+---------------------------------------+--------------------------------------+
+|             |Use Linux convention to *hide* files.  |Sending to systems that               |
+| .           |Prefix names with '.'                  |do not support suffix.                |
+| (Prefix)    |that need that. (compatibility)        |                                      |
+|             |same performance as Suffix method.     |sources.                              |
++-------------+---------------------------------------+--------------------------------------+
+|             |Minimum age in seconds the file must   |Last choice, guarantees delay         |
+|  number     |be before the file is considered       |only if no other method works         |
+|  (mtime)    |complete.                              |Receiving from uncooperative          |
+|             |                                       |sources.                              |
+|             |Imposes fixed delay in every transfer. |                                      |
+|             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
++-------------+---------------------------------------+--------------------------------------+
 
 By default ( when no *inflight* option is given ), if the post_broker is set, then a value of NONE
 is used because it is assumed that it is delivering to another broker. If no post_broker
