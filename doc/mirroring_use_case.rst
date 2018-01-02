@@ -15,7 +15,7 @@
 
 
 Summary
-=======
+-------
 
 This project was over a year long as the entire problem space was explored with the help of a very patient
 client, and the tools developed to implement the efficient solution eventually settled on. The client
@@ -33,8 +33,8 @@ and the techniques and topology to do the transfer are all easily controlled to 
 transfers for whatever criteria are deemed most important.
 
 
-Case-Study:  HPC Mirroring Millions of Files in Real-Time 
-=========================================================
+Problem Statement
+-----------------
 
 In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological Service of Canada (MSC), 
 as part of a the High Performance Computing Replacement (HPCR) project asked for very large directory 
@@ -69,9 +69,9 @@ The site stores are clusters in their own right:
 
 There are essentially three parts of the problem:
  
- * obtain the list of files which have been modified (recently.)
- * copy them to the other cluster.
- * aspirational deadline to deliver a mirrored file: five minutes.
+ * Detection: obtain the list of files which have been modified (recently.)
+ * Transfer: copy them to the other cluster.
+ * Performance: aspirational deadline to deliver a mirrored file: five minutes.
  
 The actual trees to mirror are the following::
  
@@ -98,6 +98,9 @@ third parties to perform.) ECCC set the additional constraint that modification 
 not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the 
 system without active user involvement.)
  
+Reading the Tree Takes Too Long
+-------------------------------
+
 One could just scan at a higher level in order to scan a single parent directory, but the half-dozen 
 sub-trees trees were picked in order to have smaller ones which worked more quickly, regardless of the 
 method being used to obtain lists of new files. What do we mean when we say these trees are too large? 
@@ -120,6 +123,9 @@ it, and that there is no reason to believe that any other tool such as find, dum
 be significantly quicker than rsync. We need a faster method of knowing which files have been modified 
 so that they can be copied.  
 
+Detection Methods: Inotify, Policy, SHIM
+-----------------------------------------
+
 There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified in the tree. This was the initial approach taken. It turns out (last January), that INOTIFY is indeed a Linux feature, in that the INOTIFY events only propagate across a single erver. With a cluster file system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather than running a single daemon, we were faced with running around several hundred daemons (one per physical node), each monitoring the same set of 10's of millions of files. Since the deamons were running on many nodes, the memory use rose into the terabyte range. 
  
 An alternate approach is, instead of running the modification detection at the Linux level, use the file system itself, which is database driven, to indicate which files had been modified. The HPC solution's main storage system uses IBM's General Parallel File System, or GPFS.  Using the *GPFS-policy* method, a query is run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per query.) combined with sr_poll to announce of files modified (and thus eligible for copying.)
@@ -128,6 +134,9 @@ Over the winter 2016/2017, both of these methods were implemented. The Inotify b
  
 As the migration progressed, the file systems got more filled, and the GPFS-policy method got progressively slower. Already in July, this was not an acceptable solution. At this point, the idea of intercepting jobs' file i/o calls with a shim library was introduced. ECCC told SSC at the time, that having correct feeds, and having everything ready for transition was the priority, so the focus of efforts was in that direction until the migration was achieved in September. In spite of being a lower priority over the summer, a C implementation of the sending portion of the sarra library was implemented along with a prototype shim library to call it.
  
+Copying Files
+-------------
+
 It needs to be noted that while all of this work was progressing on the 'obtain the list of files to be copied' part of the problem, we were 
 also working on the 'copy the files to the other side' part of the problem. Over the summer, results of performance tests and other 
 considerations militated frequent changes in tactics. Many different sources and destinations (ppp, nfs, and protocol nodes), as well many 
@@ -146,30 +155,36 @@ selected of using *cp* (via the *download_cp* plugin) is not the fastest transfe
 spread the load out better and resulted in more stable NFS and protocol nodes. The 'copy the files to the other side' part of the problem was 
 stable by the end of the summer of 2017, and the impact on system stability has been minimized.
  
-Unfortunately, the mirroring between sites was not working. It was, in principle working with about a 10 minutes lag on the source files 
-system ( or about 30 times faster than an a naive rsync approach. ), but because the file selection part was only working in principle, with 
+Shim Library Necessary
+----------------------
+
+Unfortunately, the mirroring between sites had with about a 10 minutes lag on the source files 
+system ( or about 30 times faster than an a naive rsync approach. ), and was only working in principle, with 
 many files missing in practice, it wasn't usable for it's intended purpose. The operational commissioning of the new solution (with mirroring 
 deferred.) occurred in September of 2017, and work on mirroring essentially stopped until October (because of activities related to 
 the commissioning work.)
 
-We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually an overlap
-of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one ended.) because there were 
-issues with files being missing in the copies. Even with this level of overlap, there were still missing files. At this point, in late
-November, early December, the libcshim was working well enough to be so encouraging that folks lost interest in the GPFS policy.  In contrast
-to an average of about 10 minutes delay starting a file copy with GPFS-policy queries, the libcshim approach has the copy initiated as soon
-as the file is closed on the source file system.
+We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
+an overlap of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one 
+ended.) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
+files. At this point, in late November, early December, the libcshim was working well enough to be so encouraging that folks lost 
+interest in the GPFS policy. In contrast to an average of about 10 minutes delay starting a file copy with GPFS-policy queries, 
+the libcshim approach has the copy initiated as soon as the file is closed on the source file system.
 
 It should be noted that when the work began, the python implementation of Sarracenia was a data distribution tool, with no support for mirroring.
 as the year progressed features:  symbolic link support, file attribute transportation, file removal support were added to the initial package.
 The idea of periodic processing (called heartbeats) was added, first to detect failures of clients (by seeing idle logs) but later to initiate
 garbage collection for the duplicates cache, memory use policing, and complex error recovery. The use case precipitated many improvements in
-the application, including a second implementation in C for environments where the requisit python3 environment was difficult to establish, or
+the application, including a second implementation in C for environments where the requisite python3 environment was difficult to establish, or
 where efficiency was paramount (the libc-shim case.)
+
+Does it Work?
+-------------
 
 The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
 A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
-on the destination.  Over a large number of samples, we get a quantification of how accurate the copy is.  The plugin for this comparison
-is still in development.
+on the destination. Over a large number of samples, we get a quantification of how accurate the copy is. The plugin for this comparison
+is still in development.  
 
 * FIXME: include links to plugins
 
