@@ -847,7 +847,7 @@ many protocols appropriate for different situations:
 +-------------+---------------------------------------+-------------------------------+
 | Method      | Description                           | Application                   |
 +=============+=======================================+===============================+
-|             |Files are just sent with right name.   |Sending to Sarracenia          |
+|             |Files are just sent with right name.   |Sending to Sarracenia, and     |
 |   NONE      |Communicate end with posting.          |post only when file is complete|
 |             |Default on sr_sarra.                   |(Best when available)          |
 |             |Default on sr_subscribe and sender     |                               |
@@ -857,16 +857,18 @@ many protocols appropriate for different situations:
 | .tmp        |When complete, renamed without suffix. |(.tmp support built-in)        |
 | (Suffix)    |Actual suffix is settable.             |Use to send to Sundew          |
 |             |Default when no post_broker set.       |(usually a good choice)        |
+|             |requires extra round trips for rename. |a little slower.               |
 +-------------+---------------------------------------+-------------------------------+
 |             |Use Linux convention to *hide* files.  |Sending to systems that        |
 | .           |Prefix names with '.'                  |do not support suffix.         |
 | (Prefix)    |that need that. (compatibility)        |                               |
+|             |same performance as Suffix method.     |sources.                       |
 +-------------+---------------------------------------+-------------------------------+
 |             |Minimum age in seconds the file must   |Last choice, guarantees delay  |
 |  number     |be before the file is considered       |only if no other method works  |
 |  (mtime)    |complete.                              |Receiving from uncooperative   |
 |             |                                       |sources.                       |
-|             |                                       |(ok choice with PDS)           |
+|             |Imposes fixed delay in every transfer. |(ok choice with PDS)           |
 +-------------+---------------------------------------+-------------------------------+
 
 By default ( when no *inflight* option is given ), if the post_broker is set, then a value of NONE
