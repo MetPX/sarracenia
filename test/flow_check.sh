@@ -344,7 +344,7 @@ fi
 printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
 
 
-calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1_f00 ( ${totshovel1} ) and t_dd2_f00 ( ${totshovel2} ) should have about the same number of items read"  
+calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1_f00 (${totshovel1}) and t_dd2_f00 (${totshovel2}) should have about the same number of items read"  
 
 
 

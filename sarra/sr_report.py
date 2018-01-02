@@ -93,6 +93,7 @@ class sr_report(sr_subscribe):
                   e = self.exchange
                self.bindings[i] = (e,k)
 
+
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)
         self.topic_prefix         = 'v02.report'
