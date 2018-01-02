@@ -35,6 +35,11 @@
 
 import os, stat, sys, time
 
+try:
+    from sr_util import *
+except:
+    from sarra.sr_util import *
+
 #============================================================
 # file protocol in sarracenia supports/uses :
 #
@@ -142,7 +147,7 @@ def file_insert( parent,msg ) :
     fp = open(msg.relpath,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
-    ok = file_write_length(fp, msg, parent.bufsize, msg.filesize )
+    ok = file_write_length(fp, msg, parent.bufsize, msg.filesize, parent )
 
     fp.close()
 
@@ -405,7 +410,7 @@ def file_reassemble(parent):
 # file_write_length
 # called by file_process->file_insert (general file:// processing)
 
-def file_write_length(req,msg,bufsize,filesize):
+def file_write_length(req,msg,bufsize,filesize,parent):
     msg.logger.debug("file_write_length")
 
     msg.onfly_checksum = None
@@ -445,13 +450,13 @@ def file_write_length(req,msg,bufsize,filesize):
 
     fp.close()
   
-    h = self.parent.msg.headers
-    if self.parent.preserve_mode and 'mode' in h :
+    h = parent.msg.headers
+    if parent.preserve_mode and 'mode' in h :
        try   : mod = int( h['mode'], base=8)
        except: mod = 0
        if mod > 0 : os.chmod(msg.new_file, mod )
 
-    if self.parent.preserve_time and 'mtime' in h and h['mtime'] :
+    if parent.preserve_time and 'mtime' in h and h['mtime'] :
         os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
     if chk : msg.onfly_checksum = chk.get_value()

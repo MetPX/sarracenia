@@ -92,7 +92,7 @@ class sr_message():
         if the file advertised is newer than the local one, and it has a different checksum, return True.
 
         """
-        self.logger.debug("sr_message content_match")
+        self.logger.debug("sr_message content_match %s" % self.new_file )
         self.local_checksum = None
 
         if not os.path.isfile(self.new_file) : return False

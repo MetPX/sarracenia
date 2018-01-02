@@ -416,7 +416,7 @@ if [ "$C_ALSO" ]; then
 fi
 
 
-calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed!"
+calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 
 # MG shows retries
 
