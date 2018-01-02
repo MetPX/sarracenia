@@ -2,9 +2,9 @@
  Case Study: HPC Mirroring 
 ===========================
 
---------------------------------------------------------------------------------------------
- Transparent User Controlled Real-Time Mirroring of 27 Million File Tree in a Supercomputer
---------------------------------------------------------------------------------------------
+-------------------------------------------------------
+ Continuously Mirror 27 Million File Tree Very Quickly
+-------------------------------------------------------
 
 .. warning::
    This is a bit speculative at the time of this writing (2017/12) We expect to deploy over the winter
@@ -25,6 +25,12 @@ are many specificities of this implementation, the resulting tool relies on no s
 normal Linux file system to achieve a 60:1 speedup relative compared to rsync on real-time continuous 
 mirroring a tree of over 20 million files. With the lessons learned and the tools now available, 
 it should be straight-forward to apply this solution to other cases.
+
+The end result is that one adds a shim library to the users' environment (transparent to user jobs), and 
+then every time a file is written, an AMQP message with file metadata is posted. Subscribers are 
+standing by at all times to transfer the files posted.  The number of subscribers is programmable/scalable, 
+and the techniques and topology to do the transfer are all easily controlled to optimize 
+transfers for whatever criteria are deemed most important.
 
 
 Case-Study:  HPC Mirroring Millions of Files in Real-Time 
