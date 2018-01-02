@@ -1,16 +1,28 @@
+===========================
+ Case Study: HPC Mirroring 
+===========================
 
-NOTE::
+--------------------------------------------------------------------------------------------
+ Transparent User Controlled Real-Time Mirroring of 27 Million File Tree in a Supercomputer
+--------------------------------------------------------------------------------------------
+
+.. warning::
    This is a bit speculative at the time of this writing (2017/12) We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
    hope to improve this article to reflect the advancing solution.
+
+.. contents::
+
 
 Summary
 =======
 
 This project was over a year long as the entire problem space was explored with the help of a very patient
-client, and the tools developed to implement the efficient solution eventually settled on. While there 
-are many specificities of this implementation, the tool relies on no specific features beyond a normal 
-Linux file system to achieve a 60:1 speedup relative compared to rsync on real-time continuous 
+client, and the tools developed to implement the efficient solution eventually settled on. The client
+as actually more of a partner, as the client had the large test cases available and ended up shouldering
+the responsibility for all of us to understand whether the solution was working or not.  While there 
+are many specificities of this implementation, the resulting tool relies on no specific features beyond a 
+normal Linux file system to achieve a 60:1 speedup relative compared to rsync on real-time continuous 
 mirroring a tree of over 20 million files. With the lessons learned and the tools now available, 
 it should be straight-forward to apply this solution to other cases.
 
@@ -20,16 +32,16 @@ Case-Study:  HPC Mirroring Millions of Files in Real-Time
 
 In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological Service of Canada (MSC), 
 as part of a the High Performance Computing Replacement (HPCR) project asked for very large directory 
-trees to be mirrored in real-time. It was already known from the outset that these trees would 
-be too large to deal with using ordinary tools. It is expected to take about 15 months to explore the 
-issue and arrive at an effective operational deployment.
+trees to be mirrored in real-time. It was known from the outset that these trees would be too large to 
+deal with using ordinary tools. It is expected to take about 15 months to explore the issue and 
+arrive at an effective operational deployment.
 
 It should be noted that SSC worked throughout this period in close partnership with ECCC, and that this
 deployment required the very active participation of very sophisticated users, to follow along with
 the twists and turns and different avenues explored and implemented.
 
-The environment here is Canada's national weather centre, in other words a "production" numerical weather 
-prediction suite, where models run 7/24 hours/day running different simulations (models of the atmosphere, 
+The Computing environment is Canada's national weather centre, whose primary applicaiton a "production" numerical 
+weather prediction suite, where models run 7/24 hours/day running different simulations (models of the atmosphere, 
 and sometimes waterways and ocean, and the land under the atmosphere) either ingesting current observations 
 aka *assimilation*, mapping them to a grid *analysis*, and then walking the grid forward in 
 time *prediction/prognostic*. The forecasts follow a precise schedule throughout the 24hour cycle, and 
@@ -57,7 +69,7 @@ There are essentially three parts of the problem:
  
 The actual trees to mirror are the following::
  
- pas037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
+ pas999@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
  policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
  policy_hall1_archive_dbase.conf:directory /fs/site1/ops/eccc/cmod/prod/archive.dbase
  policy_hall1_cmop.conf:directory /fs/site1/ops/eccc/cmod/cmop/data/maestro/smco500
@@ -68,7 +80,7 @@ The actual trees to mirror are the following::
  policy_hall1_version_control.conf:directory /fs/site1/ops/eccc/cmod/prod/version_control
  policy_hall1_work_ops.conf:directory /fs/site1/ops/eccc/cmod/prod/work_ops
  policy_hall1_work_par.conf:directory /fs/site1/ops/eccc/cmod/prod/work_par
- pas037@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
+ pas999@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
  
 Initially, we knew the number of files was large, but we had no knowledge of the actual amounts involved.
 Nor was that data even available until much later.
@@ -76,7 +88,7 @@ Nor was that data even available until much later.
 The most efficient way to copy these trees, as was stated at the outset, would be for all of the jobs 
 writing files in the trees to explicitly announce the files to be copied. This would involve users 
 modifying their jobs to include invocation of sr_post (a command which queues up file transfers for 
-third parties to perform.)  ECCC set the additional constraint that modification of user jobs was 
+third parties to perform.) ECCC set the additional constraint that modification of user jobs was 
 not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the 
 system without active user involvement.)
  
@@ -87,13 +99,13 @@ The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs. ) rsyn
 directory, as just walking the tree once, without any file copying going on. The walk of the tree, using 
 rsync with checksumming disabled as an optimization, resulted in the log below::
  
- pas037@eccc1-ppp1:~/test$ more tt_walk_hubs.log
+ pas999@eccc1-ppp1:~/test$ more tt_walk_hubs.log
  nohup: ignoring input
  rsync starting @ Sat Oct  7 14:56:52 GMT 2017
  number of files examined is on the order of: rsync --dry-run --links -avi --size-only /fs/site1/ops/eccc/cmod/prod/hubs /fs/site2/ops/eccc/cmod/prod/hubs |& wc -l
  27182247
  rsync end @ Sat Oct  7 20:06:31 GMT 2017
- pas037@eccc1-ppp1:~/test$
+ pas999@eccc1-ppp1:~/test$
  
 A single pass took over five hours, to examine 27 million files, or examining about 1500 files per second. 
 The maximum rate of running rsyncs on this tree is thus on the order of once every six hours (to allow some 
