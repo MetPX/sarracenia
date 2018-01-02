@@ -867,11 +867,12 @@ many protocols appropriate for different situations:
 | (Prefix)    |that need that. (compatibility)        |                                      |
 |             |same performance as Suffix method.     |sources.                              |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Minimum age in seconds the file must   |Last choice, guarantees delay         |
-|  number     |be before the file is considered       |only if no other method works         |
-|  (mtime)    |complete.                              |Receiving from uncooperative          |
-|             |                                       |sources.                              |
-|             |Imposes fixed delay in every transfer. |                                      |
+|             |Minimum age (modification time)        |Last choice, guarantees delay only if |
+|  number     |of the file before it is considered    |no other method works.                |
+|  (mtime)    |complete.                              |                                      |
+|             |                                       |Receiving from uncooperative          |
+|             |Adds delay in every transfer.          |sources.                              |
+|             |Vulnerable to network failures.        |                                      |
 |             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
 +-------------+---------------------------------------+--------------------------------------+
 
