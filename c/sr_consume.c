@@ -43,6 +43,7 @@
 #include <amqp.h>
 #include <amqp_framing.h>
 
+#include "sr_config.h"
 #include "sr_consume.h"
 
 
@@ -304,6 +305,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     amqp_basic_deliver_t *d;
     amqp_basic_properties_t *p;
     int is_report;
+    char consumer_tag[AMQP_MAX_SS];
     char *tok;
     size_t body_target;
     size_t body_received;
@@ -346,9 +348,12 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
    */  
     if ( ! sr_c->cfg->broker->started ) {
 
+       sprintf( consumer_tag, "host_%s_pid_%d", local_fqdn(), sr_c->cfg->pid );
+
        amqp_basic_consume(sr_c->cfg->broker->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 
-          amqp_empty_bytes, // consumer_tag
+          //amqp_empty_bytes, // consumer_tag
+          amqp_cstring_bytes(consumer_tag),
           0,  // no_local
           1,  // no_ack ( == auto-ack ) - if set to 1, then comment out basic_ack code above.
           0,  // not_exclusive

@@ -36,7 +36,11 @@
 import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
 
-from shutil import copyfile,get_terminal_size
+if sys.hexversion > 0x03030000 :
+   from shutil import copyfile,get_terminal_size
+   py2old=False
+else: 
+   py2old=True 
 
 try :
          from sr_config      import *
@@ -157,11 +161,16 @@ class sr_instances(sr_config):
     def print_plugins(self):
        
        print( '\npackaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
-       term = get_terminal_size((80,20))
+       if py2old:
+          colums=80
+       else: 
+          term = get_terminal_size((80,20))
+          columns = term.colums
+
        i=0
        for p in sorted( os.listdir( self.package_dir + os.sep + 'plugins'  )):
            if p == '__init__.py' : continue
-           if ( ((i+1)*21) >= term.columns ): 
+           if ( ((i+1)*21) >= columns ): 
                print('')
                i=1
            else:
@@ -212,12 +221,16 @@ class sr_instances(sr_config):
             print( "\ngeneral: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
             print("\nuser configurations: ( %s )" % configdir )
-            term = get_terminal_size((80,20))
+            if py2old:
+                columns=80
+            else:
+                term = get_terminal_size((80,20))
+                columns=term.columns
 
         i=0
         for confname in sorted( os.listdir(configdir) ):
             if action == 'list' : 
-                if ( ((i+1)*21) >= term.columns ): 
+                if ( ((i+1)*21) >= columns ): 
                     print('')
                     i=1
                 else:
@@ -270,7 +283,7 @@ class sr_instances(sr_config):
 
         self.logger.debug("exec_action_on_config %s, def_dir=%s, def_fil=%s sampledir=%s" % ( action, def_dir, def_fil, sampledir ) )
 
-        if   action == 'add' :
+        if   action == 'add' and not py2old :
              if not os.path.isfile(usr_fil):
                 if os.path.isfile(sampledir + os.sep + usr_fil):
                     copyfile(sampledir + os.sep + usr_fil, def_fil)

@@ -149,6 +149,12 @@ struct sr_config_t {
   
 };
 
+char *local_fqdn();
+/*
+   return a string containing the fully qualified domain name of the computer running
+   the code.
+ */
+
 struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* chaine );
  /* 
     return pointer to matched pattern, if there is one, NULL otherwise.
