@@ -400,12 +400,15 @@ In many cases, other processes are writing files to directories being monitored 
 Failing to properly set file completion protocols is a common source of intermittent and
 difficult to diagnose file transfer issues. For reliable file transfers, it is
 critical that both the writer and sr_watch agree on how to represent a file that isn't complete.
-The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
-many protocols appropriate for different situations:
+
+
+File Detection Strategies
+-------------------------
 
 +--------------------------------------------------------------------------------------------+
 |                                                                                            |
-|         Receiver (sr_watch) File Detection Methods (Order: Fastest to Slowest )            |
+|         File Detection Strategies (Order: Fastest to Slowest )                             |
+|         Faster Methods Work for Larger Trees.                                              |
 |                                                                                            |
 +-------------+---------------------------------------+--------------------------------------+
 | Method      | Description                           | Application                          |
@@ -413,34 +416,44 @@ many protocols appropriate for different situations:
 |             |File delivery advertised by libsrshim  |Many user jobs which cannot be        |
 |Implicit     | - requires C package.                 |modified to post explicitly.          |
 |posting      | - export LD_PRELOAD=libsrshim.so.1    |                                      |
-|using shim   | - must tune rejects as everything     | - most efficient.                    |
-|library      |   might be posted.                    | - more complicated to setup.         |
-|(LD_PRELOAD) | - Works on any size file tree.        | - use where python3 not available.   |
-|             | - Only working method for > 1M files. | - no sr_watch needed.                |
-|             | - very multi-threaded (user processes)|                                      |
-|             | - checksum calculated by writer.      |                                      |
+|using shim   | - must tune rejects as everything     | - multi-million file trees.          |
+|library      |   might be posted.                    | - most efficient.                    |
+|             | - works on any size file tree.        | - more complicated to setup.         |
+|(LD_PRELOAD) | - very multi-threaded.                | - use where python3 not available.   |
+|             | - I/O by writer (better localized)    | - no sr_watch needed.                |
+|(in C)       | - very multi-threaded (user processes)| - no plugins.                        |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
-|             |File delivery advertised by            |Receiving from another pump.          |
-|Explicit     |`sr_post(1) <sr_post.1.html>`_         |Will receive post only when file is   |
-|posting by   |after file transfer is complete.       |complete                              |
-|clients      |                                       |                                      |
+|             |File delivery advertised by            |User posts only when file is complete.|
+|Explicit     |`sr_post(1) <sr_post.1.html>`_         |                                      |
+|posting by   |or other sr\_ components               |                                      |
+|clients      |after file writing complete.           |                                      |
+|             |                                       | - user has finest grain control.     |
 |             | - poster builds checksums             | - usually best.                      |
-|             | - fewer round trips (no renames)      | - if available, do not use sr_watch. |
-|             | - only a little slower than shim.     | - requires explicitly posting source |
-|             | - no directory scanning.              |                                      |
-|             | - many sr_posts can run at once.      |                                      |
+|C: sr_cpost  | - fewer round trips (no renames)      | - if available, do not use sr_watch. |
+|or           | - only a little slower than shim.     | - requires explicit posting by user  |
+|Python:      | - no directory scanning.              |   scripts/jobs.                      |
+|sr_post      | - many sr_posts can run at once.      |                                      |
++-------------+---------------------------------------+--------------------------------------+
+|sr_cpost     |works like watch if sleep > 0          | - where python3 is hard to get.      |
+|             |                                       | - where speed is critical.           |
+|(in C)       | - faster than sr_watch                | - where plugins not needed.          |
+|             | - uses less memory than sr_watch.     | - same issues with tree size         |
+|             | - practical with a bit bigger trees.  |   as sr_watch, just a little later.  |
+|             |                                       |   (see following methods)            |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|Files transferred with a *.tmp* suffix.|Receiving from most other systems     |
 |reject       |When complete, renamed without suffix. |(.tmp support built-in)               |
-|.*\.tmp$     |Actual suffix is settable.             |Use to receive from Sundew            |
+|.*\.tmp$     |Actual suffix is settable.             |Use to receive from Sundew.           |
 |(suffix)     |                                       |                                      |
 |             | - requires extra round trips for      |best choice for most trees on a       |
-|  INOTIFY    |   rename (a little slower)            |single server or workstation.         |
+|  INOTIFY    |   rename (a little slower)            |single server or workstation. Full    |
+|             |                                       |plugin support.                       |
 |  (default)  | - Assume 1500 limited to files/second |                                      |
-|             | - Large trees mean long startup.      |                                      |
-|             | - each node in a cluster may need     |                                      |
+|             | - Large trees mean long startup.      |works great with 10000 files          |
+|(in Python)  | - each node in a cluster may need     |only a few seconds startup.           |
 |             |   to run an instance                  |                                      |
-|             | - each sr_watch single threaded.      |                                      |
+|             | - each sr_watch single threaded.      |too slow for millions of files.       |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|                                       |                                      |
 |reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
@@ -461,9 +474,10 @@ many protocols appropriate for different situations:
 |force_polling|As per INOTIFY, but uses plain old     |Only use when INOTIFY has some sort   |
 |using reject |directory listings.                    |of issue, such as cluster file        |
 |or mtime     |                                       |system in a supercomputer.            |
-|methods above| - Large treese means slower to notice |                                      |
+|methods above| - Large trees means slower to notice  |                                      |
 |             |   new files                           |needed on NFS shares with multiple    |
 |             | - should work anywhere.               |writing nodes.                        |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 
 
