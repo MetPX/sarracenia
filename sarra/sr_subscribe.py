@@ -68,40 +68,6 @@ class sr_subscribe(sr_instances):
     def __init__(self,config=None,args=None,action=None):
         sr_instances.__init__(self,config,args,action)
 
-    def log_settings(self):
- 
-        if self.action not in [ 'start', 'foreground', 'restart' ]:
-             return
-
-        self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
-        self.logger.info( "\tinflight=%s events=%s use_pika=%s suppress_duplicates=%s retry_mode=%s retry_ttl=%s" % \
-           ( self.inflight, self.events, self.use_pika, self.cache, self.retry_mode, self.retry_ttl ) )
-        self.logger.info( "\texpire=%s reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
-           ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
-        self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
-           ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
-        self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath=%s base_dir=%s follow_symlinks=%s" % \
-           ( self.preserve_mode, self.preserve_time, self.realpath, self.base_dir, self.follow_symlinks ) )
-        self.logger.info( "\tmirror=%s flatten=%s realpath=%s strip=%s base_dir=%s" % \
-           ( self.mirror, self.flatten, self.realpath, self.strip, self.base_dir ) )
-
-        if self.post_broker :
-            self.logger.info( "\tpost_base_dir=%s post_base_url=%s sum=%s blocksize=%s " % \
-               ( self.post_base_dir, self.post_base_url, self.sumflg, self.blocksize ) )
-
-        self.logger.info('\tPlugins configured:')
-        self.logger.info('\t\ton_line: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_line_list ) ) )
-        self.logger.info('\t\ton_html_page: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_html_page_list ) ) ) 
-        self.logger.info('\t\ton_message: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_message_list ) ) )
-        self.logger.info('\t\ton_part: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_part_list ) ) ) 
-        self.logger.info('\t\ton_file: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_file_list ) ) ) 
-        self.logger.info('\t\ton_post: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_post_list ) ) ) 
-        self.logger.info('\t\ton_watch: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_watch_list ) ) ) 
-        self.logger.info('\t\ton_heartbeat: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_heartbeat_list ) ) ) 
-
-        self.logger.info('log_settings end.')
- 
-
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
@@ -1659,6 +1625,7 @@ class sr_subscribe(sr_instances):
         self.run()
 
     def start(self):
+        self.logger.info("%s %s start" % (self.program_name, self.config_name  ) )
         self.log_settings()
         self.run()
 

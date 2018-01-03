@@ -1322,22 +1322,23 @@ class sr_post(sr_instances):
         self.close()
 
     def reload(self):
-        self.logger.info("%s reload" % self.program_name )
+        self.logger.info( "%s reload" % self.program_name )
         self.close()
         self.configure()
         self.run()
 
     def start(self):
-        self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
+        self.logger.info( "%s %s startup" % (self.program_name,self.config_name) )
+        self.log_settings()
         self.run()
 
     def stop(self):
-        self.logger.info("%s stop" % self.program_name)
+        self.logger.info( "%s stop" % self.program_name)
         self.close()
         os._exit(0)
 
     def cleanup(self):
-        self.logger.info("%s %s cleanup" % (self.program_name,self.config_name))
+        self.logger.info( "%s %s cleanup" % (self.program_name,self.config_name))
 
         if self.post_broker :
            self.post_hc = HostConnect( logger = self.logger )
