@@ -11,6 +11,8 @@ watch a directory and post messages when files in it change
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
+.. contents::
+
 SYNOPSIS
 ========
 
