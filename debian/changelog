@@ -1,3 +1,24 @@
+metpx-sarracenia (2.18.01a1) unstable; urgency=medium
+
+  * C: made consumer tag meaningful (identifies hostname and pid of consumer.)
+  * added version check and work around because get_terminal_width on python3.2 ( ubuntu 12.04 )
+  * C: subscribers creating consumer for each message. api/usage wrong. Fixed.
+  * added log_settings to display all settings on startup.
+  * noticed wrong default settings on startup:  durable was false, should be true.
+  * noticed wrong default settings on startup:  prefetch was 1, supposed to be 25.
+  * flow_test: redirected much output to log files.
+  * flow_test: added some libcshim (via cp command) based posting (in c diagram.)
+  * flow_test: moved sr_poster code into flow_setup, so it is started at beginning instead of run in flow_check.
+  * Corrected that *inflight* option was NONE on sender.  It was documented and intended to be '.tmp'.
+    now it defaults to '.tmp' but if there is a post_broker, it defaults to NONE.
+  * added info messages for cases where msg_received, but the log does not say what happenned (rename/link/mv cases.)
+  * times used to be truncated to milliseconds, now the natural number of places after the decimal are retained.
+  * C: fix: mv called from shim where no directory in old file name caused malformed *oldname* field in resulting post.
+  * C: fix: segfault if credentials.conf is missing.
+
+
+ -- Peter Silva <peter@idefix>  Wed, 03 Jan 2018 14:27:18 -0500
+
 metpx-sarracenia (2.17.12a8) unstable; urgency=medium
 
   * added exponential backoff on failure to main processing loop in sr_subscribe.
