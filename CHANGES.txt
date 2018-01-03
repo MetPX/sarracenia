@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.18.01a1**
+
 * C: made consumer tag meaningful (identifies hostname and pid of consumer.)
 * added version check and work around because get_terminal_width on python3.2 ( ubuntu 12.04 )
 * C: subscribers creating consumer for each message. api/usage wrong. Fixed.

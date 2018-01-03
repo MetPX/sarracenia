@@ -38,11 +38,16 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.01a1
+---------
+
+*NOTICE*: All components print their settings on startup.
+
 *NOTICE*: The default for *inflight* was NONE in sr_sender, contrary to what was stated in the documentation and contrary to intent.
           This would cause deliveries using the sender to use the final name without a temporary one being chosen, causing many cases where
           files which weren't complete being picked up when relying on the default configuration.
 
-*NOTICE*: default prefetch=25 now, was 1.  This change happenned in code re-writing.
+*NOTICE*: default prefetch=25 now, was 1.  noticed this was wrong once started printing settings.
 
 *CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
           one must add *inflight NONE* to the obtain the previous behaviour.
