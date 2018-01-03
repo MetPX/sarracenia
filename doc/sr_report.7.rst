@@ -13,6 +13,8 @@ Sarracenia v02 Report Message Format/Protocol
 :Manual group: MetPX-Sarracenia
 
 
+.. contents::
+
 
 
 SYNOPSIS

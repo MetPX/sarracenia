@@ -11,6 +11,8 @@ Sends file from messages to remote server (option repost to remote broker)
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
+.. contents::
+
 SYNOPSIS
 ========
 

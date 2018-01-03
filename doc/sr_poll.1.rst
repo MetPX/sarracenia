@@ -12,6 +12,7 @@ Poll products from a remote server
 :Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
+.. contents::
 
 SYNOPSIS
 ========

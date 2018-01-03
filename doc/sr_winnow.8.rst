@@ -11,6 +11,8 @@ Suppress Redundant Messages
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
+.. contents::
+
 SYNOPSIS
 ========
 

@@ -11,7 +11,6 @@ Overview of Sarra Configuration Files
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
-
 Content has been moved to `sr_subscribe(1) <sr_subscribe.1.html>`_
 
 

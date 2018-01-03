@@ -12,6 +12,7 @@ Publish the Availability of a File to Subcribers
 :Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
+.. contents::
 
 SYNOPSIS
 ========

@@ -11,6 +11,7 @@ Select and Process Posted Reports
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
+.. contents::
 
 SYNOPSIS
 ========

@@ -12,6 +12,8 @@ Sarracenia v02 Post Message Format/Protocol
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
+.. contents::
+
 SYNOPSIS
 --------
 

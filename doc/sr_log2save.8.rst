@@ -12,7 +12,7 @@ Convert _log Entries to .save Format for Reload
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
-
+.. contents::
 
 SYNOPSIS
 ========

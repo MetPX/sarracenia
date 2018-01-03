@@ -11,7 +11,7 @@ Audit Broker State
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
-
+.. contents::
 
 SYNOPSIS
 ========

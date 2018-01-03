@@ -11,6 +11,8 @@ sr_subscribe in C
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
+.. contents::
+
 SYNOPSIS
 ========
 

@@ -11,7 +11,7 @@ Select and Conditionally Download Posted Files
 :Version: @Version@
 :Manual group: Metpx-Sarracenia Suite
 
-
+.. contents::
 
 SYNOPSIS
 ========

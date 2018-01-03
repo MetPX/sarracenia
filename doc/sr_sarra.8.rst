@@ -12,6 +12,8 @@ Subscribe, Acquire and Recursively Re-announce Ad nauseam
 :Version: @Version@
 :Manual group: MetPx Sarracenia Suite
 
+.. contents::
+
 
 SYNOPSIS
 ========
