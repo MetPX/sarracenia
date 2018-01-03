@@ -167,7 +167,10 @@ for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses 
 **[--delete <boolean>]**
 
 In force_polling mode, assume that directories empty themselves, so that every file in each *path*
-should be posted at every polling pass, instead of just new ones.
+should be posted at every polling pass, instead of just new ones.  Use caching to ignore the ones
+seen before.  In polling mode, the speed of reconition of files is limited to the speed at which
+a tree can be traversed.  The scanning method needs to be chosen based on the performance sought.
+
 
 **[-pbd|--post_base_dir <path>]**
 
@@ -321,6 +324,129 @@ It is a comma separated string.  Valid checksum flags are ::
 
 Then using a checksum script, it must be registered with the pumping network, so that consumers
 of the postings have access to the algorithm.
+
+
+Timeliness
+----------
+
+The appropriate strategy for noticing when files are available for ingestion varies according to
+the size of the tree to be monitored, the amount of time that is acceptable before the file is noticed,
+and the size of the files in the tree.  The default method of noticing changes in directories uses OS 
+specific mechanisms to recognize changes without having to scan the entire directory tree manually. 
+That method is instantaneous at noticing when files have changed, but requires a priming pass 
+when sr_watch is started.
+
+The easiest tree to monitor is the smallest one. With a single directory to wath where one is posting
+for an *sr_sarra* component, then use of the *delete* option will keep the directory small and minimize
+the time to notice new files. In such optimal conditions, noticing files in a hundredth of a second
+is reasonable to expect. Any method will work well for such trees.
+
+For rough calculation purposes, assume a server can examine 1500 files/second. If the tree to be scanned 
+is 30,000 files, then it will take 20 seconds for a priming pass. Using the fastest method available, 
+one must assume that on startup for such a directory tree it will take 20 seconds or so before it starts reliably 
+posting all files in the tree quickly. After that initial scan, files are noticed with sub-second latency.
+
+If one selects *force_polling* option, then that 20 second delay is incurred for each polling pass, 
+plus the time to perform the posting itself.  For such a tree, a *sleep* setting of 30 seconds would 
+be the minimum to recommend. One should expect that files will be noticed, about 1.5* the *sleep* settings, 
+or about 45 seconds old.  
+
+In supercomputing clusters, distributed files systems are used, and the OS optimized methods for recognizing
+file modifications (INOTIFY on Linux) do not cross node boundaries. To use sr_watch with the default strategy
+on a directory in a compute cluster, one usually must have an sr_watch process running on every node.
+If that is undesirable, then one can deploy it on a single node with *force_polling* but the timing will
+be constrained by the directory size.
+
+As the tree being monitored grows in size, sr_watch´s latency on startup grows, and if polling is used
+the latency to notice file modifications will grow as well.  For example, with a tree with 1 million files,
+one should expect, at best, a startup latency of 11 minutes. If using polling, then a reasonable expectation 
+of the time it takes to notice new files would be in the 16 minute range. 
+
+If the performance above is not sufficient, then one needs to consider the use of the shim library instead
+of sr_watch. First Install the C version of Sarracenia, then set the environment for all processes 
+writing files that need to be posted to call it::
+
+  export SR_POST_CONFIG=shimpost.conf
+  export LD_PRELOAD="libsrshim.so.1"
+
+where *shimpost.conf* is an sr_cpost configuration file in the ~/.config/sarra/post/ directory. An sr_cpost
+configuration file is the same as an sr_post one, except that no plugins are not supported.  With the shim
+library in place, whenever a file is written, the *accept/reject* clauses of the shimpost.conf file are
+consulted, and if accepted, the file is posted, as it would be by sr_watch.
+
+So far, the discussion has been about the time to notice the file exists. Another consideration is the time
+to post files once they have been noticed. Here there are tradeoffs based on the checksum algorithm chosen.
+The most robust choice is the default: s or SHA-512. When using the s sum method, the entire file will be
+read in order to calculate it's checksum, which is likely to determine the time to posting. Thse sum
+will used by downstream consumers to determine whether the file being announced is new, or one that has 
+already been seen. 
+
+For smaller files checksum calculation time is negligeable, but it is generally true that bigger files 
+take longer to post. When using the shim library method, the same process that wrote the file is the one
+calculating the checksum, the likelihood of the file data being in a locally accessible cache is quite
+high, so it should be as inexpensive as possible.  
+
+To shorten posting times, one can select sum algorithms that do not read the entire 
+file, such as N (SHA-512 of the file name only), but then one loses the ability to differentiate 
+between versions of the file.
+
+
+Delivery Completion 
+-------------------
+
+In many cases, other processes are writing files to directories being monitored by sr_watch.
+Failing to properly set file completion protocols is a common source of intermittent and
+difficult to diagnose file transfer issues. For reliable file transfers, it is
+critical that both the writer and sr_watch agree on how to represent a file that isn't complete.
+The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
+many protocols appropriate for different situations:
+
++--------------------------------------------------------------------------------------------+
+|                                                                                            |
+|         Receiver (sr_watch) File Detection Methods (Order: Fastest to Slowest )            |
+|                                                                                            |
++-------------+---------------------------------------+--------------------------------------+
+| Method      | Description                           | Application                          |
++=============+=======================================+======================================+
+|             |File delivery advertised by libsrshim  |Many user jobs which cannot be        |
+| NONE        | - requires C package.                 |modified to post explicitly.          |
+| (libshim)   | - export LD_PRELOAD=libsrshim.so.1    | - no sr_watch needed.                |
+| LDPRELOAD   | - must tune rejects as everything     | - Same efficiency as sr source       |
+|             |   might be posted.                    | - a bit more complicated.            |
+|             | - Works on any size file tree.        | - where python3 not available.       |
++-------------+---------------------------------------+--------------------------------------+
+|             |File delivery advertised by            |Receiving from another pump.          |
+| NONE        |`sr_post(7) <sr_post.7.html>`_         |Will receive post only when file is   |
+| (sr source) |after file transfer is complete.       |complete                              |
+|             |                                       | - (Best when available)              |
+|             | - fewer round trips (no renames)      | - if available, do not use sr_watch. |
+|             | - least overhead / highest speed      |   Use sr_subscribe or sr_sarra       |
+|             | - no directory scanning.              | - requires explicitly posting source |
++-------------+---------------------------------------+--------------------------------------+
+|reject       |Files transferred with a *.tmp* suffix.|Receiving from most other systems     |
+|.*\.tmp$     |When complete, renamed without suffix. |(.tmp support built-in)               |
+|(Suffix)     |Actual suffix is settable.             |Use to receive from Sundew            |
+|             |                                       |                                      |
+|             | - requires extra round trips for      |(usually a good choice)               |
+|             |   rename (a little slower)            | - default when no post broker set    |
+|             | - Assume 1500 files/second            |                                      |
+|             |                                       |                                      |
++-------------+---------------------------------------+--------------------------------------+
+|reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
+|^\..*        |Prefix names with '.'                  |do not support suffix.                |
+|(Prefix)     |that need that. (compatibility)        |                                      |
+|             |same performance as Suffix method.     |sources.                              |
++-------------+---------------------------------------+--------------------------------------+
+|inflight     |Minimum age (modification time)        |Last choice, guarantees delay only if |
+|  number     |of the file before it is considered    |no other method works.                |
+|  (mtime)    |complete.                              |                                      |
+|             |                                       |Receiving from uncooperative          |
+|             |Adds delay in every transfer.          |sources.                              |
+|             |Vulnerable to network failures.        |                                      |
+|             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
++-------------+---------------------------------------+--------------------------------------+
+
+
 
 
 DEVELOPER SPECIFIC OPTIONS
