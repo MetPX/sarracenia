@@ -154,7 +154,7 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
 
      reply = amqp_get_rpc_reply(broker->conn);
      if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-       sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+       sr_amqp_reply_print(reply, "failed AMQP channel_open get_rpc_reply");
        goto have_channel;
      }
 
@@ -163,11 +163,12 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
        log_msg( LOG_ERROR, "failed AMQP amqp_tx_select\n");
        reply = amqp_get_rpc_reply(broker->conn);
        if (reply.reply_type != AMQP_RESPONSE_NORMAL ) {
-           sr_amqp_reply_print(reply, "failed AMQP get_rpc_reply");
+           sr_amqp_reply_print(reply, "failed AMQP tx_select get_rpc_reply");
            goto have_channel;
        }
        goto have_channel;
      }
+  broker->started=0;
   return(broker);
 
   have_channel:

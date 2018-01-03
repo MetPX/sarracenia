@@ -47,8 +47,10 @@ git origin/master branch
 *CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
           one must add *inflight NONE* to the obtain the previous behaviour.
   
-*CHANGE*: default durable=True  (was false in earlier versions... queues may not bind correctly. May need to migrate...
-          create a new queue, then use a shovel to read from old queue to new one.
+*CHANGE*: default changed from false to True. Existing queues will fail to bind. As transition. 
+          All queues should be declared durable.
+          for all existing flows, add *durable false* to declaration, and plan migration to durable queue later.
+
 
 2.17.12a6
 ---------

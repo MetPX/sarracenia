@@ -89,6 +89,7 @@ struct sr_broker_t {
   uint64_t last_delivery_tag;
   amqp_socket_t *socket;
   amqp_connection_state_t conn;
+  int started;
   struct sr_broker_t *next; 
 };
 

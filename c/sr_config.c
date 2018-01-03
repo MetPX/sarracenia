@@ -276,6 +276,7 @@ struct sr_broker_t *broker_uri_parse( char *src )
     b->exchange=NULL;
     b->next=NULL;
     b->socket=NULL;
+    b->started=1;
     b->last_delivery_tag=0;
 
     //fprintf( stderr, "broker ssl=%d, host: +%s+ , port: %d, user: +%s+ password: _%s_\n", 

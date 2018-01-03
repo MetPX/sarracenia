@@ -49,7 +49,7 @@
 static struct sr_message_t msg;
 
 int sr_consume_cleanup(struct sr_context *sr_c)
-( == auto-ack ) {
+{
   amqp_rpc_reply_t reply;
   char p[PATH_MAX];
 
@@ -297,6 +297,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
 {
     amqp_rpc_reply_t reply;
     amqp_frame_t frame;
+    amqp_envelope_t envelope;
     int result;
     char buf[2*PATH_MAXNUL];
 
@@ -309,6 +310,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     char tag[AMQP_MAX_SS];
     char value[AMQP_MAX_SS];
     struct sr_header_t *tmph;
+    struct timeval timeout;
 
     while (msg.user_headers)
     {
@@ -339,22 +341,43 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
         }
     }
   */
-    amqp_basic_consume(sr_c->cfg->broker->conn, 1, 
+  /*
+     FIXME: consume initializes consumer, then use consume_message later... not sure where to put this.
+            should probably move into another routine.
+   */  
+    if ( ! sr_c->cfg->broker->started ) {
+
+       amqp_basic_consume(sr_c->cfg->broker->conn, 1, 
           amqp_cstring_bytes(sr_c->cfg->queuename), 
           amqp_empty_bytes, // consumer_tag
           0,  // no_local
           1,  // no_ack ( == auto-ack ) - if set to 1, then comment out basic_ack code above.
           0,  // not_exclusive
           amqp_empty_table);
+     
+       reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+       {
+           sr_amqp_reply_print(reply, "basic_consume failed");
+           return(NULL);
+       }
+       sr_c->cfg->broker->started=1;
+    }
+
+    amqp_maybe_release_buffers(sr_c->cfg->broker->conn);
+    // if want to be non-blocking... replace NULL with &timeout
+    timeout.tv_sec=0;
+    timeout.tv_usec=1;
+
+    amqp_consume_message(sr_c->cfg->broker->conn, &envelope, NULL,  0);
 
     reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
     {
-        sr_amqp_reply_print(reply, "consume failed");
-        return(NULL);
+         sr_amqp_reply_print(reply, "consume_message failed");
+         return(NULL);
     }
 
-    amqp_maybe_release_buffers(sr_c->cfg->broker->conn);
     result = amqp_simple_wait_frame(sr_c->cfg->broker->conn, &frame);
 
     //log_msg( LOG_DEBUG, "Result %d\n", result);

@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: subscribers creating consumer for each message. api/usage wrong. Fixed.
 * added log_settings to display all settings on startup.
 * noticed wrong default settings on startup:  durable was false, should be true.
 * noticed wrong default settings on startup:  prefetch was 1, supposed to be 25.
