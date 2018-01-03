@@ -49,7 +49,7 @@
 static struct sr_message_t msg;
 
 int sr_consume_cleanup(struct sr_context *sr_c)
-{
+( == auto-ack ) {
   amqp_rpc_reply_t reply;
   char p[PATH_MAX];
 
@@ -88,6 +88,7 @@ int sr_consume_setup(struct sr_context *sr_c)
 
   int tecnt = 0;
 
+  // FIXME: would be nice to add something to the effect: content-encoding: utf8
   props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG ;
   props.content_type = amqp_cstring_bytes("text/plain");
   if ( sr_c->cfg->expire > 0 ) 
@@ -342,7 +343,7 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
           amqp_cstring_bytes(sr_c->cfg->queuename), 
           amqp_empty_bytes, // consumer_tag
           0,  // no_local
-          1,  // ack - if set to 1, then comment out basic_ack code above.
+          1,  // no_ack ( == auto-ack ) - if set to 1, then comment out basic_ack code above.
           0,  // not_exclusive
           amqp_empty_table);
 
