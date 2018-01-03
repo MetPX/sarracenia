@@ -291,7 +291,7 @@ void sr_message_2url(struct sr_message_t *m)
 
 struct sr_message_t *sr_consume(struct sr_context *sr_c) 
  /*
-    read messages from the queue. dump to stdout in json format.
+    blocking read messages from queue. 
 
   */
 {
@@ -310,7 +310,6 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     char tag[AMQP_MAX_SS];
     char value[AMQP_MAX_SS];
     struct sr_header_t *tmph;
-    struct timeval timeout;
 
     while (msg.user_headers)
     {
@@ -365,9 +364,6 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
     }
 
     amqp_maybe_release_buffers(sr_c->cfg->broker->conn);
-    // if want to be non-blocking... replace NULL with &timeout
-    timeout.tv_sec=0;
-    timeout.tv_usec=1;
 
     amqp_consume_message(sr_c->cfg->broker->conn, &envelope, NULL,  0);
 
