@@ -409,41 +409,59 @@ many protocols appropriate for different situations:
 | Method      | Description                           | Application                          |
 +=============+=======================================+======================================+
 |             |File delivery advertised by libsrshim  |Many user jobs which cannot be        |
-| NONE        | - requires C package.                 |modified to post explicitly.          |
-| (libshim)   | - export LD_PRELOAD=libsrshim.so.1    | - no sr_watch needed.                |
-| LDPRELOAD   | - must tune rejects as everything     | - Same efficiency as sr source       |
-|             |   might be posted.                    | - a bit more complicated.            |
-|             | - Works on any size file tree.        | - where python3 not available.       |
+|Implicit     | - requires C package.                 |modified to post explicitly.          |
+|posting      | - export LD_PRELOAD=libsrshim.so.1    |                                      |
+|using shim   | - must tune rejects as everything     | - most efficient.                    |
+|library      |   might be posted.                    | - more complicated to setup.         |
+|(LD_PRELOAD) | - Works on any size file tree.        | - use where python3 not available.   |
+|             | - Only working method for > 1M files. | - no sr_watch needed.                |
+|             | - very multi-threaded (user processes)|                                      |
+|             | - checksum calculated by writer.      |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |File delivery advertised by            |Receiving from another pump.          |
-| NONE        |`sr_post(7) <sr_post.7.html>`_         |Will receive post only when file is   |
-| (sr source) |after file transfer is complete.       |complete                              |
-|             |                                       | - (Best when available)              |
+|Explicit     |`sr_post(1) <sr_post.1.html>`_         |Will receive post only when file is   |
+|posting by   |after file transfer is complete.       |complete                              |
+|clients      |                                       |                                      |
+|             | - poster builds checksums             | - usually best.                      |
 |             | - fewer round trips (no renames)      | - if available, do not use sr_watch. |
-|             | - least overhead / highest speed      |   Use sr_subscribe or sr_sarra       |
-|             | - no directory scanning.              | - requires explicitly posting source |
+|             | - only a little slower than shim.     | - requires explicitly posting source |
+|             | - no directory scanning.              |                                      |
+|             | - many sr_posts can run at once.      |                                      |
 +-------------+---------------------------------------+--------------------------------------+
-|reject       |Files transferred with a *.tmp* suffix.|Receiving from most other systems     |
-|.*\.tmp$     |When complete, renamed without suffix. |(.tmp support built-in)               |
-|(Suffix)     |Actual suffix is settable.             |Use to receive from Sundew            |
-|             |                                       |                                      |
-|             | - requires extra round trips for      |(usually a good choice)               |
-|             |   rename (a little slower)            | - default when no post broker set    |
-|             | - Assume 1500 files/second            |                                      |
-|             |                                       |                                      |
+|sr_watch with|Files transferred with a *.tmp* suffix.|Receiving from most other systems     |
+|reject       |When complete, renamed without suffix. |(.tmp support built-in)               |
+|.*\.tmp$     |Actual suffix is settable.             |Use to receive from Sundew            |
+|(suffix)     |                                       |                                      |
+|             | - requires extra round trips for      |best choice for most trees on a       |
+|  INOTIFY    |   rename (a little slower)            |single server or workstation.         |
+|  (default)  | - Assume 1500 limited to files/second |                                      |
+|             | - Large trees mean long startup.      |                                      |
+|             | - each node in a cluster may need     |                                      |
+|             |   to run an instance                  |                                      |
+|             | - each sr_watch single threaded.      |                                      |
 +-------------+---------------------------------------+--------------------------------------+
+|sr_watch with|                                       |                                      |
 |reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
 |^\..*        |Prefix names with '.'                  |do not support suffix.                |
 |(Prefix)     |that need that. (compatibility)        |                                      |
-|             |same performance as Suffix method.     |sources.                              |
+|             |same performance as previous method.   |                                      |
+| INOTIFY     |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
+|sr_watch with|                                       |                                      |
 |inflight     |Minimum age (modification time)        |Last choice, guarantees delay only if |
-|  number     |of the file before it is considered    |no other method works.                |
-|  (mtime)    |complete.                              |                                      |
+|number       |of the file before it is considered    |no other method works.                |
+|(mtime)      |complete.                              |                                      |
 |             |                                       |Receiving from uncooperative          |
-|             |Adds delay in every transfer.          |sources.                              |
-|             |Vulnerable to network failures.        |                                      |
-|             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
+| INOTIFY     | - Adds delay in every transfer.       |sources.                              |
+|             | - Vulnerable to network failures.     |                                      |
+|             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
++-------------+---------------------------------------+--------------------------------------+
+|force_polling|As per INOTIFY, but uses plain old     |Only use when INOTIFY has some sort   |
+|using reject |directory listings.                    |of issue, such as cluster file        |
+|or mtime     |                                       |system in a supercomputer.            |
+|methods above| - Large treese means slower to notice |                                      |
+|             |   new files                           |needed on NFS shares with multiple    |
+|             | - should work anywhere.               |writing nodes.                        |
 +-------------+---------------------------------------+--------------------------------------+
 
 
