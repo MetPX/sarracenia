@@ -42,9 +42,13 @@ git origin/master branch
           This would cause deliveries using the sender to use the final name without a temporary one being chosen, causing many cases where
           files which weren't complete being picked up when relying on the default configuration.
 
+*NOTICE*: default prefetch=25 now, was 1.  This change happenned in code re-writing.
+
 *CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
           one must add *inflight NONE* to the obtain the previous behaviour.
   
+*CHANGE*: default durable=True  (was false in earlier versions... queues may not bind correctly. May need to migrate...
+          create a new queue, then use a shovel to read from old queue to new one.
 
 2.17.12a6
 ---------

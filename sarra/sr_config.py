@@ -205,8 +205,8 @@ class sr_config:
            ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
         self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath=%s base_dir=%s follow_symlinks=%s" % \
            ( self.preserve_mode, self.preserve_time, self.realpath, self.base_dir, self.follow_symlinks ) )
-        self.logger.info( "\tmirror=%s flatten=%s realpath=%s strip=%s base_dir=%s" % \
-           ( self.mirror, self.flatten, self.realpath, self.strip, self.base_dir ) )
+        self.logger.info( "\tmirror=%s flatten=%s realpath=%s strip=%s base_dir=%s report_back=%s" % \
+           ( self.mirror, self.flatten, self.realpath, self.strip, self.base_dir, self.reportback ) )
 
         if self.post_broker :
             self.logger.info( "\tpost_base_dir=%s post_base_url=%s sum=%s blocksize=%s " % \
@@ -494,11 +494,11 @@ class sr_config:
 
         self.queue_name           = None
         self.queue_suffix         = None
-        self.durable              = False
+        self.durable              = True
         self.expire               = 1000 *60 * 5  # 5 mins = 1000millisec * 60s * 5m 
         self.reset                = False
         self.message_ttl          = None
-        self.prefetch             = 1
+        self.prefetch             = 25
         self.max_queue_size       = 25000
         self.set_passwords        = True
 

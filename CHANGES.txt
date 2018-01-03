@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* added log_settings to display all settings on startup.
+* noticed wrong default settings on startup:  durable was false, should be true.
+* noticed wrong default settings on startup:  prefetch was 1, supposed to be 25.
 * flow_test: redirected much output to log files.
 * flow_test: added some libcshim (via cp command) based posting (in c diagram.)
 * flow_test: moved sr_poster code into flow_setup, so it is started at beginning instead of run in flow_check.
