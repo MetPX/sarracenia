@@ -328,30 +328,40 @@ Then using a checksum script, it must be registered with the pumping network, so
 of the postings have access to the algorithm.
 
 
-Timeliness
-----------
+File Detection Strategies
+-------------------------
 
-The appropriate strategy for noticing when files are available for ingestion varies according to
-the size of the tree to be monitored, the amount of time that is acceptable before the file is noticed,
-and the size of the files in the tree.  The default method of noticing changes in directories uses OS 
-specific mechanisms to recognize changes without having to scan the entire directory tree manually. 
-That method is instantaneous at noticing when files have changed, but requires a priming pass 
-when sr_watch is started.
+The fundamental job of sr_watch is to notice when files are available to be transferred.
+The appropriate strategy varies according to:
 
-The easiest tree to monitor is the smallest one. With a single directory to wath where one is posting
-for an *sr_sarra* component, then use of the *delete* option will keep the directory small and minimize
-the time to notice new files. In such optimal conditions, noticing files in a hundredth of a second
-is reasonable to expect. Any method will work well for such trees.
+ - the **number of files in the tree** to be monitored, 
+ - the **time to notice changes** to files, and
+ - the **size of each file** in the tree.  
 
-For rough calculation purposes, assume a server can examine 1500 files/second. If the tree to be scanned 
-is 30,000 files, then it will take 20 seconds for a priming pass. Using the fastest method available, 
+When trees get too large, sr_watch is no longer the correct tool, as will be explained.
+The default method of noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
+to recognize changes without having to scan the entire directory tree manually. 
+That method notices file changes instantaneous, but requires a priming pass when sr_watch is started.
+
+**The easiest tree to monitor is the smallest one.** With a single directory to watch where one is posting
+for an *sr_sarra* component, then use of the *delete* option will keep the number of files in directory 
+at any one point small and minimize the time to notice new ones. In such optimal conditions, noticing files 
+in a hundredth of a second is reasonable to expect. Any method will work well for such trees, but
+the sr_watch defaults (inotify) are usually lowest overhead.
+
+For example, **assume a server can examine 1500 files/second**. If the **tree to be watched is 30,000 files,
+then it will take 20 seconds for a priming pass**. Using the fastest method available, 
 one must assume that on startup for such a directory tree it will take 20 seconds or so before it starts reliably 
-posting all files in the tree quickly. After that initial scan, files are noticed with sub-second latency.
+posting all files in the tree. After that initial scan, files are noticed with sub-second latency.
+So a **sleep of 0.1 (check for file changes every tenth of a second) is reasonable, as long as we accept
+the intial priming pass.**
 
-If one selects *force_polling* option, then that 20 second delay is incurred for each polling pass, 
-plus the time to perform the posting itself.  For such a tree, a *sleep* setting of 30 seconds would 
-be the minimum to recommend. One should expect that files will be noticed, about 1.5* the *sleep* settings, 
-or about 45 seconds old.  
+If one selects **force_polling** option, then that 20 second delay is incurred for each polling pass, 
+plus the time to perform the posting itself. **For the same tree, a *sleep* setting of 30 seconds would 
+be the minimum to recommend**. **Expect that files will be noticed about 1.5* the *sleep* settings on average.**
+In this example, about when they are about 45 seconds. Some will be picked up sooner, others later. 
+Apart from special cases where the default method misses files, it is much slower than the default
+and should not be used if timeliness is a concern.
 
 In supercomputing clusters, distributed files systems are used, and the OS optimized methods for recognizing
 file modifications (INOTIFY on Linux) do not cross node boundaries. To use sr_watch with the default strategy
@@ -360,12 +370,12 @@ If that is undesirable, then one can deploy it on a single node with *force_poll
 be constrained by the directory size.
 
 As the tree being monitored grows in size, sr_watch´s latency on startup grows, and if polling is used
-the latency to notice file modifications will grow as well.  For example, with a tree with 1 million files,
+the latency to notice file modifications will grow as well. For example, with a tree with 1 million files,
 one should expect, at best, a startup latency of 11 minutes. If using polling, then a reasonable expectation 
 of the time it takes to notice new files would be in the 16 minute range. 
 
 If the performance above is not sufficient, then one needs to consider the use of the shim library instead
-of sr_watch. First Install the C version of Sarracenia, then set the environment for all processes 
+of sr_watch. First, install the C version of Sarracenia, then set the environment for all processes 
 writing files that need to be posted to call it::
 
   export SR_POST_CONFIG=shimpost.conf
@@ -383,27 +393,31 @@ read in order to calculate it's checksum, which is likely to determine the time 
 will used by downstream consumers to determine whether the file being announced is new, or one that has 
 already been seen. 
 
-For smaller files checksum calculation time is negligeable, but it is generally true that bigger files 
+For smaller files, checksum calculation time is negligeable, but it is generally true that bigger files 
 take longer to post. When using the shim library method, the same process that wrote the file is the one
 calculating the checksum, the likelihood of the file data being in a locally accessible cache is quite
-high, so it should be as inexpensive as possible.  
+high, so it should be as inexpensive as possible. It should also be noted that the sr_watch/sr_cpost
+processes are single threaded, while when sr_post, or the shim library are in use, there can be as 
+many processes posting files as there are file writers.
 
-To shorten posting times, one can select sum algorithms that do not read the entire 
-file, such as N (SHA-512 of the file name only), but then one loses the ability to differentiate 
-between versions of the file.
+To shorten posting times, one can select *sum* algorithms that do not read the entire 
+file, such as *N* (SHA-512 of the file name only), but then one loses the ability to differentiate 
+between versions of the file.  
 
+note ::
+  should think about using N on the sr_watch, and having multi-instance shovels recalculate checksums
+  so that part becomes easily parallellizable. Should be straightforward, but not yet explored
+  as a result of use of shim library. FIXME.
 
-Delivery Completion 
--------------------
-
-In many cases, other processes are writing files to directories being monitored by sr_watch.
-Failing to properly set file completion protocols is a common source of intermittent and
-difficult to diagnose file transfer issues. For reliable file transfers, it is
+A last consideration is that in many cases, other processes are writing files to directories being 
+monitored by sr_watch.  Failing to properly set file completion protocols is a common source of 
+intermittent and difficult to diagnose file transfer issues. For reliable file transfers, it is
 critical that both the writer and sr_watch agree on how to represent a file that isn't complete.
 
 
-File Detection Strategies
--------------------------
+
+File Detection Strategy Table
+-----------------------------
 
 +--------------------------------------------------------------------------------------------+
 |                                                                                            |
@@ -478,6 +492,9 @@ File Detection Strategies
 |             |   new files                           |needed on NFS shares with multiple    |
 |             | - should work anywhere.               |writing nodes.                        |
 |             |                                       |                                      |
+|             |                                       |If a process is re-writing a file     |
+|             |                                       |often, can use mtime to smooth out    |
+|             |                                       |the i/o pattern.                      |
 +-------------+---------------------------------------+--------------------------------------+
 
 
