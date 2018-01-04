@@ -457,7 +457,7 @@ File Detection Strategies
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|                                       |                                      |
 |reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
-|^\..*        |Prefix names with '.'                  |do not support suffix.                |
+|^\\..*       |Prefix names with '.'                  |do not support suffix.                |
 |(Prefix)     |that need that. (compatibility)        |                                      |
 |             |same performance as previous method.   |                                      |
 | INOTIFY     |                                       |                                      |
