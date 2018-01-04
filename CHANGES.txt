@@ -300,7 +300,7 @@ lists all changes between versions.
 
 **2.17.07a1**
 
-* sr_sarra bug fix os_.exit
+* sr_sarra bug fix os\_.exit
 * All sarra programs have standard invoke : pgm [args] action config... old way still supported (MG)
 * sr_util defines a function startup_args to parse sarra program arguments (MG)
 * sr_audit --users : makes sure exchanges/queues configured on pump are setup (MG)

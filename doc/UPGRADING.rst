@@ -38,6 +38,26 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*CHANGE*: plugins convention now enforced.  One must declare a class with some upper case
+          characters in the name. Then instantiate the class with a variable that is the all lower case
+          version of the class name:
+
+.. code-block:: python
+
+          Class MyPlugin():
+              def __init__(self,parent):
+                  pass
+           
+              def on_message(self,parent): 
+                  """" prior to this version convention was to use *perform*, but now naming
+                       it after it's intended use is preferred. (any name will still work.)
+                  """"
+
+          myplugin = MyPlugin(self)     
+          #prior to this version, myplugin could have any name, now it must be lower case version of class name.
+          self.on_message = myplugin.on_message
+
+
 2.18.01a1
 ---------
 
@@ -146,7 +166,7 @@ Arguments: (('sr_winnow', '192.168.xx.yy'),)
 shows up when using VIP. fills log with garbage. 
 
 
-*SHOULD*: change document_root -> base_dir (same for post_ variations.) The code still
+*SHOULD*: change document_root -> base_dir (same for post\_ variations.) The code still
 understands the old values, but you will see a warning message advising you to change it.
 
 *SHOULD*: change ${PDR} -> ${PBD} to mirror above change. There will be no visible
@@ -155,7 +175,7 @@ effect of this, but at some future release, PDR will be dropped.
 *SHOULD*: URL option to post_base_url option.  will still understand old values, but 
 warning will result.
 
-*SHOULD*: use post_ versions in sr_post, so now it is post_base_url, post_base_dir, 
+*SHOULD*: use post\_ versions in sr_post, so now it is post_base_url, post_base_dir, 
 post_exchange Again, code still understands previous settings, but will warn.
   
 *NOTICE*: now prefers to use pika library if available, but falls back to amqplib 
