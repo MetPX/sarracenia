@@ -338,19 +338,20 @@ The appropriate strategy varies according to:
  - the **minimum time to notice changes** to files that is acceptable, and
  - the **size of each file** in the tree.  
 
-When trees get too large, sr_watch is no longer the correct tool, as will be explained.
-With sr_watch (and sr_cpost, the identical C implementation.) The default method of noticing 
-changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
-to recognize changes without having to scan the entire directory tree manually. 
-That method notices file changes instantaneous, but requires a priming pass when sr_watch is started.
-
 **The easiest tree to monitor is the smallest one.** With a single directory to watch where one is posting
 for an *sr_sarra* component, then use of the *delete* option will keep the number of files in directory 
 at any one point small and minimize the time to notice new ones. In such optimal conditions, noticing files 
 in a hundredth of a second is reasonable to expect. Any method will work well for such trees, but
 the sr_watch defaults (inotify) are usually lowest overhead.
 
-For example, **assume a server can examine 1500 files/second**. If the **tree to be watched is 30,000 files,
+sr_watch is sr_post with the added *sleep* option that will cause it to loop over directories given as arguments.
+sr_cpost is a C version that functions identically, except it is faster and uses much less memory, at
+the cost of the loss of plugin support.  With sr_watch (and sr_cpost) The default method of noticing 
+changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
+to recognize changes without having to scan the entire directory tree manually. 
+Once primed, file changes are noticed instantaneously, but requires a an initial walk across the tree, *a priming pass*.
+
+For example, **assume a server can examine 1500 files/second**. If a **medium sized tree is 30,000 files,
 then it will take 20 seconds for a priming pass**. Using the fastest method available, 
 one must assume that on startup for such a directory tree it will take 20 seconds or so before it starts reliably 
 posting all files in the tree. After that initial scan, files are noticed with sub-second latency.
@@ -361,7 +362,7 @@ If one selects **force_polling** option, then that 20 second delay is incurred f
 plus the time to perform the posting itself. **For the same tree, a *sleep* setting of 30 seconds would 
 be the minimum to recommend**. **Expect that files will be noticed about 1.5* the *sleep* settings on average.**
 In this example, about when they are about 45 seconds. Some will be picked up sooner, others later. 
-Apart from special cases where the default method misses files, it is much slower than the default
+Apart from special cases where the default method misses files, it is much slower on medium sized trees than the default
 and should not be used if timeliness is a concern.
 
 In supercomputing clusters, distributed files systems are used, and the OS optimized methods for recognizing
@@ -383,12 +384,12 @@ writing files that need to be posted to call it::
   export LD_PRELOAD="libsrshim.so.1"
 
 where *shimpost.conf* is an sr_cpost configuration file in the ~/.config/sarra/post/ directory. An sr_cpost
-configuration file is the same as an sr_post one, except that no plugins are not supported.  With the shim
+configuration file is the same as an sr_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of the shimpost.conf file are
-consulted, and if accepted, the file is posted, as it would be by sr_watch.
+consulted, and if accepted, the file is posted just as it would be by sr_watch.
 
-So far, the discussion has been about the time to notice the file exists. Another consideration is the time
-to post files once they have been noticed. Here there are tradeoffs based on the checksum algorithm chosen.
+So far, the discussion has been about the time to notice a file has changed. Another consideration is the time
+to post files once they have been noticed. There are tradeoffs based on the checksum algorithm chosen.
 The most robust choice is the default: *s* or SHA-512. When using the *s* sum method, the entire file will be
 read in order to calculate it's checksum, which is likely to determine the time to posting. The check sum
 will used by downstream consumers to determine whether the file being announced is new, or one that has 
