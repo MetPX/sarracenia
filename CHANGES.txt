@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
+* fixed: column width hack for older versions was busted.
+
 **2.18.01a1**
 
 * C: made consumer tag meaningful (identifies hostname and pid of consumer.)
