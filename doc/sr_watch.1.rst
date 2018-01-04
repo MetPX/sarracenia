@@ -335,11 +335,12 @@ The fundamental job of sr_watch is to notice when files are available to be tran
 The appropriate strategy varies according to:
 
  - the **number of files in the tree** to be monitored, 
- - the **time to notice changes** to files, and
+ - the **minimum time to notice changes** to files that is acceptable, and
  - the **size of each file** in the tree.  
 
 When trees get too large, sr_watch is no longer the correct tool, as will be explained.
-The default method of noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
+With sr_watch (and sr_cpost, the identical C implementation.) The default method of noticing 
+changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
 to recognize changes without having to scan the entire directory tree manually. 
 That method notices file changes instantaneous, but requires a priming pass when sr_watch is started.
 
@@ -388,17 +389,17 @@ consulted, and if accepted, the file is posted, as it would be by sr_watch.
 
 So far, the discussion has been about the time to notice the file exists. Another consideration is the time
 to post files once they have been noticed. Here there are tradeoffs based on the checksum algorithm chosen.
-The most robust choice is the default: s or SHA-512. When using the s sum method, the entire file will be
-read in order to calculate it's checksum, which is likely to determine the time to posting. Thse sum
+The most robust choice is the default: *s* or SHA-512. When using the *s* sum method, the entire file will be
+read in order to calculate it's checksum, which is likely to determine the time to posting. The check sum
 will used by downstream consumers to determine whether the file being announced is new, or one that has 
-already been seen. 
+already been seen, and is really handy.
 
-For smaller files, checksum calculation time is negligeable, but it is generally true that bigger files 
-take longer to post. When using the shim library method, the same process that wrote the file is the one
-calculating the checksum, the likelihood of the file data being in a locally accessible cache is quite
-high, so it should be as inexpensive as possible. It should also be noted that the sr_watch/sr_cpost
-processes are single threaded, while when sr_post, or the shim library are in use, there can be as 
-many processes posting files as there are file writers.
+**For smaller files, checksum calculation time is negligeable, but it is generally true that bigger files 
+take longer to post.** When **using the shim library** method, the same process that wrote the file is the one
+**calculating the checksum**, the likelihood of the file data being in a locally accessible cache is quite
+high, so it **is as inexpensive as possible**. It should also be noted that the sr_watch/sr_cpost
+**directory watching processes are single threaded, while when user jobs call sr_post, or use the shim 
+library, there can be as many processes posting files as there are file writers.**
 
 To shorten posting times, one can select *sum* algorithms that do not read the entire 
 file, such as *N* (SHA-512 of the file name only), but then one loses the ability to differentiate 
@@ -410,7 +411,7 @@ note ::
   as a result of use of shim library. FIXME.
 
 A last consideration is that in many cases, other processes are writing files to directories being 
-monitored by sr_watch.  Failing to properly set file completion protocols is a common source of 
+monitored by sr_watch. Failing to properly set file completion protocols is a common source of 
 intermittent and difficult to diagnose file transfer issues. For reliable file transfers, it is
 critical that both the writer and sr_watch agree on how to represent a file that isn't complete.
 
@@ -461,7 +462,7 @@ File Detection Strategy Table
 |.*\.tmp$     |Actual suffix is settable.             |Use to receive from Sundew.           |
 |(suffix)     |                                       |                                      |
 |             | - requires extra round trips for      |best choice for most trees on a       |
-|  INOTIFY    |   rename (a little slower)            |single server or workstation. Full    |
+|             |   rename (a little slower)            |single server or workstation. Full    |
 |             |                                       |plugin support.                       |
 |  (default)  | - Assume 1500 limited to files/second |                                      |
 |             | - Large trees mean long startup.      |works great with 10000 files          |
@@ -474,18 +475,18 @@ File Detection Strategy Table
 |^\\..*       |Prefix names with '.'                  |do not support suffix.                |
 |(Prefix)     |that need that. (compatibility)        |                                      |
 |             |same performance as previous method.   |                                      |
-| INOTIFY     |                                       |                                      |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|                                       |                                      |
 |inflight     |Minimum age (modification time)        |Last choice, guarantees delay only if |
 |number       |of the file before it is considered    |no other method works.                |
 |(mtime)      |complete.                              |                                      |
 |             |                                       |Receiving from uncooperative          |
-| INOTIFY     | - Adds delay in every transfer.       |sources.                              |
+|             | - Adds delay in every transfer.       |sources.                              |
 |             | - Vulnerable to network failures.     |                                      |
 |             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
 +-------------+---------------------------------------+--------------------------------------+
-|force_polling|As per INOTIFY, but uses plain old     |Only use when INOTIFY has some sort   |
+|force_polling|As per above 3, but uses plain old     |Only use when INOTIFY has some sort   |
 |using reject |directory listings.                    |of issue, such as cluster file        |
 |or mtime     |                                       |system in a supercomputer.            |
 |methods above| - Large trees means slower to notice  |                                      |
@@ -494,7 +495,7 @@ File Detection Strategy Table
 |             |                                       |                                      |
 |             |                                       |If a process is re-writing a file     |
 |             |                                       |often, can use mtime to smooth out    |
-|             |                                       |the i/o pattern.                      |
+|             |                                       |the i/o pattern, by slowing posts.    |
 +-------------+---------------------------------------+--------------------------------------+
 
 
