@@ -270,7 +270,7 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_0001.log | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
