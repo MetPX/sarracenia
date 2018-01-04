@@ -5,3 +5,5 @@ dist
 .pybuild
 *.debhelper
 *.debhelper.log
+libsarra-c*
+sarra-c*

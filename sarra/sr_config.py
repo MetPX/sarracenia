@@ -660,9 +660,12 @@ class sr_config:
         self.on_heartbeat_list = [ ]
         self.on_html_page_list    = []
         self.on_part_list         = []
-        self.do_task_list         = []
         self.on_line_list = [ ]
         self.on_watch_list        = []
+        self.do_task_list         = []
+        self.do_poll_list         = []
+        self.do_send_list         = []
+        self.do_task_list         = []
 
         self.execfile("on_message",'msg_log')
         self.execfile("on_file",'file_log')
@@ -1258,6 +1261,8 @@ class sr_config:
                      self.execfile("do_download",words1)
                      if ( self.do_download == None ) and not self.isNone(words1):
                         ok = False
+                     else:
+                        self.do_download_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_task': # See: sr_config.1, others...
@@ -1268,20 +1273,24 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     #else:
-                     #   self.do_task_list.append(self.do_task)
+                     else:
+                        self.do_task_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
                      self.execfile("do_poll",words1)
                      if ( self.do_poll == None ) and not self.isNone(words1):
                         ok = False
+                     else:
+                        self.do_poll_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_send': # See sr_config.7, and sr_sender.1
                      self.execfile("do_send",words1)
                      if ( self.do_send == None ) and not self.isNone(words1):
                         ok = False
+                     else:
+                        self.do_send_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'durable'   : # See sr_config.7 ++

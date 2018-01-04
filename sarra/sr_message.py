@@ -454,6 +454,10 @@ class sr_message():
 
         if self.partflg == '1' : return
         if self.partflg == None : return
+        if (self.partflg != 'i') and ( self.partflg != 'p' ):
+            self.logger.error("sr_message/set_new message received with invalid partflg=%s" % (self.partflg) )
+            return
+            
      
         # part file never inserted
 

@@ -24,7 +24,7 @@ eval `application_dirs`
 echo "Stopping sr..."
 sr stop >$LOGDIR/sr_stop_f99.log 2>&1
 
-echo "Cleanup sr... "
+echo "Cleanup sr... (if it hangs here, do ^C once) "
 sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
 
 echo extra lines for the sr_cpump cleanup hanging

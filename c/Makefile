@@ -29,13 +29,11 @@ SARRA_LIB = libsarra.so.1.0.0
 EXT_LIB = -lrabbitmq -lcrypto -lc
 SHARED_LIB = libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0
 
-.c.o: 
+.c.o: sr_version.h
 	$(CC) $(CFLAGS) -c  $<
 
 #  head -1 debian/changelog | sed 's/.*(//' | sed 's/).*//'
-all: $(SARRA_OBJECT)
-	sed 's/^metpx-sarracenia/libsarra-c/' <../debian/changelog >debian/changelog 
-	echo "#define __sarra_version__ \"`head -1 debian/changelog| sed 's/.*(//' | sed 's/).*//'`\"" >sr_version.h
+all: sr_version.h $(SARRA_OBJECT)
 	$(CC) $(CFLAGS) -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 $(SARRA_OBJECT) -ldl $(RABBIT_LINK) $(EXT_LIB)
 	$(CC) $(CFLAGS) -shared -Wl,-soname,$(SHARED_LIB) -ldl $(SARRA_LINK) $(RABBIT_LINK) $(EXT_LIB)
 	if [ ! -f libsarra.so ]; \
@@ -52,6 +50,9 @@ all: $(SARRA_OBJECT)
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpump sr_cpump.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 
+sr_version.h: ../debian/changelog
+	sed 's/^metpx-sarracenia/libsarra-c/' <../debian/changelog >debian/changelog 
+	echo "#define __sarra_version__ \"`head -1 debian/changelog| sed 's/.*(//' | sed 's/).*//'`\"" >sr_version.h
 
 install:
 	@mkdir build build/bin build/lib build/include
@@ -63,9 +64,9 @@ install:
 
 clean:
 	@rm -f *.o *.so *.so.* sr_cpost sr_configtest sr_utiltest sr_cpump sr_cachetest sr_cache_save.test
-	@rm -rf build
+	@rm -rf build sr_version.h
 
-test:
+test: all
 	./sr_configtest test_post.conf 
 	./sr_utiltest 
 	./sr_cachetest
