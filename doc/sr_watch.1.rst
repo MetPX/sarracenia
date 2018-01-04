@@ -486,6 +486,10 @@ File Detection Strategy Table
 |             | - Adds delay in every transfer.       |sources.                              |
 |             | - Vulnerable to network failures.     |                                      |
 |             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
+|             |                                       |                                      |
+|             |                                       |If a process is re-writing a file     |
+|             |                                       |often, can use mtime to smooth out    |
+|             |                                       |the i/o pattern, by slowing posts.    |
 +-------------+---------------------------------------+--------------------------------------+
 |force_polling|As per above 3, but uses plain old     |Only use when INOTIFY has some sort   |
 |using reject |directory listings.                    |of issue, such as cluster file        |
@@ -494,9 +498,6 @@ File Detection Strategy Table
 |             |   new files                           |needed on NFS shares with multiple    |
 |             | - should work anywhere.               |writing nodes.                        |
 |             |                                       |                                      |
-|             |                                       |If a process is re-writing a file     |
-|             |                                       |often, can use mtime to smooth out    |
-|             |                                       |the i/o pattern, by slowing posts.    |
 +-------------+---------------------------------------+--------------------------------------+
 
 
