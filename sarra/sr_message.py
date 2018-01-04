@@ -122,14 +122,14 @@ class sr_message():
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
-        self.logger.debug("sr_message compute_local_checksum")
+        self.logger.debug("sr_message compute_local_checksum new_dir=%s, new_file=%s" % ( self.new_dir, self.new_file ) )
 
         bufsize = self.bufsize
         if self.length < bufsize : bufsize = self.length
 
         self.sumalgo.set_path(os.path.basename(self.new_file))
 
-        fp = open(self.new_file,'rb')
+        fp = open( self.new_dir + '/' + self.new_file,'rb')
         if self.local_offset != 0 : fp.seek(self.local_offset,0)
         i  = 0
         while i<self.length :
