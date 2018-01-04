@@ -30,6 +30,7 @@
 
 #include "uthash.h"
 
+#include "sr_version.h"
 /* 
   for each directory opened, store it's dev+inode pair.
   if you encounter another directory witht the same numbers, there is a loop.
@@ -413,7 +414,7 @@ void dir_stack_check4events( struct sr_context *sr_c )
 
 void usage() 
 {
-     fprintf( stderr, "usage: sr_cpost <options> <paths>\n\n" );
+     fprintf( stderr, "usage: sr_cpost %s <options> <paths>\n\n", __sarra_version__ );
      fprintf( stderr, "\taccept/reject <regex> - to filter files to post.\n" );
      fprintf( stderr, "\taccept_unmatch <boolean> - if not matched, accept? (default: true).\n" );
      fprintf( stderr, "\taction [start|stop|setup|cleanup|foreground] default: foreground\n" );
@@ -634,7 +635,7 @@ int main(int argc, char **argv)
         log_msg( LOG_WARNING, "could not save pidfile %s: possible to run conflicting instances  \n", sr_cfg.pidfile );
     } 
 
-    log_msg( LOG_INFO, "%s config: %s, pid: %d, starting\n", sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid );
+    log_msg( LOG_INFO, "%s %s config: %s, pid: %d, starting\n", sr_cfg.progname, __sarra_version__, sr_cfg.configname,  sr_cfg.pid );
 
     pass=0;     // when using inotify, have to walk the tree to set the watches initially.
     //latest_min_mtim.tv_sec = 0;

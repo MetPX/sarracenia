@@ -45,6 +45,7 @@
 #include <amqp_framing.h>
 
 #include "sr_context.h"
+#include "sr_version.h"
 
 
 void sr_amqp_error_print(int x, char const *context)
@@ -181,7 +182,7 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
       status = amqp_destroy_connection(broker->conn);
 
   sleep(to_sleep);
-  log_msg( LOG_INFO, "context_connect slept %d seconds, trying again now.", to_sleep );
+  log_msg( LOG_INFO, "broker_connect slept %d seconds, trying again now.", to_sleep );
   if (to_sleep < 60) to_sleep<<=1;
  
   }
@@ -194,13 +195,13 @@ struct sr_context *sr_context_connect(struct sr_context *sr_c) {
        sr_c->cfg->broker = sr_broker_connect( sr_c->cfg->broker ) ; 
        if ( ! (sr_c->cfg->broker)  ) return(NULL);
        if ( (sr_c->cfg!=NULL) && sr_c->cfg->debug )
-            log_msg(  LOG_DEBUG, "sr_context_connect to subscription broker succeeded!\n" );
+            log_msg(  LOG_DEBUG, "%s sr_context_connect to subscription broker succeeded!\n", __sarra_version__ );
   }
      
   if (sr_c->cfg->post_broker) {
        sr_c->cfg->post_broker = sr_broker_connect( sr_c->cfg->post_broker ) ; 
        if ( ! (sr_c->cfg->post_broker)  ) return(NULL);
-       log_msg(  LOG_DEBUG, "connected to post broker %s\n", sr_broker_uri(sr_c->cfg->post_broker) );
+       log_msg(  LOG_DEBUG, "%s connected to post broker %s\n", __sarra_version__, sr_broker_uri(sr_c->cfg->post_broker) );
   }
        
   return(sr_c);

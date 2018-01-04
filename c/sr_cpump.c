@@ -16,12 +16,14 @@
 #include <stdio.h>
 #include <signal.h>
 
+#include "sr_version.h"
+
 #include "sr_consume.h"
 #include "sr_post.h"
 
 void usage()
 {
-    fprintf( stderr, "usage: sr_cpump <options> <action> <configuration>\n\n" );
+    fprintf( stderr, "usage: sr_cpump %s <options> <action> <configuration>\n\n", __sarra_version__  );
     fprintf( stderr, "\t<options> - sr_post compatible configuration file.\n" );
     fprintf( stderr, "\tbroker amqps://<user>@host - required - to lookup in ~/.config/sarra/credentials.\n" );
     fprintf( stderr, "\tdebug <on|off> - more verbose output.\n" );
@@ -203,8 +205,8 @@ int main(int argc, char **argv)
             "could not save pidfile %s: possible to run conflicting instances  \n", 
             sr_cfg.pidfile );
   }
-  log_msg( LOG_INFO, "%s config: %s, pid: %d, queue: %s bound to exchange: %s starting\n", 
-            sr_cfg.progname, sr_cfg.configname,  sr_cfg.pid, sr_cfg.queuename, sr_cfg.exchange );
+  log_msg( LOG_INFO, "%s %s config: %s, pid: %d, queue: %s bound to exchange: %s starting\n", 
+            sr_cfg.progname, __sarra_version__, sr_cfg.configname,  sr_cfg.pid, sr_cfg.queuename, sr_cfg.exchange );
 
 
   while(1)

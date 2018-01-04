@@ -50,6 +50,8 @@
 // needed for sr_post_message.
 #include "sr_consume.h"
 
+#include "sr_version.h"
+
 /*
  Statically assign the maximum number of headers that can be included in a message.
  just picked a number.  I remember picking a larger one before, and it bombed, don't know why.
@@ -454,7 +456,7 @@ void sr_post_rename_dir(struct sr_context *sr_c, const char *oldname, const char
   char newpath[PATH_MAX+1];
   int newlen;
 
-  log_msg( LOG_DEBUG, "sr_%s starting rename_dir: %s %s \n", sr_c->cfg->progname, oldname, newname );
+  log_msg( LOG_DEBUG, "sr_%s %s starting rename_dir: %s %s \n", sr_c->cfg->progname, __sarra_version__, oldname, newname );
   dir = opendir( newname );
   if (!dir) return;
   
@@ -517,7 +519,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
      strcpy( newname, n );
   }
       
-  log_msg( LOG_DEBUG, "sr_%s starting rename: %s %s \n", sr_c->cfg->progname, oldname, newname );
+  log_msg( LOG_DEBUG, "sr_%s %s starting rename: %s %s \n", sr_c->cfg->progname, __sarra_version__, oldname, newname );
 
   if ( lstat( newname, &sb ) ) 
   {

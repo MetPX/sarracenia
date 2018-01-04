@@ -32,7 +32,10 @@ SHARED_LIB = libsrshim.so.1 -o libsrshim.so.1.0.0 libsrshim.c libsarra.so.1.0.0
 .c.o: 
 	$(CC) $(CFLAGS) -c  $<
 
+#  head -1 debian/changelog | sed 's/.*(//' | sed 's/).*//'
 all: $(SARRA_OBJECT)
+	sed 's/^metpx-sarracenia/libsarra-c/' <../debian/changelog >debian/changelog 
+	echo "#define __sarra_version__ \"`head -1 debian/changelog| sed 's/.*(//' | sed 's/).*//'`\"" >sr_version.h
 	$(CC) $(CFLAGS) -shared -Wl,-soname,libsarra.so.1 -o libsarra.so.1.0.0 $(SARRA_OBJECT) -ldl $(RABBIT_LINK) $(EXT_LIB)
 	$(CC) $(CFLAGS) -shared -Wl,-soname,$(SHARED_LIB) -ldl $(SARRA_LINK) $(RABBIT_LINK) $(EXT_LIB)
 	if [ ! -f libsarra.so ]; \
