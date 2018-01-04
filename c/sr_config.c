@@ -1286,10 +1286,19 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   }
 
   // FIXME: if prog is post, then only post_broker is OK.
-  log_msg( LOG_INFO, "sr_%s settings: action=%s log_level=%d follow_symlinks=%s realpath=%s sleep=%g heartbeat=%g cache=%g cache_file=%s\n",
-          sr_cfg->progname, sr_cfg->action, log_level, sr_cfg->follow_symlinks?"yes":"no",  sr_cfg->realpath?"yes":"no",
-          sr_cfg->sleep, sr_cfg->heartbeat, sr_cfg->cache, sr_cfg->cachep?p:"off" );
+  log_msg( LOG_INFO, "sr_%s %s settings: action=%s config_name=%s log_level=%d follow_symlinks=%s realpath=%s\n",
+          sr_cfg->progname, __sarra_version__, sr_cfg->action, sr_cfg->configname, log_level, sr_cfg->follow_symlinks?"yes":"no",  
+          sr_cfg->realpath?"yes":"no" );
+  log_msg( LOG_INFO, "\tsleep=%g heartbeat=%g cache=%g cache_file=%s accept_unmatch=%s\n",
+          sr_cfg->sleep, sr_cfg->heartbeat, sr_cfg->cache, sr_cfg->cachep?p:"off", sr_cfg->accept_unmatched?"on":"off" );
+  log_msg( LOG_INFO, "\tevents=%04x directory=%s queuename=%s force_polling=%s\n",
+          sr_cfg->events, sr_cfg->directory, sr_cfg->queuename, sr_cfg->force_polling?"on":"off"  );
+  log_msg( LOG_INFO, "\tmessage_ttl=%d post_exchange=%s post_exchange_split=%d sum=%c statehost=%c\n",
+          sr_cfg->message_ttl, sr_cfg->post_exchange, sr_cfg->post_exchange_split, sr_cfg->sumalgo, sr_cfg->statehost  );
+  log_msg( LOG_INFO, "\tsource=%s to=%s post_base_url=%s topic_prefix=%s pid=%d\n",
+          sr_cfg->source, sr_cfg->to, sr_cfg->post_base_url, sr_cfg->topic_prefix, sr_cfg->pid  );
 
+  // FIXME: Missing: topics, user_headers, 
   if  ( !strcmp(sr_cfg->progname,"post") || !strcmp(sr_cfg->progname,"cpost") ) 
   {
       if ( !(sr_cfg->post_broker) ) 
