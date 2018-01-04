@@ -5,7 +5,7 @@
 
 """
 
-class Heartbeat_Log(object): 
+class Hb_Log(object): 
 
     def __init__(self,parent):
         parent.logger.debug( "hb_log initialized" )
@@ -14,7 +14,7 @@ class Heartbeat_Log(object):
         parent.logger.info("heartbeat. Sarracenia version is: %s \n" % sarra.__version__ )
         return True
 
-hb_log = Heartbeat_Log(self)
+hb_log = Hb_Log(self)
 
 self.on_heartbeat = hb_log.perform
 

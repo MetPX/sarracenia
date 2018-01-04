@@ -6,7 +6,7 @@
 
 """
 
-class Heartbeat_Cache(object): 
+class Hb_Cache(object): 
 
     def __init__(self,parent):
         self.last_time  = time.time()
@@ -39,7 +39,7 @@ class Heartbeat_Cache(object):
 
         return True
 
-hb_cache = Heartbeat_Cache(self)
+hb_cache = Hb_Cache(self)
 
 self.on_heartbeat = hb_cache.perform
 

@@ -102,7 +102,7 @@ class Post_Total(object):
 
         return True
 
-total = Post_Total(self)
+post_total = Post_Total(self)
 
-self.on_post = total.perform
+self.on_post = post_total.perform
 

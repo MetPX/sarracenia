@@ -34,7 +34,7 @@ class Http2Local(object):
         l.info( "msg_2http output: urlstr: %s"  % m.urlstr )
         return True
 
-ren2local=Http2Local(self)
-self.on_message=ren2local.on_message
+http2local=Http2Local(self)
+self.on_message=http2local.on_message
 
 

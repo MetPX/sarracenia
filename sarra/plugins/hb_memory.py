@@ -31,7 +31,7 @@ hb_memory_multiplier (default: 3)
   
 """
 
-class Heartbeat_Memory(object): 
+class Hb_Memory(object): 
 
     def __init__(self,parent):
 
@@ -112,5 +112,5 @@ class Heartbeat_Memory(object):
 
         return
 
-hb_memory  = Heartbeat_Memory(self)
+hb_memory  = Hb_Memory(self)
 self.on_heartbeat = hb_memory.perform

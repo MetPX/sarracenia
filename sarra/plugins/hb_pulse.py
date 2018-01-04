@@ -20,7 +20,7 @@
 
 """
 
-class Heartbeat_Pulse(object): 
+class Hb_Pulse(object): 
 
     def __init__(self,parent):
         self.last_time          = time.time()
@@ -66,7 +66,7 @@ class Heartbeat_Pulse(object):
 
         return True
 
-hb_pulse = Heartbeat_Pulse(self)
+hb_pulse = Hb_Pulse(self)
 
 self.on_heartbeat = hb_pulse.perform
 

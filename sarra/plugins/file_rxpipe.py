@@ -40,7 +40,7 @@ class File_RxPipe(object):
         self.rxpipe.flush()
         return None
 
-rxpipe=File_RxPipe(self)
-self.on_file=rxpipe.perform
+file_rxpipe=File_RxPipe(self)
+self.on_file=file_rxpipe.perform
 
 

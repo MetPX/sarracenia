@@ -105,7 +105,7 @@ class Msg_Total(object):
 
         return True
 
-total = Msg_Total(self)
+msg_total = Msg_Total(self)
 
-self.on_message = total.on_message
+self.on_message = msg_total.on_message
 

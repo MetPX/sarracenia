@@ -92,6 +92,6 @@ class DOWNLOAD_REWRITE(object):
 
           return True
 
-dnld_rewrite = DOWNLOAD_REWRITE(self)
-self.on_message = dnld_rewrite.on_message
+download_rewrite = DOWNLOAD_REWRITE(self)
+self.on_message = download_rewrite.on_message
 

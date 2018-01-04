@@ -650,35 +650,32 @@ class sr_config:
 
         # Plugin defaults
 
+        self.on_part              = None
+        self.do_task              = None
+        self.on_watch             = None
+
         self.on_message_list = [ ]
+        self.on_file_list = [ ]
+        self.on_post_list = [ ]
+        self.on_heartbeat_list = [ ]
+        self.on_html_page_list    = []
+        self.on_part_list         = []
+        self.do_task_list         = []
+        self.on_line_list = [ ]
+        self.on_watch_list        = []
+
         self.execfile("on_message",'msg_log')
         self.execfile("on_file",'file_log')
-        self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
-        self.on_post_list = [ self.on_post ]
 
         self.execfile("on_heartbeat",'hb_log')
-        self.on_heartbeat_list    = [self.on_heartbeat]
         self.execfile("on_heartbeat",'hb_memory')
-        self.on_heartbeat_list.append(self.on_heartbeat)
         self.execfile("on_heartbeat",'hb_pulse')
-        self.on_heartbeat_list.append(self.on_heartbeat)
-
         self.execfile("on_html_page",'html_page')
-        self.on_html_page_list    = [self.on_html_page]
-
-        self.on_part              = None
-        self.on_part_list         = []
-
-        self.do_task              = None
-        self.do_task_list         = []
 
         self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
-        self.on_line_list = [ self.on_line ]
 
-        self.on_watch             = None
-        self.on_watch_list        = []
 
     def duration_from_str(self,str_value,setting_units='s'):
         self.logger.debug("sr_config duration_from_str %s unit %s" % (str_value,setting_units))
@@ -731,20 +728,30 @@ class sr_config:
             self.logger.error("sr_config/execfile 2 Type: %s, Value: %s" % (stype, svalue))
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
 
-        if getattr(self,opname) is None:
-            self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
-            return False
-
         qn = eval('self.'+opname+'.__qualname__') 
         #self.logger.info( "%s added as %s plugin" % ( qn, opname ) )
         
         plugin_class_name = qn.split('.')[0]
         pcv = eval( 'vars('+plugin_class_name+')' )
         #self.logger.info( "Plugin Class is: %s %s" % ( plugin_class_name, pcv ) )
+        if not plugin_class_name.lower() in locals():
+            self.logger.error("%s plugin %s incorrect: plugin %s class must be instanced as %s" % (opname, path, plugin_class_name, plugin_class_name.lower() ))
+            return False
         
-        if 'on_message' in pcv:
-            plugin_routine=eval( plugin_class_name + '.on_message' )
-            self.on_message_list.append(self.on_message)
+        found=False
+        for when in [ 'on_message', 'on_part', 'on_heartbeat', 'on_file', 'on_watch', 'on_html_page', 'on_line' ]:
+            if when in pcv:
+                found=True
+                plugin_routine=plugin_class_name.lower() + '.' + when
+                eval( 'self.' + when + '_list.append(' + plugin_routine + ')' )
+
+        # following gives backward compatibility with existing plugins that don't follow new naming convention.
+        if not found:
+            if getattr(self,opname) is None:
+                self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
+                return False
+            eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
+
 
         return True
 
@@ -1150,7 +1157,6 @@ class sr_config:
                         n = 2
                      if self.caching and not hasattr(self,'heartbeat_cache_installed') :
                         self.execfile("on_heartbeat",'hb_cache')
-                        self.on_heartbeat_list.append(self.on_heartbeat)
                         self.heartbeat_cache_installed = True
 
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
@@ -1262,8 +1268,8 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     else:
-                        self.do_task_list.append(self.do_task)
+                     #else:
+                     #   self.do_task_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
@@ -1535,9 +1541,6 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     else:
-                        self.on_file_list.append(self.on_file)
-
                      n = 2
 
                 elif words0 in [ 'on_heartbeat', 'on_hb' ]: # See: sr_config.7, sr_sarra,shovel,subscribe
@@ -1548,9 +1551,6 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     else:
-                        self.on_heartbeat_list.append(self.on_heartbeat)
-
                      n = 2
 
                 elif words0 == 'on_html_page': # See: sr_config
@@ -1561,8 +1561,6 @@ class sr_config:
                         else:
                             ok = False
                             needexit = True
-                     else:
-                        self.on_html_page_list.append(self.on_html_page)
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
@@ -1573,21 +1571,16 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     else:
-                        self.on_line_list.append(self.on_line)
-
                      n = 2
 
                 elif words0 in [ 'on_message',  'on_msg' ] : # See: sr_config.1, others...
                      self.execfile("on_message",words1)
-                     #if ( self.on_message == None ):
-                     #   if self.isNone(words1):
-                     #      self.on_message_list = []
-                     #   else:
-                     #      ok = False
-                     #      needexit = True
-                     #else:
-                     #   self.on_message_list.append(self.on_message)
+                     if ( self.on_message == None ):
+                        if self.isNone(words1):
+                           self.on_message_list = []
+                        else:
+                           ok = False
+                           needexit = True
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
@@ -1598,9 +1591,6 @@ class sr_config:
                         else:
                            ok = False
                            needexit = True
-                     else:
-                        self.on_part_list.append(self.on_part)
-
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config
@@ -1611,8 +1601,6 @@ class sr_config:
                         else:
                             ok = False
                             needexit = True
-                     else:
-                        self.on_post_list.append(self.on_post)
                      n = 2
 
                 elif words0 == 'on_watch': # See: sr_config
@@ -1623,8 +1611,6 @@ class sr_config:
                         else:
                             ok = False
                             needexit = True
-                     else:
-                        self.on_watch_list.append(self.on_watch)
                      n = 2
 
                 elif words0 == 'outlet' : # MG FIXME to be documented

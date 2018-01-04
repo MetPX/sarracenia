@@ -92,7 +92,7 @@ class Msg_Speedo(object):
 
         return True
 
-speedo = Msg_Speedo(self)
+msg_speedo = Msg_Speedo(self)
 
-self.on_message = speedo.on_message
+self.on_message = msg_speedo.on_message
 

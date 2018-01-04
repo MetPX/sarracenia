@@ -20,7 +20,7 @@
 
 import os,stat,time
 
-class Msg_Total(object): 
+class File_Total(object): 
 
 
     def __init__(self,parent):
@@ -103,7 +103,7 @@ class Msg_Total(object):
 
         return True
 
-total = Msg_Total(self)
+file_total = File_Total(self)
 
-self.on_file = total.perform
+self.on_file = file_total.perform
 

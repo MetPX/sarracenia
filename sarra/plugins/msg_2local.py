@@ -79,8 +79,8 @@ class Http2Local(object):
 
         return True
 
-ren2local=Http2Local(self)
+http2local=Http2Local(self)
 
-self.on_message=ren2local.on_message
+self.on_message=http2local.on_message
 
 
