@@ -63,7 +63,7 @@ class Http2Local(object):
             parent.lurlre = re.compile(parent.msg_2local_url[0])
         pass
 
-    def perform(self,parent):
+    def on_message(self,parent):
         import re
 
         l = parent.logger
@@ -81,6 +81,6 @@ class Http2Local(object):
 
 ren2local=Http2Local(self)
 
-self.on_message=ren2local.perform
+self.on_message=ren2local.on_message
 
 

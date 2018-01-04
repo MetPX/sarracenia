@@ -11,7 +11,7 @@ class Msg_Delete(object):
     def __init__(self,parent):
         parent.logger.debug("msg_delete initialized")
           
-    def perform(self,parent):
+    def on_message(self,parent):
  
         import os
         msg = parent.msg
@@ -28,5 +28,5 @@ class Msg_Delete(object):
 
 msg_delete = Msg_Delete(self)
 
-self.on_message = msg_delete.perform
+self.on_message = msg_delete.on_message
 

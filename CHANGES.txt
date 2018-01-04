@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* working on universal plugin parser.
 * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
 * fixed: column width hack for older versions was busted.
 

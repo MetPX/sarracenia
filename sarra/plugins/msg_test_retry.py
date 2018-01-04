@@ -19,7 +19,7 @@ class Msg_test_retry():
         self.details_bad      = None
         self.msg_baseurl_bad  = 'sftp://ruser:rpass@retryhost'
 
-    def perform(self,parent):
+    def on_message(self,parent):
 
         l = parent.logger
         m = parent.msg
@@ -57,4 +57,4 @@ class Msg_test_retry():
         return True
 
 msg_test_retry=Msg_test_retry(None)
-self.on_message=msg_test_retry.perform
+self.on_message=msg_test_retry.on_message

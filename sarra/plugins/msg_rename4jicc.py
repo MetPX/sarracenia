@@ -18,7 +18,7 @@ class Renamer(object):
       def __init__(self) :
           pass
 
-      def perform(self,parent):
+      def on_message(self,parent):
           import time
 
           if not 'ccstn.dat' in parent.new_file : return True
@@ -36,5 +36,5 @@ class Renamer(object):
           return True
 
 renamer=Renamer()
-self.on_message=renamer.perform
+self.on_message=renamer.on_message
 

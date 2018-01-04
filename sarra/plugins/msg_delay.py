@@ -24,7 +24,7 @@ class Msg_Delay(object):
             parent.msg_delay=300
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
         import calendar
 
         msg = parent.msg
@@ -45,5 +45,5 @@ class Msg_Delay(object):
 
 msg_delay = Msg_Delay(self)
 
-self.on_message = msg_delay.perform
+self.on_message = msg_delay.on_message
 

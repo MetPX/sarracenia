@@ -16,12 +16,12 @@ class Renamer(object):
           pass
 
       # old in sundew
-      #def perform(self,path):
+      #def on_message(self,path):
           #datestr = time.strftime('%Y%m%d%H%M%S',time.localtime())
           #new_path = path + ':' + datestr
           #return new_path
 
-      def perform(self,parent):
+      def on_message(self,parent):
           import time
 
           datestr = time.strftime(':%Y%m%d%H%M%S',time.localtime())
@@ -32,8 +32,8 @@ class Renamer(object):
           return True
 
 renamer=Renamer(self)
-self.on_message=renamer.perform
+self.on_message=renamer.on_message
 
 # test interactif
-#print renamer.perform(sys.argv[1])
+#print renamer.on_message(sys.argv[1])
 

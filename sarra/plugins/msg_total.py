@@ -59,7 +59,7 @@ class Msg_Total(object):
             ( parent.msg_total_interval, parent.msg_total_maxlag ) )
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -107,5 +107,5 @@ class Msg_Total(object):
 
 total = Msg_Total(self)
 
-self.on_message = total.perform
+self.on_message = total.on_message
 

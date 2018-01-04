@@ -11,7 +11,7 @@ class Msg_Log(object):
     def __init__(self,parent):
         parent.logger.debug("msg_log initialized")
           
-    def perform(self,parent):
+    def on_message(self,parent):
         msg = parent.msg
         parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
            tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
@@ -19,5 +19,5 @@ class Msg_Log(object):
 
 msg_log = Msg_Log(self)
 
-self.on_message = msg_log.perform
+self.on_message = msg_log.on_message
 

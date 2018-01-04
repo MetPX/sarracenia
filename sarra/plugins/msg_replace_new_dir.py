@@ -24,7 +24,7 @@ class Transformer():
 
         parent.logger.debug("msg_replace_new_dir is %s " % parent.msg_replace_new_dir )
 
-      def perform(self,parent):
+      def on_message(self,parent):
           for p in parent.msg_replace_new_dir :
               ( b, a ) = p.split(",") 
               parent.logger.info("msg_replace_new_dir is %s " % p )
@@ -33,4 +33,4 @@ class Transformer():
           return True
 
 transformer = Transformer(self)
-self.on_message = transformer.perform
+self.on_message = transformer.on_message

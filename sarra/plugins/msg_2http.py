@@ -19,7 +19,7 @@ class Http2Local(object):
         parent.hurlre = re.compile( 'file:/' + parent.ldocroot )
 
 
-    def perform(self,parent):
+    def on_message(self,parent):
         import re
 
         l = parent.logger
@@ -35,6 +35,6 @@ class Http2Local(object):
         return True
 
 ren2local=Http2Local(self)
-self.on_message=ren2local.perform
+self.on_message=ren2local.on_message
 
 

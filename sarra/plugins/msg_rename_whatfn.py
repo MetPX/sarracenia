@@ -14,7 +14,7 @@ class Renamer(object):
       def __init__(self) :
           pass
 
-      def perform(self,parent):
+      def on_message(self,parent):
           import time
 
           parts = parent.msg.new_file.split(':')
@@ -28,8 +28,8 @@ class Renamer(object):
           return True
 
 renamer=Renamer()
-self.on_message=renamer.perform
+self.on_message=renamer.on_message
 
 # test interactif
-#print renamer.perform(sys.argv[1])
+#print renamer.on_message(sys.argv[1])
 

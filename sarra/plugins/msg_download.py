@@ -66,7 +66,7 @@ class DOWNLOAD_REWRITE(object):
           if not hasattr( parent, "msg_download_protocol" ):
              parent.msg_download_protocol = [ "http" ]
           
-      def perform(self,parent):
+      def on_message(self,parent):
           logger = parent.logger
           msg    = parent.msg
 
@@ -93,5 +93,5 @@ class DOWNLOAD_REWRITE(object):
           return True
 
 dnld_rewrite = DOWNLOAD_REWRITE(self)
-self.on_message = dnld_rewrite.perform
+self.on_message = dnld_rewrite.on_message
 

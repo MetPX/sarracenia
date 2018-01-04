@@ -95,7 +95,7 @@ class Msg_2LocalFile():
     def __init__(self,parent):
         self.parent = parent
 
-    def perform(self,parent):
+    def on_message(self,parent):
         l = parent.logger
         m = parent.msg
 
@@ -114,4 +114,4 @@ class Msg_2LocalFile():
 
 msg_2localfile=Msg_2LocalFile(None)
 
-self.on_message=msg_2localfile.perform
+self.on_message=msg_2localfile.on_message

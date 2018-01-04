@@ -22,7 +22,7 @@ class Transformer(object):
 
         pass
           
-    def perform(self,parent):
+    def on_message(self,parent):
 
         parent.logger.info("message = \n")
         parent.logger.info(vars(parent.msg))
@@ -30,5 +30,5 @@ class Transformer(object):
         return True
 
 transformer = Transformer(self)
-self.on_message = transformer.perform
+self.on_message = transformer.on_message
 

@@ -32,10 +32,10 @@ class ToCluster(object):
         parent.logger.info("msg_to_clusters valid destinations: %s " % parent.msg_to_clusters )
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
         return ( parent.msg.headers[ 'to_clusters' ] in parent.msg_to_clusters ) 
 
 
 tocluster = ToCluster(self)
-self.on_message = tocluster.perform
+self.on_message = tocluster.on_message
 

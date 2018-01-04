@@ -193,6 +193,8 @@ class sr_config:
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
 
+    def xcl( self, x ):
+        return x.__qualname__.split('.')[0] + ' '
 
     def log_settings(self):
 
@@ -215,15 +217,15 @@ class sr_config:
         self.logger.info('\tPlugins configured:')
 
         if self.program_name == 'sr_poll' :
-            self.logger.info( '\t\ton_line: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_line_list ) ) )
-            self.logger.info( '\t\ton_html_page: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_html_page_list ) ) )
+            self.logger.info( '\t\ton_line: %s' % ''.join( map( self.xcl , self.on_line_list ) ) )
+            self.logger.info( '\t\ton_html_page: %s' % ''.join( map( self.xcl , self.on_html_page_list ) ) )
 
-        self.logger.info( '\t\ton_message: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_message_list ) ) )
-        self.logger.info( '\t\ton_part: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_part_list ) ) )
-        self.logger.info( '\t\ton_file: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_file_list ) ) )
-        self.logger.info( '\t\ton_post: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_post_list ) ) )
-        self.logger.info( '\t\ton_watch: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_watch_list ) ) )
-        self.logger.info( '\t\ton_heartbeat: %s' % ''.join( map( lambda x: '%s ' % x.__qualname__ , self.on_heartbeat_list ) ) )
+        self.logger.info( '\t\ton_message: %s' % ''.join( map( self.xcl , self.on_message_list ) ) )
+        self.logger.info( '\t\ton_part: %s' % ''.join( map( self.xcl , self.on_part_list ) ) )
+        self.logger.info( '\t\ton_file: %s' % ''.join( map( self.xcl , self.on_file_list ) ) )
+        self.logger.info( '\t\ton_post: %s' % ''.join( map( self.xcl , self.on_post_list ) ) )
+        self.logger.info( '\t\ton_watch: %s' % ''.join( map( self.xcl , self.on_watch_list ) ) )
+        self.logger.info( '\t\ton_heartbeat: %s' % ''.join( map( self.xcl , self.on_heartbeat_list ) ) )
 
         self.logger.info('log_settings end.')
 
@@ -648,8 +650,8 @@ class sr_config:
 
         # Plugin defaults
 
+        self.on_message_list = [ ]
         self.execfile("on_message",'msg_log')
-        self.on_message_list = [ self.on_message ]
         self.execfile("on_file",'file_log')
         self.on_file_list = [ self.on_file ]
         self.execfile("on_post",'post_log')
@@ -707,12 +709,14 @@ class sr_config:
 
 
     def execfile(self, opname, path):
-
+        """
+           Add plugins, returning True on Success.
+        """
         setattr(self,opname,None)
 
         if path == 'None' or path == 'none' or path == 'off':
              self.logger.debug("Reset plugin %s to None" % opname ) 
-             return
+             return True
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
@@ -729,6 +733,20 @@ class sr_config:
 
         if getattr(self,opname) is None:
             self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
+            return False
+
+        qn = eval('self.'+opname+'.__qualname__') 
+        #self.logger.info( "%s added as %s plugin" % ( qn, opname ) )
+        
+        plugin_class_name = qn.split('.')[0]
+        pcv = eval( 'vars('+plugin_class_name+')' )
+        #self.logger.info( "Plugin Class is: %s %s" % ( plugin_class_name, pcv ) )
+        
+        if 'on_message' in pcv:
+            plugin_routine=eval( plugin_class_name + '.on_message' )
+            self.on_message_list.append(self.on_message)
+
+        return True
 
 
     def heartbeat_check(self):
@@ -1562,14 +1580,14 @@ class sr_config:
 
                 elif words0 in [ 'on_message',  'on_msg' ] : # See: sr_config.1, others...
                      self.execfile("on_message",words1)
-                     if ( self.on_message == None ):
-                        if self.isNone(words1):
-                           self.on_message_list = []
-                        else:
-                           ok = False
-                           needexit = True
-                     else:
-                        self.on_message_list.append(self.on_message)
+                     #if ( self.on_message == None ):
+                     #   if self.isNone(words1):
+                     #      self.on_message_list = []
+                     #   else:
+                     #      ok = False
+                     #      needexit = True
+                     #else:
+                     #   self.on_message_list.append(self.on_message)
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe

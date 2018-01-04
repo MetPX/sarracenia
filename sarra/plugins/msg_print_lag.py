@@ -24,7 +24,7 @@ class Transformer(object):
     def __init__(self,parent):
           pass
           
-    def perform(self,parent):
+    def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -39,5 +39,5 @@ class Transformer(object):
         return True
 
 transformer = Transformer(self)
-self.on_message = transformer.perform
+self.on_message = transformer.on_message
 

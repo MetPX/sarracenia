@@ -65,7 +65,7 @@ class SundewRoute(object):
         
         logger.debug( "sundew_pxroute For %s, the following headers are routed %s" % ( parent.msg_pxclient[0], self.ahls_to_route.keys() ) )
         
-    def perform(self,parent):
+    def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
         
@@ -88,6 +88,6 @@ class SundewRoute(object):
 sundewroute=SundewRoute(self)
 
 
-self.on_message = sundewroute.perform
+self.on_message = sundewroute.on_message
 
 

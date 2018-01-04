@@ -14,7 +14,7 @@ class Renamer(object):
       def __init__(self) :
           pass
 
-      def perform(self,parent):
+      def on_message(self,parent):
           import time
 
           datestr = time.strftime(':%Y%m%d%H%M%S',time.localtime())
@@ -25,5 +25,5 @@ class Renamer(object):
           return True
 
 renamer=Renamer()
-self.on_message=renamer.perform
+self.on_message=renamer.on_message
 

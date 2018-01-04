@@ -27,10 +27,10 @@ class Transformer(object):
         parent.logger.info("msg_from_cluster is %s " % parent.msg_from_cluster )
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
         return ( parent.msg.headers[ 'from_cluster' ] in parent.msg_from_cluster ) 
 
 
 transformer = Transformer(self)
-self.on_message = transformer.perform
+self.on_message = transformer.on_message
 

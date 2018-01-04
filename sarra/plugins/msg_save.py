@@ -38,7 +38,7 @@ class Msg_Save(object):
 
         parent.logger.debug("msg_save initialized")
           
-    def perform(self,parent):
+    def on_message(self,parent):
    
         import json
 
@@ -54,5 +54,5 @@ class Msg_Save(object):
 
 msg_save = Msg_Save(self)
 
-self.on_message = msg_save.perform
+self.on_message = msg_save.on_message
 

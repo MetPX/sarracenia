@@ -28,7 +28,7 @@ class Transformer(object):
         parent.logger.info("msg_by_user is %s " % parent.msg_by_user )
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
 
         # MG  FIX ME  checking for report user I guess
         if parent.topic_prefix == 'v02.report' :
@@ -39,5 +39,5 @@ class Transformer(object):
 
 
 transformer = Transformer(self)
-self.on_message = transformer.perform
+self.on_message = transformer.on_message
 

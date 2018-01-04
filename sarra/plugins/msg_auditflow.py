@@ -24,7 +24,7 @@ class Msg_AuditFlow(object):
         parent.auditflow_BtoAratio=4
   
           
-    def perform(self,parent):
+    def on_message(self,parent):
  
         import os,filecmp
         msg = parent.msg
@@ -62,5 +62,5 @@ class Msg_AuditFlow(object):
 
 msg_auditflow = Msg_AuditFlow(self)
 
-self.on_message = msg_auditflow.perform
+self.on_message = msg_auditflow.on_message
 

@@ -50,7 +50,7 @@ class Msg_Speedo(object):
         parent.msg_speedo_bytecount=0
 
           
-    def perform(self,parent):
+    def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -94,5 +94,5 @@ class Msg_Speedo(object):
 
 speedo = Msg_Speedo(self)
 
-self.on_message = speedo.perform
+self.on_message = speedo.on_message
 

@@ -185,7 +185,7 @@ class Xwmo2msc(object):
            print('Trimmed %d trailing blanks!' % (lenb - len(self.bintxt)) )
 
 
-    def perform(self,parent):
+    def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -285,7 +285,7 @@ if __name__ != '__main__':
 
     # real activation as a do_download filtering script.
     xwmo2msc  = Xwmo2msc(self)
-    self.on_message = xwmo2msc.perform
+    self.on_message = xwmo2msc.on_message
 
 else:
     
@@ -324,7 +324,7 @@ else:
         if f[0].isdigit():
             testparent=TestParent( os.getcwd() + os.sep + f)
             xwmo2msc  = Xwmo2msc(testparent)
-            xwmo2msc.perform(testparent)
+            xwmo2msc.on_message(testparent)
     
 """
 
