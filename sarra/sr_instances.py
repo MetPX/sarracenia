@@ -162,10 +162,10 @@ class sr_instances(sr_config):
        
        print( '\npackaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
        if py2old:
-          colums=80
+          columns=80
        else: 
           term = get_terminal_size((80,20))
-          columns = term.colums
+          columns = term.columns
 
        i=0
        for p in sorted( os.listdir( self.package_dir + os.sep + 'plugins'  )):
@@ -185,7 +185,7 @@ class sr_instances(sr_config):
            i=0
            print( '\nconfiguration examples: ( %s ) ' %  d  )
            for p in sorted( os.listdir( d )):
-               if ( ((i+1)*21) >= term.columns ): 
+               if ( ((i+1)*21) >= columns ): 
                    print('')
                    i=1
                else:
@@ -199,7 +199,7 @@ class sr_instances(sr_config):
        i=0
        print( '\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
        for p in sorted( os.listdir(  self.user_config_dir + os.sep + 'plugins' )):
-           if ( ((i+1)*21) >= term.columns ): 
+           if ( ((i+1)*21) >= columns ): 
                print('')
                i=1
            else:
