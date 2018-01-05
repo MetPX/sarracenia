@@ -219,12 +219,22 @@ class sr_config:
         if self.program_name == 'sr_poll' :
             self.logger.info( '\t\ton_line: %s' % ''.join( map( self.xcl , self.on_line_list ) ) )
             self.logger.info( '\t\ton_html_page: %s' % ''.join( map( self.xcl , self.on_html_page_list ) ) )
+            self.logger.info( '\t\tdo_poll: %s' % ''.join( map( self.xcl , self.do_poll_list ) ) )
+
+        elif self.program_name == 'sr_sender' :
+            self.logger.info( '\t\tdo_send: %s' % ''.join( map( self.xcl , self.do_send_list ) ) )
+
+        elif self.program_name in [ 'sr_watch', 'sr_post' ]:
+            self.logger.info( '\t\ton_watch: %s' % ''.join( map( self.xcl , self.on_watch_list ) ) )
+
+        else :
+            self.logger.info( '\t\tdo_download: %s' % ''.join( map( self.xcl , self.do_download_list ) ) )
+
 
         self.logger.info( '\t\ton_message: %s' % ''.join( map( self.xcl , self.on_message_list ) ) )
         self.logger.info( '\t\ton_part: %s' % ''.join( map( self.xcl , self.on_part_list ) ) )
         self.logger.info( '\t\ton_file: %s' % ''.join( map( self.xcl , self.on_file_list ) ) )
         self.logger.info( '\t\ton_post: %s' % ''.join( map( self.xcl , self.on_post_list ) ) )
-        self.logger.info( '\t\ton_watch: %s' % ''.join( map( self.xcl , self.on_watch_list ) ) )
         self.logger.info( '\t\ton_heartbeat: %s' % ''.join( map( self.xcl , self.on_heartbeat_list ) ) )
 
         self.logger.info('log_settings end.')
@@ -656,7 +666,7 @@ class sr_config:
 
         self.plugin_times = [ 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
             'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
-            'do_send', 'do_task', 'on_start', 'on_stop' ]
+            'do_download', 'do_send', 'do_task', 'on_start', 'on_stop' ]
 
         for t in self.plugin_times:
             exec( 'self.'+t+'_list = [ ]' )

@@ -41,6 +41,10 @@ git origin/master branch
 2.18.01a2
 ---------
 
+*NOTICE*: when using a do_download plugin, a harmless error message is printed on startup:
+          [ERROR] sr_config/option 4 Type: <class 'AttributeError'>, Value: 'sr_subscribe' object has no attribute 'do_download_list',  ...
+          This error has no effect.
+
 *NOTICE*: Note change to *durable* default from previous version, for transition can specify *durable no* 
           in configuration to use existing queues, and/or --reset to redefine queue with new setting.
 
