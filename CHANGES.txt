@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* disable new plugin api on python < 3.4 to avoid error messages.
+* fix for bogus error message when do_download used.
+
 **2.18.01a2**
 
 * likely fix included for 1 in 200 file missing in HPC mirroring.
