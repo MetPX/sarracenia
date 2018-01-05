@@ -740,25 +740,28 @@ class sr_config:
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
             return False
 
-        try:
-            qn = eval('self.'+opname+'.__qualname__') 
-        except : 
-            self.logger.error( "plugin %s: self.%s improperly set. Could not determine plugin class" % ( path, opname ) )
-            return False
-
-        plugin_class_name = qn.split('.')[0]
-        pcv = eval( 'vars('+plugin_class_name+')' )
-        #self.logger.info( "Plugin Class is: %s %s" % ( plugin_class_name, pcv ) )
-        if not plugin_class_name.lower() in locals():
-            self.logger.error("%s plugin %s incorrect: plugin %s class must be instanced as %s" % (opname, path, plugin_class_name, plugin_class_name.lower() ))
-            return False
-        
         found=False
-        for when in self.plugin_times:
-            if when in pcv:
-                found=True
-                plugin_routine=plugin_class_name.lower() + '.' + when
-                eval( 'self.' + when + '_list.append(' + plugin_routine + ')' )
+        if sys.hexversion > 0x03030000:
+            try:
+                qn = eval('self.'+opname+'.__qualname__') 
+            except : 
+                self.logger.error( "plugin %s: self.%s improperly set. Could not determine plugin class" % ( path, opname ) )
+                return False
+    
+            plugin_class_name = qn.split('.')[0]
+            pcv = eval( 'vars('+plugin_class_name+')' )
+            #self.logger.info( "Plugin Class is: %s %s" % ( plugin_class_name, pcv ) )
+            if not plugin_class_name.lower() in locals():
+                self.logger.error("%s plugin %s incorrect: plugin %s class must be instanced as %s" % (opname, path, plugin_class_name, plugin_class_name.lower() ))
+                return False
+            
+                for when in self.plugin_times:
+                    if when in pcv:
+                        found=True
+                        plugin_routine=plugin_class_name.lower() + '.' + when
+                        eval( 'self.' + when + '_list.append(' + plugin_routine + ')' )
+        else:
+            self.logger.warning("python version < 3.3. Only single function plugins supported.")
 
         # following gives backward compatibility with existing plugins that don't follow new naming convention.
         if not found:
@@ -766,7 +769,6 @@ class sr_config:
                 self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
                 return False
             eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
-
 
         return True
 
