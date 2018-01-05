@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* fix to *object has no attribute 'do_download_list'*
+
 **2.18.01a2**
 
 * likely fix included for 1 in 200 file missing in HPC mirroring.
