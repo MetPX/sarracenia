@@ -717,9 +717,10 @@ class sr_config:
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
-             self.logger.debug("installing %s plugin %s" % (opname, script ) ) 
+            self.logger.debug("installing %s plugin %s" % (opname, script ) ) 
         else:
-             self.logger.error("installing %s plugin %s failed: not found " % (opname, path) ) 
+            self.logger.error("installing %s plugin %s failed: not found " % (opname, path) ) 
+            return False
 
         try    : 
             exec(compile(open(script).read(), script, 'exec'))
@@ -727,10 +728,14 @@ class sr_config:
             (stype, svalue, tb) = sys.exc_info()
             self.logger.error("sr_config/execfile 2 Type: %s, Value: %s" % (stype, svalue))
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
+            return False
 
-        qn = eval('self.'+opname+'.__qualname__') 
-        #self.logger.info( "%s added as %s plugin" % ( qn, opname ) )
-        
+        try:
+            qn = eval('self.'+opname+'.__qualname__') 
+        except : 
+            self.logger.error( "plugin %s: self.%s improperly set. Could not determine plugin class" % ( path, opname ) )
+            return False
+
         plugin_class_name = qn.split('.')[0]
         pcv = eval( 'vars('+plugin_class_name+')' )
         #self.logger.info( "Plugin Class is: %s %s" % ( plugin_class_name, pcv ) )

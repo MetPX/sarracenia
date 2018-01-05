@@ -69,8 +69,8 @@ the rabbitmq server, or manage the configurations.
 
  - cleanup:  deletes the component's resources on the server
  - declare:  creates the component's resources on the server
- - setup:    like declare, additionnaly does queue bindings
- - add:      Add to the list of available configurations.
+ - setup:    like declare, additionally does queue bindings
+ - add:      copy to the list of available configurations.
  - list:     List all the configurations available.
  - edit:     modify an existing configuration.
  - remove:   Remove a configuration
@@ -129,33 +129,56 @@ There are also other manual pages available here: `See Also`_
 Configurations
 --------------
 
-If one has a ready made configuration called *xvan_f14.conf*, it can be 
+If one has a ready made configuration called *q_f71.conf*, it can be 
 added to the list of known ones with::
 
-  sr_subscribe add xvan_f14
+  sr_subscribe add q_f71.conf
 
+In this case, xvan_f14 is included with examples provided, so *add* finds it in the examples
+directory and copies into the active configuration one. 
 Each configuration file manages the consumers for a single queue on
 the broker. To view the available configurations, use::
 
   blacklab% sr_subscribe list
 
-  blacklab% /sr_cpump list
-  Configurations available for sr_cpump:
-    t_no_large_files.inc (disabled)
-    xvan_f15             (enabled)
-    xvan_f14             (enabled)
-    pelle_dd2_f05        (enabled)
-    pelle_dd1_f04        (enabled)
+  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
+         __pycache__       bad_plugin1.py       bad_plugin2.py       bad_plugin3.py     destfn_sample.py       download_cp.py 
+      download_dd.py      download_scp.py     download_wget.py          file_age.py        file_check.py          file_log.py 
+      file_rxpipe.py        file_total.py           harness.py          hb_cache.py            hb_log.py         hb_memory.py 
+         hb_pulse.py         html_page.py          line_log.py         line_mode.py               log.py         msg_2http.py 
+       msg_2local.py    msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
+       msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py 
+    msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py msg_rename_whatfn.py 
+      msg_renamer.py msg_replace_new_dir.py          msg_save.py      msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py 
+   msg_test_retry.py   msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py 
+      poll_script.py    post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
+       post_total.py         watch_log.py 
+
+  configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
+            all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
+      cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
+        ftp_f70.conf            gdps.conf         ninjo-a.conf           q_f71.conf           radar.conf            rdps.conf 
+           swob.conf           t_f30.conf      u_sftp_f60.conf 
+
+  user plugins: ( /home/peter/.config/sarra/plugins ) 
+        destfn_am.py         destfn_nz.py       msg_tarpush.py 
+
+  general: ( /home/peter/.config/sarra ) 
+          admin.conf     credentials.conf         default.conf
+
+  user configurations: ( /home/peter/.config/sarra/subscribe )
+     cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf         ftp_f70.conf           q_f71.conf 
+          t_f30.conf      u_sftp_f60.conf
   blacklab%
 
 one can then modify it using::
 
-  sr_subscribe edit myconfig
+  sr_subscribe edit q_f71.conf
 
 (The edit command uses the EDITOR environment variable, if present.)
 Once satisfied, one can start the the configuration running::
 
-  sr_subscibe start myconfig
+  sr_subscibe foreground q_f71.conf
 
 What goes into the files? See next section:
 
@@ -1299,6 +1322,10 @@ configuration file specify an on_<event> option. The event can be one of:
 - on_post -- when a data source (or sarra) is about to post a message, permit customized
   adjustments of the post. on_part also defaults to post_log, which prints a message
   whenever a file is to be posted.
+
+- on_start -- runs on startup, for when a plugin needs to recover state.
+
+- on_stop -- runs on startup, for when a plugin needs to save state.
 
 - on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
   It could be used to put a file in one of the watch directory and have it published when needed.

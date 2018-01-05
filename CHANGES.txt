@@ -7,7 +7,7 @@ lists all changes between versions.
 **git repo(unreleased)**
 
 * added on_start, and on_stop to plugins available.
-* combined plugin parser for all plugins in one module.
+* combined plugin parser for all plugins in one module. Improved error checking.
 * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
 * fixed: column width hack for older versions was busted.
 

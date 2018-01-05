@@ -138,9 +138,11 @@ only for convenience.  There are four sections:
  * general:  configuration files that are referenced by other configuration files.
  * user configurations: these are the ones set by the user and most often of interest.
 
-To view a particular configuration, give sr_subscribe list the file as an argument example::
+To view a particular configuration, give sr_subscribe list the file as an argument:: 
 
     blacklab% sr_subscribe list msg_log.py
+
+.. code:: python
     #!/usr/bin/python3
     
     """
@@ -154,15 +156,16 @@ To view a particular configuration, give sr_subscribe list the file as an argume
         def __init__(self,parent):
             parent.logger.debug("msg_log initialized")
               
-        def perform(self,parent):
+        def on_message(self,parent):
             msg = parent.msg
             parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
                tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
             return True
     
-    msg_log = Msg_Log(self)
+   
+    msg_log = Msg_Log(self) # required: Make instance of class whose name is lower case version of class.
     
-    self.on_message = msg_log.perform
+    self.on_message = msg_log.on_message  # assign self.on_message to corresponding function.
     
     blacklab% 
 

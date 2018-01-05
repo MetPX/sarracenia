@@ -87,7 +87,9 @@ In contrast to on\_ scripts, only a single do_script can be specified at a time.
 Plugin Scripts Basics
 ---------------------
 
-An example, A file_noop.py script for **on_file**, could be ::
+An example, A file_noop.py script for **on_file**, could be 
+
+.. code:: python
 
  class File_Noop(object):
       def __init__(self,parent):
@@ -95,15 +97,18 @@ An example, A file_noop.py script for **on_file**, could be ::
              parent.file_string='hello world'
 
 
-      def perform(self,parent):
+      def on_file(self,parent):
           logger = parent.logger
 
           logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
 
           return True
 
- filenoop  = File_Noop(self)
- self.on_file = filenoop.perform
+ # must instance a variable with lower case version of class name.
+ file_noop  = File_Noop(self)
+
+ # must assign plugin value
+ self.on_file = file_noop.on_file
 
 There is an initialization portion which runs when the component is started,
 a perform section which is to be invoked on the appropriate event.  Setting
