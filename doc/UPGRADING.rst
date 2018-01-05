@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.01a2
+---------
+
+*NOTICE*: Note change to *durable* default from previous version, for transition can specify *durable no* 
+          in configuration to use existing queues, and/or --reset to redefine queue with new setting.
+
 *CHANGE*: plugins convention now enforced.  One must declare a class with some upper case
           characters in the name. Then instantiate the class with a variable that is the all lower case
           version of the class name:
@@ -49,9 +55,9 @@ git origin/master branch
                   pass
            
               def on_message(self,parent): 
-                  """" prior to this version convention was to use *perform*, but now naming
+                  """ prior to this version convention was to use *perform*, but now naming
                        it after it's intended use is preferred. (any name will still work.)
-                  """"
+                  """
 
           myplugin = MyPlugin(self)     
           #prior to this version, myplugin could have any name, now it must be lower case version of class name.

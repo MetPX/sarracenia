@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.18.01a2**
+
+* likely fix included for 1 in 200 file missing in HPC mirroring.
 * added on_start, and on_stop to plugins available.
 * combined plugin parser for all plugins in one module. Improved error checking.
 * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
