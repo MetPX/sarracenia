@@ -169,7 +169,7 @@ class sr_instances(sr_config):
 
        i=0
        for p in sorted( os.listdir( self.package_dir + os.sep + 'plugins'  )):
-           if p == '__init__.py' : continue
+           if p in [ '__init__.py', '__pycache__' ]: continue
            if ( ((i+1)*21) >= columns ): 
                print('')
                i=1
