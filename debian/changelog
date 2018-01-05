@@ -1,3 +1,13 @@
+metpx-sarracenia (2.18.01a2) unstable; urgency=medium
+
+  * likely fix included for 1 in 200 file missing in HPC mirroring.
+  * added on_start, and on_stop to plugins available.
+  * combined plugin parser for all plugins in one module. Improved error checking.
+  * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
+  * fixed: column width hack for older versions was busted.
+
+ -- Peter Silva <peter@blacklab>  Fri, 05 Jan 2018 11:40:22 -0500
+
 metpx-sarracenia (2.18.01a1) unstable; urgency=medium
 
   * C: made consumer tag meaningful (identifies hostname and pid of consumer.)
