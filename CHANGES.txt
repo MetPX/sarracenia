@@ -6,7 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* working on universal plugin parser.
+* added on_start, and on_stop to plugins available.
+* combined plugin parser for all plugins in one module.
 * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
 * fixed: column width hack for older versions was busted.
 

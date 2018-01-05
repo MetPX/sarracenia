@@ -654,29 +654,25 @@ class sr_config:
         self.do_task              = None
         self.on_watch             = None
 
-        self.on_message_list = [ ]
-        self.on_file_list = [ ]
-        self.on_post_list = [ ]
-        self.on_heartbeat_list = [ ]
-        self.on_html_page_list    = []
-        self.on_part_list         = []
-        self.on_line_list = [ ]
-        self.on_watch_list        = []
-        self.do_task_list         = []
-        self.do_poll_list         = []
-        self.do_send_list         = []
-        self.do_task_list         = []
+        self.plugin_times = [ 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
+            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
+            'do_send', 'do_task', 'on_start', 'on_stop' ]
 
-        self.execfile("on_message",'msg_log')
+        for t in self.plugin_times:
+            exec( 'self.'+t+'_list = [ ]' )
+
+        #self.execfile("on_message","log_all")
+
         self.execfile("on_file",'file_log')
         self.execfile("on_post",'post_log')
-
         self.execfile("on_heartbeat",'hb_log')
+
+
         self.execfile("on_heartbeat",'hb_memory')
         self.execfile("on_heartbeat",'hb_pulse')
         self.execfile("on_html_page",'html_page')
 
-        self.on_post_list = [ self.on_post ]
+        #self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
 
 
@@ -716,6 +712,7 @@ class sr_config:
 
         if path == 'None' or path == 'none' or path == 'off':
              self.logger.debug("Reset plugin %s to None" % opname ) 
+             exec( 'self.' + opname + '_list = [ ]' )
              return True
 
         ok,script = self.config_path('plugins',path,mandatory=True,ctype='py')
@@ -742,7 +739,7 @@ class sr_config:
             return False
         
         found=False
-        for when in [ 'on_message', 'on_part', 'on_heartbeat', 'on_file', 'on_watch', 'on_html_page', 'on_line' ]:
+        for when in self.plugin_times:
             if when in pcv:
                 found=True
                 plugin_routine=plugin_class_name.lower() + '.' + when
@@ -1146,7 +1143,6 @@ class sr_config:
 
                 elif words0 in [ 'caching', 'cache', 'no_duplicates', 'noduplicates', 'nd', 'suppress_duplicates', 'sd' ] : # See: sr_post.1 sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        #self.caching = True
                         self.caching = 300
                         n = 1
                      else :
@@ -1258,39 +1254,21 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
-                     self.execfile("do_download",words1)
-                     if ( self.do_download == None ) and not self.isNone(words1):
-                        ok = False
-                     else:
-                        self.do_download_list.append(self.do_task)
+                     ok = self.execfile("do_download",words1)
                      n = 2
 
                 elif words0 == 'do_task': # See: sr_config.1, others...
-                     self.execfile("do_task",words1)
-                     if ( self.do_task == None ):
-                        if self.isNone(words1):
-                           self.do_task_list = []
-                        else:
-                           ok = False
+                     ok =self.execfile("do_task",words1)
+                     if not ok:
                            needexit = True
-                     else:
-                        self.do_task_list.append(self.do_task)
                      n = 2
 
                 elif words0 == 'do_poll': # See sr_config.7 and sr_poll.1
-                     self.execfile("do_poll",words1)
-                     if ( self.do_poll == None ) and not self.isNone(words1):
-                        ok = False
-                     else:
-                        self.do_poll_list.append(self.do_task)
+                     ok = self.execfile("do_poll",words1)
                      n = 2
 
                 elif words0 == 'do_send': # See sr_config.7, and sr_sender.1
-                     self.execfile("do_send",words1)
-                     if ( self.do_send == None ) and not self.isNone(words1):
-                        ok = False
-                     else:
-                        self.do_send_list.append(self.do_task)
+                     ok = self.execfile("do_send",words1)
                      n = 2
 
                 elif words0 == 'durable'   : # See sr_config.7 ++
@@ -1543,81 +1521,61 @@ class sr_config:
                      n = 1
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
-                     self.execfile("on_file",words1)
-                     if ( self.on_file == None ):
-                        if self.isNone(words1):
-                           self.on_file_list = []
-                        else:
+                     if not self.execfile("on_file",words1):
                            ok = False
                            needexit = True
                      n = 2
 
                 elif words0 in [ 'on_heartbeat', 'on_hb' ]: # See: sr_config.7, sr_sarra,shovel,subscribe
-                     self.execfile("on_heartbeat",words1)
-                     if ( self.on_heartbeat == None ):
-                        if self.isNone(words1):
-                           self.on_heartbeat_list = []
-                        else:
+                     if not self.execfile("on_heartbeat",words1):
                            ok = False
                            needexit = True
                      n = 2
 
                 elif words0 == 'on_html_page': # See: sr_config
-                     self.execfile("on_html_page",words1)
-                     if ( self.on_html_page == None ):
-                        if self.isNone(words1):
-                            self.on_html_page_list = []
-                        else:
+                     if not self.execfile("on_html_page",words1):
                             ok = False
                             needexit = True
                      n = 2
 
                 elif words0 == 'on_line': # See: sr_poll.1
-                     self.execfile("on_line",words1)
-                     if ( self.on_line == None ):
-                        if self.isNone(words1):
-                           self.on_line_list = []
-                        else:
+                     if not self.execfile("on_line",words1):
                            ok = False
                            needexit = True
                      n = 2
 
                 elif words0 in [ 'on_message',  'on_msg' ] : # See: sr_config.1, others...
-                     self.execfile("on_message",words1)
-                     if ( self.on_message == None ):
-                        if self.isNone(words1):
-                           self.on_message_list = []
-                        else:
+                     if not self.execfile("on_message",words1):
                            ok = False
                            needexit = True
                      n = 2
 
                 elif words0 == 'on_part': # See: sr_config, sr_subscribe
-                     self.execfile("on_part",words1)
-                     if ( self.on_part == None ):
-                        if self.isNone(words1):
-                           self.on_part_list = []
-                        else:
+                     if not self.execfile("on_part",words1):
                            ok = False
                            needexit = True
                      n = 2
 
                 elif words0 == 'on_post': # See: sr_config
-                     self.execfile("on_post",words1)
-                     if ( self.on_post == None ):
-                        if self.isNone(words1):
-                            self.on_post_list = []
-                        else:
+                     if not self.execfile("on_post",words1):
+                            ok = False
+                            needexit = True
+                     n = 2
+
+                elif words0 == 'on_start': # See: sr_config
+                     if not self.execfile("on_start",words1):
+                            ok = False
+                            needexit = True
+                     n = 2
+
+                elif words0 == 'on_stop': # See: sr_config
+                     if not self.execfile("on_stop",words1):
                             ok = False
                             needexit = True
                      n = 2
 
                 elif words0 == 'on_watch': # See: sr_config
-                     self.execfile("on_watch",words1)
-                     if ( self.on_watch == None ):
-                        if self.isNone(words1):
-                            self.on_watch_list = []
-                        else:
+                     if not self.execfile("on_watch",words1):
                             ok = False
                             needexit = True
                      n = 2

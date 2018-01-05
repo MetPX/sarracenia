@@ -124,6 +124,10 @@ class sr_subscribe(sr_instances):
 
 
     def close(self):
+
+        for plugin in self.on_stop_list:
+           if not plugin(self): break
+
         self.consumer.close()
 
         if self.post_broker :
@@ -1413,6 +1417,10 @@ class sr_subscribe(sr_instances):
         # processing messages
 
         if self.vip : last = not self.has_vip()
+
+        for plugin in self.on_start_list:
+           if not plugin(self): break
+
 
         going_badly=0.01
         while True :
