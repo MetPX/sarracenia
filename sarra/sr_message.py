@@ -92,14 +92,16 @@ class sr_message():
         if the file advertised is newer than the local one, and it has a different checksum, return True.
 
         """
-        self.logger.debug("sr_message content_match %s" % self.new_file )
+        fname = "%s%s%s" %  (self.new_dir, os.sep, self.new_file )
+        self.logger.debug("sr_message content_match %s" % (fname ) )
+        
         self.local_checksum = None
 
-        if not os.path.isfile(self.new_file) : return False
+        if not os.path.isfile(fname) : return False
 
         # insert : file big enough to compute part checksum ?
 
-        lstat = os.stat(self.new_file)
+        lstat = os.stat(fname)
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
 
