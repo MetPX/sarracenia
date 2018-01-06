@@ -38,6 +38,14 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.01a3
+---------
+
+*NOTICE*: new plugin api features disabled on python < 3.3 (avoid crash on ubuntu 12.04)
+
+*NOTICE*: got rid of harmless error message of previous release.
+
+
 2.18.01a2
 ---------
 
