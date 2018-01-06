@@ -2809,7 +2809,7 @@ def main():
 
     # user wants to logging in a directory/file
     else :       
-       fn     = config.replace(".conf","")
+       fn     = os.path.basename( config.replace(".conf","") )
        lfn    = fn + "_%s" % os.getpid() + ".log"
        lfile  = ldir + os.sep + lfn
 
