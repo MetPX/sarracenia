@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.18.01a3**
+
 * fix to error message about *object has no attribute 'do_download_list'* 
 * disable new plugin api on python < 3.4 to avoid error messages.
 
