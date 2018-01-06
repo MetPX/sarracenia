@@ -1,6 +1,13 @@
+metpx-sarracenia (2.18.01a3) unstable; urgency=medium
+
+  * fix to error message about *object has no attribute 'do_download_list'* 
+  * disable new plugin api on python < 3.4 to avoid error messages.
+
+ -- Peter Silva <peter@blacklab>  Fri, 05 Jan 2018 19:27:13 -0500
+
 metpx-sarracenia (2.18.01a2) unstable; urgency=medium
 
-  * likely fix included for 1 in 200 file missing in HPC mirroring.
+  * lkely fix included for 1 in 200 file missing in HPC mirroring.
   * added on_start, and on_stop to plugins available.
   * combined plugin parser for all plugins in one module. Improved error checking.
   * C: now imports version info from python, so C version is meaningful (instead of always 1.0.0)
