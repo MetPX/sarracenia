@@ -87,8 +87,11 @@ In contrast to on\_ scripts, only a single do_script can be specified at a time.
 Plugin Scripts Basics
 ---------------------
 
-An example, A file_noop.py script for **on_file**, could be 
+An example, A file_noop.py script be included in a configuration file with::
 
+  plugin file_noop
+
+The content of the file would be:
 .. code:: python
 
  # MUST: declare a class with Upper case characters in it.
@@ -105,11 +108,9 @@ An example, A file_noop.py script for **on_file**, could be
 
           return True
 
- # MUST: instance a variable with lower case version of class name.
- file_noop  = File_Noop(self)
+# MUST: set the value of the plugin variable to the name of the class.
+self.plugin = 'File_Noop'
 
- # MUST: assign plugin value for one entry point. (or all entry points on python < 3.3 )
- self.on_file = file_noop.on_file
 
 There is an initialization portion which runs when the component is started,
 a perform section which is to be invoked on the appropriate event.  Setting

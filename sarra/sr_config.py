@@ -194,7 +194,10 @@ class sr_config:
         # user_cache_dir will be created later in configure()
 
     def xcl( self, x ):
-        return x.__qualname__.split('.')[0] + ' '
+        if sys.hexversion > 0x03030000 :
+            return x.__qualname__.split('.')[0] + ' '
+        else:
+            return x.__name__ + ' '
 
     def log_settings(self):
 
@@ -668,7 +671,7 @@ class sr_config:
             'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
             'do_download', 'do_send', 'do_task', 'on_start', 'on_stop' ]
 
-        for t in self.plugin_times:
+        for t in self.plugin_times + [ 'plugin' ]:
             exec( 'self.'+t+' = None' )
             exec( 'self.'+t+'_list = [ ]' )
 
@@ -741,36 +744,22 @@ class sr_config:
             self.logger.error("for option %s plugin %s did not work" % (opname,path))
             return False
 
-        found=False
-        if sys.hexversion > 0x03030000:
-            #self.logger.debug( "plugin file %s look for: %s" % ( path, opname ) )
-            try:
-                qn = eval('self.'+opname+'.__qualname__') 
-            except : 
-                self.logger.error( "plugin %s: self.%s improperly set. Could not determine plugin class" % ( path, opname ) )
-                return False
-    
-            plugin_class_name = qn.split('.')[0]
-            pcv = eval( 'vars('+plugin_class_name+')' )
-            #self.logger.debug( "Plugin Class name: %s" % ( plugin_class_name ) )
-            if not plugin_class_name.lower() in locals():
-                #self.logger.debug("%s plugin %s incorrect: plugin %s class must be instanced as %s" \
-                #     % (opname, path, plugin_class_name, plugin_class_name.lower() ))
-                return False
-            
+        if getattr(self,opname) is None:
+            self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
+            return False
+
+        if opname == 'plugin' :
+            pci = self.plugin.lower()
+            exec( pci + ' = ' + self.plugin + '(self)' )
+            pcv = eval( 'vars('+ self.plugin +')' )
             for when in self.plugin_times:
                 if when in pcv:
-                    found=True
-                    eval( 'self.' + when + '_list.append(' + plugin_class_name.lower() + '.' + when + ')' )
+                    exec( 'self.' + when + '=' + pci + '.' + when )
+                    eval( 'self.' + when + '_list.append(' + pci + '.' + when + ')' )
         else:
-            self.logger.debug("python version < 3.3. Careful, must include all entry points to use in config file.")
+            eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
 
         # following gives backward compatibility with existing plugins that don't follow new naming convention.
-        if not found:
-            if getattr(self,opname) is None:
-                self.logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
-                return False
-            eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
 
         return True
 
@@ -1647,6 +1636,12 @@ class sr_config:
                      if n == 1 :
                         self.logger.error("problem with path option")
                         needexit = True
+
+                elif words0 == 'plugin': # See: sr_config
+                     if not self.execfile("plugin",words1):
+                            ok = False
+                            needexit = True
+                     n = 2
 
                 elif words0 in ['post_base_dir','pbd']: # See: sr_sarra,sender,shovel,winnow
                      if sys.platform == 'win32':

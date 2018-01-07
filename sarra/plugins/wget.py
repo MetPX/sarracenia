@@ -55,9 +55,6 @@ class WGET(object):
       parent.declare_option( 'wget_threshold' )
       parent.declare_option( 'wget_protocol' )
 
-      if not sys.hexversion > 0x03030000:
-         parent.logger.debug("on older pythons like this one (%08x), must configure entry point, on_message, and on_download" % sys.hexversion )
-         
 
 
    def on_start(self,parent):
@@ -71,7 +68,7 @@ class WGET(object):
       if not hasattr( parent, "wget_protocol" ):
              parent.wget_protocol = [ "http" ]
           
-      return  (sys.hexversion > 0x03030000)
+      return True
 
    def on_message(self,parent):
 
@@ -110,12 +107,12 @@ class WGET(object):
       msg.urlstr = msg.urlstr.replace("download:","http:")
       os.chdir( msg.new_dir )
       cmd = parent.download_wget_command[0].split() + [ msg.urlstr ]
-      #logger.debug("download_wget in %s invoking: %s " % ( msg.new_dir, cmd ) )
+      logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
       result =  subprocess.call( cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
       
       if result == 0:  # Success!
+         logger.info("wget Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
          if parent.reportback:
-            logger.info("Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
             msg.report_publish(201,'Downloaded')
          return True
          
@@ -123,11 +120,12 @@ class WGET(object):
          msg.report_publish(499,'wget download failed')
       return False 
 
+self.plugin='WGET'
 
-wget = WGET(self)
-#multiple entry points required for old python versions.
-self.on_message = wget.on_message
-self.do_download = wget.do_download
+#This plugin works on older versions of sarracenia by uncommenting the following three lines.
+#    wget = WGET(self)
+#    self.on_message = wget.on_message
+#    self.do_download = wget.do_download
 
 
 """
