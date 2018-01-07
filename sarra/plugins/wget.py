@@ -31,6 +31,9 @@ See end of file for performance considerations.
 
 Caveats:
 
+     FIXME: on testing with python 3.6, if I don't re-direct to DEVNULL, it hangs.  
+     would like to see output of command in the log.
+
      This downloader invokes wget with only the remote url.
      no options about local file naming are implemented.
 
@@ -39,7 +42,7 @@ Caveats:
 
 """
 
-import os,stat,time
+import os,stat,time,sys
 import calendar
 
 class WGET(object): 
@@ -51,6 +54,10 @@ class WGET(object):
       parent.declare_option( 'wget_command' )
       parent.declare_option( 'wget_threshold' )
       parent.declare_option( 'wget_protocol' )
+
+      if not sys.hexversion > 0x03030000:
+         parent.logger.debug("on older pythons like this one (%08x), must configure entry point, on_message, and on_download" % sys.hexversion )
+         
 
 
    def on_start(self,parent):
@@ -64,6 +71,7 @@ class WGET(object):
       if not hasattr( parent, "wget_protocol" ):
              parent.wget_protocol = [ "http" ]
           
+      return  (sys.hexversion > 0x03030000)
 
    def on_message(self,parent):
 
@@ -116,9 +124,11 @@ class WGET(object):
       return False 
 
 
-
 wget = WGET(self)
+#multiple entry points required for old python versions.
+self.on_message = wget.on_message
 self.do_download = wget.do_download
+
 
 """
   APPLICATION NOTES:

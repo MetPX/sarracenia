@@ -4,3 +4,7 @@
 *.tmp
 build
 sr_version.h
+sr_cachetest
+sr_cache_save.test
+sr_configtest
+sr_utiltest

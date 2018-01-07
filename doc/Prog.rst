@@ -91,6 +91,7 @@ An example, A file_noop.py script for **on_file**, could be
 
 .. code:: python
 
+ # MUST: declare a class with Upper case characters in it.
  class File_Noop(object):
       def __init__(self,parent):
           if not hasattr(parent,'file_string'):
@@ -104,10 +105,10 @@ An example, A file_noop.py script for **on_file**, could be
 
           return True
 
- # must instance a variable with lower case version of class name.
+ # MUST: instance a variable with lower case version of class name.
  file_noop  = File_Noop(self)
 
- # must assign plugin value
+ # MUST: assign plugin value for one entry point. (or all entry points on python < 3.3 )
  self.on_file = file_noop.on_file
 
 There is an initialization portion which runs when the component is started,

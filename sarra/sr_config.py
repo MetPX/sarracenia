@@ -669,6 +669,7 @@ class sr_config:
             'do_download', 'do_send', 'do_task', 'on_start', 'on_stop' ]
 
         for t in self.plugin_times:
+            exec( 'self.'+t+' = None' )
             exec( 'self.'+t+'_list = [ ]' )
 
         #self.execfile("on_message","log_all")
@@ -762,7 +763,7 @@ class sr_config:
                     found=True
                     eval( 'self.' + when + '_list.append(' + plugin_class_name.lower() + '.' + when + ')' )
         else:
-            self.logger.warning("python version < 3.3. Only single function plugins supported.")
+            self.logger.debug("python version < 3.3. Careful, must include all entry points to use in config file.")
 
         # following gives backward compatibility with existing plugins that don't follow new naming convention.
         if not found:
