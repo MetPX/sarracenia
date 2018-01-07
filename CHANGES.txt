@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* added new style: cp.py and wget.py plugins.
+
 **2.18.01a3**
 
 * fix to error message about *object has no attribute 'do_download_list'* 
