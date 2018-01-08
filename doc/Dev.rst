@@ -731,7 +731,7 @@ For example, to add SHA-2 encoding::
 
 Then in sr_config.py, in the set_sumalgo routine::
 
-      if flgs == 's':
+      if flgs == 'c':
           self.sumalgo = checksum_s()
 
 Might want to add 's' to the list of valid sums in validate_sum( as well.

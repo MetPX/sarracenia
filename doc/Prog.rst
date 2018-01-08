@@ -96,7 +96,9 @@ Examples are available using the list command::
   blacklab% 
 
 The packages plugins are shown in the first grouping of available ones. Many of them have arguments which
-are documented by listing them. For example::
+are documented by listing them. For example:
+
+.. code:: python
 
   blacklab% sr_subscribe list msg_log.py
   #!/usr/bin/python3

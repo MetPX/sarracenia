@@ -113,10 +113,8 @@ class CP(object):
 
       return False 
 
+self.plugin='CP'
 
-cp = CP(self)
-self.on_message = cp.on_message
-self.do_download = cp.do_download
 
 """
   APPLICATION NOTES:

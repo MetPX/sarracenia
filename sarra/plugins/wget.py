@@ -3,7 +3,7 @@
 This plugin launches the UNIX 'wget' command with appropriate arguments to perform a file transfer.
 Sample usage:
 
-  do_download wget
+  plugin wget
 
 One should invoke the more efficient binary downloader only when it makes sense to do so in place
 of the built-in python interpreted downloader, typically for larger files. By default, the threshold
@@ -12,10 +12,10 @@ is 10M (ten megabytes.) The wget_threshold option can be used to change it.
 Options
 -------
 
-While the internal downloader is bound to the 'http' protocol, if a file larger than the threshold 
-is advertised, on_message routine replaces the URL scheme 'http' with 'download'.  That change
-causes the do_download plugin to be invoked for that file.  'http' is the default, but the 
-initial url is 'sftp', then the wget_protocol option should be set. 
+If a file larger than the threshold is advertised, on_message routine replaces the URL 
+scheme 'http' with 'download'.  That change causes the do_download plugin to be invoked 
+for that file.  'http' is the default, but the initial url is 'sftp', then the 
+wget_protocol option should be set, to have that protocol substituted instead.
 
   wget_threshold 6M
   wget_protocol  'sftp'
@@ -28,17 +28,6 @@ wget_command option.
 
 Instead of invoking wget, it will invoke the wget -p command. To the command will be 
 See end of file for performance considerations.
-
-Caveats:
-
-     FIXME: on testing with python 3.6, if I don't re-direct to DEVNULL, it hangs.  
-     would like to see output of command in the log.
-
-     This downloader invokes wget with only the remote url.
-     no options about local file naming are implemented.
-
-     If you have python >= 3.5, replace 'subprocess.call' by subprocess.run, and the stout and stderr will 
-     do the right thing. For 'call' also need to change result == 0 to result.returncode == 0 .
 
 """
 
@@ -54,8 +43,6 @@ class WGET(object):
       parent.declare_option( 'wget_command' )
       parent.declare_option( 'wget_threshold' )
       parent.declare_option( 'wget_protocol' )
-
-
 
    def on_start(self,parent):
 
@@ -122,14 +109,20 @@ class WGET(object):
 
 self.plugin='WGET'
 
-#This plugin works on older versions of sarracenia by uncommenting the following three lines.
-#    wget = WGET(self)
-#    self.on_message = wget.on_message
-#    self.do_download = wget.do_download
-
 
 """
-  APPLICATION NOTES:
+Caveats:
+
+     FIXME: on testing with python 3.6, if I don't re-direct to DEVNULL, it hangs.  
+     would like to see output of command in the log.
+
+     This downloader invokes wget with only the remote url.
+     no options about local file naming are implemented.
+
+     If you have python >= 3.5, replace 'subprocess.call' by subprocess.run, and the stout and stderr will 
+     do the right thing. For 'call' also need to change result == 0 to result.returncode == 0 .
+
+APPLICATION NOTES:
 
     - The built-in downloading logic is pretty good in almost all cases. It is rarely adviseable to use
       this functionality from a performance perspective.

@@ -1283,7 +1283,7 @@ such as logging (implemented by default use of msg_log, file_log, post_log plugi
 Users can place their own scripts in the script sub-directory
 of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
 
-There are two varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
+There are three varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
 to implement functions, replacing built-in functionality, for example, to implement
 additional transfer protocols.
 
@@ -1297,6 +1297,8 @@ additional transfer protocols.
 On\_* plugins are used more often. They allow actions to be inserted to augment the default
 processing for various specialized use cases. The scripts are invoked by having a given
 configuration file specify an on_<event> option. The event can be one of:
+
+- plugin -- declare a set of plugins to achieve a collective function.
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
   The **on_file** option defaults to file_log, which writes a downloading status message.
@@ -1344,8 +1346,7 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
           return True
 
-  transformer  = Transformer()
-  self.on_file = transformer.perform
+  self.plugin = 'Transformer'
 
 The last line of the script is specific to the kind of plugin being
 written, and must be modified to correspond (on_file or an on_file, on_message 
