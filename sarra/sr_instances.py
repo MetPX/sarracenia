@@ -284,6 +284,9 @@ class sr_instances(sr_config):
         self.logger.debug("exec_action_on_config %s, def_dir=%s, def_fil=%s sampledir=%s" % ( action, def_dir, def_fil, sampledir ) )
 
         if   action == 'add' and not py2old :
+             if not os.path.isdir(def_dir):
+                try    : os.makedirs(def_dir, 0o775,True)
+                except : pass
              if not os.path.isfile(usr_fil):
                 if os.path.isfile(sampledir + os.sep + usr_fil):
                     copyfile(sampledir + os.sep + usr_fil, def_fil)
