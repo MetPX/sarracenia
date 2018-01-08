@@ -1,3 +1,12 @@
+metpx-sarracenia (2.18.01a4) unstable; urgency=medium
+
+  * documentation updated for new plugin declaration.
+  * made new style plugin examples work with older python.
+  * added new style: cp.py and wget.py plugins.
+  * fix: the new api was broken by old python fix.
+
+ -- Peter Silva <peter@blacklab>  Mon, 08 Jan 2018 02:09:15 -0500
+
 metpx-sarracenia (2.18.01a3) unstable; urgency=medium
 
   * fix to error message about *object has no attribute 'do_download_list'* 
