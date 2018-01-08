@@ -1,11 +1,17 @@
 #!/usr/bin/python3
 
 """
-  example of mis-formed plugin.
+  example of mis-formed plugin. in old format.
   Error: instance variable is not lowercase version of Classname
 
 usage:
 
+version >=2.18.1a4:
+
+plugin bad_plugin1
+
+
+Pre 2.18:
 on_message bad_plugin1
 
 blacklab% ./sr_subscribe.py foreground clean_f90.conf
@@ -25,6 +31,16 @@ class Bad_Plugin1(object):
            tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
         return True
           
+""" 
+after 2.18.1a4
+"""
+self.plugin='bad_blugin'  # <-- error plugin must be Mixed case, and string must have same case as Class.
+
+
+
+"""
+format for release < 2.18.1a4
+"""
 hoho = Bad_Plugin1(self)  # <-- ERROR: must be named bad_plugin1, not hoho
 
 self.on_message = hoho.on_message

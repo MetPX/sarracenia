@@ -22,10 +22,8 @@ Audience
 Readers of this manual should be comfortable with light scripting in python version 3.
 Sarracenia includes a number of points where processing can be customized by
 small snippets of user provided code, known as plugins.  The plugins themselves
-are expected to be rather concise, and an elementary knowledge of python should suffice to
-build new plugins in an essentially copy/paste manner, with many samples being
-available to read.  For some examples of how plugin processing might be of
-interest to users see the Ideas below:
+are expected to be concise, and an elementary knowledge of python should suffice to
+build new plugins in a copy/paste manner, with many samples being available to read.  
 
 
 Plugin Script Ideas
@@ -56,60 +54,148 @@ the data wanted to a directory on a subscriber machine where other software
 can process it.
 
 Often, the purpose of automated downloading is to have other code ingest
-the files and perform further processing.  Rather than having a separate
-process have to look at a file in a directory, Sarracenia provides a means
-of customizing processing via plugins written in python 3. A first example:
+the files and perform further processing. Rather than having a separate
+process have to look at a file in a directory, One can insert customized
+processing at various points:
 
-There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the
-program:
+Examples are available using the list command::
 
-- **on_message  <script>        (default: msg_log)**
-- **on_file     <script>        (default: file_log)**
-- **on_part     <script>        (default: None)**
-- **on_post     <script>        (default: post_log)**
-- **on_line     <script>        (default: None)**
+  blacklab% sr_subscribe list
+  
+  packaged plugins: ( /home/peter/src/sarracenia/sarra/plugins ) 
+        bad_plugin1.py       bad_plugin2.py       bad_plugin3.py                cp.py     destfn_sample.py 
+        download_cp.py       download_dd.py      download_scp.py     download_wget.py          file_age.py 
+         file_check.py          file_log.py       file_rxpipe.py        file_total.py           harness.py 
+           hb_cache.py            hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
+           line_log.py         line_mode.py               log.py         msg_2http.py        msg_2local.py 
+     msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
+         msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py 
+   msg_from_cluster.py     msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py 
+     msg_rename_dmf.py msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
+       msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py   msg_to_clusters.py 
+          msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py       poll_script.py 
+     post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
+         post_total.py         watch_log.py              wget.py 
+  
+  configuration examples: ( /home/peter/src/sarracenia/sarra/examples/subscribe ) 
+              all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf 
+       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf 
+             cmml.conf cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
+            q_f71.conf           radar.conf            rdps.conf            swob.conf           t_f30.conf 
+       u_sftp_f60.conf 
+  user plugins: ( /home/peter/.config/sarra/plugins ) 
+          destfn_am.py         destfn_nz.py       msg_tarpush.py              wget.py 
+  
+  general: ( /home/peter/.config/sarra ) 
+            admin.conf     credentials.conf         default.conf
+  
+  user configurations: ( /home/peter/.config/sarra/subscribe )
+       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf         ftp_f70.conf 
+            q_f71.conf           t_f30.conf      u_sftp_f60.conf 
+  
+  blacklab% 
 
-While the first four are self-evident, the on_line plugin is a bit obscure.  It
-is used to parse remote directories listings using sr_poll,
-as the listing format varies by implementation of the remote server.
-Multiple on_scripts can be specified to act cumulatively.
+The packages plugins are shown in the first grouping of available ones. Many of them have arguments which
+are documented by listing them. For example::
 
-There are also do\_ scripts, which provide or replace functionality in programs:
+  blacklab% sr_subscribe list msg_log.py
+  #!/usr/bin/python3
+  
+  """
+    the default on_msg handler for subscribers.  Prints a simple notice.
+  
+  """
+  
+  class Msg_Log(object):  # Mandatory: declare a class, with a capital letter in it.
+  
+      def __init__(self,parent):  # Mandatory: declare a constructor.
+          parent.logger.debug("msg_log initialized")
+            
+      def on_message(self,parent):  # Mandatory: Declare an function to be called when messages are accepted.
+          msg = parent.msg
+          parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
+             tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+          return True
+  
+  msg_log = Msg_Log(self)   # Mandatory: Declare a variable of the class.
+  
+  self.on_message = msg_log.on_message # Mandatory: assign the function to the entry point.
+  
+  blacklab% 
 
-- **do_download     <script>        (default: None)**
-- **do_poll         <script>        (default: None)**
-- **do_send         <script>        (default: None)**
 
-In contrast to on\_ scripts, only a single do_script can be specified at a time.
+To modify it, copy it from the examples directory installed as part of the package to the editable preference one::
 
----------------------
-Plugin Scripts Basics
----------------------
+  blacklab% sr_subscribe add msg_log.py
 
-An example, A file_noop.py script be included in a configuration file with::
+And then modify it for the purpose::
+
+  blacklab% sr_subscribe edit msg_log.py
+
+The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins1, 2, and 3 
+to identify the mandatory elements. as one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
+Similarly, file\_ ones provide examples of *on_file*, etc... for the other types of single entry plugins.
+
+If a plugin doesn't have such a prefix, there is a second form of plugins called simply a *plugin*, where a group
+of routines to implement an overall function.  Examine The *log.py* and *wget.py* routines for examples of this format.
+
+One can also see which plugins are active in a configuration by looking at the messages on startup::
+
+   blacklab% sr_subscribe foreground clean_f90
+   2018-01-08 01:21:34,763 [INFO] sr_subscribe clean_f90 start
+   2018-01-08 01:21:34,763 [INFO] log settings start for sr_subscribe (version: 2.18.01a3):
+   2018-01-08 01:21:34,763 [INFO]  inflight=.tmp events=create|delete|link|modify use_pika=False
+   2018-01-08 01:21:34,763 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=900000
+   2018-01-08 01:21:34,763 [INFO]  expire=900000 reset=False message_ttl=None prefetch=1 accept_unmatch=False delete=False
+   2018-01-08 01:21:34,763 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+   2018-01-08 01:21:34,763 [INFO]  preserve_mode=True preserve_time=True realpath=False base_dir=None follow_symlinks=False
+   2018-01-08 01:21:34,763 [INFO]  mirror=True flatten=/ realpath=False strip=0 base_dir=None report_back=True
+   2018-01-08 01:21:34,763 [INFO]  Plugins configured:
+   2018-01-08 01:21:34,763 [INFO]      do_download: 
+   2018-01-08 01:21:34,763 [INFO]      on_message: Msg_FDelay Msg_2LocalFile Msg_AuditFlow Msg_Delete 
+   2018-01-08 01:21:34,764 [INFO]      on_part: 
+   2018-01-08 01:21:34,764 [INFO]      on_file: File_Log 
+   2018-01-08 01:21:34,764 [INFO]      on_post: Post_Log 
+   2018-01-08 01:21:34,764 [INFO]      on_heartbeat: Hb_Log Hb_Memory Hb_Pulse 
+   2018-01-08 01:21:34,764 [INFO] log_settings end.
+   2018-01-08 01:21:34,764 [INFO] sr_subscribe run
+   2018-01-08 01:21:34,764 [INFO] AMQP  broker(localhost) user(tsub) vhost(/)
+   2018-01-08 01:21:34,766 [INFO] Binding queue q_tsub.sr_subscribe.clean_f90.39474678.00703117 with key v02.post.# from exchange xpublic on broker amqp://tsub@localhost/
+   2018-01-08 01:21:34,768 [INFO] reading from to tsub@localhost, exchange: xpublic
+   2018-01-08 01:21:34,769 [INFO] report_back to tsub@localhost, exchange: xs_tsub
+   ^C2018-01-08 01:21:35,353 [INFO] signal stop
+   2018-01-08 01:21:35,353 [INFO] sr_subscribe stop
+   blacklab% 
+
+
+
+
+--------------------
+Plugin Script Basics
+--------------------
+
+An example, of the *plugin* format, one can configure use of file_noop.py in a configuration like so::
 
   plugin file_noop
 
-The content of the file would be:
+The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would be:
 .. code:: python
 
- # MUST: declare a class with Upper case characters in it.
- class File_Noop(object):
+  # MUST: declare a class with Upper case characters in it.
+
+  class File_Noop(object):
       def __init__(self,parent):
-          if not hasattr(parent,'file_string'):
+          parent.declare_option( 'file_string' )  # declare options to avoid 'unknown option' messages being logged.
+
+      def on_start(self,parent):
+          if not hasattr(parent,'file_string'):  # set default values here, if necessary.
              parent.file_string='hello world'
 
-
       def on_file(self,parent):
-          logger = parent.logger
-
-          logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
-
+          parent.logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
           return True
 
-# MUST: set the value of the plugin variable to the name of the class.
-self.plugin = 'File_Noop'
+  self.plugin = 'File_Noop'   # MUST: set the value of the plugin variable to the name of the class.
 
 
 There is an initialization portion which runs when the component is started,
@@ -135,7 +221,7 @@ as shown in the sample above.  The *logger* is a python3 logger object, as docum
 here: https://docs.python.org/3/library/logging.html.   To allow users to tune the
 verbosity of logs, use priority specific method to classify messages::
 
-  logger.debug - something deeply wrong, spelunking in progress.
+  logger.debug - spelunking in progress... a lot of detail.
   logger.info - informative messages that are not essential
   logger.warn - a difficulty that is likely problematic, but the component still functions to some degree.
   logger.error - The component failed to do something.
@@ -159,19 +245,13 @@ Popular Variables in Plugins
 A popular variable in on_file and on_part plugins is: *parent.new_file*,
 giving the file name the downloaded product has been written to.  When the
 same variable is modified in an on_message plugin, it changes the name of
-the file to be downloaded.  Similarly Another oft used variable is 
+the file to be downloaded. Similarly Another oft used variable is 
 *parent.new_dir*, which operates on the directory to which the file
 will be downloaded.
 
-There is one difference between on_* scripts used in a sender when compared to
-a subscriber or other consumer process. In Senders, one must use *parent.msg.remote_file*
-and similarly *parent.msg.remote_dir*
-
-There is no length limit on dir or file names.
-
 There is also parent.msg.urlstr which is the completed download URL of the file,
- and parent.msg.url, which is the equivalent url after it has been parsed with urlparse.
-(see python3 documentation of urlparse for detailed usage.)  this gives access
+and parent.msg.url, which is the equivalent url after it has been parsed with urlparse.
+(see python3 documentation of urlparse for detailed usage.) This gives access
 to, for example *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
 or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
 remote host.
@@ -185,25 +265,6 @@ application code creates values longer than that.
 These are the variable which are most often of interest, but much other 
 program state is available.  See the  `Variables Available`_ section for a more thorough
 discussion.
-
-Sample Plugins
---------------
-
-There is a number of examples of plugin scripts included with every
-installation.  If installed with debian packages, they are here::
-
-   /usr/lib/python3/dist-packages/sarra/plugins
-
-Another good location to browse is::
-
-  https://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/sarra/plugins/
-
-The git repository with many plugins available to reference.
-
-For example, the default settings of on_msg and on_file print report messages
-for each message and file processed.
-
-
 
 
 ---------------------
@@ -255,36 +316,36 @@ provided with sarracenia::
   class File_RxPipe(object):
 
       def __init__(self,parent):
+          parent.declare_option( 'file_rxpipe_name' ):
+
+      def on_start(self,parent):
           if not hasattr(parent,'file_rxpipe_name'):
               parent.logger.error("Missing file_rxpipe_name parameter")
               return
-
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
-      def perform(self, parent):
+      def on_file(self, parent):
           self.rxpipe.write( parent.new_file + "\n" )
           self.rxpipe.flush()
           return None
 
-  rxpipe =File_RxPipe(self)
-
-  self.on_file=rxpipe.perform
+  self.plugin = 'File_RxPipe'
 
 With this fragment of python, when sr_subscribe is first called, it ensures that
 a pipe named npipe is opened in the specified directory by executing
 the __init__ function within the declared RxPipe python class.  Then, whenever
 a file reception is completed, the assignment of *self.on_file* ensures that
-the rx.perform function is called.
+the rx.on_file function is called.
 
-The rxpipe.perform function just writes the name of the file dowloaded to
+The rxpipe.on_file function just writes the name of the file dowloaded to
 the named pipe.  The use of the named pipe renders data reception asynchronous
 from data processing.   as shown in the previous example, one can then
 start a single task *do_something* which processes the list of files fed
 as standard input to it, from a named pipe.
 
-In the examples above, file reception and processing are kept entirely separate.  If there
+In the examples above, file reception and processing are kept entirely separate. If there
 is a problem with processing, the file reception directories will fill up, potentially
-growing to an unwieldy size and causing many practical difficulties.  When a plugin such
+growing to an unwieldy size and causing many practical difficulties. When a plugin such
 as on_file is used, the processing of each file downloaded is run before proceeding
 to the next file.
 
@@ -561,19 +622,25 @@ To do basic syntax work, one can add some debugging scaffolding.  Taking the abo
 
     class File_Noop(object):
           def __init__(self,parent):
-              if not hasattr(parent,'file_string'):
+              parent.declare_option( 'file_string' )
+
+          def on_start(self,parent):
+              if not hasattr(parent,'file_string'): # prior to 2.18.1a4, include on_start code in __init__
                  parent.file_string='hello world'
 
-
-          def perform(self,parent):
+          def on_file(self,parent):
               logger = parent.logger
 
               logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
 
               return True
 
+    # after > 2.18.4
+    self.plugin = 'File_Noop'
+    
+    # prior to sarra 2.18.4
     #file_noop=File_Noop(self)
-    #self.on_file=file_noop.perform
+    #self.on_file=file_noop.on_file
 
     ## DEBUGGING CODE START
 
@@ -596,7 +663,7 @@ To do basic syntax work, one can add some debugging scaffolding.  Taking the abo
     testparent=TestParent()
 
     filenoop  = File_Noop(testparent)
-    testparent.on_file = filenoop.perform
+    testparent.on_file = filenoop.on_file
 
 So now it can be invoked with::
 
@@ -630,7 +697,7 @@ For more complicated tests, just add more testing code::
       def __init__(self):
           pass
 
-      def perform(self,parent):
+      def on_file(self,parent):
           msg    = parent.msg
 
           # writing filename in pipe
@@ -643,7 +710,7 @@ For more complicated tests, just add more testing code::
           return True
 
   transformer=Transformer()
-  #self.on_file = transformer.perform
+  #self.on_file = transformer.on_file
 
   """
   for testing outside of a sr_ component plugin environment,
@@ -676,11 +743,13 @@ For more complicated tests, just add more testing code::
 
   testparent=TestParent()
 
-  transformer.perform(testparent)
+  transformer.on_file(testparent)
 
 The part after the #self.on_file line is only a test harness.
 One creates a calling object with the fields needed to test the
 fields the plugin will use in the TestParent and TestMessage classes.
+Also consult the harness.py plugin available to include the above
+code for plugin testing.
 
 
 -------------------------------------

@@ -4,6 +4,12 @@
   example of mis-formed plugin.
   error: missing instantiation of class.
 
+Post 2.18.1a4 *plugin* method:
+
+   plugin bad_plugin2
+
+Individual declaration: 
+
   on_message bad_plugin2
 
 blacklab% ./sr_subscribe.py foreground clean_f90.conf
@@ -24,7 +30,7 @@ class Bad_Plugin2(object):
            tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
         return True
 
-#bad_plugin2 = Bad_Plugin2(self)  <-- need this line.
+#bad_plugin2 = Bad_Plugin2(self)  <-- need this line when declaring individual
 
 self.on_message = bad_plugin2.on_message
 
