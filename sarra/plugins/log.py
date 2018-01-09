@@ -20,6 +20,7 @@ class Log(object):
 
     def __init__(self,parent):
         #parent.logger.debug("log initialized")
+        pass
           
     def on_start(self,parent):
         """ Runs when the component is started up.
