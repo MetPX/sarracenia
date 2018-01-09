@@ -162,10 +162,15 @@ int main(int argc, char **argv)
      log_msg( LOG_ERROR, "failed to connect context.\n");
      return(1);
   }
-  sr_consume_setup(sr_c);
 
-  if (!strcmp(sr_cfg.outlet,"post"))
-      sr_post_init( sr_c );
+  // dont consume_setup or post_init if in cleanup
+  // (just hangs when attempting to bind queue with cleaned up exchange)
+  if ( strcmp( sr_cfg.action, "cleanup" ) ) {
+     sr_consume_setup(sr_c);
+
+     if (!strcmp(sr_cfg.outlet,"post"))
+         sr_post_init( sr_c );
+  }
   
   if ( !strcmp( sr_cfg.action, "setup" ) || !strcmp( sr_cfg.action, "declare") )
   {
