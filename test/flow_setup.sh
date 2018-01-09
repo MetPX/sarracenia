@@ -97,7 +97,9 @@ echo "Adding flow test configurations..."
 echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh 
 
 # sr_post "add" doesn't. so a little help:
-cp ../sarra/examples/post/*f[0-9][0-9].conf ~/.config/sarra/post
+
+mkdir ${CONFDIR}/post 2> /dev/null
+cp ../sarra/examples/post/*f[0-9][0-9].conf ${CONFDIR}/post
 
 
 passed_checks=0
