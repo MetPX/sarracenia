@@ -24,13 +24,13 @@ eval `application_dirs`
 echo "Stopping sr..."
 sr stop >$LOGDIR/sr_stop_f99.log 2>&1
 
-echo "Cleanup sr... (if it hangs here, do ^C once) "
+echo "Cleanup sr..."
 sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
 
-echo extra lines for the sr_cpump cleanup hanging
-sleep 10
-killall sr_cpump
-echo remove these 2 when corrected
+#echo extra lines for the sr_cpump cleanup hanging
+#sleep 10
+#killall sr_cpump
+#echo remove these 2 when corrected
 
 echo "Cleanup trivial http server... "
 if [ -f .httpserverpid ]; then
