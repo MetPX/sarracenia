@@ -46,34 +46,6 @@ try :
 except : 
          from sarra.sr_util      import *
 
-
-
-# ==========
-# message to mimic amqplib from pika
-# ==========
-
-class Message:
-
-   def __init__(self,logger):
-       self.logger        = logger
-       self.delivery_info = {}
-       self.properties    = {}
-
-   def pika_to_amqplib(self, method_frame, properties, body ):
-       try :
-               self.body  = body
-
-               self.delivery_info['exchange']         = method_frame.exchange
-               self.delivery_info['routing_key']      = method_frame.routing_key
-               self.delivery_tag                      = method_frame.delivery_tag
-
-               self.properties['application_headers'] = properties.headers
-       except:
-               (stype, value, tb) = sys.exc_info()
-               self.logger.error("sr_amqp/pika_to_amqplib Type: %s, Value: %s" % (stype, value))
-               self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
-
-
 # ==========
 # HostConnect
 # ==========
@@ -287,11 +259,11 @@ class Consumer:
 
       self.hc.add_build(self.build)
 
-      self.retry_msg = Message(self.logger)
+      self.retry_msg = raw_message(self.logger)
 
       self.for_pika_msg  = None
       if self.hc.use_pika :
-         self.for_pika_msg = Message(self.logger)
+         self.for_pika_msg = raw_message(self.logger)
 
    def add_prefetch(self,prefetch):
        self.prefetch = prefetch

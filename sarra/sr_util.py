@@ -201,6 +201,32 @@ class checksum_N(object):
           self.value = self.filehash.hexdigest()
 
 # =========================================
+# raw_message to mimic raw amqplib
+# use for retry and to convert from pika
+# =========================================
+
+class raw_message:
+
+   def __init__(self,logger):
+       self.logger        = logger
+       self.delivery_info = {}
+       self.properties    = {}
+
+   def pika_to_amqplib(self, method_frame, properties, body ):
+       try :
+               self.body  = body
+
+               self.delivery_info['exchange']         = method_frame.exchange
+               self.delivery_info['routing_key']      = method_frame.routing_key
+               self.delivery_tag                      = method_frame.delivery_tag
+
+               self.properties['application_headers'] = properties.headers
+       except:
+               (stype, value, tb) = sys.exc_info()
+               self.logger.error("sr_amqp/pika_to_amqplib Type: %s, Value: %s" % (stype, value))
+               self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
+
+# =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
 
