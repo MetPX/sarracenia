@@ -99,7 +99,7 @@ class sr_winnow(sr_subscribe):
            self.retry_ttl = self.expire
 
         if self.retry_ttl == 0:
-           self.retry_ttle = None
+           self.retry_ttl = None
 
         # set notify_only : no download
 

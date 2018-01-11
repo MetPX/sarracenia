@@ -158,7 +158,7 @@ class sr_sarra(sr_subscribe):
            self.retry_ttl = self.expire
 
         if self.retry_ttl == 0:
-           self.retry_ttle = None
+           self.retry_ttl = None
 
 
         # default reportback if unset
