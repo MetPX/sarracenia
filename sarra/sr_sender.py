@@ -173,6 +173,9 @@ class sr_sender(sr_subscribe):
         if self.retry_ttl == 0:
            self.retry_ttl = None
 
+        if self.retry_mode :
+           self.execfile("plugin",'hb_retry')
+
         # always sends ...
 
         if self.notify_only :
@@ -312,18 +315,11 @@ class sr_sender(sr_subscribe):
         i  = 0
         while i < self.attempts :
               ok = self.__do_send__()
-              if ok :
-                  self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
-                  break
-              else:
-                  #========================
-                  # Connection failed.  increment interval, sleep and try again
-                  #========================
-                  time.sleep(self.sleep_connect_try_interval)       
-                  if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
-                       self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
-                  i = i + 1
-
+              if ok : break
+              # dont force on retry 
+              if self.msg.isRetry : break
+              i = i + 1
+               
         # if retry mode... do retry stuff
         if self.retry_mode :
            if ok : self.consumer.msg_worked()

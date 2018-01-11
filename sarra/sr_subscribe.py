@@ -105,11 +105,15 @@ class sr_subscribe(sr_instances):
            self.cache_stat = True
            self.cache.open()
 
+        # retry
         if self.retry_ttl == None:
            self.retry_ttl = self.expire
 
         if self.retry_ttl == 0:
            self.retry_ttl = None
+
+        if self.retry_mode :
+           self.execfile("plugin",'hb_retry')
 
         # reporting
 
@@ -1175,11 +1179,9 @@ class sr_subscribe(sr_instances):
            while i <= self.attempts :
                  ok = self.__do_download__()
                  if ok : break
+                 # dont force on retry 
+                 if self.msg.isRetry : break
                  i = i + 1
-                 if i < 6 :
-                    time.sleep(1<<i) 
-                 else:
-                    time.sleep(60) 
 
            # if retry mode... do retry stuff
            if self.retry_mode :

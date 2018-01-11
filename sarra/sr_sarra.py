@@ -160,6 +160,9 @@ class sr_sarra(sr_subscribe):
         if self.retry_ttl == 0:
            self.retry_ttl = None
 
+        if self.retry_mode :
+           self.execfile("plugin",'hb_retry')
+
 
         # default reportback if unset
 

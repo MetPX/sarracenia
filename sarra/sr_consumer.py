@@ -36,11 +36,13 @@ try :
          from sr_amqp           import *
          from sr_config         import *
          from sr_message        import *
+         from sr_retry          import *
          from sr_util           import *
 except : 
          from sarra.sr_amqp     import *
          from sarra.sr_config   import *
          from sarra.sr_message  import *
+         from sarra.sr_retry    import *
          from sarra.sr_util     import *
 
 # class sr_consumer
@@ -52,9 +54,8 @@ class sr_consumer:
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
 
-        self.retry_fp       = None
-        self.retry_addmode  = False
-        self.retry_getmode  = False
+        self.retry           = sr_retry(parent)
+        self.last_msg_failed = False
 
         if admin : return
 
@@ -67,7 +68,7 @@ class sr_consumer:
 
         # truncated exponential backoff for consume...
 
-        self.sleep_max = 1
+        self.sleep_max = 10
         self.sleep_min = 0.01
         self.sleep_now = self.sleep_min
 
@@ -99,7 +100,8 @@ class sr_consumer:
 
         self.consumer.build()
 
-        self.retry_msg = self.consumer.retry_msg
+        self.retry_msg = self.retry.message
+
     def build_queue(self):
         self.logger.debug("sr_consumer build_queue")
 
@@ -124,6 +126,7 @@ class sr_consumer:
 
     def close(self):
         self.hc.close()
+        self.retry.close()
 
     def consume(self):
 
@@ -135,33 +138,19 @@ class sr_consumer:
 
         # if no message from queue, perhaps we have message to retry
 
-        if self.raw_msg == None : self.raw_msg = self.retry_get()
-
-        # check if retry message expiry
-
-        if self.raw_msg != None and self.raw_msg.isRetry:
-           notice   = self.raw_msg.body
-           if type(notice) == bytes: notice = notice.decode("utf-8")
-           nparts   = notice.split()
-           tparts   = nparts[0].split('.')
-           ts       = time.strptime(tparts[0], "%Y%m%d%H%M%S" )
-           ep_msg   = calendar.timegm(ts)
-           msg_time = ep_msg + int(tparts[1]) / 1000.0
-
-           msg_age  = time.time() - msg_time
-           if msg_age > self.parent.retry_ttl :
-              self.logger.info("expired retry message skipped %s" % notice)
-              self.msg_worked()
-              return False, self.msg
-           self.logger.info("message is %d seconds old, retry_ttl is %d" % (msg_age, self.parent.retry_ttl ) )
-
+        if self.raw_msg == None : self.raw_msg = self.retry.get()
 
         # when no message sleep for 1 sec. (value taken from old metpx)
         # *** value 0.01 was tested and would simply raise cpu usage of broker
         # to unacceptable level with very fews processes (~20) trying to consume messages
         # remember that instances and broker sharing messages add up to a lot of consumers
 
-        if self.raw_msg == None :
+        should_sleep = False
+
+        if   self.raw_msg == None                          : should_sleep = True
+        elif self.raw_msg.isRetry and self.last_msg_failed : should_sleep = True
+
+        if should_sleep :
            time.sleep(self.sleep_now)
            self.sleep_now = self.sleep_now * 2
            if self.sleep_now > self.sleep_max : 
@@ -241,48 +230,23 @@ class sr_consumer:
         return True
 
     def msg_to_retry(self):
+        self.last_msg_failed = True
 
         if self.raw_msg == None : return
 
-        if self.raw_msg.isRetry : return
-        self.logger.info("added to the retry list")
+        if self.raw_msg.isRetry : self.retry.add_msg_to_state_file(self.raw_msg)
+        else                    : self.retry.add_msg_to_new_file  (self.raw_msg)
 
-        if self.retry_getmode :
-           self.retry_getmode = False
-           self.retry_rewrite()
-
-        self.retry_addmode = True
-        
-        if not os.path.isfile(self.parent.retry_path) :
-           self.retry_fp = None
-           fp = open(self.parent.retry_path,'w')
-           fp.close()
-
-        if self.retry_fp == None :
-           self.retry_fp  = open(self.parent.retry_path,'r+')
-
-        topic   = self.raw_msg.delivery_info['routing_key']
-        headers = self.raw_msg.properties['application_headers']
-        notice  = self.raw_msg.body
-
-        if type(notice) == bytes: notice = notice.decode("utf-8")
-
-        json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
-
-        self.retry_fp.seek(0,2)
-        self.retry_fp.write( json_line )
-        self.retry_fp.flush()
-        os.fsync(self.retry_fp)
-        self.logger.info("confirmed added to the retry list %s" % notice)
+        self.logger.info("confirmed added to the retry process %s" % self.raw_msg.body)
 
     def msg_worked(self):
+        self.last_msg_failed = False
+
         if not self.raw_msg.isRetry : return
-        # comment this message not to reprocess again
-        self.retry_fp.seek(self.retry_bol,0)
-        self.retry_fp.write('//')
-        self.retry_fp.seek(self.retry_eol,0)
-        self.retry_fp.flush()
-        os.fsync(self.retry_fp)
+
+        self.retry.add_msg_to_state_file(self.raw_msg,done=True)
+
+        self.logger.info("confirmed removed from the retry process %s" % self.raw_msg.body)
 
     def publish_back(self):
         self.logger.debug("sr_consumer publish_back")
@@ -361,120 +325,6 @@ class sr_consumer:
         f = open(self.queuepath,'w')
         f.write(self.queue_name)
         f.close()
-
-    def retry_close(self):
-        if self.retry_fp == None : return
-        try:    
-                self.retry_fp.flush()
-                os.fsync(self.retry_fp)
-                self.retry_fp.close()
-        except: pass
-        self.retry_fp = None
-
-    def retry_get(self):
-
-        if self.retry_addmode :
-           self.retry_close()
-           self.retry_addmode = False
-
-        self.retry_getmode = True
-
-        # open (might already be open)
-
-        self.retry_fp  = self.retry_open_rw()
-        if self.retry_fp == None : return None
-
-        # get next json_line
-
-        self.retry_bol = self.retry_fp.tell()
-        json_line = self.retry_fp.readline()
-        if not json_line : 
-            self.retry_rewrite()
-            return self.retry_get()
-        self.retry_eol = self.retry_fp.tell()
-
-        try:
-            topic, headers, notice = json.loads(json_line)
-        except:
-            self.logger.info("corrupted line in retry file: %s " % (json_line))
-            self.retry_fp.seek(self.retry_bol,0)
-            self.retry_fp.write('//')
-            self.retry_fp.seek(self.retry_eol,0)
-            self.retry_fp.flush()
-            os.fsync(self.retry_fp)
-            return None
-
-        self.retry_msg.delivery_info['exchange']         = self.parent.exchange
-        self.retry_msg.delivery_info['routing_key']      = topic
-        self.retry_msg.properties['application_headers'] = headers
-        self.retry_msg.body                              = notice
-        self.retry_msg.isRetry = True
-
-        self.retry_getmode = True
-
-        return self.retry_msg
-
-    def retry_open_rw(self):
-
-        if not os.path.isfile(self.parent.retry_path) : return None
-
-        if self.retry_fp != None : return self.retry_fp
-
-        try   : fp = open(self.parent.retry_path,'r+')
-        except: return None
-
-        return fp
-
-    def retry_rewrite(self):
-        self.logger.debug("retry_rewrite begin")
-        
-        if not os.path.isfile(self.parent.retry_path) : return
-
-        if self.retry_fp == None :
-           try   : self.retry_fp = open(self.parent.retry_path,'r+')
-           except: return
-
-        try   : self.retry_fp.seek(0,0)
-        except: return
-
-        tmp_path = self.parent.retry_path + '.tmp'
-        try:    os.unlink(tmp_path)
-        except: pass
-
-        count = 0
-        fp    = open(tmp_path,'w')
-        while True :
-              try:    json_line = self.retry_fp.readline()
-              except: json_line = None
-              if not json_line             : break
-              if json_line.startswith('//'): continue
-              fp.write(json_line)
-              count += 1
-        fp.close()
-
-        self.retry_fp.close()
-        self.retry_fp = None
-        try:    os.unlink(self.parent.retry_path)
-        except: pass
-
-        if count == 0 :
-           try:    os.unlink(tmp_path)
-           except: pass
-           return
-
-        os.rename(tmp_path,self.parent.retry_path)
-
-        if hasattr(self, 'last_retry_rewrite') and ( (time.time() - self.last_retry_rewrite) < 1) :
-           if ( self.rewrite_slowdown < 5 ):
-               self.rewrite_slowdown*=2;
-
-           self.logger.info("retry_rewrite rewrote %d entries, napping %g second" % (count, self.rewrite_slowdown) )
-           time.sleep(self.rewrite_slowdown)
-        else:
-           self.rewrite_slowdown = 0.01
-           self.logger.info("retry_rewrite rewrote %d retries" % count)
-
-        self.last_retry_rewrite=time.time()
 
     def set_queue_name(self):
 

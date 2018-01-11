@@ -101,6 +101,9 @@ class sr_winnow(sr_subscribe):
         if self.retry_ttl == 0:
            self.retry_ttl = None
 
+        if self.retry_mode :
+           self.execfile("plugin",'hb_retry')
+
         # set notify_only : no download
 
         if not self.notify_only :
