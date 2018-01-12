@@ -669,7 +669,7 @@ class sr_config:
 
         self.plugin_times = [ 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
             'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
-            'do_download', 'do_send', 'do_task', 'on_start', 'on_stop' ]
+            'do_download', 'do_send', 'do_task', 'on_start', 'on_cleanup', 'on_stop' ]
 
         for t in self.plugin_times + [ 'plugin' ]:
             exec( 'self.'+t+' = None' )

@@ -1355,6 +1355,11 @@ class sr_post(sr_instances):
 
         self.close()
 
+        # cleanup plugin
+
+        for plugin in self.on_cleanup_list:
+           if not plugin(self): break
+
     def declare(self):
         self.logger.info("%s %s declare" % (self.program_name,self.config_name))
 

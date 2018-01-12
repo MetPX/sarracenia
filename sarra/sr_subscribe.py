@@ -147,6 +147,8 @@ class sr_subscribe(sr_instances):
            self.cache.save()
            self.cache.close()
 
+        if hasattr(self,'retry') : self.retry.close()
+
     def connect(self):
 
         # =============
@@ -1676,6 +1678,12 @@ class sr_subscribe(sr_instances):
            self.cache = None
 
         self.close()
+
+        # cleanup plugin
+
+        for plugin in self.on_cleanup_list:
+           if not plugin(self): break
+
 
     def declare(self):
         self.logger.info("%s %s declare" % (self.program_name,self.config_name))

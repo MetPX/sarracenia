@@ -151,16 +151,13 @@ class sr_consumer:
         elif self.raw_msg.isRetry and self.last_msg_failed : should_sleep = True
 
         if should_sleep :
+           #self.logger.debug("sleeping %f" % self.sleep_now)
            time.sleep(self.sleep_now)
            self.sleep_now = self.sleep_now * 2
            if self.sleep_now > self.sleep_max : 
                   self.sleep_now = self.sleep_max
 
         if self.raw_msg == None: return False, self.msg
-
-        # we have a message, reset timer  (original or retry)
-
-        self.sleep_now = self.sleep_min 
 
         # make use it as a sr_message
         # dont bother with retry... were good to be kept
@@ -181,6 +178,10 @@ class sr_consumer:
         if self.msg.isPulse :
            self.parent.pulse_count += 1
            return True,self.msg
+
+        # we have a message, reset timer (original or retry)
+
+        self.sleep_now = self.sleep_min 
 
         # normal message
 
