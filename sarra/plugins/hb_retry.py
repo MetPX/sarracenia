@@ -4,7 +4,6 @@ class RETRY(object):
 
    def __init__(self,parent):
        self.retry = None
-       parent.heartbeat = 10
 
    def on_start(self,parent):
        parent.logger.info("hb_retry on_start")
