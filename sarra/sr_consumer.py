@@ -155,7 +155,8 @@ class sr_consumer:
            self.sleep_now = self.sleep_now * 2
            if self.sleep_now > self.sleep_max : 
                   self.sleep_now = self.sleep_max
-           return False, self.msg
+
+        if self.raw_msg == None: return False, self.msg
 
         # we have a message, reset timer  (original or retry)
 
