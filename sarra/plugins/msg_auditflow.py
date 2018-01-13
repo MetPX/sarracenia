@@ -27,6 +27,7 @@ class Msg_AuditFlow(object):
     def on_message(self,parent):
  
         import os,filecmp
+        import os.path
         msg = parent.msg
         #parent.logger.info("msg_delete received: %s %s%s topic=%s lag=%g %s" % \
         #   tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
@@ -47,7 +48,10 @@ class Msg_AuditFlow(object):
         for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
             f= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
             parent.logger.info("msg_delete: %s" % f )
-            os.unlink( f )
+            if os.path.exists(f):
+                 os.unlink( f )
+            else:
+                 parent.logger.error("msg_auditflow: file could not be deleted because already gone: %s" % ( f ) ) 
             # sr_watch running here should propagate the deletion to the other directories.
         
         tally = ( parent.auditflow_Atotal*parent.auditflow_BtoAratio  /  parent.auditflow_Bgood ) 
