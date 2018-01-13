@@ -348,6 +348,13 @@ struct sr_message_t *sr_consume(struct sr_context *sr_c)
    */  
     if ( ! sr_c->cfg->broker->started ) {
 
+       amqp_basic_qos( sr_c->cfg->broker->conn, 1, 0, sr_c->cfg->prefetch, 0 );
+       reply = amqp_get_rpc_reply(sr_c->cfg->broker->conn);
+       if (reply.reply_type != AMQP_RESPONSE_NORMAL ) 
+       {
+           sr_amqp_reply_print(reply, "basic_consume failed");
+           return(NULL);
+       }
        sprintf( consumer_tag, "host_%s_pid_%d", local_fqdn(), sr_c->cfg->pid );
 
        amqp_basic_consume(sr_c->cfg->broker->conn, 1, 

@@ -129,6 +129,7 @@ struct sr_config_t {
   char               *outlet;
   int                 pid;
   char               *pidfile;
+  int                 prefetch;
   char               *progname;
   struct sr_path_t   *paths;
   int                 pipe;  // pipe mode, read file names from standard input

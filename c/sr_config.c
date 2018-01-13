@@ -806,6 +806,10 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
       sr_cfg->post_exchange_split = atoi(argument);
       retval=(2);
 
+  } else if ( !strcmp( option, "prefetch" ) ) {
+      sr_cfg->prefetch = atoi(argument);
+      retval=(2);
+
   } else if ( !strcmp( option, "realpath" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->realpath = val&2;
@@ -981,6 +985,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->post_broker=NULL;
   sr_cfg->post_exchange=NULL;
   sr_cfg->post_exchange_split=0;
+  sr_cfg->prefetch=25;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
      if (c) sr_cfg->progname = strdup(c+1);
