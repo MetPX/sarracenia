@@ -40,22 +40,7 @@ function countthem {
    fi
 }
 
-function calcres {
-   #
-   # calcres - Calculate test result.
-   # 
-   # logic:
-   # increment test number (tno)
-   # compare first and second totals, and report agreement if within 10% of one another.
-   # emit description based on agreement.  Arguments:
-   # 1 - first total
-   # 2 - second total 
-   # 3 - test description string.
-   # 4 - will retry flag.
-   #
-
-   
-   tno=$((${tno}+1))
+function chkargs {
 
    if [ ! "${1}" -o ! "${2}" ]; then
       printf "test %2d FAILURE: blank results! ${3}\n" ${tno}
@@ -69,6 +54,30 @@ function calcres {
    if [ "${2}" -eq 0 ]; then
       printf "test %2d FAILURE: no successful results, 2nd item! ${3}\n" ${tno}
       return 2
+   fi
+
+   return 0
+}
+
+function calcres {
+   #
+   # calcres - Calculate test result.
+   # 
+   # logic:
+   # increment test number (tno)
+   # compare first and second totals, and report agreement if within 10% of one another.
+   # emit description based on agreement.  Arguments:
+   # 1 - first total
+   # 2 - second total 
+   # 3 - test description string.
+   # 4 - will retry flag.
+   #
+   
+   tno=$((${tno}+1))
+
+   chkargs "${1}" "${2}" "${3}"
+   if [ $? -ne 0 ]; then
+      return $?
    fi
 
    res=0
@@ -154,11 +163,9 @@ function sumlogs {
 
 function countall {
 
-  #countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
   sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log 
   totsarra="${tot}"
 
-  #countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow00_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log 
   totwinnow00="${tot}"
 
@@ -168,23 +175,18 @@ function countall {
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  #countthem "`grep msg_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totmsgt="${tot}"
 
-  #countthem "`grep file_total "$LOGDIR"/sr_subscribe_t_f30_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totfilet="${tot}"
 
-  #countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd1_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
   totshovel1="${tot}"
 
-  #countthem "`grep msg_total "$LOGDIR"/sr_shovel_t_dd2_f00_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
   totshovel2="${tot}"
 
-  #countthem "`grep post_total "$LOGDIR"/sr_watch_f40_0001.log | tail -1 | awk ' { print $5; }; '`"
   sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
   totwatch="${tot}"
 
