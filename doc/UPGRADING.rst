@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.01a2
+---------
+
+*NOTICE*: backed out of plugin convention enforcement mentioned in 2.18.01a2.  Now there is a new *plugin*
+          option that supports new style, and the old style is left alone.
+
 2.18.01a3
 ---------
 
