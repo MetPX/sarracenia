@@ -50,6 +50,12 @@ class Log(object):
             When a completed part is received, one can specify additional processing.
             Can process parts of files while the rest is in transit, i.e. for AV.
         """
+
+        # make sure only a part gets logged
+        try   :
+                if parent.msg.headers['parts'][0] == '1' : return True
+        except: pass
+
         parent.logger.info("log part downloaded to: %s/%s" % ( parent.new_dir, parent.msg.new_file) )
         return True
 
