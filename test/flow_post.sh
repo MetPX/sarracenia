@@ -52,7 +52,7 @@ function do_sr_post {
 # sr_post initial end
 
 while true; do
-   sleep 10
+   sleep 1
    do_sr_post
 done
 
