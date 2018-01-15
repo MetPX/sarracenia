@@ -949,7 +949,7 @@ class sr_subscribe(sr_instances):
                        #MG FIXME : except: return False  maybe ?
 
                     # move
-                    if True: #try   : 
+                    try   : 
                             # file link
                             if os.path.isfile(oldpath) or os.path.islink(oldpath) :
                                os.link(oldpath,newpath)
@@ -960,7 +960,7 @@ class sr_subscribe(sr_instances):
                                self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                             if self.reportback: self.msg.report_publish(201, 'moved')
                             need_download = False
-                    #except: pass
+                    except: pass
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
@@ -1010,7 +1010,7 @@ class sr_subscribe(sr_instances):
                  # move
                  ok = True
                  #self.logger.warning("%s doit_download - oldname=%s about to mv" % (self.program_name, self.msg.headers['oldname']) )
-                 if True : #try   : 
+                 try   : 
                          if os.path.isfile(oldpath) or os.path.islink(oldpath) :
                             os.link(oldpath,newpath)
                             self.logger.info("move %s to %s (hardlink)" % (oldpath,newpath))
@@ -1020,7 +1020,7 @@ class sr_subscribe(sr_instances):
                          else:
                             self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
                          need_download = False
-                 #except: ok = False
+                 except: ok = False
 
                  if ok  :
                           self.logger.info("file moved %s to %s" % (oldpath,newpath) )
@@ -1678,12 +1678,6 @@ class sr_subscribe(sr_instances):
            self.cache = None
 
         self.close()
-
-        # cleanup plugin
-
-        for plugin in self.on_cleanup_list:
-           if not plugin(self): break
-
 
     def declare(self):
         self.logger.info("%s %s declare" % (self.program_name,self.config_name))
