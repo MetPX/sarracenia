@@ -250,6 +250,9 @@ function countall {
   audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
   audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
   audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
+  countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log | wc -l`"
+  totaudit="${tot}"
+
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
   awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
@@ -386,12 +389,13 @@ done
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
 zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
-calcres "${audit_t1}" "${audit_t2}" "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
-calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
-calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
-calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
+#calcres "${audit_t1}" "${audit_t2}" "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
+#calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
+#calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
+#calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
+calcres "${totsarra}" "${totaudit}" "sarra tsarra ($totsarra) and good audit ${totaudit} should be about the same."
 
-calcres ${totpoll1} ${totsubq} "poll test1_f62 and subscribe q_f71 run together. Should have equal results."
+calcres ${totpoll1} ${totsubq} "poll test1_f62 ${totpoll1} and subscribe q_f71 ${totsubq} run together. Should have equal results."
 
 calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
 
