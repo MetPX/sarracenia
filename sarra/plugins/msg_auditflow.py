@@ -34,20 +34,24 @@ class Msg_AuditFlow(object):
         
         a= "%s/%s/%s" % ( parent.msg_auditflow_topdir, "downloaded_by_sub_t", msg.new_file )
         parent.auditflow_Atotal+=1
+        i=0
 
-        for d in [ "downloaded_by_sub_u", "posted_by_srpost_test2", "recd_by_srpoll_test1", "sent_by_tsource2send" ]:
+        for d in [ "downloaded_by_sub_u", "sent_by_tsource2send", "posted_by_srpost_test2", "recd_by_srpoll_test1" ]:
+            i+=1
             b= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
-            try: 
+            if os.path.exists(b):
                 if filecmp.cmp( a, b ):
                     parent.auditflow_Bgood+=1
                 else:
-                    parent.logger.error("msg_auditflow: files differ: %s vs. %s " % ( a, b ) ) 
-            except:
-                parent.logger.error("msg_auditflow: compare failed: %s vs. %s " % ( a, b ) ) 
+                    parent.logger.error("msg_auditflow: files-%d differ: %s vs. %s " % ( i, a, b ) ) 
+                a=b
+            else:
+                parent.logger.error("msg_auditflow: compare-%d failed: %s vs. %s " % ( i, a, b ) ) 
+
 
         for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
             f= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
-            parent.logger.info("msg_delete: %s" % f )
+            parent.logger.info("msg_auditflow delete: %s" % f )
             if os.path.exists(f):
                  os.unlink( f )
             else:
