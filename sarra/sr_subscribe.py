@@ -736,7 +736,9 @@ class sr_subscribe(sr_instances):
         #=================================
 
         ok = self.__on_message__()
-        if not ok : return ok
+        if not ok :
+           if self.msg.isRetry: self.consumer.msg_worked()
+           return ok
 
         #=================================
         # if caching is set
@@ -748,6 +750,7 @@ class sr_subscribe(sr_instances):
            if not new_msg :
               if self.reportback : self.msg.report_publish(304,'Not modified1')
               self.logger.info("Ignored %s not modified" % (self.msg.notice))
+              if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
         #=================================
@@ -765,6 +768,8 @@ class sr_subscribe(sr_instances):
                    print("%s" % json_line )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+
+           if self.msg.isRetry: self.consumer.msg_worked()
            return True
 
         #=================================
@@ -1039,6 +1044,7 @@ class sr_subscribe(sr_instances):
                                   print("%s" % json_line )
                              elif self.outlet == 'url'  :
                                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+                          if self.msg.isRetry: self.consumer.msg_worked()
                           return True
 
                  self.logger.debug("could not move %s to %s (hardlink)" % (oldpath,newpath))
@@ -1055,6 +1061,7 @@ class sr_subscribe(sr_instances):
 
            if not 'delete' in self.events and not 'newname' in self.msg.headers : 
               self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
+              if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
            path = self.new_dir + os.sep + self.new_file
@@ -1083,6 +1090,7 @@ class sr_subscribe(sr_instances):
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
+           if self.msg.isRetry: self.consumer.msg_worked()
            return True
 
         #=================================
@@ -1094,6 +1102,7 @@ class sr_subscribe(sr_instances):
            if not 'link' in self.events: 
               self.logger.info("message to link %s to %s ignored (events setting)" %  \
                                             ( self.new_file, self.msg.headers[ 'link' ] ) )
+              if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
            if not os.path.isdir(self.new_dir):
@@ -1128,6 +1137,7 @@ class sr_subscribe(sr_instances):
                  elif self.outlet == 'url'  :
                       print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
+           if self.msg.isRetry: self.consumer.msg_worked()
            return True
 
         #=================================
@@ -1143,11 +1153,15 @@ class sr_subscribe(sr_instances):
         if self.post_base_dir and not '{' in self.post_base_dir :
            if not os.path.isdir(self.post_base_dir) :
               self.logger.error("directory %s does not exist" % self.post_base_dir)
+              # FIXME not sure ... retry on problems ?
+              #if self.msg.isRetry: self.consumer.msg_to_retry()
               return False
 
         # pass no warning it may already exists
         try    : os.makedirs(self.new_dir,0o775,True)
         except : pass
+        try    : os.chdir(self.new_dir)
+        except : self.logger.error("could not cd to directory %s" % self.new_dir)
 
         #=================================
         # overwrite False, user asked that if the announced file already exists,
@@ -1158,8 +1172,11 @@ class sr_subscribe(sr_instances):
            if self.reportback: self.msg.report_publish(304, 'not modified3')
            self.logger.debug("file not modified %s " % self.new_file)
 
+
            # if we are processing an entire file... we are done
-           if self.msg.partflg == '1' :  return False
+           if self.msg.partflg == '1' :
+              if self.msg.isRetry: self.consumer.msg_worked()
+              return False
 
            need_download = False
 
@@ -1185,14 +1202,11 @@ class sr_subscribe(sr_instances):
                  if self.msg.isRetry : break
                  i = i + 1
 
-           # if retry mode... do retry stuff
-           if self.retry_mode :
-              if ok : self.consumer.msg_worked()
-              else  : self.consumer.msg_to_retry()
-
            # could not download ...
 
-           if not ok: return False
+           if not ok:
+              if self.retry_mode : self.consumer.msg_to_retry()
+              return False
 
            # after download we dont propagate renaming... once used get rid of it
            if 'rename'  in self.msg.headers : del self.msg.headers['rename']
@@ -1236,7 +1250,10 @@ class sr_subscribe(sr_instances):
 
            for plugin in self.on_part_list :
 
-              if not plugin(self): return False
+              if not plugin(self):
+                 # plugin discarded it ... but the message worked
+                 if self.msg.isRetry: self.consumer.msg_worked()
+                 return False
 
               if ( self.msg.local_file != saved_file ): # FIXME: remove in 2018
                  self.logger.warning("on_part plugins 1 should replace parent.msg.local_file, by parent.new_file" )
@@ -1274,7 +1291,10 @@ class sr_subscribe(sr_instances):
                              (not self.inplace) or \
                              (self.inplace and (self.msg.lastchunk and not self.msg.in_partfile)))):
 
-                 if not self.__on_file__(): return False
+                 if not self.__on_file__():
+                    # plugin discarded it ... but the message worked
+                    if self.msg.isRetry: self.consumer.msg_worked()
+                    return False
 
                  #for plugin in self.on_file_list:
                  #    if not plugin(self): return False
@@ -1292,6 +1312,7 @@ class sr_subscribe(sr_instances):
               except :
                         (stype, svalue, tb) = sys.exc_info()
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+              if self.msg.isRetry: self.consumer.msg_worked()
               return False
 
 
@@ -1320,7 +1341,9 @@ class sr_subscribe(sr_instances):
         # if we processed a file we are done
         #=================================
 
-        if self.msg.partflg == '1' : return True
+        if self.msg.partflg == '1' :
+           if self.msg.isRetry: self.consumer.msg_worked()
+           return True
 
         #=================================
         # if we processed a part (downloaded or not)
@@ -1337,6 +1360,7 @@ class sr_subscribe(sr_instances):
         FIXME: 2016/10 - PAS: suspect a bug: pretty sure discard should run after reassembly complete.
                     2016/12 - well maybe not, if it is discarding parts, it is probably better... hmm..
         """
+        if self.msg.isRetry: self.consumer.msg_worked()
         return True
 
     def restore_messages(self):
