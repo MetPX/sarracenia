@@ -98,13 +98,23 @@ class sr_retry:
 
         if type(notice) == bytes: notice = notice.decode("utf-8")
 
-        if done: headers['_retry_tag_'] = 'done'
+        if done:
+           headers = {}
+           headers['_retry_tag_'] = 'done'
 
         json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
 
         return json_line
 
     def get(self):
+        ok = False
+
+        while not ok :
+              ok, message = self.get_retry()
+
+        return message
+
+    def get_retry(self):
         self.retry_fp, message = self.msg_get_from_file(self.retry_fp, self.retry_path)
 
         # FIXME MG as discussed with Peter
@@ -112,23 +122,19 @@ class sr_retry:
         # if no message (and new or state file there)
         # we wait for heartbeat to present retry messages
         if not message :
+           try   : os.unlink(self.retry_path)
+           except: pass
            #self.logger.debug("DEBUG retry get return None")
-           return None
+           return True,None
 
-        # go to next valid
-        while self.is_expired(message):
-              self.logger.info("expired retry message skipped %s" % message.body)
-              self.add_msg_to_state_file(message,done=True)
-              self.retry_fp, message = self.msg_get_from_file(self.retry_fp, self.retry_path)
-              if not message :
-                 #self.logger.debug("DEBUG retry get return None")
-                 return None
+        # validation
 
-        #self.logger.debug("DEBUG retry get return %s" % message.body)
+        if not self.is_valid(message):
+           return False,None
 
-        self.message.isRetry = True
+        message.isRetry = True
 
-        return self.message
+        return True,message
 
     def init(self):
 
@@ -179,6 +185,19 @@ class sr_retry:
 
         return expired
 
+    def is_valid(self,message):
+        # validation
+
+        if self.is_expired(message):
+           self.logger.debug("expired message skipped %s" % message.body)
+           return False
+
+        if self.is_done(message):
+           self.logger.debug("done message skipped %s" % message.body)
+           return False
+
+        return True
+
     def msg_append_to_file(self,fp,path,message,done=False):
         if fp == None :
            present = os.path.isfile(path)
@@ -208,83 +227,74 @@ class sr_retry:
         if not line :
            try   : fp.close()
            except: pass
-           try   : os.unlink(path)
-           except: pass
            return None,None
 
         msg = self.decode(line)
+        # a corrupted line : go to the next
+        if msg == None : return msg_get_from_file(fp,path)
 
         return fp,msg
-
-    def msg_transfer_retry_to_state(self):
-        N = 0
-
-        if self.retry_fp != None :
-
-           while True:
-               message = self.get()
-               if not message : break
-               #self.logger.debug("DEBUG flush retry to state %s" % message.body)
-               self.add_msg_to_state_file(message)
-               N = N + 1
-
-        #self.logger.debug("DEBUG Number of messages flush to state %d" % N)
-
-        return 
 
     def on_heartbeat(self,parent):
         self.logger.info("sr_retry on_heartbeat")
 
-        # flush remaining of retry messages in state file
+        # make sure heart file is new
 
-        self.msg_transfer_retry_to_state()
+        try   : self.heart_fp.close()
+        except: pass
+        try   : os.unlink(self.heart_path)
+        except: pass
+        self.heart_fp = None
 
-        # close all files
-        self.close()
+        # state to heart
+        N         = 0
+        last_body = None
 
-        # state -> heartbeat file
-
-        N           = 0
-        last_notice = None
+        if self.state_fp :
+           try   : self.state_fp.close()
+           except: pass
+           self.state_fp = None
 
         while True:
               self.state_fp, message = self.msg_get_from_file(self.state_fp, self.state_path)
               if not message : break
-              last_notice = message.body
-              if self.is_done(message)   : continue
-              if self.is_expired(message):
-                 self.logger.info("expired retry message skipped %s" % message.body)
-                 continue
-              #self.logger.debug("DEBUG move state to heartbeat %s" % message.body)
+              last_body = message.body
+              if not self.is_valid(message): continue
+              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
               self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
               N = N + 1
 
-        try   : close(self.heart_fp)
-        except: pass
-        self.heart_fp   = None
+        # remaining of retry to heart
 
-        # retry -> heartbeat file
+        if self.retry_fp :
+           last_body = None
 
         while True:
               self.retry_fp, message = self.msg_get_from_file(self.retry_fp, self.retry_path)
               if not message : break
-              if last_notice and message.notice != last_notice : continue
-              #self.logger.debug("DEBUG move retry to heartbeat %s" % message.body)
+              if last_body and last_body != message.body : continue
+              if not self.is_valid(message): continue
+              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
               self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
               N = N + 1
 
-        try   : close(self.heart_fp)
-        except: pass
-        self.heart_fp   = None
+        # new to heart
 
-        # new -> heartbeat file
+        if self.new_fp :
+           try   : self.new_fp.close()
+           except: pass
+           self.new_fp = None
 
         while True:
               self.new_fp, message = self.msg_get_from_file(self.new_fp, self.new_path)
               if not message : break
-              #self.logger.debug("DEBUG move new to heartbeat %s" % message.body)
+              last_body = message.body
+              if not self.is_valid(message): continue
+              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
               self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
               N = N + 1
+
+        # close heart
 
         try   : close(self.heart_fp)
         except: pass
@@ -293,15 +303,23 @@ class sr_retry:
         # no more retry
 
         if N == 0 :
+           self.logger.info("No retry in list")
            try   : os.unlink(self.heart_path)
            except: pass
-           self.logger.info("No retry in list")
-           return
 
         # heartbeat file becomes new retry
 
-        self.logger.info("Number of messages in retry list %d" % N)
-        try   : os.rename(self.heart_path,self.retry_path)
+        else:
+           self.logger.info("Number of messages in retry list %d" % N)
+           try   : os.unlink(self.retry_path)
+           except: pass
+           try   : os.rename(self.heart_path,self.retry_path)
+           except: pass
+
+        # cleanup
+        try   : os.unlink(self.state_path)
+        except: pass
+        try   : os.unlink(self.new_path)
         except: pass
 
 # ===================================
@@ -336,23 +354,26 @@ def test_retry_encode_decode(retry,message,done=False):
     if msg.delivery_info['routing_key'] != message.delivery_info['routing_key'] :
        retry.logger.error("encode_decode routing_key (done %s)" % done)
 
-    if msg.properties['application_headers']['my_header_attr'] != \
-       message.properties['application_headers']['my_header_attr']:
-       retry.logger.error("encode_decode headers (done %s)" % done)
+    if not done :
 
-    if not done : return
+       if msg.properties['application_headers']['my_header_attr'] != \
+          message.properties['application_headers']['my_header_attr']:
+          retry.logger.error("encode_decode headers (done %s)" % done)
 
-    if not '_retry_tag_' in msg.properties['application_headers'] :
-       retry.logger.error("encode_decode retry_tag not present")
+    if done :
 
-    if '_retry_tag_' in msg.properties['application_headers'] and \
-       msg.properties['application_headers']['_retry_tag_'] != 'done':
-       retry.logger.error("encode_decode retry_tag != done")
 
-    # test is_done
+       if not '_retry_tag_' in msg.properties['application_headers'] :
+          retry.logger.error("encode_decode retry_tag not present")
 
-    if not retry.is_done(msg):
-       retry.logger.error("encode_decode is_done method")
+       if '_retry_tag_' in msg.properties['application_headers'] and \
+          msg.properties['application_headers']['_retry_tag_'] != 'done':
+          retry.logger.error("encode_decode retry_tag != done")
+
+       # test is_done
+
+       if not retry.is_done(msg):
+         retry.logger.error("encode_decode is_done method")
 
     return
 
@@ -415,11 +436,11 @@ def test_retry_msg_append_get_file(retry,message):
     if d != 50 : retry.logger.error("append_get should have 50 done (%d/100)" % d) 
     if r != 50 : retry.logger.error("append_get should have 50 todo (%d/100)" % r)
 
-    # at end file is unlinked and fp is none
-
-    if os.path.isfile(path) : retry.logger.error("append_get retry_path should have been deleted")
+    # at end file fp is none
 
     if fp != None : retry.logger.error("append_get returned file pointer should have been None")
+
+    os.unlink(path)
 
 # test retry_get simple
 def test_retry_get_simple(retry,message):
