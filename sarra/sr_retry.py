@@ -50,9 +50,12 @@ class sr_retry:
 
         self.retry_ttl  = self.parent.retry_ttl
 
+        self.activity   = True
+
         # message to work with
 
         self.message    = raw_message(self.logger)
+        self.last_body  = None
 
         # initialize all retry path if retry_path is provided
 
@@ -67,15 +70,19 @@ class sr_retry:
         self.new_fp = self.msg_append_to_file(self.new_fp,self.new_path,message)
 
     def close(self):
+        self.last_body = None
         try   : self.new_fp.close()
         except: pass
         try   : self.retry_fp.close()
         except: pass
         try   : self.state_fp.close()
         except: pass
+        try   : self.heart_fp.close()
+        except: pass
         self.new_fp   = None
         self.retry_fp = None
         self.state_fp = None
+        self.heart_fp = None
 
     def decode(self, line ):
         try:
@@ -112,6 +119,8 @@ class sr_retry:
         while not ok :
               ok, message = self.get_retry()
 
+        self.activity = True
+
         return message
 
     def get_retry(self):
@@ -121,17 +130,24 @@ class sr_retry:
         # no heartbeat in get ...
         # if no message (and new or state file there)
         # we wait for heartbeat to present retry messages
+        self.last_message = message
+
         if not message :
            try   : os.unlink(self.retry_path)
            except: pass
-           #self.logger.debug("DEBUG retry get return None")
+           self.retry_fp = None
+           #self.logger.debug("MG DEBUG retry get return None")
            return True,None
+
+        self.last_message = message.body
 
         # validation
 
         if not self.is_valid(message):
+           #self.logger.error("MG invalid %s" % message.body)
            return False,None
 
+        #self.logger.error("MG return %s" % message.body)
         message.isRetry = True
 
         return True,message
@@ -141,16 +157,19 @@ class sr_retry:
         # retry messages
 
         self.retry_path = self.parent.retry_path
+        self.retry_work = self.retry_path        + '.work'
         self.retry_fp   = None
 
         # newer retries
 
         self.new_path   = self.parent.retry_path + '.new'
+        self.new_work   = self.new_path          + '.work'
         self.new_fp     = None
 
         # state retry messages
 
         self.state_path = self.parent.retry_path + '.state'
+        self.state_work = self.state_path        + '.work'
         self.state_fp   = None
 
         # working file at heartbeat
@@ -215,6 +234,8 @@ class sr_retry:
         fp.flush()
         os.fsync(fp)
 
+        self.activity = True
+
         return fp
 
     def msg_get_from_file(self,fp,path):
@@ -238,67 +259,123 @@ class sr_retry:
     def on_heartbeat(self,parent):
         self.logger.info("sr_retry on_heartbeat")
 
-        # make sure heart file is new
+        if not self.activity : return
 
-        try   : self.heart_fp.close()
-        except: pass
-        try   : os.unlink(self.heart_path)
-        except: pass
-        self.heart_fp = None
+        now          = time.time()
+        marker_body  = self.last_body
+        marker_valid = marker_body != None
+        #self.logger.debug("marker_body1 = %s" % marker_body)
 
-        # state to heart
-        N         = 0
-        last_body = None
+        # put this in try/except in case ctrl-c breaks something
 
-        if self.state_fp :
-           try   : self.state_fp.close()
-           except: pass
-           self.state_fp = None
+        try:
+             self.close()
+             try   : os.unlink(self.heart_path)
+             except: pass
+             fp = open(self.heart_path,'w')
+             fp.close()
 
-        while True:
-              self.state_fp, message = self.msg_get_from_file(self.state_fp, self.state_path)
-              if not message : break
-              last_body = message.body
-              if not self.is_valid(message): continue
-              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
-              self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
-              N = N + 1
+             # rename to working file to avoid corruption
 
-        # remaining of retry to heart
+             if not os.path.isfile(self.retry_work) :
+                fp = open(self.retry_work,'w')
+                fp.close()
+                if os.path.isfile(self.retry_path) : os.rename(self.retry_path,self.retry_work)
 
-        if self.retry_fp :
-           last_body = None
+             if not os.path.isfile(self.state_work):
+                fp = open(self.state_work,'w')
+                fp.close()
+                if os.path.isfile(self.state_path) : os.rename(self.state_path,self.state_work)
 
-        while True:
-              self.retry_fp, message = self.msg_get_from_file(self.retry_fp, self.retry_path)
-              if not message : break
-              if last_body and last_body != message.body : continue
-              if not self.is_valid(message): continue
-              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
-              self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
-              N = N + 1
+             if not os.path.isfile(self.new_work):
+                fp = open(self.new_work,'w')
+                fp.close()
+                if os.path.isfile(self.new_path) : os.rename(self.new_path,self.new_work)
 
-        # new to heart
+             # state to heart
 
-        if self.new_fp :
-           try   : self.new_fp.close()
-           except: pass
-           self.new_fp = None
+             #self.logger.debug("MG DEBUG has state %s" % os.path.isfile(self.state_path))
+     
+             i    = 0
+             N    = 0
+             last = None
 
-        while True:
-              self.new_fp, message = self.msg_get_from_file(self.new_fp, self.new_path)
-              if not message : break
-              last_body = message.body
-              if not self.is_valid(message): continue
-              #self.logger.debug("DEBUG flush retry to state %s" % message.body)
-              self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
-              N = N + 1
+             fp   = None
+             while True:
+                   fp, message = self.msg_get_from_file(fp, self.state_work)
+                   if not message : break
+                   i = i + 1
+                   last  = message.body
+                   valid = self.is_valid(message)
+                   if not valid: continue
+                   #self.logger.debug("DEBUG flush retry to state %s" % message.body)
+                   self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
+                   N = N + 1
+             try   : fp.close()
+             except: pass
 
-        # close heart
+             if not marker_body and last :
+                marker_body  = last
+                marker_valid = valid
+             #self.logger.debug("marker_body2 = %s" % marker_body)
 
-        try   : close(self.heart_fp)
-        except: pass
-        self.heart_fp   = None
+             #self.logger.debug("MG DEBUG took %d out of the %d state" % (N,i))
+
+             # remaining of retry to heart
+     
+             #self.logger.debug("MG DEBUG has retry %s" % os.path.isfile(self.retry_path))
+     
+             i   = 0
+             j   = N
+
+             fp   = None
+             while True:
+                   fp, message = self.msg_get_from_file(fp, self.retry_work)
+                   if not message : break
+                   i = i + 1
+                   if marker_body :
+                      if marker_body != message.body : continue
+                      marker_body = None
+                      continue
+                   if not self.is_valid(message): continue
+                   #self.logger.debug("MG DEBUG flush retry to state %s" % message.body)
+                   self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
+                   N = N + 1
+             try   : fp.close()
+             except: pass
+
+             #self.logger.debug("MG DEBUG took %d out of the %d retry" % (N-j,i))
+     
+             # new to heart
+     
+             #self.logger.debug("MG DEBUG has new %s" % os.path.isfile(self.new_path))
+     
+             i   = 0
+             j   = N
+
+             fp   = None
+             while True:
+                   fp, message = self.msg_get_from_file(fp, self.new_work)
+                   if not message : break
+                   i = i + 1
+                   if not self.is_valid(message): continue
+                   #self.logger.debug("MG DEBUG flush retry to state %s" % message.body)
+                   self.heart_fp = self.msg_append_to_file(self.heart_fp,self.heart_path,message)
+                   N = N + 1
+             try   : fp.close()
+             except: pass
+     
+             #self.logger.debug("MG DEBUG took %d out of the %d new" % (N-j,i))
+     
+             # close heart
+     
+             try   : close(self.heart_fp)
+             except: pass
+
+        except:
+                self.logger.error("on_heartbeat something went wrong")
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
         # no more retry
 
@@ -307,20 +384,42 @@ class sr_retry:
            try   : os.unlink(self.heart_path)
            except: pass
 
+
         # heartbeat file becomes new retry
 
         else:
            self.logger.info("Number of messages in retry list %d" % N)
-           try   : os.unlink(self.retry_path)
-           except: pass
            try   : os.rename(self.heart_path,self.retry_path)
-           except: pass
+           except: 
+                   self.logger.error("Something went wrong with rename")
 
         # cleanup
-        try   : os.unlink(self.state_path)
+        try   : os.unlink(self.state_work)
         except: pass
-        try   : os.unlink(self.new_path)
+        try   : os.unlink(self.retry_work)
         except: pass
+        try   : os.unlink(self.new_work)
+        except: pass
+
+        self.last_body = None
+        self.activity  = False
+        elapse         = time.time()-now
+        self.logger.info("sr_retry on_heartbeat elapse %f" % elapse)
+
+    def on_start(self,parent):
+        self.logger.info("sr_retry on_start")
+        
+        if not os.path.isfile(self.retry_path): return
+
+        retry_age = os.stat(self.retry_path)[stat.ST_MTIME]
+
+        if os.path.isfile(self.state_path):
+           state_age = os.stat(self.state_path)[stat.ST_MTIME]
+           if retry_age > state_age : os.unlink(self.state_path)
+
+        if os.path.isfile(self.new_path):
+           new_age = os.stat(self.new_path)[stat.ST_MTIME]
+           if retry_age > new_age : os.unlink(self.new_path)
 
 # ===================================
 # self_test
@@ -564,6 +663,7 @@ def test_retry_ctrl_c(retry,message):
           # heartbeat or done
           if not msg :
              if h_done : break
+             retry.logger.error("THIS heartbeat")
              retry.on_heartbeat(retry.parent)
              h_count = h_count + 1
              h_done  = 1
@@ -591,9 +691,11 @@ def test_retry_ctrl_c(retry,message):
              retry.add_msg_to_new_file(message)
              msg_count = msg_count + 1
              a_count   = a_count + 1
-             if a_count == 1 : break
+             if a_count == 2 : break
 
     # ctrl_c heartbeat
+    
+    retry.close()
     retry.on_heartbeat(retry.parent)
 
     # start same loop
@@ -692,9 +794,11 @@ def self_test():
     test_retry_get_simple(retry,message)
 
     # test complex case no interrup
+
     test_retry_overall(retry,message)
 
     # test ctrl_c
+
     test_retry_ctrl_c(retry,message)
 
     # test close
