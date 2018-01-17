@@ -181,7 +181,7 @@ class sr_consumer:
 
         # we have a message, reset timer (original or retry)
 
-        self.sleep_now = self.sleep_min 
+        if not should_sleep : self.sleep_now = self.sleep_min 
 
         # normal message
 
