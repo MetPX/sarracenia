@@ -769,7 +769,16 @@ class sr_config:
         elapse = now - self.last_heartbeat
         if elapse > self.heartbeat :
            self.__on_heartbeat__()
-           self.last_heartbeat = time.time()
+           self.last_heartbeat = now
+           # check how on_heartbeat lasted
+           hb_last = time.time() - now
+           ration  = hb_last/self.heartbeat
+           # heartbeat needs to be adjusted (to the nearest higher rounded minute)
+           if ration > 0.1 :
+              self.heartbeat = int(ratio * 10 * heartbeat/60 + 1) * 60
+              self.logger.warning("on_heartbeat spent more than 10% of heartbeat")
+              self.logger.warning("heartbeat set to %f" % self.heartbeat)
+           
 
     def __on_heartbeat__(self):
         self.logger.debug("__on_heartbeat__")
