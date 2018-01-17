@@ -769,7 +769,7 @@ class sr_config:
         elapse = now - self.last_heartbeat
         if elapse > self.heartbeat :
            self.__on_heartbeat__()
-           self.last_heartbeat = now
+           self.last_heartbeat = time.time()
 
     def __on_heartbeat__(self):
         self.logger.debug("__on_heartbeat__")
