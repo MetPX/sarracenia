@@ -772,9 +772,9 @@ class sr_config:
            self.last_heartbeat = now
            # check how on_heartbeat lasted
            hb_last = time.time() - now
-           ration  = hb_last/self.heartbeat
+           ratio   = hb_last/self.heartbeat
            # heartbeat needs to be adjusted (to the nearest higher rounded minute)
-           if ration > 0.1 :
+           if ratio > 0.1 :
               self.heartbeat = int(ratio * 10 * heartbeat/60 + 1) * 60
               self.logger.warning("on_heartbeat spent more than 10% of heartbeat")
               self.logger.warning("heartbeat set to %f" % self.heartbeat)
