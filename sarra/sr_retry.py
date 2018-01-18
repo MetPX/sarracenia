@@ -64,25 +64,33 @@ class sr_retry:
     def add_msg_to_state_file(self,message,done=False):
         #self.logger.debug("DEBUG add to state file %s %s %s" % (os.path.basename(self.state_path),message.body,done))
         self.state_fp = self.msg_append_to_file(self.state_fp,self.state_path,message,done)
+        # performance issue... only do before close
+        #os.fsync(self.state_fp)
 
     def add_msg_to_new_file(self,message):
         #self.logger.debug("DEBUG add to new file %s %s" % (os.path.basename(self.new_path),message.body))
         self.new_fp = self.msg_append_to_file(self.new_fp,self.new_path,message)
+        # performance issue... only do before close
+        #os.fsync(self.new_fp)
 
     def close(self):
         self.last_body = None
-        try   : self.new_fp.close()
+        try   : self.heart_fp.close()
+        except: pass
+        try   :
+                os.fsync(self.new_fp)
+                self.new_fp.close()
         except: pass
         try   : self.retry_fp.close()
         except: pass
-        try   : self.state_fp.close()
+        try   : 
+                os.fsync(self.state_fp)
+                self.state_fp.close()
         except: pass
-        try   : self.heart_fp.close()
-        except: pass
+        self.heart_fp = None
         self.new_fp   = None
         self.retry_fp = None
         self.state_fp = None
-        self.heart_fp = None
 
     def decode(self, line ):
         try:
@@ -232,7 +240,6 @@ class sr_retry:
 
         fp.write( line )
         fp.flush()
-        os.fsync(fp)
 
         self.activity = True
 
@@ -774,6 +781,8 @@ def self_test():
     message.properties['application_headers'] = headers
     message.body                              = notice
 
+    now   = time.time()
+
     retry = sr_retry(cfg)
 
     # test encode decode methods
@@ -804,6 +813,66 @@ def self_test():
     # test close
 
     retry.close()
+    e = time.time() - now
+
+    print("test elapse = %f " % e)
+
+    # performance test
+
+    json_line = '["v02.post.sent_by_tsource2send", {"atime": "20180118151049.356378078", "from_cluster": "localhost", "mode": "644", "mtime": "20180118151048", "parts": "1,69,1,0,0", "source": "tsource", "sum": "d,c35f14e247931c3185d5dc69c5cd543e", "to_clusters": "localhost"}, "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"]'
+
+    i   = 0
+    top = 100000
+    now = time.time()
+    while i<top:
+          i = i+1
+          topic, headers, notice = json.loads(json_line)
+          json_line = json.dumps( [ topic, headers, notice ], sort_keys=True )
+
+    e=time.time()-now
+    print("json loads/dumps (%d) %f" % (i,e))
+
+    retry.message.delivery_info['exchange']         = "test"
+    retry.message.delivery_info['routing_key']      = topic
+    retry.message.properties['application_headers'] = headers
+    retry.message.body                              = notice
+
+    i   = 0
+    now = time.time()
+    while i<top:
+          i = i+1
+          line  = retry.encode(message)
+          msg   = retry.decode(line)
+
+    e=time.time()-now
+    print("json encode/decode not done (%d) %f" % (i,e))
+
+    i   = 0
+    now = time.time()
+    while i<top:
+          i = i+1
+          line  = retry.encode(message,True)
+          msg   = retry.decode(line)
+          del msg.properties['application_headers']['_retry_tag_']
+
+    e=time.time()-now
+    print("json encode/decode done (%d) %f" % (i,e))
+
+    fp  = None
+    path= "/tmp/ftest1"
+    try: os.unlink(path)
+    except:pass
+
+    i   = 0
+    now = time.time()
+    while i<top:
+          i = i+1
+          fp = retry.msg_append_to_file(fp,path,message)
+    fp.close()
+
+    e=time.time()-now
+    print("msg_append_to_file (%d) %f" % (i,e))
+
 
     sys.exit(0)
 
