@@ -192,14 +192,14 @@ Why Not Just Use Rsync?
 
 There are a number of tree replication tools that are widely used, why invent another?  
 RSync, for example is a fabulous tool, and we recommend it highly for many use cases.  but there are times
-when Sarracenia can go sixty times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
+when Sarracenia can go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
 
 Rsync and other tools are comparison based (dealing with a single Source and Destination) Sarracenia, while it does 
 not require or use multi-casting, is oriented towards a delivery to multiple receivers, particularly when the source
 does not know who all the receivers are (pub/sub.) Where rsync synchronization is typically done by walking a 
 large tree, that means that the synchronization interval is inherently limited to the frequency at which you 
-can do the file tree walks (in large trees, that can be a long time.) Each file tree 
-walk reads the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
+can do the file tree walks (in large trees, that can be a long time.) Each file tree walk reads 
+the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
 large overhead. Sarracenia avoids file tree walks by having writers calculate the checksums once, and 
 signal their activity directly to readers by messages, reducing overhead by orders of magnitude.  Lsync 
 is a tool that leverages the INOTIFY features of Linux to achieve the same liveness, and it might be more 
