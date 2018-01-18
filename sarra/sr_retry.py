@@ -252,7 +252,7 @@ class sr_retry:
 
         msg = self.decode(line)
         # a corrupted line : go to the next
-        if msg == None : return msg_get_from_file(fp,path)
+        if msg == None : return self.msg_get_from_file(fp,path)
 
         return fp,msg
 
