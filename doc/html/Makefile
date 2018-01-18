@@ -14,13 +14,13 @@ SVG_TRGT = $(patsubst ../%.dia,%.svg,$(SVG_SRCS))
 
 TARGETS = CHANGES.html $(HTML_TRGT) $(SVG_TRGT)
 
-default: $(TARGETS) 
+default: img $(TARGETS) 
  
 %.svg: ../%.dia
 	dia -t svg $<
 
 img:
-	cp ../*.gif .
+	cp ../*.gif ../*.png .
 
 # In the html build, the TEMPLATE is provided on the command line
 # see site/Makefile

@@ -21,7 +21,7 @@ Summary
 
 This project has taken longer than expected, over a year, as the problem space was explored with the 
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
-settled on.  The client as actually more of a partner, who had very large test cases available and 
+settled on. The client as actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
 While there are many specificities of this implementation, the resulting tool relies on no specific features 
 beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
@@ -60,8 +60,18 @@ time *prediction/prognostic*. The forecasts follow a precise schedule throughout
 into one another, so delays ripple, and considerable effort is expended to avoid interruptions and 
 maintain schedule.
 
- * **FIXME:** likely better to get a program person to review the above...
- * **FIXME:** insert system diagram here... show SC1,PPP1,SS1 <-> SC2,PPP2,SS2* 
+High Level View
+---------------
+
+.. image:: HPC-XC_High_Availability.png
+  :scale: 66 %
+
+
+In the diagram above, if operations are in Data Hall 1 (left of centre), then they should be able to resume operations
+promptly from data hall 2 (on the right) in case of a loss of Data Hall 1.  For this to be realistic, production data must
+be available in the other hall quickly. The *mirroring* problem is synchronizing a very large subset of data 
+between data hall 1 and data hall 2. For monitoring purposes, at the same time, a smaller subset to must be 
+mirrored to data hall 0.
 
 
 Continuous Mirrorring
@@ -72,12 +82,6 @@ and the other as a *spare* (running only research and development loads.)  When 
 the intent is to run operations on the other supercomputer, using a *spare* disk to which all the
 live data has been mirrored. As there are (nearly) always runs in progress, the directories never 
 stop being modified, and there is no maintenance period when one can catch up if one falls behind.
-The site stores are clusters in their own right:
-
- * FIXME: someone else should have a diagram of this.
- * data movers connect via Infiniband to the disk units themselves.
- * meta data managers?
- * protocol and NFS nodes GPFS nodes that serve those outside the cluster, via NFS.
 
 There are essentially three parts of the problem:
  
@@ -172,11 +176,20 @@ prototype shim library to call it.
 Copying Files
 -------------
 
-It needs to be noted that while all of this work was progressing on the 'obtain the list of files to be copied' part of the problem, we were 
-also working on the 'copy the files to the other side' part of the problem. Over the summer, results of performance tests and other 
-considerations militated frequent changes in tactics. Many different sources and destinations (ppp, nfs, and protocol nodes), as well many 
-different methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different times. At this point several 
-strengths of sarracenia were evident:
+It needs to be noted that while all of this work was progressing on the 'obtain the list of 
+files to be copied' part of the problem, we were also working on the 'copy the files to the 
+other side' part of the problem. Over the summer, results of performance tests and other 
+considerations militated frequent changes in tactics.  The site stores are clusters in 
+their own right.  They have protocol nodes for serving traffic outside of the GPFS cluster. There are
+disk mover nodes with infiniband connections and actual disks. There are multiple networks (40GigE, 
+Infiniband, as well as management networks.) and the disks are considered *local* on the PPP servers
+as well.
+
+* FIXME: would like a site store diagram here.
+
+Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different 
+methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different 
+times. At this point several strengths of sarracenia were evident:
 
 * The separation of publishing from subscribing means that one can subscribe on the source node and push to the destination, or on the
   destination and pull from the source. It is easy to adapt for either approach. (ended up on destination protocol nodes, pulling from the source 
