@@ -48,12 +48,6 @@ except :
 
 class sr_report(sr_subscribe):
 
-    def __init__(self,config=None,args=None,action=None):
-        #start debug before it is set by args or config option
-        #self.debug = True
-        #self.setlog()
-        sr_subscribe.__init__(self,config,args,action)
-
     def check(self):
         self.logger.debug("%s check" % self.program_name)
         if self.config_name == None : return

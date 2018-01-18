@@ -305,7 +305,10 @@ class sr_config:
         self.logger.debug("action    %s" % self.action)
 
         if path        == None  : return
-        if self.action in [ 'edit', 'add', 'enable', 'remove' ]: return
+        if self.action in [ 'edit', 'add', 'enable' ]: return
+        if self.action == 'remove' :
+           if not path.endswith('.conf'): return
+           if not os.path.isfile(path)  : return
 
         try:
             f = open(path, 'r')

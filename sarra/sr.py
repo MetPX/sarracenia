@@ -99,6 +99,8 @@ def instantiate(dirconf,pgm,confname,action):
             elif  action == 'declare': inst.declare()
             elif  action == 'setup':   inst.setup()
 
+            elif  action == 'remove':  inst.exec_action('remove',False)
+
             sys.argv[0] = orig
 
     except:
@@ -169,9 +171,10 @@ def scandir(dirconf,pgm,action):
 
 def main():
     # first check action
+    actions_supported = ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'remove']
 
-    if len(sys.argv) == 1 or sys.argv[1] not in ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup']:
-       print("USAGE: %s (start|stop|restart|reload|status|cleanup|declare|setup) (version: %s) " % (sys.argv[0], sarra.__version__) )
+    if len(sys.argv) == 1 or sys.argv[1] not in actions_supported :
+       print("USAGE: %s (start|stop|restart|reload|status|cleanup|declare|setup|remove) (version: %s) " % (sys.argv[0], sarra.__version__) )
        sys.exit(1)
 
     action = sys.argv[-1]

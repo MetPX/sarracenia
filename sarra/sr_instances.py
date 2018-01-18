@@ -92,6 +92,54 @@ class sr_instances(sr_config):
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
 
+    def cleanup_parent(self,log_cleanup=False):
+        # make sure all instances are stopped
+
+        no=1
+        stopped = True
+        while no <= self.nbr_instances :
+              self.build_instance(no)
+              if self.pid != None :
+                 try    : 
+                          p = psutil.Process(self.pid)
+                          self.logger.info("%s running" % self.instance_str)
+                          stopped = False
+                 except : pass
+              no = no + 1
+
+        if not stopped :
+           self.logger.error("instances must be stopped for cleanup")
+           return False
+
+        # run cleanup
+
+        self.cleanup()
+
+        # get rid of this instance's cache file
+
+        dpath = self.user_cache_dir
+        if not os.path.isdir(dpath): return True
+
+        for x in os.listdir(dpath):
+            fpath = dpath + os.sep + x
+            try   : os.unlink(fpath)
+            except: self.logger.debug("could not delete %f on cleanup" % fpath)
+
+        try   : os.rmdir(dpath)
+        except: self.logger.debug("could not delete %d on cleanup" % dpath)
+
+        # log_cleanup 
+
+        if log_cleanup :
+           no=1
+           while no <= self.nbr_instances :
+                 self.build_instance(no)
+                 try   : os.unlink(self.logpath)
+                 except: self.logger.debug("could not delete %s logpath" % self.logpath)
+                 no = no + 1
+
+        return True
+
     def exec_action(self,action,old=False):
 
         if old :
@@ -120,14 +168,15 @@ class sr_instances(sr_config):
                 self.logger.warning("Should invoke 4: %s [args] action config" % sys.argv[0])
            os._exit(0)
 
-        elif action in [ 'add', 'enable', 'remove' ]: 
+        elif action in [ 'add', 'enable' ]: 
            self.exec_action_on_config(action)
            os._exit(0)
 
         # a config file that does not exists
 
         if not os.path.isfile(self.user_config) :
-           if   action == 'edit'    : self.exec_action_on_config(action)
+           if   action in ['edit','remove']     :
+                self.exec_action_on_config(action)
            else :
                 self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
@@ -141,7 +190,8 @@ class sr_instances(sr_config):
         elif action == 'stop'       : self.stop_parent()
         elif action == 'status'     : self.status_parent()
 
-        elif action == 'cleanup'    : self.cleanup()
+        elif action == 'cleanup'    : self.cleanup_parent()
+
         elif action == 'declare'    : self.declare()
         elif action == 'setup'      : self.setup()
 
@@ -259,10 +309,8 @@ class sr_instances(sr_config):
     def exec_action_on_config(self,action):
         self.logger.debug("exec_action_on_config %s, config_dir=%s, user_config=%s" % ( action, self.config_dir, self.user_config ) )
         
-        usr_dir = self.config_dir
-        usr_fil = self.user_config
-
-        ext     = '.conf'
+        usr_fil   = self.user_config
+        ext       = '.conf'
 
         sampledir = self.package_dir + os.sep + 'examples' + os.sep + self.program_dir
 
@@ -270,7 +318,7 @@ class sr_instances(sr_config):
 
         if self.user_config[-3:] == '.py' : 
            ext = ''
-           def_dir = self.user_config_dir + os.sep + 'plugins'
+           def_dir   = self.user_config_dir + os.sep + 'plugins'
            sampledir = self.package_dir + os.sep + 'plugins'
 
         elif self.user_config[-4:] == '.off':
@@ -351,8 +399,14 @@ class sr_instances(sr_config):
                    no = no + 1
 
         elif action == 'remove'     : 
+             if not def_fil                 : return
+             if not os.path.isfile(def_fil) : return
+             if def_fil.endswith('.conf')   :
+                ok = self.cleanup_parent(log_cleanup=True)
+                if not ok : return
+
              try   : os.unlink(def_fil)
-             except: self.logger.error("could not remove %s" % self.logpath)
+             except: self.logger.error("could not remove %s" % self.def_fil)
 
     
     def file_get_int(self,path):
