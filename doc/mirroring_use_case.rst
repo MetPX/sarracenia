@@ -87,7 +87,7 @@ There are essentially three parts of the problem:
  
 The actual trees to mirror are the following::
  
- pas999@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
+ psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
  policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
  policy_hall1_archive_dbase.conf:directory /fs/site1/ops/eccc/cmod/prod/archive.dbase
  policy_hall1_cmop.conf:directory /fs/site1/ops/eccc/cmod/cmop/data/maestro/smco500
@@ -98,7 +98,7 @@ The actual trees to mirror are the following::
  policy_hall1_version_control.conf:directory /fs/site1/ops/eccc/cmod/prod/version_control
  policy_hall1_work_ops.conf:directory /fs/site1/ops/eccc/cmod/prod/work_ops
  policy_hall1_work_par.conf:directory /fs/site1/ops/eccc/cmod/prod/work_par
- pas999@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
+ psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
  
 Initially, it was known that the number of files was large, but there was no knowledge of the actual 
 amounts involved.  Nor was that data even available until much later.
@@ -120,13 +120,13 @@ The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs. ) rsyn
 directory, as just walking the tree once, without any file copying going on. The walk of the tree, using 
 rsync with checksumming disabled as an optimization, resulted in the log below::
  
- pas999@eccc1-ppp1:~/test$ more tt_walk_hubs.log
+ psilva@eccc1-ppp1:~/test$ more tt_walk_hubs.log
  nohup: ignoring input
  rsync starting @ Sat Oct  7 14:56:52 GMT 2017
  number of files examined is on the order of: rsync --dry-run --links -avi --size-only /fs/site1/ops/eccc/cmod/prod/hubs /fs/site2/ops/eccc/cmod/prod/hubs |& wc -l
  27182247
  rsync end @ Sat Oct  7 20:06:31 GMT 2017
- pas999@eccc1-ppp1:~/test$
+ psilva@eccc1-ppp1:~/test$
  
 A **single pass took over five hours, to examine 27 million files or** examining **about 1500 files per second.** 
 The maximum rate of running rsyncs on this tree is thus on the order of once every six hours (to allow some 
@@ -253,7 +253,9 @@ vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is ju
 must be limited to a certain polling interval (five minutes) to limit impact on the file system, and that provides a lower bound 
 on transfer latency. 
 
-client report (from D. Racette)::
+client report:
+
+.. code:: bash
  
     You wanted some numbers for your case study so here goes:
      
@@ -296,8 +298,12 @@ client report (from D. Racette)::
     To keep in mind:
      
     We have 12 instances for the preload while we’re running 40 for the policy.
-    I filtered out the set of files that skewed the results heavily.
-    The preload audit in hourly slices shows that it’s heavily instance-bound. If we were to boost it up it should give out much better results in high count situations. Here’s Jan 4th  again but by hourly slice:
+
+    * I filtered out the set of files that skewed the results heavily.
+    * The preload audit in hourly slices shows that it’s heavily instance-bound. 
+    * If we were to boost it up it should give out much better results in high count situations. 
+
+    Here’s Jan 4th  again but by hourly slice:
      
      
     dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/ldpreload.conf  -t hourly -d 2018-01-04
