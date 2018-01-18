@@ -21,15 +21,15 @@ Summary
 
 This project has taken longer than expected, over a year, as the problem space was explored with the 
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
-settled on.  The client as actually more of a partner, as the client had the large test cases available and 
+settled on.  The client as actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
 While there are many specificities of this implementation, the resulting tool relies on no specific features 
-beyond a normal Linux file system to achieve a 72:1 speedup relative compared to rsync on real-time continuous 
-mirroring of 14 terabytes in 1.9 million files per day between two trees of 27 million files each. While
-this averages to 162 Mbytes/second sustained over a 24 hour period, it should be noted that the transfers
+beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
+mirroring of 16 terabytes in 1.9 million files per day between two trees of 27 million files each. While
+this averages to 185 Mbytes/second sustained over a 24 hour period, it should be noted that the transfers
 are very peaky, and peak transfer rates are much higher. On the same equipment at the same time, another
 4 terabytes per day is being written to clusters on another network, so the aggregate read rate on
-the operational cluster is 18 Terabytes per day (208 mbytes/second) for this application, while
+the operational cluster is 20 Terabytes per day (231 mbytes/second) for this application, while
 the file systems are used for all the normal user applications as well.
 
 While this project had to suffer through the develeopment, with the lessons learned and the tools 
@@ -47,17 +47,18 @@ Problem Statement
 In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological Service of Canada (MSC), 
 as part of a the High Performance Computing Replacement (HPCR) project asked for very large directory 
 trees to be mirrored in real-time. It was known from the outset that these trees would be too large to 
-deal with using ordinary tools. It is expected to take about 15 months to explore the issue and 
-arrive at an effective operational deployment. It should be noted that SSC worked throughout this period 
-in close partnership with ECCC, and that this deployment required the very active participation of 
-sophisticated users, to follow along with the twists and turns and different avenues explored and implemented.
+deal with using ordinary tools. It is expected that it will take about 15 months to explore the 
+issue and arrive at an effective operational deployment.  It should be noted that SSC worked throughout 
+this period in close partnership with ECCC, and that this deployment required the very active participation of 
+sophisticated users to follow along with the twists and turns and different avenues explored and implemented.
 
-The Computing environment is Canada's national weather centre, whose primary application a "production" numerical 
-weather prediction suite, where models run 7/24 hours/day running different simulations (models of the atmosphere, 
+The computing environment is Canada's national weather centre, whose primary application is *production* numerical 
+weather prediction, where models run 7/24 hours/day running different simulations (models of the atmosphere, 
 and sometimes waterways and ocean, and the land under the atmosphere) either ingesting current observations 
 aka *assimilation*, mapping them to a grid *analysis*, and then walking the grid forward in 
-time *prediction/prognostic*. The forecasts follow a precise schedule throughout the 24hour cycle, and 
-delays have ripples, so considerable effort is expended to avoid interruptions and maintain that schedule.
+time *prediction/prognostic*. The forecasts follow a precise schedule throughout the 24hour cycle, feeding
+into one another, so delays ripple, and considerable effort is expended to avoid interruptions and 
+maintain schedule.
 
  * **FIXME:** likely better to get a program person to review the above...
  * **FIXME:** insert system diagram here... show SC1,PPP1,SS1 <-> SC2,PPP2,SS2* 
@@ -127,7 +128,7 @@ rsync with checksumming disabled as an optimization, resulted in the log below::
  rsync end @ Sat Oct  7 20:06:31 GMT 2017
  pas999@eccc1-ppp1:~/test$
  
-A single pass took over five hours, to examine 27 million files, or examining about 1500 files per second. 
+A **single pass took over five hours, to examine 27 million files or** examining **about 1500 files per second.** 
 The maximum rate of running rsyncs on this tree is thus on the order of once every six hours (to allow some 
 time for copying) for this tree. Note that any usual method of copying a directory tree requires traversing 
 it, and that there is no reason to believe that any other tool such as find, dump, tar, tree, etc... would 
@@ -148,7 +149,7 @@ the memory use rose into the terabyte range.
  
 An alternate approach is, instead of running the modification detection at the Linux level, use the file 
 system itself, which is database driven, to indicate which files had been modified. The HPC solution's main 
-storage system uses IBM's General Parallel File System, or GPFS.  Using the *GPFS-policy* method, a query is 
+storage system uses IBM's General Parallel File System, or GPFS. Using the *GPFS-policy* method, a query is 
 run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per 
 query.) combined with sr_poll to announce of files modified (and thus eligible for copying.) This is 
 completely non-portable, but was expected to be much faster than file tree traversal.
@@ -236,7 +237,12 @@ Is it Fast?
 -----------
 
 The GPFS-policy runs are the still the method in use operatonally as this is written (2018/01.) The performance numbers given in 
-the summary are taken from the logs of one days of GPFS-policy runs. All indications are that the shim library copies more data, 
+the summary are taken from the logs of one days of GPFS-policy runs. 
+
+ * Hall1 to Hall2: bytes/days: 18615163646615 = 16T, nb file/day:  1901463
+ * Hall2 yo CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
+
+All indications are that the shim library copies more data, 
 more quickly than the policy based runs, but so far (2018/01) only subsets of the main tree have been tested. 
 On one tree of 142000 files, the GPFS-policy run had a mean transfer time
 of 1355 seconds (about 23 minutes), where the shim library approach had a mean transfer time of 239 seconds (less than five minutes.)
@@ -245,12 +251,118 @@ the mean transfer time was 264 seconds, where the same tree with the GPFS-policy
 are accumulated for particular hours, and at low traffic times, the average transfer time with the shim library was 0.5 seconds, 
 vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to the fact that GPFS-policy method 
 must be limited to a certain polling interval (five minutes) to limit impact on the file system, and that provides a lower bound 
-on transfer latency.
+on transfer latency. 
+
+client report (from D. Racette)::
+ 
+    You wanted some numbers for your case study so here goes:
+     
+    Jan 4th
+    Preload:
+    dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/ldpreload.conf  -t daily -d 2018-01-04
+    Mean transfer time: 238.622s
+    Max transfer time: 1176.83s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wh/banco/cutoff/2018010406_078_prog_gls_rel.tb0
+    Min transfer time: 0.0244577s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/backup/ATX_radprm
+    Total files: 142426
+    Files over 300s: 44506
+    Files over 600s: 14666
+    Policy:
+    dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/mirror-ss1-from-hall2.conf  -t daily -d 2018-01-04
+    Mean transfer time: 1355.42s
+    Max transfer time: 2943.53s for file: /space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/surface/201801041500_tt.obs
+    Min transfer time: 1.93106s for file: /space/hall2/sitestore/eccc/cmod/prod/archive.dbase/dayfiles/par/2018010416_opruns_capa25km_rdpa_final
+    Total files: 98296
+    Files over 300s: 97504
+    Files over 600s: 96136
+     
+    Jan 3rd
+    Preload:
+    dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/ldpreload.conf  -t daily -d 2018-01-03
+    Mean transfer time: 264.377s
+    Max transfer time: 1498.73s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/capa/bassin/6h/prelim/05/2018010312_05ME005_1.dbf
+    Min transfer time: 0.0178287s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/XSS_0p1_statqpe
+    Total files: 144419
+    Files over 300s: 60977
+    Files over 600s: 14185
+    Policy:
+    dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/mirror-ss1-from-hall2.conf  -t daily -d 2018-01-03
+    Mean transfer time: 1175.33s
+    Max transfer time: 2954.57s for file: /space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/surface/201801032200_tt.obs
+    Min transfer time: -0.359947s for file: /space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/1h/XTI/201801031300~~PA,PA_PRECIPET,EE,1H:URP:XTI:RADAR:META:COR1
+    Total files: 106892
+    Files over 300s: 106176
+    Files over 600s: 104755
+     
+    To keep in mind:
+     
+    We have 12 instances for the preload while we’re running 40 for the policy.
+    I filtered out the set of files that skewed the results heavily.
+    The preload audit in hourly slices shows that it’s heavily instance-bound. If we were to boost it up it should give out much better results in high count situations. Here’s Jan 4th  again but by hourly slice:
+     
+     
+    dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/ldpreload.conf  -t hourly -d 2018-01-04
+    00 GMT
+    Mean transfer time: 0.505439s
+    Max transfer time: 5.54261s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/6h/XME/201801040000~~PA,PA_PRECIPET,EE,6H:URP:XME:RADAR:META:NRML
+    Min transfer time: 0.0328007s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/IWX_0p5_statqpe
+    Total files: 847
+    Files over 300s: 0
+    Files over 600s: 0
+    01 GMT
+    Mean transfer time: 166.883s
+    Max transfer time: 1168.64s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wh/banco/cutoff/2018010318_078_prog_gls_rel.tb0
+    Min transfer time: 0.025425s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/XPG/201801031800_XPG_statomr
+    Total files: 24102
+    Files over 300s: 3064
+    Files over 600s: 1
+    02 GMT
+    Mean transfer time: 0.531483s
+    Max transfer time: 4.73308s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/archive.dbase/dayfiles/par/2018010401_opruns_capa25km_rdpa_preli
+    Min transfer time: 0.0390887s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/XMB/201801031900_XMB_radprm
+    Total files: 774
+    Files over 300s: 0
+    Files over 600s: 0
+    03 GMT
+    Mean transfer time: 0.669443s
+    Max transfer time: 131.666s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/1h/WKR/201801032000~~PA,PA_PRECIPET,EE,1H:URP:WKR:RADAR:META:COR2
+    Min transfer time: 0.0244577s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/backup/ATX_radprm
+    Total files: 590
+    Files over 300s: 0
+    Files over 600s: 0
+    04 GMT
+    Mean transfer time: 59.0324s
+    Max transfer time: 236.029s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wf/depot/2018010400/nemo/LISTINGS/ocean.output.00016.672
+    Min transfer time: 0.033812s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/resps_20171107/forecast/products_dbase/images/2018010400_resps_ens-point-ETAs_239h-boxplot-NS_Pictou-001_240.png
+    Total files: 2297
+    Files over 300s: 0
+    Files over 600s: 0
+    05 GMT
+    Mean transfer time: 6.60841s
+    Max transfer time: 28.6136s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/rewps_20171018/forecast/products_dbase/images_prog/2018010400_rewps_ens-point-Hs_Tp_072h-45012-000_072.png
+    Min transfer time: 0.0278831s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/XSM/201801032200_XSM_0p2_statqpe
+    Total files: 3540
+    Files over 300s: 0
+    Files over 600s: 0
+    06 GMT
+    Mean transfer time: 1.90411s
+    Max transfer time: 18.5288s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/ARX_0p5_statqpe
+    Min transfer time: 0.0346384s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/WWW/201801040600_WWW_statomr
+    Total files: 757
+    Files over 300s: 0
+    Files over 600s: 0
+    07 GMT
+    Mean transfer time: 262.338s
+    Max transfer time: 558.845s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/capa/bassin/6h/final/11/2018010400_11AA028_1.shp
+    Min transfer time: 0.028173s for file: /space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/DLH/201801040000_DLH_statomr
+    Total files: 23849
+    Files over 300s: 11596
+    Files over 600s: 0
+ 
 
 On comparable trees, the number of files being copied with the shim library is always higher than with the GPFS-policy. While 
 correctness is still being evaluated, the shim method is apparently working better than the policy runs. If we return to the 
-original rsync performance of 6 hours to sync the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
-or 72:1 speedup on the use case that matters.
+original rsync performance of 6 hours for the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
+or 72:1 speedup. 
 
 
 Contributions
