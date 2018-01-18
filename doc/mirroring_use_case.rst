@@ -242,23 +242,25 @@ the summary are taken from the logs of one days of GPFS-policy runs.
  * Hall1 to Hall2: bytes/days: 18615163646615 = 16T, nb file/day:  1901463
  * Hall2 yo CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
 
-All indications are that the shim library copies more data, 
-more quickly than the policy based runs, but so far (2018/01) only subsets of the main tree have been tested. 
-On one tree of 142000 files, the GPFS-policy run had a mean transfer time
-of 1355 seconds (about 23 minutes), where the shim library approach had a mean transfer time of 239 seconds (less than five minutes.)
-or a speedup for libshim vs. GPFS-policy of about 4:1. On a second tree where the shim library transferred 144 thousand files in a day, 
-the mean transfer time was 264 seconds, where the same tree with the GPFS-policy approach took 1175 (basically 20 minutes) The stats 
-are accumulated for particular hours, and at low traffic times, the average transfer time with the shim library was 0.5 seconds, 
-vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to the fact that GPFS-policy method 
-must be limited to a certain polling interval (five minutes) to limit impact on the file system, and that provides a lower bound 
-on transfer latency. 
+All indications are that the shim library copies more data more quickly than the policy based runs, 
+but so far (2018/01) only subsets of the main tree have been tested.  On one tree of 142000 files, the GPFS-policy run had a mean 
+transfer time of 1355 seconds (about 23 minutes), where the shim library approach had a mean transfer time of 239 seconds (less than 
+five minutes.) or a speedup for libshim vs. GPFS-policy of about 4:1. On a second tree where the shim library transferred 144 
+thousand files in a day, the mean transfer time was 264 seconds, where the same tree with the GPFS-policy approach took 1175 
+(basically 20 minutes) The stats are accumulated for particular hours, and at low traffic times, the average transfer time with 
+the shim library was 0.5 seconds, vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to 
+the fact that GPFS-policy method must be limited to a certain polling interval (five minutes) to limit impact on the file system, 
+and that provides a lower bound on transfer latency. 
 
-client report:
+On comparable trees, the number of files being copied with the shim library is always higher than with the GPFS-policy. While 
+correctness is still being evaluated, the shim method is apparently working better than the policy runs. If we return to the 
+original rsync performance of 6 hours for the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
+or 72:1 speedup. 
+
+the above is based on the following client report:
 
 .. code:: bash
  
-    You wanted some numbers for your case study so here goes:
-     
     Jan 4th
     Preload:
     dracette@eccc1-ppp1:~$ ./mirror.audit_filtered -c ~opruns/.config/sarra/subscribe/ldpreload.conf  -t daily -d 2018-01-04
@@ -364,11 +366,6 @@ client report:
     Files over 300s: 11596
     Files over 600s: 0
  
-
-On comparable trees, the number of files being copied with the shim library is always higher than with the GPFS-policy. While 
-correctness is still being evaluated, the shim method is apparently working better than the policy runs. If we return to the 
-original rsync performance of 6 hours for the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
-or 72:1 speedup. 
 
 
 Contributions
