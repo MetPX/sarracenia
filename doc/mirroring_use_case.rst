@@ -7,21 +7,24 @@
 -------------------------------------------------------
 
 .. warning::
+
+   **CAVEAT:** 
    This is a bit speculative at the time of this writing (2018/01) We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
    article will be amended to reflect the advancing solution, until complete, then this note will be removed.
+
 .. contents::
 
 
 Summary
 -------
 
-This project was over a year long as the problem space was explored with the help of a very patient
-client while the tool to implement the efficient solution was eventually settled on. The client
-as actually more of a partner, as the client had the large test cases available and ended up shouldering
-the responsibility for all of us to understand whether the solution was working or not. While there 
-are many specificities of this implementation, the resulting tool relies on no specific features beyond a 
-normal Linux file system to achieve a 72:1 speedup relative compared to rsync on real-time continuous 
+This project has taken longer than expected, over a year, as the problem space was explored with the 
+help of a very patient client while the tool to design and implement the efficient solution was eventually 
+settled on.  The client as actually more of a partner, as the client had the large test cases available and 
+ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
+While there are many specificities of this implementation, the resulting tool relies on no specific features 
+beyond a normal Linux file system to achieve a 72:1 speedup relative compared to rsync on real-time continuous 
 mirroring of 14 terabytes in 1.9 million files per day between two trees of 27 million files each. While
 this averages to 162 Mbytes/second sustained over a 24 hour period, it should be noted that the transfers
 are very peaky, and peak transfer rates are much higher. On the same equipment at the same time, another
@@ -33,7 +36,7 @@ While this project had to suffer through the develeopment, with the lessons lear
 now available, it should be straightforward to apply this solution to other cases. The end result is 
 that one adds a shim library to the users' environment (transparent to user jobs), and 
 then every time a file is written, an AMQP message with file metadata is posted. A pool of transfer
-daemons stand by at all times to transfer the files posted to their shared queue. The number of subscribers 
+daemons are standing by to transfer the files posted to a shared queue. The number of subscribers 
 is programmable and scalable, and the techniques and topology to do the transfer are all easily 
 controlled to optimize transfers for whatever criteria are deemed most important.
 
@@ -45,11 +48,9 @@ In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological 
 as part of a the High Performance Computing Replacement (HPCR) project asked for very large directory 
 trees to be mirrored in real-time. It was known from the outset that these trees would be too large to 
 deal with using ordinary tools. It is expected to take about 15 months to explore the issue and 
-arrive at an effective operational deployment.
-
-It should be noted that SSC worked throughout this period in close partnership with ECCC, and that this
-deployment required the very active participation of sophisticated users, to follow along with the twists 
-and turns and different avenues explored and implemented.
+arrive at an effective operational deployment. It should be noted that SSC worked throughout this period 
+in close partnership with ECCC, and that this deployment required the very active participation of 
+sophisticated users, to follow along with the twists and turns and different avenues explored and implemented.
 
 The Computing environment is Canada's national weather centre, whose primary application a "production" numerical 
 weather prediction suite, where models run 7/24 hours/day running different simulations (models of the atmosphere, 
@@ -58,8 +59,12 @@ aka *assimilation*, mapping them to a grid *analysis*, and then walking the grid
 time *prediction/prognostic*. The forecasts follow a precise schedule throughout the 24hour cycle, and 
 delays have ripples, so considerable effort is expended to avoid interruptions and maintain that schedule.
 
- * *FIXME: likely better to get a program person to review the above...
- * *FIXME: insert system diagram here... show SC1,PPP1,SS1 <-> SC2,PPP2,SS2* 
+ * **FIXME:** likely better to get a program person to review the above...
+ * **FIXME:** insert system diagram here... show SC1,PPP1,SS1 <-> SC2,PPP2,SS2* 
+
+
+Continuous Mirrorring
+---------------------
 
 There is a pair of clusters running these simulations, one normally mostly working on operations,
 and the other as a *spare* (running only research and development loads.)  When the primary fails,
@@ -134,7 +139,7 @@ Detection Methods: Inotify, Policy, SHIM
 
 There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By 
 setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified 
-in the tree. This was the initial approach taken. It turns out (last January), that INOTIFY is indeed a 
+in the tree. This was the initial approach taken. It turns out (in January 2017), that INOTIFY is indeed a 
 Linux feature, in that the INOTIFY events only propagate across a single server. With a cluster file 
 system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather 
 than running a single daemon, we were faced with running several hundred daemons (one per physical node), 
@@ -155,8 +160,8 @@ as the rsync). While slower (taking longer to notice a file was modified), the G
 performance and was far more reliable than the parallel sr_watch method,and by the spring, with deployment 
 expected for early July 2017, the GPFS policy approach was selected.
  
-As the migration progressed, the file systems got more filled, and the GPFS-policy method got progressively 
-slower. Already in July, this was not an acceptable solution. At this point, the idea of intercepting 
+As the migration progressed, the file systems grew in that they had more files in the trees, and the GPFS-policy 
+method progressively slowed. Already in July, this was not an acceptable solution. At this point, the idea of intercepting 
 jobs' file i/o calls with a shim library was introduced. ECCC told SSC at the time, that having correct 
 feeds, and having everything ready for transition was the priority, so the focus of efforts was in that 
 direction until the migration was achieved in September. In spite of being a lower priority over the 
@@ -198,7 +203,7 @@ an overlap of 75 seconds (where a succeeding query would ask for file modificati
 ended.) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
 files. At this point, in late November, early December, the libcshim was working well enough to be so encouraging that folks lost 
 interest in the GPFS policy. In contrast to an average of about 10 minutes delay starting a file copy with GPFS-policy queries, 
-the libcshim approach has the copy initiated as soon as the file is closed on the source file system.
+the libcshim approach has the copy queued as soon as the file is closed on the source file system.
 
 It should be noted that when the work began, the python implementation of Sarracenia was a data distribution tool, with no support for mirroring.
 as the year progressed features:  symbolic link support, file attribute transportation, file removal support were added to the initial package.
@@ -210,76 +215,103 @@ where efficiency was paramount (the libcshim case.)
 Does it Work?
 -------------
 
+In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs.) It is
+expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
+delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
+or 72 times faster than rsync (see next section for performance info.)
+
 The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
 A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
 on the destination. Over a large number of samples, we get a quantification of how accurate the copy is. The plugin for this comparison
 is still in development.  
 
-* FIXME: include links to plugins
+* **FIXME:** include links to plugins
 
-In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs.) It is
-expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
-delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
-or 72 times faster than rsync.
+* **FIXME:** Another approach being considered is to compare file system snapshots.
 
-So far (2018/01) only subsets of the main tree have been tested.  On one tree of 142000 files, the GPFS-policy run had a mean transfer time
+
+
+
+Is it Fast?
+-----------
+
+The GPFS-policy runs are the still the method in use operatonally as this is written (2018/01.) The performance numbers given in 
+the summary are taken from the logs of one days of GPFS-policy runs. All indications are that the shim library copies more data, 
+more quickly than the policy based runs, but so far (2018/01) only subsets of the main tree have been tested. 
+On one tree of 142000 files, the GPFS-policy run had a mean transfer time
 of 1355 seconds (about 23 minutes), where the shim library approach had a mean transfer time of 239 seconds (less than five minutes.)
-On a second tree where the shim library transferred 144 thousand files in a day, the mean transfer time was 264 seconds, where the same
-tree with the GPFS-policy approach took 1175 (basically 20 minutes) The stats are accumulated for particular hours, and at low traffic times, 
-the average transfer time with the shim library was 0.5 seconds, vs. 166 seconds with the policy.  The number of files being copied
-with the shim library is always higher than with the GPFS-policy.  While correctness is still being evaluated, the shim method is
-apparently working better than the policy runs.  If we return to the oringal rsync performance of 6 hours to sync the tree, then
-the ratio we are seem to be delivering on is six hours vs. 5 minutes ... or 72:1 speedup.
+or a speedup for libshim vs. GPFS-policy of about 4:1. On a second tree where the shim library transferred 144 thousand files in a day, 
+the mean transfer time was 264 seconds, where the same tree with the GPFS-policy approach took 1175 (basically 20 minutes) The stats 
+are accumulated for particular hours, and at low traffic times, the average transfer time with the shim library was 0.5 seconds, 
+vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to the fact that GPFS-policy method 
+must be limited to a certain polling interval (five minutes) to limit impact on the file system, and that provides a lower bound 
+on transfer latency.
+
+On comparable trees, the number of files being copied with the shim library is always higher than with the GPFS-policy. While 
+correctness is still being evaluated, the shim method is apparently working better than the policy runs. If we return to the 
+original rsync performance of 6 hours to sync the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
+or 72:1 speedup on the use case that matters.
 
 
 Contributions
 -------------
 
 
-Dominic Racette - CMC Operations Implementation group 
+**Dominic Racette** - ECCC CMC Operations Implementation 
 
-    Client lead on the mirroring project.  A lot of auditing and running of tests.
-    integration/deployment of copying plugins. a great deal of testing and extraction of log reports.
+   Client lead on the mirroring project.  A lot of auditing and running of tests.
+   integration/deployment of copying plugins. a great deal of testing and extraction of log reports.
 
-Daluma Sen - SSC DCSB Supercomputing HPC Optimization
+**Doug Bender** - ECCC CMC Operations Implementation
 
-   building C libraries in HPC environment, contributing the random file picker, general consulting.
+   Another client analyst participating in the project.  Awareness, engagement, etc...
 
-Alain St-Denis - Manager, SSC DCSB Supercomputing HPC Optimization
 
-   inspiration, consultation, wise man. Initially proposed shim library.
+**Daluma Sen** - SSC DCSB Supercomputing HPC Optimization
+
+   Building C libraries in HPC environment, contributing the random file picker, general consulting.
+
+**Alain St-Denis** - Manager, SSC DCSB Supercomputing HPC Optimization
+
+   Inspiration, consultation, wise man. Initially proposed shim library.
    
-Daniel Pelissier - SSC DCSB Supercomputing HPC Integration / then replacing Alain.
+**Daniel Pelissier** - SSC DCSB Supercomputing HPC Integration / then replacing Alain.
 
-   inspiration/consultation on GPFS-policy work, and use of storage systems.
+   Inspiration/consultation on GPFS-policy work, and use of storage systems.
 
-Tarak Patel - SSC DCSB Supercomputing HPC Integration.
+**Tarak Patel** - SSC DCSB Supercomputing HPC Integration.
 
    Installation of Sarracenia on protocol nodes and other specific locations. Development of GPFS-policy scripts,
    called by Jun Hu's plugins.
 
-Jun Hu  - SSC DCSB Supercomputing Data Interchange
+**Jun Hu**  - SSC DCSB Supercomputing Data Interchange
 
-   developed GPFS-policy sarracenia integration plugins, implemented them within sr_poll, worked with CMOI on deployments
+   Deployment lead for SSC, Developed GPFS-policy sarracenia integration plugins, 
+   implemented them within sr_poll, worked with CMOI on deployments
    Shouldered Most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
 
-Peter Silva - Manager, SSC DCSB Supercomputing Data Interchange
+**Peter Silva** - Manager, SSC DCSB Supercomputing Data Interchange
 
-   project lead (nutbar?) made C implementation including shim library. hacked on the Python also from time to time.
+   Project lead, made C implementation including shim library. hacked on the Python also from time to time.
    Initial versions of most plugins.
 
-Michel Grenier - SSC DCSB Supercomputing Data Interchange
+**Michel Grenier** - SSC DCSB Supercomputing Data Interchange
 
    Python sarracenia development lead
 
-Deric Sullivan - Manager, SSC DCSB Supercomputing HPC Services
+**Deric Sullivan** - Manager, SSC DCSB Supercomputing HPC Solutions
 
-   consultation/work on deployments with inotify solution. 
+   Consultation/work on deployments with inotify solution. 
 
-Walter Richards - SSC DCSB Supercomputing HPC Services
+**Walter Richards** - SSC DCSB Supercomputing HPC Solutions
 
-   consultation/work on deployments with inotify solution. 
+   Consultation/work on deployments with inotify solution. 
 
-FIXME: who else should be here
+**Jamal Ayach** - SSC DCSB Supercomputing HPC Solutions
 
+   Consultation/work on deployments with inotify solution. 
+
+**FIXME:** who else should be here: ?
+
+There was also support and oversight from management in both ECCC and SSC throughout the project.
 
