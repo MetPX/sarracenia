@@ -67,11 +67,11 @@ High Level View
   :scale: 66 %
 
 
-In the diagram above, if operations are in Data Hall 1 (left of centre), then they should be able to resume operations
-promptly from data hall 2 (on the right) in case of a loss of Data Hall 1.  For this to be realistic, production data must
-be available in the other hall quickly. The *mirroring* problem is synchronizing a very large subset of data 
-between data hall 1 and data hall 2. For monitoring purposes, at the same time, a smaller subset to must be 
-mirrored to data hall 0.
+In the diagram above, if operations are in Data Hall 1 (left of centre) and they fail, then the goal is to resume 
+operations promptly from data hall 2 (on the right.) For this to be realistic, production data must be available 
+in the other hall, on the other site store, quickly. The *mirroring* problem is synchronizing a very large 
+subset of data between site store 1 and site store 2. For monitoring purposes, at the same time, a smaller 
+subset to must be mirrored to data hall 0.
 
 
 Continuous Mirrorring
