@@ -77,14 +77,12 @@ except :
 
 class sr_sender(sr_subscribe):
 
-    def __init__(self,config=None,args=None,action=None):
-        sr_subscribe.__init__(self,config,args,action)
+    def check(self):
+
         self.sleep_connect_try_interval_min=0.01
         self.sleep_connect_try_interval_max=30
         self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
 
-
-    def check(self):
         self.connected     = False 
 
         if self.config_name == None : return

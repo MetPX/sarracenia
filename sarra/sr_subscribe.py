@@ -65,9 +65,6 @@ except :
 
 class sr_subscribe(sr_instances):
 
-    def __init__(self,config=None,args=None,action=None):
-        sr_instances.__init__(self,config,args,action)
-
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 

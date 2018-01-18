@@ -47,10 +47,6 @@ except :
 
 class sr_audit(sr_instances):
 
-    def __init__(self,config=None,args=None):
-        sr_instances.__init__(self,config,args)
-        self.hc = None
-
     def add_exchange(self,e):
         self.logger.info("adding exchange '%s'" % e)
         self.hc.exchange_declare(e)
@@ -146,6 +142,8 @@ class sr_audit(sr_instances):
 
     def check(self):
         self.logger.debug("sr_audit check")
+
+        self.hc = None
 
         # only one audit around
         self.nbr_instances = 1

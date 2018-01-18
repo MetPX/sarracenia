@@ -41,9 +41,6 @@ except :
 
 class sr_winnow(sr_subscribe):
 
-    def __init__(self,config=None,args=None,action=None):
-        sr_subscribe.__init__(self,config,args,action)
-
     def check(self):
 
         if self.config_name == None : return
