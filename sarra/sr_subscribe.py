@@ -143,7 +143,7 @@ class sr_subscribe(sr_instances):
         if hasattr(self,'http_link'): self.http_link.close()
         if hasattr(self,'sftp_link'): self.sftp_link.close()
 
-        if self.cache :
+        if hasattr(self,'cache') and self.cache :
            self.cache.save()
            self.cache.close()
 
@@ -1697,7 +1697,7 @@ class sr_subscribe(sr_instances):
 
         # caching
 
-        if self.caching :
+        if hasattr(self,'cache') and self.cache :
            self.cache.close(unlink=True)
            self.cache = None
 

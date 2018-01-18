@@ -142,7 +142,7 @@ class sr_post(sr_instances):
            self.post_hc.close()
            self.post_hc = None
 
-        if self.cache :
+        if hasattr(self,'cache') and self.cache :
            self.cache.save()
            self.cache.close()
 
@@ -1349,7 +1349,7 @@ class sr_post(sr_instances):
 
         # caching
 
-        if self.caching :
+        if hasattr(self,'cache') and self.cache :
            self.cache.close(unlink=True)
            self.cache = None
 
