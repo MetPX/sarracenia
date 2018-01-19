@@ -288,7 +288,7 @@ class sr_instances(sr_config):
                 print( "%20s " % confname, end='' )
             else:
                 try: 
-                   if confname[-5:] == '.conf' : subprocess.check_call([self.program_name, action, confname] )
+                   if confname[-5:] == '.conf' : subprocess.check_output([self.program_name, action, confname] )
                 except: pass
 
         if action == 'list': print('\n')
@@ -369,7 +369,7 @@ class sr_instances(sr_config):
              cmd = os.environ.get('PAGER')
              if cmd == None:
                  cmd="more"
-             try   : subprocess.check_call([ cmd, usr_fil ] )
+             try   : subprocess.check_output([ cmd, usr_fil ] )
              except: self.logger.error("could not %s %s" % ( cmd, usr_fil ) )
 
         elif action == 'log' and ext == '.conf' :
@@ -378,14 +378,14 @@ class sr_instances(sr_config):
              if self.nbr_instances == 1 :
                 self.build_instance(1)
                 print("\ntail -f %s\n" % self.logpath)
-                try   : subprocess.check_call([ 'tail', '-f', self.logpath] )
+                try   : subprocess.check_output([ 'tail', '-f', self.logpath])
                 except: self.logger.info("stop (or error?)")
                 return
 
              if self.no > 0 :
                 self.build_instance(self.no)
                 print("\ntail -f %s\n" % self.logpath)
-                try   : subprocess.check_call([ 'tail', '-f', self.logpath] )
+                try   : subprocess.check_output([ 'tail', '-f', self.logpath] )
                 except: self.logger.info("stop (or error?)")
                 return
 
@@ -394,7 +394,7 @@ class sr_instances(sr_config):
                    self.build_instance(no)
                    print("\ntail -f %s\n" % self.logpath)
                    if not os.path.isfile(self.logpath) : continue
-                   try   : subprocess.check_call( [ 'tail', '-n10', self.logpath] )
+                   try   : subprocess.check_output( [ 'tail', '-n10', self.logpath] )
                    except: self.logger.error("could not tail -n 10 %s" % self.logpath)
                    no = no + 1
 
@@ -527,11 +527,8 @@ class sr_instances(sr_config):
         PS-20171212-do not know why this if statement is here, but it means debug output doesn't go to the log.
          so I commented it out.  If it ever turns out there is a case we need it... will look again.
         """ 
-        if 0 : #self.debug :
-           pid = subprocess.Popen(cmd)
-        else :
-           pid = subprocess.Popen(cmd,shell=False,\
-                 stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        pid = subprocess.Popen(cmd,shell=False,\
+              stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
