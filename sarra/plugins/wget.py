@@ -95,13 +95,19 @@ class WGET(object):
       os.chdir( msg.new_dir )
       cmd = parent.download_wget_command[0].split() + [ msg.urlstr ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
-      result =  subprocess.call( cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
-      
+
+      p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      outstr, dummy = p.communicate()
+      result = p.returncode
+
       if result == 0:  # Success!
+         logger.debug("%s" % outstr)
          logger.info("wget Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          return True
+
+      logger.error("%s" % outstr)
          
       if parent.reportback:
          msg.report_publish(499,'wget download failed')
