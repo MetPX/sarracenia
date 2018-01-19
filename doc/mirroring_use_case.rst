@@ -34,12 +34,13 @@ the file systems are used for all the normal user applications as well.
 
 While this project had to suffer through the develeopment, with the lessons learned and the tools 
 now available, it should be straightforward to apply this solution to other cases. The end result is 
-that one adds a shim library to the users' environment (transparent to user jobs), and 
+that one adds a `shim library`_ to the users' environment (transparent to user jobs), and 
 then every time a file is written, an AMQP message with file metadata is posted. A pool of transfer
 daemons are standing by to transfer the files posted to a shared queue. The number of subscribers 
 is programmable and scalable, and the techniques and topology to do the transfer are all easily 
 controlled to optimize transfers for whatever criteria are deemed most important.
 
+.. _shim library: https://en.wikipedia.org/wiki/Shim_(computing)
 
 Problem Statement
 -----------------
@@ -417,6 +418,10 @@ Contributions
    Deployment lead for SSC, Developed GPFS-policy sarracenia integration plugins, 
    implemented them within sr_poll, worked with CMOI on deployments
    Shouldered Most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
+
+**Noureddine Habili**  - SSC DCSB Supercomputing Data Interchange
+
+   Debian packaging for C-implementation. Some deployment work as well.
 
 **Peter Silva** - Manager, SSC DCSB Supercomputing Data Interchange
 
