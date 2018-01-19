@@ -27,12 +27,12 @@ While there are many specificities of this implementation, the resulting tool re
 beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
 mirroring of 16 terabytes in 1.9 million files per day between two trees of 27 million files each. While
 this averages to 185 Mbytes/second sustained over a 24 hour period, it should be noted that the transfers
-are very peaky, and peak transfer rates are much higher. On the same equipment at the same time, another
+are very peaky. On the same equipment at the same time, another
 4 terabytes per day is being written to clusters on another network, so the aggregate read rate on
 the operational cluster is 20 Terabytes per day (231 mbytes/second) for this application, while
 the file systems are used for all the normal user applications as well.
 
-While this project had to suffer through the develeopment, with the lessons learned and the tools 
+While this project had to suffer through the development, with the lessons learned and the tools 
 now available, it should be straightforward to apply this solution to other cases. The end result is 
 that one adds a `shim library`_ to the users' environment (transparent to user jobs), and 
 then every time a file is written, an AMQP message with file metadata is posted. A pool of transfer
