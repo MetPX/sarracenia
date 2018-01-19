@@ -180,13 +180,18 @@ Copying Files
 It needs to be noted that while all of this work was progressing on the 'obtain the list of 
 files to be copied' part of the problem, we were also working on the 'copy the files to the 
 other side' part of the problem. Over the summer, results of performance tests and other 
-considerations militated frequent changes in tactics.  The site stores are clusters in 
+considerations militated frequent changes in tactics.  The *site stores* are clusters in 
 their own right.  They have protocol nodes for serving traffic outside of the GPFS cluster. There are
-disk mover nodes with infiniband connections and actual disks. There are multiple networks (40GigE, 
-Infiniband, as well as management networks.) and the disks are considered *local* on the PPP servers
-as well.
+siteio nodes with infiniband connections and actual disks.  the protocol nodes (called nfs or proto) 
+are participants in the GPFS cluster dedicated to i/o operations, used to offload i/o from the 
+main compute clusters (PPP and Supercomputer), which have comparable connections to the site store
+as the protocol nodes. 
 
-* FIXME: would like a site store diagram here.
+There are multiple networks (40GigE, Infiniband, as well as management networks.) and the one
+to use needs to be chosen as well.  Then there are the methods of communication (ssh over tcp/ip?
+bbcp over tcp/ip? GPFS over tcpip? ipoib? native-ib? )
+
+.. image:: site-store.jpg
 
 Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different 
 methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different 
@@ -200,9 +205,11 @@ times. At this point several strengths of sarracenia were evident:
   applied to the transfer problem.
 
 Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, transfer speed, load on PPP nodes,) The final 
-configuration selected of using *cp* (via the *download_cp* plugin) is not the fastest transfer method tested (*bbcp* was faster) but it was 
-chosen because it spread the load out better and resulted in more stable NFS and protocol nodes. The 'copy the files to the other side' 
-part of the problem was stable by the end of the summer of 2017, and the impact on system stability is minimized.
+configuration selected of using *cp* (via the *download_cp* plugin) initiated from the receiving site store's protocol nodes.  So the reads
+would occur via GPFS over IPoIB, and the writes would be done over native GPFS over IB.  This was not the fastest transfer method 
+tested (*bbcp* was faster) but it was chosen because it spread the load out to the siteio nodes, resulted in more stable NFS and protocol 
+nodes and removed tcp/ip setup/teardown overhead. The 'copy the files to the other side' part of the problem was stable by the end of 
+the summer of 2017, and the impact on system stability is minimized.
  
 Shim Library Necessary
 ----------------------

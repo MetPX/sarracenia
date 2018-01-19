@@ -20,7 +20,7 @@ default: img $(TARGETS)
 	dia -t svg $<
 
 img:
-	cp ../*.gif ../*.png .
+	cp ../*.gif ../*.jpg ../*.png .
 
 # In the html build, the TEMPLATE is provided on the command line
 # see site/Makefile
