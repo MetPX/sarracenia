@@ -46,10 +46,11 @@ Problem Statement
 -----------------
 
 In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological Service of Canada (MSC), 
-as part of a the High Performance Computing Replacement (HPCR) project asked for very large directory 
-trees to be mirrored in real-time. It was known from the outset that these trees would be too large to 
+as part of the High Performance Computing Replacement (HPCR) project asked for very large directory 
+trees to be mirrored in real-time. Shared Services Canada (SSC) had primary responsibility for deployment
+of HPCR, with ECCC/MSC being the sole user community. It was known from the outset that these trees would be too large to 
 deal with using ordinary tools. It is expected that it will take about 15 months to explore the 
-issue and arrive at an effective operational deployment.  It should be noted that SSC worked throughout 
+issue and arrive at an effective operational deployment. It should be noted that SSC worked throughout 
 this period in close partnership with ECCC, and that this deployment required the very active participation of 
 sophisticated users to follow along with the twists and turns and different avenues explored and implemented.
 
@@ -61,8 +62,8 @@ time *prediction/prognostic*. The forecasts follow a precise schedule throughout
 into one another, so delays ripple, and considerable effort is expended to avoid interruptions and 
 maintain schedule.
 
-High Level View
----------------
+HPCR Solution Overview
+----------------------
 
 .. image:: HPC-XC_High_Availability.png
   :scale: 66 %
@@ -143,7 +144,7 @@ so that they can be copied.
 Detection Methods: Inotify, Policy, SHIM
 -----------------------------------------
 
-There is a standard Linux feature known as INOTIFY, which can trigger an event when a file is modified. By 
+There is a Linux kernel feature known as INOTIFY, which can trigger an event when a file is modified. By 
 setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified 
 in the tree. This was the initial approach taken. It turns out (in January 2017), that INOTIFY is indeed a 
 Linux feature, in that the INOTIFY events only propagate across a single server. With a cluster file 
@@ -197,19 +198,28 @@ Many different sources and destinations (ppp, nfs, and protocol nodes), as well 
 methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different 
 times. At this point several strengths of sarracenia were evident:
 
-* The separation of publishing from subscribing means that one can subscribe on the source node and push to the destination, or on the
-  destination and pull from the source. It is easy to adapt for either approach. (ended up on destination protocol nodes, pulling from the source 
-* The separation of copying from the computational jobs means that the models run times are unaffected, as the i/o jobs are completely separate.
-* The ability to scale the number of workers to the performance needed.  (Eventually settled on 40 workers performing copies in parallel.)
-* The availability of plugins *download_cp*, *download_rcp*, *download_dd*, allow many different copy programs (and hence protocols) to be easily
-  applied to the transfer problem.
+* The separation of publishing from subscribing means that one can subscribe on the source node 
+  and push to the destination, or on the destination and pull from the source. It is easy to 
+  adapt for either approach. (ended up on destination protocol nodes, pulling from the source 
 
-Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, transfer speed, load on PPP nodes,) The final 
-configuration selected of using *cp* (via the *download_cp* plugin) initiated from the receiving site store's protocol nodes.  So the reads
-would occur via GPFS over IPoIB, and the writes would be done over native GPFS over IB.  This was not the fastest transfer method 
-tested (*bbcp* was faster) but it was chosen because it spread the load out to the siteio nodes, resulted in more stable NFS and protocol 
-nodes and removed tcp/ip setup/teardown overhead. The 'copy the files to the other side' part of the problem was stable by the end of 
-the summer of 2017, and the impact on system stability is minimized.
+* The separation of copying from the computational jobs means that the models run times are 
+  unaffected, as the i/o jobs are completely separate.
+
+* The ability to scale the number of workers to the performance needed.  (Eventually settled 
+  on 40 workers performing copies in parallel.)
+
+* The availability of plugins *download_cp*, *download_rcp*, *download_dd*, allow many different 
+  copy programs (and hence protocols) to be easily applied to the transfer problem.
+
+Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, 
+transfer speed, load on PPP nodes,) The final configuration selected of using *cp* (via the 
+*download_cp* plugin) initiated from the receiving site store's protocol nodes.  So the reads
+would occur via GPFS over IPoIB, and the writes would be done over native GPFS over IB.
+This was not the fastest transfer method tested (*bbcp* was faster) but it was selected because 
+it spread the load out to the siteio nodes, resulted in more stable NFS and protocol 
+nodes and removed tcp/ip setup/teardown overhead. The 'copy the files to the other side' part 
+of the problem was stable by the end of the summer of 2017, and the impact on system stability 
+is minimized.
  
 Shim Library Necessary
 ----------------------
@@ -217,7 +227,7 @@ Shim Library Necessary
 Unfortunately, the mirroring between sites was running with about a 10 minutes lag on the source files 
 system ( about 30 times faster than a naive rsync approach. ), and was only working in principle, with 
 many files missing in practice, it wasn't usable for it's intended purpose. The operational commissioning of the 
-new solution (with mirroring deferred.) occurred in September of 2017, and work on mirroring essentially 
+HPCR solution as a whole (with mirroring deferred.) occurred in September of 2017, and work on mirroring essentially 
 stopped until October (because of activities related to the commissioning work.)
 
 We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
