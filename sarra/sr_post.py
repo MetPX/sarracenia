@@ -817,17 +817,16 @@ class sr_post(sr_instances):
            return True
 
         # directory
+        if os.path.isdir(dst) :
+            for x in os.listdir(dst):
 
-        for x in os.listdir(dst):
+                dst_x = dst + os.sep + x
+                src_x = src + os.sep + x
 
-            dst_x = dst + os.sep + x
-            src_x = src + os.sep + x
+                ok = self.post_move(src_x,dst_x)
 
-            ok = self.post_move(src_x,dst_x)
-
-        # directory list to delete at end
-
-        self.move_dir_lst.append( (src,dst) )
+            # directory list to delete at end
+            self.move_dir_lst.append( (src,dst) )
 
         return True
 
@@ -1069,8 +1068,9 @@ class sr_post(sr_instances):
         if os.path.islink(src) and self.realpath :
            src = os.path.realpath(src)
 
-        # walk src directory
-
+        # walk src directory, this walk is depth first... there could be a lot of time
+        # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
+        # hence the existence check after listdir (crashed in flow_tests of > 20,000)
         for x in os.listdir(src):
             path = src + os.sep + x
             if os.path.isdir(path):
@@ -1078,7 +1078,8 @@ class sr_post(sr_instances):
                continue
 
             # add path created
-            self.post1file(path,os.stat(path))
+            if os.path.exists(path):
+                self.post1file(path,os.stat(path))
 
     # =============
     # original walk_priming
