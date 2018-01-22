@@ -101,7 +101,7 @@ class WGET(object):
       result = p.returncode
 
       if result == 0:  # Success!
-         logger.debug("%s" % outstr)
+         logger.info("%s" % outstr)
          logger.info("wget Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
