@@ -70,21 +70,16 @@ int sr_cpump_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int do
   struct stat sb;
   struct dirent *e;
 
-  log_msg( LOG_INFO, "sr_cpump_cleanup \n");
-
-
   // if running, warn no cleanup
   if (sr_cfg->pid > 0)
   {
      ret=kill(sr_cfg->pid,0);
      if (!ret)
      {   // is running.
-         log_msg( LOG_INFO, "pump is running \n");
          fprintf( stderr, "cannot cleanup : sr_cpump configuration %s is running\n", sr_cfg->configname );
          return(1);
      }
   }
-  log_msg( LOG_INFO, "pump is not running \n");
 
   sprintf( cache_dir, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_c->cfg->progname, sr_c->cfg->configname);
 
@@ -112,18 +107,15 @@ int sr_cpump_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int do
            fprintf( stderr, "cannot cleanup : sr_cpump configuration %s directory\n", e->d_name );
       }
 
-      log_msg( LOG_INFO, "pump deleting this %s \n",cache_fil);
       ret = remove(cache_fil);
   }
 
   closedir(dir);
 
-  log_msg( LOG_INFO, "pump removing this %s \n",cache_dir);
   ret = rmdir(cache_dir);
 
   if (dolog)
   {
-     log_msg( LOG_INFO, "pump removing log %s \n",sr_cfg->logfn);
      ret = remove(sr_cfg->logfn);
   }
 
