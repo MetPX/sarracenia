@@ -162,6 +162,12 @@ struct sr_mask_t *isMatchingPattern( struct sr_config_t *sr_cfg, const char* cha
     if called multiple times, it returns a cached response from the previous call.
   */
 
+char* sr_config_find_one( struct sr_config_t *sr_cfg, const char *original_one );
+ /* 
+    return pointer to char, or NULL otherwise.
+    The pointer to char will hold the absolute path of the config file corresponding to original_one
+  */
+
 
 int sr_config_parse_option( struct sr_config_t *sr_cfg, char *option, char* argument, char* arg2, int master );
  /* 

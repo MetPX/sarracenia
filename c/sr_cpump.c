@@ -88,31 +88,33 @@ int sr_cpump_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int do
   sr_context_close(sr_c);
 
   dir = opendir( cache_dir );
-  if (!dir) return(0);
 
-  while( (e = readdir(dir)) )
+  if (dir)
   {
-      if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") )
-           continue;
-
-      strcpy( cache_fil, cache_dir );
-      strcat( cache_fil, "/" );
-      strcat( cache_fil, e->d_name );
-
-      if ( lstat( cache_fil, &sb ) < 0 )
-           continue;
-
-      if ( S_ISDIR(sb.st_mode) )
+      while( (e = readdir(dir)) )
       {
-           fprintf( stderr, "cannot cleanup : sr_cpump configuration %s directory\n", e->d_name );
+          if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") )
+               continue;
+
+          strcpy( cache_fil, cache_dir );
+          strcat( cache_fil, "/" );
+          strcat( cache_fil, e->d_name );
+
+          if ( lstat( cache_fil, &sb ) < 0 )
+               continue;
+
+          if ( S_ISDIR(sb.st_mode) )
+          {
+               fprintf( stderr, "cannot cleanup : sr_cpump configuration %s directory\n", e->d_name );
+          }
+
+          ret = remove(cache_fil);
       }
 
-      ret = remove(cache_fil);
+      closedir(dir);
+
+      ret = rmdir(cache_dir);
   }
-
-  closedir(dir);
-
-  ret = rmdir(cache_dir);
 
   if (dolog)
   {
@@ -129,6 +131,7 @@ int main(int argc, char **argv)
   struct sr_config_t sr_cfg;
   struct sr_mask_t *mask;
   int    consume,i,ret;
+  char   *one;
   
   //if ( argc < 3 ) usage();
  
@@ -185,6 +188,19 @@ int main(int argc, char **argv)
         exit(0);
   }
 
+  if ( !strcmp( sr_cfg.action, "remove") )
+  {
+      // remove anything but a config file
+      if (sr_cfg.configname)
+      {
+         one = sr_config_find_one( &sr_cfg, sr_cfg.configname );
+         if ( !one || strcmp( &(one[strlen(one)-5]),".conf"))
+         {
+            sr_config_remove( &sr_cfg );
+            exit(0);
+         }
+      }
+  }
 
   if ( !strcmp( sr_cfg.action, "list" ))
   {
@@ -225,8 +241,9 @@ int main(int argc, char **argv)
   
   if ( !strcmp( sr_cfg.action, "remove" ))
   {
+
         ret = sr_cpump_cleanup(sr_c,&sr_cfg,1);
-        if (ret == 0)  sr_config_remove( &sr_cfg );
+        if (ret == 0) sr_config_remove( &sr_cfg );
         exit(0);
   }
 
