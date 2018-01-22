@@ -264,12 +264,12 @@ class sr_instances(sr_config):
 
         configdir = self.user_config_dir + os.sep + self.program_dir
 
-        if not os.path.isdir(configdir)      : return
 
         if action == 'list':
             self.print_plugins()
             print( "\ngeneral: ( %s ) " % self.user_config_dir )
             print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
+
             print("\nuser configurations: ( %s )" % configdir )
             if py2old:
                 columns=80
@@ -278,6 +278,10 @@ class sr_instances(sr_config):
                 columns=term.columns
 
         i=0
+        if not os.path.isdir(configdir): 
+            print('')
+            return
+
         for confname in sorted( os.listdir(configdir) ):
             if action == 'list' : 
                 if ( ((i+1)*21) >= columns ): 
