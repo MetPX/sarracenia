@@ -1495,6 +1495,13 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
                return(0);
             }
 
+            if ( !strcmp(sr_cfg->action, "cleanup") || !strcmp(sr_cfg->action, "remove") )
+            {
+               fprintf( stderr, "sr_cpost configuration %s is running with pid %d. log: %s\n", sr_cfg->configname, sr_cfg->pid, sr_cfg->logfn );
+               fprintf( stderr, "cannot perform %s\n", sr_cfg->action);
+               return(-1);
+            }
+
             // pid is running and have permission to signal, this is a problem for start & foreground.
             if ( !strcmp(sr_cfg->action, "start" ) || ( !strcmp(sr_cfg->action, "foreground" ) ) ) 
             {
@@ -1558,7 +1565,12 @@ int sr_config_startstop( struct sr_config_t *sr_cfg)
         }
         if ( !strcmp( sr_cfg->action, "restart" ) ) return(0);
     } else {
+        /* At this point, config is not running which is good for actions cleanup/remove... */
+        if ( !strcmp( sr_cfg->action, "cleanup" ) || !strcmp( sr_cfg->action, "remove" ) ) return(1);
+
+        /* for other actions warn not running */
         fprintf( stderr, "config %s not running.\n", sr_cfg->configname );
+
         /*  MG FIXME if we are not running... if action is stop return 0 */
         if ( !strcmp( sr_cfg->action, "stop" )   ) return(0);
     }
