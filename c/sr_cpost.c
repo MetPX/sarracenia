@@ -412,6 +412,77 @@ void dir_stack_check4events( struct sr_context *sr_c )
     }
 }
 
+int sr_cpost_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int dolog)
+{
+  DIR   *dir;
+  int    ret;
+  char   cache_dir[PATH_MAX];
+  char   cache_fil[PATH_MAX];
+  struct stat sb;
+  struct dirent *e;
+
+  // if running, warn no cleanup
+  if (sr_cfg->pid > 0)
+  {
+     ret=kill(sr_cfg->pid,0);
+     if (!ret)
+     {   // is running.
+         fprintf( stderr, "cannot cleanup : sr_cpost configuration %s is running\n", sr_cfg->configname );
+         return(1);
+     }
+  }
+
+  sprintf( cache_dir, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_c->cfg->progname, sr_c->cfg->configname);
+
+  if ( !sr_post_cleanup( sr_c ) ) 
+     {
+        log_msg( LOG_WARNING, "failed to delete exchange: %s\n", sr_cfg->exchange );
+     }
+  else  
+     {
+	log_msg( LOG_INFO, "exchange: %s deleted\n", sr_cfg->exchange );
+     }
+  sr_context_close(sr_c);
+  sr_config_free(sr_cfg);
+
+  dir = opendir( cache_dir );
+
+  if (dir)
+  {
+
+      while( (e = readdir(dir)) )
+      {
+          if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") )
+               continue;
+
+          strcpy( cache_fil, cache_dir );
+          strcat( cache_fil, "/" );
+          strcat( cache_fil, e->d_name );
+
+          if ( lstat( cache_fil, &sb ) < 0 )
+               continue;
+
+          if ( S_ISDIR(sb.st_mode) )
+          {
+               fprintf( stderr, "cannot cleanup : sr_cpost configuration %s directory\n", e->d_name );
+          }
+    
+          ret = remove(cache_fil);
+      }
+
+      closedir(dir);
+
+      ret = rmdir(cache_dir);
+  }
+
+  if (dolog)
+  {
+     ret = remove(sr_cfg->logfn);
+  }
+
+  return(0);
+}
+
 void usage() 
 {
      fprintf( stderr, "usage: sr_cpost %s <options> <paths>\n\n", __sarra_version__ );
@@ -480,6 +551,7 @@ int main(int argc, char **argv)
     char inbuff[PATH_MAXNUL];
     int consume,i,pass;
     int ret;
+    char *one;
 
     struct timespec tsleep ;
     float elapsed;
@@ -531,8 +603,17 @@ int main(int argc, char **argv)
 
     if ( !strcmp( sr_cfg.action, "remove" ))
     {
-        sr_config_remove( &sr_cfg );
-        exit(0);
+
+        one = sr_config_find_one( &sr_cfg, sr_cfg.paths->path );
+        if ( one && !strcmp( &(one[strlen(one)-5]),".conf"))
+        {
+            sr_config_read(&sr_cfg, one, 1, 1);
+        }
+        else
+        {
+            sr_config_remove( &sr_cfg );
+            exit(0);
+        }
     }
 
     if ( !strcmp( sr_cfg.action, "disable" ))
@@ -552,6 +633,7 @@ int main(int argc, char **argv)
         sr_config_list( &sr_cfg );
         exit(0);
     }
+
     if (!sr_config_finalize( &sr_cfg, 0 ))
     {
         log_msg( LOG_ERROR, "something missing, failed to finalize config\n");
@@ -593,17 +675,17 @@ int main(int argc, char **argv)
 
     if ( !strcmp( sr_cfg.action, "cleanup" ) )
     {
-        if ( !sr_post_cleanup( sr_c ) ) 
-        {
-            log_msg( LOG_WARNING, "failed to delete exchange: %s\n", 
-                 sr_cfg.exchange );
-            sr_context_close(sr_c);
-            sr_config_free(&sr_cfg);
-            return(1);
-        }
-        log_msg( LOG_INFO, "exchange: %s deleted\n", sr_cfg.exchange );
-       sr_context_close(sr_c);
-        sr_config_free(&sr_cfg);
+        ret = sr_cpost_cleanup(sr_c,&sr_cfg,0);
+        return(0);
+    }
+
+    if ( !strcmp( sr_cfg.action, "remove" ) )
+    {
+        ret = sr_cpost_cleanup(sr_c,&sr_cfg,1);
+        if (ret == 0)
+           {
+           if (one) unlink(one);
+           }
         return(0);
     }
   
