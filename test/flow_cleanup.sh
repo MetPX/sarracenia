@@ -118,11 +118,11 @@ flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 echo "Removing flow configs..."
 echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ remove +g' | sh
 
-echo "Removing flow config logs..."
-echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log\*/g' | (cd $LOGDIR; sh )
+#echo "Removing flow config logs..."
+#echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_000?.log\*/g' | (cd $LOGDIR; sh )
 
-echo "Removing flow cache/state files ..."
-echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh )
+#echo "Removing flow cache/state files ..."
+#echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh )
 
 rm $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse* $LOGDIR/*f[0-9][0-9].log 
 
