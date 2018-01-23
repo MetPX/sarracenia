@@ -130,13 +130,13 @@ class sr_instances(sr_config):
 
         # log_cleanup 
 
-        if log_cleanup :
-           no=1
-           while no <= self.nbr_instances :
-                 self.build_instance(no)
-                 try   : os.unlink(self.logpath)
-                 except: self.logger.debug("could not delete %s logpath" % self.logpath)
-                 no = no + 1
+        #if log_cleanup :
+        #   no=1
+        #   while no <= self.nbr_instances :
+        #         self.build_instance(no)
+        #         try   : os.unlink(self.logpath)
+        #         except: self.logger.debug("could not delete %s logpath" % self.logpath)
+        #         no = no + 1
 
         return True
 

@@ -116,11 +116,13 @@ int sr_cpump_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int do
       ret = rmdir(cache_dir);
   }
 
+  /* PAS not sure, but currently don't think we should ever delete logs.
+     MG also mentioned this code does not delete old logs, so missing a bit.
   if (dolog)
   {
      ret = remove(sr_cfg->logfn);
   }
-
+   */
   return(0);
 }
 
