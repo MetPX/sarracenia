@@ -281,6 +281,12 @@ class sr_sftp(sr_proto):
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
         alarm_set(self.iotime)
+        # check if the file is there... if not we are done,no error
+        try   : self.sftp.stat(remote_file)
+        except: 
+                alarm_cancel()
+                return
+        # proceed with file removal
         self.sftp.remove(path)
         alarm_cancel()
 
