@@ -282,7 +282,8 @@ class sr_sftp(sr_proto):
         self.logger.debug("sr_sftp rm %s" % path)
         alarm_set(self.iotime)
         # check if the file is there... if not we are done,no error
-        try   : self.sftp.stat(remote_file)
+        try   :
+                s = self.sftp.stat(path)
         except: 
                 alarm_cancel()
                 return
@@ -823,6 +824,7 @@ def self_test():
               cfg.inflight      = None
               dldr.send(cfg)
               if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")
+              if hasattr(sftp,'delete') : dldr.sftp.delete("zzz_unexistant")
               cfg.inflight        = '.'
               dldr.send(cfg)
               if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")
