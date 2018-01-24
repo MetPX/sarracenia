@@ -75,14 +75,6 @@ class sr_winnow(sr_subscribe):
 
         if not self.post_broker : self.post_broker = self.broker
 
-        # reporting
-        if self.report_exchange == None :
-           if ( self.broker.username in self.users.keys() ) and \
-               self.users[ self.broker.username ] == 'feeder' :
-               self.report_exchange = 'xreport'
-           else:
-               self.report_exchange = 'xs_' + self.broker.username
-
         # no vip given... so should not matter ?
         if self.vip == None :
            self.logger.debug("vip missing... standalone mode")

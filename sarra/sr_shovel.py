@@ -106,15 +106,6 @@ class sr_shovel(sr_subscribe):
         # some sr_subscribe options reset to match sr_shovel behavior
         # ===========================================================
 
-        # reporting
-
-        if self.report_exchange == None :
-           if ( self.broker.username in self.users.keys() ) and \
-               self.users[ self.broker.username ] == 'feeder' :
-               self.report_exchange = 'xreport'
-           else:
-               self.report_exchange = 'xs_' + self.broker.username
-
         # retry_ttl setup.
         if self.retry_ttl == None:
            self.retry_ttl = self.expire
@@ -145,10 +136,6 @@ class sr_shovel(sr_subscribe):
         # default broker and exchange None
 
         self.topic_prefix = None
-
-        # FIX ME  report_exchange set to NONE
-        # instead of xreport and make it mandatory perhaps ?
-        # since it can be xreport or xs_remotepumpUsername ?
 
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are
