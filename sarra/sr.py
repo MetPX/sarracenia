@@ -220,7 +220,7 @@ def main():
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
            subprocess.check_call(['sr_'+pgm,action])
 
-    for d in SR_PROGRAMS:
+    for d in cfg.programs:
         pgm = d
         scandir(cfg.user_config_dir,pgm,action)
 
