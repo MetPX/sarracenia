@@ -208,94 +208,19 @@ class sr_instances(sr_config):
            self.help()
            os._exit(1)
 
-    def print_plugins(self):
-       
-       print( '\npackaged plugins: ( %s ) ' %  ( self.package_dir + os.sep + 'plugins' ) )
-       if py2old:
-          columns=80
-       else: 
-          term = get_terminal_size((80,20))
-          columns = term.columns
-
-       i=0
-       for p in sorted( os.listdir( self.package_dir + os.sep + 'plugins'  )):
-           if p in [ '__init__.py', '__pycache__' ]: continue
-           if ( ((i+1)*21) >= columns ): 
-               print('')
-               i=1
-           else:
-               i+=1
-
-           print( "%20s " % p, end=''  )
-
-       if ( i > 1 ) : print('')
-
-       d = self.package_dir + os.sep + 'examples' +os.sep + self.program_dir
-       if os.path.isdir(d):
-           i=0
-           print( '\nconfiguration examples: ( %s ) ' %  d  )
-           for p in sorted( os.listdir( d )):
-               if ( ((i+1)*21) >= columns ): 
-                   print('')
-                   i=1
-               else:
-                   i+=1
-    
-               print( "%20s " % p, end=''  )
-
-       if ( i > 1 ) : print('')
-       if not os.path.isdir( self.user_config_dir + os.sep + 'plugins' ): return
- 
-       i=0
-       print( '\nuser plugins: ( %s ) ' % ( self.user_config_dir + os.sep + 'plugins' ) )
-       for p in sorted( os.listdir(  self.user_config_dir + os.sep + 'plugins' )):
-           if ( ((i+1)*21) >= columns ): 
-               print('')
-               i=1
-           else:
-               i+=1
-           print( "%20s " % p , end='' )
-
-       if ( i > 1 ) : print('')
-      
-
-
     def exec_action_on_all(self,action):
 
         configdir = self.user_config_dir + os.sep + self.program_dir
 
-
         if action == 'list':
-            self.print_plugins()
-            print( "\ngeneral: ( %s ) " % self.user_config_dir )
-            print( "%20s %20s %20s" % ( "admin.conf", "credentials.conf", "default.conf") )
-
-            print("\nuser configurations: ( %s )" % configdir )
-            if py2old:
-                columns=80
-            else:
-                term = get_terminal_size((80,20))
-                columns=term.columns
-
-        i=0
-        if not os.path.isdir(configdir): 
-            print('')
+            self.print_general()
+            self.print_configdir(configdir)
             return
 
         for confname in sorted( os.listdir(configdir) ):
-            if action == 'list' : 
-                if ( ((i+1)*21) >= columns ): 
-                    print('')
-                    i=1
-                else:
-                    i+=1
-                print( "%20s " % confname, end='' )
-            else:
-                try: 
-                   if confname[-5:] == '.conf' : subprocess.check_output([self.program_name, action, confname] )
-                except: pass
-
-        if action == 'list': print('\n')
+            try: 
+                    if confname[-5:] == '.conf' : subprocess.check_output([self.program_name, action, confname] )
+            except: pass
 
 
     # MG FIXME first shot
@@ -372,8 +297,8 @@ class sr_instances(sr_config):
         elif action == 'list'       : 
              cmd = os.environ.get('PAGER')
              if cmd == None:
-                 cmd="more"
-             try   : subprocess.check_output([ cmd, usr_fil ] )
+                 cmd="/bin/more"
+             try   : subprocess.check_call([ cmd, usr_fil ] )
              except: self.logger.error("could not %s %s" % ( cmd, usr_fil ) )
 
         elif action == 'log' and ext == '.conf' :
