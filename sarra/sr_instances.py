@@ -213,8 +213,11 @@ class sr_instances(sr_config):
         configdir = self.user_config_dir + os.sep + self.program_dir
 
         if action == 'list':
-            self.print_general()
-            self.print_configdir(configdir)
+            self.print_configdir("packaged plugins",       self.package_dir     +os.sep+ 'plugins')
+            self.print_configdir("configuration examples", self.package_dir     +os.sep+ 'examples' +os.sep+ self.program_dir)
+            self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
+            self.print_configdir("general",                self.user_config_dir )
+            self.print_configdir("user configurations",    configdir)
             return
 
         for confname in sorted( os.listdir(configdir) ):
@@ -295,11 +298,7 @@ class sr_instances(sr_config):
                  except: self.logger.error("cound not enable %s " % src )
 
         elif action == 'list'       : 
-             cmd = os.environ.get('PAGER')
-             if cmd == None:
-                 cmd="/bin/more"
-             try   : subprocess.check_call([ cmd, usr_fil ] )
-             except: self.logger.error("could not %s %s" % ( cmd, usr_fil ) )
+             self.list_file(usr_fil)
 
         elif action == 'log' and ext == '.conf' :
 

@@ -170,14 +170,45 @@ def scandir(dirconf,pgm,action):
 # ===================================
 
 def main():
-    # first check action
+
+    # actions supported
     actions_supported = ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'remove']
 
+    # actions extended (actions on config)
+    actions_supported.extend( ['list'] )
+
+    actstr = str(actions_supported)
+    actstr = actstr.replace(", ","|")
+
+    # validate action
     if len(sys.argv) == 1 or sys.argv[1] not in actions_supported :
-       print("USAGE: %s (start|stop|restart|reload|status|cleanup|declare|setup|remove) (version: %s) " % (sys.argv[0], sarra.__version__) )
+       print("USAGE: %s %s (version: %s) " % (sys.argv[0],actstr,sarra.__version__) )
        sys.exit(1)
 
-    action = sys.argv[-1]
+    action = sys.argv[1]
+    config = None
+
+    if len(sys.argv) == 3 : config = sys.argv[2]
+
+    # action list
+
+    if action == 'list' :
+       if config :
+             result = cfg.find_conf_file(config)
+             if  not result :
+                 print("no file named %s found in all sarra configs" % config )
+                 sys.exit(1)
+             cfg.list_file(result)
+       else:
+             cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
+             for d in sorted(cfg.programs):
+                 cfg.print_configdir("configuration examples", cfg.package_dir     +os.sep+ 'examples' +os.sep+ d)
+             cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
+             cfg.print_configdir("general",                    cfg.user_config_dir )
+             for d in sorted(cfg.programs):
+                 cfg.print_configdir("user configurations",    cfg.user_config_dir + os.sep + d)
+
+       sys.exit(0)
 
     # sarracenia program that may start without config file
     REPORT_PROGRAMS=['audit']
@@ -188,14 +219,6 @@ def main():
         else :
            cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
            subprocess.check_call(['sr_'+pgm,action])
-
-    # sarracenia program requiring configs
-    
-    SR_PROGRAMS = ['post', 'watch', 'winnow', 'sarra', 'shovel', 'subscribe', 'sender', 'poll', 'report']
-
-    # extend with C suff 
-
-    SR_PROGRAMS.extend( ['cpost', 'cpump'] )
 
     for d in SR_PROGRAMS:
         pgm = d
