@@ -784,28 +784,42 @@ class sr_config:
         for p in self.programs:
             d = self.user_config_dir +os.sep+ p
             for e in sorted( os.listdir(d) ):
-                if e == name : return d+os.sep+e
+                f = d+os.sep+e
+                if os.path.isdir(f) : continue
+                if f.endswith(name) : return f
 
         # check in user plugin configs
 
-        for p in self.programs:
-            d =  self.user_config_dir +os.sep+ 'plugins'
-            for e in sorted( os.listdir(d) ):
-                if e == name : return d+os.sep+e
+        d =  self.user_config_dir +os.sep+ 'plugins'
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
 
         # check in user general configs
 
-        for p in self.programs:
-            d =  self.user_config_dir
-            for e in sorted( os.listdir(d) ):
-                if e == name : return d+os.sep+e
+        d =  self.user_config_dir
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
 
         # check in package plugins
 
+        d =  self.package_dir +os.sep+ 'plugins'
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
+
+        # check in package examples
+
         for p in self.programs:
-            d =  self.package_dir +os.sep+ 'plugins'
+            d =  self.package_dir     +os.sep+ 'examples' +os.sep+ p
             for e in sorted( os.listdir(d) ):
-                if e == name : return d+os.sep+e
+                f = d+os.sep+e
+                if os.path.isdir(f) : continue
+                if f.endswith(name) : return f
 
         # not found
 
@@ -2029,6 +2043,7 @@ class sr_config:
            return
 
         for confname in sorted( os.listdir(configdir) ):
+            if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
                  i=1
