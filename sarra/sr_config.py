@@ -527,7 +527,7 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.report_exchange      = 'xreport'
+        self.report_exchange      = None
           
         # amqp
 

@@ -106,6 +106,10 @@ class sr_shovel(sr_subscribe):
         # some sr_subscribe options reset to match sr_shovel behavior
         # ===========================================================
 
+        # reporting
+
+        if self.report_exchange == None :
+           self.report_exchange = 'xs_' + self.broker.username
 
         # retry_ttl setup.
         if self.retry_ttl == None:

@@ -126,6 +126,11 @@ class sr_sender(sr_subscribe):
            if self.inflight == 'unspecified':
               self.inflight='.tmp'
            
+        # reporting
+
+        if self.report_exchange == None :
+           self.report_exchange = 'xs_' + self.broker.username
+
         # caching
 
         if self.caching :

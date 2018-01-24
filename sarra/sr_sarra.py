@@ -117,6 +117,12 @@ class sr_sarra(sr_subscribe):
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
+
+        # reporting
+
+        if self.report_exchange == None :
+           self.report_exchange = 'xs_' + self.broker.username
+
         # default queue name if not given
 
         if self.queue_name == None :
