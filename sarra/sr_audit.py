@@ -85,6 +85,7 @@ class sr_audit(sr_instances):
            self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'feeder',c,w,r))
            declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
            dummy = run_rabbitmqadmin( self.admin,declare,self.logger)
+           self.hc.exchange_declare('xs_%s'%u)
            return
 
         # source

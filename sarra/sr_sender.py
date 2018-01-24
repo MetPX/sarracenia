@@ -127,9 +127,12 @@ class sr_sender(sr_subscribe):
               self.inflight='.tmp'
            
         # reporting
-
         if self.report_exchange == None :
-           self.report_exchange = 'xs_' + self.broker.username
+           if ( self.broker.username in self.users.keys() ) and \
+               self.users[ self.broker.username ] == 'feeder' :
+               self.report_exchange = 'xreport'
+           else:
+               self.report_exchange = 'xs_' + self.broker.username
 
         # caching
 
