@@ -112,15 +112,6 @@ class sr_subscribe(sr_instances):
         if self.retry_mode :
            self.execfile("plugin",'hb_retry')
 
-        # reporting
-
-        if self.report_exchange == None :
-           if ( self.broker.username in self.users.keys() ) and \
-               self.users[ self.broker.username ] == 'feeder' :
-               self.report_exchange = 'xreport'
-           else:
-               self.report_exchange = 'xs_' + self.broker.username
-
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
 
@@ -678,7 +669,6 @@ class sr_subscribe(sr_instances):
         self.mirror         = False
 
         self.accept_unmatch  = False
-        self.report_exchange = None
 
     # =============
     # process message  
