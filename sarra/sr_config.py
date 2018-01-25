@@ -165,6 +165,7 @@ class sr_config:
         # config
 
         self.config_dir    = ''
+        self.config_found  = False
         self.config_name   = None
         self.user_config   = config
         self.remote_config = False
@@ -182,20 +183,24 @@ class sr_config:
         if args == [] : args = None
         self.user_args       = args
 
+        # starting the program we should have a real config file ... ending with .conf
+
         if config != None :
-           if ( ( self.action == 'list' ) or ( self.action == 'edit' ) ) and ( config[-3:] == '.py' ) :
-               ok, self.user_config = self.config_path( 'plugins', config )
-           else:
-               cdir = os.path.dirname(config)
-               if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
-               self.config_name = re.sub(r'(\.conf)','',os.path.basename(config))
-               ok, self.user_config = self.config_path(self.program_dir,config)
-               if ok :
-                  cdir = os.path.dirname(self.user_config)
-                  if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
-               self.logger.debug("sr_config config_dir   %s " % self.config_dir  ) 
-               self.logger.debug("sr_config config_name  %s " % self.config_name ) 
-               self.logger.debug("sr_config user_config  %s " % self.user_config ) 
+           usr_cfg = config
+           if not config.endswith('.conf') : usr_cfg += '.conf'
+           cdir = os.path.dirname(usr_cfg)
+           if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
+           self.config_name = re.sub(r'(\.conf)','',os.path.basename(usr_cfg))
+           ok, self.user_config = self.config_path(self.program_dir,usr_cfg)
+           if ok :
+              cdir = os.path.dirname(self.user_config)
+              if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
+              self.config_found  = True
+           else :
+              if not config.endswith('.conf') : self.user_config = config
+           self.logger.debug("sr_config config_dir   %s " % self.config_dir  )
+           self.logger.debug("sr_config config_name  %s " % self.config_name )
+           self.logger.debug("sr_config user_config  %s " % self.user_config )
 
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
@@ -313,13 +318,6 @@ class sr_config:
     def config(self,path):
         self.logger.debug("sr_config config component is: %s" % self.program_name )
         self.logger.debug("sr_config %s" % path)
-        self.logger.debug("action    %s" % self.action)
-
-        if path        == None  : return
-        if self.action in [ 'edit', 'add', 'enable' ]: return
-        if self.action == 'remove' :
-           if not path.endswith('.conf'): return
-           if not os.path.isfile(path)  : return
 
         try:
             f = open(path, 'r')
@@ -388,13 +386,8 @@ class sr_config:
 
         # return bad file ... 
         if mandatory :
-          if subdir == 'plugins' :     
-              self.logger.error("script not found %s" % config)
-          elif self.action not in [ 'edit', 'enable', 'add' ] : 
-              self.logger.error("file not found %s" % config)
-
-          if config == None : return False,None
-          #os._exit(1)
+          if subdir == 'plugins' : self.logger.error("Script incorrect %s" % config)
+          else                   : self.logger.debug("Config not found %s" % config)
 
         return False,config
 
@@ -417,22 +410,27 @@ class sr_config:
 
         self.overwrite_defaults()
 
-        if self.action in [ 'edit', 'list' ]:
-            return
-
         # load/reload all config settings
 
         self.args   (self.user_args)
-        self.config (self.user_config)
+
+        # dont need to configure if it is not a config file or for theses actions
+
+        if self.config_found :
+
+           if not self.action in [ 'add','edit','enable', 'list' ]: self.config (self.user_config)
 
         # configure some directories if statehost was set
 
         self.configure_statehost()
 
+        # no checks if no config except if program is sr_audit
+
+        if not self.config_found and not self.program_name in ['sr_audit']  : return
+
         # verify / complete settings
 
-        if not self.action in ['add','disable','edit','enable','list','log','remove' ]  :
-           self.check()
+        self.check()
 
         # check extended options
 
@@ -777,49 +775,48 @@ class sr_config:
 
         return True
 
+    def find_file_in_dir(self,d,name,recursive=False):
+
+        if not os.path.isdir(d) : return None
+
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) :
+               if not recursive : continue
+               f = self.find_file_in_dir(f,name,recursive)
+               if f : return f
+            if f.endswith(name) : return f
+
+        return None
+
     def find_conf_file(self,name):
 
         # check in user program configs
 
         for p in self.programs:
-            d = self.user_config_dir +os.sep+ p
-            for e in sorted( os.listdir(d) ):
-                f = d+os.sep+e
-                if os.path.isdir(f) : continue
-                if f.endswith(name) : return f
+            f = self.find_file_in_dir( self.user_config_dir +os.sep+ p, name)
+            if f : return f
 
         # check in user plugin configs
 
-        d =  self.user_config_dir +os.sep+ 'plugins'
-        for e in sorted( os.listdir(d) ):
-            f = d+os.sep+e
-            if os.path.isdir(f) : continue
-            if f.endswith(name) : return f
+        f = self.find_file_in_dir( self.user_config_dir +os.sep+ 'plugins', name, recursive=True)
+        if f : return f
 
         # check in user general configs
 
-        d =  self.user_config_dir
-        for e in sorted( os.listdir(d) ):
-            f = d+os.sep+e
-            if os.path.isdir(f) : continue
-            if f.endswith(name) : return f
+        f = self.find_file_in_dir( self.user_config_dir, name )
+        if f : return f
 
         # check in package plugins
 
-        d =  self.package_dir +os.sep+ 'plugins'
-        for e in sorted( os.listdir(d) ):
-            f = d+os.sep+e
-            if os.path.isdir(f) : continue
-            if f.endswith(name) : return f
+        f = self.find_file_in_dir( self.package_dir +os.sep+ 'plugins', name, recursive=True)
+        if f : return f
 
         # check in package examples
 
         for p in self.programs:
-            d =  self.package_dir     +os.sep+ 'examples' +os.sep+ p
-            for e in sorted( os.listdir(d) ):
-                f = d+os.sep+e
-                if os.path.isdir(f) : continue
-                if f.endswith(name) : return f
+            f = self.find_file_in_dir( self.package_dir +os.sep+ 'examples' +os.sep+ p , name)
+            if f : return f
 
         # not found
 

@@ -57,9 +57,6 @@ class sr_instances(sr_config):
 
         sr_config.__init__(self,config,args,action)
 
-        if (( action == 'list' ) or ( action == 'edit' )) and (( config != None ) and ( config[-3:] == '.py' )):
-            return
-
         self.cwd = os.getcwd()
         self.configure()
         self.build_parent()
@@ -141,6 +138,7 @@ class sr_instances(sr_config):
         return True
 
     def exec_action(self,action,old=False):
+        self.logger.debug("config = %s" % self.user_config)
 
         if old :
            self.logger.warning("Should invoke 3: %s [args] action config" % sys.argv[0])
@@ -151,11 +149,7 @@ class sr_instances(sr_config):
            self.foreground_parent()
            return
 
-        # no config file given
-        if ((action == 'list') or (action == 'edit')) and ((self.user_config != None) and (self.user_config[-3:] == '.py')):
-           self.config_name=os.path.basename(self.user_config)
-           self.exec_action_on_config(action)
-           os._exit(0)
+        # No config provided
 
         if self.config_name == None:
            if   action == 'list'     : self.exec_action_on_all(action)
@@ -168,20 +162,20 @@ class sr_instances(sr_config):
                 self.logger.warning("Should invoke 4: %s [args] action config" % sys.argv[0])
            os._exit(0)
 
-        elif action in [ 'add', 'enable' ]: 
-           self.exec_action_on_config(action)
-           os._exit(0)
+        # Config provided was not a config (i.e. ".conf' file in usr_config_dir)
 
-        # a config file that does not exists
-
-        if not os.path.isfile(self.user_config) :
-           if   action in ['edit','remove']     :
-                self.exec_action_on_config(action)
+        if not self.config_found :
+           if   action == 'add'      : self.exec_action_on_config(action)
+           elif action == 'disable'  : self.exec_action_on_config(action)
+           elif action == 'edit'     : self.exec_action_on_config(action)
+           elif action == 'enable'   : self.exec_action_on_config(action)
+           elif action == 'list'     : self.exec_action_on_config(action)
+           elif action == 'remove'   : self.exec_action_on_config(action)
            else :
                 self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
 
-        # a config file exists
+        # config file is correct
 
         if   action == 'foreground' : self.foreground_parent()
         elif action == 'reload'     : self.reload_parent()
@@ -239,70 +233,85 @@ class sr_instances(sr_config):
     #      remove  : program is running
 
     def exec_action_on_config(self,action):
-        self.logger.debug("exec_action_on_config %s, config_dir=%s, user_config=%s" % ( action, self.config_dir, self.user_config ) )
-        
-        usr_fil   = self.user_config
-        ext       = '.conf'
+        self.logger.debug("exec_action_on_config %s, config_dir=%s, user_config=%s" % (action,self.config_dir,self.user_config) )
 
-        sampledir = self.package_dir + os.sep + 'examples' + os.sep + self.program_dir
+        usr_cfg  = self.user_config
+        plugin   = usr_cfg.endswith('.py') or usr_cfg.endswith('.py.off')
 
-        if self.user_config[-4:] == '.inc' : ext = ''
+        if plugin: sub_dir = 'plugins'
+        else     : sub_dir = self.program_dir
 
-        if self.user_config[-3:] == '.py' : 
-           ext = ''
-           def_dir   = self.user_config_dir + os.sep + 'plugins'
-           sampledir = self.package_dir + os.sep + 'plugins'
+        if sub_dir in usr_cfg: def_fil = self.user_config_dir + os.sep + usr_cfg
+        else                 : def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + usr_cfg
 
-        elif self.user_config[-4:] == '.off':
-           ext = ''
-           def_dir = self.user_config_dir + os.sep + self.program_dir
-        else:
-           def_dir = self.user_config_dir + os.sep + self.program_dir
+        def_dir  = os.path.dirname(def_fil)
 
-        def_fil = def_dir + os.sep + self.config_name + ext
+        usr_fil  = None
+        if    self.config_found      : usr_fil = usr_cfg
+        elif  os.path.isfile(usr_cfg): usr_fil = usr_cfg
 
-        self.logger.debug("exec_action_on_config %s, def_dir=%s, def_fil=%s sampledir=%s" % ( action, def_dir, def_fil, sampledir ) )
+        # add
 
-        if   action == 'add' and not py2old :
+        if   action == 'add' and not py2old:
              if not os.path.isdir(def_dir):
                 try    : os.makedirs(def_dir, 0o775,True)
                 except : pass
-             if not os.path.isfile(usr_fil):
-                if os.path.isfile(sampledir + os.sep + usr_fil):
-                    copyfile(sampledir + os.sep + usr_fil, def_fil)
-                else:
-                    self.logger.error("could not add %s to %s" % (self.user_config, def_dir))
+
+             if not usr_fil:
+                f  = self.find_conf_file(usr_cfg)
+                if f and 'examples' in f : usr_fil = f
+
+             if not usr_fil:
+                self.logger.error("could not add %s to %s" % (self.user_config, def_dir))
              else:
                 copyfile(usr_fil,def_fil)
 
-        elif action == 'disable'    :
+        # disable
+
+        elif action == 'disable' :
              src   = def_fil.replace('.off','')
              dst   = src + '.off'
+             if  os.path.isfile( dst ):
+                 self.logger.info('%s already disabled' % self.user_config )
+                 return
              try   : os.rename(src,dst)
              except: self.logger.error("cound not disable %s" % src )
 
-        elif action == 'edit'       :
-             if self.config_name in ['admin','default','credentials'] :
-                def_fil = def_dir + os.sep + '..' + os.sep + self.config_name + ext
-             editor =  os.environ.get('EDITOR')
-             if not editor: editor='vi'
-             try   : subprocess.check_call([editor, def_fil] )
-             except: self.logger.error("problem editor %s file %s" % (editor, def_fil))
+        # edit
 
-        elif action == 'enable'     :
-             if  os.path.isfile( self.user_config ):
-                 self.logger.info('%s already enabled' % self.user_config )
-
+        elif action == 'edit'    :
+             if not usr_fil:
+                f  = self.find_conf_file(usr_cfg)
+                if self.user_config_dir in f : usr_fil = f
              else:
-                 dst   = def_fil.replace('.off','')
-                 src   = dst + '.off'
-                 try   : os.rename(src,dst)
-                 except: self.logger.error("cound not enable %s " % src )
+                usr_fil = self.user_config
 
-        elif action == 'list'       : 
+             edit_fil = usr_fil
+
+             try   : subprocess.check_call([ os.environ.get('EDITOR'), edit_fil] )
+             except: self.logger.error("problem editor %s file %s" % (os.environ.get('EDITOR'), self.user_config))
+
+        # enable
+
+        elif action == 'enable'  :
+             dst   = def_fil.replace('.off','')
+             src   = dst + '.off'
+             if  os.path.isfile( dst ):
+                 self.logger.info('%s already enabled' % self.user_config )
+                 return
+             try   : os.rename(src,dst)
+             except: self.logger.error("cound not enable %s " % src )
+
+        # list
+
+        elif action == 'list'    :
+             if not usr_fil:
+                usr_fil  = self.find_conf_file(usr_cfg)
              self.list_file(usr_fil)
 
-        elif action == 'log' and ext == '.conf' :
+        # log
+
+        elif action == 'log' and self.config_found :
 
 
              if self.nbr_instances == 1 :
@@ -328,13 +337,14 @@ class sr_instances(sr_config):
                    except: self.logger.error("could not tail -n 10 %s" % self.logpath)
                    no = no + 1
 
-        elif action == 'remove'     : 
-             if not def_fil                 : return
-             if not os.path.isfile(def_fil) : return
-             if def_fil.endswith('.conf')   :
+        # remove
+
+        elif action == 'remove'  :
+             if self.config_found :
                 ok = self.cleanup_parent(log_cleanup=True)
                 if not ok : return
-
+             if not def_fil                 : return
+             if not os.path.isfile(def_fil) : return
              try   : os.unlink(def_fil)
              except: self.logger.error("could not remove %s" % self.def_fil)
 
