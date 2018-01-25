@@ -515,6 +515,7 @@ class sr_config:
         self.broker               = None
         self.bindings             = []
         self.exchange             = None
+        self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
         self.subtopic             = None
@@ -621,6 +622,7 @@ class sr_config:
         self.pipe                 = False
         self.post_broker          = None
         self.post_exchange        = None
+        self.post_exchange_suffix = None
         self.post_exchange_split  = 0
         self.preserve_mode        = True
         self.preserve_time        = True
@@ -1397,6 +1399,10 @@ class sr_config:
                      self.exchange = words1
                      n = 2
 
+                elif words0 in ['exchange_suffix'] : # FIXME: sr_config.7 ++ everywhere fixme?
+                     self.exchange_suffix = words1
+                     n = 2
+
                 elif words0 in [ 'expire', 'expiry' ]: # See: sr_config.7 ++ everywhere fixme?
                      if    words1.lower() == 'none' :
                            self.expire = None
@@ -1744,6 +1750,10 @@ class sr_config:
 
                 elif words0 in ['post_exchange','pe','px']: # See: sr_sarra,sender,shovel,winnow 
                      self.post_exchange = words1
+                     n = 2
+
+                elif words0 in ['post_exchange_suffix']: # FIXME: sr_sarra,sender,shovel,winnow 
+                     self.post_exchange_suffix = words1
                      n = 2
 
                 elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1
@@ -2294,7 +2304,7 @@ def self_test():
     f.write("          return True\n")
     f.write("\n")
     f.write("transformer = Transformer()\n")
-    f.write("self.this_script = transformer.perform\n")
+    f.write("self.on_message = transformer.perform\n")
     f.close()
 
     # able to find the script
@@ -2304,14 +2314,14 @@ def self_test():
        failed = True
  
     # able to load the script
-    cfg.execfile("this_script",path)
-    if cfg.this_script == None :
+    cfg.execfile("on_message",path)
+    if cfg.on_message == None :
        cfg.logger.error("problem with module execfile script not loaded")
        failed = True
 
     # able to run the script
     cfg.this_value = 0
-    cfg.this_script(cfg)
+    cfg.on_message(cfg)
     if cfg.this_value != 1 :
        cfg.logger.error("problem to run the script ")
        failed = True
@@ -2446,19 +2456,13 @@ def self_test():
     os.unlink('aaa.conf')
     os.unlink('bbb.inc')
 
-    opt1 = "headers toto1=titi1"
+    opt1 = "header toto1=titi1"
     cfg.option(opt1.split())
-    opt2 = "headers toto2=titi2"
+    opt2 = "header toto2=titi2"
     cfg.option(opt2.split())
-    opt3 = "headers tutu1=None"
+    opt3 = "header tutu1=None"
     cfg.option(opt3.split())
-    opt4 = "headers tutu2=None"
-    cfg.option(opt4.split())
-
-    opt4 = "expire 10m"
-    cfg.option(opt4.split())
-
-    opt4 = "message_ttl 10m"
+    opt4 = "header tutu2=None"
     cfg.option(opt4.split())
 
     if not 'toto1' in cfg.headers_to_add      or \
@@ -2474,6 +2478,12 @@ def self_test():
        len(cfg.headers_to_del)     != 2 :
        cfg.logger.error(" option headers deleting entries did not work")
        failed = True
+
+    opt4 = "expire 10m"
+    cfg.option(opt4.split())
+
+    opt4 = "message_ttl 10m"
+    cfg.option(opt4.split())
 
     opt4="directory ${MAIL}/${USER}/${SHELL}/blabla"
     cfg.option(opt4.split())
@@ -2617,16 +2627,18 @@ def self_test():
        cfg.logger.error("retry_mode not off")
        failed = True
 
-    opt1 = "retry_ttl none"
-    cfg.option(opt1.split())
-    if cfg.retry_ttl :
-       cfg.logger.error("retry_ttl not none")
-       failed = True
-
     opt1 = "retry_ttl 1D"
     cfg.option(opt1.split())
     if cfg.retry_ttl != 86400 :
        cfg.logger.error("retry_ttl not properly set to 1D %d" % cfg.retry_ttl)
+       failed = True
+
+    opt1 = "exchange_suffix suffix1"
+    cfg.option(opt1.split())
+    opt1 = "post_exchange_suffix suffix2"
+    cfg.option(opt1.split())
+    if cfg.exchange_suffix != 'suffix1' or cfg.post_exchange_suffix != 'suffix2' :
+       cfg.logger.error("exchange_suffix or post_exchange_suffix problem")
        failed = True
 
 
