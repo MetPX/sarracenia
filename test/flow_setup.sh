@@ -32,6 +32,11 @@ EOF
 
 eval `application_dirs`
 
+if [ -d $CACHEDIR/log ]; then
+   echo "cleaning logs, just in case"
+   rm $CACHEDIR/log/*
+fi
+
 if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  cat <<EOT
  ERROR:

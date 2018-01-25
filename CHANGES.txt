@@ -17,6 +17,7 @@ lists all changes between versions.
 * sftp will now not report an error if a file it is supposed to delete is not there. (jobs is done.)
 * re-worked wget plugin so the stdout and stderr are printed.
 * list action now prints properly (includes the examples) when user has no configurations.
+* added pitcher and sci2ec use cases to examples.
 
 **2.18.01a4**
 
