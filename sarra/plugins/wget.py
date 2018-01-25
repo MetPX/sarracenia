@@ -7,7 +7,7 @@ Sample usage:
 
 One should invoke the more efficient binary downloader only when it makes sense to do so in place
 of the built-in python interpreted downloader, typically for larger files. By default, the threshold
-is 10M (ten megabytes.) The wget_threshold option can be used to change it. 
+is 1M (one megabyte.) The wget_threshold option can be used to change it. 
 
 Options
 -------
@@ -50,20 +50,20 @@ class WGET(object):
          parent.download_wget_command= [ '/usr/bin/wget' ]
 
       if not hasattr( parent, "wget_threshold" ):
-             parent.wget_threshold = [ "10M" ]
+             parent.wget_threshold = [ "1M" ]
 
       if not hasattr( parent, "wget_protocol" ):
              parent.wget_protocol = [ "http" ]
           
+      if type(parent.wget_threshold) is list:
+          parent.wget_threshold = parent.chunksize_from_str( parent.wget_threshold[0] )
+
       return True
 
    def on_message(self,parent):
 
       logger = parent.logger
       msg    = parent.msg
-
-      if type(parent.wget_threshold) is list:
-          parent.wget_threshold = parent.chunksize_from_str( parent.wget_threshold[0] )
 
       if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return True
 
@@ -146,7 +146,7 @@ APPLICATION NOTES:
  
     - As a file gets bigger, the transfer time will eventually dominate the setup-time, and at that
       point, it can make sense to switch to a forking download. Experience with actual configurations
-      is needed to pick a good threshold for that. Default of 10M is a reasonable first guess.
+      is needed to pick a good threshold for that. Default of 1M is a reasonable first guess.
 
     - The native downloader does partitioning of files for passage through multiple pumps and is preferable
       for that case to avoid the 'capybara through an anaconda' syndrome. In cases 'dataless' transfers.

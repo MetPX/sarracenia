@@ -442,7 +442,7 @@ processed fastest, RADARS will queue up against each other and so experience som
 more delay, and other products will share a single queue and be subject to more
 delay in cases of backlog.
 
-https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/dmc_hipri.conf::
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_hipri.conf::
 
   broker amqp://dd.weather.gc.ca/
   mirror
@@ -452,7 +452,7 @@ https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/dmc_hip
 
 
 
-https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/dmc_normal.conf::
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_normal.conf::
 
   broker amqp://dd.weather.gc.ca/
   subtopic #
@@ -463,8 +463,8 @@ https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/dmc_nor
 
 
 Where you want the mirror of the data mart to start at /data/web (presumably there is a web
-server configured do display that directory.)  Likely, the *dmc_normal* configuration 
-will experience a lot of queueing, as there is a lot of data to download.  The *dmc_hipri.conf* is 
+server configured do display that directory.)  Likely, the *ddc_normal* configuration 
+will experience a lot of queueing, as there is a lot of data to download.  The *ddc_hipri.conf* is 
 only subscribed to weather warnings in Common Alerting Protocol format, so there will be
 little to no queueing for that configuration.
 
