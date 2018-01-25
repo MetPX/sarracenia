@@ -356,8 +356,10 @@ class sr_instances(sr_config):
         elif action == 'edit'       :
              if self.config_name in ['admin','default','credentials'] :
                 def_fil = def_dir + os.sep + '..' + os.sep + self.config_name + ext
-             try   : subprocess.check_call([ os.environ.get('EDITOR'), def_fil] )
-             except: self.logger.error("problem editor %s file %s" % (os.environ.get('EDITOR'), def_fil))
+             editor =  os.environ.get('EDITOR')
+             if not editor: editor='vi'
+             try   : subprocess.check_call([editor, def_fil] )
+             except: self.logger.error("problem editor %s file %s" % (editor, def_fil))
 
         elif action == 'enable'     :
              if  os.path.isfile( self.user_config ):
