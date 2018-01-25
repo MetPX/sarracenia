@@ -100,6 +100,7 @@ class sr_post(sr_instances):
 
         if self.post_exchange == None :
            self.post_exchange = 'xs_%s' % self.post_broker.username
+           if self.post_exchange_suffix : self.post_exchange += '_' + self.post_exchange_suffix
 
         if   self.post_base_url == None :
              self.logger.error("post_base_url required")
