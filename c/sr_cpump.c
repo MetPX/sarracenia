@@ -15,6 +15,12 @@
  */
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
+
+//for opendir/readdir
+#include <dirent.h>
+
+
 
 #include "sr_version.h"
 
@@ -55,14 +61,79 @@ void usage()
     exit(1);
 }
 
+int sr_cpump_cleanup(struct sr_context *sr_c, struct sr_config_t *sr_cfg, int dolog)
+{
+  DIR   *dir;
+  int    ret;
+  char   cache_dir[PATH_MAX];
+  char   cache_fil[PATH_MAX];
+  struct stat sb;
+  struct dirent *e;
+
+  // if running, warn no cleanup
+  if (sr_cfg->pid > 0)
+  {
+     ret=kill(sr_cfg->pid,0);
+     if (!ret)
+     {   // is running.
+         fprintf( stderr, "cannot cleanup : sr_cpump configuration %s is running\n", sr_cfg->configname );
+         return(1);
+     }
+  }
+
+  sprintf( cache_dir, "%s/.cache/sarra/%s/%s", getenv("HOME"), sr_c->cfg->progname, sr_c->cfg->configname);
+
+  sr_consume_cleanup(sr_c);
+  sr_post_cleanup( sr_c ); 
+  sr_context_close(sr_c);
+
+  dir = opendir( cache_dir );
+
+  if (dir)
+  {
+      while( (e = readdir(dir)) )
+      {
+          if ( !strcmp(e->d_name,".") || !strcmp(e->d_name,"..") )
+               continue;
+
+          strcpy( cache_fil, cache_dir );
+          strcat( cache_fil, "/" );
+          strcat( cache_fil, e->d_name );
+
+          if ( lstat( cache_fil, &sb ) < 0 )
+               continue;
+
+          if ( S_ISDIR(sb.st_mode) )
+          {
+               fprintf( stderr, "cannot cleanup : sr_cpump configuration %s directory\n", e->d_name );
+          }
+
+          ret = remove(cache_fil);
+      }
+
+      closedir(dir);
+
+      ret = rmdir(cache_dir);
+  }
+
+  /* PAS not sure, but currently don't think we should ever delete logs.
+     MG also mentioned this code does not delete old logs, so missing a bit.
+  if (dolog)
+  {
+     ret = remove(sr_cfg->logfn);
+  }
+   */
+  return(0);
+}
+
 int main(int argc, char **argv)
 {
   struct sr_message_t *m;
   struct sr_context *sr_c;
   struct sr_config_t sr_cfg;
   struct sr_mask_t *mask;
-  int consume,i,ret;
-
+  int    consume,i,ret;
+  char   *one;
   
   //if ( argc < 3 ) usage();
  
@@ -100,12 +171,6 @@ int main(int argc, char **argv)
         exit(0);
   }
   
-  if ( !strcmp( sr_cfg.action, "remove" ))
-  {
-        sr_config_remove( &sr_cfg );
-        exit(0);
-  }
-  
   if ( !strcmp( sr_cfg.action, "disable" ))
   {
         sr_config_disable( &sr_cfg );
@@ -125,6 +190,19 @@ int main(int argc, char **argv)
         exit(0);
   }
 
+  if ( !strcmp( sr_cfg.action, "remove") )
+  {
+      // remove anything but a config file
+      if (sr_cfg.configname)
+      {
+         one = sr_config_find_one( &sr_cfg, sr_cfg.configname );
+         if ( !one || strcmp( &(one[strlen(one)-5]),".conf"))
+         {
+            sr_config_remove( &sr_cfg );
+            exit(0);
+         }
+      }
+  }
 
   if ( !strcmp( sr_cfg.action, "list" ))
   {
@@ -162,6 +240,14 @@ int main(int argc, char **argv)
      log_msg( LOG_ERROR, "failed to connect context.\n");
      return(1);
   }
+  
+  if ( !strcmp( sr_cfg.action, "remove" ))
+  {
+
+        ret = sr_cpump_cleanup(sr_c,&sr_cfg,1);
+        if (ret == 0) sr_config_remove( &sr_cfg );
+        exit(0);
+  }
 
   // dont consume_setup or post_init if in cleanup
   // (just hangs when attempting to bind queue with cleaned up exchange)
@@ -179,10 +265,8 @@ int main(int argc, char **argv)
 
   if ( !strcmp( sr_cfg.action, "cleanup" ) )
   {
-      sr_consume_cleanup(sr_c);
-      sr_post_cleanup( sr_c ); 
-      sr_context_close(sr_c);
-      return(0);
+        ret = sr_cpump_cleanup(sr_c,&sr_cfg,0);
+        return(0);
   }
 
   /*

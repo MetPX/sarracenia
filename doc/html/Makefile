@@ -43,5 +43,6 @@ endif
 	sed -i 's/<img \(.*\)\/>/<div class="panel"><div class="panel-body"><img \1 class="img-responsive"\/><\/div><\/div>/' $@
 
 clean: 
+	rm -f *.png *.jpg *.png *.gif
 	rm -f $(TARGETS)
 	rm -f ../CHANGES.rst

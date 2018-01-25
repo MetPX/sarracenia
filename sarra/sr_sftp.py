@@ -281,6 +281,13 @@ class sr_sftp(sr_proto):
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
         alarm_set(self.iotime)
+        # check if the file is there... if not we are done,no error
+        try   :
+                s = self.sftp.stat(path)
+        except: 
+                alarm_cancel()
+                return
+        # proceed with file removal
         self.sftp.remove(path)
         alarm_cancel()
 
@@ -817,6 +824,7 @@ def self_test():
               cfg.inflight      = None
               dldr.send(cfg)
               if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")
+              if hasattr(sftp,'delete') : dldr.sftp.delete("zzz_unexistant")
               cfg.inflight        = '.'
               dldr.send(cfg)
               if hasattr(sftp,'delete') : dldr.sftp.delete("ddd")

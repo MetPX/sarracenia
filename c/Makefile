@@ -51,8 +51,10 @@ all: sr_version.h $(SARRA_OBJECT)
 	$(CC) $(CFLAGS) -o sr_cpost sr_cpost.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 	$(CC) $(CFLAGS) -o sr_cpump sr_cpump.c -lsarra $(SARRA_LINK) -lrabbitmq $(RABBIT_LINK) -lcrypto
 
-sr_version.h: ../debian/changelog
+debian/changelog: ../debian/changelog
 	sed 's/^metpx-sarracenia/libsarra-c/' <../debian/changelog >debian/changelog 
+
+sr_version.h: debian/changelog
 	echo "#define __sarra_version__ \"`head -1 debian/changelog| sed 's/.*(//' | sed 's/).*//'`\"" >sr_version.h
 
 install:

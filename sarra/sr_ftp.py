@@ -246,7 +246,9 @@ class sr_ftp(sr_proto):
     def delete(self, path):
         self.logger.debug( "sr_ftp rm %s" % path)
         alarm_set(self.iotime)
-        self.ftp.delete(path)
+        # if delete does not work (file not found) run pwd to see if connection is ok
+        try   : self.ftp.delete(path)
+        except: d = self.ftp.pwd()
         alarm_cancel()
 
     # get
@@ -643,7 +645,7 @@ def self_test():
     msg.onfly_checksum = False
     cfg.msg = msg
     #cfg.debug  = True
-    opt1 = "destination ftp://localhost"
+    opt1 = "destination ftp://localhost:2121"
     cfg.option( opt1.split()  )
     cfg.logger = logger
     cfg.timeout = 5.0
@@ -692,7 +694,7 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.baseurl = "ftp://localhost"
+           msg.baseurl = "ftp://localhost:2121"
            msg.relpath = "tztz/ccc"
            msg.partflg = '1'
            msg.offset  = 0
@@ -739,12 +741,13 @@ def self_test():
               cfg.new_file      = "ddd"
               cfg.remote_file   = "ddd"
               cfg.remote_path   = "tztz/ddd"
-              cfg.remote_urlstr = "ftp://localhost/tztz/ddd"
+              cfg.remote_urlstr = "ftp://localhost:2121/tztz/ddd"
               cfg.remote_dir    = "tztz"
               cfg.chmod         = 0o775
               cfg.inflight      = None
               dldr.send(cfg)
               if hasattr(ftp,'delete') : dldr.ftp.delete("ddd")
+              if hasattr(ftp,'delete') : dldr.ftp.delete("zzz_unexistant")
               cfg.inflight        = '.'
               dldr.send(cfg)
               if hasattr(ftp,'delete') : dldr.ftp.delete("ddd")

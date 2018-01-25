@@ -53,9 +53,12 @@ class sr_consumer:
         self.logger         = parent.logger
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
+        self.broker         = parent.broker
 
         self.retry           = sr_retry(parent)
         self.last_msg_failed = False
+
+        reporting = self.isReporting()
 
         if admin : return
 
@@ -80,8 +83,6 @@ class sr_consumer:
     def build_connection(self):
         self.logger.debug("sr_consumer build_broker")
 
-        self.broker     = self.parent.broker
-
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
@@ -105,7 +106,6 @@ class sr_consumer:
     def build_queue(self):
         self.logger.debug("sr_consumer build_queue")
 
-        self.broker      = self.parent.broker
         self.bindings    = self.parent.bindings
 
         self.broker_str  = self.broker.geturl().replace(':'+self.broker.password+'@','@')
@@ -231,6 +231,34 @@ class sr_consumer:
         alarm_cancel()
         return True
 
+    def isReporting(self):
+        self.logger.debug("sr_consumer isReporting")
+
+        self.report_exchange = None
+        self.report_manage   = False
+
+        if not self.parent.reportback : return False
+
+        self.report_exchange = self.parent.report_exchange
+
+        # user has power to create exchanges
+
+        user           = self.broker.username
+        self.users     = self.parent.users
+
+        self.isAllowed = user             in self.users    and \
+                         self.users[user] in ['admin','feeder','manager']
+
+        # default report_exchange if unset
+
+        if self.report_exchange == None :
+           self.report_exchange = 'xs_' + user
+           if self.isAllowed :
+              self.report_exchange = 'xreport'
+           self.parent.report_exchange = self.report_exchange
+
+        return True
+
     def msg_to_retry(self):
         self.last_msg_failed = True
 
@@ -330,7 +358,6 @@ class sr_consumer:
 
     def set_queue_name(self):
 
-        self.broker       = self.parent.broker
         self.queue_prefix = 'q_'+ self.broker.username
         self.queue_name   = self.parent.queue_name
 
@@ -351,16 +378,22 @@ class sr_consumer:
                  if hasattr(self,'queuepath') :
                     os.unlink(self.queuepath)
         except : pass
+        if self.report_manage :
+           self.hc.exchange_delete(self.report_exchange)
 
     def declare(self):
         self.logger.debug("sr_consume declare")
         self.build_connection()
         self.queue_declare(build=True)
+        if self.report_manage :
+           self.hc.exchange_declare(self.report_exchange)
                   
     def setup(self):
         self.logger.debug("sr_consume setup")
         self.build_connection()
         self.build_queue()
+        if self.report_manage :
+           self.hc.exchange_declare(self.report_exchange)
 
 
 # ===================================

@@ -39,6 +39,7 @@ import os,re,socket,sys,random
 import urllib,urllib.parse
 from   appdirs import *
 import shutil
+import subprocess
 import sarra
 
 try   : import amqplib.client_0_8 as amqp
@@ -56,6 +57,13 @@ try :
 except : 
          from sarra.sr_credentials import *
          from sarra.sr_util        import *
+
+if sys.hexversion > 0x03030000 :
+   from shutil import copyfile,get_terminal_size
+   py2old=False
+else: 
+   py2old=True 
+
 
 class sr_config:
 
@@ -79,6 +87,9 @@ class sr_config:
          
         self.appname          = 'sarra'
         self.appauthor        = 'science.gc.ca'
+
+        self.programs         = ['post', 'watch', 'winnow', 'sarra', 'shovel', 'subscribe', 'sender', 'poll', 'report']
+        self.programs.extend  ( ['cpost', 'cpump'] )
 
         self.package_dir      = os.path.dirname(inspect.getfile(sr_credentials))
         self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
@@ -527,7 +538,7 @@ class sr_config:
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
 
-        self.report_exchange      = 'xreport'
+        self.report_exchange      = None
           
         # amqp
 
@@ -766,6 +777,54 @@ class sr_config:
 
         return True
 
+    def find_conf_file(self,name):
+
+        # check in user program configs
+
+        for p in self.programs:
+            d = self.user_config_dir +os.sep+ p
+            for e in sorted( os.listdir(d) ):
+                f = d+os.sep+e
+                if os.path.isdir(f) : continue
+                if f.endswith(name) : return f
+
+        # check in user plugin configs
+
+        d =  self.user_config_dir +os.sep+ 'plugins'
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
+
+        # check in user general configs
+
+        d =  self.user_config_dir
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
+
+        # check in package plugins
+
+        d =  self.package_dir +os.sep+ 'plugins'
+        for e in sorted( os.listdir(d) ):
+            f = d+os.sep+e
+            if os.path.isdir(f) : continue
+            if f.endswith(name) : return f
+
+        # check in package examples
+
+        for p in self.programs:
+            d =  self.package_dir     +os.sep+ 'examples' +os.sep+ p
+            for e in sorted( os.listdir(d) ):
+                f = d+os.sep+e
+                if os.path.isdir(f) : continue
+                if f.endswith(name) : return f
+
+        # not found
+
+        return None
+
 
     def heartbeat_check(self):
         now    = time.time()
@@ -863,6 +922,13 @@ class sr_config:
         s = S.lower()
         if  s == 'false' or s == 'none' or s == 'off' or s == '0': return True
         return False
+
+    def list_file(self,path):
+        cmd = os.environ.get('PAGER')
+        if cmd == None: cmd="/bin/more"
+
+        try   : subprocess.check_call([ cmd, path ] )
+        except: self.logger.error("could not %s %s" % ( cmd, path ) )
 
     # modified from metpx SenderFTP
     def sundew_basename_parts(self,basename):
@@ -1962,6 +2028,31 @@ class sr_config:
 
     def overwrite_defaults(self):
         self.logger.debug("sr_config overwrite_defaults")
+
+    def print_configdir(self,prefix,configdir):
+
+        print("\n%s: ( %s )" % (prefix,configdir))
+        if py2old: columns=80
+        else:
+                   term = get_terminal_size((80,20))
+                   columns=term.columns
+
+        i=0
+        if not os.path.isdir(configdir): 
+           print('')
+           return
+
+        for confname in sorted( os.listdir(configdir) ):
+            if os.path.isdir(configdir+os.sep+confname) : continue
+            if ( ((i+1)*21) >= columns ): 
+                 print('')
+                 i=1
+            else:
+                 i+=1
+                 print( "%20s " % confname, end='' )
+
+        print("")
+
 
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)
