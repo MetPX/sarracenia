@@ -477,6 +477,12 @@ class Queue:
               (stype, svalue, tb) = sys.exc_info()
               self.logger.error("sr_amqp/build Type: %s, Value: %s" %  (stype, svalue))
 
+       # no bindings... in declare mode
+
+       if len(self.bindings) == 0 :
+          self.logger.debug("queue build done in declare mode")
+          return
+
        # queue bindings
        exchange_ok = None
        for exchange_name,exchange_key in self.bindings:
