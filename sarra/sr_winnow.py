@@ -45,6 +45,25 @@ class sr_winnow(sr_subscribe):
 
         if self.config_name == None : return
 
+        # broker requiered
+
+        if self.broker == None :
+           self.logger.error("no broker given")
+           self.help()
+           sys.exit(1)
+
+        # post_broker
+
+        if not self.post_broker : self.post_broker = self.broker
+
+        # exchanges suffix process if needed
+
+        if self.exchange == None and self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+
+        if self.post_exchange == None and self.post_exchange_suffix :
+           self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+
         # no queue name allowed
 
         if self.queue_name == None:
@@ -59,21 +78,21 @@ class sr_winnow(sr_subscribe):
            os._exit(1)
 
         # exchange must be provided 
+
         if self.exchange == None:
            self.logger.error("exchange (input) unset... exitting")
            sys.exit(1)
 
         # post_exchange must be provided
+
         if self.post_exchange == None :
            self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
 
         # post_exchange must be different from exchange if on same broker
-        if not self.post_broker and self.post_exchange == self.exchange :
+        if self.broker.geturl() == self.post_broker.geturl() and self.post_exchange == self.exchange :
            self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
-
-        if not self.post_broker : self.post_broker = self.broker
 
         # no vip given... so should not matter ?
         if self.vip == None :

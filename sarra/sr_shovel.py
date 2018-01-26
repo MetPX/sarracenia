@@ -73,6 +73,14 @@ class sr_shovel(sr_subscribe):
            self.help()
            sys.exit(1)
 
+        # exchanges suffix process if needed
+
+        if self.exchange == None and self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+
+        if self.post_exchange == None and self.post_exchange_suffix :
+           self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+
         if self.exchange == None :
            self.logger.error("no exchange given")
            self.help()

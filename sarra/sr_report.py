@@ -73,11 +73,18 @@ class sr_report(sr_subscribe):
         if self.retry_mode :
            self.execfile("plugin",'hb_retry')
 
+        # exchanges  process if needed
+
         if self.exchange == None:
-           self.exchange = 'xs_' + username
            if username in self.users.keys():
               if self.users[username] in [ 'feeder', 'admin' ]:
                  self.exchange = 'xreport'
+
+        if self.exchange_suffix :
+           self.exchange = 'xs_%s' % username + self.exchange_suffix
+
+        if self.exchange == None:
+           self.exchange = 'xs_' + username
 
         if self.bindings == [] :
            key = self.topic_prefix + '.' + self.subtopic

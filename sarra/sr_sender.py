@@ -98,6 +98,9 @@ class sr_sender(sr_subscribe):
 
         if self.post_broker != None :
 
+           if self.post_exchange == None and self.post_exchange_suffix :
+              self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+
            # enforcing post_exchange
 
            if self.post_exchange == None :

@@ -95,6 +95,18 @@ class sr_sarra(sr_subscribe):
            self.help()
            sys.exit(1)
 
+        if self.post_broker == None : self.post_broker = self.broker
+
+        # exchanges suffix process if needed
+
+        if self.exchange == None and self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+
+        if self.post_exchange == None and self.post_exchange_suffix :
+           self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+
+        # verify exchange
+
         if self.exchange == None :
            self.logger.error("no exchange given")
            self.help()
