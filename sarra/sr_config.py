@@ -186,18 +186,21 @@ class sr_config:
         # starting the program we should have a real config file ... ending with .conf
 
         if config != None :
+           mandatory = True
+           if action in ['add','edit','enable','remove']: mandatory = False
            usr_cfg = config
            if not config.endswith('.conf') : usr_cfg += '.conf'
            cdir = os.path.dirname(usr_cfg)
            if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
            self.config_name = re.sub(r'(\.conf)','',os.path.basename(usr_cfg))
-           ok, self.user_config = self.config_path(self.program_dir,usr_cfg)
+           ok, self.user_config = self.config_path(self.program_dir,usr_cfg,mandatory)
            if ok :
               cdir = os.path.dirname(self.user_config)
               if cdir and cdir != '' : self.config_dir = cdir.split(os.sep)[-1]
               self.config_found  = True
            else :
-              if not config.endswith('.conf') : self.user_config = config
+              self.user_config = config
+              self.config_dir = self.program_dir
            self.logger.debug("sr_config config_dir   %s " % self.config_dir  )
            self.logger.debug("sr_config config_name  %s " % self.config_name )
            self.logger.debug("sr_config user_config  %s " % self.user_config )
@@ -386,8 +389,8 @@ class sr_config:
 
         # return bad file ... 
         if mandatory :
-          if subdir == 'plugins' : self.logger.error("Script incorrect %s" % config)
-          else                   : self.logger.debug("Config not found %s" % config)
+          if subdir == 'plugins' : self.logger.error("script not found %s" % config)
+          else                   : self.logger.error("file not found %s" % config)
 
         return False,config
 
@@ -416,21 +419,23 @@ class sr_config:
 
         # dont need to configure if it is not a config file or for theses actions
 
-        if self.config_found :
-
-           if not self.action in [ 'add','edit','enable', 'list' ]: self.config (self.user_config)
+        if self.config_found and \
+           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           self.config (self.user_config)
 
         # configure some directories if statehost was set
 
         self.configure_statehost()
 
-        # no checks if no config except if program is sr_audit
-
-        if not self.config_found and not self.program_name in ['sr_audit']  : return
-
         # verify / complete settings
 
-        self.check()
+        if self.config_found and \
+           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           self.check()
+
+        # sr_audit is the only program working without config
+
+        if self.program_name == 'sr_audit' : self.check()
 
         # check extended options
 
@@ -785,9 +790,10 @@ class sr_config:
             f = d+os.sep+e
             if os.path.isdir(f) :
                if not recursive : continue
-               f = self.find_file_in_dir(f,name,recursive)
-               if f : return f
-            if f.endswith(name) : return f
+               rf = self.find_file_in_dir(f,name,recursive)
+               if rf : return rf
+               continue
+            if f and f.endswith(name) : return f
 
         return None
 
