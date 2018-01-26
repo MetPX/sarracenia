@@ -244,6 +244,8 @@ class sr_instances(sr_config):
         if sub_dir in usr_cfg: def_fil = self.user_config_dir + os.sep + usr_cfg
         else                 : def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + usr_cfg
 
+        if self.config_found : def_fil = self.user_config
+
         def_dir  = os.path.dirname(def_fil)
 
         usr_fil  = None
@@ -258,12 +260,17 @@ class sr_instances(sr_config):
                 except : pass
 
              if not usr_fil:
-                f  = self.find_conf_file(usr_cfg)
+                f  = self.find_conf_file('/'+usr_cfg)
                 if f and 'examples' in f : usr_fil = f
 
-             if not usr_fil:
+             if not usr_fil or not os.path.isfile(usr_fil):
                 self.logger.error("could not add %s to %s" % (self.user_config, def_dir))
+             elif usr_fil == def_fil :
+                self.logger.warning("file already installed %s" % def_fil)
              else:
+                self.logger.info("copying %s to %s" % (usr_fil,def_fil))
+                try   : os.unlink(def_fil)
+                except: pass
                 copyfile(usr_fil,def_fil)
 
         # disable
