@@ -324,14 +324,14 @@ class sr_instances(sr_config):
              if self.nbr_instances == 1 :
                 self.build_instance(1)
                 print("\ntail -f %s\n" % self.logpath)
-                try   : subprocess.check_output([ 'tail', '-f', self.logpath])
+                try   : subprocess.check_call([ 'tail', '-f', self.logpath])
                 except: self.logger.info("stop (or error?)")
                 return
 
              if self.no > 0 :
                 self.build_instance(self.no)
                 print("\ntail -f %s\n" % self.logpath)
-                try   : subprocess.check_output([ 'tail', '-f', self.logpath] )
+                try   : subprocess.check_call([ 'tail', '-f', self.logpath] )
                 except: self.logger.info("stop (or error?)")
                 return
 
@@ -340,7 +340,7 @@ class sr_instances(sr_config):
                    self.build_instance(no)
                    print("\ntail -f %s\n" % self.logpath)
                    if not os.path.isfile(self.logpath) : continue
-                   try   : subprocess.check_output( [ 'tail', '-n10', self.logpath] )
+                   try   : subprocess.check_call( [ 'tail', '-n10', self.logpath] )
                    except: self.logger.error("could not tail -n 10 %s" % self.logpath)
                    no = no + 1
 
