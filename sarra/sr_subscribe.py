@@ -89,6 +89,11 @@ class sr_subscribe(sr_instances):
               self.post_base_dir = self.document_root
               self.logger.warning("use post_base_dir instead of document_root")
 
+        # overwrite xpublic default with suffix 
+
+        if self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+
         # impacting other settings
 
         if self.discard:
