@@ -593,7 +593,7 @@ def startup_args(sys_argv):
     except :
              try    : idx = argv.index('-config')
              except : pass
-    if idx > -1 and idx < largv-2 :
+    if idx > -1 and idx < largv-1 :
        config = argv[idx+1]
        argv.pop(idx+1)
        argv.pop(idx)
