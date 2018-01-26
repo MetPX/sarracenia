@@ -33,8 +33,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-
-import os, os.path, shutil, subprocess, sys, time
+import logging, os, os.path, shutil, subprocess, sys, time
 
 try :    
          from sr_config          import *
@@ -62,6 +61,10 @@ except :
 cfg    = sr_config()
 action = sys.argv[-1]
 
+#cfg.configure()
+#cfg.loglevel = logging.DEBUG
+#cfg.setlog()
+
 # instantiate each program  with its configuration file
 # and invoke action if one of cleanup,declare,setup
 
@@ -70,6 +73,7 @@ def instantiate(dirconf,pgm,confname,action):
     # c stuff always requiere to spawn a call
 
     if pgm in ['cpost','cpump'] :
+       cfg.logger.debug("%s %s %s" % ("sr_" + pgm,action,confname))
        subprocess.check_call([ "sr_" + pgm, action, confname])
        return
 
@@ -82,6 +86,7 @@ def instantiate(dirconf,pgm,confname,action):
 
     try:
             inst  = None
+            cfg.logger.debug("inst %s %s %s" % (pgm,config,action))
             if    pgm == 'poll':      inst = sr_poll     (config,[action])
             elif  pgm == 'post':      inst = sr_post     (config,[action])
             elif  pgm == 'sarra':     inst = sr_sarra    (config,[action])
@@ -119,6 +124,7 @@ def invoke(dirconf,pgm,confname,action):
     try :
              # anything but sr_post
              if program != 'sr_post' :
+                cfg.logger.debug("%s %s %s" % (program,action,config))
                 subprocess.check_call([program,action,config])
                 return
 
@@ -127,6 +133,7 @@ def invoke(dirconf,pgm,confname,action):
              confpath = dirconf + os.sep + pgm + os.sep + confname
              post = sr_post(confpath)
 
+             cfg.logger.debug("INVOKE %s %s %s %s" % (program,'-c',confpath,action))
              subprocess.check_call([program,'-c',confpath,action])
              return
 
@@ -159,6 +166,7 @@ def scandir(dirconf,pgm,action):
     for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue
+        cfg.logger.info("%s %s %s" % (pgm,confname,action))
         if action in ['cleanup','declare','setup']:
               instantiate(dirconf,pgm,confname,action)
         else:
