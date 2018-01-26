@@ -1428,18 +1428,28 @@ def main():
     # try the normal sarra arguments parsing
 
     args,action,config,old = startup_args(sys.argv)
-
-    # verification: action
-
-    if action == None : action = 'foreground'
+    #print("args,action,config,old = %s %s %s %s" % (args,action,config,old))
 
     # verification: config
 
-    post        = sr_post(None,None,None)
+    post        = sr_post(None,None,action)
     logger      = post.logger
     post.logger = Silent_Logger()
 
     config_ok, user_config = post.config_path(post.program_dir,config)
+    #print("config_ok,user_config = %s %s" % (config_ok, user_config))
+    if action in ['add','edit','enable','remove']: config_ok = True
+
+    # config and action are ok so try normal execution
+
+    if config_ok and action :
+       post = sr_post(user_config,args,action)
+       post.exec_action(action,old)
+       os._exit(0)
+
+    # verification: action
+
+    if action == None : action = 'foreground'
 
     # user_config is wrong
 
@@ -1456,7 +1466,7 @@ def main():
           os._exit(1)
 
        # parsing incorrect, put it back in args
-       args.append(config)
+       if config : args.append(config)
        config = None
     
     # if the config is ok, we parse it
