@@ -695,6 +695,12 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
       argument=NULL;
       retval=(2);
 
+  } else if ( !strcmp( option, "exchange_suffix" ) || !strcmp( option, "exs") || !strcmp( option, "xs") ) {
+      if (sr_cfg->exchange_suffix) free(sr_cfg->exchange_suffix);
+      sr_cfg->exchange_suffix = argument;
+      argument=NULL;
+      retval=(2);
+
   } else if ( !strcmp( option, "expire" ) || !strcmp( option, "expiry" ) ) {
       if isalpha(*argument) {
           val = StringIsTrue(argument);
@@ -896,11 +902,13 @@ void sr_config_free( struct sr_config_t *sr_cfg )
   if (sr_cfg->directory) free(sr_cfg->directory);
   if (sr_cfg->post_base_dir) free(sr_cfg->post_base_dir);
   if (sr_cfg->exchange) free(sr_cfg->exchange);
+  if (sr_cfg->exchange_suffix) free(sr_cfg->exchange_suffix);
   if (sr_cfg->last_matched) free(sr_cfg->last_matched);
   if (sr_cfg->queuename) free(sr_cfg->queuename);
   if (sr_cfg->outlet) free(sr_cfg->outlet);
   if (sr_cfg->pidfile) free(sr_cfg->pidfile);
   if (sr_cfg->post_exchange) free(sr_cfg->post_exchange);
+  if (sr_cfg->post_exchange_suffix) free(sr_cfg->post_exchange_suffix);
   if (sr_cfg->progname) free(sr_cfg->progname);
   if (sr_cfg->source) free(sr_cfg->source);
   if (sr_cfg->to) free(sr_cfg->to);
@@ -967,6 +975,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->events= ( SR_MODIFY | SR_DELETE | SR_LINK ) ;
   sr_cfg->expire=3*60*1000 ;
   sr_cfg->exchange=NULL;
+  sr_cfg->exchange_suffix=NULL;
   sr_cfg->follow_symlinks=0;
   sr_cfg->force_polling=0;
   sr_cfg->instance=1;
@@ -985,6 +994,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
   sr_cfg->post_broker=NULL;
   sr_cfg->post_exchange=NULL;
   sr_cfg->post_exchange_split=0;
+  sr_cfg->post_exchange_suffix=NULL;
   sr_cfg->prefetch=25;
   if (progname) { /* skip the sr_ prefix */
      c = strchr(progname,'_');
@@ -1296,10 +1306,10 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
           sr_cfg->realpath?"yes":"no" );
   log_msg( LOG_INFO, "\tsleep=%g heartbeat=%g cache=%g cache_file=%s accept_unmatch=%s\n",
           sr_cfg->sleep, sr_cfg->heartbeat, sr_cfg->cache, sr_cfg->cachep?p:"off", sr_cfg->accept_unmatched?"on":"off" );
-  log_msg( LOG_INFO, "\tevents=%04x directory=%s queuename=%s force_polling=%s\n",
-          sr_cfg->events, sr_cfg->directory, sr_cfg->queuename, sr_cfg->force_polling?"on":"off"  );
-  log_msg( LOG_INFO, "\tmessage_ttl=%d post_exchange=%s post_exchange_split=%d sum=%c statehost=%c\n",
-          sr_cfg->message_ttl, sr_cfg->post_exchange, sr_cfg->post_exchange_split, sr_cfg->sumalgo, sr_cfg->statehost  );
+  log_msg( LOG_INFO, "\tevents=%04x directory=%s queuename=%s force_polling=%s sum=%c statehost=%c\n",
+          sr_cfg->events, sr_cfg->directory, sr_cfg->queuename, sr_cfg->force_polling?"on":"off", sr_cfg->sumalgo, sr_cfg->statehost  );
+  log_msg( LOG_INFO, "\tmessage_ttl=%d post_exchange=%s post_exchange_split=%d post_exchange_suffix=%s\n",
+          sr_cfg->message_ttl, sr_cfg->post_exchange, sr_cfg->post_exchange_split, sr_cfg->post_exchange_suffix );
   log_msg( LOG_INFO, "\tsource=%s to=%s post_base_url=%s topic_prefix=%s pid=%d\n",
           sr_cfg->source, sr_cfg->to, sr_cfg->post_base_url, sr_cfg->topic_prefix, sr_cfg->pid  );
 
@@ -1331,7 +1341,10 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
           {
               sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
           } else {
-              sprintf( q, "xs_%s", sr_cfg->post_broker->user );
+              if ( sr_cfg->exchange_suffix )
+                  sprintf( q, "xs_%s_%s", sr_cfg->post_broker->user, sr_cfg->exchange_suffix );
+              else
+                  sprintf( q, "xs_%s", sr_cfg->post_broker->user );
               sr_cfg->post_broker->exchange= strdup(q);
           }
       } else {
@@ -1363,7 +1376,13 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   {
      sr_cfg->broker->exchange = strdup(sr_cfg->exchange) ; 
   } else {
-     sr_cfg->broker->exchange = strdup("xpublic") ; 
+     if ( sr_cfg->exchange_suffix ) 
+     {
+         sprintf( q, "xs_%s_%s", sr_cfg->broker->user, sr_cfg->exchange_suffix );
+         sr_cfg->broker->exchange = strdup(q) ; 
+     }
+     else
+         sr_cfg->broker->exchange = strdup("xpublic") ; 
   }
 
   if (! sr_cfg->queuename ) 

@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* added *exchange_suffix* and *post_exchange_suffix*
 * *cleanup* action aborts if running. (py and C)
 * *cleanup* action removes .cache files and directories. (py and C)
 * *remove* action calls cleanup. (py and C)

@@ -112,6 +112,7 @@ struct sr_config_t {
   int                 durable;
   sr_event_t          events;
   char                *exchange;
+  char                *exchange_suffix;
   int                 expire;
   int                 follow_symlinks;
   int                 force_polling;
@@ -136,6 +137,7 @@ struct sr_config_t {
   struct sr_broker_t *post_broker;
   char               *post_exchange;
   int                 post_exchange_split;
+  char               *post_exchange_suffix;
   char               *queuename;
   int                 realpath;
   int                 recursive;

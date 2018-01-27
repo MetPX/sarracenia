@@ -480,8 +480,15 @@ option.)
 These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
+ - **exchange_suffix      <name>  (default: None)** 
  - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
+
+The convention on data pumps is to use the *xpublic* exchange. Users can establish
+private data flow for their own processing. Users can declare their own exchanges
+that always begin with *xs_<username>*, so to save having to specify that each
+time, one can just declare *exchange_suffix kk* which will result in the exchange
+being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
 
 Several topic options may be declared. To give a correct value to the subtopic,
 

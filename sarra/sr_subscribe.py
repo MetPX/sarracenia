@@ -398,8 +398,10 @@ class sr_subscribe(sr_instances):
 
         if self.program_name == 'sr_subscribe':
           print("\texchange             <name>          (default: xpublic)")
+          print("\tpost_exchange_suffix <name>          (default none))")
         else :
-          print("\texchange             <name>          (MANDATORY)")
+          print("\texchange             <name>          (MANDATORY if no suffix)")
+          print("\tpost_exchange_suffix <name>          (default none))")
 
         print("\ttopic_prefix         <amqp pattern>  (default: v02.post)")
         print("\tsubtopic             <amqp pattern>  (default: #)")
@@ -466,8 +468,10 @@ class sr_subscribe(sr_instances):
         if self.program_name == 'sr_sarra' :
            print("\t\t(default: manager amqp broker in default.conf)")
            print("\tpost_exchange        <name>          (default xpublic)")
+           print("\tpost_exchange_suffix <name>          (default none))")
         else :
-           print("\tpost_exchange        <name>          (MANDATORY)")
+           print("\tpost_exchange        <name>          (MANDATORY if no post_exchange_suffix set.)")
+           print("\tpost_exchange_suffix <name>          (default none))")
 
         print("\tpost_base_dir        <name>          (default None)")
         print("\tpost_base_url        <url>      post message: base_url         (MANDATORY)")
