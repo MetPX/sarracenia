@@ -207,23 +207,29 @@ class sr_cache():
         # keep open to append entries
 
         self.fp = open(self.cache_file,'r+')
+        lineno=0
         while True :
               # read line, parse words
               line  = self.fp.readline()
               if not line : break
+              lineno += 1
 
               # words  = [ sum, time, path, part ]
-              words    = line.split()
-              pathpart = words[2:]
+              try:
+                  words    = line.split()
+                  pathpart = words[2:]
 
-              # skip expired entry
-              ctime = float(words[1])
-              ttl   = now - ctime
-              if ttl > self.expire : continue
+                  # skip expired entry
+                  ctime = float(words[1])
+                  ttl   = now - ctime
+                  if ttl > self.expire : continue
 
-              # key = sum and value = ( time, [ path, part ])
-              key      = words[0]
-              value    = (ctime,pathpart)
+                  # key = sum and value = ( time, [ path, part ])
+                  key      = words[0]
+                  value    = (ctime,pathpart)
+              except: # skip corrupted line.
+                  self.logger.error("sr_cache load corrupted line %d in %s" % ( lineno, self.cache_file) )
+                  continue
 
               #  key already in cache
               if key in self.cache_dict :
