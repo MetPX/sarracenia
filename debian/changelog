@@ -1,3 +1,21 @@
+metpx-sarracenia (2.18.01a5) unstable; urgency=medium
+
+  * added *exchange_suffix* and *post_exchange_suffix*
+  * *cleanup* action aborts if running. (py and C)
+  * *cleanup* action removes .cache files and directories. (py and C)
+  * *remove* action calls cleanup. (py and C)
+  * Documentation: added mirroring use case.
+  * retry logic refactored. performance substantially improved. more correct.
+  * added detection of too short heartbeat interval.
+  * C: added prefetch option.
+  * many improvements to flow_tests (improved QA)
+  * sftp will now not report an error if a file it is supposed to delete is not there. (jobs is done.)
+  * re-worked wget plugin so the stdout and stderr are printed.
+  * list action now prints properly (includes the examples) when user has no configurations.
+  * added pitcher and sci2ec use cases to examples.
+
+ -- Peter Silva <peter@blacklab>  Sat, 27 Jan 2018 16:31:25 -0500
+
 metpx-sarracenia (2.18.01a4) unstable; urgency=medium
 
   * documentation updated for new plugin declaration.
