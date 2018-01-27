@@ -38,7 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
-2.18.01a2
+2.18.01a5
+---------
+
+
+
+2.18.01a4
 ---------
 
 *NOTICE*: backed out of plugin convention enforcement mentioned in 2.18.01a2.  Now there is a new *plugin*
