@@ -1118,6 +1118,12 @@ class sr_config:
                           if '{' in parts : elst.append((parts.split('{'))[1])
                   except: pass
               for e in elst :
+                  try:    
+                          repval = eval( '"%s" % self.' + e )
+                          result = result.replace('${'+e+'}',repval)
+                          continue
+                  except: pass
+
                   try:    result = result.replace('${'+e+'}',os.environ.get(e))
                   except: pass
 
@@ -2645,6 +2651,14 @@ def self_test():
     cfg.option(opt1.split())
     if cfg.exchange_suffix != 'suffix1' or cfg.post_exchange_suffix != 'suffix2' :
        cfg.logger.error("exchange_suffix or post_exchange_suffix problem")
+       failed = True
+
+    opt1 = "broker amqp://michel:passwd@testbroker.toto"
+    cfg.option(opt1.split())
+    opt1 = "post_base_dir /${broker.hostname}/${broker.username}"
+    cfg.option(opt1.split())
+    if cfg.post_base_dir != '/testbroker.toto/michel':
+       cfg.logger.error("option from attribute did not work %s" % cfg.post_base_dir)
        failed = True
 
 
