@@ -105,7 +105,6 @@ class sr_subscribe(sr_instances):
         if self.caching :
            self.cache      = sr_cache(self)
            self.cache_stat = True
-           self.cache.open()
 
         # retry
         if self.retry_ttl == None:
@@ -1432,6 +1431,11 @@ class sr_subscribe(sr_instances):
         # reset was asked... so cleanup before connection
 
         if self.reset : self.cleanup()
+
+
+        # open cache
+        if self.caching :
+           self.cache.open()
 
         # loop/process messages
 

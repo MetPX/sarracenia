@@ -136,8 +136,10 @@ class sr_cache():
 
     def close(self, unlink=False):
         self.logger.debug("sr_cache close")
-        self.fp.flush()
-        self.fp.close()
+        try   :
+                self.fp.flush()
+                self.fp.close()
+        except: pass
         self.fp = None
 
         if unlink : os.unlink(self.cache_file)
