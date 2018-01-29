@@ -370,7 +370,7 @@ class Publisher:
                  time.sleep(5)
                  self.hc.reconnect()
                  if self.hc.asleep : return False
-                 return self.publish(exchange_name,exchange_key,message,mheaders)
+                 return self.publish(exchange_name,exchange_key,message,mheaders,mexp)
               else:
                  (etype, evalue, tb) = sys.exc_info()
                  self.logger.error("sr_amqp/publish 2 Type: %s, Value: %s" %  (etype, evalue))
