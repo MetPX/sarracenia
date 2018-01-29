@@ -1341,8 +1341,8 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
           {
               sr_cfg->post_broker->exchange = strdup(sr_cfg->exchange) ; 
           } else {
-              if ( sr_cfg->exchange_suffix )
-                  sprintf( q, "xs_%s_%s", sr_cfg->post_broker->user, sr_cfg->exchange_suffix );
+              if ( sr_cfg->post_exchange_suffix )
+                  sprintf( q, "xs_%s_%s", sr_cfg->post_broker->user, sr_cfg->post_exchange_suffix );
               else
                   sprintf( q, "xs_%s", sr_cfg->post_broker->user );
               sr_cfg->post_broker->exchange= strdup(q);
