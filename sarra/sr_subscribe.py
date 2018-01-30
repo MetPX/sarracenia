@@ -1539,6 +1539,7 @@ class sr_subscribe(sr_instances):
            HH = time.strftime("%H", time.gmtime()) 
            new_dir = new_dir.replace('${HH}',HH)
 
+        new_dir = self.varsub(new_dir)
 
         return new_dir
 
