@@ -6,6 +6,7 @@ export SR_POST_CONFIG=""
 export LD_PRELOAD=""
 
 
+export TESTDIR="`pwd`"
 export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
@@ -190,6 +191,28 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 # note, defaults to port 2121 so devs can start it.
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
+
+echo "running self test on sarracenia"
+
+cd ${TESTDIR}
+echo ${TESTDIR}
+nbr_test=0
+nbr_fail=0
+
+for t in sr_config; do
+    nbr_test=$(( ${nbr_test}+1 ))
+    ${TESTDIR}/unit_tests/${t}_unit_test.py
+    status=${?}
+    nbr_fail=$(( ${nbr_fail}+${status} ))
+done
+
+if [ $nbr_fail -ne 0 ]; then
+   echo "FAILED: "${nbr_fail}" self test did not work"
+else
+   echo "OK: all "${nbr_test}" self test passed"
+fi
+
+
 
 cd $testrundir
 
