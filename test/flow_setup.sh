@@ -195,11 +195,14 @@ ftpserverpid=$!
 echo "running self test on sarracenia"
 
 cd ${TESTDIR}
-echo ${TESTDIR}
+
 nbr_test=0
 nbr_fail=0
 
+count_of_checks=$((${count_of_checks}+1))
+
 for t in sr_config; do
+    echo "======= testing "${t}
     nbr_test=$(( ${nbr_test}+1 ))
     ${TESTDIR}/unit_tests/${t}_unit_test.py
     status=${?}
@@ -209,9 +212,9 @@ done
 if [ $nbr_fail -ne 0 ]; then
    echo "FAILED: "${nbr_fail}" self test did not work"
 else
-   echo "OK: all "${nbr_test}" self test passed"
+   echo "OK, as expected "${nbr_test}" tests passed"
+   passed_checks=$((${passed_checks}+1))
 fi
-
 
 
 cd $testrundir
