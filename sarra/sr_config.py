@@ -639,7 +639,6 @@ class sr_config:
         self.reportback           = True
         self.restore              = False
         self.restore_queue        = None
-        self.recursive            = True
 
         self.save                 = False
         self.save_file            = None
@@ -1525,14 +1524,6 @@ class sr_config:
                         n = 1
                      else :
                         self.pipe = self.isTrue(words[1])
-                        n = 2
-
-                elif words0 == 'recursive' : # FIXME MG for sr_poll
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.recursive = True
-                        n = 1
-                     else :
-                        self.recursive = self.isTrue(words[1])
                         n = 2
 
                 elif words0 == 'restore' : # See: sr_config.7 

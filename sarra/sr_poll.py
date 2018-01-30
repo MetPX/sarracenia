@@ -406,11 +406,9 @@ class sr_poll(sr_post):
 
         self.accept_unmatch = False
 
-        self.recursive = False
-
 
     def poll_directory(self,pdir,lspath):
-        self.logger.info("poll_directory %s %s" % (pdir,lspath))
+        self.logger.debug("poll_directory %s %s" % (pdir,lspath))
         npost = 0
 
         # cd to that directory
@@ -442,16 +440,17 @@ class sr_poll(sr_post):
 
         ok = self.write_ls_file(file_dict,lspath)
 
-        # if recursive, poll children directory
+        # poll in children directory
 
-        if self.recursive :
-           sdir = sorted(dir_dict.keys())
-           for d in sdir :
-               d_lspath = lspath + '_'    + d
-               d_pdir   = pdir   + os.sep + d
+        sdir = sorted(dir_dict.keys())
+        for d in sdir :
+            if d == '.' or d == '..' : continue
+
+            d_lspath = lspath + '_'    + d
+            d_pdir   = pdir   + os.sep + d
                         
-               n = self.poll_directory(d_pdir, d_lspath)
-               npost += n
+            n = self.poll_directory(d_pdir, d_lspath)
+            npost += n
 
         return npost
 
@@ -640,8 +639,7 @@ class sr_poll(sr_post):
         return False
 
     def run(self):
-
-        self.logger.info("sr_poll run")
+        self.logger.debug("sr_poll run")
 
         # connect to broker
 
