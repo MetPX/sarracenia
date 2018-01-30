@@ -1120,6 +1120,9 @@ class sr_config:
               for e in elst :
                   try:    
                           repval = eval( '"%s" % self.' + e )
+                          # FIXME Peter asked if a list was proposed... we use/set item 0 from that list
+                          #       should have a better test than checking for [ ] but it seemed easy that way
+                          if '[' in repval and ']' in repval : repval = eval( '"%s" % self.' + e + '[0]' )
                           result = result.replace('${'+e+'}',repval)
                           continue
                   except: pass
@@ -2659,13 +2662,6 @@ def self_test():
     cfg.option(opt1.split())
     if cfg.post_base_dir != '/testbroker.toto/michel':
        cfg.logger.error("option from attribute did not work %s" % cfg.post_base_dir)
-       failed = True
-
-    cfg.toto = ['valuea','valueb']
-    opt1 = "post_base_dir /${toto[1]}/${broker.username}"
-    cfg.option(opt1.split())
-    if cfg.post_base_dir != '/valueb/michel':
-       cfg.logger.error("option from attribute did not work 2 %s" % cfg.post_base_dir)
        failed = True
 
 
