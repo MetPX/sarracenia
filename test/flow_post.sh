@@ -32,7 +32,7 @@ function do_sr_post {
 
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
-   find $srpostdir -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
+   find . -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
    # Obtain file listing delta
    srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
 
@@ -41,7 +41,7 @@ function do_sr_post {
    fi
 
    sr_post -c test2_f61.conf -p $srpostdelta 
-   LD_PRELOAD="libsrshim.so.1" cp -p $srpostdelta  ${httpdocroot}/posted_by_shim
+   LD_PRELOAD="libsrshim.so.1" cp -p --parents $srpostdelta  ${httpdocroot}/posted_by_shim
    
    cp -p $srpostlstfile_new $srpostlstfile_old
 

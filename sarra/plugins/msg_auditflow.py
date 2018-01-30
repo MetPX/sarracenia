@@ -54,8 +54,6 @@ class Msg_AuditFlow(object):
 
         for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
             f= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
-            if d == "posted_by_shim" :
-               f= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
             parent.logger.info("msg_auditflow delete: %s" % f )
             if os.path.exists(f):
                  os.unlink( f )
