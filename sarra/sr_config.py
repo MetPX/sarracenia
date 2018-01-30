@@ -2661,6 +2661,13 @@ def self_test():
        cfg.logger.error("option from attribute did not work %s" % cfg.post_base_dir)
        failed = True
 
+    cfg.toto = ['valuea','valueb']
+    opt1 = "post_base_dir /${toto[1]}/${broker.username}"
+    cfg.option(opt1.split())
+    if cfg.post_base_dir != '/valueb/michel':
+       cfg.logger.error("option from attribute did not work 2 %s" % cfg.post_base_dir)
+       failed = True
+
 
     if not failed : print("TEST PASSED")
     else :          print("TEST FAILED")
