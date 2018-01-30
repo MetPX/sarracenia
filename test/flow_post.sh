@@ -32,7 +32,7 @@ function do_sr_post {
 
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
-   ls $srpostdir/* | grep -v '.tmp$' > $srpostlstfile_new
+   find $srpostdir -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
    # Obtain file listing delta
    srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
 
