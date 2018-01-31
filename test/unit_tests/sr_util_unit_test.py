@@ -215,6 +215,13 @@ def self_test():
 
     if status == 4 : print("test 19: alarm_cancel 2 NOT OK")
 
+
+###### missing coverage ######
+# class raw_message
+# class sr_proto()
+# class sr_transport()
+
+
     if not failed :
                     print("sr_util.py TEST PASSED")
     else :          

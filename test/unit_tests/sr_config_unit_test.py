@@ -453,7 +453,10 @@ def self_test():
        failed = True
 
     # more config test to perform for full coverage... 
-    #def isMatchingPattern(self, str, accept_unmatch = False): 
+
+    # options 'accept','get','reject']
+    # option  'accept_unmatched'
+    # def isMatchingPattern(self, str, accept_unmatch = False): 
     #def sundew_dirPattern(self,basename,destDir,destName) :
     #def sundew_getDestInfos(self, filename):
     #def validate_urlstr(self,urlstr):
@@ -487,3 +490,4 @@ def main():
 
 if __name__=="__main__":
    main()
+
