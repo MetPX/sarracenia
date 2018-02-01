@@ -37,8 +37,8 @@ def self_test():
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = False
-    cfg.expire         = 60 * 1000 # 60 secs
-    cfg.message_ttl    = 10 * 1000 # 10 secs
+    cfg.expire         = 300 * 1000  # 5 mins = 300 secs 
+    cfg.message_ttl    = 300 * 1000  # 5 mins = 300 secs
     cfg.user_cache_dir = os.getcwd()
     cfg.config_name    = "test"
     cfg.queue_name     = None
@@ -48,7 +48,7 @@ def self_test():
 
     consumer = sr_consumer(cfg)
 
-    # loop 100 times to try to catch a bulletin
+    # loop 10000 times to try to catch a bulletin
 
     i = 0
     while True :
@@ -56,7 +56,7 @@ def self_test():
           if ok: break
 
           i = i + 1
-          if i == 100 : 
+          if i == 10000 : 
              msg = None
              break
 
