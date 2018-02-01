@@ -202,7 +202,7 @@ nbr_fail=0
 
 count_of_checks=$((${count_of_checks}+1))
 
-for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http sr_sftp; do
+for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http sr_sftp sr_instances; do
     echo "======= testing "${t}  >>  ${testdocroot}/unit_tests.log
     nbr_test=$(( ${nbr_test}+1 ))
     ${TESTDIR}/unit_tests/${t}_unit_test.py 2>>  ${testdocroot}/unit_tests.log
