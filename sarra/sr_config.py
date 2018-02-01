@@ -374,20 +374,21 @@ class sr_config:
         # remote config
 
         if config.startswith('http:') :
+           urlstr = config
+           name   = os.path.basename(config)
+           if not name.endswith(ctype) : name += '.' + ctype
+           path   = self.user_config_dir + os.sep + subdir + os.sep + name
+           config = name
+
+           self.logger.debug("http url %s path %s name %s" % (urlstr,path,name))
 
            # do not allow plugin (Peter's mandatory decision)
            # because plugins may need system or python packages
            # that may not be installed on the current server.
            if subdir == 'plugins' :
-              self.logger.error("it is not allowed to download plugin")
-              sys.exit(1)
-
-           urlstr = config
-           name   = os.path.basename(config)
-           if not name.endswith(ctype) : name += '.' + ctype
-           path   = self.user_config_dir + os.sep + subdir + os.sep + name
-           ok = self.wget_config(urlstr,path)
-           config = name
+              self.logger.error("it is not allowed to download plugins")
+           else :
+              ok = self.wget_config(urlstr,path)
 
         # priority 1 : config given is a valid path
 
