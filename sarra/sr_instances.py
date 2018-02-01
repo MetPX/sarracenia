@@ -44,8 +44,10 @@ else:
 
 try :
          from sr_config      import *
+         from sr_util        import *
 except :
          from sarra.sr_config import *
+         from sarra.sr_util   import *
 
 class sr_instances(sr_config):
 
@@ -583,66 +585,4 @@ class sr_instances(sr_config):
         if hasattr(self,'stop') :
            self.stop()
         os._exit(0)
-
-# ===================================
-# MAIN
-# ===================================
-
-class test_instances(sr_instances):
-     
-      def __init__(self,config=None,args=None):
-         sr_instances.__init__(self,config,args)
-
-      def close(self):
-          pass
-
-      def reload(self):
-          self.logger.info("reloaded")
-          self.close()
-          self.configure()
-          self.run()
-
-      def run(self):
-          while True :
-                time.sleep(100000)
-
-      def start(self):
-          self.logger.info("started")
-          self.run()
-
-      def stop(self):
-          self.logger.info("stopped")
-          pass
-
-def main():
-
-
-    action = sys.argv[-1]
-    args   = sys.argv[1:-1]
-    config = './test_instances.conf'
-
-    f = open(config,'wb')
-    f.close()
-
-
-    this_test = test_instances(config,args)
-
-    action = sys.argv[-1]
-
-    if action == 'foreground' : this_test.foreground_parent()
-    if action == 'reload'     : this_test.reload_parent()
-    if action == 'restart'    : this_test.restart_parent()
-    if action == 'start'      : this_test.start_parent()
-    if action == 'status'     : this_test.status_parent()
-    if action == 'stop'       :
-                                this_test.stop_parent()
-                                os.unlink('./test_instances.conf')
-    sys.exit(0)
-
-# =========================================
-# direct invocation
-# =========================================
-
-if __name__=="__main__":
-   main()
 
