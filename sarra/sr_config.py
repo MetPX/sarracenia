@@ -343,7 +343,7 @@ class sr_config:
            name   = os.path.basename(config)
            path   = self.user_config_dir + os.sep + subdir + os.sep + name
            if not path.endswith(ctype) : path += '.' + ctype
-           ok = self.wget_config(urlstr,path,self.logger)
+           ok = self.wget_config(urlstr,path)
            config = name
 
         # priority 1 : config given is a valid path
