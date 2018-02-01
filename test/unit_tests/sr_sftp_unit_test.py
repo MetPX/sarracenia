@@ -42,7 +42,7 @@ def self_test():
     msg.onfly_checksum = False
     cfg.msg = msg
 
-    opt1 = "destination sftp://${SFTPUSER}@localhost"
+    opt1 = "destination sftp://localhost"
     cfg.option( opt1.split()  )
     cfg.logger = logger
     cfg.timeout = 5.0
