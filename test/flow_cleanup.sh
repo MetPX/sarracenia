@@ -19,6 +19,8 @@ print('export LOGDIR=%s'% logdir)
 EOF
 }
 
+export TESTDIR="`pwd`"
+
 eval `application_dirs`
 
 echo "Stopping sr..."
@@ -40,8 +42,12 @@ if [ -f .httpserverpid ]; then
        echo "web server stopped."
        sleep 2
    else
-       echo "no web server found running"
+       echo "no web server found running from pid file"
    fi
+
+   echo "if other web servers with lost pid kill them"
+   pgrep -al python3 | grep trivialserver.py | grep -v grep  | xargs -n1 kill 2> /dev/null
+
    if [ "`netstat -an | grep LISTEN | grep 8000`" ]; then
        pid="`ps ax | grep trivialserver.py | grep -v grep| awk '{print $1;};'`" 
        echo "killing rogue web server found on port 8000 at pid=$pid"
@@ -61,8 +67,12 @@ if [ -f .ftpserverpid ]; then
        echo "ftp server stopped."
        sleep 2
    else
-       echo "no properly started ftp server found running"
+       echo "no properly started ftp server found running from pid file"
    fi
+
+   echo "if other ftp servers with lost pid kill them"
+   pgrep -al python3 | grep pyftpdlib.py | grep -v grep  | xargs -n1 kill 2> /dev/null
+
    if [ "`netstat -an | grep LISTEN | grep 2121`" ]; then
        pid="`ps ax | grep ftpdlib | grep -v grep| awk '{print $1;};'`" 
        echo "killing rogue ftp server on port 2121 found at pid=$pid"
@@ -82,8 +92,12 @@ if [ -f .flowpostpid ]; then
        echo "flow poster stopped."
        sleep 2
    else
-       echo "no properly started flow poster found running"
+       echo "no properly started flow poster found running from pid file"
    fi
+
+   echo "if other flow_post.sh with lost pid kill them"
+   pgrep flow_post.sh  | grep -v grep | xargs -n1 kill 2> /dev/null
+
 fi
 
 

@@ -93,6 +93,7 @@ except :
          from sarra.sr_post      import *
          from sarra.sr_util      import *
 
+
 class sr_poll(sr_post):
 
     def cd(self, path):
@@ -162,14 +163,7 @@ class sr_poll(sr_post):
            except : from sarra.sr_sftp import sr_sftp
            self.dest = sr_sftp(self)
 
-        # General Attributes
-
-        self.ls          = {}
-        self.lsold       = {}
-        self.lspath      = ''
-        self.pulllst     = []
-        self.originalDir = ''
-        self.destDir     = ''
+        # check to post new urls
 
         ok = self.post_new_urls()
 
@@ -178,23 +172,15 @@ class sr_poll(sr_post):
     # find differences between current ls and last ls
     # only the newer or modified files will be kept...
 
-    def differ(self):
+    def differ_ls_file(self,ls,lspath):
 
         # get new list and description
-        new_lst  = []
-        for k in self.ls.keys():
-            new_lst.append(k)
-        new_desc = self.ls
-        new_lst.sort()
+
+        new_lst = sorted(ls.keys())
 
         # get old list and description
-        self.load_ls_file(self.lspath)
 
-        old_lst  = []
-        for k in self.lsold.keys():
-            old_lst.append(k)
-        old_desc = self.lsold
-        old_lst.sort()
+        old_ls  = self.load_ls_file(lspath)
 
         # compare
 
@@ -204,15 +190,15 @@ class sr_poll(sr_post):
         for f in new_lst :
 
             # keep a newer entry
-            if not f in old_lst :
+            if not f in old_ls:
                filelst.append(f)
-               desclst[f] = new_desc[f]
+               desclst[f] = ls[f]
                continue
 
             # keep a modified entry
-            if new_desc[f] != old_desc[f] :
+            if ls[f] != old_ls[f] :
                filelst.append(f)
-               desclst[f] = new_desc[f]
+               desclst[f] = ls[f]
                continue
 
         return filelst,desclst
@@ -286,9 +272,9 @@ class sr_poll(sr_post):
         print("-debug")
 
     def load_ls_file(self,path):
-        self.lsold = {}
+        lsold = {}
 
-        if not os.path.isfile(path) : return True
+        if not os.path.isfile(path) : return lsold
         try : 
                 file=open(path,'r')
                 lines=file.readlines()
@@ -297,58 +283,54 @@ class sr_poll(sr_post):
                 for line in lines :
                     parts = line.split()
                     fil   = parts[-1]
-                    self.lsold[fil] = line[:-1]
+                    lsold[fil] = line[:-1]
 
-                return True
+                return lsold
 
         except:
                 self.logger.error("load_ls_file: Unable to parse files from %s" % path )
 
-        return False
+        return lsold
 
     def lsdir(self):
         try :
-            self.ls = self.dest.ls()
+            ls      = self.dest.ls()
             new_ls  = {}
+            new_dir = {}
+
             # apply selection on the list
 
-            for f in self.ls :
+            for f in ls :
                 matched = False
-                self.line = self.ls[f]
+                self.line = ls[f]
 
-                ok = True
                 if self.on_line_list : 
                     for plugin in self.on_line_list :
                         ok = plugin(self)
                         if not ok: break
+                    if not ok: continue
       
-                if ok:
-                    if self.line[0] == 'd' :
-                       self.logger.debug("directory %s skipped" % f)
-                       continue
+                if self.line[0] == 'd' :
+                   d = f.strip(os.sep)
+                   new_dir[d] = self.line
+                   continue
 
-                    for mask in self.pulllst :
-                       pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-                       if mask_regexp.match(f):
-                           if accepting:
-                               matched=True
-                               new_ls[f] = self.line
-                           break
+                for mask in self.pulllst :
+                   pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+                   if mask_regexp.match(f):
+                       if accepting:
+                           matched=True
+                           new_ls[f] = self.line
+                       break
 
-                # debug for developper
-                #if matched:
-                #    self.logger.debug("lsdir: accept line: %s" % self.line)
-                #else:
-                #    self.logger.debug("lsdir: rejected line: %s" % self.line)
 
-            self.ls = new_ls
-            return True
+            return True, new_ls, new_dir
         except:
             (stype, svalue, tb) = sys.exc_info()
-            self.logger.warning("dest.lsdir: Could not ls directory %s" % self.destDir)
+            self.logger.warning("dest.lsdir: Could not ls directory")
             self.logger.warning("sr_poll/lsdir Type: %s, Value: %s" % (stype ,svalue))
 
-        return False
+        return False, {}, {}
 
     def matchPattern(self,keywd,defval) :
         """
@@ -425,6 +407,53 @@ class sr_poll(sr_post):
         self.accept_unmatch = False
 
 
+    def poll_directory(self,pdir,lspath):
+        self.logger.debug("poll_directory %s %s" % (pdir,lspath))
+        npost = 0
+
+        # cd to that directory
+
+        self.logger.debug(" cd %s" % pdir)
+        ok = self.cd( pdir )
+        if not ok : return npost
+
+        # ls that directory
+
+        ok, file_dict, dir_dict = self.lsdir()
+        if not ok : return npost
+
+        # when not sleeping
+
+        if not self.sleeping :
+
+           # get file list from difference in ls
+
+           filelst,desclst = self.differ_ls_file(file_dict,lspath)
+           self.logger.debug("poll_directory: after differ, len=%d" % len(filelst) )
+
+           # post poll list
+
+           n = self.poll_list_post( pdir, desclst, filelst ) 
+           npost += n
+
+        # sleeping or not, write the directory file content 
+
+        ok = self.write_ls_file(file_dict,lspath)
+
+        # poll in children directory
+
+        sdir = sorted(dir_dict.keys())
+        for d in sdir :
+            if d == '.' or d == '..' : continue
+
+            d_lspath = lspath + '_'    + d
+            d_pdir   = pdir   + os.sep + d
+                        
+            n = self.poll_directory(d_pdir, d_lspath)
+            npost += n
+
+        return npost
+
     def post(self,post_exchange,post_base_url,post_relpath,to_clusters, \
                   partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
 
@@ -467,6 +496,67 @@ class sr_poll(sr_post):
 
         return ok
 
+
+    def poll_file_post(self,ssiz,destDir,remote_file):
+
+        FileOption = None
+        for mask in self.pulllst :
+            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            if mask_regexp.match(remote_file) and accepting :
+               FileOption = maskFileOption
+
+        path = destDir + '/'+ remote_file
+
+        # posting a localfile
+        if self.post_base_url.startswith('file:') :
+           if os.path.isfile(path)   :
+              try   : lstat = os.stat(path)
+              except: lstat = None
+              ok    = self.post1file(path,lstat)
+              return ok
+
+        self.post_relpath = destDir + '/'+ remote_file
+
+        self.sumstr  = self.sumflg
+        self.partstr = None
+
+        try :
+                isiz = int(ssiz)
+                self.partstr = '1,%d,1,0,0' % isiz
+        except: pass
+
+        this_rename  = self.rename
+
+        # FIX ME generalized fileOption
+        if FileOption != None :
+           parts = FileOption.split('=')
+           option = parts[0].strip()
+           if option == 'rename' and len(parts) == 2 : 
+              this_rename = parts[1].strip()
+
+        if this_rename != None and this_rename[-1] == '/' :
+           this_rename += remote_file
+                
+        ok = self.post(self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters, \
+                       self.partstr,self.sumstr,this_rename)
+
+        return ok
+
+
+    def poll_list_post(self, destDir, desclst, filelst ):
+ 
+        n = 0
+
+        for idx,remote_file in enumerate(filelst) :
+            desc = desclst[remote_file]
+            ssiz = desc.split()[4]
+
+            ok = self.poll_file_post(ssiz,destDir,remote_file)
+            if ok : n += 1
+
+        return n
+
+
     # =============
     # for all directories, get urls to post
     # if True is returned it means : no sleep, retry on return
@@ -474,6 +564,10 @@ class sr_poll(sr_post):
     # =============
 
     def post_new_urls(self):
+
+        # General Attributes
+
+        self.pulllst     = []
 
         # number of post files
 
@@ -495,152 +589,57 @@ class sr_poll(sr_post):
 
         for destDir in self.pulls :
 
-            self.destDir = destDir
+            # setup of poll directory info
+
             self.pulllst = self.pulls[destDir]
 
-            pdir = self.dirPattern(self.destDir)
-            if pdir != '' : self.destDir = pdir
-            #self.destDir = self.destDir[1:]
+            path         = destDir
+            path         = path.replace('${','')
+            path         = path.replace('}','')
+            path         = path.replace('/','_')
+            lsPath       = self.user_cache_dir + os.sep + 'ls' + path
 
-            # cd to that directory
+            currentDir   = self.dirPattern(destDir)
 
-            self.logger.debug(" cd %s" % self.destDir)
-            ok = self.cd(self.destDir)
-            if not ok : continue
+            if currentDir == '' : currentDir = destDir
 
-            # create ls filename for that directory
-
-            pdir = destDir
-            pdir = pdir.replace('${','')
-            pdir = pdir.replace('}','')
-            pdir = pdir.replace('/','_')
-
-            self.lspath = self.user_cache_dir + os.sep + 'ls' + pdir
-
-            # ls that directory
-
-            ok = self.lsdir()
-            if not ok : continue
-
-            #self.logger.debug("post_new_urls: back from lsdir ok sleeping=%s #files: %d" % ( self.sleeping, len(self.ls.keys())) )
-
-            # if we are sleeping and we are here it is because
-            # this pull is retrieving difference between directory content
-            # so write the directory content without retrieving files
-
-            if self.sleeping :
-               ok = self.write_ls_file(self.lspath)
-               continue
-
-            #self.logger.debug("post_new_urls: not sleeping " )
-
-            # get the file list from the ls
-            
-            filelst = []
-            for k in self.ls.keys():
-                filelst.append(k)
-            desclst = self.ls
-
-            # get file list from difference in ls
-
-            filelst,desclst = self.differ()
-            self.logger.debug("post_new_urls: after differ, len=%d" % len(filelst) )
-
-            if len(filelst) == 0 :
-               ok = self.write_ls_file(self.lspath)
-               continue
-
-            # for all files make a post
-            for idx,remote_file in enumerate(filelst) :
-
-                FileOption = None
-                for mask in self.pulllst :
-                    pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
-                    if mask_regexp.match(remote_file) and accepting :
-                       FileOption = maskFileOption
-
-                path = self.destDir + '/'+ remote_file
-
-                # posting a localfile
-                if self.post_base_url.startswith('file:') :
-                   if os.path.isfile(path)   :
-                      try   : lstat = os.stat(path)
-                      except: lstat = None
-                      ok    = self.post1file(path,lstat)
-                      if ok : npost += 1
-                      continue
-
-                self.post_relpath = self.destDir + '/'+ remote_file
-
-                desc         = desclst[remote_file]
-                ssiz         = desc.split()[4]
-
-                self.sumstr  = self.sumflg
-                self.partstr = None
-
-                try :
-                        isiz = int(ssiz)
-                        self.partstr = '1,%d,1,0,0' % isiz
-                except: pass
-
-                this_rename  = self.rename
-
-                # FIX ME generalized fileOption
-                if FileOption != None :
-                   parts = FileOption.split('=')
-                   option = parts[0].strip()
-                   if option == 'rename' and len(parts) == 2 : 
-                      this_rename = parts[1].strip()
-
-                if this_rename != None and this_rename[-1] == '/' :
-                   this_rename += remote_file
-                
-                ok = self.post(self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters, \
-                               self.partstr,self.sumstr,this_rename)
-
-                if ok : npost += 1
-
-
-            ok = self.write_ls_file(self.lspath)
+            npost += self.poll_directory( currentDir, lsPath )
 
         # close connection
 
         try   : self.dest.close()
         except: pass
 
-        #dev logging
-        #if self.sleeping:
-        #   self.logger.info("oh! we are sleeping...")
 
         return npost > 0
 
 
     # write ls file
 
-    def write_ls_file(self,path):
+    def write_ls_file(self,ls,lspath):
 
-        filelst = []
-        for k in self.ls.keys():
-            filelst.append(k)
-        desclst = self.ls
-        filelst.sort()
+        if len(ls) == 0 : 
+           try   : os.unlink(lspath)
+           except: pass
+           return True
+
+        filelst = sorted(ls.keys())
 
         try : 
-                fp=open(path,'w')
+                fp=open(lspath,'w')
                 for f in filelst :
-                    fp.write(desclst[f]+'\n')
+                    fp.write(ls[f]+'\n')
                 fp.close()
 
                 return True
 
         except:
-                self.logger.error("Unable to write ls to file %s" % path )
+                self.logger.error("Unable to write ls to file %s" % lspath )
 
         return False
 
     def run(self):
-
-        self.logger.info("sr_poll run")
+        self.logger.debug("sr_poll run")
 
         # connect to broker
 

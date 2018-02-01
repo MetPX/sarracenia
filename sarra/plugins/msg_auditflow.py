@@ -31,14 +31,17 @@ class Msg_AuditFlow(object):
         msg = parent.msg
         #parent.logger.info("msg_delete received: %s %s%s topic=%s lag=%g %s" % \
         #   tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
-        
-        a= "%s/%s/%s" % ( parent.msg_auditflow_topdir, "downloaded_by_sub_t", msg.new_file )
+
+      
+        middir = msg.new_dir.replace(parent.currentDir+os.sep,'')
+
+        a= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, "downloaded_by_sub_t", middir, msg.new_file )
         parent.auditflow_Atotal+=1
         i=0
 
         for d in [ "downloaded_by_sub_u", "sent_by_tsource2send", "posted_by_srpost_test2", "recd_by_srpoll_test1" ]:
             i+=1
-            b= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
+            b= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
             if os.path.exists(b):
                 if filecmp.cmp( a, b ):
                     parent.auditflow_Bgood+=1
@@ -50,7 +53,7 @@ class Msg_AuditFlow(object):
 
 
         for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
-            f= "%s/%s/%s" % ( parent.msg_auditflow_topdir, d, msg.new_file )
+            f= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
             parent.logger.info("msg_auditflow delete: %s" % f )
             if os.path.exists(f):
                  os.unlink( f )

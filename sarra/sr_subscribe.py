@@ -105,7 +105,6 @@ class sr_subscribe(sr_instances):
         if self.caching :
            self.cache      = sr_cache(self)
            self.cache_stat = True
-           self.cache.open()
 
         # retry
         if self.retry_ttl == None:
@@ -1433,6 +1432,11 @@ class sr_subscribe(sr_instances):
 
         if self.reset : self.cleanup()
 
+
+        # open cache
+        if self.caching :
+           self.cache.open()
+
         # loop/process messages
 
         self.connect()
@@ -1535,6 +1539,7 @@ class sr_subscribe(sr_instances):
            HH = time.strftime("%H", time.gmtime()) 
            new_dir = new_dir.replace('${HH}',HH)
 
+        new_dir = self.varsub(new_dir)
 
         return new_dir
 
