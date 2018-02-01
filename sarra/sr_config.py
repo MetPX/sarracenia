@@ -2268,4 +2268,7 @@ class sr_config:
         try   : os.unlink(path+'.downloading')
         except: pass
 
+        if os.path.isfile(path) :
+           self.logger.warning("continue using existing %s"%path)
+
         return False
