@@ -7,9 +7,6 @@
 Revision Record
 ---------------
 
-.. warning::
-    **Pre-Draft.**  This document is still being built and should not be reviewed or relied upon.
-
 :version: @Version@
 :date: @Date@
 
@@ -45,7 +42,7 @@ On Ubuntu 12.04::
   pip3 install metpx_sarracenia==<latest version>
 
 .. note::
-   **Why the specific versions?**
+   **Why the specific versions on older distributions?**
 
    pip > 1.5.6 does not support python < 3.2 which is the python in Ubuntu 12.04.
 
@@ -90,3 +87,13 @@ If you do not have a python environment handy, then the easiest one to get going
 is winpython, which includes many scientifically relevant modules, and will easily install
 all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>'_ 
 (note: select python version >3 ) Then one can install with pip (as above.)
+
+
+Linux C Client
+--------------
+
+There is a Linux only C implementation, which is not currently packaged for any distribution because
+it depends on librabbitmq-c >= 0.8.0, which is only present on ubuntu >= 17.10. So one must manually
+build librabbitmq=c and install it, then one can build the sarrac tools.  
+
+
