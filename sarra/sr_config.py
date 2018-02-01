@@ -304,6 +304,26 @@ class sr_config:
 
         return ok
 
+    def check_for_remote_config(self,path):
+        self.logger.debug("check_for_remote_config %s" % path)
+
+        # parse once to seek for  remote_config_url
+
+        urlstr = None
+        try:
+            f = open(path, 'r')
+            for line in f.readlines():
+                words = line.split()
+                if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
+                   if words[0] != 'remote_config_url' : continue
+                   urlstr = words[1]
+                   ok = self.wget_config(urlstr,path)
+            f.close()
+
+        except:
+            (stype, svalue, tb) = sys.exc_info()
+            self.logger.error("check_remote_config Type: %s, Value: %s" % (stype, svalue))
+
     def chunksize_from_str(self,str_value):
         self.logger.debug("sr_config chunksize_from_str %s" % str_value)
         factor = 1
@@ -320,6 +340,8 @@ class sr_config:
     def config(self,path):
         self.logger.debug("sr_config config component is: %s" % self.program_name )
         self.logger.debug("sr_config %s" % path)
+
+        self.check_for_remote_config(path)
 
         try:
             f = open(path, 'r')
