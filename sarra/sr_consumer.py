@@ -160,7 +160,7 @@ class sr_consumer:
         if self.raw_msg == None: return False, self.msg
 
         # make use it as a sr_message
-        # dont bother with retry... were good to be kept
+        # dont bother with retry... 
 
         try :
                  self.msg.from_amqplib(self.raw_msg)
