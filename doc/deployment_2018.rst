@@ -48,4 +48,80 @@ method used to serve and download data. Data servers can be implemented with a w
 and very little integration is needed.  
 
 
+HPC Mirroring
+-------------
+
+All through 2017, work was proceeding to implement high speed mirroring between the supercomputer site stores
+to permit failover. That work is now in a final deployment phase, and should be in operations by spring 2018.
+For more details see: `HPC Mirroring Use Case <mirroring_use_case.html>`_
+
+
+Application Changes in 2017
+---------------------------
+
+Expanded use cases explored:
+
+* mirroring.  Formerly tool was used for raw data dissemination without regard for permissions, ownership, symbolic links, etc...
+For the mirroring use case, exact metadata replication was a suprisingly complex requirement.
+
+* C-implementation:  In exploring mirroring, it became obvious that for sufficiently large trees ( 27 
+Million files), the only practical method available was the use of a C shim library.  Having all user codes invoke
+a python3 script, is complete nonsense in an HPC environment, so it was necessary to implement a C version of sarracenia
+posting code for use by the shim library.  Once the C implementation was begun it was only a little additional work
+to implement a C version of sr_watch which was much more memory and cpu efficient than the python original.
+
+* node.js implementation:  A client of the public datamart decided to implement enough of sarracenia to download
+warnings in real-time.
+
+* end-user usage:  All of the deployments thus far are implemented by analysts with a deep understanding of Sarracenia,
+and extensive support, and background.  This year, we went through several iterations of having users deploy their flows,
+collecting feedback, and then making it easier end users at the the next iteration. Many of these changes were *breaking*
+changes, in that options and ways or working were still prototypes and required revision.
+
+Changes:
+
+   - exchanges were an administrator-defined resource.  Now users can declare their own.
+   - One had to look on web sites for find examples.  Now the *list* command shows many examples included with the package.
+   - It was hard to find where to put settings files.  The *edit* command helps with that.
+   - Different variables were available in different plugins.  Now they are the same.
+   - partitioning specifications were arcane.  replaced with the *blocksize* option, which has only three possibilities: 0,1,many.
+   - Users needed to understand routing across multiple pumps, which was quite complex.  Now optional, with good defaults, 
+     so uses can usually ignore it. 
+   - an improved plugin interface is available to have multiple routines that work together specified in a single plugin.
+
+These changes were confusing for the expert analysts, as significant changes in details occurred across versions
+in 2017, in the name of more consistency, and a cleaner interface.
+
+
+Coming in 2018
+--------------
+
+As of release 2.18.01a5, the first good relase of 2018, all of the use cases targetted have been explored
+and reasonable solutions are available, so there should be no further changes to the existing configuration language or options.
+No changes to existing configuration settings are to be done. Additions are still coming, but not at the cost
+of breakage of any existing configurations.  Even those additions are relatively minor, as the core application
+is now feature complete.
+
+Expect 2.18.01a5 to be the last alpha release of the package and for subsequent work to be on a beta version
+with a target of a much more long-lived stable version some time in 2018.  
+
+- HPC mirroring use case will be completed.
+
+- improve deployment consistency: Currently, different deployments use different operational versions, as the package
+was evolving for new cases continuously. In 2018, we will revisit early deployments to bring them uptodate.
+
+- more examples, and documentation: Incorporation of mirroring plugins into provided examples.
+
+- reporting. While reporting was baked in from the start, it proved to be very expensive, and so deployments to date
+have omitted reporting. Now that deployments loads are quieting down, this year should allow us to add real-time report
+routing to deployed configurations.  There is no functionality to develop, as everything is already in the application,
+but mostly not used. Use may uncover additional issues.
+
+- pluggable checksum algorithms. Currently checksum algorithms are baked into the implementations. There is a need
+to support plugins to support user-defined checksum algorithms.
+
+- deployment of additional instances:  flux.weather.gc.ca, hpfx.collab.science.gc.ca, etc...
+  
+- introduction to end users of stable version.
+
 
