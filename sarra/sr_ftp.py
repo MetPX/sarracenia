@@ -645,7 +645,8 @@ def self_test():
     msg.onfly_checksum = False
     cfg.msg = msg
     #cfg.debug  = True
-    opt1 = "destination ftp://localhost:2121"
+    my_ftp_cred = 'ftp://localhost'
+    opt1 = "destination " + my_ftp_cred
     cfg.option( opt1.split()  )
     cfg.logger = logger
     cfg.timeout = 5.0
@@ -694,7 +695,7 @@ def self_test():
            msg.start_timer()
            msg.topic   = "v02.post.test"
            msg.notice  = "notice"
-           msg.baseurl = "ftp://localhost:2121"
+           msg.baseurl = my_ftp_cred
            msg.relpath = "tztz/ccc"
            msg.partflg = '1'
            msg.offset  = 0
@@ -741,7 +742,7 @@ def self_test():
               cfg.new_file      = "ddd"
               cfg.remote_file   = "ddd"
               cfg.remote_path   = "tztz/ddd"
-              cfg.remote_urlstr = "ftp://localhost:2121/tztz/ddd"
+              cfg.remote_urlstr = my_ftp_cred + "/tztz/ddd"
               cfg.remote_dir    = "tztz"
               cfg.chmod         = 0o775
               cfg.inflight      = None
@@ -800,7 +801,7 @@ def self_test():
 
     except:
            (stype, svalue, tb) = sys.exc_info()
-           logger.error("sr_sftp/test (Type: %s, Value: %s)" % (stype ,svalue))
+           logger.error("sr_ftp/test (Type: %s, Value: %s)" % (stype ,svalue))
            logger.error("sr_ftp TEST FAILED")
            sys.exit(2)
 
