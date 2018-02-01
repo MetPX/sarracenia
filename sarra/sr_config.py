@@ -371,7 +371,17 @@ class sr_config:
 
         if config == None : return False,None
 
+        # remote config
+
         if config.startswith('http:') :
+
+           # do not allow plugin (Peter's mandatory decision)
+           # because plugins may need system or python packages
+           # that may not be installed on the current server.
+           if subdir == 'plugins' :
+              self.logger.error("it is not allowed to download plugin")
+              sys.exit(1)
+
            urlstr = config
            name   = os.path.basename(config)
            if not name.endswith(ctype) : name += '.' + ctype
@@ -2262,7 +2272,7 @@ class sr_config:
                            ts = time.strptime(info.get('Last-Modified'),"%a, %d %b %Y %H:%M:%S %Z")
                            last_mod_remote = time.mktime(ts)
                            last_mod_local  = os.stat(path)[stat.ST_MTIME]
-                           if last_mod_remote < last_mod_local:
+                           if last_mod_remote <= last_mod_local:
                               self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
                    except: 
