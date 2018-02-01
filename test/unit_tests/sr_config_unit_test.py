@@ -254,9 +254,12 @@ def self_test():
        cfg.logger.error("test 29: option message_ttl or module duration_from_str did not work")
        failed = True
 
-    opt4="directory ${MAIL}/${USER}/${SHELL}/blabla"
+    os.environ["VAR1"] = "michel"
+    os.environ["VAR2"] = "peter"
+    os.environ["VAR3"] = "jun"
+    opt4="directory ${VAR1}/${VAR2}/${VAR3}/blabla"
     cfg.option(opt4.split())
-    if '$' in cfg.currentDir:
+    if '$' in cfg.currentDir or cfg.currentDir != 'michel/peter/jun/blabla':
        cfg.logger.error("test 30: env variable substitution failed %s" % cfg.currentDir)
        failed = True
 
