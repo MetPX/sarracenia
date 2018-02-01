@@ -41,7 +41,9 @@ git origin/master branch
 2.18.01a5
 ---------
 
-
+*NOTICE*: This is likely the last alpha release.  All changes required for feature completeness are done now. 
+          No breaking changes in configuration language to be expected for a long time.  
+          Stabilizing towards beta.
 
 2.18.01a4
 ---------
@@ -361,6 +363,8 @@ the new file is not newer than the one of the existing file.
 
       preserve_mode off
 
+**NOTICE**: use the *blocksize* option to determine partitioning strategy. default is 0 (same as previous default) *parts* deprecated.
+      
 
 
 2.17.02
