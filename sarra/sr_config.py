@@ -341,8 +341,8 @@ class sr_config:
         if config.startswith('http:') :
            urlstr = config
            name   = os.path.basename(config)
+           if not name.endswith(ctype) : name += '.' + ctype
            path   = self.user_config_dir + os.sep + subdir + os.sep + name
-           if not path.endswith(ctype) : path += '.' + ctype
            ok = self.wget_config(urlstr,path)
            config = name
 
@@ -2230,7 +2230,7 @@ class sr_config:
                            last_mod_remote = time.mktime(ts)
                            last_mod_local  = os.stat(path)[stat.ST_MTIME]
                            if last_mod_local > last_mod_remote :
-                              self.logger.info("file %s up to date (%s)" % (path,urlstr))
+                              self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
                    except: 
                            self.logger.warning("could not compare modification dates... downloading")
@@ -2245,8 +2245,11 @@ class sr_config:
                       fp.write(chunk)
                 fp.close()
 
-                os.unlink(path)
+                try   : os.unlink(path)
+                except: pass
                 os.rename(path+'.downloading',path)
+
+                self.logger.info("file %s downloaded (%s)" % (path,urlstr))
 
                 return True
 
