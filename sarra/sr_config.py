@@ -182,6 +182,16 @@ class sr_config:
         if args == [] : args = None
         self.user_args       = args
 
+        # remote config 
+
+        if config and config.startswith('http:') :
+           urlstr = config
+           name   = os.path.basename(config)
+           if not name.endswith('.conf') : name += '.conf'
+           path   = self.user_config_dir + os.sep + self.program_dir + os.sep + name
+           ok = self.wget_config(urlstr,path,remote_config_url=True)
+           config = name
+
         # starting the program we should have a real config file ... ending with .conf
 
         if config != None :
@@ -210,6 +220,7 @@ class sr_config:
         self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
+
 
     def xcl( self, x ):
         if sys.hexversion > 0x03030000 :
@@ -317,7 +328,7 @@ class sr_config:
                 if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
                    if words[0] != 'remote_config_url' : continue
                    urlstr = words[1]
-                   ok = self.wget_config(urlstr,path)
+                   ok = self.wget_config(urlstr,path,remote_config_url=True)
             f.close()
 
         except:
@@ -2239,7 +2250,7 @@ class sr_config:
                  return False
         return False
 
-    def wget_config(self,urlstr,path):
+    def wget_config(self,urlstr,path,remote_config_url=False):
         self.logger.debug("wget_config %s %s" % (urlstr,path))
 
         try :
@@ -2251,7 +2262,7 @@ class sr_config:
                            ts = time.strptime(info.get('Last-Modified'),"%a, %d %b %Y %H:%M:%S %Z")
                            last_mod_remote = time.mktime(ts)
                            last_mod_local  = os.stat(path)[stat.ST_MTIME]
-                           if last_mod_local > last_mod_remote :
+                           if last_mod_remote < last_mod_local:
                               self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
                    except: 
@@ -2260,7 +2271,17 @@ class sr_config:
                            self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
                 fp = open(path+'.downloading','wb')
-                fp.write(bytes("remote_config_url %s\n"%urlstr,'utf-8'))
+
+                # top program config only needs to keep the url
+                # we set option remote_config_url with the urlstr
+                # at the first line of the config...
+                # includes/plugins  etc... may be left as url in the config...
+                # as the urlstr is kept in the config this option would be useless
+                # (and damagable for plugins)
+
+                if remote_config_url :
+                   fp.write(bytes("remote_config_url %s\n"%urlstr,'utf-8'))
+
                 while True:
                       chunk = resp.read(8192)
                       if not chunk : break
@@ -2276,16 +2297,31 @@ class sr_config:
                 return True
 
         except urllib.error.HTTPError as e:
-               self.logger.error('Download failed: %s' % urlstr)                    
-               self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
+               if os.path.isfile(path) :
+                     self.logger.warning('file %s could not be processed1 (%s)' % (path,urlstr))
+                     self.logger.warning('resume with the one on the server')
+               else:
+                     self.logger.error('Download failed: %s' % urlstr)                    
+                     self.logger.error('Server couldn\'t fulfill the request')
+                     self.logger.error('Error code: %s, %s' % (e.code, e.reason))
+
         except urllib.error.URLError as e:
-               self.logger.error('Download failed: %s' % urlstr)                                    
-               self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
+               if os.path.isfile(path) :
+                     self.logger.warning('file %s could not be processed2 (%s)' % (path,urlstr))
+                     self.logger.warning('resume with the one on the server')
+               else:
+                     self.logger.error('Download failed: %s' % urlstr)                                    
+                     self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
+
         except:
-               self.logger.error('Download failed: %s' % urlstr )
-               self.logger.error('Uexpected error')              
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+               if os.path.isfile(path) :
+                     self.logger.warning('file %s could not be processed3 (%s)' % (path,urlstr))
+                     self.logger.warning('resume with the one on the server')
+               else:
+                     self.logger.error('Download failed: %s' % urlstr )
+                     self.logger.error('Uexpected error')              
+                     (stype, svalue, tb) = sys.exc_info()
+                     self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
 
         try   : os.unlink(path+'.downloading')
         except: pass
