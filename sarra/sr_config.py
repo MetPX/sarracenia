@@ -36,7 +36,7 @@ import logging
 import inspect
 import netifaces
 import os,re,socket,sys,random
-import urllib,urllib.parse
+import urllib,urllib.parse, urllib.request, urllib.error
 from   appdirs import *
 import shutil
 import subprocess
@@ -168,7 +168,6 @@ class sr_config:
         self.config_found  = False
         self.config_name   = None
         self.user_config   = config
-        self.remote_config = False
 
         # config might be None ... in some program or if we simply instantiate a class
         # but if it is not... it better be an existing file
@@ -339,6 +338,14 @@ class sr_config:
 
         if config == None : return False,None
 
+        if config.startswith('http:') :
+           urlstr = config
+           name   = os.path.basename(config)
+           path   = self.user_config_dir + os.sep + subdir + os.sep + name
+           if not path.endswith(ctype) : path += '.' + ctype
+           ok = self.wget_config(urlstr,path,self.logger)
+           config = name
+
         # priority 1 : config given is a valid path
 
         self.logger.debug("config_path %s " % config )
@@ -349,9 +356,9 @@ class sr_config:
         config_name = re.sub(r'(\.inc|\.conf|\.py)','',config_file)
         ext         = config_file.replace(config_name,'')
         if ext == '': ext = '.' + ctype
+        config_path = config_name + ext
 
         # priority 1.5: config file given without extenion...
-        config_path = config_name + ext
         if os.path.isfile(config_path) :
            return True,config_path
 
@@ -378,14 +385,6 @@ class sr_config:
            self.logger.debug("config_path %s " % config_path )
            if os.path.isfile(config_path) :
               return True,config_path
-
-        # priority 5 : if remote_config enabled, check at given remote_config_url[]
-
-        if self.remote_config :
-           wconfig = self.wget(config)
-           if wconfig != None :
-              self.logger.debug("config = %s" % wconfig)
-              return True, wconfig
 
         # return bad file ... 
         if mandatory :
@@ -493,8 +492,7 @@ class sr_config:
         self.retry_mode           = True
         self.retry_ttl            = None
 
-        self.remote_config        = False
-        self.remote_config_url    = []
+        self.remote_config_url    = None
 
         self.heartbeat            = 300
         self.last_heartbeat       = time.time()
@@ -1847,16 +1845,8 @@ class sr_config:
                         self.reconnect = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['remote_config']: # See: sr_config.7
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.remote_config = True
-                        n = 1
-                     else :
-                        self.remote_config = self.isTrue(words[1])
-                        n = 2
-
                 elif words0 in ['remote_config_url']: # See: sr_config.7
-                     self.remote_config_url.append(words[1])
+                     self.remote_config_url = words[1]
                      n = 2
 
                 elif words0 in ['rename','rn']: # See: sr_poll, sarra, sender, sub, watch? 
@@ -2227,40 +2217,52 @@ class sr_config:
                  return False
         return False
 
+    def wget_config(urlstr,path):
+        self.logger.debug("wget_config %s %s" % (urlstr,path))
 
-    def wget(self,config):
-        self.logger.debug("sr_config wget %s" % config)
-        import urllib.request, urllib.error
-
-        if len(self.remote_config_url) == 0 : return None
-
-        for u in self.remote_config_url :
-
-            url        = u + os.sep + config
-            local_file = self.http_dir + os.sep + config
-
-            try :
-                req  = urllib.request.Request(url)
+        try :
+                req  = urllib.request.Request(urlstr)
                 resp = urllib.request.urlopen(req)
-                fp   = open(local_file,'wb')
+                if os.path.isfile(path) :
+                   try:
+                           info = resp.info()
+                           ts = time.strptime(info.get('Last-Modified'),"%a, %d %b %Y %H:%M:%S %Z")
+                           last_mod_remote = time.mktime(ts)
+                           last_mod_local  = os.stat(path)[stat.ST_MTIME]
+                           if last_mod_local > last_mod_remote :
+                              self.logger.info("file %s up to date (%s)" % (path,urlstr))
+                              return True
+                   except: 
+                           self.logger.warning("could not compare modification dates... downloading")
+                           (stype, svalue, tb) = sys.exc_info()
+                           self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+
+                fp = open(path+'.downloading','wb')
+                fp.write(bytes("remote_config_url %s\n"%urlstr,'utf-8'))
                 while True:
-                      chunk = resp.read(self.bufsize)
+                      chunk = resp.read(8192)
                       if not chunk : break
                       fp.write(chunk)
                 fp.close()
-                return local_file
 
-            except urllib.error.HTTPError as e:
-                self.logger.error('Download failed: %s' % url)                    
-                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
-            except urllib.error.URLError as e:
-                self.logger.error('Download failed: %s' % url)                                    
-                self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
-            except:
-                self.logger.error('Download failed: %s' % url )
-                self.logger.error('Uexpected error')              
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_config/wget 6 Type: %s, Value: %s,  ..." % (stype, svalue))
+                os.unlink(path)
+                os.rename(path+'.downloading',path)
 
-        return None
+                return True
 
+        except urllib.error.HTTPError as e:
+               self.logger.error('Download failed: %s' % urlstr)                    
+               self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
+        except urllib.error.URLError as e:
+               self.logger.error('Download failed: %s' % urlstr)                                    
+               self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
+        except:
+               self.logger.error('Download failed: %s' % urlstr )
+               self.logger.error('Uexpected error')              
+               (stype, svalue, tb) = sys.exc_info()
+               self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+
+        try   : os.unlink(path+'.downloading')
+        except: pass
+
+        return False
