@@ -2217,7 +2217,7 @@ class sr_config:
                  return False
         return False
 
-    def wget_config(urlstr,path):
+    def wget_config(self,urlstr,path):
         self.logger.debug("wget_config %s %s" % (urlstr,path))
 
         try :
