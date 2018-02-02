@@ -55,7 +55,8 @@ class Msg_Total(object):
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
             ( parent.msg_total_interval, parent.msg_total_maxlag ) )
 
-        parent.msg_total_cache_file = parent.user_cache_dir + os.sep + 'msg_total_plugin.vars'
+        parent.msg_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % parent.instance
 
     def on_message(self,parent):
         logger = parent.logger

@@ -58,7 +58,8 @@ class File_Total(object):
         logger.debug("file_total: initialized, interval=%d, maxlag=%d" % \
             ( parent.file_total_interval, parent.file_total_maxlag ) )
 
-        parent.file_total_cache_file = parent.user_cache_dir + os.sep + 'file_total_plugin.vars'
+        parent.file_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.file_total_cache_file += 'file_total_plugin_%.4d.vars' % parent.instance
           
     def on_file(self,parent):
         logger = parent.logger

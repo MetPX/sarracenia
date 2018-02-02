@@ -649,6 +649,9 @@ class sr_poll(sr_post):
 
         if self.vip : last = self.has_vip()
 
+        for plugin in self.on_start_list:
+           if not plugin(self): break
+
         while True :
 
               #  heartbeat (may be used to check if program is alive if not "has_vip")

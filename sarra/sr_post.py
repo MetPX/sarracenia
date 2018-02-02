@@ -139,6 +139,9 @@ class sr_post(sr_instances):
     def close(self):
         self.logger.debug("%s close" % self.program_name)
 
+        for plugin in self.on_stop_list:
+           if not plugin(self): break
+
         if self.post_hc :
            self.post_hc.close()
            self.post_hc = None
@@ -1301,6 +1304,9 @@ class sr_post(sr_instances):
            self.cache.open()
 
         pbd = self.post_base_dir
+
+        for plugin in self.on_start_list:
+           if not plugin(self): break
 
         for d in self.postpath :
             self.logger.debug("postpath = %s" % d)
