@@ -106,6 +106,9 @@ class Post_Total(object):
     # restoring accounting variables
     def on_start(self,parent):
 
+        parent.post_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
+
         if not os.path.isfile(parent.post_total_cache_file) : return
 
         fp=open(parent.post_total_cache_file,'r')

@@ -107,6 +107,9 @@ class File_Total(object):
     # restoring accounting variables
     def on_start(self,parent):
 
+        parent.file_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.file_total_cache_file += 'file_total_plugin_%.4d.vars' % parent.instance
+
         if not os.path.isfile(parent.file_total_cache_file) : return
 
         fp=open(parent.file_total_cache_file,'r')

@@ -107,6 +107,9 @@ class Msg_Total(object):
     # restoring accounting variables
     def on_start(self,parent):
 
+        parent.msg_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % parent.instance
+
         if not os.path.isfile(parent.msg_total_cache_file) : return
 
         fp=open(parent.msg_total_cache_file,'r')
