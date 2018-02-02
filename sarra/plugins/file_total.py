@@ -54,13 +54,13 @@ class File_Total(object):
         parent.file_total_start = now
         parent.file_total_msgcount=0
         parent.file_total_bytecount=0
-        parent.file_total_msgcount=0
-        parent.file_total_bytecount=0
         parent.file_total_lag=0
         logger.debug("file_total: initialized, interval=%d, maxlag=%d" % \
             ( parent.file_total_interval, parent.file_total_maxlag ) )
+
+        parent.file_total_cache_file = parent.user_cache_dir + os.sep + 'file_total_plugin.vars'
           
-    def perform(self,parent):
+    def on_file(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -103,7 +103,36 @@ class File_Total(object):
 
         return True
 
-file_total = File_Total(self)
+    # restoring accounting variables
+    def on_start(self,parent):
 
-self.on_file = file_total.perform
+        if not os.path.isfile(parent.file_total_cache_file) : return
+
+        fp=open(parent.file_total_cache_file,'r')
+        line = fp.read(8192)
+        fp.close()
+
+        line  = line.strip('\n')
+        words = line.split()
+
+        parent.file_total_last      = float(words[0])
+        parent.file_total_start     = float(words[1])
+        parent.file_total_msgcount  = int  (words[2])
+        parent.file_total_bytecount = int  (words[3])
+        parent.file_total_lag       = float(words[4])
+
+    # saving accounting variables
+    def on_stop(self,parent):
+
+        line  = '%f ' % parent.file_total_last
+        line += '%f ' % parent.file_total_start
+        line += '%d ' % parent.file_total_msgcount
+        line += '%d ' % parent.file_total_bytecount
+        line += '%f\n'% parent.file_total_lag
+
+        fp=open(parent.file_total_cache_file,'w')
+        fp.write(line)
+        fp.close()
+
+self.plugin = 'File_Total'
 
