@@ -33,7 +33,7 @@
 #
 #
 
-import os, urllib.request, urllib.error, sys
+import os, urllib.request, urllib.error, ssl, sys
 
 try :
          from sr_util            import *
@@ -232,11 +232,18 @@ class sr_http(sr_proto):
                    str_range = 'bytes=%d-%d'%(remote_offset,remote_offset + length-1)
                    self.req.headers['Range'] = str_range
 
+                # https without user : create/use an ssl context
+                ctx = None
+                if self.user == None and self.urlstr.startswith('https'):
+                   ctx = ssl.create_default_context()
+                   ctx.check_hostname = False
+                   ctx.verify_mode = ssl.CERT_NONE
+
                 # open... we are connected
                 if self.timeout == None :
-                   self.http = urllib.request.urlopen(self.req)
+                   self.http = urllib.request.urlopen(self.req, context=ctx)
                 else :
-                   self.http = urllib.request.urlopen(self.req, timeout=self.timeout)
+                   self.http = urllib.request.urlopen(self.req, timeout=self.timeout, context=ctx)
 
                 self.connected = True
 

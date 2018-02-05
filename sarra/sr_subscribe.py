@@ -238,13 +238,13 @@ class sr_subscribe(sr_instances):
                          (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
         try :
-                if   self.msg.url.scheme == 'http' :
+                if   self.msg.url.scheme in ['http','https'] :
                      if not hasattr(self,'http_link') :
                         self.http_link = http_transport()
                      ok = self.http_link.download(self)
                      return ok
 
-                elif self.msg.url.scheme == 'ftp' :
+                elif self.msg.url.scheme in ['ftp','ftps'] :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.download(self)
