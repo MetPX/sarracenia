@@ -1169,12 +1169,22 @@ int sr_config_finalize( struct sr_config_t *sr_cfg, const int is_consumer)
   FILE *f;
   int ret;
   struct stat sb;
+  struct timespec tseed;
 
   if (! sr_cfg->configname )
      sr_cfg->configname=strdup("NONE");
 
   if (! sr_cfg->progname )
      sr_cfg->progname=strdup("NONE");
+
+  // seeding random generator from clock nano sec
+  // sr_context_init_config is ran later and so
+  // the random generator is not ready when generating a queue name
+  // therefore, we have to seed/initialize random process Here
+
+  clock_gettime( CLOCK_REALTIME , &tseed);
+  srandom(tseed.tv_nsec);
+
 
   // subdir for statehost
 
