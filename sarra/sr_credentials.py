@@ -142,9 +142,9 @@ class sr_credentials:
         # we have everything
         if both : return True
 
-        # we have no user and no pasw (http normal, sftp hope for .ssh/config)
+        # we have no user and no pasw (http normal, https... no cert,  sftp hope for .ssh/config)
         if not user and not pasw :
-           if url.scheme in ['http','sftp'] : return True
+           if url.scheme in ['http','https','sftp'] : return True
            return False
 
         #  we have a pasw no user 
