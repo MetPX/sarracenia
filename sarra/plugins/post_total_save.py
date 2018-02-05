@@ -55,13 +55,14 @@ class Post_Total(object):
         parent.post_total_start = now
         parent.post_total_msgcount=0
         parent.post_total_bytecount=0
-        parent.post_total_msgcount=0
-        parent.post_total_bytecount=0
         parent.post_total_lag=0
         logger.debug( "post_total: initialized, interval=%d, maxlag=%d" % \
              ( parent.post_total_interval, parent.post_total_maxlag ) ) 
+
+        parent.post_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
           
-    def perform(self,parent):
+    def on_post(self,parent):
         logger = parent.logger
         msg    = parent.msg
 
@@ -102,7 +103,39 @@ class Post_Total(object):
 
         return True
 
-post_total = Post_Total(self)
+    # restoring accounting variables
+    def on_start(self,parent):
 
-self.on_post = post_total.perform
+        parent.post_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
+
+        if not os.path.isfile(parent.post_total_cache_file) : return
+
+        fp=open(parent.post_total_cache_file,'r')
+        line = fp.read(8192)
+        fp.close()
+
+        line  = line.strip('\n')
+        words = line.split()
+
+        parent.post_total_last      = float(words[0])
+        parent.post_total_start     = float(words[1])
+        parent.post_total_msgcount  = int  (words[2])
+        parent.post_total_bytecount = int  (words[3])
+        parent.post_total_lag       = float(words[4])
+
+    # saving accounting variables
+    def on_stop(self,parent):
+
+        line  = '%f ' % parent.post_total_last
+        line += '%f ' % parent.post_total_start
+        line += '%d ' % parent.post_total_msgcount
+        line += '%d ' % parent.post_total_bytecount
+        line += '%f\n'% parent.post_total_lag
+
+        fp=open(parent.post_total_cache_file,'w')
+        fp.write(line)
+        fp.close()
+
+self.plugin='Post_Total'
 

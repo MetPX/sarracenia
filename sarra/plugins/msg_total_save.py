@@ -22,7 +22,6 @@ import os,stat,time
 
 class Msg_Total(object): 
 
-
     def __init__(self,parent):
         """
            set defaults for options.  can be overridden in config file.
@@ -52,13 +51,13 @@ class Msg_Total(object):
         parent.msg_total_start = now
         parent.msg_total_msgcount=0
         parent.msg_total_bytecount=0
-        parent.msg_total_msgcount=0
-        parent.msg_total_bytecount=0
         parent.msg_total_lag=0
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
             ( parent.msg_total_interval, parent.msg_total_maxlag ) )
 
-          
+        parent.msg_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % parent.instance
+
     def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
@@ -105,7 +104,38 @@ class Msg_Total(object):
 
         return True
 
-msg_total = Msg_Total(self)
+    # restoring accounting variables
+    def on_start(self,parent):
 
-self.on_message = msg_total.on_message
+        parent.msg_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % parent.instance
 
+        if not os.path.isfile(parent.msg_total_cache_file) : return
+
+        fp=open(parent.msg_total_cache_file,'r')
+        line = fp.read(8192)
+        fp.close()
+
+        line  = line.strip('\n')
+        words = line.split()
+
+        parent.msg_total_last      = float(words[0])
+        parent.msg_total_start     = float(words[1])
+        parent.msg_total_msgcount  = int  (words[2])
+        parent.msg_total_bytecount = int  (words[3])
+        parent.msg_total_lag       = float(words[4])
+
+    # saving accounting variables
+    def on_stop(self,parent):
+
+        line  = '%f ' % parent.msg_total_last
+        line += '%f ' % parent.msg_total_start
+        line += '%d ' % parent.msg_total_msgcount
+        line += '%d ' % parent.msg_total_bytecount
+        line += '%f\n'% parent.msg_total_lag
+
+        fp=open(parent.msg_total_cache_file,'w')
+        fp.write(line)
+        fp.close()
+
+self.plugin='Msg_Total'
