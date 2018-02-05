@@ -421,8 +421,10 @@ class sr_instances(sr_config):
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
     
-    def reload_signal(self,sig,stack):
-        self.logger.info("signal reload")
+    def reload_signal(self,signum,stack):
+        sig_str = None
+        if signum == signal.SIGHUP  : sig_str = 'SIGHUP'
+        self.logger.info("signal reload (%s)" % sig_str)
         if hasattr(self,'reload') :
            self.reload()
 
@@ -580,8 +582,11 @@ class sr_instances(sr_config):
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
     
-    def stop_signal(self, sig, stack):
-        self.logger.info("signal stop")
+    def stop_signal(self, signum, stack):
+        sig_str = None
+        if signum == signal.SIGTERM : sig_str = 'SIGTERM'
+        if signum == signal.SIGINT  : sig_str = 'SIGINT'
+        self.logger.info("signal stop (%s)" % sig_str)
         if hasattr(self,'stop') :
            self.stop()
         os._exit(0)
