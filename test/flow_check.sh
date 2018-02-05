@@ -207,6 +207,9 @@ function countall {
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
   totsubu="${tot}"
 
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_000*.log | wc -l`"
+  totsubcp="${tot}"
+
   countthem "`grep 'post_log notice' $LOGDIR/srposter.log | wc -l`"
   totpost1="${tot}"
 
@@ -386,6 +389,8 @@ while ! calcres ${t3} ${totwatch}  "same downloads by subscribe t_f30 (${t3}) an
     fi
 done
 
+t4=$(( ${totsubcp}*2 ))
+calcres ${totwatch} ${t4} "posted by watch(${totwatch}) and subscribed cp_f60 (${totsubcp}) should be about half as many"
 calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
 
 zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
