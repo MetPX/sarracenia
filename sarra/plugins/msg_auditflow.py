@@ -61,9 +61,7 @@ class Msg_AuditFlow(object):
                  parent.logger.error("msg_auditflow: file could not be deleted because already gone: %s" % ( f ) ) 
             # sr_watch running here should propagate the deletion to the other directories.
         
-        tally = 0
-        if parent.auditflow_Bgood > 0 :
-           tally = ( parent.auditflow_Atotal*parent.auditflow_BtoAratio  /  parent.auditflow_Bgood ) 
+        tally = ( parent.auditflow_Atotal*parent.auditflow_BtoAratio  /  parent.auditflow_Bgood ) 
 
         if ( tally > 0.90 ) and ( tally < 1.1 ) : 
             so_far="GOOD" 
