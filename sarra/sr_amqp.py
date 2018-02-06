@@ -441,41 +441,17 @@ class Queue:
        self.logger.debug("building queue %s" % self.name)
        self.channel = self.hc.new_channel()
 
-       # queue arguments
-       args = {}
-       if self.expire      > 0 : args['x-expires']     = self.expire
-       if self.message_ttl > 0 : args['x-message-ttl'] = self.message_ttl
-
        # reset 
        if self.reset :
           try    : self.channel.queue_delete( self.name )
           except : self.logger.debug("could not delete queue %s (%s@%s)" % (self.name,self.hc.user,self.hc.host))
                   
-       # create queue
-       try:
-           if self.hc.use_pika:
-                  #self.logger.debug("queue_declare PIKA is used")
-                  q_dclr_ok = self.channel.queue_declare( self.name,
-                                       passive=False, durable=self.durable, exclusive=False,
-                                       auto_delete=self.auto_delete,
-                                       arguments= args )
+       # declare queue
 
-                  method = q_dclr_ok.method
+       msg_count = self.declare()
 
-                  self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
-
-           else:
-                  #self.logger.debug("queue_declare AMQPLIB is used")
-                  self.qname, msg_count, consumer_count = \
-                      self.channel.queue_declare( self.name,
-                                          passive=False, durable=self.durable, exclusive=False,
-                                          auto_delete=self.auto_delete,
-                                          nowait=False,
-                                          arguments= args )
-       except : 
-              self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
-              (stype, svalue, tb) = sys.exc_info()
-              self.logger.error("sr_amqp/build Type: %s, Value: %s" %  (stype, svalue))
+       # something went wrong
+       if msg_count == -1 : return
 
        # no bindings... in declare mode
 
@@ -511,3 +487,42 @@ class Queue:
            self.logger.warning( "this process will not receive pulse message")
 
        self.logger.debug("queue build done")
+
+   def declare(self):
+       self.logger.debug("declaring queue %s" % self.name)
+
+       # queue arguments
+       args = {}
+       if self.expire      > 0 : args['x-expires']     = self.expire
+       if self.message_ttl > 0 : args['x-message-ttl'] = self.message_ttl
+
+       # create queue
+       try:
+           if self.hc.use_pika:
+                  #self.logger.debug("queue_declare PIKA is used")
+                  q_dclr_ok = self.channel.queue_declare( self.name,
+                                       passive=False, durable=self.durable, exclusive=False,
+                                       auto_delete=self.auto_delete,
+                                       arguments= args )
+
+                  method = q_dclr_ok.method
+
+                  self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
+
+           else:
+                  #self.logger.debug("queue_declare AMQPLIB is used")
+                  self.qname, msg_count, consumer_count = \
+                      self.channel.queue_declare( self.name,
+                                          passive=False, durable=self.durable, exclusive=False,
+                                          auto_delete=self.auto_delete,
+                                          nowait=False,
+                                          arguments= args )
+
+           self.logger.debug("queue declare done")
+           return msg_count
+
+       except : 
+              self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
+              (stype, svalue, tb) = sys.exc_info()
+              self.logger.error("sr_amqp/build Type: %s, Value: %s" %  (stype, svalue))
+              return -1
