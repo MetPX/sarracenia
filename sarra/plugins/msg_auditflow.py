@@ -39,7 +39,7 @@ class Msg_AuditFlow(object):
         parent.auditflow_Atotal+=1
         i=0
 
-        for d in [ "downloaded_by_sub_u", "sent_by_tsource2send", "posted_by_srpost_test2", "recd_by_srpoll_test1", "downloaded_by_sub_cp" ]:
+        for d in [ "downloaded_by_sub_u", "sent_by_tsource2send", "posted_by_srpost_test2", "recd_by_srpoll_test1" ]:
             i+=1
             b= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
             if os.path.exists(b):
@@ -52,7 +52,7 @@ class Msg_AuditFlow(object):
                 parent.logger.error("msg_auditflow: compare-%d failed: %s vs. %s " % ( i, a, b ) ) 
 
 
-        for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim" ]:
+        for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim", "downloaded_by_sub_cp" ]:
             f= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
             parent.logger.info("msg_auditflow delete: %s" % f )
             if os.path.exists(f):
@@ -60,9 +60,8 @@ class Msg_AuditFlow(object):
             else:
                  parent.logger.error("msg_auditflow: file could not be deleted because already gone: %s" % ( f ) ) 
             # sr_watch running here should propagate the deletion to the other directories.
-        
-        tally = ( parent.auditflow_Atotal*parent.auditflow_BtoAratio  /  parent.auditflow_Bgood ) 
 
+        tally = ( parent.auditflow_Atotal*parent.auditflow_BtoAratio  /  parent.auditflow_Bgood ) 
         if ( tally > 0.90 ) and ( tally < 1.1 ) : 
             so_far="GOOD" 
         else: 
