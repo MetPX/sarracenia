@@ -413,10 +413,8 @@ class sr_instances(sr_config):
               i = i + 1
 
         # the number of instances has decreased... stop excedent
-        while i <= self.last_nbr_instances:
-              self.build_instance(i)
-              self.stop_instance()
-              i = i + 1
+        if i <= self.last_nbr_instances:
+           self.stop_instances(i,self.last_nbr_instances)
 
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
@@ -430,8 +428,9 @@ class sr_instances(sr_config):
 
     def restart_instance(self):
         self.stop_instance()
-        time.sleep(0.01)
-        self.start_instance()
+        if self.pid == None :
+           time.sleep(0.01)
+           self.start_instance()
 
     def restart_parent(self):
 
@@ -444,10 +443,8 @@ class sr_instances(sr_config):
               i = i + 1
 
         # the number of instances has decreased... stop excedent
-        while i <= self.last_nbr_instances:
-              self.build_instance(i)
-              self.stop_instance()
-              i = i + 1
+        if i <= self.last_nbr_instances:
+           self.stop_instances(i,self.last_nbr_instances)
 
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
@@ -462,6 +459,7 @@ class sr_instances(sr_config):
            except : 
                     self.logger.info("%s strange state... " % self.instance_str)
                     self.stop_instance()
+                    if self.pid != None : return
 
         cmd = []
         cmd.append(sys.argv[0])
@@ -496,10 +494,8 @@ class sr_instances(sr_config):
                    i = i + 1
 
              # the number of instances has decreased... stop excedent
-             while i <= self.last_nbr_instances:
-                   self.build_instance(i)
-                   self.stop_instance()
-                   i = i+1
+             if i <= self.last_nbr_instances:
+                self.stop_instances(i,self.last_nbr_instances)
 
              # write nbr_instances
              self.file_set_int(self.statefile,self.nbr_instances)
@@ -539,10 +535,8 @@ class sr_instances(sr_config):
               i = i + 1
 
         # the number of instances has decreased... stop excedent
-        while i <= self.last_nbr_instances:
-              self.build_instance(i)
-              self.stop_instance()
-              i = i+1
+        if i <= self.last_nbr_instances:
+           self.stop_instances(i,self.last_nbr_instances)
 
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
@@ -553,17 +547,105 @@ class sr_instances(sr_config):
            self.logger.info("%s already stopped" % self.instance_str)
            return
 
-        try    : 
-                 self.logger.info("%s stopping" % self.instance_str)
-                 os.kill(self.pid, signal.SIGTERM)
-                 time.sleep(0.01)
-                 os.kill(self.pid, signal.SIGKILL)
+        self.logger.info("%s stopping" % self.instance_str)
 
+        # try sigterm and let the program finish
+
+        try    : os.kill(self.pid, signal.SIGTERM)
+        except : self.logger.debug("stop_instance SIGTERM pid = %d did not work" % self.pid)
+        time.sleep(0.01)
+
+        # check if program is still alive
+
+        try    : 
+                 os.kill(self.pid, signal.SIG_DFL)
+                 stillAlive = True
+        except : stillAlive = False
+
+        # if program is still alive, kill it
+
+        if stillAlive:
+           time.sleep(2)
+           try   : os.kill(self.pid, signal.SIGKILL)
+           except: self.logger.debug("stop_instance SIGKILL pid = %d did not work" % self.pid)
+
+        # if program is running... we could not stop it
+
+        try    : 
+                 os.kill(self.pid, signal.SIG_DFL)
+                 self.logger.error("unable to stop instance pid = %d" % self.pid)
+                 return
         except : pass
+
+        # not running anymore...
+
         try    : os.unlink(self.pidfile)
         except : pass
 
         self.pid = None
+
+    def stop_instances(self, begin, end):
+
+        i=begin
+        while i <= end :
+              self.build_instance(i)
+              i = i + 1
+              if self.pid == None: continue
+
+              try    : os.kill(self.pid, signal.SIGTERM)
+              except : pass
+        time.sleep(0.01)
+
+        # turn off the one not alive
+
+        i=begin
+        while i <= end :
+              self.build_instance(i)
+              i = i + 1
+              if self.pid == None: continue
+
+              try   : 
+                      os.kill(self.pid, signal.SIG_DFL)
+                      continue
+              except: pass
+              try   : os.unlink(self.pidfile)
+              except: pass
+
+        # enforced kill for the one still alive
+
+        i=begin
+        hasSleep = False
+        while i <= end :
+              self.build_instance(i)
+              i = i + 1
+              if self.pid == None: continue
+
+              if not hasSleep :
+                 hasSleep = True
+                 time.sleep(2)
+
+              try   : os.kill(pid, signal.SIGKILL)
+              except: pass
+
+        # log problematic
+
+        time.sleep(0.01)
+
+        i=begin
+        while i <= end :
+              self.build_instance(i)
+              i = i + 1
+              if self.pid == None: continue
+
+
+              try   : 
+                      os.kill(pid, signal.SIG_DFL)
+                      self.logger.error("unable to stop instance = %d (pid=%d)" % (i,pid))
+                      continue
+              except: pass
+              try   : os.unlink(self.pidfile)
+              except: pass
+
 
     def stop_parent(self):
 
@@ -574,10 +656,9 @@ class sr_instances(sr_config):
         if n < self.last_nbr_instances :
            n = self.last_nbr_instances
 
-        while i <= n :
-              self.build_instance(i)
-              self.stop_instance()
-              i = i + 1
+
+        if i <= n:
+           self.stop_instances(i,n)
 
         # write nbr_instances
         self.file_set_int(self.statefile,self.nbr_instances)
