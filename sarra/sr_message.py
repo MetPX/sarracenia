@@ -552,7 +552,7 @@ class sr_message():
         parts       = self.time.split('.')
         ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
-        self.tbegin = ep_msg + int(parts[1]) / 1000.0
+        self.tbegin = ep_msg + float('0.'+parts[1])
 
     def set_notice_url(self,url,time=None):
         self.url    = url
@@ -694,8 +694,8 @@ class sr_message():
 
     def set_time(self):
         now  = time.time()
-        msec = '.%d' % (int(round(now * 1000)) %1000)
-        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + msec
+        frac = '%f' % now
+        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
         self.time = nows
         if not hasattr(self,'tbegin') : self.tbegin = now
 
