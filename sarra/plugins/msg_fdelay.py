@@ -25,17 +25,18 @@ class Msg_FDelay(object):
 
           
     def on_message(self,parent):
-        import os,calendar
+        import calendar,os,stat
 
         msg = parent.msg
-        mt=msg.time
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
-        now=time.time()
 
-        lag=now-msgtime
+        # dont need to wait or clean 'R' message
+        if msg.sumflg == 'R' : return False
+
+        parent.logger.info("%s" % msg.notice)
+        lag = msg.get_elapse()
 
         parent.logger.info("msg_fdelay received: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           tuple( msg.notice.split()[0:3] + [ msg.topic, lag, msg.hdrstr ] ) )
 
         if lag < parent.msg_fdelay :
             parent.logger.info("msg_fdelay message not old enough, sleeping for %d seconds" %  (parent.msg_fdelay - lag) )
@@ -44,9 +45,9 @@ class Msg_FDelay(object):
         
         f= "%s/%s" % ( msg.new_dir, msg.new_file )
         if not os.path.exists(f):
-             return True
+           return True
 
-        filetime=os.stat( f )[8]
+        filetime=os.stat( f )[stat.ST_MTIME]
         now=time.time()
         lag=now-filetime
         if lag < parent.msg_fdelay :
