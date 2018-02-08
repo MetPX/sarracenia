@@ -558,7 +558,7 @@ class sr_instances(sr_config):
         # check if program is still alive
 
         try    : 
-                 os.kill(self.pid, signal.SIG_DFL)
+                 os.kill(self.pid,0)
                  stillAlive = True
         except : stillAlive = False
 
@@ -572,7 +572,7 @@ class sr_instances(sr_config):
         # if program is running... we could not stop it
 
         try    : 
-                 os.kill(self.pid, signal.SIG_DFL)
+                 os.kill(self.pid,0)
                  self.logger.error("unable to stop instance pid = %d" % self.pid)
                  return
         except : pass
@@ -605,7 +605,7 @@ class sr_instances(sr_config):
               if self.pid == None: continue
 
               try   : 
-                      os.kill(self.pid, signal.SIG_DFL)
+                      os.kill(self.pid,0)
                       continue
               except: pass
               try   : os.unlink(self.pidfile)
@@ -639,7 +639,7 @@ class sr_instances(sr_config):
 
 
               try   : 
-                      os.kill(pid, signal.SIG_DFL)
+                      os.kill(pid,0)
                       self.logger.error("unable to stop instance = %d (pid=%d)" % (i,pid))
                       continue
               except: pass
