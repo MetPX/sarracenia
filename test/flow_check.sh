@@ -163,31 +163,30 @@ function sumlogs {
 
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log*
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log*
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log
   totwinnow00="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_f10_0001.log* | tail -1 | awk ' { print $5; }; '`"
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log* 
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log 
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log*
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totmsgt="${tot}"
 
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log*
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
   totfilet="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
   totshovel2="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log*
+  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
   totwatch="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
@@ -247,14 +246,16 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log* | wc -l`"
   totcfile="${tot}"
 
-  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log* | tail -1 | awk ' { print $5; };'`"
-  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log* | tail -1 | awk ' { print $12; };'`"
-  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log* | tail -1 | awk ' { print $12; };'`"
-  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log* | tail -1 | awk ' { print $12; };'`"
-  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log* | tail -1 | awk ' { print $12; };'`"
-  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log* | tail -1 | awk ' { print $12; };'`"
-  countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log* | wc -l`"
-  totaudit="${tot}"
+  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $5; };'`"
+  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $12; };'`"
+  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log | tail -1 | awk ' { print $12; };'`"
+  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
+  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
+  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
+
+  totaudit=$(( ${audit_t1} + ${audit_t2} + ${audit_t3} + ${audit_t4} + ${audit_t5} ))
+  #countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log* | wc -l`"
+  #totaudit="${tot}"
 
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
@@ -278,7 +279,7 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log* | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
@@ -398,7 +399,8 @@ zerowanted "${missed_dispositions}" "messages received that we don't know what h
 #calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
 #calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
 #calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
-calcres "${totsarra}" "${totaudit}" "sarra tsarra ($totsarra) and good audit ${totaudit} should be about the same."
+t3=$(( ${totaudit}/4 ))
+calcres "${totsarra}" "${t3}" "sarra tsarra ($totsarra) and good audit ${totaudit} should be one forth."
 
 calcres ${totpoll1} ${totsubq} "poll test1_f62 ${totpoll1} and subscribe q_f71 ${totsubq} run together. Should have equal results."
 
