@@ -484,9 +484,10 @@ class sr_poll(sr_post):
         # cache testing
         # ========================================
 
-        if not self.cache.check(sumstr,post_relpath,partstr):
-            self.logger.debug("Ignored %s" % (self.msg.notice))
-            return False
+        if self.caching :
+           if not self.cache.check(sumstr,post_relpath,partstr):
+              self.logger.debug("Ignored %s" % (self.msg.notice))
+              return False
 
         self.logger.debug("Added %s" % (self.msg.notice))
 
