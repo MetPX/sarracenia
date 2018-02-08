@@ -435,20 +435,29 @@ class sr_instances(sr_config):
 
     def restart_parent(self):
 
-        # instance 0 is the parent... child starts at 1
+        # as parent
+        if   self.no == -1 :
 
-        i=1
-        while i <= self.nbr_instances :
-              self.build_instance(i)
-              self.restart_instance()
-              i = i + 1
+             # instance 0 is the parent... child starts at 1
 
-        # the number of instances has decreased... stop excedent
-        if i <= self.last_nbr_instances:
-           self.stop_instances(i,self.last_nbr_instances)
+             i=1
+             while i <= self.nbr_instances :
+                   self.build_instance(i)
+                   self.restart_instance()
+                   i = i + 1
 
-        # write nbr_instances
-        self.file_set_int(self.statefile,self.nbr_instances)
+             # the number of instances has decreased... stop excedent
+             if i <= self.last_nbr_instances:
+                self.stop_instances(i,self.last_nbr_instances)
+
+             # write nbr_instances
+             self.file_set_int(self.statefile,self.nbr_instances)
+
+        # as instance
+        else:
+             self.logger.debug("restart instance %d \n" % self.no)
+             self.build_instance(self.no)
+             self.restart_instance()
 
     def start_instance(self):
 
@@ -672,18 +681,28 @@ class sr_instances(sr_config):
 
     def stop_parent(self):
 
-        # instance 0 is the parent... child starts at 1
+        # as parent
+        if   self.no == -1 :
 
-        i=1
-        n = self.nbr_instances
-        if n < self.last_nbr_instances :
-           n = self.last_nbr_instances
+             # instance 0 is the parent... child starts at 1
 
-        if i <= n:
-           self.stop_instances(i,n)
+             i=1
+             n = self.nbr_instances
+             if n < self.last_nbr_instances :
+                n = self.last_nbr_instances
 
-        # write nbr_instances
-        self.file_set_int(self.statefile,self.nbr_instances)
+             if i <= n:
+                self.stop_instances(i,n)
+
+             # write nbr_instances
+             self.file_set_int(self.statefile,self.nbr_instances)
+
+        # as instance
+        else:
+             self.logger.debug("stop instance %d \n" % self.no)
+             self.build_instance(self.no)
+             self.stop_instance()
+        sys.exit(0)
     
     def stop_signal(self, signum, stack):
         sig_str = None
