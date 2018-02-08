@@ -427,7 +427,7 @@ class sr_message():
     def set_hdrstr(self):
         self.hdrstr  = ''
 
-        for h in self.headers:
+        for h in sorted(self.headers):
            self.hdrstr += '%s=%s ' % (h, self.headers[h])
 
         # added for v00 compatibility (old version of dd_subscribe)
