@@ -603,7 +603,7 @@ class sr_instances(sr_config):
               self.pid, self.pidfile, stopped = pdict[i]
               if not stopped:
                  try    : os.kill(self.pid, signal.SIGTERM)
-                 except : self.logger.debug("stop_instance SIGKILL pid = %d did not work" % self.pid)
+                 except : self.logger.debug("stop_instance SIGTERM pid = %d did not work" % self.pid)
               i = i + 1
 
         time.sleep(0.01)
@@ -658,11 +658,13 @@ class sr_instances(sr_config):
               self.pid, self.pidfile, stopped = pdict[i]
               i = i + 1
 
-              try   : 
-                      p=psutil.Process(self.pid)
-                      self.logger.error("unable to stop instance = %d (pid=%d)" % (i,pid))
-                      continue
-              except: pass
+              if not stopped : 
+
+                 try   : 
+                         p=psutil.Process(self.pid)
+                         self.logger.error("unable to stop instance = %d (pid=%d)" % (i-1,self.pid))
+                         continue
+                 except: pass
 
               try   : os.unlink(self.pidfile)
               except: pass
