@@ -428,9 +428,10 @@ class sr_instances(sr_config):
 
     def restart_instance(self):
         self.stop_instance()
-        if self.pid == None :
-           time.sleep(0.01)
-           self.start_instance()
+        if self.pid != None :
+           self.logger.error("%s could not stop... not restarted " % self.instance_str)
+           return
+        self.start_instance()
 
     def restart_parent(self):
 
@@ -459,7 +460,9 @@ class sr_instances(sr_config):
            except : 
                     self.logger.info("%s strange state... " % self.instance_str)
                     self.stop_instance()
-                    if self.pid != None : return
+                    if self.pid != None :
+                       self.logger.error("%s could not stop... not started " % self.instance_str)
+                       return
 
         cmd = []
         cmd.append(sys.argv[0])
@@ -472,10 +475,7 @@ class sr_instances(sr_config):
      
         self.logger.info("%s starting" % self.instance_str)
         self.logger.debug("cmd = %s" % cmd)
-        """
-        PS-20171212-do not know why this if statement is here, but it means debug output doesn't go to the log.
-         so I commented it out.  If it ever turns out there is a case we need it... will look again.
-        """ 
+
         pid = subprocess.Popen(cmd,shell=False,\
               stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
@@ -552,13 +552,13 @@ class sr_instances(sr_config):
         # try sigterm and let the program finish
 
         try    : os.kill(self.pid, signal.SIGTERM)
-        except : self.logger.debug("stop_instance SIGTERM pid = %d did not work" % self.pid)
+        except : self.logger.debug("%s SIGTERM pid = %d did not work" % (self.instance_str,self.pid))
         time.sleep(0.01)
 
         # check if program is still alive
 
         try    : 
-                 os.kill(self.pid,0)
+                 p=psutil.Process(self.pid)
                  stillAlive = True
         except : stillAlive = False
 
@@ -567,13 +567,13 @@ class sr_instances(sr_config):
         if stillAlive:
            time.sleep(2)
            try   : os.kill(self.pid, signal.SIGKILL)
-           except: self.logger.debug("stop_instance SIGKILL pid = %d did not work" % self.pid)
+           except: self.logger.debug("%s SIGKILL pid = %d did not work" % (self.instance_str,self.pid))
 
         # if program is running... we could not stop it
 
         try    : 
-                 os.kill(self.pid,0)
-                 self.logger.error("unable to stop instance pid = %d" % self.pid)
+                 p=psutil.Process(self.pid)
+                 self.logger.debug("instance pid = %d still alive" % self.pid)
                  return
         except : pass
 
@@ -586,63 +586,84 @@ class sr_instances(sr_config):
 
     def stop_instances(self, begin, end):
 
+        pdict = {}
+
+        # get instance info
+
         i=begin
         while i <= end :
               self.build_instance(i)
+              pdict[i] = [self.pid, self.pidfile, self.pid == None ]
               i = i + 1
-              if self.pid == None: continue
 
-              try    : os.kill(self.pid, signal.SIGTERM)
-              except : pass
+        # loop on instance and send SIGTERM
+
+        i=begin
+        while i <= end :
+              self.pid, self.pidfile, stopped = pdict[i]
+              if not stopped:
+                 try    : os.kill(self.pid, signal.SIGTERM)
+                 except : self.logger.debug("stop_instance SIGKILL pid = %d did not work" % self.pid)
+              i = i + 1
+
         time.sleep(0.01)
 
-        # turn off the one not alive
+        # loop on instance clean stopped, keep alive in pdict
 
         i=begin
         while i <= end :
-              self.build_instance(i)
-              i = i + 1
-              if self.pid == None: continue
+              self.pid, self.pidfile, stopped = pdict[i]
 
-              try   : 
-                      os.kill(self.pid,0)
-                      continue
-              except: pass
+              if not stopped :
+                 try   : 
+                         p=psutil.Process(self.pid)
+                         i = i+1
+                         continue
+                 except: pass
+
               try   : os.unlink(self.pidfile)
               except: pass
 
-        # enforced kill for the one still alive
+              pdict[i] = [None, self.pidfile, True]
+              i = i + 1
+
+
+        # enforced kill if necessary (sleep 2 sec before first SIGKILL)
+
+        hasSlept = False
 
         i=begin
-        hasSleep = False
         while i <= end :
-              self.build_instance(i)
+              self.pid, self.pidfile, stopped = pdict[i]
               i = i + 1
-              if self.pid == None: continue
 
-              if not hasSleep :
-                 hasSleep = True
-                 time.sleep(2)
+              if not stopped :
 
-              try   : os.kill(pid, signal.SIGKILL)
-              except: pass
+                 if not hasSlept: time.sleep(2)
+                 hasSlept = True
 
-        # log problematic
+                 try   : os.kill(pid, signal.SIGKILL)
+                 except: pass
+
+        # we did not sleep... they are all stopped
+
+        if not hasSlept : return
+
+        # log the one still alive, clean the one stopped
 
         time.sleep(0.01)
 
         i=begin
         while i <= end :
-              self.build_instance(i)
+              self.pid, self.pidfile, stopped = pdict[i]
               i = i + 1
-              if self.pid == None: continue
-
 
               try   : 
-                      os.kill(pid,0)
+                      p=psutil.Process(self.pid)
                       self.logger.error("unable to stop instance = %d (pid=%d)" % (i,pid))
                       continue
               except: pass
+
               try   : os.unlink(self.pidfile)
               except: pass
 
@@ -655,7 +676,6 @@ class sr_instances(sr_config):
         n = self.nbr_instances
         if n < self.last_nbr_instances :
            n = self.last_nbr_instances
-
 
         if i <= n:
            self.stop_instances(i,n)
