@@ -617,6 +617,7 @@ class sr_message():
 
         self.partflg = None
         self.partstr = partstr
+        self.length  = 0
 
         if self.partstr == None : return
 
