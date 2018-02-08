@@ -163,51 +163,51 @@ function sumlogs {
 
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log 
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log*
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log 
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log*
   totwinnow00="${tot}"
 
-  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_f10_0001.log | tail -1 | awk ' { print $5; }; '`"
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log 
+  countthem "`grep msg_total "$LOGDIR"/sr_report_twinnow01_f10_0001.log* | tail -1 | awk ' { print $5; }; '`"
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log* 
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log*
   totmsgt="${tot}"
 
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log*
   totfilet="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log*
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log*
   totshovel2="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
+  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log*
   totwatch="${tot}"
 
-  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log | wc -l`"
+  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
   totshortened="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_000*.log | wc -l`"
+  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_000*.log* | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
   totsubq="${tot}"
-  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_000*.log | wc -l`"
+  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_000*.log* | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
   totsubr="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
   totsubu="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_000*.log | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
   totsubcp="${tot}"
 
   countthem "`grep 'post_log notice' $LOGDIR/srposter.log | wc -l`"
@@ -220,45 +220,45 @@ function countall {
      return
   fi
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log* | wc -l`"
   totcpelle04r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log* | wc -l`"
   totcpelle04p="${tot}"
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log* | wc -l`"
   totcpelle05r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log* | wc -l`"
   totcpelle05p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_0001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_0001.log* | wc -l`"
   totcvan14p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_0001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_0001.log* | wc -l`"
   totcvan15p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_0001.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_0001.log* | wc -l`"
   totcveille="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_000*.log | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_000*.log* | wc -l`"
   totcdnld="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log* | wc -l`"
   totcfile="${tot}"
 
-  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $5; };'`"
-  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $12; };'`"
-  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log | tail -1 | awk ' { print $12; };'`"
-  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
-  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
-  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
-  countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log | wc -l`"
+  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log* | tail -1 | awk ' { print $5; };'`"
+  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log* | tail -1 | awk ' { print $12; };'`"
+  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log* | tail -1 | awk ' { print $12; };'`"
+  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log* | tail -1 | awk ' { print $12; };'`"
+  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log* | tail -1 | awk ' { print $12; };'`"
+  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log* | tail -1 | awk ' { print $12; };'`"
+  countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log* | wc -l`"
   totaudit="${tot}"
 
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
-  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
+  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
   missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
 
 }
@@ -278,7 +278,7 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log* | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
@@ -432,8 +432,8 @@ calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $
 # MG shows retries
 
 echo
-echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log | wc -l`
-echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log | wc -l`
+echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
 
 # MG shows errors in logs if any
 
@@ -442,10 +442,10 @@ if (("${missed_dispositions}">0)); then
 fi
 
 echo
-NERROR=`grep ERROR "$LOGDIR"/*.log | grep -v ftps | grep -v retryhost | wc -l`
+NERROR=`grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
    fcel=flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*.log | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel
