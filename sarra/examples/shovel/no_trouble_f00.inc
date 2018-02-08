@@ -1,7 +1,3 @@
-
-# make the messages last long enough to be deleted...
-expire 15m
-
 # want a continuous feed, but of small files, so eliminate big ones.
 # make sure it wants to download anything.
 
@@ -19,4 +15,3 @@ reject .*/GIF/.*
 reject .*citypage.*
 reject .*marine_weather.*
 reject .*hydrometric.*
-reject .*observations/xml.*
