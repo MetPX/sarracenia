@@ -42,9 +42,10 @@ def self_test():
     msg.onfly_checksum = False
     cfg.msg = msg
 
-    opt1 = "destination sftp://localhost"
+    opt1 = "destination sftp://${SFTPUSER}@localhost"
     cfg.option( opt1.split()  )
     cfg.logger = logger
+    sftp_url = cfg.destination
     cfg.timeout = 5.0
     # 1 bytes par 5 secs
     #cfg.kbytes_ps = 0.0001
@@ -95,7 +96,7 @@ def self_test():
     msg.start_timer()
     msg.topic   = "v02.post.test"
     msg.notice  = "notice"
-    msg.baseurl = "sftp://localhost"
+    msg.baseurl = sftp_url
     msg.relpath = "tztz/ccc"
     msg.partflg = '1'
     msg.offset  = 0
@@ -158,7 +159,7 @@ def self_test():
     cfg.new_file      = "ddd"
     cfg.remote_file   = "ddd"
     cfg.remote_path   = "tztz/ddd"
-    cfg.remote_urlstr = "sftp://localhost/tztz/ddd"
+    cfg.remote_urlstr = sftp_url + "/tztz/ddd"
     cfg.remote_dir    = "tztz"
     cfg.chmod         = 0o775
     cfg.inflight      = None
