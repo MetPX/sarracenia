@@ -2,6 +2,13 @@
 #include "sr_context.h"
 
  /*
+  PS / MG  FIXME...  WHEN USING CACHE IN SR_POLL ENVIRONMENT, THE SUM (cache key) IS 
+  THE SAME FOR ALL POLLED ITEMS SOMETHING LIKE sum=z,d ... THIS CAUSE ALL ITEMS TO BE
+  ADDED UNDER THE SAME CACHE KEY... IF THE CACHE KEY VALUE IS A LIST, THE SCAN OF THE
+  LIST KILLS PERFORMANCE...  THE SOLUTION IS TO HAVE ANOTHER ASSOCIATIVE ARRAY FOR
+  EACH CACHE ENTRY (this was implemented in python the cache is a dictionnary, and 
+  cache entries are  dictionaries...
+
   for use by sr_post to avoid duplicate postings, sr_winnow to suppress duplicated, perhaps other consumers as well.
 
   is the use of the hash enough of a key?  dunno.
