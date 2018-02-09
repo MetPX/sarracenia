@@ -253,7 +253,7 @@ function countall {
   audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
   audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
 
-  totaudit=$(( ${audit_t1} + ${audit_t2} + ${audit_t3} + ${audit_t4} + ${audit_t5} ))
+  totaudit=$(( audit_t1 + audit_t2 + audit_t3 + audit_t4 + audit_t5 ))
   #countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log* | wc -l`"
   #totaudit="${tot}"
 
@@ -400,7 +400,7 @@ zerowanted "${missed_dispositions}" "messages received that we don't know what h
 #calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
 #calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
 t3=$(( ${totaudit}/4 ))
-calcres "${totsarra}" "${t3}" "sarra tsarra ($totsarra) and good audit ${totaudit} should be one forth."
+calcres "${totsarra}" "${t3}" "sarra tsarra ($totsarra) and good audit ${t3} should be the same."
 
 calcres ${totpoll1} ${totsubq} "poll test1_f62 ${totpoll1} and subscribe q_f71 ${totsubq} run together. Should have equal results."
 
