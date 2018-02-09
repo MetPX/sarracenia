@@ -24,7 +24,6 @@ class test_logger:
           self.info    = print
           self.warning = print
           self.debug   = self.silence
-          self.info    = self.silence
 
 def self_test():
 
@@ -34,10 +33,13 @@ def self_test():
     # config setup
     cfg = sr_config()
 
+    logger.info("sftp testing start...")
     cfg.defaults()
     cfg.general()
+    logger.info("sftp testing config read...")
     cfg.set_sumalgo('d')
     msg = sr_message(cfg)
+    logger.info("sftp testing fake message built ...")
     msg.filesize = None
     msg.onfly_checksum = False
     cfg.msg = msg
@@ -53,12 +55,17 @@ def self_test():
     cfg.chmod_dir = 0o775
 
     sftp = sr_sftp(cfg)
+    logger.info("sftp sr_ftp instantiated ...")
     sftp.connect()
+    logger.info("sftp sr_ftp connected ...")
     sftp.mkdir("tztz")
+    logger.info("sftp sr_ftp mkdir ...")
     ls = sftp.ls()
     if not "tztz" in ls :
        logger.error("test 01: directory creation failed")
        failed = True
+    else:
+       logger.info("test 01: directory creation succeeded")
 
     sftp.chmod(0o775,"tztz")
     sftp.cd("tztz")
@@ -74,6 +81,8 @@ def self_test():
     if not "bbb" in ls :
        logger.error("test 02: file upload failed")
        failed = True
+    else:
+       logger.info("test 02: file upload succeeded")
 
     sftp.chmod(0o775,"bbb")
 
@@ -82,6 +91,8 @@ def self_test():
     if "bbb" in ls or not "ccc" in ls :
        logger.error("test 03: file rename failed")
        failed = True
+    else:
+       logger.info("test 03: file rename succeeded")
 
     sftp.get("ccc", "bbb",1,0,4)
     f = open("bbb","rb")
@@ -91,6 +102,8 @@ def self_test():
     if data != b"\n2\n3" :
        logger.error("test 04: getting a part FAILED")
        failed = True
+    else:
+       logger.info("test 04: getting a part succeeded")
 
     # build a message
     msg.start_timer()
@@ -126,11 +139,15 @@ def self_test():
     if not os.path.exists("bbb") :
        logger.error("test 05: download FAILED")
        failed = True
+    else:
+       logger.info("test 05: download succeeded")
 
     # onfly_checksum
     if not cfg.msg.onfly_checksum :
        logger.error("test 06: onfly_checksum FAILED")
        failed = True
+    else:
+       logger.info("test 06: onfly_checksum succeeded")
 
     # testing various download
     dldr.download(cfg)
@@ -167,11 +184,15 @@ def self_test():
     if not os.path.exists(os.path.expanduser("~/tztz/ddd")) :
        logger.error("test 07: download FAILED")
        failed = True
+    else:
+       logger.info("test 07: download succeeded")
 
     dldr.sftp.delete("ddd")
     if os.path.exists("~/tztz/ddd") :
        logger.error("test 08: delete FAILED")
        failed = True
+    else:
+       logger.info("test 08: delete succeeded")
 
     # deleting a non existing file
     dldr.sftp.delete("zzz_unexistant")
@@ -226,6 +247,8 @@ def self_test():
     if data != b"1\n2\n3\n" :
        logger.error("test 09: bad part FAILED")
        failed = True
+    else:
+       logger.info("test 09: bad part succeeded")
 
     sftp.delete("bbb")
     sftp.delete("aaa")
