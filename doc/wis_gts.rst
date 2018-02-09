@@ -6,8 +6,7 @@
 
 .. contents::
 
-.. note::
-   FIXME: the classic GTS picture... Get one from JF?
+.. image:: gtsstructureL.png
 
 The World Meteorological Organization (WMO) Information Service (WIS)'s Global
 Telecommunications System (GTS) is the WMO's accepted method to circulate of
@@ -47,6 +46,8 @@ unnecessarily.
 Routing in the GTS is Hard and Opaque
 -------------------------------------
 
+.. image:: GTS_Routing.jpg
+
 .. note::
    FIXME: Illustration of GTS with NMC´s and RTH´s.
 
@@ -84,15 +85,48 @@ WIS Part 1 was in service, with DAR available which at first blush appears
 much easier and friendlier, why didn't everyone just use DAR to replace the
 GTS? 
 
+.. image:: dar.png
+
 The WIS architecture tends to concentrate load on GISCS, whether they want it
 or not. Even assuming they want it, answering large volumes of queries in such
-an architecture is a problem. The mental model for this is a database with an
-index per metadata field, and the size of each index grows with the number of
-items in the database. From Computational complexity theory, we know that the
-best algorithms for looking up a single item in a index of N items requires
-log(N) operations to complete. To perform Retrieval (the R in DAR), of all of
-the items from an index, one at a time, the best algorithm has complexity 
-N*log(N).
+an architecture is a problem. The mental model for this is a database and each
+retrieval is conceptualized as a query.  From computational complexity theory, 
+general queries are O(N) operations (or in the best case of perfect indexing,
+log(N), but retrieval of specific items by their key
+can be done O(log(N)).
+
+To perform Retrieval (the R in DAR), of all of the items from an index, one 
+at a time, the best algorithm has complexity N*log(N).  
+
+
+Databases are very Fast for fixed Sized Records. Pity No-one Uses Them
+-----------------------------------------------------------------------
+
+.. note:
+   picture of two trees, one invisible and computed (the DB)
+   one hand selected, visible, inspectable (file system.)
+   retrieval performance should be the same, they are doing the same thing.
+
+There are typically two major schools of thought on meteorological data 
+storage: Files and Databases. For many years, data was relatively small, 
+there were relatively few datatypes, and they fit in small databases and
+with enough analysis one could normalize them down to fixed size fields. 
+
+Relational databases were invented a decade or two after the GTS, and they 
+optimize storage and retrieval of fixed size data. They achieve near optimal 
+performance by careful selection of the data model and extensive use of 
+fixed sized fields. In practice, the use of fixed size fields turns out to 
+be a difficult constraint to satisfy and many interesting data sets, especially
+on systems whose primary function is data transmisssion, are most logically 
+stored as arbitarily sized byte sequences, generally termed: Binary Large 
+Objects, or BLOBS. When one stores BLOBS, a database becomes a file system.  
+
+Essentially BLOBS are an index list of byte streams. Once a database
+uses BLOBS, it incurs the same overhead for data retrieval as
+a properly used file system. Regardless of the storage method,
+the cost of retrieval is going to be O(log N) for a known key.
+In a file system, the key is the name. In a DB, the key is an object-id
+or index value.
 
 
 Internet Push is Poor Fit for Large Feeds
@@ -117,25 +151,36 @@ likewise expensive, which likely motivates the standard discouragement of rapid
 polling. Note that the order(N) preparation of a response to a query is
 incurred for every client for every polling interval.  
 
-There are likely be ways to optimize this sort of transfer, but as this 
-technology is usually deployed in non-realtime domains and for smaller 
-datasets, there aren't easily adopted stacks that substantially optimize this.
+So the cost of the search and subsequent retrieval needed by a server
+to a client is at best O(log(N)** 2) , and more likely O( N * log(N) )
+
+The actual cost of serving a client depends on the server's indices being
+optimally constructed, and the structure of client's query making optimal
+use of the indices.
 
 
-Store And Forward is Faster/Better/Cheaper
-------------------------------------------
+Store And Forward is Much Faster and Cheaper
+--------------------------------------------
 
-Real-time systems such as the GTS get around the retrieval expense problem by
-storing and forwarding at the same time. When a datum is received, a table of
-interested parties is consulted, and then the forwarding is done based on the 
-data already "retrieved". This works as an optimization because one is 
-forwarding the message at exactly the time it is received, so the entire lookup
-and retrieval process is skipped for all those known consumers.  In addition,
-since the products are sent pro-actively, polling traffic is eliminated. 
+"Store and Forward" is a term we will use here to denote technologies that 
+deal with data on receipt.  Real-time systems such as the GTS get around the 
+retrieval expense problem by storing and forwarding at the same time. When 
+a datum is received, a table of interested parties is consulted, and then 
+the forwarding is done based on the data already "retrieved". 
+
+The cost to forward an item to a given client is closer to O( log(N) ).
+
+This works as an optimization because one is forwarding the message at exactly 
+the time it is received, so the entire lookup and search process is skipped 
+for all those known consumers.  For comparison, the polling web standards
+standards the cost of search at every polling interval.
+
+The cost of the search is highly variable and not under server control. Poorly structured 
+queries (e.g. by station, and then time) can result in an N*log(N) query
 
 This is especially acute for weather alert information, where a high polling 
 frequency is a business need, but the volume of data is relatively low (alerts
-are rare.)  In such cases the polling data can be 10 times or even 100 times the
+are rare.) In such cases the polling data can be 10 times or even 100 times the
 amount of data transfer needed to send the warnings themselves.
 
 In practice, the load on servers with large real-time flows to many clients will
@@ -144,13 +189,16 @@ traditional GTS, than supporting the same load with Internet Push technologies.
 By forwarding notifications on receipt, rather then having to service polls, one
 reduces overall load, eliminating the vast majority of read traffic.
 
-The savings in data transfer is significant in many cases. For example, in 2015,
-a German company began retrieving NWP outputs from the Canadian datamart using
-web-scraping (periodic polling of the directory) and when they transitioned to
-using the AMQP push method, the total bytes downloaded by they went from 90
-Gbytes/day to 60 Gbytes per day for the same data being transferred. 30
-GBytes/day was just (polling) information about whether new model run outputs
-were available.
+
+.. note: not clear at all that polling traffic is significant from this example.
+ am I wrong, is the example wrong? dunno. FIXME.
+
+An analogous real-world example, in 2015, would be that of the German company 
+that began retrieving NWP outputs from the Canadian datamart using web-scraping 
+(periodic polling of the directory) and when they transitioned to using the 
+AMQP push method, the total bytes downloaded by they went from 90 Gbytes/day to
+60 Gbytes per day for the same data being transferred. 30 GBytes/day was just 
+(polling) information about whether new model run outputs were available.
 
 The requirements for a store and forward system:
 
