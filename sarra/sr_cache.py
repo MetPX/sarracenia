@@ -67,35 +67,34 @@ class sr_cache():
 
         # set time and value
         now   = time.time()
-        value = [path,part]
+        value = '%s*%s' % (path,part)
 
         # new... add
         if not key in self.cache_dict :
            self.logger.debug("new")
-           self.cache_dict[key] = [(now,value)]
+           kdict = {}
+           kdict[value] = now
+           self.cache_dict[key] = kdict
            self.fp.write("%s %f %s %s\n"%(key,now,path,part))
            self.count += 1
            return True
 
-        # key (sum) in cache
-        for i,tup in enumerate(self.cache_dict[key]) :
-            t,v = tup
-            # same path/part update time
-            self.logger.debug("compare %s %s" %(v,value))
-            if v == value :
-               self.cache_dict[key][i] = (now,value)
-               return False
+        # key (sum) in cache ... 
+        # if value "path part" already there update its time
+        # if value "path part" not there add it 
+        # this ends up to be the same code
 
-        self.logger.debug("differ")
+        kdict   = self.cache_dict[key]
+        present = value in kdict
+        kdict[value] = now
 
-        # key (sum) in cache...
-        # same path but not same part ...
-        # MG --- does this make sense ? ---
+        if not present : self.logger.debug("differ")
 
-        self.cache_dict[key].append( (now,value) )
+        # differ or newer, write to file
+
         self.fp.write("%s %f %s %s\n"%(key,now,path,part))
         self.count += 1
-        return True
+        return not present
 
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")
@@ -109,7 +108,7 @@ class sr_cache():
 
         return self.check(sumstr,relpath,partstr)
 
-    def clean(self):
+    def clean(self, fp = None, delpath = None):
         self.logger.debug("sr_cache clean")
 
         # create refreshed dict
@@ -120,16 +119,27 @@ class sr_cache():
 
         # from  cache[sum] = [(time,[path,part]), ... ]
         for key in self.cache_dict.keys() :
-            new_dict[key] = []
-            for t,v in self.cache_dict[key] :
+            ndict = {}
+            kdict = self.cache_dict[key]
+
+            for value in kdict :
                 # expired or keep
+                t   = kdict[value]
                 ttl = now - t
                 if ttl > self.expire : continue
-                new_dict[key].append( (t,v) )
-                self.count += 1
 
-            if len(new_dict[key]) == 0 :
-               del new_dict[key]
+                parts = value.split('*')
+                path  = parts[0]
+                part  = parts[1]
+
+                if path == delpath  : continue
+
+                ndict[value] = t
+                self.count  += 1
+
+                if fp : fp.write("%s %f %s %s\n"%(key,t,path,part))
+
+            if len(ndict) > 0 : new_dict[key] = ndict
 
         # set cleaned cache_dict
         self.cache_dict = new_dict
@@ -147,7 +157,7 @@ class sr_cache():
         self.cache_dict = {}
         self.count      = 0
 
-    def delete_path(self, path):
+    def delete_path(self, delpath):
         self.logger.debug("sr_cache delete_path")
 
         # close,remove file, open new empty file
@@ -155,34 +165,9 @@ class sr_cache():
         os.unlink(self.cache_file)
         self.fp = open(self.cache_file,'w')
 
-        # write unexpired entries, create refreshed dict
-        new_dict   = {}
-        now        = time.time()
-        self.count = 0
+        # clean cache removing delpath
 
-        # from  cache[sum] = [(time,[path,part]),...]
-        for key in self.cache_dict.keys():
-            new_dict[key] = []
-            for t,v in self.cache_dict[key]:
-
-                # expired are skipped
-                ttl = now - t
-                if ttl > self.expire : continue
-                if v[0] == path      : continue
-
-                # save
-                new_dict[key].append( (t,v) )
-                self.fp.write("%s %f %s %s\n"%(key,t,v[0],v[1]))
-                self.count += 1
-
-            # all expired
-            if len(new_dict[key]) == 0 :
-               del new_dict[key]
-
-        # set cleaned cache_dict and
-        # keep file open for append
-
-        self.cache_dict = new_dict
+        self.clean(self.fp, delpath)
 
     def free(self):
         self.logger.debug("sr_cache free")
@@ -219,34 +204,31 @@ class sr_cache():
               # words  = [ sum, time, path, part ]
               try:
                   words    = line.split()
-                  pathpart = words[2:]
+                  key      = words[0]
+                  ctime    = float(words[1])
+                  path     = words[2]
+                  part     = words[3]
+                  value    = '%s*%s' % (path,part)
 
                   # skip expired entry
-                  ctime = float(words[1])
+
                   ttl   = now - ctime
                   if ttl > self.expire : continue
 
-                  # key = sum and value = ( time, [ path, part ])
-                  key      = words[0]
-                  value    = (ctime,pathpart)
               except: # skip corrupted line.
                   self.logger.error("sr_cache load corrupted line %d in %s" % ( lineno, self.cache_file) )
                   continue
 
-              #  key already in cache
-              if key in self.cache_dict :
-                 v = None
-                 for t,v in self.cache_dict[key] :
-                     if v == pathpart : break
-                 if v == pathpart : continue
-                 # key already in cache
-                 self.cache_dict[key].append(value)
-                 self.count += 1
-                 continue
+              #  add info in cache
 
-              #  add key
-              self.cache_dict[key] = [ value ]
-              self.count += 1
+              if key in self.cache_dict : kdict = self.cache_dict[key]
+              else:                       kdict = {}
+
+              if not value in kdict     : self.count += 1
+
+              kdict[value]         = ctime
+              self.cache_dict[key] = kdict
+
 
     def open(self, cache_file = None):
 
@@ -268,32 +250,7 @@ class sr_cache():
         self.fp = open(self.cache_file,'w')
 
         # write unexpired entries, create refreshed dict
-        new_dict   = {}
-        now        = time.time()
-        self.count = 0
-
-        # from  cache[sum] = [(time,[path,part]),...]
-        for key in self.cache_dict.keys():
-            new_dict[key] = []
-            for t,v in self.cache_dict[key]:
-
-                # expired are skipped
-                ttl = now - t
-                if ttl > self.expire : continue
-
-                # save
-                new_dict[key].append( (t,v) )
-                self.fp.write("%s %f %s %s\n"%(key,t,v[0],v[1]))
-                self.count += 1
-
-            # all expired
-            if len(new_dict[key]) == 0 :
-               del new_dict[key]
-
-        # set cleaned cache_dict and
-        # keep file open for append
-
-        self.cache_dict = new_dict
+        self.clean(self.fp)
 
     def check_expire(self):
         self.logger.debug("sr_cache check_expire")

@@ -72,11 +72,14 @@ def self_test():
     time.sleep(1)
     cache.check('key3','file3','part3')
     cache.check_expire()
-    cache.check('key4','file4','part4')
+    cache.check('key4','file4',None)
     cache.check('key5','file5','part5')
     if len(cache.cache_dict) != 3 :
        logger.error("test 02: expecting 3 entries...")
        failed = True
+
+    #checking cache internals ...
+    #logger.error("%s" % cache.cache_dict)
 
     cache.close()
 
@@ -127,7 +130,7 @@ def self_test():
     cache.delete_path('file8')
 
     if len(cache.cache_dict) != 9 :
-       logger.error("test 06: expecting 9 entries...")
+       logger.error("test 06: expecting 9 entries...got %d" % len(cache.cache_dict))
        failed = True
 
     # expire and clean
