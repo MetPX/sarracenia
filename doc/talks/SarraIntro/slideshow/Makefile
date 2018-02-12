@@ -2,7 +2,7 @@
 build: slides script.html
 
 slides: Makefile ../A2B.dia
-	awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e a2b_%02d.png -L %s ../A2B.dia \n", s, $$2 ; }; ' ../script.txt | sh -x
+	awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e slideshow/a2b_%02d.png -L %s A2B.dia \n", s, $$2 ; }; ' ../script.txt | (cd ..; sh -x)
 	touch slides
 
 script.rst: Makefile ../script.txt
