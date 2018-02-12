@@ -17,6 +17,7 @@ information flows from end to end in both directions.
 Overview
 --------
 
+
 At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using any
 standard HTTP server (tested with apache) or SFTP server, with other types of servers as
 a pluggable option.  Weather applications are soft real-time, where data should be delivered 
@@ -24,7 +25,7 @@ as quickly as possible to the next hop, and minutes, perhaps seconds, count.  Th
 standard web push technologies, ATOM, RSS, etc... are actually polling technologies 
 that when used in low latency applications consume a great deal of bandwidth and overhead.  
 For exactly these reasons, those standards stipulate a minimum polling interval of five 
-minutes.   Advanced Message Queueing Protocol (AMQP) messaging brings true push 
+minutes. Advanced Message Queueing Protocol (AMQP) messaging brings true push 
 to notifications, and makes real-time sending far more efficient.
 
 .. image:: e-ddsr-components.jpg
@@ -63,7 +64,9 @@ Sarracenia imposes a single interface mechanism, but that mechanism is
 completely portable and generic.  It should run without issue on any modern
 platform (Linux, Windows, Mac)
 
-For more information about Sarra, Please proceed to the `documentation <sarra-docs-e.html>`_
+For more information about Sarra, view the
+`Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
+or proceed to the detailed `documentation <sarra-docs-e.html>`_
 
 Implementations
 ---------------
