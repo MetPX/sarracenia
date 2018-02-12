@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import shutil
+
 try    :
          from sr_config         import *
          from sr_message        import *
@@ -27,27 +29,40 @@ class test_logger:
 
 def self_test():
 
+
     failed = False
     logger = test_logger()
+    logger.info("sftp testing start...")
 
     # config setup
     cfg = sr_config()
 
-    logger.info("sftp testing start...")
+    logger.info("sftp testing config read...")
     cfg.defaults()
     cfg.general()
-    logger.info("sftp testing config read...")
+
+    logger.info("sftp testing fake message built ...")
     cfg.set_sumalgo('d')
     msg = sr_message(cfg)
-    logger.info("sftp testing fake message built ...")
     msg.filesize = None
     msg.onfly_checksum = False
     cfg.msg = msg
 
+    logger.info("sftp testing setting destination...")
     opt1 = "destination sftp://${SFTPUSER}@localhost"
     cfg.option( opt1.split()  )
     cfg.logger = logger
     sftp_url = cfg.destination
+    
+    # make sure test directory is removed before test startup
+    logger.info("remove testing directory if present...")
+    logger.info('sftp_url = %s' % sftp_url)
+    sftpuser = sftp_url.split('/')[2].split('@')[0]
+    testdir  = os.path.expanduser('~'+sftpuser) + '/tztz'
+    try   :shutil.rmtree(testdir)
+    except: pass
+
+
     cfg.timeout = 5.0
     # 1 bytes par 5 secs
     #cfg.kbytes_ps = 0.0001
