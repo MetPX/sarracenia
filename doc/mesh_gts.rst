@@ -46,6 +46,15 @@ existing standards, the WMO does not need to define any additional ones,
 and interoperability and access for other players in the broader
 society should be straightforward.  
 
+While it is believed that this technology has great potential
+to improve WMO data exchange, it will take a few years to adopt it,
+and prior to adoption, there needs to be agreement on the approach.
+Today, the next step would be to find some partner countries with which 
+to engage in some experimental data exchanges to validate the approach,
+and be able to collaboratively determine implementation details.
+
+
+
 .. [1] *real-time*, in meteorological circles refers to *immediately* or ASAP,
  which can mean anything between a few seconds, and a few minutes. This is very 
  different from the computing use of the term, where it refers to hard deadlines
@@ -156,8 +165,8 @@ devolve to N**2.
   more: `Big O notation <https://en.wikipedia.org/wiki/Analysis_of_algorithms>`_
   also: `Time complexity <https://en.wikipedia.org/wiki/Time_complexity>`_
 
-Databases are Optimal for Fixed Sized Records. No-one Uses Them
----------------------------------------------------------------
+Databases are Optimal for Fixed Sized Records. No-one Uses Them That Way
+------------------------------------------------------------------------
 
 .. note:
    picture of two trees, one invisible and computed (the DB)
@@ -432,7 +441,7 @@ in that it uses the asterisk ('*') to denote any single topic, and the hash symb
 to match any remainder of the topic tree.  So examples of how one could subscribe selectively on 
 a node are::
 
-  v02.post.#            -- all products from all countries on a node.
+  v02.post.#            -- all products from all Origins (CCCC)'s on a node.
   v02.post.*.CWAO.#     -- all products from CWAO (Canada) on a node
   v02.post.*.CWAO.WV.#  -- all volcanic ash warnings (in CAP?) from Canada RSMC/VAAC.
 
@@ -481,16 +490,14 @@ follow the speed of downloading from each node. If one node slows,
 neighbours will get advertisements from other nodes that present
 new data earlier. So the network should balance bandwidth naturally.
 
-National centres and can have as much, or as little, information locally as 
+National centres and can have as much, or as little, information locally as
 they see fit. Minimum set is only the country's own data. Redundancy is 
-achieved by many nations being interested
-in other nations' data sets. If one NC has an issue, the data can likely be
-obtained from another node. NC's can also behave *selfishly* if they so choose,
-downloading data to internal services without making it available for 
-retransmission to peers.  
-
-Super national nodes may be provisioned in the cloud, for management or 
-resource optimization purposes. These nodes will ease communication by adding 
+achieved by many nations being interested in other nations' data sets. If
+one NC has an issue, the data can likely be obtained from another node. NC's
+can also behave *selfishly* if they so choose, downloading data to internal
+services without making it available for retransmission to peers.  Super 
+national nodes may be provisioned in the cloud, for management or resource 
+optimization purposes. These nodes will ease communication by adding 
 redundancy to routes between nations. With mesh style interconnection, in the 
 case of a failure of a cloud provisioned node, it is likely that connections 
 between countries automatically compensates for individual failures.
@@ -500,34 +507,31 @@ model. Nodes can be established with greater or lesser capacity and they can
 decide for themselves which data sets are worth copying locally. As the 
 subscriptions are under local control, there is a sharply reduced need for 
 co-ordination when obtaining new data sets. 
-
 There is also no need for a node to correspond uniquely to a national centre. 
 There are many situations where members with more resources assist other members,
 and that practice could continue by having nodes insert data onto the GTS
 on other countries' behalf. Redundancy for uploading could also be accomplished
 by uploading to multiple initial sites.
 
-If there are countries that, for some reason, do not want to directly 
-communicate, they do not subscribe to streams from the respective nations. Each
+If there are nodes that, for some reason, do not want to directly 
+communicate, they do not subscribe to each others advertisements directly. Each
 can acquire data safely through intermediaries that each is comfortable with. 
 As long as there is a single path that leads between the two nodes, data will
 arrive at each node eventually. No explicit action by intermediaries is needed
 to ensure this exchange, as the normal network will simply route around
 the missing edge in the graph.
 
-If there is misbehavior, other nodes can cease subscribing certain data on 
+If there is misbehaviour, other nodes can cease subscribing certain data on 
 a node or cease to bring in any data at all from a node which is injecting 
-corrupt or unwanted data. 
-
-It could happen that some nations have very good bandwidth and server 
-performance. The motivation would be to obtain the data most quickly for 
-themselves, however by implementing this excellent service, it attracts more
-demand for data from the rest of the world. If one node feels they are
-shouldering too much of the global load of traffic exchange, there are many
-straight-forward means encourage use of other nodes: not posting, delayed 
-posting, traffic shaping, etc... All of these techniques are straight-forward
-applications of industry technology, without the need to resort to 
-WMO specific standards.
+corrupt or unwanted data. It could happen that some nations have very good
+bandwidth and server performance. The motivation would be to obtain the data
+most quickly for themselves, however by implementing this excellent service, it
+attracts more demand for data from the rest of the world. If one node feels 
+they are shouldering too much of the global load of traffic exchange, there 
+are many straight-forward means encourage use of other nodes: not posting, 
+delayed posting, traffic shaping, etc... All of these techniques are 
+straight-forward applications of industry technology, without the need to 
+resort to WMO specific standards.
 
 
 Using An Open Reference Stack
