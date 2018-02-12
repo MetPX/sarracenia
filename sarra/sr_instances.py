@@ -710,23 +710,6 @@ class sr_instances(sr_config):
         if signum == signal.SIGINT  : sig_str = 'SIGINT'
         self.logger.info("signal stop (%s)" % sig_str)
 
-        # FIXME: MG - mirror meeting AI 142 -
-        #        temporary measure to check when we are stopped
-        #        most probably useless...
-        self.LOG_TRACE()
-
         if hasattr(self,'stop') :
            self.stop()
         os._exit(0)
-    
-    def LOG_TRACE(self):
-        import io, traceback
-
-        tb_output = io.StringIO()
-        traceback.print_stack(None, None, tb_output)
-        self.logger.info("\n\n****************************************\n" + \
-                             "***** PRINTING TRACEBACK FROM STOP *****\n" + \
-                             "****************************************\n" + \
-                           "\n" + tb_output.getvalue()             + "\n" + \
-                           "\n****************************************\n")
-        tb_output.close()
