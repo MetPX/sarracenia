@@ -83,7 +83,8 @@ commercial air travel to expand exponentially over the succeeding decades. It
 was made in a world of expensive point-to-point telephone links, very low 
 bandwidth, very little computational power, and few existing standards for
 reliable data transfer. Today, The underlying technologies embodied by 
-Internet and Regional Main Data Communications Network (RMDCN) are completely
+Internet and `Regional Main Data Communications Network (RMDCN) <https://www.ecmwf.int/en/computing/our-facilities/rmdcn>`_
+(which have already subsumed the physical links of GTS) are completely
 different: Bandwidth and storage are relatively cheap, computing power is 
 cheaper, point-to-point links are more expensive than multi-point clouds. 
 Today's WMO members want to exchange orders of magnitude more data types 
@@ -99,26 +100,36 @@ unnecessarily.
 
 
 
-Routing in the GTS is Hard and Opaque
--------------------------------------
+GTS is Limited & Inflexible
+---------------------------
 
 .. image:: GTS_Routing.jpg
    :align: center
 
 
-In the traditional GTS, which has been around for decades, When new data is made 
-available by a National Meteorological Centre (NMC), it needs to issue notices, 
-and likely discuss with their (Regional Telecommunications Hub) RTH, about 
-accepting and routing the new data. The RTH's must discuss amongst eachother 
-whether to exchange the data, and other NMC must further request from their
-RTH. For NMC *A* to make data available to NMC *B*, the GTS staff at both NMC's
-and all intervening RTH's must agree and action the request.
+In the traditional GTS, when new data is made available by a National 
+Meteorological Centre (NMC), it needs to issue notices, and likely discuss with
+their (Regional Telecommunications Hub) RTH, about accepting and routing the
+new data. The RTH's must discuss amongst eachother whether to exchange the 
+data, and other NMC must further request from their RTH. For NMC *A* to make
+data available to NMC *B*, the GTS staff at both NMC's and all intervening
+RTH's must agree and action the request.
 
-Also, the routing tables at each NMC and each RTH are not likely to be
-open to inspection. It may be that the product NMC *B* is looking for is already 
+Also, the routing tables at each NMC and each RTH are not easily
+inspected. It may be that the product NMC *B* is looking for is already 
 available at their local RTH, but neither *A*, nor *B* have any effective way
 of determining that, other than asking the administrators of B's RTH. Manual
 routing is ineffective, opaque and human resource intensive.
+
+Lastly, the GTS combines information about data with the data itself.
+It has a maximum message size, which though it was raised from 
+14,000 bytes to 500,000 bytes in the last few years, is still very limiting.
+This rules out many modern important data sets  (e.g. RADAR, Satellite, NWP.)
+WMO doesn't need it's own data transport, as is demonstrated by many
+members' use of protocols without such limitations, adopted from the broader
+internet, such as FTP, SFTP, and HTTP. Even more often such transfers
+are accomplished by bi-lateral arrangement, as transfers of larger datasets
+cannot be expressed in GTS protocols.
 
 The initial WIS, as formulated over a decade ago, was in part an attempt to address
 this opaqueness by introducing some Information Management (IM) concepts, and 
@@ -142,12 +153,11 @@ GTS?
 .. image:: dar.png
    :align: center
 
-The WIS architecture tends to concentrate load on GISCS, whether they want it
+The WIS architecture tends to concentrate load at the GISCS, whether they want it
 or not. Even assuming they want it, answering large volumes of queries in such
 an architecture is a problem. The mental model for this is a database and each
-retrieval is conceptualized as a query.  From computational complexity theory
- [2]_, 
-each query is O(N) operations (or in the best case of perfect indexing,
+retrieval is conceptualized as a query.  From computational complexity theory[2]_, 
+each query is a often O(N) operation (or in the best case of perfect indexing,
 log n, but retrieval of specific items by their key can be done O(log n).
 
 To perform Retrieval (the R in DAR), of all of the items from an index, one 
@@ -198,6 +208,11 @@ can still use a database, which is largely what WIS Part 1 is. It
 is simply a standard pratice to store the actual data in BLOBS, and file 
 systems are a competitive method of storing those.
 
+Over time, as data items grow in individual size, it makes progressively
+more and more sense to store them in file systems, and to use database
+systems to store metadata and indices that point to the data items stored
+in files.
+
 
 Internet Push is a Poor Fit for Large Feeds
 -------------------------------------------
@@ -235,7 +250,8 @@ Store And Forward is Often Better in Practice
 ---------------------------------------------
 
 "Store and Forward" is a term we will use here to denote technologies that 
-deal with data on receipt. Real-time systems such as the GTS get around the 
+deal with data on receipt, in contrast to simply storing the data and
+awaiting clients' polls. Real-time systems such as the GTS get around the 
 retrieval expense problem by storing and forwarding at the same time. When 
 a datum is received, a table of interested parties is consulted, and then 
 the forwarding is done based on the data already "retrieved". 
@@ -295,20 +311,25 @@ industry and includes all of the above characteristics. It can be adopted
 as-is by and a relatively simple AMQP application can be built to to serve
 notifications about newly arrived data. 
 
-While AMQP provides a robust messaging and queueing layer, the small additional 
-application layer is needed. The application is the software that understands
-the specific content of the AMQP messages, and that is the value of the
-Sarracenia application. Sarracenia sends and receives notifications over AMQP.
-That application neither requires, nor has, any WMO-specific features, and can be 
-used for real-time data replication in general.
+While AMQP provides a robust messaging and queueing layer, a small additional 
+application that understands the specific content of the AMQP messages, and 
+that is the value of the Sarracenia protocol and application offerred 
+as the protocol's reference implementation. Sarracenia sends and receives 
+notifications over AMQP. That application neither requires, nor has, 
+any WMO-specific features, and can be used for real-time data replication
+in general.
 
 .. image:: A2B_message.png
    :align: center
 
 A Sarracenia notification contains a Uniform Resource Location (URL) informing 
 clients that a particular datum has arrived, thus inviting them to download it. 
-As these notifications are sent in real-time to clients, they can initiate 
-downloads while the datum in question is still in memory and thus benefit 
+The URL can advertise any protocol that both client and server understand: HTTP,
+HTTPS, SFTP for example. If new protocols become important in the future,
+then their implementation can be done with no change in the notification layer.
+
+As these notifications are sent in real-time, clients can initiate 
+downloads while the datum in question is still in server memory and thus benefit
 from optimal retrieval performance. As the clients' time of access to the data 
 is more closely clustered in time, overall i/o performed by the server is 
 minimized.
@@ -412,7 +433,9 @@ the bulletins, whose content is::
 
 Aside from the contents of the tree, the rest of the functionality proposed 
 would be as described. One can easily subscribe to the datamart to replicate 
-the entire tree as the data is delivered to it. Most likely, an appropriate 
+the entire tree as the data is delivered to it.  While the application does not
+require it, the standardization of the tree to be exchanged by WMO members
+will substantially simplify data exchange. Most likely, an appropriate 
 tree to standardize for WMO uses would be something along the lines of::
 
   20180210/          -- YYYYMMDD
