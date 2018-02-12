@@ -46,7 +46,7 @@ class Hb_Memory(object):
 
 
     def perform(self,parent):
-        import psutil,humanize
+        import os,psutil,humanize
         self.logger = parent.logger
 
         p = psutil.Process()
@@ -54,6 +54,9 @@ class Hb_Memory(object):
            mem = p.memory_info()
         else:
            mem = p.get_memory_info()
+
+        ost = os.times()
+        self.logger.info("hb_memory cpu_times user=%s system=%s elapse=%s" %(ost.user,ost.system,ost.elapsed))
 
         if self.file_count == None:
             if hasattr(parent,'hb_memory_baseline_file'):
