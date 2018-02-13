@@ -40,6 +40,7 @@ def self_test():
     logger.info("sftp testing config read...")
     cfg.defaults()
     cfg.general()
+    cfg.load_sums()
 
     logger.info("sftp testing fake message built ...")
     cfg.set_sumalgo('d')
@@ -132,7 +133,8 @@ def self_test():
 
     msg.local_file   = "bbb"
     msg.local_offset = 0
-    msg.sumalgo      = checksum_d()
+    cfg.set_sumalgo('d')
+    msg.sumalgo      = cfg.sumalgo
     msg.logger       = logger
 
     cfg.new_file     = "bbb"
