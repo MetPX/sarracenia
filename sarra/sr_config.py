@@ -631,11 +631,6 @@ class sr_config:
         self.postpath             = []
         self.movepath             = []
 
-        #self.broker              = urllib.parse.urlparse('amqp://guest:guest@localhost/')
-        #self.exchange            = None
-        #self.topic_prefix        = 'v02.post'
-        #self.subtopic            = None
-
         self.to_clusters          = None
         self.parts                = None
         self.sumflg               = 'd'
