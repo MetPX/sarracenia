@@ -4,6 +4,8 @@
 --------------------------------------------------
 
 
+DRAFT: working document, subject to change.
+
 .. contents::
 
 Executive Summary
@@ -27,15 +29,15 @@ other industries' mostly web-based technologies.
 
 This brief suggests that a mesh-like network of web servers is possible now 
 because of great advances in technology that reduce the need for rules and 
-strict order for international exchange of meteorological data. Previously, 
+structure for international exchange of meteorological data. Previously, 
 technological limitations placed stringent constraints on international data
 exchange. These days, effective international data exchange can be arranged
 with fewer interveners, less hierarchy, less coordination. A more
 loosely coupled and flexible interconnection strategy makes it much
 easier for members to exchange new datasets in a systematic way, without having
-to develop the bi-lateral or multi-lateral exchange agreements
-that would be necessary if the GTS were used. Indeed often, the GTS
-is circumvented because it is so ill-suited to such exchanges.
+to develop the bi-lateral or multi-lateral exchange agreements.
+Indeed often, the GTS is circumvented because it is so ill-suited
+to such exchanges.
 
 Members that agree to exchange data, can do so directly, which completes 
 the dream of the WIS. The existing work on WIS, standardizing metadata 
@@ -53,8 +55,6 @@ Today, the next step would be to find some partner countries with which
 to engage in some experimental data exchanges to validate the approach,
 and be able to collaboratively determine implementation details.
 
-
-
 .. [1] *real-time*, in meteorological circles refers to *immediately* or ASAP,
  which can mean anything between a few seconds, and a few minutes. This is very 
  different from the computing use of the term, where it refers to hard deadlines
@@ -71,10 +71,9 @@ GTS was Designed Long Ago
 The World Meteorological Organization (WMO) Information Service (WIS)'s Global
 Telecommunications System (GTS) is the WMO's accepted method to circulate of
 weather data in *meteorological real-time* [1]_ It does so by pre-established
-bi-lateral agreements about who circulates what to whom, so that when data 
+bi-lateral agreements about who circulates what to whom. When data 
 arrives, it is sent to the proper destinations immediately. In hardware terms,
-the GTS used to be a set of point-to-point links that collectively formed an
-overlapping set of directed acyclic graphs. It is, in general, very reliable
+the GTS used to be a set of point-to-point links. It is, in general, very reliable
 and has good performance for the sorts of data for which it was envisioned.
 
 The GTS successfully and elegantly applied the technologies of the 1940's to
@@ -86,16 +85,16 @@ reliable data transfer. Today, The underlying technologies embodied by
 Internet and `Regional Main Data Communications Network (RMDCN) <https://www.ecmwf.int/en/computing/our-facilities/rmdcn>`_
 (which have already subsumed the physical links of GTS) are completely
 different: Bandwidth and storage are relatively cheap, computing power is 
-cheaper, point-to-point links are more expensive than multi-point clouds. 
+cheaper, point-to-point links are now more expensive than multi-point clouds. 
 Today's WMO members want to exchange orders of magnitude more data types 
-and higher volumes at higher speed. 
+and higher volumes at higher speed.
 
 The weather community has, in the past, needed to create standards because no 
 similar need in the rest of industry existed. Over the last few decades, as 
 internet adoption has broadened and deepened, horizontal solutions for most of
 the technical issues addressed by WMO standards have emerged. The WMO's 
-strategic direction always has been and will continue to be to use widely
-adopted technologies from the wider world and not define their own standards
+strategic direction always has been and will continue to be to use 
+technologies from the wider world and not define their own standards
 unnecessarily.
 
 
@@ -115,29 +114,27 @@ data, and other NMC must further request from their RTH. For NMC *A* to make
 data available to NMC *B*, the GTS staff at both NMC's and all intervening
 RTH's must agree and action the request.
 
-Also, the routing tables at each NMC and each RTH are not easily
-inspected. It may be that the product NMC *B* is looking for is already 
-available at their local RTH, but neither *A*, nor *B* have any effective way
-of determining that, other than asking the administrators of B's RTH. Manual
-routing is ineffective, opaque and human resource intensive.
+Also, the routing tables at each NMC and each RTH are theoretically, but in
+practice, not easily, inspectable. It may be that the product NMC *B* is looking
+for is already available at their local RTH, but neither *A*, nor *B* have any
+effective way of determining that, other than asking the administrators of B's
+RTH. Manual routing is ineffective, opaque and human resource intensive.
 
-Lastly, the GTS combines information about data with the data itself.
-It has a maximum message size, which though it was raised from 
+Lastly, the GTS has a maximum message size, which though it was raised from 
 14,000 bytes to 500,000 bytes in the last few years, is still very limiting.
 This rules out many modern important data sets  (e.g. RADAR, Satellite, NWP.)
 WMO doesn't need it's own data transport, as is demonstrated by many
 members' use of protocols without such limitations, adopted from the broader
-internet, such as FTP, SFTP, and HTTP. Even more often such transfers
+internet, such as FTP, SFTP, and HTTP. Even more often, such transfers
 are accomplished by bi-lateral arrangement, as transfers of larger datasets
-cannot be expressed in GTS protocols.
+cannot be expressed in current GTS protocols.
 
 The initial WIS, as formulated over a decade ago, was in part an attempt to address
 this opaqueness by introducing some Information Management (IM) concepts, and 
 support for DAR: Discovery, Access, and Retrieval. All WMO members want to
-know which data is available from which NMC's (or some intermediaries.) So we
-publish metadata to Global Information Service Centres, where all the world's
-real-time weather information is available and some means of retrieval is 
-specified in that metadata.
+know which data is available from which centres. So we publish metadata to 
+Global Information Service Centres, where the world's real-time weather
+information is available and some means of retrieval is specified.
 
 When dealing in the abstract, without time constraints, add/or with small
 datasets, retrieval time does not matter, but the access penalty imposed by
@@ -146,7 +143,7 @@ items stored, and the number of queries or retrievals to be sustained.
 Initially, WIS was most concerned with getting higher visibilty of data, 
 understanding what data was available. WIS Part 1 primarily implemented a
 metadata layer, while the GTS has persisted to transfer actual data. Once
-WIS Part 1 was in service, with DAR available which at first blush appears
+WIS Part 1 was in service and DAR was available, which at first blush appears
 much easier and friendlier, why didn't everyone just use DAR to replace the
 GTS? 
 
@@ -158,7 +155,7 @@ or not. Even assuming they want it, answering large volumes of queries in such
 an architecture is a problem. The mental model for this is a database and each
 retrieval is conceptualized as a query.  From computational complexity theory[2]_, 
 each query is a often O(N) operation (or in the best case of perfect indexing,
-log n, but retrieval of specific items by their key can be done O(log n).
+log n) and retrieval of specific items by their key is also, at best, O(log n).
 
 To perform Retrieval (the R in DAR), of all of the items from an index, one 
 at a time, the best algorithm has complexity *N \* log n*. The best case only
@@ -209,9 +206,9 @@ is simply a standard pratice to store the actual data in BLOBS, and file
 systems are a competitive method of storing those.
 
 Over time, as data items grow in individual size, it makes progressively
-more and more sense to store them in file systems, and to use database
-systems to store metadata and indices that point to the data items stored
-in files.
+more and more sense to store them in file systems, and to confine use of
+database systems to store metadata and indices that point to the data 
+items stored in files.
 
 
 Internet Push is a Poor Fit for Large Feeds
@@ -265,7 +262,7 @@ standards the cost of search at every polling interval.
 
 The cost of the search is highly variable and not under server control. Poorly
 structured queries (e.g. by station, and then time) can result in an N*log(N) 
-query or even n-squared complexity.
+query or even N-squared complexity.
 
 This is especially acute for weather alert information, where a high polling 
 frequency is a business need, but the volume of data is relatively low (alerts
