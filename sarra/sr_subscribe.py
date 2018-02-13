@@ -8,7 +8,7 @@
 # sarracenia repository: git://git.code.sf.net/p/metpx/git
 # Documentation: http://metpx.sourceforge.net/#SarraDocumentation
 #
-# sr_subscribe.py : python3 program allowing users to download product from dd.weather.gc.ca
+# sr_subscribe.py : python3 program allowing users to download products
 #                   as soon as they are made available (through amqp notifications)
 #
 #
@@ -67,6 +67,13 @@ class sr_subscribe(sr_instances):
 
     def check(self):
         self.logger.debug("%s check" % self.program_name)
+
+        # a broker is requiered
+
+        if self.broker == None :
+           self.logger.error("no broker given")
+           self.help()
+           sys.exit(1)
 
         # if no subtopic given... make it #  for all
         if self.bindings == []  :
@@ -355,7 +362,6 @@ class sr_subscribe(sr_instances):
                     % self.program_name)
            print("\nminimal configuration :")
            print("sr_subscribe start ./aaa")
-           print("\t\twhere aaa is an empty file: downloads announced files on dd.weather in cwd\n")
 
            print("\nExamples:\n")    
 
@@ -364,7 +370,7 @@ class sr_subscribe(sr_instances):
            print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
            print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
            print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
-           print("\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
+           print("\t\t(broker amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
 
         # ---------------------------
         # option presentations
@@ -385,9 +391,6 @@ class sr_subscribe(sr_instances):
 
         print("\nAMQP consumer broker settings:")
         print("\tbroker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>   (MANDATORY)")
-
-        if self.program_name == 'sr_subscribe':
-           print("\t\t(default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
 
         # ---------------------------
         # queue bindings
@@ -669,7 +672,6 @@ class sr_subscribe(sr_instances):
 
         # special settings for sr_subscribe
 
-        self.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca:5672/")
         self.exchange       = 'xpublic'
         self.inplace        = True
         self.subtopic       = '#'
