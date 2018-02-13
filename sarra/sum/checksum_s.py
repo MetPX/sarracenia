@@ -20,7 +20,7 @@ class checksum_s(sr_checksum):
           return self.filehash.hexdigest()
 
       def registered_as(self):
-          return 'd'
+          return 's'
 
       def set_path(self,path):
           self.filehash = sha512()
