@@ -52,9 +52,11 @@ import paramiko
 from   paramiko import *
 
 try :
+         from sr_checksum          import *
          from sr_credentials       import *
          from sr_util              import *
 except : 
+         from sarra.sr_checksum    import *
          from sarra.sr_credentials import *
          from sarra.sr_util        import *
 
@@ -453,6 +455,7 @@ class sr_config:
 
         self.defaults()
         self.general()
+        self.load_sums()
 
         self.overwrite_defaults()
 
@@ -550,9 +553,10 @@ class sr_config:
 
         self.kbytes_ps            = 0
 
+        self.add_sumalgo_list     = []
+        self.sumalgos             = {}
         self.sumalgo              = None
         self.lastflg              = None
-        self.set_sumalgo('d')
 
         self.admin                = None
         self.manager              = None
@@ -970,6 +974,54 @@ class sr_config:
         if  s == 'false' or s == 'none' or s == 'off' or s == '0': return True
         return False
 
+    def load_sums(self):
+        self.logger.debug("load_sums")
+
+        # load sums from package_dir
+        sumdirs = []
+        sumdirs.append( self.site_config_dir + os.sep + 'sum' + os.sep )
+        sumdirs.append( self.package_dir     + os.sep + 'sum' + os.sep )
+        sumdirs.append( self.user_config_dir + os.sep + 'sum' + os.sep )
+
+        # loop on possible sum directories
+        for d in sumdirs:
+            if not os.path.isdir(d) : continue
+            # loop on all files in the current directory
+            for s in os.listdir(d):
+                p = d + s
+                if os.path.isdir(p)   : continue
+                if s == '__init__.py' : continue
+
+                # load the checksum algo from the file
+                if not self.execfile("add_sumalgo",p):
+                   self.logger.error("sum file %s did not execute" % p)
+                   continue
+
+                # verify that it is an instance of sr_checksum
+                if not isinstance(self.add_sumalgo,sr_checksum):
+                   self.logger.error("sum file %s add_sumalgo is not inherited from class sr_checksum" % p)
+                   continue
+
+                # get its registering name
+                try   : register_name = self.add_sumalgo.registered_as()
+                except: register_name = None
+
+                if register_name == None:
+                   self.logger.error("sum file %s add_sumalgo does not provide a checksum letter/name" % p)
+                   continue
+
+                # check if it overwrites one already set
+                if register_name in self.sumalgos :
+                   self.logger.error("sum file %s add_sumalgo with a checksum letter/name already set, skipped" % p)
+                   continue
+
+                # add the sumalgo 
+                self.logger.debug("sum file %s add_sumalgo with a checksum letter/name %s" % (p,register_name))
+                self.sumalgos[register_name] = self.add_sumalgo
+
+        # setting default to 'd'
+        self.set_sumalgo('d')
+         
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
         if cmd == None: cmd="/bin/more"
@@ -2109,7 +2161,6 @@ class sr_config:
 
         print("")
 
-
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)
 
@@ -2121,38 +2172,21 @@ class sr_config:
            flgs = sumflg[2:]
 
         if flgs == self.lastflg : return
-        self.lastflg = flgs
-
-        if flgs == 'd' : 
-           self.sumalgo = checksum_d()
-           return
-
-        if flgs == 'n' :
-           self.sumalgo = checksum_n()
-           return
-
-        if flgs in [ 's' ]:
-           self.sumalgo = checksum_s()
-           return
 
         if flgs in [ '0', 'L', 'R' ]:
-           self.sumalgo = checksum_0()
+           self.sumalgo = self.sumalgos['0']
+           self.lastflg = flgs
            return
 
-        sum_error    = False
-        self.execfile('sumalgo',flgs)
+        try   : 
+                self.sumalgo = self.sumalgos[flgs]
+                self.lastflg = flgs
+                return
+        except: pass
 
-        if self.sumalgo == None : sum_error = True
-
-        if not sum_error and not hasattr(self.sumalgo,'set_path' ) : sum_error = True
-        if not sum_error and not hasattr(self.sumalgo,'update'   ) : sum_error = True
-        if not sum_error and not hasattr(self.sumalgo,'get_value') : sum_error = True
-
-        if sum_error :
-           self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
-           self.lastflg = 'd'
-           self.sumalgo = checksum_d()
-
+        self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
+        self.lastflg = 'd'
+        self.sumalgo = self.sumalgos['d']
 
     def set_loglevel(self):
 
@@ -2249,7 +2283,7 @@ class sr_config:
 
         if sumflg == 'z' : sumflg = self.sumflg[2:]
 
-        if not sumflg in ['0','n','d','s','L','R']: return False
+        if not sumflg in ['L','R'] and not sumflg in self.sumalgos: return False
 
         try :
                  self.set_sumalgo(sumflg)
