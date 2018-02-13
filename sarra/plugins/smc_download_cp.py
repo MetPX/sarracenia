@@ -30,6 +30,7 @@ class CP_DOWNLOAD(object):
 
 
    def __init__(self,parent):
+      parent.declare_option( 'download_cp_command' )
       if not hasattr(parent,'download_cp_command'):
          parent.download_cp_command= [ '/usr/bin/cp' ]
       pass

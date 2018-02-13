@@ -31,6 +31,7 @@ def self_test():
     #setup consumer to catch first post
     cfg = sr_config()
     cfg.defaults()
+    cfg.load_sums()
     cfg.logger         = logger
     cfg.debug          = True
     cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
