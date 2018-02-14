@@ -11,6 +11,7 @@ void str2event( char *evstr, sr_event_t *evbm )
   if (!strcmp(evstr,"link"))   (*evbm) |= SR_LINK;
   if (!strcmp(evstr,"delete")) (*evbm) |= SR_DELETE;
   if (!strcmp(evstr,"create")) (*evbm) |= SR_CREATE;
+  if (!strcmp(evstr,"read")) (*evbm) |= SR_READ;
 }
 
 sr_event_t parse_events( char *el )
