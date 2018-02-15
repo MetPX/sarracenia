@@ -1234,6 +1234,27 @@ will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
 
+Remote Configurations
+---------------------
+
+One can specify URI's as configuration files, rather than local files. Example:
+
+  - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
+
+On startup, sr_subscribe check if the local file cap.conf exists in the 
+local configuration directory.  If it does, then the file will be read to find
+a line like so:
+
+  - **--remote_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf**
+
+In which case, it will check the remote URL and compare the modification time
+of the remote file against the local one. The remote file is not newer, or cannot
+be reached, then the component will continue with the local file.
+
+If either the remote file is newer, or there is no local file, it will be downloaded, 
+and the remote_config_url line will be prepended to it, so that it will continue 
+to self-update in future.
+
 
 ROUTING
 =======
