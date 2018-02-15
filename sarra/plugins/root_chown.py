@@ -71,7 +71,7 @@ class ROOT_CHOWN(object):
 
        if msg.headers['sum'].startswith('R,') and not 'newname' in msg.headers: return True
 
-       # if move ... new_dir new_file set to move target and ownership was taken from it
+       # if move ... sr_watch sets new_dir new_file on destination file so we are ok
 
        # already set ... check for mapping switch
 
@@ -91,10 +91,17 @@ class ROOT_CHOWN(object):
                username = pwd.getpwuid(s.st_uid).pw_name
                group    = grp.getgrgid(s.st_gid).gr_name
 
-               msg.headers['ownership'] = "%s:%s" %  (username,group)
+               ug       = "%s:%s" %  (username,group)
+
+               # check for mapping switch
+               if ug in self.mapping :
+                  logger.debug("ROOT_CHOWN mapping from %s to %s" % (ug,self.mapping[ug]))
+                  ug    = self.mapping[ug]
+
+               msg.headers['ownership'] = ug
                logger.debug("ROOT_CHOWN set ownership in headers %s" % msg.headers['ownership'])
 
-       except: logger.error("ROOT_CHOWN could not set ownership  %s" % msg.headers['ownership'])
+       except: logger.error("ROOT_CHOWN could not set ownership  %s" % local_file)
 
        return True
 
