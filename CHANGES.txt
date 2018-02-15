@@ -6,6 +6,30 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+* BUG FIX
+* C  queue_name   random seed corrected
+* sr_cache.py     cache performance when all sumstr were the same
+* sr_http.py      https needs an ssl context (if no credentials)
+* sr_instances.py stop/restart ... revisited
+* sr_message.py   length = 0 when message has minimal infos
+* sr_post.py      oldname/newname (post_base_dir withdrawal)
+*
+* CHANGES
+* flow_tests      unit tests, mirroring, will cope with log rotations
+* plugins         on_start/on_stop completed,  root_chown.py, trace_on_stop.py
+*                 hb_memory shows cpu usage
+* sr_audit.py     getting ready to check processes sanity
+* sr_config.py    exchange_suffix and post_exchange suffix
+*                 sum classes now register from sum directory
+*                 config can use api internals ex.: ${broker.username}
+*                 config and include might be URL and refreshed when needed
+* sr_log2save.py  updated so it runs on post_log at least
+* sr_message.py   sorted msg headers if msg.hdrstr is used
+*                 simplifies process of time'decimals
+* sr_poll.py      is now recursive
+* sr_post.py      new_dir/new_file now available
+* sr_subscribe.py broker default is None (was dd.weather.gc.ca)
+
 **2.18.01a5**
 
 * added *exchange_suffix* and *post_exchange_suffix*
