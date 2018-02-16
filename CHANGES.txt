@@ -25,6 +25,7 @@ lists all changes between versions.
 * bugfix: sr_poll.py cache.check only if cache enabled
 * bugfix: sr_post rename paths wrong  oldname/newname (post_base_dir was not removed)
 * bugfix: sr_post/sr_poll on_post events now have new_dir/new_file as per other plugin entry points.
+* bugfix: C: components crash on add when SR_CONFIG_EXAMPLES is not set. Now complain and error exit.
 * performance: added dictionary to speed up cache when multiple entries have same sum.
 * flow_tests: unit tests, mirroring, will cope with log rotations
 

@@ -1735,7 +1735,10 @@ int sr_config_add_one( struct sr_config_t *sr_cfg, const char *original_one )
             cp( oldp, newp );
             return(0);
         }
-     } 
+     } else {
+        log_msg( LOG_ERROR, "Cannot add configurations because SR_CONFIG_EXAMPLES is not set.\n" );
+        return(1);
+     }
 
      
      strcpy( one, original_one );
