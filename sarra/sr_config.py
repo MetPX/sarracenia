@@ -704,7 +704,7 @@ class sr_config:
         self.do_downloads         = {}
 
         self.do_poll              = None
-        self.do_pools             = {}
+        self.do_polls             = {}
 
         self.do_send              = None
         self.do_sends             = {}
@@ -1042,14 +1042,22 @@ class sr_config:
         for do_download in self.do_download_list :
             parent_class = do_download.__self__
             if hasattr(parent_class,'registered_as') :
-               self.do_downloads[parent_class.registered_as()] = do_download
+               register_name = parent_class.registered_as()
+               if not isinstance(register_name,list): register_name = [register_name]
+               for r in register_name:
+                   self.logger.debug("registering do_download with '%s'" % r )
+                   self.do_downloads[r] = do_download
 
         # registering pools
 
         for do_poll in self.do_poll_list :
             parent_class = do_poll.__self__
             if hasattr(parent_class,'registered_as') :
-               self.do_polls[parent_class.registered_as()] = do_poll
+               register_name = parent_class.registered_as()
+               if not isinstance(register_name,list): register_name = [register_name]
+               for r in register_name:
+                   self.logger.debug("registering do_poll with '%s'" % r )
+                   self.do_polls[r] = do_poll
 
         # registering sends
 
@@ -1057,7 +1065,11 @@ class sr_config:
         for do_send in self.do_send_list :
             parent_class = do_send.__self__
             if hasattr(parent_class,'registered_as') :
-               self.do_sends[parent_class.registered_as()] = do_send
+               register_name = parent_class.registered_as()
+               if not isinstance(register_name,list): register_name = [register_name]
+               for r in register_name:
+                   self.logger.debug("registering do_send with '%s'" % r)
+                   self.do_sends[r] = do_send
 
         # FIXME MG sum registering could be done here... 
         #          the simplest code for that is here
