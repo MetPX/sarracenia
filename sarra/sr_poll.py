@@ -141,34 +141,6 @@ class sr_poll(sr_post):
                self.pulls[maskDir] = []
             self.pulls[maskDir].append(mask)
 
-    # =============
-    # default_poll
-    # =============
-
-    def default_poll(self):
-
-        # instantiate according to the protocol
-
-        url = self.details.url
-
-        self.dest = None
-        if url.scheme == 'file' : self.dest = sr_file(self)
-        if url.scheme == 'ftp'  : self.dest = sr_ftp(self)
-        if url.scheme == 'ftps' : self.dest = sr_ftp(self)
-
-        if url.scheme == 'http' : self.dest = sr_http(self)
-
-        if url.scheme == 'sftp' :
-           try    : from sr_sftp       import sr_sftp
-           except : from sarra.sr_sftp import sr_sftp
-           self.dest = sr_sftp(self)
-
-        # check to post new urls
-
-        ok = self.post_new_urls()
-
-        return ok
-
     # find differences between current ls and last ls
     # only the newer or modified files will be kept...
 
@@ -233,12 +205,47 @@ class sr_poll(sr_post):
 
     def __do_poll__(self):
 
+        scheme    = self.details.url.scheme
+
+        # try registered do_poll first... might overload defaults
+
+        try:
+                if   scheme in self.do_pools :
+                     do_poll = self.do_polls[scheme]
+                     ok = do_poll(self)
+                     return ok
+        except: pass
+
+        # try supported hardcoded download
+
+        self.dest = None
+
+        if   scheme == 'file'        : self.dest = sr_file(self)
+        elif scheme in ['ftp','ftps']: self.dest = sr_ftp(self)
+        elif scheme == 'http'        : self.dest = sr_http(self)
+        elif scheme == 'sftp' :
+             try    : from sr_sftp       import sr_sftp
+             except : from sarra.sr_sftp import sr_sftp
+             self.dest = sr_sftp(self)
+
+        # standard poll to post new urls
+
+        if self.dest != None :
+           ok = self.post_new_urls()
+           return ok
+
+        # user defined poll scripts
+        # if many are configured, this one is the last one in config
+
         if self.do_poll :
            ok = self.do_poll(self)
            return ok
 
-        ok = self.default_poll()
-        return ok
+        # something went wrong
+
+        self.logger.error("Service unavailable %s" % scheme)
+
+        return False
 
     def help(self):
         print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
@@ -679,7 +686,7 @@ class sr_poll(sr_post):
               ok = False
 
               try  :
-                      #  get a list of url to post
+                      #  do poll stuff
                       ok = self.__do_poll__()
 
               except:

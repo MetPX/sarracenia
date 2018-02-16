@@ -198,24 +198,42 @@ class sr_sender(sr_subscribe):
 
         self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.new_dir ) )
 
-        try : 
-                if   self.do_send :
-                     ok = self.do_send(self)
-                     return ok
+        # try registered do_send first... might overload defaults
 
-                elif self.details.url.scheme in ['ftp','ftps']  :
+        scheme = self.details.url.scheme 
+        try:
+                if   scheme in self.do_sends :
+                     do_send = self.do_sends[scheme]
+                     ok = do_send(self)
+                     return ok
+        except: pass
+
+
+        # try supported hardcoded send
+
+        try : 
+                if   scheme in ['ftp','ftps']  :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.send(self)
                      return ok
 
-                elif self.details.url.scheme == 'sftp' :
+                elif scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
                         self.sftp_link = sftp_transport()
                      ok = self.sftp_link.send(self)
                      return ok
+
+
+                # user defined send scripts
+                # if many are configured, this one is the last one in config
+
+                elif self.do_send :
+                     ok = self.do_send(self)
+                     return ok
+
         except :
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("sender/__do_send__  Type: %s, Value: %s,  ..." % (stype, svalue))

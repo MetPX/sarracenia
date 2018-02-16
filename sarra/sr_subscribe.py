@@ -244,20 +244,32 @@ class sr_subscribe(sr_instances):
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (self.msg.urlstr, self.msg.url.scheme, self.new_file))
 
+        # try registered do_download first... might overload defaults
+
+        scheme = self.msg.url.scheme 
+        try:
+                if   scheme in self.do_downloads :
+                     do_download = self.do_downloads[scheme]
+                     ok = do_download(self)
+                     return ok
+        except: pass
+
+        # try supported hardcoded download
+
         try :
-                if   self.msg.url.scheme in ['http','https'] :
+                if   scheme in ['http','https'] :
                      if not hasattr(self,'http_link') :
                         self.http_link = http_transport()
                      ok = self.http_link.download(self)
                      return ok
 
-                elif self.msg.url.scheme in ['ftp','ftps'] :
+                elif scheme in ['ftp','ftps'] :
                      if not hasattr(self,'ftp_link') :
                         self.ftp_link = ftp_transport()
                      ok = self.ftp_link.download(self)
                      return ok
 
-                elif self.msg.url.scheme == 'sftp' :
+                elif scheme == 'sftp' :
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
@@ -265,11 +277,12 @@ class sr_subscribe(sr_instances):
                      ok = self.sftp_link.download(self)
                      return ok
 
-                elif self.msg.url.scheme == 'file' :
+                elif scheme == 'file' :
                      ok = file_process(self)
                      return ok
 
                 # user defined download scripts
+                # if many are configured, this one is the last one in config
 
                 elif self.do_download :
                      ok = self.do_download(self)
@@ -283,7 +296,7 @@ class sr_subscribe(sr_instances):
                 self.logger.error("%s: Could not download" % self.program_name)
 
         if self.reportback: 
-            self.msg.report_publish(503,"Service unavailable %s" % self.msg.url.scheme)
+            self.msg.report_publish(503,"Service unavailable %s" % scheme)
 
         return False
 
