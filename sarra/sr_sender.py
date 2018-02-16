@@ -203,6 +203,7 @@ class sr_sender(sr_subscribe):
         scheme = self.details.url.scheme 
         try:
                 if   scheme in self.do_sends :
+                     self.logger.debug("using registered do_send for %s" % scheme)
                      do_send = self.do_sends[scheme]
                      ok = do_send(self)
                      return ok

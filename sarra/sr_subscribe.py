@@ -249,6 +249,7 @@ class sr_subscribe(sr_instances):
         scheme = self.msg.url.scheme 
         try:
                 if   scheme in self.do_downloads :
+                     self.logger.debug("using registered do_download for %s" % scheme)
                      do_download = self.do_downloads[scheme]
                      ok = do_download(self)
                      return ok

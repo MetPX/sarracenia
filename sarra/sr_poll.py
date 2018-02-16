@@ -211,6 +211,7 @@ class sr_poll(sr_post):
 
         try:
                 if   scheme in self.do_pools :
+                     self.logger.debug("using registered do_poll for %s" % scheme)
                      do_poll = self.do_polls[scheme]
                      ok = do_poll(self)
                      return ok
