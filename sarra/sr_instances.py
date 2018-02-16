@@ -379,7 +379,9 @@ class sr_instances(sr_config):
                  f = open(path,'w')
                  f.write("%d"%i)
                  f.close()
+                 return True
         except : pass
+        return False
 
     def foreground_parent(self):
         self.logger.debug("sr_instances foreground_parent")
@@ -514,7 +516,12 @@ class sr_instances(sr_config):
              self.logger.debug("start instance %d \n" % self.no)
              self.build_instance(self.no)
              self.pid = os.getpid()
-             self.file_set_int(self.pidfile,self.pid)
+             ok = self.file_set_int(self.pidfile,self.pid)
+             if not ok :
+                self.logger.error("could not write pid for instance %s \n" % self.instance_str)
+                self.logger.error("instance not started\n")
+                sys.exit(1)
+               
              self.setlog()
              self.start()
         sys.exit(0)
