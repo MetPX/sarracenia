@@ -487,6 +487,10 @@ class sr_config:
 
         self.check_extended()
 
+        # register plugins
+
+        self.register_plugins()
+
 
     def configure_statehost(self):
         self.logger.debug("configure_statehost")
@@ -695,9 +699,15 @@ class sr_config:
         self.blocksize            = 0
 
         self.destfn_script        = None
+
         self.do_download          = None
+        self.do_downloads         = {}
+
         self.do_poll              = None
+        self.do_pools             = {}
+
         self.do_send              = None
+        self.do_sends             = {}
 
         self.inplace              = False
 
@@ -1023,6 +1033,47 @@ class sr_config:
 
         try   : subprocess.check_call([ cmd, path ] )
         except: self.logger.error("could not %s %s" % ( cmd, path ) )
+
+    def register_plugins(self):
+        self.logger.debug("register_plugins")
+
+        # registering downloads
+
+        for do_download in self.do_download_list :
+            parent_class = do_download.__self__
+            if hasattr(parent_class,'registered_as') :
+               self.do_downloads[parent_class.registered_as()] = do_download
+
+        # registering pools
+
+        for do_poll in self.do_poll_list :
+            parent_class = do_poll.__self__
+            if hasattr(parent_class,'registered_as') :
+               self.do_polls[parent_class.registered_as()] = do_poll
+
+        # registering sends
+
+        self.do_sends = {}
+        for do_send in self.do_send_list :
+            parent_class = do_send.__self__
+            if hasattr(parent_class,'registered_as') :
+               self.do_sends[parent_class.registered_as()] = do_send
+
+        # FIXME MG sum registering could be done here... 
+        #          the simplest code for that is here
+        #          you would have to set default to 'd' self.set_sumalgo('d')
+        #          after registering the sums
+        #          the code for this is in load_sums and pays more attentions
+        #          to config, class... etc...
+
+        # registering sums
+        # the add_sumalgo is the class... no need to use __self__
+         
+        #for add_sumalgo in self.add_sumalgo_list :
+        #    parent_class = add_sumalgo
+        #    if hasattr(parent_class,'registered_as') :
+        #       self.sumalgos[parent_class.registered_as()] = self.add_sumalgo
+
 
     # modified from metpx SenderFTP
     def sundew_basename_parts(self,basename):
