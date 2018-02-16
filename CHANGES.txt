@@ -8,9 +8,8 @@ lists all changes between versions.
 
 * change: no default broker (was dd.weather.gc.ca) caused more trouble than help.
 * feature: pluggable checksum algorithms implemented.
-* feature: remote_config URL added.
 * feature: sr_poll is now recursive.
-* feature: can use URL's in config & 'include' directives.
+* feature: can use URL's in config & 'include' directives... also: remote_config_url added.
 * feature: python https & ftps download support added. (was an omission.)
 * feature: code now has msg_count available (number of queued messages at broker.)
 * feature: config can use api instance variables from application ex.: ${broker.username}
