@@ -3,9 +3,9 @@
 help_str =  \
 """
  
-   FIXME: early days, do not know if this works yet!
+   FIXME: MG as of Wed Feb 14 2018... this is working on post_log.py  log message
 
-   sr_convert_log2save <logfile>
+   sr_log2save <logfile>
 
    sr_log2save reads the _log lines from the given file, assumed to be a log of a sarracenia component, where
    the _log lines are written by a plugin such as post_log, msg_log, or file_log.
@@ -24,19 +24,21 @@ def main():
     
     for m in log_file:
             f = m.split()
-    
-            if f[3][-4:]  != '_log' :
-               continue
+
+            # wrong line or bad field count : skip this line
+            try :
+                  if f[3][-4:]  != '_log' :
+                    continue
+            except: continue
     
             timestamp=f[4].split('=')[1]
             
-            theslash=10+f[5][10:].index('/')
-            path=f[5][theslash+1:]
-            newurl=f[5][0:theslash]
+            path=f[6]
+            newurl=f[5]
     
             notice="%s %s %s" % ( timestamp, newurl, path )
     
-            headers=' '.join(f[6:])[8:].replace("'","\"")
+            headers=' '.join(f[7:])[8:].replace("'","\"")
 
             thepath = path.strip('/')
             words   = thepath.split('/')

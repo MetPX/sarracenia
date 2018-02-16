@@ -96,6 +96,8 @@ done
 
 mkdir -p "$CONFDIR" 2> /dev/null
 
+export SR_CONFIG_EXAMPLES=../sarra/examples
+
 flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 

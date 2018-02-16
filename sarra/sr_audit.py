@@ -149,9 +149,9 @@ class sr_audit(sr_instances):
         self.nbr_instances = 1
 
         # audit must be user  admin
-        if not hasattr(self,'admin'):
-           self.logger.info("admin user not set...")
-           os._exit(0)
+        self.pump_admin = hasattr(self,'admin')
+        if not self.pump_admin :
+           return
 
         # get other admins  users
 
@@ -679,11 +679,9 @@ class sr_audit(sr_instances):
     def run(self):
         self.logger.info("sr_audit run")
 
-
         # loop : audit should never stop working   ;-)
 
         while True  :
-              try   :
                      #  is it sleeping ?
                       if not self.has_vip() :
                          self.logger.debug("sr_audit does not have vip=%s, is sleeping" % self.vip)
@@ -695,58 +693,72 @@ class sr_audit(sr_instances):
                       self.logger.info("sr_audit waking up")
                       self.configure()
 
-                      # establish an amqp connection using admin
+                      # do pump admin stuff ... if we are admin
 
-                      self.hc = None
+                      if self.pump_admin :
+                         self.run_pump_admin()
 
-                      try:
-                              self.hc = HostConnect(logger = self.logger)
-                              self.hc.loop = False
-                              self.hc.set_pika(self.use_pika)
-                              self.hc.set_url(self.admin)
-                              self.hc.connect()
-                      except: pass
+                      if self.users_flag or self.pump_flag : return
 
-                      if self.hc == None or self.hc.asleep or self.hc.connection == None:
-                         self.logger.error("no connection to broker with admin %s" % self.admin.geturl())
-                         try : self.hc.close()
-                         except: pass
-                         time.sleep(5)
-                         continue
+                      self.run_processes_sanity()
 
-                      # verify pump before anything else...
+                      self.logger.info("audit is sleeping %d seconds " % self.sleep)
+                      time.sleep(self.sleep)
 
-                      if self.pump_flag  : self.verify_pump()
+    def run_processes_sanity(self):
+        self.logger.info("sr_audit run_processes_sanity")
 
-                      # verify setup : users/exchanges/queues
+    def run_pump_admin(self):
+        self.logger.info("sr_audit run_pump_admin")
 
-                      if self.users_flag : 
-                          # create report shovel configs first
-                          self.verify_report_routing()
-                          # create pulse configs
-                          self.verify_pulse()
-                          # verify users from default/credentials
-                          self.verify_users()
-                          # verify overall exchanges (once everything created)
-                          self.verify_exchanges()
-                          # setup all exchanges and queues from configs
-                          self.run_sr_setup()
+        try   :
+                # establish an amqp connection using admin
 
-                      # verify overall queues
-                      self.verify_queues()
+                self.hc = None
 
-                      try : self.hc.close()
-                      except: pass
+                try:
+                        self.hc = HostConnect(logger = self.logger)
+                        self.hc.loop = False
+                        self.hc.set_pika(self.use_pika)
+                        self.hc.set_url(self.admin)
+                        self.hc.connect()
+                except: pass
 
-              except:
-                      (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error("sr_audit/run Type: %s, Value: %s,  ..." % (stype, svalue))
+                if self.hc == None or self.hc.asleep or self.hc.connection == None:
+                   self.logger.error("no connection to broker with admin %s" % self.admin.geturl())
+                   try : self.hc.close()
+                   except: pass
+                   time.sleep(5)
+                   return
 
-              if self.users_flag or self.pump_flag :
-                  return
-              else :
-                  self.logger.info("audit is sleeping %d seconds " % self.sleep)
-                  time.sleep(self.sleep)
+                # verify pump before anything else...
+
+                if self.pump_flag  : self.verify_pump()
+
+                # verify setup : users/exchanges/queues
+
+                if self.users_flag : 
+                    # create report shovel configs first
+                    self.verify_report_routing()
+                    # create pulse configs
+                    self.verify_pulse()
+                    # verify users from default/credentials
+                    self.verify_users()
+                    # verify overall exchanges (once everything created)
+                    self.verify_exchanges()
+                    # setup all exchanges and queues from configs
+                    self.run_sr_setup()
+
+                # verify overall queues
+                self.verify_queues()
+
+                try : self.hc.close()
+                except: pass
+
+        except:
+                (stype, svalue, tb) = sys.exc_info()
+                self.logger.error("sr_audit/run_pump_admin Type: %s, Value: %s,  ..." % (stype, svalue))
+
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name)

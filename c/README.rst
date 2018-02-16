@@ -48,6 +48,8 @@ uses the posting api. sample usage::
 
    export SR_POST_CONFIG="mypost"
    export LD_PRELOAD=`pwd`/libsrshim.so.1.0.0
+   #export SR_POST_READS=true
+   #export SR_SHIMDEBUG=true 
 
    cp libsrshim.c ~/test/hoho_my_darling.txt
    ln -s hoho haha
@@ -56,7 +58,18 @@ uses the posting api. sample usage::
 With the SR_POST_CONFIG set to "mypost", The libsrshim library will look in ~/.config/sarra/post/  for "mypost.conf."
 With the LD_PRELOAD set to use the library, processes that run will call functions like 'close' that are in 
 the shim library, and the shim library will apply the "mypost.conf" configuration to figure out whether it
-should post the file being closed, and if so, to what broker.
+should post the file being closed, and if so, to what broker.  
+
+Normally, posting  will only occur for files that have been written. If one wants to post files opened even in
+readonly mode, this triggers more overhead as even trivial programs such as *cat* need to configure a connection
+to the broker in case they end up posting to it. Normally, the connection is only established when there
+is a modified file is checked for posting. To enable full access monitoring, set the SR_POST_READS variable.
+This provides an auditing function and/or the ability to mirror a complete environment (even files that we didn't
+know we needed.)
+
+If the SR_SHIMDEBUG variable is set, rather verbose messaging will occur.
+
+
 
 Limitations of the C implementation
 -----------------------------------

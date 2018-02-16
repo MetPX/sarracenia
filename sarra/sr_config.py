@@ -1239,10 +1239,6 @@ class sr_config:
            if len(words) > 2:
               words2 = self.varsub(words[2])
 
-
-
-
-          
         # parsing
 
         needexit = False
@@ -1809,7 +1805,7 @@ class sr_config:
                          # adding path (cannot check if it exists we may post a delete)
                          try:
                                  path = self.varsub(w)
-                                 if pbd and not pbd in w: path = pbd + os.sep + w
+                                 if pbd and not pbd in path: path = pbd + os.sep + path
 
                                  path = os.path.abspath(path)
                                  if self.realpath:

@@ -6,27 +6,35 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
-* change: no default broker (was dd.weather.gc.ca) caused more trouble than help.
-* feature: pluggable checksum algorithms implemented.
-* feature: remote_config URL added.
-* feature: sr_poll is now recursive.
-* feature: can use URL's in config & 'include' directives.
-* feature: python https & ftps download support added. (was an omission.)
-* feature: code now has msg_count available (number of queued messages at broker.)
-* feature: config can use api instance variables from application ex.: ${broker.username}
-* plugins: on_start/on_stop support completed,  
-* plugins: root_chown.py, trace_on_stop.py
-* plugins: hb_memory now prints cpu usage.
-* bugfix: C: queue_name random seed wasn't. 
-* bugfix: *restart* no longer restarts unless old process is really gone (used to kill and hope.)
-* bugfix: sr_log2save.py was broken (old log file format), now runs on post_log at least
-* bugfix: path option when varsub and post_base_dir was implied
-* bugfix: posting remote file via polling: length = 0 when message has minimal infos
-* bugfix: sr_poll.py cache.check only if cache enabled
-* bugfix: sr_post rename paths wrong  oldname/newname (post_base_dir was not removed)
-* bugfix: sr_post/sr_poll on_post events now have new_dir/new_file as per other plugin entry points.
-* performance: added dictionary to speed up cache when multiple entries have same sum.
-* flow_tests: unit tests, mirroring, will cope with log rotations
+* FIXES
+* C               queue_name random seed corrected
+* sr_cache.py     cache performance (when sum=z,d for all entries)
+* sr_config.py    path option had a bug when varsub and post_base_dir was implied
+* sr_http.py      https needs an ssl context (if no credentials)
+* sr_instances.py stop/restart ... revisited
+* sr_log2save.py  updated so it runs on post_log at least
+* sr_message.py   length = 0 when message has minimal infos
+* sr_poll.py      cache.check only if caching enabled
+* sr_post.py      oldname/newname (post_base_dir withdrawal)
+* sr_sftp.py      logger.error printing wrong value
+*
+* CHANGES
+* sr_amqp.py      queue declare module to be ready to get msg_count
+* sr_audit.py     getting ready to check processes sanity
+* sr_config.py    sum classes now register from sum directory
+*                 config can use api internals ex.: ${broker.username}
+*                 config and include might be URL and refreshed when needed
+*                 option remote_config removed URL supported as if config/inc
+* sr_credentials  https with no credentials allowed 
+* sr_message.py   sorted msg headers if msg.hdrstr is used
+*                 simplifies process of time'decimals
+* sr_poll.py      is now recursive
+* sr_post.py      new_dir/new_file now available
+* sr_subscribe.py broker default is None (was dd.weather.gc.ca)
+*                 set_dir_pattern makes use of varsub
+* flow_tests      unit tests, mirroring, will cope with log rotations
+* plugins         on_start/on_stop completed,  root_chown.py, trace_on_stop.py
+*                 hb_memory shows cpu usage
 
 
 **2.18.01a5**
