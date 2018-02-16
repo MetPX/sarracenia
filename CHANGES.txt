@@ -29,7 +29,6 @@ lists all changes between versions.
 * performance: added dictionary to speed up cache when multiple entries have same sum.
 * flow_tests: unit tests, mirroring, will cope with log rotations
 
-
 **2.18.01a5**
 
 * added *exchange_suffix* and *post_exchange_suffix*
