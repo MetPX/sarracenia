@@ -29,7 +29,10 @@ notifications, and makes real-time sending far more efficient.
 
 homepage: http://metpx.sf.net
 
+Concepts: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
+
 Man Pages online: http://metpx.sourceforge.net/#sarracenia-documentation
+
 
 
 Sarracenia is an initiative of Shared Services Canada ( http://ssc-spc.gc.ca )

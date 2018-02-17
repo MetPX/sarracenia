@@ -275,6 +275,9 @@ long-lived stable version some time in 2018.
   yet deployed to that use case. In 2018, we will revisit early deployments to
   bring them uptodate.
 
+- continued improvement in pre-deployment testing. Emphasis on catching
+  issues prior to release, ease of reproduction of tests.
+
 - The Sarrasemina indexing tool to be deployed to assist in onboarding.
 
 - Onboarding Documentation, more of it. Reference material is good, but 
