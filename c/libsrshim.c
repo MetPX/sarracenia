@@ -566,3 +566,82 @@ int fclose(FILE *f)
     return shimpost(real_path, status) ;
 }
 
+/*
+
+
+FIXME:
+  
+  Dunno if I want to go down this rabbit hole.  If someone opens a file and doesn't close it...
+  it only matters for readonly files (SR_POST_READS)
+  to deal with read on open would need:
+
+  fopen
+  fdopen
+  fdreopen(
+  open( 2args)
+  open( 3 args )
+  creat(
+  openat( 3args )
+  openat( 4args )
+ 
+  dlopen(   
+  dlmopen(
+
+
+static int fopen_init_done = 0;
+typedef FILE* (*fopen_fn) (const char *, const char *);
+static fopen_fn fopen_fn_ptr = fopen;
+
+FILE *fopen(const char *pathname, const char *mode)
+{
+
+    FILE *f = NULL;
+
+    if (!fopen_init_done) {
+        fopen_fn_ptr = (fopen_fn) dlsym(RTLD_NEXT, "fopen");
+        fopen_init_done = 1;
+        if (getenv("SR_POST_READS"))
+           srshim_initialize( "post" );
+    }
+
+    if ( (!strcmp(mode,"r")) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
+        return fopen_fn_ptr( pathname, mode );
+
+    f = fopen_fn_ptr( pathname, mode);
+    
+    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG fopen continue %s %s\n", pathname, mode );
+
+    shimpost( pathname, (f==NULL) );
+ 
+    return(f);
+    
+}
+
+
+static int open_init_done = 0;
+typedef int (*open_fn) (const char *, int, ...  );
+static open_fn open_fn_ptr = open;
+
+int open(const char *pathname, int flags, ... )
+{
+    int status;
+
+    if (!open_init_done) {
+        open_fn_ptr = (open_fn) dlsym(RTLD_NEXT, "open");
+        open_init_done = 1;
+        if (getenv("SR_POST_READS"))
+           srshim_initialize( "post" );
+    }
+
+    if ( (flags & O_RDONLY) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
+        return open_fn_ptr( pathname, flags );
+
+    status = open_fn_ptr( pathname, flags );
+    
+    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG open continue %s %04x\n", pathname, flags );
+
+    return( shimpost( pathname, status ) );
+ 
+}
+
+ */
