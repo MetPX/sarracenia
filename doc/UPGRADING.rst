@@ -38,6 +38,9 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.02a1
+---------
+
 *CHANGE*: default broker *dd.weather.gc.ca* removed.  the default caused confusion when configurations
           where configurations were absent or invalid, but worked anyways (though not as intended.)
           it appears better for usability to make the argument mandatory.

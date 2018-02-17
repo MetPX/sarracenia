@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo(unreleased)**
 
+**2.18.02a1**
+
 * change: no default broker (was dd.weather.gc.ca) caused more trouble than help.
 * feature: pluggable checksum algorithms implemented.
 * feature: sr_poll is now recursive.
