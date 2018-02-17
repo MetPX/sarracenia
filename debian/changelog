@@ -1,3 +1,30 @@
+metpx-sarracenia (2.18.02a1) unstable; urgency=medium
+
+  * change: no default broker (was dd.weather.gc.ca) caused more trouble than help.
+  * feature: pluggable checksum algorithms implemented.
+  * feature: sr_poll is now recursive.
+  * feature: can use URL's in config & 'include' directives... also: remote_config_url added.
+  * feature: python https & ftps download support added. (was an omission.)
+  * feature: code now has msg_count available (number of queued messages at broker.)
+  * feature: config can use api instance variables from application ex.: ${broker.username}
+  * plugins: on_start/on_stop support completed,  
+  * plugins: root_chown.py, trace_on_stop.py
+  * plugins: hb_memory now prints cpu usage.
+  * bugfix: C: queue_name random seed wasn't. 
+  * bugfix: *restart* no longer restarts unless old process is really gone (used to kill and hope.)
+  * bugfix: sr_log2save.py was broken (old log file format), now runs on post_log at least
+  * bugfix: path option when varsub and post_base_dir was implied
+  * bugfix: posting remote file via polling: length = 0 when message has minimal infos
+  * bugfix: sr_poll.py cache.check only if cache enabled
+  * bugfix: sr_post rename paths wrong  oldname/newname (post_base_dir was not removed)
+  * bugfix: sr_post/sr_poll on_post events now have new_dir/new_file as per other plugin entry points.
+  * bugfix: C: components crash on add when SR_CONFIG_EXAMPLES is not set. Now complain and error exit.
+  * performance: added dictionary to speed up cache when multiple entries have same sum.
+  * flow_tests: unit tests, mirroring, will cope with log rotations
+  
+  
+ -- Peter Silva <peter@blacklab>  Sat, 17 Feb 2018 11:03:08 -0500
+
 metpx-sarracenia (2.18.01a5) unstable; urgency=medium
 
   * added *exchange_suffix* and *post_exchange_suffix*
