@@ -45,6 +45,8 @@ git origin/master branch
           where configurations were absent or invalid, but worked anyways (though not as intended.)
           it appears better for usability to make the argument mandatory.
 
+*NOTICE*: OOPS! https download support was missing, no-one had noticed.  
+          We added it in this release.
 
 2.18.01a5
 ---------

@@ -1,7 +1,7 @@
 
-------------------------
- Sarracenia Status 2018
-------------------------
+--------------------------------
+ Sarracenia Status January 2018
+--------------------------------
 
 Sarracenia is a small application iteratively developed by addressing one use 
 case at a time, so development and deployment have been inextricably linked up
@@ -27,8 +27,8 @@ year 2017.
 
 Use cases mentioned in the video which were implemented:
 
-- Central meteorological switching has made substantially progress in migrating
-  to new stack. This was the central initial use case that drove initial work.
+- Central meteorological pumping has made substantially progress in migrating
+  to the new stack. This was the central initial use case that drove initial work.
   The transformation is not complete, but is well in hand. (not yet complete.)
 
 - RADAR redundant acquisition through two national hubs. (spring 2016)
@@ -77,8 +77,9 @@ Central Data Flows
 ------------------
 
 
-The slide below corresponds to deployed data flows in support of Environment 
-Canada, mostly for operational weather forecasting, in place in January 2018.
+The slide below corresponds to deployed daily data flows in support of 
+Environment Canada, mostly for operational weather forecasting, in place in 
+January 2018.
 
 .. image:: E-services_data-volume_pas.png
 
