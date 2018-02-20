@@ -312,8 +312,9 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   } 
   // FIXME: 255? AMQP_SS_LEN limit?
   strcpy( m->routing_key, sr_c->cfg->topic_prefix );
+  strcat( m->routing_key, "." );
+  strcat( m->routing_key, m->path + (*(m->path)=='/') );
 
-  strcat( m->routing_key, m->path );
   lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(m->routing_key) ; i++ )
   {
