@@ -7,6 +7,7 @@ lists all changes between versions.
 **git repo(unreleased)**
 
 * bugfix: C: posting, post_base_directory that started and/or ended with / might be missing a . in topic.
+* documentation: renamed cp.py -> accel_cp.py, wget.py --> accel_wget.py
 
 **2.18.02a1**
 
