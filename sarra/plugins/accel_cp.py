@@ -34,7 +34,7 @@ See end of file for more APPLICATION NOTES.
 import os,stat,time
 import calendar
 
-class CP(object): 
+class ACCEL_CP(object): 
 
    import urllib.parse
 
@@ -113,7 +113,7 @@ class CP(object):
 
       return False 
 
-self.plugin='CP'
+self.plugin='ACCEL_CP'
 
 
 """

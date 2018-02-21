@@ -1,3 +1,4 @@
+	direct
 amq.direct	direct
 amq.fanout	fanout
 amq.headers	headers
@@ -5,7 +6,6 @@ amq.match	headers
 amq.rabbitmq.log	topic
 amq.rabbitmq.trace	topic
 amq.topic	topic
-	direct
 xcpublic	topic
 xcsarra	topic
 xcvan00	topic

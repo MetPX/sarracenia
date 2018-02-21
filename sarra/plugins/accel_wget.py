@@ -34,7 +34,7 @@ See end of file for performance considerations.
 import os,stat,time,sys
 import calendar
 
-class WGET(object): 
+class ACCEL_WGET(object): 
 
    import urllib.parse
 
@@ -113,7 +113,7 @@ class WGET(object):
          msg.report_publish(499,'wget download failed')
       return False 
 
-self.plugin='WGET'
+self.plugin='ACCEL_WGET'
 
 
 """
