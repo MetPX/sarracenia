@@ -85,7 +85,7 @@ More implementations are welcome.
 Deployments/Use Cases
 ---------------------
 
-Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in)<https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
+Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
 
 Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.html>`_
 

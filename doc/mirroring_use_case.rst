@@ -11,7 +11,7 @@
    **CAVEAT:** 
    This is a bit speculative at the time of this writing (2018/01) We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
-   article will be amended to reflect the advancing solution, until complete, then this note will be removed.
+   This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
 
 .. contents::
 
@@ -434,7 +434,7 @@ Contributions
 
    Deployment lead for SSC, Developed GPFS-policy sarracenia integration plugins, 
    implemented them within sr_poll, worked with CMOI on deployments
-   Shouldered Most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
+   Shouldered most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
 
 **Noureddine Habili**  - SSC DCSB Supercomputing Data Interchange
 
@@ -442,7 +442,7 @@ Contributions
 
 **Peter Silva** - Manager, SSC DCSB Supercomputing Data Interchange
 
-   Project lead, made C implementation including shim library. hacked on the Python also from time to time.
+   Project lead, made C implementation including shim library, hacked on the Python also from time to time.
    Initial versions of most plugins.
 
 **Michel Grenier** - SSC DCSB Supercomputing Data Interchange
