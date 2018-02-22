@@ -3,11 +3,11 @@
 This plugin launches the UNIX 'wget' command with appropriate arguments to perform a file transfer.
 Sample usage:
 
-  plugin wget
+  plugin accel_wget
 
 One should invoke the more efficient binary downloader only when it makes sense to do so in place
 of the built-in python interpreted downloader, typically for larger files. By default, the threshold
-is 1M (one megabyte.) The wget_threshold option can be used to change it. 
+is 1M (one megabyte.) The accel_wget_threshold option can be used to change it. 
 
 Options
 -------
@@ -15,16 +15,16 @@ Options
 If a file larger than the threshold is advertised, on_message routine replaces the URL 
 scheme 'http' with 'download'.  That change causes the do_download plugin to be invoked 
 for that file.  'http' is the default, but the initial url is 'sftp', then the 
-wget_protocol option should be set, to have that protocol substituted instead.
+accel_wget_protocol option should be set, to have that protocol substituted instead.
 
-  wget_threshold 6M
-  wget_protocol  'sftp'
+  accel_wget_threshold 6M
+  accel_wget_protocol  'sftp'
 
 Means that the do_download routine will be called for sftp url's representing files larger than 
 six megabytes.  While the wget command is used by default, it can be overridden with the 
-wget_command option.
+accel_wget_command option.
 
-  wget_command /usr/bin/wget -p 
+  accel_wget_command /usr/bin/wget -p 
 
 Instead of invoking wget, it will invoke the wget -p command. To the command will be 
 See end of file for performance considerations.
@@ -40,23 +40,23 @@ class ACCEL_WGET(object):
 
    def __init__(self,parent):
 
-      parent.declare_option( 'wget_command' )
-      parent.declare_option( 'wget_threshold' )
-      parent.declare_option( 'wget_protocol' )
+      parent.declare_option( 'accel_wget_command' )
+      parent.declare_option( 'accel_wget_threshold' )
+      parent.declare_option( 'accel_wget_protocol' )
 
    def on_start(self,parent):
 
-      if not hasattr(parent,'wget_command'):
-         parent.download_wget_command= [ '/usr/bin/wget' ]
+      if not hasattr(parent,'accel_wget_command'):
+         parent.download_accel_wget_command= [ '/usr/bin/wget' ]
 
-      if not hasattr( parent, "wget_threshold" ):
-             parent.wget_threshold = [ "1M" ]
+      if not hasattr( parent, "accel_wget_threshold" ):
+             parent.accel_wget_threshold = [ "1M" ]
 
-      if not hasattr( parent, "wget_protocol" ):
-             parent.wget_protocol = [ "http" ]
+      if not hasattr( parent, "accel_wget_protocol" ):
+             parent.accel_wget_protocol = [ "http" ]
           
-      if type(parent.wget_threshold) is list:
-          parent.wget_threshold = parent.chunksize_from_str( parent.wget_threshold[0] )
+      if type(parent.accel_wget_threshold) is list:
+          parent.accel_wget_threshold = parent.chunksize_from_str( parent.accel_wget_threshold[0] )
 
       return True
 
@@ -74,9 +74,9 @@ class ACCEL_WGET(object):
           sz=int(parts[1])*int(parts[2])
 
       logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
-          sz, parent.wget_threshold, parent.msg.urlstr, msg.new_file ) )
-      if sz >= parent.wget_threshold :
-          for p in parent.wget_protocol :
+          sz, parent.accel_wget_threshold, parent.msg.urlstr, msg.new_file ) )
+      if sz >= parent.accel_wget_threshold :
+          for p in parent.accel_wget_protocol :
               parent.msg.urlstr = msg.urlstr.replace(p,"download")
 
           parent.msg.url = urllib.parse.urlparse(msg.urlstr)
@@ -93,7 +93,7 @@ class ACCEL_WGET(object):
 
       msg.urlstr = msg.urlstr.replace("download:","http:")
       os.chdir( msg.new_dir )
-      cmd = parent.download_wget_command[0].split() + [ msg.urlstr ]
+      cmd = parent.download_accel_wget_command[0].split() + [ msg.urlstr ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
 
       p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

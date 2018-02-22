@@ -5,11 +5,11 @@ cp : an example do_download option usage.
 
 This launches the UNIX 'cp' command with appropriate arguments to perform a file transfer.
 This downloader expects to be invoked for the 'download' URL scheme is specified as a URL.
-while the cp command is used by default, it can be overridden with the cp_command option.
+while the cp command is used by default, it can be overridden with the accel_cp_command option.
 
 <options are placed before do_download in the configuration>
 
-do_download cp
+plugin accel_cp
 
 Options:
 
@@ -17,14 +17,14 @@ Starting a subprocess is only faster if the size of the file is over a certain s
 The optimal threshold to depends on the environment and requires trial and error. 
 Default is a good guess. 
 
-  cp_threshold 10M
+  accel_cp_threshold 10M
 
 Normally, the plugin replaces 'http' urls for files that exceed the threshold with 'download'
-ones, which triggers use of the do_download plugin.  Can change with cp_protocol option.
+ones, which triggers use of the do_download plugin.  Can change with accel_cp_protocol option.
 
-  cp_protocol  'sftp'
+  accel_cp_protocol  'sftp'
 
-  cp_command /usr/bin/cp -p 
+  accel_cp_command /usr/bin/cp -p 
 
 See wget plugin for a more fulsome description.
 See end of file for more APPLICATION NOTES.
@@ -40,21 +40,21 @@ class ACCEL_CP(object):
 
    def __init__(self,parent):
 
-      parent.declare_option( 'cp_command' )
-      parent.declare_option( 'cp_threshold' )
-      parent.declare_option( 'cp_protocol' )
+      parent.declare_option( 'accel_cp_command' )
+      parent.declare_option( 'accel_cp_threshold' )
+      parent.declare_option( 'accel_cp_protocol' )
 
 
    def on_start(self,parent):
 
-      if not hasattr(parent,'cp_command'):
-         parent.cp_command= [ '/usr/bin/cp' ]
+      if not hasattr(parent,'accel_cp_command'):
+         parent.accel_cp_command= [ '/usr/bin/cp' ]
 
-      if not hasattr( parent, "cp_threshold" ):
-             parent.cp_threshold = [ "10M" ]
+      if not hasattr( parent, "accel_cp_threshold" ):
+             parent.accel_cp_threshold = [ "10M" ]
 
-      if not hasattr( parent, "cp_protocol" ):
-             parent.cp_protocol = [ "http" ]
+      if not hasattr( parent, "accel_cp_protocol" ):
+             parent.accel_cp_protocol = [ "http" ]
           
 
    def on_msssage(self,parent):
@@ -62,8 +62,8 @@ class ACCEL_CP(object):
       logger = parent.logger
       msg    = parent.msg
 
-      if type(parent.cp_threshold) is list:
-          parent.cp_threshold = parent.chunksize_from_str( parent.cp_threshold[0] )
+      if type(parent.accel_cp_threshold) is list:
+          parent.accel_cp_threshold = parent.chunksize_from_str( parent.accel_cp_threshold[0] )
 
       if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return True
 
@@ -74,9 +74,9 @@ class ACCEL_CP(object):
           sz=int(parts[1])*int(parts[2])
 
       logger.debug("cp sz: %d, threshold: %d download: %s to %s, " % ( \
-          sz, parent.cp_threshold, parent.msg.urlstr, msg.new_file ) )
-      if sz >= parent.cp_threshold :
-          for p in parent.cp_protocol :
+          sz, parent.accel_cp_threshold, parent.msg.urlstr, msg.new_file ) )
+      if sz >= parent.accel_cp_threshold :
+          for p in parent.accel_cp_protocol :
               parent.msg.urlstr = msg.urlstr.replace(p,"download")
 
           parent.msg.url = urllib.parse.urlparse(msg.urlstr)
@@ -93,7 +93,7 @@ class ACCEL_CP(object):
 
       # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
 
-      cmd = parent.cp_command[0].split() + [ msg.url.path, msg.new_dir + os.sep + msg.new_file ] 
+      cmd = parent.accel_cp_command[0].split() + [ msg.url.path, msg.new_dir + os.sep + msg.new_file ] 
 
       logger.debug("cp invoking: %s " % cmd )
       
