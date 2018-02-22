@@ -131,20 +131,20 @@ Exchanges.  All clients are expected to use existing exchanges which have been d
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
 
-Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges,
+Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
 but sr_post have the topic sent in order to support server side filtering by using topic
 based filtering.  The topics mirror the path of the files being announced, allowing
 straight-forward server-side filtering, to be augmented by client-side filtering on
 message reception.
 
-The root of the topic tree is the version of the message payload.  This allows single brokers
-to easily support multiple versions of the protocol at the same time during transitions.  v02
+The root of the topic tree is the version of the message payload. This allows single brokers
+to easily support multiple versions of the protocol at the same time during transitions. v02
 is the third iteration of the protocol and existing servers routinely support previous versions
-simultaneously in this way.  The second topic in the topic tree defines the type of message.
+simultaneously in this way. The second topic in the topic tree defines the type of message.
 at the time of writing:  v02.post is the topic prefix for current post messages.
 
-The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes
-small messages.  Keeping the messages small allows for maximum message throughtput and permits
+The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes
+small messages. Keeping the messages small allows for maximum message throughtput and permits
 clients to use priority mechanisms based on transfer of data, rather than the announcements.
 Accomodating large messages would create many practical complications, and inevitably require
 the definition of a maximum file size to be included in the message itself, resulting in
@@ -154,7 +154,7 @@ sr_post is intended for use with arbitrarily large files, via segmentation and m
 blocks of large files are announced independently. and blocks can follow different paths
 between initial pump and final delivery.
 
-AMQP vhosts are not used.  Never saw any need for them. The commands support their optional 
+AMQP vhosts are not used. Never saw any need for them. The commands support their optional 
 use, but there was no visible purpose to using them is apparent.
 
 Aspects of AMQP use can be either constraints or features:
@@ -164,7 +164,7 @@ Aspects of AMQP use can be either constraints or features:
  - We define the *anonymous* for use in many configurations.
 
  - users authenticate to local cluster only. We don´t impose any sort of credential or identity propagation
-   or federation, or distributed trust.  
+   or federation, or distributed trust.
 
  - pumps represent users by forwarding files on their behalf, there is no need to include
    information about the source users later on in the network. 
@@ -177,17 +177,17 @@ Aspects of AMQP use can be either constraints or features:
 Application 
 ===========
 
-Description of application logic relevant to discussion.  There is a ´control plane´ where posts about new 
+Description of application logic relevant to discussion. There is a ´control plane´ where posts about new 
 data available are made, and log messages reporting status of transfers of the same data are routed among 
-control plane users and pumps.  A pump is an AMQP broker, and users authenticate to the broker.  Data 
-may (most of the time does) have a different other authentication method.  
+control plane users and pumps. A pump is an AMQP broker, and users authenticate to the broker. Data 
+may (most of the time does) have a different other authentication method.
 
 There are very different security use cases for file transfer:
 
  1. **Public Dissemination** data is being produced, whose confidentiality is not an issue, the purpose is to 
     disseminate to all who are interested as quickly and reliably as possible, potentially involving many 
-    copies.  The data authentication is typically null for this case.  Users just issue HTTP GET requests with 
-    no authentication.  for AMQP authentication, it can be done as anonymous, with no ability for providers to
+    copies. The data authentication is typically null for this case. Users just issue HTTP GET requests with 
+    no authentication. For AMQP authentication, it can be done as anonymous, with no ability for providers to
     monitor.  If there is to be support from the data source, then the source would assign a non-anonymous user
     for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and 
     alert when problems arise.

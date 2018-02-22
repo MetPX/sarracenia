@@ -11,8 +11,6 @@ Receiving Data from a MetPX-Sarracenia Data Pump
     **Pre-Draft**
 
 .. warning::
-  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-
   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. contents::

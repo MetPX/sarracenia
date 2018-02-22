@@ -2,17 +2,12 @@
 Sarracenia Documentation
 ========================
 
-.. danger::
-  This package is not ready for use yet.  It is undergoing internal testing, and the
-  documentation is incomplete.  This note will be removed once the package documentation
-  is complete and usable.
-
-Documentation comes in two varieties: Guides and Manual Pages.  The Guides provide the
+Documentation comes in two varieties: Guides and Manual Pages. The guides provide the
 overall idea of how to use the tools, with description of several components, use cases, and
-some sample configurations and runs.  The guides provide "Getting started" type information,
+some sample configurations and runs. The guides provide "Getting started" type information,
 describing the purpose, in general, of the various components needed for various jobs.
 
-The Manual Pages, on the other hand, are reference material.  For each component or format,
+The Manual Pages, on the other hand, are reference material. For each component or format,
 the manual page provides a complete reference that shows all the options that exist for that
 component, and also provides examples of usage. To learn the application, it is best to
 start with Guides. The Guides are also best read in order, as knowledge of each guide assumes
@@ -51,7 +46,7 @@ Administrative Components
 
 * `sr_audit(8) <sr_audit.8.html>`_ - Audit the running configuration, looking for issues.
 * `sr_log2save(8) <sr_log2save.8.html>`_ - Extract log messages to create a save format file.
-* `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise...  the main pump.
+* `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise... the main pump.
 * `sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
 * `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
 
@@ -71,8 +66,8 @@ Sarracenia documentation uses a number of words in a particular way.
 This glossary should make it easier to understand the rest of the documentation.
 
 Source
-  Someone who wants to ship data to someone else.  They do that by advertise a trees of files that are copied from
-  the starting point to one or more pumps in the network.  The advertisement sources produce tell others exactly
+  Someone who wants to ship data to someone else. They do that by advertise a trees of files that are copied from
+  the starting point to one or more pumps in the network. The advertisement sources produce tell others exactly
   where and how to download the files, and Sources have to say where they want the data to go to.
 
   Sources use programs like `sr_post.1 <sr_post.1.html>`_, `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_
@@ -86,25 +81,25 @@ Subscribers
 
 Post, Notice, Notification, Advertisement, Announcement
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users know that a particular
-  file is ready.   The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.html>`_
-  manual page.  All of these words are used interchangeably.  Advertisements at each step preserve the
+  file is ready. The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.html>`_
+  manual page. All of these words are used interchangeably. Advertisements at each step preserve the
   original source of the posting, so that report messages can be routed back to the source.
 
 Report messages
   These are AMQP messages (in `sr_report(7) <sr_report.7.html>`_ format) built by consumers of messages, to indicate
-  what a given pump or subscriber decided to do with a message.   They conceptually flow in the opposite
+  what a given pump or subscriber decided to do with a message. They conceptually flow in the opposite
   direction of notifications in a network, to get back to the source.
 
 Pump or broker
   A pump is a host running Sarracenia, a rabbitmq AMQP server (called a *broker* in AMQP parlance)
   The pump has administrative users and manage the AMQP broker as a dedicated resource.
   Some sort of transport engine, like an apache server, or an openssh server, is used to support file transfers.
-  SFTP, and HTTP/HTTPS are the protocols which are fully supported by sarracenia.  Pumps copy files from
-  somewhere, and write them locally.  They then re-advertised the local copy to it's neighbouring pumps, and end user
+  SFTP, and HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps copy files from
+  somewhere, and write them locally. They then re-advertised the local copy to it's neighbouring pumps, and end user
   subscribers, they can obtain the data from this pump.
 
 .. Note::
-  For end users, a pump and a broker is the same thing for all practical purposes.  When pump administrators
+  For end users, a pump and a broker is the same thing for all practical purposes. When pump administrators
   configure multi-host clusters, however, a broker might be running on two hosts, and the same broker could
   be used by many transport engines. The entire cluster would be considered a pump. So the two words are not
   always the same.
@@ -117,7 +112,7 @@ Dataless Transfers
   Sometimes transfers through pumps are done without using local space on the pump.
 
 Pumping Network
-  A number of interconnects servers running the sarracenia stack.  Each stack determines how it routes stuff
+  A number of interconnects servers running the sarracenia stack. Each stack determines how it routes stuff
   to the next hop, so the entire size or extent of the network may not be known to those who put data into it.
 
 Network Maps

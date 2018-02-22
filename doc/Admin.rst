@@ -4,9 +4,7 @@
 =====================================
 
 .. note::
-   Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-
-   **FIXME**: Missing sections are highlighted by **FIXME**. What is here should be accurate!
+   **FIXME**: Missing sections are highlighted by **FIXME**. What is here is accurate.
 
 .. Contents::
 
@@ -276,13 +274,6 @@ source
 
   Sources determine who can access their data, by specifying which cluster to send the data to.
 
-
-.. note::
-   restrictions by user name not yet implemented, but planned.
-
-   FIXME: monitor role is missing. someone who can read all logs, but not change anything.
-   Ideal for service desks, and security monitoring.
-
 feeder
   a user permitted to subscribe or originate data, but understood to represent a pump.
   this local pump user would be used to, run processes like sarra, report routing shovels, etc...
@@ -384,8 +375,8 @@ Currently, the default is set that any unused queue having more than 25000 messa
 One can change this limit by having option *max_queue_size 50000* in default.conf.
 
 
-Excess Queueing
-~~~~~~~~~~~~~~~
+Excess Queueing/Performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When rabbitmq has hundreds of thousands of messages queued, broker performance can suffer. Such
 accumulations can occur when the destination of a sender is down for a prolonged period, or a 
@@ -397,16 +388,30 @@ To avoid data loss, please consult the sr_sender(1) manual page *DESTINATION UNA
 for details of save and restore options. Briefly, when a sender is placed in *save* mode, rather
 than attempting to send each file, the messages written to a disk file. When the remote user
 is back, one invokes *restore* mode, and the disk file is read back, and the files are sent.
+In vesions >= 2.18, there is logic to automatically save failed transfers for later retry,
+offloading the queue from the broker to the instances' cache storage, so no intervention is 
+needed.
 
 In the case of components other than a sender, please consult the QUEUE Save/Restore section
 of the sr_shovel(8) manual page. There is a similar mechanism used to write messages queued
 to disk, to avoid them overloading the broker. When the consumer is back in service, the
 *restore_to_queue* option can be used to recover missing messages.
 
-FIXME: Need to consolidate and express the limitation of one rabbitmq's *one cpu to serve a queue*, and 
-Jun's multiple queue technique when volume dictates that.
+If one gets to the point where traffic through a queue is excessive (several hundred messages
+per second to a single queue), especially if there are many instances sharing the same queue
+(if more than 40 instances to service a single queue) then one can run into a point where
+adding instances gives no improvement in the overall throughput. For example, rabbitmq uses
+only a single cpu to serve a queue. In such cases, creating multiple configurations,
+(each with their own queue) dividing the traffic among them will allow further improvements 
+in throughput.
 
-FIXME: Need to document post_exchange_split, as a means of exceeding capacity of single winnow.
+sr_winnow is used to suppress duplicates.  
+**Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the
+first time a posting is received, it could be picked by one instance, and if a duplicate one is received
+it would likely be picked up by another instance. **For effective duplicate suppression with instances**,
+one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate
+suppression turned off and output with *post_exchange_split*, which route posts by checksum to
+a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
 
 
 

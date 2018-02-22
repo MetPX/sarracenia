@@ -8,14 +8,13 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 ---------------------------------------------------
 
 .. warning::
-  Pardon the dust, This package is alpha, not ready for general use yet. Please Stay Tuned!
-  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
+  **FIXME**: Missing sections are highlighted by **FIXME**. What is here should be accurate!
 
 .. contents::
 
 .. note::
   **FIXME**: known missing elements: good discussion of checksum choice.
-  Caveat about file update strategies.  use case of a file file that is constantly updated,
+  Caveat about file update strategies. Use case of a file file that is constantly updated,
   rather than issuing new files.)
 
 
@@ -600,5 +599,3 @@ Note::
 As an example, we have a tree of 22 million files that is written continuously day and night.
 We need to copy that tree to a second file system as quickly as possible, with an aspirational
 maximum copy time being about five minutes.
-
-FIXME: insert performance data when available.

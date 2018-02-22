@@ -206,8 +206,8 @@ the optimal method can be manyfold (10x or even 100x) faster to recognize when a
 In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed 
 file systems), so one must use a slower but more reliable and portable polling method.  The *force_polling* 
 keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
-FIXME: KNOWN LIMITATION: When *force_polling* is set, the *sleep* setting, should be at least 5 seconds.
-not clear why.   
+KNOWN LIMITATION: When *force_polling* is set, the *sleep* setting, should be at least 5 seconds. It is not
+currently clear why.
 
 NOTE::
 

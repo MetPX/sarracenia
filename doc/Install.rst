@@ -85,9 +85,14 @@ complete package should install with all features.
 
 If you do not have a python environment handy, then the easiest one to get going with
 is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>'_ 
+all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
 (note: select python version >3 ) Then one can install with pip (as above.)
 
+Packages
+~~~~~~~~
+
+Debian packages and python wheels can be downloaded directly 
+from `Sourceforge <https://sourceforge.net/projects/metpx/files/sarracenia/>`_
 
 Linux C Client
 --------------
