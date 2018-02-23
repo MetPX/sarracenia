@@ -191,16 +191,16 @@ national deployment of NinJo and the Weather.
 
 Expanded use cases explored:
 
-* Mirroring:  Formerly, a tool was used for raw data dissemination without regard for permissions, 
-  ownership, symbolic links, etc...  For the mirroring use case, exact metadata replication was 
-  a surprisingly complex requirement.
+* Mirroring:  Prior to this use case, sarracenia was used for raw data dissemination without regard for 
+  permissions, ownership, symbolic links, etc...  For the mirroring use case, exact metadata 
+  replication was a surprisingly complex requirement.
 
 * C-implementation: In exploring large scale mirroring, it became obvious that for sufficiently large 
   trees (27 Million files), the only practical method available was the use of a C shim library.  
   Having all user codes invoke a python3 script, is complete nonsense in an HPC environment, so 
-  it was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
+  It was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
   Once the C implementation was begun, it was only a little additional work to implement a C version 
-  of sr_watch which was much more memory and CPU efficient than the python original.
+  of sr_watch (called sr_cpost) which was much more memory and CPU efficient than the python original.
 
 * Node.js implementation: A client of the public datamart decided to implement enough of sarracenia 
   to download warnings in real-time.

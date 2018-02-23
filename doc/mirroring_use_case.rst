@@ -432,7 +432,7 @@ Contributions
 
 **Jun Hu**  - SSC DCSB Supercomputing Data Interchange
 
-   Deployment lead for SSC, Developed GPFS-policy sarracenia integration plugins, 
+   Deployment lead for SSC, Developed GPFS-policy Sarracenia integration plugins, 
    implemented them within sr_poll, worked with CMOI on deployments
    Shouldered most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
 
@@ -447,7 +447,7 @@ Contributions
 
 **Michel Grenier** - SSC DCSB Supercomputing Data Interchange
 
-   Python sarracenia development lead
+   Python Sarracenia development lead. Some C fixes as well.
 
 **Deric Sullivan** - Manager, SSC DCSB Supercomputing HPC Solutions
 
