@@ -201,8 +201,9 @@ Why Not Just Use Rsync?
 -----------------------
 
 There are a number of tree replication tools that are widely used, why invent another?
-RSync, for example is a fabulous tool, and we recommend it highly for many use cases. but there are times
-when Sarracenia can go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
+`RSync <https://rsync.samba.org/>`_, for example is a fabulous tool, and we 
+recommend it highly for many use cases. but there are times when Sarracenia can
+go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
 
 Rsync and other tools are comparison based (dealing with a single Source and Destination) Sarracenia, while it does 
 not require or use multi-casting, is oriented towards a delivery to multiple receivers, particularly when the source
@@ -211,22 +212,24 @@ large tree, that means that the synchronization interval is inherently limited t
 can do the file tree walks (in large trees, that can be a long time.) Each file tree walk reads 
 the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
 large overhead. Sarracenia avoids file tree walks by having writers calculate the checksums once, and 
-signal their activity directly to readers by messages, reducing overhead by orders of magnitude. Lsync 
-is a tool that leverages the INOTIFY features of Linux to achieve the same liveness, and it might be more 
-suitable but it is obviously not portable. Doing this through the file system is thought to be cumbersome 
-and less general than explicit middleware message passing, which also handles the logs in a straight-forward way.
+signal their activity directly to readers by messages, reducing overhead by orders of magnitude. 
+`Lsyncd <https://github.com/axkibe/lsyncd>`_ is a tool that leverages the INOTIFY features of Linux 
+to achieve the same liveness, and it might be more suitable but it is obviously not portable.
+Doing this through the file system is thought to be cumbersome and less general than explicit
+middleware message passing, which also handles the logs in a straight-forward way.
 
 One of the design goals of Sarracenia is to be end-to-end. Rsync is point-to-point,
 meaning it does not support the *transitivity* of transfers across multiple data pumps that
 is desired. On the other hand, the first use case for Sarracenia is the distribution of
-new files. Updates to files are not common, and so file deltas are not yet dealt with
-efficiently. ZSync is much closer in spirit to this use case. Sarracenia has a similar
-approach based on file partitions, but user settable to much larger than Zsync blocks, more
-amenable to accelleration. Using an announcement per checksummed block allows transfers to be 
-parallelized easily. 
+new files. Updates to files were not common initially. `ZSync <http://zsync.moria.org.uk/>`_ 
+is much closer in spirit to this use case. Sarracenia now has a similar 
+approach based on file partitions (or blocks), but with user selectable size
+(50M is a good choice), generally much larger than Zsync blocks (typically 4k),
+more amenable to accelleration. Using an announcement per checksummed block 
+allows transfers to be accellerated more easily. 
 
-The use of the AMQP message bus also allows for completely flexible third party transfers to be configured
-and for system-wide monitoring to be straight-forward, and to easily integrate other features such as security
+The use of the AMQP message bus enables use of flexible third party transfers,
+straight-forward system-wide monitoring and integration of other features such as security
 scanning within the flow.
 
 Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
@@ -234,7 +237,8 @@ to the actual protocol used to tranfer data. Once can post arbitrary protocol UR
 with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
 The download_scp plugin, included with the package, shows the use of the built-in python transfer mechanisms, 
 but the simple use of a binary to accellerate downloads when the file exceeds a threshold size, making that 
-method more efficient. Use of another compatible binary, such as BBCP, is also straightforward.
+method more efficient. Use of another compatible binary, such as dd or cp (for local files), scp, 
+BBCP, or wget is also straightforward.
 
 
 
@@ -242,13 +246,16 @@ Why No FTP?
 -----------
 
 The transport protocols fully supported by Sarracenia are http(s) and SFTP (SSH File Transfer Protocol.)
-In many cases, when public data is being exchanged, FTP is a lingua franca that is used. The main advantage
-being relatively simple programmatic access, but that advantage is obviated by the use of Sarracenia itself.
-Further, these days, with increased security concerns, and with cpu power becoming extremely available, it
-no longer makes much sense not to encrypt traffic. Additionally, to support multi-streaming, Sarracenia
-makes use of byte-ranges, which are provided by SFTP and HTTP servers, but not FTP. So we cannot support
-file partitioning on FTP. So while FTP sort-of-works, it is not now, nor ever will be, fully supported.
-
+In many cases, when public data is being exchanged, `FTP <https://tools.ietf.org/html/rfc959>`_ 
+is a lingua franca that is used. The main advantage being relatively simple
+programmatic access, but that advantage is obviated by the use of Sarracenia
+itself. Further, these days, with increased security concerns, and with cpu
+instructions for encryption and multiple cores something of a cpu glut, 
+it no longer makes much sense not to encrypt traffic. Additionally, to 
+support multi-streaming, Sarracenia makes use of byte-ranges, which are
+provided by SFTP and HTTP servers, but not FTP. So we cannot support file 
+partitioning on FTP. So while FTP sort-of-works, it is not now, nor ever will
+be, fully supported.
 
 
 AMQP
