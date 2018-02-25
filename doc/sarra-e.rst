@@ -235,10 +235,13 @@ scanning within the flow.
 Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
 to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
 with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
-The download_scp plugin, included with the package, shows the use of the built-in python transfer mechanisms, 
-but the simple use of a binary to accellerate downloads when the file exceeds a threshold size, making that 
-method more efficient. Use of another compatible binary, such as dd or cp (for local files), scp, 
-BBCP, or wget is also straightforward.
+The `download_scp <download_scp.py>`_ plugin, included with the package, shows
+the use of the built-in python transfer mechanisms, but the simple use of a 
+binary to accellerate downloads when the file exceeds a threshold size, making
+that method more efficient. Use of another compatible binary, such as `dd <download_dd.py>`_ or 
+`cp <accel_cp.py>`_, (for local files), `scp <download_scp.py>`_, or `wget <accel_wget.py>`_ via 
+plugins is also straightforward.
+
 
 
 
