@@ -18,9 +18,9 @@ Available for anonymous read-only access. One can also obtain a stable release b
 Building From Source
 --------------------
 
-Please refer to `Sarracenia developer guide <Dev.html>`_ for instructions on building *Metpx-Sarracenia* from source.
+Please refer to `Sarracenia developer guide <Dev.rst>`_ for instructions on building *Metpx-Sarracenia* from source.
 
 Sarracenia Binaries
 -------------------
 
-Please refer to `Sarracenia Installation Guide <Install.html>`_ for instructions on how to download and install *Metpx-Sarracenia* binaries.
+Please refer to `Sarracenia Installation Guide <Install.rst>`_ for instructions on how to download and install *Metpx-Sarracenia* binaries.

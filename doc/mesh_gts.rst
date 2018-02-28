@@ -584,8 +584,8 @@ speed data transfers.
 
 Sarracenia's reference implementation is less than 20 thousand lines in Python 3,
 although a partial implementations in node.js was done by one client, and 
-another in C was done to support the `High Performance Computing use case. <http://metpx.sourceforge.net/mirroring_use_case.html>`_
-The message format is `published <http://metpx.sourceforge.net/sr_post.7.html>`_ 
+another in C was done to support the `High Performance Computing use case. <http://metpx.sourceforge.net/mirroring_use_case.rst>`_
+The message format is `published <http://metpx.sourceforge.net/sr_post.7.rst>`_ 
 and can be re-implemented any a wide variety of programming languages. 
 Another client has recently started work on a C# implementation.
 

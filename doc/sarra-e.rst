@@ -66,7 +66,7 @@ platform (Linux, Windows, Mac)
 
 For more information about Sarra, view the
 `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
-or proceed to the detailed `documentation <sarra-docs-e.html>`_
+or proceed to the detailed `documentation <sarra-docs-e.rst>`_
 
 Implementations
 ---------------
@@ -87,7 +87,7 @@ Deployments/Use Cases
 
 Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
 
-Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.html>`_
+Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.rst>`_
 
 
 The Python Implementation
@@ -203,7 +203,7 @@ Why Not Just Use Rsync?
 There are a number of tree replication tools that are widely used, why invent another?
 `RSync <https://rsync.samba.org/>`_, for example is a fabulous tool, and we 
 recommend it highly for many use cases. but there are times when Sarracenia can
-go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.html>`_
+go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.rst>`_
 
 Rsync and other tools are comparison based (dealing with a single Source and Destination) Sarracenia, while it does 
 not require or use multi-casting, is oriented towards a delivery to multiple receivers, particularly when the source
@@ -284,7 +284,7 @@ that time, the application will rely on pre-1.0 standard message brokers, such a
 Downloading Sarracenia
 ----------------------
 
-Steps for downloading the latest version of Sarracenia are available on our `downloads page <download-e.html>`_ .
+Steps for downloading the latest version of Sarracenia are available on our `downloads page <download-e.rst>`_ .
 
 Getting The Source Code
 -----------------------
@@ -294,4 +294,4 @@ The source code is available from our `git repository <https://sourceforge.net/p
 Documentation
 -------------
 
-The documentation for Sarracenia can be found on our `documentation page <sarra-docs-e.html>`_ .
+The documentation for Sarracenia can be found on our `documentation page <sarra-docs-e.rst>`_ .

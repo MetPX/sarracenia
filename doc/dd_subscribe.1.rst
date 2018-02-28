@@ -23,7 +23,7 @@ DESCRIPTION
 
 
 dd_subscribe is a program to efficiently download files from websites or file servers 
-that provide `sr_post(7) <sr_post.7.html>`_ protocol notifications.  Such sites 
+that provide `sr_post(7) <sr_post.7.rst>`_ protocol notifications.  Such sites 
 publish a message for each file as soon as it is available.  Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
@@ -319,17 +319,17 @@ These settings pertain to previous versions of the client, and have been superce
 SEE ALSO
 --------
 
-`sr_subscibe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscibe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 

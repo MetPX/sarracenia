@@ -31,7 +31,7 @@ take the form:
 Installation Instructions
 -------------------------
 
-`Installation Guide <Install.html>`_
+`Installation Guide <Install.rst>`_
 
 
 

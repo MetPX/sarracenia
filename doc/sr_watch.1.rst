@@ -22,7 +22,7 @@ DESCRIPTION
 ===========
 
 Watches a directory and publishes posts when files in the directory change
-(are added, modified, or deleted.) Its arguments are very similar to  `sr_post <sr_post.1.html>`_.
+(are added, modified, or deleted.) Its arguments are very similar to  `sr_post <sr_post.1.rst>`_.
 In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
 of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
 
@@ -131,7 +131,7 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr_subscribe(1) <sr_subscribe.1.html>`_ manual page for a detailed description of
+Please refer to the `sr_subscribe(1) <sr_subscribe.1.rst>`_ manual page for a detailed description of
 common settings, and methods of specifying them.
 
 **[--blocksize <value>]**
@@ -441,7 +441,7 @@ File Detection Strategy Table
 |             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |File delivery advertised by            |User posts only when file is complete.|
-|Explicit     |`sr_post(1) <sr_post.1.html>`_         |                                      |
+|Explicit     |`sr_post(1) <sr_post.1.rst>`_         |                                      |
 |posting by   |or other sr\_ components               |                                      |
 |clients      |after file writing complete.           |                                      |
 |             |                                       | - user has finest grain control.     |
@@ -584,20 +584,20 @@ that is big enough.  More kernel memory will be allocated for this, no other eff
 SEE ALSO
 ========
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 

@@ -43,11 +43,11 @@ Each new component sr\_whatever, should have relevant man pages implemented.
 The Guides should also be revised.  The form of the documentation is still under
 discussion.  Current thinking:
 
-- `Install.rst <Install.html>`_ (Installation)
-- `Dev.rst <Dev.html>`_ (this guide for developers)
-- `Subscribers.rst <Subscribers.html>`_ (a guide for how to read data from a pump.)
-- `Source.rst <Source.html>`_ (a guide for those publishing data to a pump.)
-- `Admin.rst <Admin.html>`_ (an Admininistrator´s Guide.)
+- `Install.rst <Install.rst>`_ (Installation)
+- `Dev.rst <Dev.rst>`_ (this guide for developers)
+- `Subscribers.rst <Subscribers.rst>`_ (a guide for how to read data from a pump.)
+- `Source.rst <Source.rst>`_ (a guide for those publishing data to a pump.)
+- `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
 
 When there are new sections, they should likely start out in design/ and after
 review, graduate into the main documentation.

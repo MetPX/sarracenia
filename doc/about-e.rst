@@ -20,7 +20,7 @@ Other, somewhat similar software, no endorsements or judgements should be taken 
 - `Netsys  <http://www.netsys.co.za>`_ - commercial WMO switch supplier.
 - `IBLSoft <http://www.iblsoft.com>`_ - commercial WMO switch supplier.
 - variety of file transfer engines: Standard Networks Move IT DMZ, Softlink B-HUB & FEST, Globalscape EFT Server, Axway XFB, Primeur Spazio, Tumbleweed Secure File Transfer, Messageway.
-- `Quantum <https://www.websocket.org/quantum.html>`_ about HTML5 web sockets. A good discussion of why traditional web push is awful, showing how web sockets can help.  AMQP is a pure socket solution that has the same advantages websockets for efficiency. Note: KAAZING wrote the piece, not disinterested.
+- `Quantum <https://www.websocket.org/quantum.rst>`_ about HTML5 web sockets. A good discussion of why traditional web push is awful, showing how web sockets can help.  AMQP is a pure socket solution that has the same advantages websockets for efficiency. Note: KAAZING wrote the piece, not disinterested.
 - `Rsync  <https://rsync.samba.org/>`_ provides fast incremental file transfer.
 - `Lsyncd <https://github.com/axkibe/lsyncd>`_ Live syncing (Mirror) Daemon.
 - `Zsync <http://zsync.moria.org.uk>`_ optimised rsync over HTTP.

@@ -11,7 +11,7 @@ use at the CMC as the core of our national switching infrastructure for bulletin
 RADAR, numerical outputs, charts & imagery...) It is used to ingest from a NOAAPORT feed, as well as two GTS protocol
 links, feed several hundred clients in both socket and file based feeds, provide Canadian participation
 in `Unidata <http://www.unidata.ucar.edu/>`_ and `TIGGE via an LDM bride <http://tigge.ecmwf.int>`_
-as well as `NAEFS <http://www.emc.ncep.noaa.gov/gmb/ens/NAEFS.html>`_ via direct file transfer.
+as well as `NAEFS <http://www.emc.ncep.noaa.gov/gmb/ens/NAEFS.rst>`_ via direct file transfer.
 MetPX is unique in its ability to run fine-grained routing with low latency and high performance.
 Developed at the Canadian Meteorological Centre of `Environment Canada <http://www.ec.gc.ca>`_
 for our own use.  Licensed under GPL for collaborative development, MetPX aims to be

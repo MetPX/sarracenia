@@ -12,9 +12,6 @@
 Revision Record
 ---------------
 
-.. warning::
-   **Pre-Draft.**  This document is still being built and should not be reviewed or relied upon.
-
 :version: @Version@
 :date: @Date@
 
@@ -585,8 +582,8 @@ probably the simplest way to do this is to copy them elsewhere::
     root@boule:~# chown -R rabbitmq.rabbitmq boule*
 
 Now that we have proper certificate chain, configure rabbitmq to disable
-tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (see
-also `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_ )::
+tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.rst>`_ (see
+also `RabbitMQ Management <https://www.rabbitmq.com/management.rst>`_ )::
 
     root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
 
