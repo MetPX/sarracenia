@@ -116,10 +116,13 @@ class sr_message():
             return False
  
         if end > fsiz :
-           self.logger.warning("sr_message content_match file not big enough (insert?)")
+           self.logger.debug("sr_message content_match file not big enough... considered different")
            return False
 
-        self.compute_local_checksum()
+        try   : self.compute_local_checksum()
+        except: 
+                self.logger.debug("sr_message something went wrong when computing local checksum... considered different")
+                return False
 
         return self.local_checksum == self.checksum
 
