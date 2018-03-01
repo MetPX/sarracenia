@@ -1,0 +1,12 @@
+changelog
+files
+libsarra-c
+libsarra-c.substvars
+libsarra-c-dev
+libsarra-c-dev.substvars
+debhelper-build-stamp
+sarra-c.substvars
+sarra-c
+sarra-c/.*
+sarra-c-server.substvars
+    

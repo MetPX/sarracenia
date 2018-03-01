@@ -1,0 +1,6 @@
+.httpdocroot
+.httpserverpid
+.ftpserverpid
+.flowpostpid
+on_*.py
+^sender/

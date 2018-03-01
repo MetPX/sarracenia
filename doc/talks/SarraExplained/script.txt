@@ -1,0 +1,53 @@
+
+
+Hi There, 
+
+Let´s take a few minutes to understand how Sarracenia works, in order to understand
+why it exists.   There will not be a useful demo in here, it´s just an explanation
+of internals.
+
+Let´s say someone wants to inject an image into the data pumping network.
+
+We call people who inject data ´sources´, and a source runs the sr_post command, 
+which creates a message like the following and sends it to the AMQP broker running 
+on a data pump:
+
+AMQP Post Message:
+
++-------------------------------------------------------------------------------------------------------------+
+| Topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif                                                               |
+|first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  |
+| Headers: parts=p,457,1,0,0 sum=d,<md5sum> source=ec_cmc                                                     |
++-------------------------------------------------------------------------------------------------------------+
+
+This message tells people who receive it, that the NRDPS_HiRes_000.gif file is available if you use the afsiext 
+account on cmcmdataserver and go to the folder data/NRDPS/outputs to retrieve it.  It also says that for public
+posting, rather than being under the data/NRPDS/outputs directory, we want the folder tree to be NRPDS/GIF.
+
+And now, a message from our Sponsor:
+
+Need to pass messages between different programs?   
+Need flexible ways for emitters and consumers to be matched with one another? 
+Reliability?
+
+Well The financial industry has decades of experience with message switches ´MQ Series´
+or ´Enterprise Service Bus´ and in the past this meant adopting a single vendor´s stack.  The Advanced
+Message Queueing Protocol is an effort, started by Morgan Stanley in 2004, to get an open, industry
+standar interoperable message passing stack.  It has caught on since then, with many open source
+implementations, and a lot of people have bought into it.
+
+Like OpenStack:
+
+
+and Intel´s High Performance Computing Stack.
+
+
+
+AMQP is Super General, it will makes any kind of communication pattern you can think of easy, but it 
+doesn´t say how to actually use it.   It´s a bit like Adopting ´XML´ for technical people.  XML gives
+you a framework, or a vocabulary to talk about certain types of information management and exchange, but 
+without an additional layer of specification, it does not achieve a useful business goal.
+
+
+
+

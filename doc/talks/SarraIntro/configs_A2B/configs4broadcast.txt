@@ -1,0 +1,98 @@
+
+This is not exactly the AAA example in the talk, but it is quite similar.
+It uses http throughout, which is simpler because there is less authentication.
+
+#In this example, rather than Alice & Bob, inspiration is taken from the World Meteorological
+#Organizations' (WMO) Information System (WIS) In the WIS, there are about a dozen Global
+#Information Service Centres which all have to exchange the last 24 hours of weather data from
+#around the world.  So any one country injects data into the nearest GISC site, and the
+#information needs to propagate to all the others from there.
+#
+#Canada, as a Data Collection and Processing Centre, would indicate it's files
+#are ready for ingest by it's designated GISC, Washington, like so:
+#
+#On Montreal's Server:
+
+echo sr_watch -u http://pumpAadmin@AliceServer//home/CWAO -b amqps://Montreal@pumpWashington/ -to GISC_cache -dr /var/www/???? FIXME
+
+# Montreal has a web server running that permits anyone to download the data, including the
+# administrator of pumpWashington.
+#
+
+cat >pumpCanadaIngest_sara.conf <<EOT
+
+# read posts from Alice:
+source_broker amqps://WashingtonAdmin@pumpWashington/
+source_exchange xs_Montreal
+
+# posting information.
+url http://pumpwashington/
+document_root /var/www
+broker http://WashingtonAdmin@pumpWashington/
+exchange xpublic
+
+EOT
+
+# On All pumps, there are sarra http channels between them.  
+#
+# the following loop builds configurations for pump nodes named after major cities.
+# In this case, I suggest using anonymous as the amqp user, and http for downloads
+# as the data is assumed public, and authentication is sort of inappropriate if everyone
+# can have the data.
+
+# While the configurations for a full mesh are built, only a fraction of them need to work
+# to achieve full mesh.
+
+# For any channel, call one pump 'left' (L) and the other 'right' (R)
+# where Pump L is ingesting data from Pump R:
+
+# The configuration on Pump L's Sara will be:
+# for each R to which L is subscribed...
+
+NODES="Beijing Washington Exeter Jeddah Toulouse Offenbach Moscow Casablanca Tehran Tokyo Melbourne Brasilia Seoul NewDelhi Pretoria"
+
+#
+# FIXME, script for rabbitmqadmin to create each pump admin user?
+#
+
+for L in $NODES; do 
+   cat >pump${L}_config_sarra.conf <<EOT
+# look for all data for 'A'
+from_cluster ${L}
+from_aliases A
+EOT
+  cat >pump${L}_config_credentials.conf <<EOT
+amqp://pump${L}admin:myrealpassword@pump${L}
+EOT
+
+  
+  for R in $NODES; do
+     if [ "$L" = "$R" ]; then
+         continue;
+     fi
+     cat >pump${R}2${L}_sara.conf <<EOT
+
+# listen to Pump${R}'s feed.
+source_broker amqp://anonymous:anonymous@pump${R}/
+source_exchange xpublic
+
+# posting to local after download:
+broker amqps://pump${L}admin@pump${L}/
+exchange xpublic
+url http://pump${L}/
+document_root /var/www
+
+EOT
+
+done
+done
+
+
+------------------------------------------------------------
+Earlier phase would be for each GISC to upload to a meta-gisc using the existing
+FTP mechanisms.  but download from all others would be a single download
+via sr_subscribe 
+
+
+
+

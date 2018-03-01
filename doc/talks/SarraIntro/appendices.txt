@@ -1,0 +1,49 @@
+Sarracenia Introduction
+-----------------------
+
+
+Appendix I: Production Method
+---------------------------
+
+This is natural to me... what can I say? I'm a little unusual...
+
+This text accompanies the A2B.dia diagram, one opens the diagram, 
+Selects view/layers, and at each *Layers* cue, change the visible layers to provide
+animation.  There is a Makefile that processes the script to produce
+the slideshow. 
+
+
+Video Editing Input
+~~~~~~~~~~~~~~~~~~~
+
+For video editing, you want consistent names to make it easier to move stuff around.
+So name the files after the layers used, like so:
+
+mkdir videoimages #so grep awk catches this too.
+awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e videoimages/a2b_%s.png -L %s A2B.dia \n", $2, $2; }; ' script.txt | sh -x
+
+For audio capture used: avconv -f pulse -i default fname.wav
+Stuck the bits together with KDEnlive on ubuntu 14.04.
+
+	
+
+Appendix II: Attributions
+-------------------------
+
+Copyright of all materials remain with the respective copyright holders.
+for images used in the presentations:
+
+1195439663140698541camel_john_olsen_01.svg - http://www.clker.com/clipart-11661.html
+Google_Chrome_icon.png - trademarks logo of respective owners. (google.com)
+Internet_Explorer_10_logo.svg - trademarks logo of respective owners. (microsoft.com)
+RabbitMQLogo.png - trademark logo of respective owners. (rabbitmq.com)
+Tree_Frog_1_coloring_book_colouring.png - http://clipartist.net/svg/tree-frog-1-coloring-book-colouring-coloring-book-colouringbook-org-svg/
+asf_logo.png - trademark logo (apache.org)
+doc_openssh_logo_2.png - trademark logo (openssh.org)
+guidelines-logo.7ea045a4e288.png - trademark logo (mozilla.org)
+pb-apache.PNG - trademark logo (apache.org)
+python-logo-inkscape.svg - trademark logo (apache.org)
+https://commons.wikimedia.org/wiki/File%3ATux.svg  - By Larry Ewing, Simon Budig, Anja Gerwinski ([1]) [Attribution], via Wikimedia Commons
+http://logos.wikia.com/wiki/Special:WhatLinksHere/File:Windows_7_logo.svg - unclear... but trademark of Microsoft.
+
+for svg imagery, They have been converted to png for convenience purposes.

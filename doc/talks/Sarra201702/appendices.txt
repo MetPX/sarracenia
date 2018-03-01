@@ -1,0 +1,15 @@
+
+
+Video Editing Input
+~~~~~~~~~~~~~~~~~~~
+
+For video editing, you want consistent names to make it easier to move stuff around.
+So name the files after the layers used, like so:
+
+mkdir videoimages #so grep awk catches this too.
+awk ' BEGIN { s=0; }; /^Layers/ { s++; printf "dia -t png --size 1920x -e videoimages/201702_%s.png -L %s 201702.dia \n", $2, $2; }; ' script.txt | sh -x
+
+For audio capture used: avconv -f pulse -i default fname.wav
+Stuck the bits together with KDEnlive on ubuntu 14.04.
+
+

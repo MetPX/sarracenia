@@ -1,0 +1,56 @@
+
+Why? Why? Why! by Saint-Ignucious and the Holy Raymond, do we need another thing to transfer files!
+
+Well in bit-heaven, All is End-to-End IPv6
+
+Here on Earth, there are bad guys and a heck of a lot of NAT.
+
+Security is Hard!
+
+Security is hard because there is so much stuff to hook up, and it could be windows 7 with the latest
+patches, or it could be Windows 95 attached to hydraulics to shake real trains.  It all has
+to get connected, but there is a lot of stuff that just isn´t upto it, like sending a four year old 
+on her own to daycare across town by subway... it doesn´t feel right.
+
+So, people put up ´Containment Areas´, ´DMZ´, some people even define firewalls as something
+that must do network address translation (NAT). In that sort of a world, Transferring a file
+from End to End cannot work.
+
+So the internet is completely broken.  How do people get anything done?  The usual web 2.0 way 
+is for both ends contact a third party, someone we all trust with all our data, like Google or
+DropBox.   If Alice is sending stuff to Bob,  She connects to Google, sends her file, and then
+Bob downloads it.  That gets around all the firewalls.
+
+In bit-heaven, Alice would just send the file directly to Bob without anybody in the way, but
+if a lot of people need to send a lot of stuff, it all goes via internet in both directions. 
+that gets slow. and what if there isn´t anyone that both Alice and Bob trusts, or if there
+are many people and they all need to agree on who to trust.
+
+So what actually happens is this:
+
+Figure.
+
+Someone writes a program to drop a file off in a directory, then there is an ad-hoc
+script to ftp it over to a server in a Bob´s company´s DMZ, and Bob has a home-made script 
+to pick it up and bring it inside to his server, and then Bob has a share or something to 
+put it on his laptop.   
+
+
+So here´s a real-world example... an exchange of weather forecasts between Canada and the US:
+And another one with the UK.
+This is what actually happens:
+
+
+
+So there are great tools to do all of these steps. but what happens in real-life is that
+any one of them can break, and no-one can see the whole thing.
+
+
+Are we making a new HTTP? no... we´ll leave that to Google (SPDY!)
+so this isn´t about the mechanics of tranporting data, it is about 
+
+
+
+
+
+
