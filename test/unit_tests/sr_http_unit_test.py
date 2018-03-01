@@ -21,19 +21,21 @@ class test_logger:
       def silence(self,str):
           pass
       def __init__(self):
-          self.debug   = print
+          self.debug   = self.silence
           self.error   = print
           self.info    = print
           self.warning = print
-          self.debug   = self.silence
-          self.info    = self.silence
 
 def self_test():
 
     failed = False
     logger = test_logger()
 
+    logger.info("sr_http: BEGIN TEST\n")
+
     opt1   = 'accept .*'
+
+    logger.info("SETUP 0: get 1 message from dd.weather")
 
     #setup consumer to catch first post
     cfg = sr_config()
@@ -52,40 +54,61 @@ def self_test():
     cfg.retry_path     = '/tmp/retry'
     cfg.option( opt1.split()  )
 
-    consumer = sr_consumer(cfg)
+    logger.info  = logger.silence
+    consumer     = sr_consumer(cfg)
 
     i = 0
     while True :
           ok, msg = consumer.consume()
           if ok: break
+    logger.info  = print
+
+    logger.info("SETUP 0: OK message received\n")
 
     cfg.set_sumalgo('d')
     cfg.msg = msg
     msg.sumalgo = cfg.sumalgo
-    cfg.new_dir  = "."
-    cfg.new_file = "toto"
+    msg.new_dir  = "."
+    msg.new_file = "toto"
 
     cfg.msg.local_offset = 0
 
     tr   = http_transport()
 
+    logger.info("TEST 01: download file with exact name")
     cfg.inflight = None
     tr.download(cfg)
+    try :   
+            os.unlink("./toto")
+            logger.info("TEST 01: OK")
+    except:
+            logger.error("TEST 01: FAILED, file not found")
+            failed = True
 
+    logger.info("TEST 02: download file lock is .filename")
     cfg.inflight = '.'
     tr.download(cfg)
+    try :
+            os.unlink("./toto")
+            logger.info("TEST 02: OK")
+    except:
+            logger.error("TEST 02: FAILED, file not found")
+            failed = True
 
+    logger.info("TEST 03: download file lock is filename.tmp")
     cfg.inflight = '.tmp'
     tr.download(cfg)
+    try :
+            os.unlink("./toto")
+            logger.info("TEST 03: OK")
+    except:
+            logger.error("TEST 03: FAILED, file not found")
+            failed = True
 
-    cfg.msg.sumalgo = cfg.sumalgo
+
+    logger.info("TEST 04: inserting a part in a local file")
+
     tr.download(cfg)
-
-    cfg.timeout = 12
-    cfg.inflight = None
-    tr.download(cfg)
-
-    http = tr.http
 
     fp = open("titi","wb")
     fp.write(b"01234567890")
@@ -99,7 +122,7 @@ def self_test():
     cfg.msg.offset = 3
     cfg.msg.length = 5
     cfg.msg.local_offset = 1
-    cfg.new_file   = "titi"
+    cfg.msg.new_file = "titi"
 
     tr.download(cfg)
 
@@ -112,22 +135,30 @@ def self_test():
     b2 = cfg.msg.local_offset
     e2 = cfg.msg.local_offset+cfg.msg.length-1
              
-    if data[b:e] != data2[b2:e2] :
-       logger.error("sr_http TEST FAILED")
-       sys.exit(1)
+    if   data[b:e] == data2[b2:e2] :
+         logger.info("TEST 04: OK")
+    else:
+         logger.info("TEST 04: failed, inserted part incorrect")
+         failed = True
 
-    os.unlink("titi")
-    os.unlink("toto")
+    try:    os.unlink("titi")
+    except: pass
+    try:    os.unlink("toto")
+    except: pass
+    try:    os.unlink(consumer.queuepath)
+    except: pass
 
-    os.unlink(consumer.queuepath)
+    logger.info = logger.silence
     consumer.cleanup()
     consumer.close()
+    logger.info = print
 
 
+    logger.info("")
     if not failed :
-                    print("sr_http.py TEST PASSED")
+                    logger.info("sr_http: TEST PASSED")
     else :          
-                    print("sr_http.py TEST FAILED")
+                    logger.info("sr_http: TEST FAILED")
                     sys.exit(1)
 
 
@@ -141,7 +172,7 @@ def main():
     except: 
             (stype, svalue, tb) = sys.exc_info()
             print("%s, Value: %s" % (stype, svalue))
-            print("sr_http.py TEST FAILED")
+            print("sr_http: TEST FAILED")
             sys.exit(1)
 
     sys.exit(0)
