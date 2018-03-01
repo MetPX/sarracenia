@@ -292,7 +292,7 @@ Steps for downloading the latest version of Sarracenia are available on our `dow
 Getting The Source Code
 -----------------------
 
-The source code is available from our `git repository <https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/>`_ .
+The source code is available from our `git repository <https://github.com/MetPX/sarracenia>`_ .
 
 Documentation
 -------------

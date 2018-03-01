@@ -18,6 +18,12 @@ reference materials provides quick answers to specific questions.
 
 .. contents::
 
+About
+-----
+
+* `Introduction <sarra-e.rst>`_ - General concepts, Motivation, use cases.
+
+
 Guides
 ------
 
