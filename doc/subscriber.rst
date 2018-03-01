@@ -8,12 +8,16 @@ Receiving Data from a MetPX-Sarracenia Data Pump
 ------------------------------------------------
 
 .. warning::
-    **Pre-Draft**
-
-.. warning::
   **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
 
 .. contents::
+
+Revision Record
+---------------
+
+:version: @Version@
+:date: @Date@
+
 
 Introduction
 ------------
@@ -735,7 +739,7 @@ in the configuration file.
 
 Plugins are all written in python, and users can create their own and create them
 with *sr_subscribe edit myplugin.py* (or just place them directly in ~/.config/sarra/plugins. 
-For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.html>`_  
+For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.rst>`_  
 
 
 to recap:
@@ -885,8 +889,8 @@ sr_winnow. See the Administrator Guide for more information.
 More Information
 ----------------
 
-The `sr_subscribe(1) <sr_subscribe.1.html>`_ is the definitive source of reference
+The `sr_subscribe(1) <sr_subscribe.1.rst>`_ is the definitive source of reference
 information for configuration options. For additional information,
-consult: `Sarracenia Documentation <http://metpx.sf.net/sarra-e-docs.html>`_
+consult: `Sarracenia Documentation <sarra-e-docs.rst>`_
 
 

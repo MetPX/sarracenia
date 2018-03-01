@@ -21,42 +21,42 @@ reference materials provides quick answers to specific questions.
 Guides
 ------
 
-* `Installation <Install.html>`_ - initial installation.
-* `Subscriber Guide <subscriber.html>`_ - effective downloading from a pump.
-* `Source Guide <source.html>`_ - effective uploading to a pump
-* `Admin Guide <Admin.html>`_ - Configuration of Pumps
-* `Upgrade Guide <Admin.html>`_ - MUST READ when upgrading pumps.
-* `Programming Guide <Prog.html>`_ - Programming custom plugins for workflow integration.
-* `Developer Guide <Dev.html>`_ - contributing to sarracenia development.
+* `Installation <Install.rst>`_ - initial installation.
+* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
+* `Source Guide <source.rst>`_ - effective uploading to a pump
+* `Admin Guide <Admin.rst>`_ - Configuration of Pumps
+* `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
+* `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
+* `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
 
 
 User-Facing Components
 ----------------------
 
-* `sr_post(1) <sr_post.1.html>`_ - to post individual files.
-* `sr_poll(1) <sr_poll.1.html>`_ - to list files to pull from remote servers.
-* `sr_subscribe(1) <sr_subscribe.1.html>`_ - the http/https subscription client.
-* `sr_report(1) <sr_report.1.html>`_ - to read report messages.
-* `sr_watch(1) <sr_watch.1.html>`_ - to post all changes to a given directory.
-* `sr_sender(1) <sr_sender.1.html>`_ - to send files from a pump.
+* `sr_post(1) <sr_post.1.rst>`_ - to post individual files.
+* `sr_poll(1) <sr_poll.1.rst>`_ - to list files to pull from remote servers.
+* `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http/https subscription client.
+* `sr_report(1) <sr_report.1.rst>`_ - to read report messages.
+* `sr_watch(1) <sr_watch.1.rst>`_ - to post all changes to a given directory.
+* `sr_sender(1) <sr_sender.1.rst>`_ - to send files from a pump.
 
 
 Administrative Components
 -------------------------
 
-* `sr_audit(8) <sr_audit.8.html>`_ - Audit the running configuration, looking for issues.
-* `sr_log2save(8) <sr_log2save.8.html>`_ - Extract log messages to create a save format file.
-* `sr_sarra(8) <sr_sarra.8.html>`_ - Subscribe, Acquire And Re-Advertise... the main pump.
-* `sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
-* `sr_winnow(8) <sr_winnow.8.html>`_ - to remove duplicate posts.
+* `sr_audit(8) <sr_audit.8.rst>`_ - Audit the running configuration, looking for issues.
+* `sr_log2save(8) <sr_log2save.8.rst>`_ - Extract log messages to create a save format file.
+* `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire And Re-Advertise... the main pump.
+* `sr_shovel(8) <sr_shovel.8.rst>`_ - copies messages between pumps.
+* `sr_winnow(8) <sr_winnow.8.rst>`_ - to remove duplicate posts.
 
 
 Formats/Protocols
 ------------------
 
-* `sr_post(7) <sr_post.7.html>`_ - the format of postings. Posted by watch and post, consumed by subscribe.
-* `sr_report(7) <sr_report.7.html>`_ - the format of report messages. Sent by consumers, for sources to measure reach.
-* `sr_pulse(7) <sr_pulse.7.html>`_ - the format of postings. posted by pumps to maintain subscriber connections.
+* `sr_post(7) <sr_post.7.rst>`_ - the format of postings. Posted by watch and post, consumed by subscribe.
+* `sr_report(7) <sr_report.7.rst>`_ - the format of report messages. Sent by consumers, for sources to measure reach.
+* `sr_pulse(7) <sr_pulse.7.rst>`_ - the format of postings. posted by pumps to maintain subscriber connections.
 
 
 Glossary
@@ -70,23 +70,23 @@ Source
   the starting point to one or more pumps in the network. The advertisement sources produce tell others exactly
   where and how to download the files, and Sources have to say where they want the data to go to.
 
-  Sources use programs like `sr_post.1 <sr_post.1.html>`_, `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_
+  Sources use programs like `sr_post.1 <sr_post.1.rst>`_, `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_
   to create their advertisements.
 
 Subscribers
   are those who examine advertisements about files that are available, and download the files
   they are interested in.
 
-  Subscribers use `sr_subscribe(1) <sr_subscribe.1.html>`_
+  Subscribers use `sr_subscribe(1) <sr_subscribe.1.rst>`_
 
 Post, Notice, Notification, Advertisement, Announcement
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users know that a particular
-  file is ready. The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.html>`_
+  file is ready. The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.rst>`_
   manual page. All of these words are used interchangeably. Advertisements at each step preserve the
   original source of the posting, so that report messages can be routed back to the source.
 
 Report messages
-  These are AMQP messages (in `sr_report(7) <sr_report.7.html>`_ format) built by consumers of messages, to indicate
+  These are AMQP messages (in `sr_report(7) <sr_report.7.rst>`_ format) built by consumers of messages, to indicate
   what a given pump or subscriber decided to do with a message. They conceptually flow in the opposite
   direction of notifications in a network, to get back to the source.
 

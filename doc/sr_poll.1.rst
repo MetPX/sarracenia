@@ -30,7 +30,7 @@ check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product.
 
-The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
+The notification protocol is defined here `sr_post(7) <sr_post.7.rst>`_
 
 **sr_poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
@@ -39,7 +39,7 @@ a notification for that product and sends it to the *broker*. The matching conte
 of the *directory* is kept in a file for reference. Should a matching file be changed,
 or created at a later iteration, a new notification is sent.
 
-**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.html>`_
+**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.rst>`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
 The **sr_poll** command takes two argument: a configuration file described below,
@@ -54,7 +54,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(1) <sr_subscribe.1.html>`__  page which should be read first.
+`sr_subscribe(1) <sr_subscribe.1.rst>`__  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -187,7 +187,7 @@ POSTING SPECIFICATIONS
 
 These options set what files the user wants to be notified for and where
 **sr_poll** polls the availability of file on a remote server by creating
-an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.html>`_
+an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.rst>`_
 to consume the announcement and download the file (or **sr_sarra**).
 To make files available to subscribers, **sr_poll** sends the announcements to
 an AMQP server, also called a broker.  Format of argument to the *broker* option::
@@ -203,8 +203,8 @@ By default, sr_poll sends its post message to the broker with default exchange
 is the prefix *xs_* followed by the broker username. The *broker* is mandatory.
 It can be given incomplete if, it is well defined in the credentials.conf file.
 
-Refer to `sr_post(1) <sr_post.1.html>`_ - to understand the complete notification process.
-Refer to `sr_post(7) <sr_post.7.html>`_ - to understand the complete notification format.
+Refer to `sr_post(1) <sr_post.1.rst>`_ - to understand the complete notification process.
+Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification format.
 
 Here it is important to say that :
 
@@ -336,18 +336,18 @@ The interface option used to be required with *vip*, now all interfaces are scan
 SEE ALSO
 --------
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.

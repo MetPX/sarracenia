@@ -26,7 +26,7 @@ DESCRIPTION
 **sr_post** posts the availability of a file by creating an announcement.
 In contrast to most other sarracenia components that act as daemons,
 sr_post is a one shot invocation which posts and exits.
-Subscribers use `sr_subscribe <sr_subscribe.1.html>`_  
+Subscribers use `sr_subscribe <sr_subscribe.1.rst>`_  
 
 To make files available to subscribers, **sr_post** sends the announcements 
 to an AMQP server, also called a broker.  
@@ -38,7 +38,7 @@ Differences:
  - plugins are not supported in the C implementation.
  - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
  - when the *sleep* option ( used only in the C implementation) is set to > 0,
-   it transforms sr_cpost into a daemon that works like `sr_watch(1) <sr_watch.1.html>`_.  
+   it transforms sr_cpost into a daemon that works like `sr_watch(1) <sr_watch.1.rst>`_.  
 
 
 Mandatory Settings
@@ -110,7 +110,7 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr_subscribe(1) <sr_subscribe.1.html>`_ manual page for a detailed description of 
+Please refer to the `sr_subscribe(1) <sr_subscribe.1.rst>`_ manual page for a detailed description of 
 common settings, and methods of specifying them.
 
 **[-c|--config <configfile>]**
@@ -244,7 +244,7 @@ enough to keep up.  In such circumstances, one can group all changes made to a f
 in *sleep* time, and produce a single post.
 
 NOTE::
-    in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.html>`_ ) the sleep 
+    in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
     interval should not be less than about five seconds, as it may miss posting some files.
 
    
@@ -370,17 +370,17 @@ implementation.
 SEE ALSO
 ========
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(7) <sr_post.7.html>`_ - the format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 
 

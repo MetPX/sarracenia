@@ -28,18 +28,18 @@ DESCRIPTION
 
 **sr_sarra** is a program that Subscribes to file notifications,
 Acquires the files and ReAnnounces them at their new locations.
-The notification protocol is defined here `sr_post(7) <sr_post.7.html>`_
+The notification protocol is defined here `sr_post(7) <sr_post.7.rst>`_
 
 **sr_sarra** connects to a *broker* (often the same as the remote file server
 itself) and subscribes to the notifications of interest. It uses the notification
 information to download the file on the local server its running on.
 It then posts a notification for the downloaded files on a broker (usually on the local server).
 
-**sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.html>`_
-or `sr_watch(1) <sr_watch.1.html>`_  or to reproduce a web-accessible folders (WAF),
+**sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.rst>`_
+or `sr_watch(1) <sr_watch.1.rst>`_  or to reproduce a web-accessible folders (WAF),
 that announce its' products.
 
-The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.html>`_  with the following presets::
+The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the following presets::
 
    mirror True
 
@@ -72,18 +72,18 @@ user exchange.
 SEE ALSO
 ========
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.

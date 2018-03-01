@@ -12,6 +12,12 @@
 
 .. Contents::
 
+Revision Record
+---------------
+
+:version: @Version@
+:date: @Date@
+
 Audience
 --------
 
@@ -227,7 +233,7 @@ verbosity of logs, use priority specific method to classify messages::
 In the above message, logger.info is used, indicating an informative message.
 Another useful attribute available in parent, is 'msg', which has all the attributes
 of the message being processed.  All of the headers from the message, as defined
-in the `sr_post(1) <sr_post.1.html>` configuration file, are available to the plugin,
+in the `sr_post(1) <sr_post.1.rst>` configuration file, are available to the plugin,
 such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
 section for an exhaustive list.  Generally, it is best to output only debug log
 messages in the __init__ routine for a plugin, because it is executed every time an
@@ -776,7 +782,7 @@ on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
 message per part. One can use the parent.msg.partstr to find out which part
-you have (See `sr_post.1 <sr_post.1.html>`_ for details on partstr encoding.
+you have (See `sr_post.1 <sr_post.1.rst>`_ for details on partstr encoding.
 
 Ensure the on_message plugin returns 'False' to prevent downloading.
 

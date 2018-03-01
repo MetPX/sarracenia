@@ -23,7 +23,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_sender** is a component derived from `sr_subscribe(1) <sr_subscribe.1.html>`_
+**sr_sender** is a component derived from `sr_subscribe(1) <sr_subscribe.1.rst>`_
 used to send loca files to a remote one using a file transfer protocol, primarily SFTP.
 **sr_sender** is a standard consumer, using all the normal AMQP settings for brokers,exchanges,
 queues, and all the standard client side filtering with accept, reject, on_message.
@@ -217,18 +217,18 @@ Notice:
 SEE ALSO
 ========
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the format of configurations for MetPX-Sarracenia.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.

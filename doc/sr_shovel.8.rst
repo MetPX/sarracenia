@@ -30,8 +30,8 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topic_prefix* option must to be set to:
 
- - **v02.post** to shovel `sr_post(7) <sr_post.7.html>`_ messages 
- - **v02.log** to shovel `sr_report(7) <sr_report.7.html>`_ messages
+ - **v02.post** to shovel `sr_post(7) <sr_post.7.rst>`_ messages 
+ - **v02.log** to shovel `sr_report(7) <sr_report.7.rst>`_ messages
 
 There is no default.  On startup, the sr_shovel component takes two 
 argument: 
@@ -53,7 +53,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first. 
+`sr_subscribe(1) <sr_subscribe.1.rst>`_  page which should be read first. 
 It fully explains the option configuration language, and how to find 
 the option settings.
 
@@ -178,18 +178,18 @@ will create the save files in the current directory named here_000x.save where x
 SEE ALSO
 --------
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - sarra downloader.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - sarra downloader.
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
