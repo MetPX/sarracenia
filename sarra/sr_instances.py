@@ -533,7 +533,10 @@ class sr_instances(sr_config):
 
         try    : 
                  p = psutil.Process(self.pid)
-                 status = p.status().replace('sleeping','running')
+                 status = p.status
+                 if not isinstance(p.status,str): status = p.status()
+                 status = status.lower()
+                 status = status.replace('sleeping','running')
                  self.logger.info("%s is %s" % (self.instance_str,status))
                  return
         except : pass
