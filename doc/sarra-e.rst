@@ -74,7 +74,7 @@ Implementations
 Part of Sarracenia defines an application layer message over AMQP as a transport.
 Sarracenia's has multiple implementations:
 
-- Sarracenia itself ( http://metpx.sf.net ) a complete reference implementation in Python >= 3.4. It runs on Linux, Mac, and Windows.
+- Sarracenia itself ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. It runs on Linux, Mac, and Windows.
 
 - csarra (c subdirectory in the main git repo) is a C implementation of data insertion (post & watch.) It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly. There is consumer code as well (to read queues) but no downloading so far. This subset is meant to be used where python3 environments are impractical (some HPC environments.) 
 
