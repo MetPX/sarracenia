@@ -27,13 +27,11 @@ reasons, those standards stipulate a minimum polling interval of five minutes.
 Advanced Message Queueing Protocol (AMQP) messaging brings true push to 
 notifications, and makes real-time sending far more efficient.
 
-homepage: http://metpx.sf.net
+homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
 
-Man Pages online: http://metpx.sourceforge.net/#sarracenia-documentation
-
-
+Documentation: https://github.com/MetPX/sarracenia/blob/master/doc/sarra-e.rst
 
 Sarracenia is an initiative of Shared Services Canada ( http://ssc-spc.gc.ca )
 in response to internal needs of the Government of Canada.
@@ -68,6 +66,6 @@ nouveaux produits.
 
 Sarracenia est une initiative de Services Partagés Canada ( http://ssc-spc.gc.ca ) en réponse à des besoins interne du gouvernement du Canada.
 
-portail: http://metpx.sf.net
+portail: http://github.com/MetPX/sarracenia
 
 

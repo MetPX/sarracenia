@@ -1662,7 +1662,7 @@ SEE ALSO
 
 `sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
 
-`http://metpx.sf.net/ <http://metpx.sf.net>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
+`https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 
 
 SUNDEW COMPATIBILITY OPTIONS

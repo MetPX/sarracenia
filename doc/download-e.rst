@@ -14,7 +14,7 @@ although currently only *sarracenia* is under active development.
 With those explanations, feel free to grab a snapshot can be obtained using
 subversion via::
 
-    git clone git://git.code.sf.net/p/metpx/sarracenia metpx-sarracenia
+    git clone https://github.com/MetPX/sarracenia sarracenia
 
 
 Available for anonymous read-only access. One can also obtain a stable release

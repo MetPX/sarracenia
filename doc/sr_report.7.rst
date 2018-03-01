@@ -199,7 +199,7 @@ EXAMPLE
 FURTHER READING
 ===============
 
-http://metpx.sf.net - home page of metpx-sarracenia
+https://github.com/MetPX - home page of metpx-sarracenia
 
 http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 

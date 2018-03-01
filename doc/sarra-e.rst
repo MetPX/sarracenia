@@ -74,7 +74,7 @@ Implementations
 Part of Sarracenia defines an application layer message over AMQP as a transport.
 Sarracenia's has multiple implementations:
 
-- Sarracenia itself ( http://metpx.sf.net ) a complete reference implementation in Python >= 3.4. It runs on Linux, Mac, and Windows.
+- Sarracenia itself ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. It runs on Linux, Mac, and Windows.
 
 - csarra (c subdirectory in the main git repo) is a C implementation of data insertion (post & watch.) It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly. There is consumer code as well (to read queues) but no downloading so far. This subset is meant to be used where python3 environments are impractical (some HPC environments.) 
 
@@ -235,10 +235,13 @@ scanning within the flow.
 Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
 to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
 with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
-The download_scp plugin, included with the package, shows the use of the built-in python transfer mechanisms, 
-but the simple use of a binary to accellerate downloads when the file exceeds a threshold size, making that 
-method more efficient. Use of another compatible binary, such as dd or cp (for local files), scp, 
-BBCP, or wget is also straightforward.
+The `download_scp <download_scp.py>`_ plugin, included with the package, shows
+the use of the built-in python transfer mechanisms, but the simple use of a 
+binary to accellerate downloads when the file exceeds a threshold size, making
+that method more efficient. Use of another compatible binary, such as `dd <download_dd.py>`_ or 
+`cp <accel_cp.py>`_, (for local files), `scp <download_scp.py>`_, or `wget <accel_wget.py>`_ via 
+plugins is also straightforward.
+
 
 
 
@@ -289,7 +292,7 @@ Steps for downloading the latest version of Sarracenia are available on our `dow
 Getting The Source Code
 -----------------------
 
-The source code is available from our `git repository <https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/>`_ .
+The source code is available from our `git repository <https://github.com/MetPX/sarracenia>`_ .
 
 Documentation
 -------------

@@ -20,13 +20,13 @@ To hack on the sarracenia source, you need:
 - paramiko. For SSH/SFTP support you need to install the python-paramiko package (which
   works with python3 even though the documentation says it is for python2.)
 - python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
-- git. in order to download the source from the sf.net repository.
+- git. in order to download the source from the github repository.
 - a dedicated rabbitmq broker, with administrative access, to run the flow_test.
   The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
 
 after you have cloned the source code::
 
-    git clone git://git.code.sf.net/p/metpx/sarracenia metpx-sarracenia
+    git clone https://github.com/MetPX/sarracenia metpx-sarracenia
     cd metpx-sarracenia
 
 The rest of the Guide assumes you are there.

@@ -10,7 +10,7 @@ Getting The Source Code
 Development is done on the *master* branch, and releases are done on a frequent basis.
 Feel free to grab a snapshot using git via::
 
-    git clone git://git.code.sf.net/p/metpx/sarracenia metpx-sarracenia
+    git clone https://github.com/MetPX/sarracenia sarracenia
 
 
 Available for anonymous read-only access. One can also obtain a stable release by checking out a release branch.

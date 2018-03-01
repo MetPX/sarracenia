@@ -331,7 +331,7 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
-`http://metpx.sf.net/ <http://metpx.sf.net/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
+`https://github.com/MetPX/ <https://github.com/MetPX/>`_ - dd_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 
 
 HISTORY

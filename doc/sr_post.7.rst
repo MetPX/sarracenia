@@ -417,7 +417,7 @@ a tag *default* and finally the source url of the product in the last 2 fields.
 MetPX-Sarracenia
 ----------------
 
-The Metpx project ( http://metpx.sf.net ) has a sub-project called Sarracenia which is intended
+The Metpx project ( https://github.com/MetPX ) has a sub-project called Sarracenia which is intended
 as a testbed and reference implementation for this protocol.  This implementation is licensed
 using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
 confirm interoperability with any other implementations that may arise.   While Sarracenia
@@ -504,7 +504,7 @@ URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where ap
 FURTHER READING
 ---------------
 
-http://metpx.sf.net - home page of metpx-sarracenia
+https://github.com/MetPX - home page of metpx-sarracenia
 
 http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 

@@ -14,10 +14,13 @@ SVG_TRGT = $(patsubst ../%.dia,%.svg,$(SVG_SRCS))
 
 TARGETS = CHANGES.html $(HTML_TRGT) $(SVG_TRGT)
 
-default: img $(TARGETS) 
+default: img plugins $(TARGETS) 
  
 %.svg: ../%.dia
 	dia -t svg $<
+
+plugins:
+	cp ../../sarra/plugins/* .
 
 img:
 	cp ../*.gif ../*.jpg ../*.png .
@@ -44,6 +47,6 @@ endif
 	sed -i 's/<img \(.*\)\/>/<div class="panel"><div class="panel-body"><img \1 class="img-responsive"\/><\/div><\/div>/' $@
 
 clean: 
-	rm -f *.png *.jpg *.png *.gif
+	rm -f *.png *.jpg *.png *.gif *.py
 	rm -f $(TARGETS)
 	rm -f ../CHANGES.rst

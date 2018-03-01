@@ -577,7 +577,7 @@ following elements:
 
 The stack consists of entirely free software, and other implementations can be
 substituted. The only uncommon element in the stack is Sarracenia, which so far 
-as only been used with the RabbitMQ broker. While Sarracenia ( http://metpx.sf.net/sarra-e.html ) 
+as only been used with the RabbitMQ broker. While Sarracenia ( https://github.com/MetPX/sarra-e.html ) 
 was inspired by the GISC data exchange problem, it is in no way specialized to weather 
 forecasting, and the plan is to offer it to other for in other domains to support high 
 speed data transfers. 
