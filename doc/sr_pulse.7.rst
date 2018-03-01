@@ -53,7 +53,7 @@ In the case of a message with the *v02.pulse.message*  topic.  The body is a mes
 FURTHER READING
 ===============
 
-http://metpx.sf.net - home page of metpx-sarracenia
+https://github.com/MetPX - home page of metpx-sarracenia
 
 http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 

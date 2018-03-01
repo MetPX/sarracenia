@@ -41,7 +41,7 @@ machine where other software can process it.  Please note:
 - More detailed reference material is available at the 
   traditional sr_subscribe(1) man page,
 - All documentation of the package is available 
-  at http://metpx.sf.net
+  at https://github.com/MetPX
 
 While Sarracenia can work with any web tree, or any URL 
 that sources choose to post, there is a conventional layout.
