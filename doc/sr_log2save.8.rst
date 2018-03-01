@@ -53,6 +53,6 @@ Example usage::
 SEE ALSO
 --------
 
-`sr_shovel(8) <sr_shovel.8.html>`_ - copies messages between pumps.
+`sr_shovel(8) <sr_shovel.8.rst>`_ - copies messages between pumps.
 
 

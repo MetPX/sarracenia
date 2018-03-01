@@ -44,7 +44,7 @@ or *message* for an administrator message intended for all subscribers.
 THE BODY
 ========
 
-The body of the message in a *tick* is the standard timestamp (as in an `sr_post(7) <sr_post.7.html>`_ message) 
+The body of the message in a *tick* is the standard timestamp (as in an `sr_post(7) <sr_post.7.rst>`_ message) 
 Format: *YYYYMMDDHHMMSS.*<decimalseconds>* (Note: The datestamp is always in UTC timezone.)
 
 In the case of a message with the *v02.pulse.message*  topic.  The body is a message to be posted in the logs of all subscribers.
@@ -61,15 +61,15 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the http-only download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcements of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcements of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.

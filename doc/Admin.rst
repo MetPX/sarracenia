@@ -12,9 +12,6 @@
 Revision Record
 ---------------
 
-.. warning::
-   **Pre-Draft.**  This document is still being built and should not be reviewed or relied upon.
-
 :version: @Version@
 :date: @Date@
 
@@ -476,7 +473,8 @@ the tools/ sub-directory directory allows for integration with tools for differe
 .. NOTE:: 
    The following is not well tested
 
-Systemd installation process, by administrator:
+Systemd installation process, by administrator::
+
    groupadd sarra
    useradd sarra
    cp tools/sarra_system.service /etc/systemd/system/sarra.service  (if a package installs it, it should go in /usr/lib/systemd/system )
@@ -484,13 +482,13 @@ Systemd installation process, by administrator:
    systemctl daemon-reload
    
 It is then assumed that one uses the 'sarra' account to store the daemon oriented (or system-wide) sarra configuration.
-Users can also run their personal configuration in sessions via:
+Users can also run their personal configuration in sessions via::
 
   systemctl --user enable sarra
   systemctl --user start sarra
 
 
-On an upstart or sysv-init based system:
+On an upstart or sysv-init based system::
 
    cp tools/sr.init /etc/init.d/sr
    <insert magic here to get that activated.>
@@ -585,8 +583,8 @@ probably the simplest way to do this is to copy them elsewhere::
     root@boule:~# chown -R rabbitmq.rabbitmq boule*
 
 Now that we have proper certificate chain, configure rabbitmq to disable
-tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (see
-also `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_ )::
+tcp, and use only the `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.rst>`_ (see
+also `RabbitMQ Management <https://www.rabbitmq.com/management.rst>`_ )::
 
     root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
 

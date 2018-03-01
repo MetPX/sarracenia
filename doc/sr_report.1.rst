@@ -25,7 +25,7 @@ DESCRIPTION
 ===========
 
 sr_report is a program to efficiently process reports of file transfers from 
-sarracenia. The format of the reports is shown in the `sr_report(7) <sr_report.7.html>`_ manual 
+sarracenia. The format of the reports is shown in the `sr_report(7) <sr_report.7.rst>`_ manual 
 page.  When clients download a message from a site running sarracenia, they post
 information about their success in doing so.  
 
@@ -54,7 +54,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -88,7 +88,7 @@ to an exchange.  These options define which messages (URL notifications) the pro
 
 Several topic options may be declared. To give a correct value to the subtopic,
 
-for more details, see: `sr_subscribe(1) <sr_subscribe.1.html>`_  
+for more details, see: `sr_subscribe(1) <sr_subscribe.1.rst>`_  
 
 One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the 
@@ -143,7 +143,7 @@ A variety of example configuration files are available here:
 
  `http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config/ <http://sourceforge.net/p/metpx/git/ci/master/tree/sarracenia/samples/config>`_
 
-for more details, see: `sr_subscribe(1) <sr_subscribe.1.html>`_  
+for more details, see: `sr_subscribe(1) <sr_subscribe.1.rst>`_  
 
 
 
@@ -175,22 +175,22 @@ A do_nothing.py script for **on_message**, **on_file**, and **on_part** could be
 The only arguments the script receives is **parent**, which is an instance of
 the **sr_report** class
 
-for more details, see: `sr_subscribe(1) <sr_subscribe.1.html>`_  
+for more details, see: `sr_subscribe(1) <sr_subscribe.1.rst>`_  
 
 
 SEE ALSO
 --------
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - Selectively Download files.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - Selectively Download files.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
 `http://metpx.sf.net/ <http://metpx.sf.net/>`_ - sr_report is a component of MetPX-Sarracenia, the AMQP based data pump.

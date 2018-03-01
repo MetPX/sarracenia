@@ -26,7 +26,7 @@ Building From Source
 Sundew
 ~~~~~~
 
-Please refer to `Sundew developer guide <DevGuide.html>`_ for instructions on
+Please refer to `Sundew developer guide <DevGuide.rst>`_ for instructions on
 how to build *Metpx-Sundew*. Currently internal installations are done, one at
 a time, from source. Development is done on the trunk release. When we install
 operationally, the process consists of creating a branch, and running the branch
@@ -43,7 +43,7 @@ faster to get some collaboration going.
 Sarracenia
 ~~~~~~~~~~
 
-Please refer to `Sarracenia developer guide <Dev.html>`_ for instructions on building *Metpx-Sarracenia* from source.
+Please refer to `Sarracenia developer guide <Dev.rst>`_ for instructions on building *Metpx-Sarracenia* from source.
 
 Sundew Binaries
 ---------------
@@ -53,4 +53,4 @@ MetPx-Sundew is only available for download from the `sundew section  <https://s
 Sarracenia Binaries
 -------------------
 
-Please refer to `Sarracenia Installation Guide <Install.html>`_ for instructions on how to download and install *Metpx-Sarracenia* binaries. 
+Please refer to `Sarracenia Installation Guide <Install.rst>`_ for instructions on how to download and install *Metpx-Sarracenia* binaries. 

@@ -19,7 +19,7 @@ Building From Source
 --------------------
 
 
-Please refer to `Sundew developer guide <DevGuide.html>`_ for instructions on how to build *Metpx-Sundew*.
+Please refer to `Sundew developer guide <DevGuide.rst>`_ for instructions on how to build *Metpx-Sundew*.
 Currently internal installations are done, one at a time, from source.
 Development is done on the trunk release.  When we install operationally, the process consists
 of creating a branch, and running the branch on a staging system, and then implementing

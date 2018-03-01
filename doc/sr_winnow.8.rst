@@ -25,9 +25,9 @@ DESCRIPTION
 **sr_winnow** is a program that Subscribes to file notifications, 
 and reposts the notifications, suppressing the redundant ones by comparing their 
 fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
-in the `sr_post(7) <sr_post.7.html>`_ man page.
+in the `sr_post(7) <sr_post.7.rst>`_ man page.
 
-**sr_winnow** is an `sr_subscribe(1) <sr_subscribe.1.html>`_ with the following options forced::
+**sr_winnow** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_ with the following options forced::
 
    no-download True  
    suppress_duplicates on
@@ -41,8 +41,8 @@ it looks up its **sum** in its cache.  if it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_winnow** can be used to trim messages from `sr_post(1) <sr_post.1.html>`_,
-`sr_poll(1) <sr_poll.1.html>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc... It is 
+**sr_winnow** can be used to trim messages from `sr_post(1) <sr_post.1.rst>`_,
+`sr_poll(1) <sr_poll.1.rst>`_  or `sr_watch(1) <sr_watch.1.html>`_  etc... It is 
 used when there are multiple sources of the same data, so that clients only download the
 source data once, from the first source that posted it.
 
@@ -63,11 +63,11 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by the
-`sr_subscribe(1) <sr_subscribe.1.html>`_  page which should be read first.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
-See `sr_subscribe(1) <sr_subscribe.1.html>`_  for more details.
+See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
 
  
 DEPRECATED
@@ -79,16 +79,16 @@ Now just scans all interfaces.
 SEE ALSO
 ========
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.html>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
-`dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+`dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.

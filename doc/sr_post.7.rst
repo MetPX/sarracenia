@@ -512,18 +512,18 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 ========
 
-`sr_report(7) <sr_report.7.html>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_pulse(7) <sr_pulse.7.html>`_ - The format of pulse messages.
+`sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
 
-`sr_report(1) <sr_report.1.html>`_ - process report messages.
+`sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.html>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_sarra(1) <sr_sarra.1.html>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.html>`_ - the download client.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.html>`_ - the directory watching daemon.
+`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
-tree `dd_subscribe(1) <dd_subscribe.1.html>`_ - the http-only download client.
+tree `dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.
