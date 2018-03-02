@@ -346,7 +346,282 @@ class sr_proto():
 class sr_transport():
 
     def __init__(self) :
-        pass
+        self.cdir   = None
+        self.pclass = None
+        self.proto  = None
+        self.scheme = None
+
+    def close(self) :
+        self.logger.debug("%s_transport close" % self.scheme)
+
+        try    : self.proto.close()
+        except : pass
+
+        self.cdir  = None
+        self.proto = None
+
+    # generalized download...
+    def download( self, parent ):
+        self.logger = parent.logger
+        self.parent = parent
+        msg         = parent.msg
+        self.logger.debug("%s_transport download" % self.scheme)
+
+        token       = msg.relpath.split('/')
+        cdir        = '/'.join(token[:-1])
+        remote_file = token[-1]
+        urlstr      = msg.baseurl + '/' + msg.relpath
+        new_lock    = ''
+
+        new_dir     = msg.new_dir
+        new_file    = msg.new_file
+
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != new_dir:
+           os.chdir(new_dir)
+
+        try :
+                parent.destination = msg.baseurl
+
+                proto = self.proto
+                if proto== None or not proto.check_is_connected() :
+                   self.logger.debug("%s_transport download connects" % self.scheme)
+                   proto = self.pclass(parent)
+                   ok = proto.connect()
+                   if not ok : return False
+                   self.proto = proto
+
+                # for generalization purpose
+                if not hasattr(proto,'seek') and msg.partflg == 'i':
+                   self.logger.error("%s, inplace part file not supported" % self.scheme)
+                   msg.report_publish(499,'%s does not support partitioned file transfers' % self.scheme)
+                   return False
+                
+                cwd = None
+                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
+                if cwd != cdir :
+                   self.logger.debug("%s_transport download cd to %s" % (self.scheme,cdir))
+                   proto.cd(cdir)
+    
+                remote_offset = 0
+                if  msg.partflg == 'i': remote_offset = msg.offset
+    
+                str_range = ''
+                if msg.partflg == 'i' :
+                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+msg.length-1)
+    
+                #download file
+    
+                self.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
+                    (urlstr,str_range,new_file,msg.local_offset,msg.local_offset+msg.length-1))
+    
+                # FIXME  locking for i parts in temporary file ... should stay lock
+                # and file_reassemble... take into account the locking
+
+                proto.set_sumalgo(msg.sumalgo)
+
+                if parent.inflight == None or msg.partflg == 'i' :
+                   proto.get(remote_file,new_file,remote_offset,msg.local_offset,msg.length)
+
+                elif parent.inflight == '.' :
+                   new_lock = '.' + new_file
+                   proto.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                   if os.path.isfile(new_file) : os.remove(new_file)
+                   os.rename(new_lock, new_file)
+                      
+                elif parent.inflight[0] == '.' :
+                   new_lock  = new_file + parent.inflight
+                   proto.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                   if os.path.isfile(new_file) : os.remove(new_file)
+                   os.rename(new_lock, new_file)
+
+                msg.onfly_checksum = proto.checksum
+
+                # fix permission 
+
+                self.set_local_file_attributes(new_file,msg)
+
+                # fix message if no partflg (means file size unknown until now)
+
+                if msg.partflg == None:
+                   msg.set_parts(partflg='1',chunksize=proto.fpos)
+    
+                msg.report_publish(201,'Downloaded')
+    
+                if parent.delete and hasattr(proto,'delete') :
+                   try   :
+                           proto.delete(remote_file)
+                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
+                   except: msg.logger.error('unable to delete remote file %s' % remote_file)
+    
+                return True
+                
+        except:
+                #closing on problem
+                try    : self.close()
+                except : pass
+    
+                (stype, svalue, tb) = sys.exc_info()
+                msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
+                msg.report_publish(499,'%s download failed' % self.scheme)
+                if os.path.isfile(new_lock) : os.remove(new_lock)
+ 
+                return False
+
+        #closing on problem
+        try    : self.close()
+        except : pass
+    
+        msg.report_publish(498,'%s download failed' % self.scheme)
+    
+        return False
+
+    # generalized send...
+    def send( self, parent ):
+        self.logger = parent.logger
+        self.parent = parent
+        msg         = parent.msg
+        self.logger.debug("%s_transport send" % self.scheme)
+
+        local_file = parent.local_path
+        new_dir    = msg.new_dir
+        new_file   = msg.new_file
+    
+        try :
+
+                proto = self.proto
+                if proto == None or not proto.check_is_connected() :
+                   self.logger.debug("%s_transport send connects" % self.scheme)
+                   proto = self.pclass(parent)
+                   ok = proto.connect()
+                   if not ok : return False
+                   self.proto = proto
+                   self.cdir = None
+
+                #=================================
+                # if parts, check that the protol supports it
+                #=================================
+
+                if not hasattr(proto,'seek') and msg.partflg == 'i':
+                   self.logger.error("%s, inplace part file not supported" % self.scheme)
+                   msg.report_publish(499,'%s does not support partitioned file transfers' % self.scheme)
+                   return False
+
+                #=================================
+                # if umask, check that the protocol supports it ... 
+                #=================================
+
+                inflight = parent.inflight
+                if not hasattr(proto,'umask') and parent.inflight == 'umask' :
+                   self.logger.warning("%s, umask not supported" % self.scheme)
+                   inflight = None
+
+                #=================================
+                # if renaming used, check that the protocol supports it ... 
+                #=================================
+
+                if not hasattr(proto,'rename') and parent.inflight.startswith('.') :
+                   self.logger.warning("%s, rename not supported" % self.scheme)
+                   inflight = None
+
+                #=================================
+                # remote set to new_dir
+                #=================================
+                
+                cwd = None
+                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
+                if cwd != new_dir :
+                   self.logger.debug("%s_transport send cd to %s" % (self.scheme,new_dir))
+                   proto.cd_forced(775,new_dir)
+
+                #=================================
+                # delete event
+                #=================================
+
+                if msg.sumflg == 'R' :
+                   if hasattr(proto,'delete') :
+                      msg.logger.debug("message is to remove %s" % new_file)
+                      proto.delete(new_file)
+                      msg.report_publish(205,'Reset Content : deleted')
+                      return True
+                   self.logger.error("%s, delete not supported" % self.scheme)
+                   msg.report_publish(499,'%s does not support delete' % self.scheme)
+                   return False
+
+                #=================================
+                # link event
+                #=================================
+
+                if msg.sumflg == 'L' :
+                   if hasattr(proto,'symlink') :
+                      msg.logger.debug("message is to link %s to: %s" % ( new_file, msg.headers['link'] ))
+                      proto.symlink(msg.headers['link'],new_file)
+                      msg.report_publish(205,'Reset Content : linked')
+                      return True
+                   self.logger.error("%s, symlink not supported" % self.scheme)
+                   msg.report_publish(499,'%s does not support symlink' % self.scheme)
+                   return False
+
+                #=================================
+                # send event
+                #=================================
+
+                offset = 0
+                if  msg.partflg == 'i': offset = msg.offset
+    
+                str_range = ''
+                if msg.partflg == 'i' :
+                   str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
+    
+                #upload file
+    
+                if inflight == None or msg.partflg == 'i' :
+                   proto.put(local_file, new_file, offset, offset, msg.length)
+                elif inflight == '.' :
+                   new_lock = '.'  + new_file
+                   proto.put(local_file, new_lock )
+                   proto.rename(new_lock, new_file)
+                elif inflight[0] == '.' :
+                   new_lock = new_file + inflight
+                   proto.put(local_file, new_lock )
+                   proto.rename(new_lock, new_file)
+                elif inflight == 'umask' :
+                   proto.umask()
+                   proto.put(local_file, new_file)
+
+                # fix permission 
+
+                self.set_remote_file_attributes(proto,new_file,msg)
+    
+                msg.logger.info('Sent: %s %s into %s/%s %d-%d' % 
+                    (parent.local_file,str_range,new_dir,new_file,offset,offset+msg.length-1))
+
+                if parent.reportback :
+                   msg.report_publish(201,'Delivered')
+    
+                return True
+                
+        except:
+                #closing on problem
+                try    : self.close()
+                except : pass
+    
+                (stype, svalue, tb) = sys.exc_info()
+                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (msg.new_dir+'/'+msg.new_file, stype ,svalue))
+                msg.report_publish(497,'%s delivery failed' % self.scheme)
+    
+                return False
+    
+        #closing on problem
+        try    : self.close()
+        except : pass
+
+        msg.report_publish(496,'%s delivery failed' % self.scheme)
+    
+        return False
+
 
     # set_local_file_attributes
     def set_local_file_attributes(self,local_file, msg) :
@@ -371,7 +646,7 @@ class sr_transport():
            os.utime( local_file, (atime, mtime))
 
     # set_remote_file_attributes
-    def set_remote_file_attributes(self,proto, remote_file, msg) :
+    def set_remote_file_attributes(self, proto, remote_file, msg) :
         #self.logger.debug("sr_transport set_remote_file_attributes %s" % remote_file)
 
         hdr  = msg.headers
