@@ -180,7 +180,7 @@ def self_test():
     # configure sending
     tr = ftp_transport()
     cfg.local_file    = "bbb"
-    cfg.local_path    = "./bbb"
+    msg.relpath       = "./bbb"
     msg.new_dir       = "tztz"
     msg.new_file      = "ddd"
     cfg.remote_file   = "ddd"
