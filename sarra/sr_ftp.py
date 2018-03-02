@@ -252,7 +252,7 @@ class sr_ftp(sr_proto):
         alarm_cancel()
 
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0, filesize=None):
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ):
         self.logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
 
         # open local file
@@ -334,7 +334,7 @@ class sr_ftp(sr_proto):
         alarm_cancel()
 
     # put
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0, filesize=None):
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
         self.logger.debug("sr_ftp put %s %s" % (local_file,remote_file))
 
         # open 
