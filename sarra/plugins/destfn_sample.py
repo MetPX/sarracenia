@@ -13,7 +13,7 @@ class Transformer():
       def __init__(self,parent):
           pass
       def perform(self,parent):
-          parent.new_file = "renamed_" + parent.new_file
+          parent.msg.new_file = "renamed_" + parent.msg.new_file
           # return true/false   but ignored at this point
           # the new_file is modified or not... that is it
           return True

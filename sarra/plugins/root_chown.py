@@ -64,8 +64,8 @@ class ROOT_CHOWN(object):
 
        logger.debug("ROOT_CHOWN on_post")
 
-       new_dir  = parent.new_dir
-       new_file = parent.new_file
+       new_dir  = parent.msg.new_dir
+       new_file = parent.msg.new_file
 
        # if remove ...
 
@@ -128,7 +128,7 @@ class ROOT_CHOWN(object):
 
        # try getting/setting ownership info to local_file
 
-       local_file = parent.new_dir + os.sep + parent.new_file
+       local_file = parent.msg.new_dir + os.sep + parent.msg.new_file
 
        try   :
                parts    = ug.split(':')

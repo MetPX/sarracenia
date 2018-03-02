@@ -17,7 +17,7 @@ class Renamer(object):
           import time
 
           datestr = time.strftime('%H',time.localtime())   # pick the hour.
-          parent.new_dir += '/' + datestr    # append the hourly element to the directory tree.
+          parent.msg.new_dir += '/' + datestr    # append the hourly element to the directory tree.
 
           # insert the additional hourly directory into the path of the file to be written.
           new_fname = parent.msg.new_file.split('/')

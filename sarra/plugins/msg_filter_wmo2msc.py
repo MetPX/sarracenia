@@ -309,8 +309,8 @@ else:
     class TestParent(object):
     
         def __init__(self,fname):
-            self.new_file = fname + os.sep + 'hoho'
             self.msg= TestMessage(fname,'/tmp/dest/')
+            self.msg.new_file = fname + os.sep + 'hoho'
             self.logger=TestLogger()
             pass
     

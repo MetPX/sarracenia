@@ -56,14 +56,14 @@ class Log(object):
                 if parent.msg.headers['parts'][0] == '1' : return True
         except: pass
 
-        parent.logger.info("log part downloaded to: %s/%s" % ( parent.new_dir, parent.msg.new_file) )
+        parent.logger.info("log part downloaded to: %s/%s" % ( parent.msg.new_dir, parent.msg.new_file) )
         return True
 
     def on_file(self,parent):
         """ When the reception of a file has been completed, trigger followup action.
         """
 
-        parent.logger.info("log file downloaded to: %s/%s" % ( parent.new_dir, parent.msg.new_file) )
+        parent.logger.info("log file downloaded to: %s/%s" % ( parent.msg.new_dir, parent.msg.new_file) )
         return True
 
     def on_post(self,parent):

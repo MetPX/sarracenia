@@ -21,16 +21,18 @@ class Renamer(object):
       def on_message(self,parent):
           import time
 
-          if not 'ccstn.dat' in parent.new_file : return True
+          if not 'ccstn.dat' in parent.msg.new_file : return True
 
           # build new name
-          local_file = parent.new_file
+          local_file = parent.msg.new_file
           datestr    = time.strftime('%Y%m%d%H%M',time.localtime())
           local_file = local_file.replace('ccstn.dat', 'jicc.' + datestr + '.ccstn.dat')
 
           # set in message (and headers for logging)
-          parent.new_file        = local_file
-          parent.msg.headers['rename'] = local_file
+          parent.msg.new_file          = local_file
+
+          # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
+          #parent.msg.headers['rename'] = local_file
 
           # on garde tous les messages
           return True

@@ -28,7 +28,7 @@ class Transformer():
           for p in parent.msg_replace_new_dir :
               ( b, a ) = p.split(",") 
               parent.logger.info("msg_replace_new_dir is %s " % p )
-              parent.new_dir     = parent.new_dir.replace(b, a)
+              parent.msg.new_dir = parent.msg.new_dir.replace(b, a)
 
           return True
 

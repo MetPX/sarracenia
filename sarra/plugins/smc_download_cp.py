@@ -40,7 +40,7 @@ class CP_DOWNLOAD(object):
 
       import subprocess
 
-      abs_new_file = parent.new_dir + '/' + parent.new_file
+      abs_new_file = parent.msg.new_dir + '/' + parent.msg.new_file
 
       # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
 
