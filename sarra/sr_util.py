@@ -393,7 +393,10 @@ class sr_transport():
                    if not ok : return False
                    self.proto = proto
 
-                # for generalization purpose
+                #=================================
+                # if parts, check that the protol supports it
+                #=================================
+
                 if not hasattr(proto,'seek') and msg.partflg == 'i':
                    self.logger.error("%s, inplace part file not supported" % self.scheme)
                    msg.report_publish(499,'%s does not support partitioned file transfers' % self.scheme)
@@ -485,7 +488,7 @@ class sr_transport():
         msg         = parent.msg
         self.logger.debug("%s_transport send" % self.scheme)
 
-        local_file = parent.local_path
+        local_file = msg.relpath
         new_dir    = msg.new_dir
         new_file   = msg.new_file
     

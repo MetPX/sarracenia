@@ -196,7 +196,7 @@ class sr_sender(sr_subscribe):
 
     def __do_send__(self):
 
-        self.logger.debug("sending/copying %s to %s " % ( self.local_path, self.new_dir ) )
+        self.logger.debug("sending/copying %s to %s " % ( self.msg.relpath, self.msg.new_dir ) )
 
         # try registered do_send first... might overload defaults
 
@@ -293,8 +293,6 @@ class sr_sender(sr_subscribe):
     def doit_send(self,parent=None):
         self.logger.debug("doit_send with %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
-        self.local_path = self.msg.relpath
-
         # the code of msg_2localfile could be put here...
 
         #=================================
@@ -327,9 +325,6 @@ class sr_sender(sr_subscribe):
            self.logger.error("The file to send is not found: %s" % self.msg.relpath)
            self.consumer.msg_to_retry()
            return False
-
-        self.local_path = self.msg.relpath
-        self.local_file = os.path.basename(self.msg.relpath)
 
         #=================================
         # proceed to send :  has to work
