@@ -246,7 +246,7 @@ will stop there and another message will be consumed from the broker.
 Popular Variables in Plugins
 -----------------------------
 
-A popular variable in on_file and on_part plugins is: *parent.new_file*,
+A popular variable in on_file and on_part plugins is: *parent.msg.new_file*,
 giving the file name the downloaded product has been written to.  When the
 same variable is modified in an on_message plugin, it changes the name of
 the file to be downloaded. Similarly Another oft used variable is 
@@ -329,7 +329,7 @@ provided with sarracenia::
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
       def on_file(self, parent):
-          self.rxpipe.write( parent.new_file + "\n" )
+          self.rxpipe.write( parent.msg.new_file + "\n" )
           self.rxpipe.flush()
           return None
 
@@ -470,7 +470,6 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'sumflg': 'd',
   'user_log_dir': '/local/home/peter/.cache/sarra/log',
   'topic_prefix': 'v02.post',
-  'new_file': 'SACN62_CYVT_142200___11878',
   'on_post': None,
   'do_poll': None,
   'message_ttl': None,
@@ -518,7 +517,6 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'credentials': <sarra.sr_credentials.sr_credentials object at 0x7f4fcdc911d0>,
   'on_message': None,
   'currentFileOption': None,
-  'new_dir': '/local/home/peter/test/dd/bulletins/alphanumeric/20160114/SA/CYVT/22',
   'user_config': 'dd.conf',
   'lpath': '/local/home/peter/.cache/sarra/log/sr_subscribe_dd_0001.log',
   'bufsize': 8192,

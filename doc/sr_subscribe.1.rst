@@ -1389,11 +1389,11 @@ The only argument the script receives is **parent**, which is a data
 structure containing all the settings, as **parent.<setting>**, and
 the content of the message itself as **parent.msg** and the headers
 are available as **parent.msg[ <header> ]**.  The path to write a file
-to is available as There is also **parent.new_dir** / **parent.new_file**
+to is available as There is also **parent.msg.new_dir** / **parent.msg.new_file**
 Some other available variables::
 
-  parent.new_file         :  name of the file to write.
-  parent.new_dir          :  name of the directory in which to write the file.
+  parent.msg.new_file     :  name of the file to write.
+  parent.msg.new_dir      :  name of the directory in which to write the file.
   parent.msg.local_offset :  offset position in the local file
   parent.msg.offset       :  offset position of the remote file
   parent.msg.length       :  length of file or part
@@ -1675,7 +1675,7 @@ For compatibility with sundew, there are some additional delivery options which 
 This option defines a script to be run when everything is ready
 for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.new_file**  will change the name of the file written locally.
+modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
 **filename <keyword> (default:WHATFN)**
 
