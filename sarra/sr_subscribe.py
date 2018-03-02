@@ -242,7 +242,7 @@ class sr_subscribe(sr_instances):
     def __do_download__(self):
 
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
-                         (self.msg.urlstr, self.msg.url.scheme, self.new_file))
+                         (self.msg.urlstr, self.msg.url.scheme, self.msg.new_file))
 
         # try registered do_download first... might overload defaults
 
@@ -522,58 +522,13 @@ class sr_subscribe(sr_instances):
     def __on_file__(self):
         #self.logger.debug("%s __on_file__" % self.program_name)
 
-        # keep current value of these variables
-
-        val_new_dir     = self.new_dir
-        val_new_file    = self.new_file
-        val_new_baseurl = self.new_baseurl
-        val_new_relpath = self.new_relpath
-
         for plugin in self.on_file_list :
 
-           # invoke user defined on_file when provided
-
-           self.local_file = self.new_dir + '/' + self.new_file  # FIXME: remove in 2018, once all plugins are converted.
-           self.msg.local_file = self.local_file
-           saved_file = self.local_file
-
-           self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
-           self.msg.local_dir = self.new_dir
-           saved_dir = self.new_dir
-
-           # sender
-           self.remote_file = self.new_file #FIXME: remove in 2018
+           self.__plugin_backward_compat_setup__()
 
            if not plugin(self): return False
 
-           if self.msg.local_file != saved_file :
-              self.logger.warning("on_file plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
-              self.new_file = os.path.basename(self.msg.local_file)
-              self.new_dir  = os.path.dirname( self.msg.local_file)
-
-           if self.msg.local_dir != saved_dir :
-              self.logger.warning("on_file plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
-              self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
-              self.new_dir = self.msg.local_dir
-
-           # sender
-           if self.remote_file != self.new_file : #FIXME: remove in 2018
-              self.logger.warning("on_file plugin should be updated: replace parent.remote_file, by parent.new_file")
-              self.new_file = self.remote_file
-
-           # this code should not be removed ... necessary when the plugin changed something
-           # if differences with new_dir and/or new_file...
-           # reset new_relpath if it stayed the same
-
-           if self.new_dir != val_new_dir or self.new_file != val_new_file :
-              if self.new_relpath == val_new_relpath :
-                 relpath = self.new_dir + '/' + self.new_file
-                 if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
-                 self.new_relpath = relpath
-              # to do it once (per plugin changes)
-              val_new_dir     = self.new_dir
-              val_new_file    = self.new_file
-              val_new_relpath = self.new_relpath
+           self.__plugin_backward_compat_repare__()
 
         return True
 
@@ -583,66 +538,14 @@ class sr_subscribe(sr_instances):
 
     def __on_message__(self):
 
-        # keep current value of these variables
-
-        val_new_dir     = self.new_dir
-        val_new_file    = self.new_file
-        val_new_baseurl = self.new_baseurl
-        val_new_relpath = self.new_relpath
-
-        # invoke user defined on_message when provided
-
-        self.local_file = self.new_dir + '/' + self.new_file  # FIXME: remove in 2018, once all plugins are converted.
-        self.msg.local_file = self.local_file
-        saved_file = self.local_file
-
-        self.local_dir = self.new_dir     # FIXME: remove in 2018, once all plugins are converted.
-        self.msg.local_dir = self.new_dir
-        saved_dir = self.new_dir
-
-        if not hasattr(self,'new_url') :
-           self.new_url = self.new_baseurl + '/' + self.new_relpath  # FIXME: remove  in 2018, new_url replaced by new_baseurl and new_relpath
-           self.new_url = urllib.parse.urlparse(self.new_url)
-        saved_url    = self.new_url.geturl()
-
-        # sender
-        self.remote_file = self.new_file #FIXME: remove in 2018
-
-
         for plugin in self.on_message_list :
+
+           self.__plugin_backward_compat_setup__()
 
            if not plugin(self): return False
 
-           if self.msg.local_file != saved_file :
-              self.logger.warning("on_message plugins 2 should replace parent.msg.local_file, by parent.new_dir and parent.new_file" )
-              self.new_file = os.path.basename(self.local_file)
-              self.new_dir  = os.path.dirname( self.local_file)
-
-           if self.msg.local_dir != saved_dir :
-              self.logger.warning("on_message plugins 2 should replace parent.msg.local_dir, by parent.new_dir" )
-              self.logger.warning("parent.msg.local_dir=%s, by parent.new_dir=%s" % (self.msg.local_dir, self.new_dir) )
-              self.new_dir = self.msg.local_dir
-
-           urlstr = self.new_url.geturl()
-           if urlstr != saved_url :
-              self.logger.warning("on_message plugins 2 should replace self.new_url, by parent.new_baseurl and parent.new_relpath" )
-              self.new_relpath = self.new_url.path
-              if not self.new_baseurl in urlstr:
-                 self.new_baseurl = urlstr.replace(self.new_relpath,'')
+           self.__plugin_backward_compat_repare__()
                
-           # sender
-           if self.remote_file != val_new_file : #FIXME: remove in 2018
-              self.logger.warning("on_message plugin should be updated: replace parent.remote_file, by parent.new_file")
-              self.new_file = self.remote_file
-
-           # if differences with new_dir/new_file... reset new_relpath
-
-           if self.new_dir != val_new_dir or self.new_file != val_new_file :
-              if self.new_relpath == val_new_relpath :
-                 relpath = self.new_dir + '/' + self.new_file
-                 if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
-                 self.new_relpath = relpath
-
         return True
 
 
@@ -653,15 +556,15 @@ class sr_subscribe(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
-        self.msg.local_file = self.new_file # FIXME, remove in 2018
-
         # invoke on_post when provided
 
         for plugin in self.on_post_list:
+
+           self.__plugin_backward_compat_setup__()
+
            if not plugin(self): return False
-           if ( self.msg.local_file != self.new_file ): # FIXME, remove in 2018
-                self.logger.warning("on_post plugins should replace self.msg.local_file, by self.new_file" )
-                self.new_file = self.msg.local_file
+
+           self.__plugin_backward_compat_repare__()
 
         ok = True
 
@@ -693,6 +596,130 @@ class sr_subscribe(sr_instances):
         self.mirror         = False
 
         self.accept_unmatch  = False
+
+    # =============
+    # __plugin_backward_compat_repare__
+    # =============
+
+    def __plugin_backward_compat_repare__(self):
+
+        # 2018 warnings
+
+        if self.local_dir      != self.pbc_local_dir  :
+           self.logger.warning("plugin modified parent.local_dir but should work with parent.msg.new_dir" )
+
+        if self.local_file     != self.pbc_local_file :
+           self.logger.warning("plugin modified parent.local_file but should work with parent.msg.new_dir and parent.msg.new_file" )
+
+        if self.msg.local_dir  != self.pbc_local_dir  :
+           self.logger.warning("plugin modified parent.msg.local_dir but should work with parent.msg.new_dir" )
+
+        if self.msg.local_file != self.pbc_local_file :
+           self.logger.warning("plugin modified parent.local_file but should work with parent.msg.new_dir and parent.msg.new_file" )
+
+        if self.remote_file    != self.pbc_remote_file:
+           self.logger.warning("plugin modified parent.remote_file but should work with parent.msg.new_file " )
+
+        if self.new_url.geturl() != self.pbc_new_url.geturl() :
+           self.logger.warning("plugin modified parent.new_url but should work with parent.msg.new_baseurl and parent.msg.new_relpath")
+
+        # 2019 warnings
+
+        if self.new_dir     != self.pbc_new_dir:
+           self.logger.warning("plugin modified parent.new_dir but should work with parent.msg.new_dir")
+
+        if self.new_file    != self.pbc_new_file:
+           self.logger.warning("plugin modified parent.new_file but should work with parent.msg.new_file")
+
+        if self.new_baseurl != self.pbc_new_baseurl:
+           self.logger.warning("plugin modified parent.new_baseurl but should work with parent.msg.new_baseurl")
+
+        if self.new_relpath != self.pbc_new_relpath:
+           self.logger.warning("plugin modified parent.new_relpath but should work with parent.msg.new_relpath")
+
+
+        # 2018 repairs
+
+        if self.local_dir      != self.pbc_local_dir  :
+           self.msg.new_dir = self.local_dir
+
+        if self.local_file     != self.pbc_local_file :
+           self.msg.new_file = os.path.basename(self.local_file)
+           self.msg.new_dir  = os.path.dirname( self.local_file)
+
+        if self.msg.local_dir  != self.pbc_local_dir  :
+           self.msg.new_dir = self.msg.local_dir
+
+        if self.msg.local_file != self.pbc_local_file :
+           self.msg.new_file = os.path.basename(self.msg.local_file)
+           self.msg.new_dir  = os.path.dirname( self.msg.local_file)
+
+        if self.remote_file    != self.pbc_remote_file:
+           self.msg.new_file = self.remote_file
+
+        if self.new_url.geturl() != self.pbc_new_url.geturl() :
+           urlstr = self.new_url.geturl()
+           self.msg.new_relpath = self.new_url.path
+           if not self.new_baseurl in urlstr:
+              self.msg.new_baseurl = urlstr.replace(self.msg.new_relpath,'')
+
+        # 2019 repairs
+
+        if self.new_dir     != self.pbc_new_dir:
+           self.msg.new_dir  = self.new_dir
+
+        if self.new_file    != self.pbc_new_file:
+           self.msg.new_file = self.new_file
+
+        if self.new_baseurl != self.pbc_new_baseurl:
+           self.msg.new_baseurl = self.new_baseurl
+
+        if self.new_relpath != self.pbc_new_relpath:
+           self.msg.new_relpath = self.new_relpath
+
+        # value changes derives to other changes
+
+        if self.msg.new_dir  != self.pbc_new_dir or \
+           self.msg.new_file != self.pbc_new_file   :
+           relpath = self.msg.new_dir + '/' + self.msg.new_file
+           if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
+           self.msg.new_relpath  = relpath
+
+
+    # =============
+    # __plugin_backward_compat_setup__
+    # =============
+
+    def __plugin_backward_compat_setup__(self):
+
+        # saved values
+
+        self.pbc_new_dir     = self.msg.new_dir
+        self.pbc_new_file    = self.msg.new_file
+        self.pbc_new_baseurl = self.msg.new_baseurl
+        self.pbc_new_relpath = self.msg.new_relpath
+        self.pbc_local_dir   = self.msg.new_dir
+        self.pbc_local_file  = self.msg.new_dir + os.sep + self.msg.new_file
+        self.pbc_remote_file = self.msg.new_file
+
+        self.pbc_new_url     = urllib.parse.urlparse(self.msg.new_baseurl + '/' + self.msg.new_relpath)
+
+        # 2018 plugin proposed old values
+
+        self.local_dir       = self.pbc_local_dir 
+        self.local_file      = self.pbc_local_file
+        self.msg.local_dir   = self.pbc_local_dir
+        self.msg.local_file  = self.pbc_local_file
+        self.remote_file     = self.pbc_remote_file
+
+        self.new_url         = self.pbc_new_url
+
+        # 2019 plugin proposed old values
+
+        self.new_dir         = self.pbc_new_dir
+        self.new_file        = self.pbc_new_file
+        self.new_baseurl     = self.pbc_new_baseurl
+        self.new_relpath     = self.pbc_new_relpath
 
     # =============
     # process message  
@@ -861,19 +888,19 @@ class sr_subscribe(sr_instances):
 
         # ok what we have found
 
-        #self.logger.debug("W new_dir     = %s" % self.new_dir)
-        #self.logger.debug("W new_file    = %s" % self.new_file)
-        #self.logger.debug("W new_baseurl = %s" % self.new_baseurl)
-        #self.logger.debug("W new_relpath = %s" % self.new_relpath)
+        #self.logger.debug("W new_dir     = %s" % self.msg.new_dir)
+        #self.logger.debug("W new_file    = %s" % self.msg.new_file)
+        #self.logger.debug("W new_baseurl = %s" % self.msg.new_baseurl)
+        #self.logger.debug("W new_relpath = %s" % self.msg.new_relpath)
 
         # set the directory of the file we try to determine
 
         found = True
-        try   : os.chdir(self.new_dir)
+        try   : os.chdir(self.msg.new_dir)
         except: found = False
 
         if not found:
-           self.logger.warning("directory containing old file (%s) to be renamed is not present, so download required." % self.new_dir)
+           self.logger.warning("directory containing old file (%s) to be renamed is not present, so download required." % self.msg.new_dir)
            pass
 
         # if it is for 'newname' verify if the files are the same
@@ -882,23 +909,23 @@ class sr_subscribe(sr_instances):
     
            if not self.overwrite and self.msg.partstr and self.msg.content_should_not_be_downloaded() :
               if self.reportback : self.msg.report_publish(304,'Not modified2')
-              #self.logger.warning("not modified %s" % self.new_file)
-              self.new_dir  = None
-              self.new_file = None
+              #self.logger.warning("not modified %s" % self.msg.new_file)
+              self.msg.new_dir  = None
+              self.msg.new_file = None
 
         # if it is for 'oldname' verify if the file exists
 
         if found and name == 'oldname' :
     
-           if not os.path.exists(self.new_file):
-              self.logger.info("file to move %s not present in destination tree (download needed.)" % self.new_file)
-              self.new_dir  = None
-              self.new_file = None
+           if not os.path.exists(self.msg.new_file):
+              self.logger.info("file to move %s not present in destination tree (download needed.)" % self.msg.new_file)
+              self.msg.new_dir  = None
+              self.msg.new_file = None
 
         # prepare results
-        tdir  = self.new_dir
-        tfile = self.new_file
-        trelp = self.new_relpath
+        tdir  = self.msg.new_dir
+        tfile = self.msg.new_file
+        trelp = self.msg.new_relpath
 
         # restore original message and settings
 
@@ -908,7 +935,7 @@ class sr_subscribe(sr_instances):
 
         ok = self.__on_message__()
 
-        try   : os.chdir(self.new_dir)
+        try   : os.chdir(self.msg.new_dir)
         except: pass
 
         # return results
@@ -947,7 +974,7 @@ class sr_subscribe(sr_instances):
            newname = self.msg.headers
 
            # it means that the message notice contains info about oldpath
-           oldpath = self.new_dir + '/' + self.new_file
+           oldpath = self.msg.new_dir + '/' + self.msg.new_file
 
            # we can do something if the oldpath exists
            if os.path.exists(oldpath) : 
@@ -1003,7 +1030,7 @@ class sr_subscribe(sr_instances):
            oldname = self.msg.headers
 
            # set 'move to' file
-           newpath = self.new_dir + '/' + self.new_file
+           newpath = self.msg.new_dir + '/' + self.msg.new_file
 
            # determine oldfile infos 
 
@@ -1022,8 +1049,8 @@ class sr_subscribe(sr_instances):
 
               if os.path.exists(oldpath) : 
 
-                 if not os.path.isdir(self.new_dir):
-                    try   : os.makedirs(self.new_dir,0o775,True)
+                 if not os.path.isdir(self.msg.new_dir):
+                    try   : os.makedirs(self.msg.new_dir,0o775,True)
                     except: pass
                     #MG FIXME : except: return False  maybe ?
 
@@ -1047,8 +1074,8 @@ class sr_subscribe(sr_instances):
                           need_download = False
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
-                          self.msg.set_topic('v02.post',self.new_relpath)
-                          self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+                          self.msg.set_topic('v02.post',self.msg.new_relpath)
+                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
                           self.msg.headers['oldname'] = oldname
                           if self.post_broker :
                              ok = self.__on_post__()
@@ -1072,14 +1099,14 @@ class sr_subscribe(sr_instances):
 
         if self.msg.sumflg.startswith('R') : 
 
-           self.logger.debug("message is to remove %s" % self.new_file)
+           self.logger.debug("message is to remove %s" % self.msg.new_file)
 
            if not 'delete' in self.events and not 'newname' in self.msg.headers : 
-              self.logger.info("message to remove %s ignored (events setting)" % self.new_file)
+              self.logger.info("message to remove %s ignored (events setting)" % self.msg.new_file)
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = self.new_dir + os.sep + self.new_file
+           path = self.msg.new_dir + os.sep + self.msg.new_file
 
            try : 
                if os.path.isfile(path) : os.unlink(path)
@@ -1092,8 +1119,8 @@ class sr_subscribe(sr_instances):
                self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
                if self.reportback: self.msg.report_publish(500, 'remove failed')
 
-           self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+           self.msg.set_topic('v02.post',self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
            if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
            if self.post_broker :
               ok = self.__on_post__()
@@ -1113,35 +1140,35 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.sumflg.startswith('L') :
-           self.logger.debug("message is to link %s to %s" % ( self.new_file, self.msg.headers[ 'link' ] ) )
+           self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
            if not 'link' in self.events: 
               self.logger.info("message to link %s to %s ignored (events setting)" %  \
-                                            ( self.new_file, self.msg.headers[ 'link' ] ) )
+                                            ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           if not os.path.isdir(self.new_dir):
-              try   : os.makedirs(self.new_dir,0o775,True)
+           if not os.path.isdir(self.msg.new_dir):
+              try   : os.makedirs(self.msg.new_dir,0o775,True)
               except: pass
 
            ok = True
            try : 
-               path = self.new_dir + os.sep + self.new_file
+               path = self.msg.new_dir + os.sep + self.msg.new_file
 
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
                if os.path.isdir (path) : os.rmdir (path)
                os.symlink( self.msg.headers[ 'link' ], path )
-               self.logger.info("%s symlinked to %s " % (self.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.info("%s symlinked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201,'linked')
            except:
                ok = False
-               self.logger.error("symlink of %s %s failed." % (self.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
            if ok :
-              self.msg.set_topic('v02.post',self.new_relpath)
-              self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+              self.msg.set_topic('v02.post',self.msg.new_relpath)
+              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
               if self.post_broker :
                  ok = self.__on_post__()
                  if ok and self.reportback : self.msg.report_publish(201,'Published')
@@ -1173,10 +1200,10 @@ class sr_subscribe(sr_instances):
               return False
 
         # pass no warning it may already exists
-        try    : os.makedirs(self.new_dir,0o775,True)
+        try    : os.makedirs(self.msg.new_dir,0o775,True)
         except : pass
-        try    : os.chdir(self.new_dir)
-        except : self.logger.error("could not cd to directory %s" % self.new_dir)
+        try    : os.chdir(self.msg.new_dir)
+        except : self.logger.error("could not cd to directory %s" % self.msg.new_dir)
 
         #=================================
         # overwrite False, user asked that if the announced file already exists,
@@ -1185,7 +1212,7 @@ class sr_subscribe(sr_instances):
 
         if not self.overwrite and self.msg.content_should_not_be_downloaded() :
            if self.reportback: self.msg.report_publish(304, 'not modified3')
-           self.logger.debug("file not modified %s " % self.new_file)
+           self.logger.debug("file not modified %s " % self.msg.new_file)
 
 
            # if we are processing an entire file... we are done
@@ -1257,26 +1284,17 @@ class sr_subscribe(sr_instances):
            # got it : call on_part (for all parts, a file being consider
            # a 1 part product... we run on_part in all cases)
 
-           self.msg.local_file = self.new_file # FIXME: remove in 2018
-           saved_file = self.new_file
-
-           self.msg.local_dir = self.new_dir # FIXME: remove in 2018
-           saved_dir = self.new_dir
-
            for plugin in self.on_part_list :
+
+              self.__plugin_backward_compat_setup__()
 
               if not plugin(self):
                  # plugin discarded it ... but the message worked
                  if self.msg.isRetry: self.consumer.msg_worked()
                  return False
 
-              if ( self.msg.local_file != saved_file ): # FIXME: remove in 2018
-                 self.logger.warning("on_part plugins 1 should replace parent.msg.local_file, by parent.new_file" )
-                 self.new_file = self.msg.local_file
+              self.__plugin_backward_compat_repare__()
 
-              if ( self.msg.local_dir != saved_dir ): # FIXME: remove in 2018
-                 self.logger.warning("on_part plugins 1 should replace parent.msg.local_dir, by parent.new_dir" )
-                 self.new_dir = self.msg.local_dir
 
            # running on_file : if it is a file, or 
            # it is a part and we are not running "inplace" (discard True)
@@ -1314,16 +1332,16 @@ class sr_subscribe(sr_instances):
                  #for plugin in self.on_file_list:
                  #    if not plugin(self): return False
 
-                 #    if ( self.msg.local_file != self.new_file ): # FIXME remove in 2018
-                 #       self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.new_file" )
-                 #       self.new_file = self.msg.local_file
+                 #    if ( self.msg.local_file != self.msg.new_file ): # FIXME remove in 2018
+                 #       self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.msg.new_file" )
+                 #       self.msg.new_file = self.msg.local_file
 
            # discard option
 
            if self.discard :
               try    :
-                        os.unlink(self.new_file)
-                        self.logger.debug("Discarded  %s" % self.new_file)
+                        os.unlink(self.msg.new_file)
+                        self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
                         (stype, svalue, tb) = sys.exc_info()
                         self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
@@ -1339,8 +1357,8 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic('v02.post',self.new_relpath)
-        self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+        self.msg.set_topic('v02.post',self.msg.new_relpath)
+        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
         if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
         if self.post_broker :
            ok = self.__on_post__()
@@ -1656,24 +1674,24 @@ class sr_subscribe(sr_instances):
 
         # set the results for the new file (downloading or sending)
 
-        self.new_baseurl = 'file:'
+        self.msg.new_baseurl = 'file:'
 
         # final value
         # NOTE : normpath keeps '/a/b/c' and '//a/b/c' the same
         #        Everywhere else // or /../ are corrected.
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
-        self.new_dir     = os.path.normpath(new_dir)
-        self.new_file    = filename
-        self.new_relpath = os.path.normpath(relpath)
+        self.msg.new_dir     = os.path.normpath(new_dir)
+        self.msg.new_file    = filename
+        self.msg.new_relpath = os.path.normpath(relpath)
 
         if self.post_broker and self.post_base_url :
-           self.new_baseurl = self.post_base_url
+           self.msg.new_baseurl = self.post_base_url
 
-        #self.logger.debug("new_dir     = %s" % self.new_dir)
-        #self.logger.debug("new_file    = %s" % self.new_file)
-        #self.logger.debug("new_baseurl = %s" % self.new_baseurl)
-        #self.logger.debug("new_relpath = %s" % self.new_relpath)
+        #self.logger.debug("new_dir     = %s" % self.msg.new_dir)
+        #self.logger.debug("new_file    = %s" % self.msg.new_file)
+        #self.logger.debug("new_baseurl = %s" % self.msg.new_baseurl)
+        #self.logger.debug("new_relpath = %s" % self.msg.new_relpath)
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )

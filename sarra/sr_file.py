@@ -299,8 +299,8 @@ def file_process( parent ) :
     try:    curdir = os.getcwd()
     except: curdir = None
 
-    if curdir != parent.new_dir:
-       os.chdir(parent.new_dir)
+    if curdir != parent.msg.new_dir:
+       os.chdir(parent.msg.new_dir)
 
     # try link if no inserts
 
@@ -353,8 +353,8 @@ def file_reassemble(parent):
     try:    curdir = os.getcwd()
     except: curdir = None
 
-    if curdir != parent.new_dir:
-       os.chdir(parent.new_dir)
+    if curdir != parent.msg.new_dir:
+       os.chdir(parent.msg.new_dir)
 
     # target file does not exit yet
 

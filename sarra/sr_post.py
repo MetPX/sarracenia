@@ -453,8 +453,8 @@ class sr_post(sr_instances):
         if key != None :
            self.msg.headers[key] = value
            if key == 'newname' and self.post_base_dir :
-              self.new_dir  = os.path.dirname( value)
-              self.new_file = os.path.basename(value)
+              self.msg.new_dir  = os.path.dirname( value)
+              self.msg.new_file = os.path.basename(value)
               self.msg.headers[key] = value.replace(self.post_base_dir, '')
 
         # post message
@@ -711,8 +711,8 @@ class sr_post(sr_instances):
 
     def post_init(self, path, lstat=None, key=None, value=None):
 
-        self.new_dir  = os.path.dirname( path)
-        self.new_file = os.path.basename(path)
+        self.msg.new_dir  = os.path.dirname( path)
+        self.msg.new_file = os.path.basename(path)
 
         # relpath
         self.post_relpath = path

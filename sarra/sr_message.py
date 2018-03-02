@@ -448,11 +448,6 @@ class sr_message():
         self.local_checksum= None
        
         self.inplace       = self.parent.inplace
-        self.new_dir       = self.parent.new_dir
-        self.new_file      = self.parent.new_file
-        self.new_baseurl   = self.parent.new_baseurl
-        self.new_relpath   = self.parent.new_relpath
-
         self.target_file   = None
 
         # file to file
