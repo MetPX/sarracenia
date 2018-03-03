@@ -33,7 +33,7 @@ describing the purpose, in general, of the various components needed for various
 * `Source Guide <source.rst>`_ - effective uploading to a pump
 * `Concepts <Concepts.rst>`_ - Abstract Concepts, Conventions, Design.
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
-* `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
+* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
 * `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
 * `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
 
