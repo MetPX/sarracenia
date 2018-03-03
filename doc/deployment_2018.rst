@@ -40,8 +40,8 @@ Use cases mentioned in the video which were implemented:
 
 Use cases in the video, but not yet realized:
 
-- End user usage. A few trials were completed in early in 2017 leading to some 
-re-design and now retesting.
+- End user usage. A few trials were completed in early in 2017 leading to some
+  review, refactoring, and now retesting.
 
 - Data sets from sequencers have been waiting for end user use cases to be
   improved.
@@ -191,7 +191,7 @@ national deployment of NinJo and the Weather.
 
 Expanded use cases explored:
 
-* Mirroring:  Prior to this use case, sarracenia was used for raw data dissemination without regard for 
+* Mirroring: Prior to this use case, sarracenia was used for raw data dissemination without regard for 
   permissions, ownership, symbolic links, etc...  For the mirroring use case, exact metadata 
   replication was a surprisingly complex requirement.
 
@@ -217,23 +217,27 @@ Expanded use cases explored:
 
 Changes to support end user usage:
 
-   - Exchanges were an administrator-defined resource. Permission model changed such that users can now declare exchanges.
-   - Previously, one had to look on web sites to find examples. Now, the *list* command displays many examples included with the package.
+- Exchanges were an administrator-defined resource. Permission model changed such that users can now declare exchanges.
 
-   - It was hard to find where to put settings files. The *list/add/remove/edit* commands simplify that. 
+- Previously, one had to look on web sites to find examples. Now, the *list* command displays many examples included with the package.
 
-   - In each plugin entry point, one had to modify different instance variables, was re-factored for consistency
-     across all all of them (on_msg, on_file, on_part, on_post, do_download, do_send, etc...)
+- It was hard to find where to put settings files. The *list/add/remove/edit* commands simplify that. 
 
-   - Partitioning specifications were arcane and were replaced with the *blocksize* option, with only three possibilities: 0, 1, many.
+- In each plugin entry point, one had to modify different instance variables, was re-factored for consistency
+  across all all of them (on_msg, on_file, on_part, on_post, do_download, do_send, etc...)
 
-   - Routing across multiple pumps was arcane. The original algorithm was replaced by simpler 
-     one with with some smarter defaults. Users can now usually ignore it. 
+- Partitioning specifications were arcane and were replaced with the 
+  *blocksize* option, with only three possibilities: 0, 1, many.
 
-   - A much more elegant plugin interface is available to have multiple routines that
-     work together, specified in a single plugin.
+- Routing across multiple pumps was arcane. The original algorithm was 
+  replaced by simpler one with with some smarter defaults. Users can now usually
+  ignore it. 
 
-   - Previously, only advertised on web servers relative to the root URL. Now, non-root base URL support was added.
+- A much more elegant plugin interface is available to have multiple routines that
+  work together, specified in a single plugin.
+
+- Previously, only advertised on web servers relative to the root URL. Now, 
+  non-root base URL support was added.
 
 The only major operational feature introduced in 2017 was 
 **save/restore/retry**: If a destination has a problem, there is
@@ -262,10 +266,10 @@ long-lived stable version some time in 2018.
 
 - HPC mirroring use case deployment will be completed.
 
-- The Permanent File Depot (PFD) use case will be deployed. Currently, this is used to
-  cover a short time horizon. One can extend it arbitrarily into the past by
-  persisting the time-based tree to nearline storage. In development since
-  2016, gradually progressing. FIXME?
+- The Permanent File Depot (PFD) use case will be deployed. Currently, this 
+  is used to cover a short time horizon. One can extend it arbitrarily into the
+  past by persisting the time-based tree to nearline storage. In development
+  since 2016, gradually progressing. 
 
 - Improve deployment consistency: The changes in 2017 were confusing for the
   expert analysts, as significant changes in details occurred across versions.
