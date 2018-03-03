@@ -2,6 +2,11 @@
  MetPX-Sarracenia
 ==================
 
+*Please pardon the dust* in February 2018, our hosting provider since 2007 ( sourceforge.net ) 
+has been having great difficulties, forcing our migration to github.com.  We have not 
+yet decided on an approach for web pages, and while most of the documentation is
+intact, there are some broken links.
+
 [ Français_ ]
 
 Overview
@@ -31,7 +36,7 @@ homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
 
-Documentation: https://github.com/MetPX/sarracenia/blob/master/doc/sarra-docs-e.rst
+Documentation: `on github <https://github.com/MetPX/sarracenia/blob/master/doc/sarra-docs-e.rst>`_, or `relative link <doc/sarra-docs-e.rst>`_
 
 Sarracenia is an initiative of Shared Services Canada ( http://ssc-spc.gc.ca )
 in response to internal needs of the Government of Canada.
