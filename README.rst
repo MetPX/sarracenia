@@ -31,7 +31,7 @@ homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
 
-Documentation: https://github.com/MetPX/sarracenia/blob/master/doc/sarra-e.rst
+Documentation: https://github.com/MetPX/sarracenia/blob/master/doc/sarra-docs-e.rst
 
 Sarracenia is an initiative of Shared Services Canada ( http://ssc-spc.gc.ca )
 in response to internal needs of the Government of Canada.

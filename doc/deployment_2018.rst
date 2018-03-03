@@ -276,7 +276,7 @@ long-lived stable version some time in 2018.
 
 - Continued improvement in pre-deployment testing. 
 
-- The Sarracenia indexing tool, which facilitates finding feeds, to be deployed 
+- The Sarrasemina indexing tool, which facilitates finding feeds, to be deployed 
   to assist onboarding.
 
 - Improved onboarding documentation. Reference materials are thurough, but 

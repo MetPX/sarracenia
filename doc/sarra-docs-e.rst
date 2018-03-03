@@ -1,15 +1,11 @@
-========================
-Sarracenia Documentation
-========================
+==========================
+ Sarracenia Documentation
+==========================
 
-Documentation comes in two varieties: Guides and Manual Pages. The guides provide the
-overall idea of how to use the tools, with description of several components, use cases, and
-some sample configurations and runs. The guides provide "Getting started" type information,
-describing the purpose, in general, of the various components needed for various jobs.
+Documentation comes in two varieties: Guides and Manual Pages. 
 
-The Manual Pages, on the other hand, are reference material. For each component or format,
-the manual page provides a complete reference that shows all the options that exist for that
-component, and also provides examples of usage. To learn the application, it is best to
+
+To learn the application, it is best to
 start with Guides. The Guides are also best read in order, as knowledge of each guide assumes
 one is familiar with the previous ones.
 
@@ -21,15 +17,21 @@ reference materials provides quick answers to specific questions.
 About
 -----
 
-* `Introduction <sarra-e.rst>`_ - General concepts, Motivation, use cases.
+* `Introduction <sarra-e.rst>`_ - Motivation, use cases, status.
 
 
 Guides
 ------
 
+The guides provide the
+overall idea of how to use the tools, with description of several components, use cases, and
+some sample configurations and runs. The guides provide "Getting started" type information,
+describing the purpose, in general, of the various components needed for various jobs.
+
 * `Installation <Install.rst>`_ - initial installation.
 * `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
 * `Source Guide <source.rst>`_ - effective uploading to a pump
+* `Concepts <Concepts.rst>`_ - Abstract Concepts, Conventions, Design.
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
 * `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
@@ -38,6 +40,10 @@ Guides
 
 User-Facing Components
 ----------------------
+
+The Manual Pages, on the other hand, are reference material. For each component or format,
+the manual page provides a complete reference that shows all the options that exist for that
+component, and also provides examples of usage. 
 
 * `sr_post(1) <sr_post.1.rst>`_ - to post individual files.
 * `sr_poll(1) <sr_poll.1.rst>`_ - to list files to pull from remote servers.
