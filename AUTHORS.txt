@@ -10,12 +10,14 @@ Peter Silva <peter.silva@canada.ca>
   Architect?  Much discussion with Michel.  Small bug fixes.
   wrote most (all?) plugins included with package.
 
-Khosrow Ebrahimpour <khosrow.ebrahimpour@canada.ca>
+Khosrow Ebrahimpour <khosrow@ChangedJobs.ca> (no long involved.)
   Packaging & Process (Debian, Launchpad, some pypi, the vagrant self-test)
 
 Daluma Sen <Daluma.Sen@canada.ca>
-  sr_watch, and worked on sr_post as well for caching.
+  some work on sr_watch, and worked on sr_post as well for caching.
 
 Murray Rennie <Murray.Rennie@canada.ca>
   sr_winnow, worked on that with Michel.
 
+credit for Sarracenia image used as github avatar photo
+  Jay Lechtman jay.lechtman@gmail.com - www.horrorculture.weebly.com
