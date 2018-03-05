@@ -307,7 +307,7 @@ class sr_message():
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
 
-        if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
+        if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility...
            self.report_code   = int(token[3])
            self.report_host   = token[4]
            self.report_user   = token[5]
@@ -647,12 +647,6 @@ class sr_message():
         if self.remainder  > 0 :
            self.filesize  += self.remainder   - self.chunksize
            if self.lastchunk : self.length    = self.remainder
-
-    def set_rename(self,rename=None):
-        if rename != None :
-           self.headers['rename'] = rename
-        elif 'rename' in self.headers :
-           del self.headers['rename']
 
     def set_source(self,source=None):
         if source != None :
