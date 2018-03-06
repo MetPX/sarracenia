@@ -89,6 +89,9 @@ void srshim_realpost(const char *path)
   {
       if (!statres) 
       {
+          /* realpath of a link might result in a file or directory
+             the stat must be reassigned
+           */
           realpath( path, fn );
           statres = lstat( fn, &sb ) ;
       } else {
@@ -123,11 +126,12 @@ void srshim_realpost(const char *path)
       return;
   }
 
+  /* if it is a link, sr_post uses the path of the link...  */
+
   if (S_ISLNK(sb.st_mode))  {
       strcpy( fn, path );
   }
 
-  printf("fn = %s\n", fn);
   sr_post( sr_c, fn, &sb );
 
 }
