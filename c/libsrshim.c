@@ -83,11 +83,14 @@ void srshim_realpost(const char *path)
  
   statres = lstat( path, &sb ) ;
 
+  strcpy( fn, path );
+
   if (sr_cfg.realpath)
   {
       if (!statres) 
       {
           realpath( path, fn );
+          statres = lstat( fn, &sb ) ;
       } else {
           /* If the stat failed, assume ENOENT (normal for removal or move), do realpath the directory containing the entry.
              then add the filename onto the that.
@@ -104,9 +107,8 @@ void srshim_realpost(const char *path)
               strcpy( fn, path );
           }
       }
-  } else {
-      strcpy( fn, path );
   }
+
   mask = isMatchingPattern(&sr_cfg, fn);
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
@@ -116,10 +118,17 @@ void srshim_realpost(const char *path)
       return;
   }
 
-  if ( statres ) 
+  if ( statres )  {
       sr_post( sr_c, fn, NULL );
-  else 
-      sr_post( sr_c, fn, &sb );
+      return;
+  }
+
+  if (S_ISLNK(sb.st_mode))  {
+      strcpy( fn, path );
+  }
+
+  printf("fn = %s\n", fn);
+  sr_post( sr_c, fn, &sb );
 
 }
 
