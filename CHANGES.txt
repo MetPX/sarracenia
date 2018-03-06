@@ -4,7 +4,9 @@
 
 lists all changes between versions.
 
-**git repo(unreleased)**
+**2.18.02a3**
+
+* bugfix: C: on rename/mv : realpath option and stat attributes unused for oldname
 
 **2.18.02a2**
 
