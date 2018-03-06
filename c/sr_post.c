@@ -266,7 +266,8 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
         strcat( linkstr, "/" );
         strcat( linkstr, pathspec);
 
-        if ( sr_c->cfg->realpath ) 
+        /* realpath stuff when it exists  sb */
+        if ( sb && sr_c->cfg->realpath ) 
         {
             log_msg( LOG_DEBUG, "applying realpath to relpath %s\n", pathspec );
             if ( !realpath( linkstr, fn ) ) {
@@ -277,7 +278,8 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
         linkstr[0]='\0';
 
     } else {
-        if ( sr_c->cfg->realpath ) 
+        /* realpath stuff when it exists  sb */
+        if ( sb && sr_c->cfg->realpath ) 
         {
             log_msg( LOG_DEBUG, "applying realpath to abspath %s\n", pathspec );
             realpath( pathspec, fn );
@@ -542,7 +544,13 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
       log_msg( LOG_DEBUG, "rejecting: %s\n", oldname );
   else 
+/*    FIXME MG ...
+      on rename oldname is never there... so no sb should be NULL
+      not too sure why sb  could possibly be there ... I think the MD5 sum that memory fault on oldname for Dominic
+      has its root cause in this 
       sr_post( sr_c,  oldname, (!access(oldname, F_OK) && S_ISREG(sb.st_mode))?(&sb):NULL );
+*/
+      sr_post( sr_c,  oldname, NULL );
  
 
   free(first_user_header.key);  
