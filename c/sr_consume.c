@@ -249,7 +249,7 @@ char *sr_message_2log(struct sr_message_t *m)
         sprintf(  strchr( b, '\0' ), " parts=%c,%ld,%ld,%ld,%ld", m->parts_s, m->parts_blksz, m->parts_blkcount, m->parts_rem, m->parts_num );
      }
 
-     if ( m->link )
+     if ( m->sum[0] == 'L' )
      {
      sprintf( strchr( b, '\0' ), " link=%s", m->link );
      }
