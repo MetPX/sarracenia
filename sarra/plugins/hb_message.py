@@ -31,6 +31,6 @@ class Hb_Message(object):
            lag = now - parent.msg.tbegin
            if lag > self.msg_maxlag: self.msg_maxlag = lag
 
-        return
+        return True
 
 self.plugin='Hb_Message'
