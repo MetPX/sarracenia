@@ -100,9 +100,9 @@ def instantiate(dirconf,pgm,confname,action):
                   print("code not configured for process type sr_%s" % pgm)
                   sys.exit(1)
 
-            if    action == 'cleanup': inst.cleanup()
-            elif  action == 'declare': inst.declare()
-            elif  action == 'setup':   inst.setup()
+            if    action == 'cleanup': inst.exec_action('cleanup',False)
+            elif  action == 'declare': inst.exec_action('declare',False)
+            elif  action == 'setup':   inst.exec_action('setup',  False)
 
             elif  action == 'remove':  inst.exec_action('remove',False)
 
