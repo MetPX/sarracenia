@@ -152,7 +152,9 @@ class sr_cache():
         except: pass
         self.fp = None
 
-        if unlink : os.unlink(self.cache_file)
+        if unlink:
+           try   : os.unlink(self.cache_file)
+           except: pass
 
         self.cache_dict = {}
         self.count      = 0
@@ -173,7 +175,8 @@ class sr_cache():
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
         self.count      = 0
-        os.unlink(self.cache_file)
+        try   : os.unlink(self.cache_file)
+        except: pass
         self.fp = open(self.cache_file,'w')
 
     def load(self):
