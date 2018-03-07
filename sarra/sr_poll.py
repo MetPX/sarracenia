@@ -57,6 +57,7 @@
 # sum                     = 0   no sum computed... if we dont download the product
 #                           x   if we download the product
 # part                    = 1   file entirely downloaded (for now) ... find filesize from ls ?
+# rename                  = which path under root, the file should appear
 # source                  = None (fixed by sr_sarra)
 # cluster                 = None (fixed by sr_sarra)
 # to                      = message.headers['to_clusters'] MANDATORY
@@ -478,6 +479,7 @@ class sr_poll(sr_post):
 
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
+        if rename   != None : self.msg.headers['rename']       = rename
         if mtime    != None : self.msg.headers['mtime']        = mtime
         if atime    != None : self.msg.headers['atime']        = atime
         if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
@@ -532,8 +534,20 @@ class sr_poll(sr_post):
                 self.partstr = '1,%d,1,0,0' % isiz
         except: pass
 
+        this_rename  = self.rename
+
+        # FIX ME generalized fileOption
+        if FileOption != None :
+           parts = FileOption.split('=')
+           option = parts[0].strip()
+           if option == 'rename' and len(parts) == 2 : 
+              this_rename = parts[1].strip()
+
+        if this_rename != None and this_rename[-1] == '/' :
+           this_rename += remote_file
+                
         ok = self.post(self.post_exchange,self.post_base_url,self.post_relpath,self.to_clusters, \
-                       self.partstr,self.sumstr)
+                       self.partstr,self.sumstr,this_rename)
 
         return ok
 

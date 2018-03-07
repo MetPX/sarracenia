@@ -234,6 +234,7 @@ class sr_post(sr_instances):
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
         print("-tp  <topic_prefix>    default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
+        print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
         print("-caching               default:enable caching")
         print("-reset                 default:enable reset")
@@ -362,6 +363,36 @@ class sr_post(sr_instances):
            return True
 
         return False
+
+    # =============
+    # path renamed
+    # =============
+
+    def path_renamed(self,path):
+
+        newname = path
+
+        # rename path given with no filename
+
+        if self.rename :
+           newname = self.rename
+           if self.rename[-1] == os.sep :
+              newname += os.path.basename(path)
+
+        # strip 'N' heading directories
+
+        if self.strip > 0:
+           strip = self.strip
+           if path[0] == '/' : strip = strip + 1
+           # if we strip too much... keep the filename
+           token = path.split('/')
+           try :   token   = token[strip:]
+           except: token   = [os.path.basename(path)]
+           newname = os.sep+os.sep.join(token)
+
+        if newname == path : return None
+
+        return newname
 
     # =============
     # path rejected
@@ -649,6 +680,11 @@ class sr_post(sr_instances):
            self.logger.error("file part extension but %s for file %s" % (log_msg,path))
            return False
 
+        # check rename see if it has the right part suffix (if present)
+
+        if 'rename' in self.msg.headers and not suffix in self.msg.headers['rename']:
+           self.msg.headers['rename'] += suffix
+
         # caching
 
         if self.caching :
@@ -693,6 +729,9 @@ class sr_post(sr_instances):
         # notice
         self.msg.set_notice(self.post_base_url,self.post_relpath)
 
+        # rename
+        rename = self.path_renamed(self.post_relpath)
+
         # headers
 
         self.msg.headers = {}
@@ -702,6 +741,7 @@ class sr_post(sr_instances):
         if self.to_clusters != None : self.msg.headers['to_clusters']  = self.to_clusters
         if self.cluster     != None : self.msg.headers['from_cluster'] = self.cluster
         if self.source      != None : self.msg.headers['source']       = self.source
+        if rename           != None : self.msg.headers['rename']       = rename
         if key              != None : self.msg.headers[key]            = value
 
         if lstat == None : return
@@ -1239,6 +1279,7 @@ class sr_post(sr_instances):
 
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
+        if rename   != None : self.msg.headers['rename']       = rename
         if mtime    != None : self.msg.headers['mtime']        = mtime
         if atime    != None : self.msg.headers['atime']        = atime
         if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )

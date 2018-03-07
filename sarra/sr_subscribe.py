@@ -1250,6 +1250,9 @@ class sr_subscribe(sr_instances):
               if self.retry_mode : self.consumer.msg_to_retry()
               return False
 
+           # after download we dont propagate renaming... once used get rid of it
+           if 'rename'  in self.msg.headers : del self.msg.headers['rename']
+
            # if an onfly_checksum was computed
 
            if self.msg.onfly_checksum :
@@ -1588,6 +1591,10 @@ class sr_subscribe(sr_instances):
         # relative path by default mirror 
 
         relpath = '%s' % self.msg.relpath
+
+        # case S=0  sr_post -> sr_suscribe... rename in headers
+        # FIXME: 255 char limit on headers, rename will break!
+        if 'rename' in self.msg.headers : relpath = '%s' % self.msg.headers['rename']
 
         token    = relpath.split('/')
         filename = token[-1]

@@ -47,6 +47,7 @@
 # exchange                = xs_source_user
 # product                 = downloaded under directory (option document_root)
 #                         = subdirectory from mirror option  OR
+#                           message.headers['rename'] ...
 #                           can be trimmed by option  strip
 #
 # post_broker             = where sarra is running (manager)

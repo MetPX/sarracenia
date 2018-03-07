@@ -639,6 +639,8 @@ class sr_config:
         self.parts                = None
         self.sumflg               = 'd'
 
+        self.rename               = None
+
         self.headers_to_add       = {}
         self.headers_to_del       = []
 
@@ -1995,6 +1997,10 @@ class sr_config:
 
                 elif words0 in ['remote_config_url']: # See: sr_config.7
                      self.remote_config_url = words[1]
+                     n = 2
+
+                elif words0 in ['rename','rn']: # See: sr_poll, sarra, sender, sub, watch? 
+                     self.rename = words1
                      n = 2
 
                 elif words0 in ['report_back','rb']:  # See: sr_subscribe.1
