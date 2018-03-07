@@ -4,9 +4,15 @@
 
 lists all changes between versions.
 
-**2.18.02a3**
+**2.18.03a2**
+
+* bugfix: C: revert stat passed to sr_post because used for hardlink
+* rename option and in message header put back
+
+**2.18.03a1**
 
 * bugfix: C: on rename/mv : realpath option and stat attributes unused for oldname
+* rename option and in message header withdrawn
 
 **2.18.02a2**
 

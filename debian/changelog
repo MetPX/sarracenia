@@ -1,3 +1,25 @@
+metpx-sarracenia (2.18.03a2) unstable; urgency=medium
+
+  * bugfix: C: revert stat passed to sr_post because used for hardlink
+  * rename option and in message header put back 
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed, 07 Mar 2018 17:46:10 +0000
+
+metpx-sarracenia (2.18.03a1) unstable; urgency=medium
+
+  * bugfix: C: on rename/mv : realpath option and stat attributes unused for oldname
+  * rename option and in message header withdrawn
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed, 06 Mar 2018 17:46:10 +0000
+
+metpx-sarracenia (2.18.02a2) unstable; urgency=medium
+
+  * bugfix: C: posting, link... would cause problem depending on realpath value
+  * bugfix: C: posting, post_base_directory that started and/or ended with / might be missing a . in topic.
+  * documentation: renamed cp.py -> accel_cp.py, wget.py --> accel_wget.py
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed, 06 Mar 2018 17:46:10 +0000
+
 metpx-sarracenia (2.18.02a1) unstable; urgency=medium
 
   * change: no default broker (was dd.weather.gc.ca) caused more trouble than help.
