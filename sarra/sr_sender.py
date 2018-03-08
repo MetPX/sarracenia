@@ -87,12 +87,7 @@ class sr_sender(sr_subscribe):
 
         if self.config_name == None : return
 
-        # fallback bindings to "all"
-
-        if self.bindings == []  :
-           key = self.topic_prefix + '.#'
-           self.bindings.append( (self.exchange,key) )
-           self.logger.debug("*** BINDINGS %s"% self.bindings)
+        self.check_consumer_options()
 
         # posting... discard not permitted
 
@@ -129,19 +124,6 @@ class sr_sender(sr_subscribe):
            if self.inflight == 'unspecified':
               self.inflight='.tmp'
            
-        # caching
-
-        if self.caching :
-           self.cache      = sr_cache(self)
-           self.cache_stat = True
-           self.cache.open()
-
-        # no queue name allowed... force this one
-
-        if self.queue_name == None :
-           self.queue_name  = 'q_' + self.broker.username + '.'
-           self.queue_name += self.program_name + '.' + self.config_name 
-
         # check destination
 
         self.details = None
@@ -166,16 +148,6 @@ class sr_sender(sr_subscribe):
         # ===========================================================
         # some sr_subscribe options reset to match sr_sarra behavior
         # ===========================================================
-
-        # retry_ttl setup.
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
 
         # always sends ...
 

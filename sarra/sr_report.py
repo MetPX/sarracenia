@@ -57,46 +57,16 @@ class sr_report(sr_subscribe):
         self.notify_only   = True
         self.post_broker   = None
 
-        if self.broker == None :
-           self.logger.error("no broker given")
-           sys.exit(1)
+        self.check_consumer_options()
 
         username = self.broker.username
 
-        # retry_ttl setup.
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
-
-        # exchanges  process if needed
-
-        if self.exchange == None:
-           if username in self.users.keys():
-              if self.users[username] in [ 'feeder', 'admin' ]:
-                 self.exchange = 'xreport'
-
-        if self.exchange_suffix :
-           self.exchange = 'xs_%s' % username + self.exchange_suffix
-
-        if self.exchange == None:
-           self.exchange = 'xs_' + username
-
-        if self.bindings == [] :
-           key = self.topic_prefix + '.' + self.subtopic
-           self.bindings     = [ (self.exchange,key) ]
-        else :
-           for i,tup in enumerate(self.bindings):
-               e,k   = tup
-               if e != self.exchange :
-                  self.logger.info("exchange forced to %s" % self.exchange)
-                  e = self.exchange
-               self.bindings[i] = (e,k)
-
+        for i,tup in enumerate(self.bindings):
+            e,k   = tup
+            if e != self.exchange :
+               self.logger.info("exchange forced to %s" % self.exchange)
+               e = self.exchange
+            self.bindings[i] = (e,k)
 
     def overwrite_defaults(self):
         self.logger.debug("%s overwrite_defaults" % self.program_name)

@@ -68,70 +68,22 @@ class sr_shovel(sr_subscribe):
 
         if self.config_name == None : return
 
-        if self.broker == None :
-           self.logger.error("no broker given")
-           self.help()
-           sys.exit(1)
+        self.check_consumer_options()
 
         # exchanges suffix process if needed
-
-        if self.exchange == None and self.exchange_suffix :
-           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
 
         if self.post_exchange == None and self.post_exchange_suffix :
            self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
 
-        if self.exchange == None :
-           self.logger.error("no exchange given")
-           self.help()
-           sys.exit(1)
-
-        if self.topic_prefix == None :
-           self.logger.error("no topic_prefix given")
-           self.help()
-           sys.exit(1)
-
-        # caching 
-        if self.caching :
-           self.cache      = sr_cache(self)
-           self.cache_stat = True
-           self.cache.open()
-
-        # bindings should be defined 
-
-        if self.bindings == []  :
-           key = self.topic_prefix + '.#'
-           self.bindings.append( (self.exchange,key) )
-           self.logger.debug("*** BINDINGS %s"% self.bindings)
-
-        # default queue name if not given
-
-        if self.queue_name == None :
-           self.queue_name  = 'q_' + self.broker.username + '.'
-           self.queue_name += self.program_name + '.' + self.config_name 
-
         # ===========================================================
         # some sr_subscribe options reset to match sr_shovel behavior
         # ===========================================================
-
-        # retry_ttl setup.
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
 
         # the message is consumed and posted (no download)
 
         if not self.notify_only :
            self.logger.error("sr_shovel works with notify_only True")
            sys.exit(1)
-
-        # MG FIXME : I dont think I forgot anything but if some options need
-        #            to be specifically set for sr_shovel put them HERE
 
     def overwrite_defaults(self):
 

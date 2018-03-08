@@ -45,30 +45,16 @@ class sr_winnow(sr_subscribe):
 
         if self.config_name == None : return
 
-        # broker requiered
-
-        if self.broker == None :
-           self.logger.error("no broker given")
-           self.help()
-           sys.exit(1)
+        self.check_consumer_options()
 
         # post_broker
 
         if not self.post_broker : self.post_broker = self.broker
 
-        # exchanges suffix process if needed
-
-        if self.exchange == None and self.exchange_suffix :
-           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+        # post exchanges
 
         if self.post_exchange == None and self.post_exchange_suffix :
            self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
-
-        # no queue name allowed
-
-        if self.queue_name == None:
-           self.queue_name  = 'q_' + self.broker.username + '.'
-           self.queue_name += self.program_name + '.' + self.config_name 
 
         # we cannot have more than one instance since we 
         # need to work with a single cache.
@@ -76,12 +62,6 @@ class sr_winnow(sr_subscribe):
         if self.nbr_instances != 1 :
            self.logger.error("Only one instance allowed... set to 1")
            os._exit(1)
-
-        # exchange must be provided 
-
-        if self.exchange == None:
-           self.logger.error("exchange (input) unset... exitting")
-           sys.exit(1)
 
         # post_exchange must be provided
 
@@ -98,27 +78,9 @@ class sr_winnow(sr_subscribe):
         if self.vip == None :
            self.logger.debug("vip missing... standalone mode")
 
-        # bindings should be defined 
-
-        if self.bindings == []  :
-           key = self.topic_prefix + '.#'
-           self.bindings.append( (self.exchange,key) )
-           self.logger.debug("*** BINDINGS %s"% self.bindings)
-
         # ===========================================================
         # some sr_subscribe options reset to match sr_winnow behavior
         # ===========================================================
-
-
-        # retry_ttl setup.
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
 
         # set notify_only : no download
 
@@ -131,18 +93,6 @@ class sr_winnow(sr_subscribe):
         if self.save or self.restore :
            self.logger.error("winnow no save/restore support")
            sys.exit(1)
-
-        # caching must be "on" ( entry cleanup default to 20 mins old )
-
-        if not self.caching : 
-           self.logger.error("caching turned off... exiting")
-           sys.exit(1)
-
-        self.cache = sr_cache(self)
-        self.cache.open()
-
-        # MG FIXME : I dont think I forgot anything but if some options need
-        #            to be specifically set for sr_winnow put them HERE
 
     def overwrite_defaults(self):
 

@@ -152,6 +152,80 @@ class sr_subscribe(sr_instances):
 
         if hasattr(self,'retry') : self.retry.close()
 
+    def check_consumer_options(self):
+        self.logger.debug("%s check_consumer_options" % self.program_name)
+
+        # broker
+
+        if self.broker == None :
+           self.logger.error("no broker given")
+           self.help()
+           sys.exit(1)
+
+        # exchange
+
+        if self.program_name == 'sr_report' :
+           if self.exchange == None :
+              self.exchange == 'xs_%s' % self.broker.username
+              if self.broker.username in self.users.keys():
+                 if self.users[self.broker.username] in [ 'feeder', 'admin' ]:
+                    self.exchange = 'xreport'
+
+        if self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + '_' + self.exchange_suffix
+
+        if self.exchange == None :
+           self.logger.error("no exchange given")
+           self.help()
+           sys.exit(1)
+
+        # topic
+
+        if self.topic_prefix == None :
+           self.logger.error("no topic_prefix given")
+           self.help()
+           sys.exit(1)
+
+        # bindings (if no subtopic)
+
+        if self.bindings == []  :
+           key = self.topic_prefix + '.#'
+           self.bindings.append( (self.exchange,key) )
+           self.logger.debug("*** BINDINGS %s"% self.bindings)
+
+        # queue
+
+        if self.queue_name == None :
+           if not self.program_name in [ 'sr_report', 'sr_subscribe' ] :
+              self.queue_name  = 'q_' + self.broker.username + '.'
+              self.queue_name += self.program_name + '.' + self.config_name
+
+        # retry
+
+        if self.retry_ttl == None:
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttl = None
+
+        if self.retry_mode :
+           self.execfile("plugin",'hb_retry')
+
+        # caching
+
+        if not self.caching and self.program_name == 'sr_winnow' :
+           self.logger.error("caching turned off... exiting")
+           sys.exit(1)
+
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           if not self.heartbeat_cache_installed :
+              self.execfile("on_heartbeat",'hb_cache')
+              self.on_heartbeat_list.append(self.on_heartbeat)
+              self.heartbeat_cache_installed = True
+
+
     def connect(self):
 
         # =============

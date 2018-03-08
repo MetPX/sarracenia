@@ -265,11 +265,12 @@ class sr_config:
             self.logger.info( '\t\tdo_download: %s' % ''.join( map( self.xcl , self.do_download_list ) ) )
 
 
-        self.logger.info( '\t\ton_message: %s' % ''.join( map( self.xcl , self.on_message_list ) ) )
-        self.logger.info( '\t\ton_part: %s' % ''.join( map( self.xcl , self.on_part_list ) ) )
-        self.logger.info( '\t\ton_file: %s' % ''.join( map( self.xcl , self.on_file_list ) ) )
-        self.logger.info( '\t\ton_post: %s' % ''.join( map( self.xcl , self.on_post_list ) ) )
+        self.logger.info( '\t\ton_message: %s'   % ''.join( map( self.xcl , self.on_message_list ) ) )
+        self.logger.info( '\t\ton_part: %s'      % ''.join( map( self.xcl , self.on_part_list ) ) )
+        self.logger.info( '\t\ton_file: %s'      % ''.join( map( self.xcl , self.on_file_list ) ) )
+        self.logger.info( '\t\ton_post: %s'      % ''.join( map( self.xcl , self.on_post_list ) ) )
         self.logger.info( '\t\ton_heartbeat: %s' % ''.join( map( self.xcl , self.on_heartbeat_list ) ) )
+        self.logger.info( '\t\ton_report: %s'    % ''.join( map( self.xcl , self.on_report_list ) ) )
 
         self.logger.info('log_settings end.')
 
@@ -739,7 +740,7 @@ class sr_config:
 
         self.plugin_times = [ 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
             'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
-            'do_download', 'do_send', 'do_task', 'on_start', 'on_stop' ]
+            'do_download', 'do_send', 'do_task', 'on_report', 'on_start', 'on_stop' ]
 
         for t in self.plugin_times + [ 'plugin' ]:
             exec( 'self.'+t+' = None' )
@@ -1812,6 +1813,12 @@ class sr_config:
                      if not self.execfile("on_post",words1):
                             ok = False
                             needexit = True
+                     n = 2
+
+                elif words0 in [ 'on_report',  'on_rpt' ] : # FIXME ... sr_config.1, others...
+                     if not self.execfile("on_report",words1):
+                           ok = False
+                           needexit = True
                      n = 2
 
                 elif words0 == 'on_start': # See: sr_config

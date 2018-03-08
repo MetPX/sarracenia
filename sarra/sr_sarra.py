@@ -90,27 +90,14 @@ class sr_sarra(sr_subscribe):
 
         if self.config_name == None : return
 
-        if self.broker == None :
-           self.logger.error("no broker given")
-           self.help()
-           sys.exit(1)
+        self.check_consumer_options()
 
         if self.post_broker == None : self.post_broker = self.broker
 
-        # exchanges suffix process if needed
-
-        if self.exchange == None and self.exchange_suffix :
-           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
+        # post exchanges suffix process if needed
 
         if self.post_exchange == None and self.post_exchange_suffix :
            self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
-
-        # verify exchange
-
-        if self.exchange == None :
-           self.logger.error("no exchange given")
-           self.help()
-           sys.exit(1)
 
         # verify post_base_dir
 
@@ -121,19 +108,6 @@ class sr_sarra(sr_subscribe):
            elif self.document_root != None :
               self.post_base_dir = self.document_root
               self.logger.warning("use post_base_dir instead of document_root")
-
-        # bindings should be defined 
-
-        if self.bindings == []  :
-           key = self.topic_prefix + '.#'
-           self.bindings.append( (self.exchange,key) )
-           self.logger.debug("*** BINDINGS %s"% self.bindings)
-
-        # default queue name if not given
-
-        if self.queue_name == None :
-           self.queue_name  = 'q_' + self.broker.username + '.'
-           self.queue_name += self.program_name + '.' + self.config_name 
 
         # ===========================================================
         # some sr_subscribe options reset to match sr_sarra behavior
@@ -162,16 +136,6 @@ class sr_sarra(sr_subscribe):
            self.logger.error("sarra discard True")
            sys.exit(1)
 
-        # retry_ttl setup.
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
-
 
         # default reportback if unset
 
@@ -182,9 +146,6 @@ class sr_sarra(sr_subscribe):
 
         if not self.doit_download in self.do_task_list :
            self.do_task_list.insert(0,self.doit_download)
-
-        # MG FIXME : I dont think I forgot anything but if some options need
-        #            to be specifically set for sr_sarra put them HERE
 
     def overwrite_defaults(self):
 
