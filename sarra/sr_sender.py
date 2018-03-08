@@ -321,28 +321,13 @@ class sr_sender(sr_subscribe):
 
         if not ok: return False
 
-        # OLD SENDING KEPT AS REFERENCE
-        #ok =self.__do_send__()
-        #if ok :
-        #     self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
-        #     break
-        #else:
-        #     #========================
-        #     # Connection failed.  increment interval, sleep and try again
-        #     #========================
-        #     time.sleep(self.sleep_connect_try_interval)       
-        #     if self.sleep_connect_try_interval < self.sleep_connect_try_interval_max:
-        #          self.sleep_connect_try_interval=self.sleep_connect_try_interval * 2
-        #
-        #if self.retry_mode and not ok : return False
-
         #=================================
         # publish our sending
         #=================================
 
         if self.post_broker :
-           self.msg.set_topic('v02.post',self.new_relpath)
-           self.msg.set_notice(self.new_baseurl,self.new_relpath,self.msg.time)
+           self.msg.set_topic('v02.post',self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')

@@ -68,18 +68,7 @@ class sr_subscribe(sr_instances):
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
-        # a broker is requiered
-
-        if self.broker == None :
-           self.logger.error("no broker given")
-           self.help()
-           sys.exit(1)
-
-        # if no subtopic given... make it #  for all
-        if self.bindings == []  :
-           key = self.topic_prefix + '.#'
-           self.bindings.append( (self.exchange,key) )
-           self.logger.debug("*** BINDINGS %s"% self.bindings)
+        self.check_consumer_options()
 
         # set inflight
         if self.inflight == 'unspecified' :
@@ -96,61 +85,17 @@ class sr_subscribe(sr_instances):
               self.post_base_dir = self.document_root
               self.logger.warning("use post_base_dir instead of document_root")
 
-        # overwrite xpublic default with suffix 
-
-        if self.exchange_suffix :
-           self.exchange = 'xs_%s' % self.broker.username + self.exchange_suffix
-
         # impacting other settings
 
         if self.discard:
            self.inplace    = False
            self.overwrite  = True
 
-        # caching
-
-        if self.caching :
-           self.cache      = sr_cache(self)
-           self.cache_stat = True
-
-        # retry
-        if self.retry_ttl == None:
-           self.retry_ttl = self.expire
-
-        if self.retry_ttl == 0:
-           self.retry_ttl = None
-
-        if self.retry_mode :
-           self.execfile("plugin",'hb_retry')
-
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
 
         if not self.doit_download in self.do_task_list :
            self.do_task_list.insert(0,self.doit_download)
-
-
-    def close(self):
-
-        for plugin in self.on_stop_list:
-           if not plugin(self): break
-
-        self.consumer.close()
-
-        if self.post_broker :
-           if self.post_broker != self.broker : self.post_hc.close()
-
-        if self.save_fp: self.save_fp.close()
-
-        if hasattr(self,'ftp_link') : self.ftp_link.close()
-        if hasattr(self,'http_link'): self.http_link.close()
-        if hasattr(self,'sftp_link'): self.sftp_link.close()
-
-        if hasattr(self,'cache') and self.cache :
-           self.cache.save()
-           self.cache.close()
-
-        if hasattr(self,'retry') : self.retry.close()
 
     def check_consumer_options(self):
         self.logger.debug("%s check_consumer_options" % self.program_name)
@@ -225,6 +170,27 @@ class sr_subscribe(sr_instances):
               self.on_heartbeat_list.append(self.on_heartbeat)
               self.heartbeat_cache_installed = True
 
+    def close(self):
+
+        for plugin in self.on_stop_list:
+           if not plugin(self): break
+
+        self.consumer.close()
+
+        if self.post_broker :
+           if self.post_broker != self.broker : self.post_hc.close()
+
+        if self.save_fp: self.save_fp.close()
+
+        if hasattr(self,'ftp_link') : self.ftp_link.close()
+        if hasattr(self,'http_link'): self.http_link.close()
+        if hasattr(self,'sftp_link'): self.sftp_link.close()
+
+        if hasattr(self,'cache') and self.cache :
+           self.cache.save()
+           self.cache.close()
+
+        if hasattr(self,'retry') : self.retry.close()
 
     def connect(self):
 
