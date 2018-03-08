@@ -723,17 +723,17 @@ Launchpad
 Automated Build
 +++++++++++++++
 
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/master>`_
+* Ensure the code mirror is updated by checking the **Import details** by checking `this page <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is uptodate, proceed with the build request.
-* Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-release>`_ recipe
+* Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
 Daily Builds
 ++++++++++++
 
-Daily builds are configured using `this recipe <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarracenia-daily>`_ and 
+Daily builds are configured using `this recipe <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily>`_ and 
 are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
 One can also **Request build(s)** on demand if desired.
 
