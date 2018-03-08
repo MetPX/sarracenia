@@ -244,7 +244,16 @@ class sr_message():
            self.logger.warning( "truncating reporting topic at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( len(self.report_topic) , self.report_topic ) )
 
+
+        # if  there is a publisher
+
         if self.report_publisher != None :
+
+           # run on_report plugins
+           for plugin in self.parent.on_report_list :
+               if not plugin(self.parent): return False
+
+           # publish
            self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.report_topic,self.report_notice,self.hdrstr))
