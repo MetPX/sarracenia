@@ -25,10 +25,18 @@ class Transformer():
         parent.logger.debug("msg_replace_new_dir is %s " % parent.msg_replace_new_dir )
 
       def on_message(self,parent):
+          msg = parent.msg
+
           for p in parent.msg_replace_new_dir :
               ( b, a ) = p.split(",") 
               parent.logger.info("msg_replace_new_dir is %s " % p )
-              parent.msg.new_dir = parent.msg.new_dir.replace(b, a)
+              msg.new_dir = msg.new_dir.replace(b, a)
+
+              # adjust new_relpath if posting
+
+              if not parent.post_broker : return True
+              msg.new_relpath = msg.new_dir + os.sep + msg.new_file
+              if parent.post_base_dir : msg.new_relpath = msg.new_relpath.replace(parent.post_base_dir,'')
 
           return True
 
