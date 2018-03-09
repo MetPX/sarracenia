@@ -407,6 +407,12 @@ class sr_post(sr_instances):
         if self.post_base_dir : self.post_relpath = path.replace(self.post_base_dir, '')
 
         urlstr = self.post_base_url + '/' + self.post_relpath
+
+        if self.filter_realpath and not self.post_realpath :
+           if os.path.exist(path) :
+              fltr_post_relpath = os.path.realpath(path)
+              if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
+              urlstr = self.post_base_url + '/' + fltr_post_relpath
         
         if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
            self.logger.debug("%s Rejected by accept/reject options" % urlstr )
@@ -814,7 +820,7 @@ class sr_post(sr_instances):
         src = src.replace(os.sep + '.' + os.sep, os.sep )
         dst = dst.replace(os.sep + '.' + os.sep, os.sep )
 
-        if os.path.islink(dst) and self.realpath:
+        if os.path.islink(dst) and self.post_realpath:
            dst = os.path.realpath(dst)
 
         # file
@@ -1080,7 +1086,7 @@ class sr_post(sr_instances):
 
         # how to proceed with symlink
 
-        if os.path.islink(src) and self.realpath :
+        if os.path.islink(src) and self.post_realpath :
            src = os.path.realpath(src)
 
         # walk src directory, this walk is depth first... there could be a lot of time
@@ -1108,7 +1114,7 @@ class sr_post(sr_instances):
         if os.path.islink(p):
             realp = os.path.realpath(p)
             self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
-            if self.realpath:
+            if self.post_realpath:
                 d=realp
             else:
                 d=p + os.sep + '.'
@@ -1235,6 +1241,15 @@ class sr_post(sr_instances):
         post_base_url = urlstr.replace(post_relpath,'')
 
         # apply accept/reject
+
+        if self.filter_realpath and not self.post_realpath :
+           path = post_relpath
+           if self.post_base_dir : path = self.post_base_dir + '/' + path
+           if os.path.exist(path) :
+              fltr_post_relpath = os.path.realpath(path)
+              if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
+              urlstr = self.post_base_url + '/' + fltr_post_relpath
+
         if not self.isMatchingPattern(urlstr,self.accept_unmatch) :
            self.logger.debug("post of %s Rejected by accept/reject options" % urlstr )
            return True  # need to return true because this isn´t a failure.
@@ -1305,8 +1320,8 @@ class sr_post(sr_instances):
     def run(self):
         self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
               ( self.program_name, self.partflg, self.sumflg, self.caching ))
-        self.logger.info("%s realpath=%s follow_links=%s force_polling=%s"  % \
-              ( self.program_name, self.realpath, self.follow_symlinks, self.force_polling ) )
+        self.logger.info("%s post_realpath=%s follow_links=%s force_polling=%s"  % \
+              ( self.program_name, self.post_realpath, self.follow_symlinks, self.force_polling ) )
 
         self.connect()
 
