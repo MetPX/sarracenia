@@ -55,6 +55,8 @@ class ACCEL_CP(object):
 
       if not hasattr( parent, "accel_cp_protocol" ):
              parent.accel_cp_protocol = [ "http" ]
+
+      return True
           
 
    def on_msssage(self,parent):

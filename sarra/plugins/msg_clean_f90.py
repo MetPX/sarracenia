@@ -50,38 +50,35 @@ class Msg_Clean_F90(object):
 
         propagated = 0
         if os.path.isfile(sarr_f20_path) : propagated += 1
-        else: logger.warning("%s not found" % sarr_f20_path) 
-
         if os.path.isfile(subs_f30_path) : propagated += 1
-        else: logger.warning("%s not found" % subs_f30_path) 
-
         if os.path.isfile(send_f50_path) : propagated += 1
-        else: logger.warning("%s not found" % send_f50_path) 
-
         if os.path.isfile(subs_f60_path) : propagated += 1
-        else: logger.warning("%s not found" % subs_f60_path) 
-
         if os.path.isfile(subs_f70_path) : propagated += 1
-        else: logger.warning("%s not found" % subs_f70_path) 
-
         if os.path.isfile(subs_f71_path) : propagated += 1
-        else: logger.warning("%s not found" % subs_f71_path) 
+
+        #if not os.path.isfile(sarr_f20_path) : logger.warning("%s not found" % sarr_f20_path) 
+        #if not os.path.isfile(subs_f30_path) : logger.warning("%s not found" % subs_f30_path) 
+        #if not os.path.isfile(send_f50_path) : logger.warning("%s not found" % send_f50_path) 
+        #if not os.path.isfile(subs_f60_path) : logger.warning("%s not found" % subs_f60_path) 
+        #if not os.path.isfile(subs_f70_path) : logger.warning("%s not found" % subs_f70_path) 
+        #if not os.path.isfile(subs_f70_path) : logger.warning("%s not found" % subs_f71_path) 
+        #logger.warning("propagated = %d" % propagated) 
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
         if propagated != 6 :
+           logger.warning("%s not fully propagated" % relp )
            parent.consumer.msg_to_retry()
            return False
 
         # ok it is everywhere ... it worked
 
         # MG SUGGESTION
-        # some integrity testing of the products could be performed here...
-        # simple : compare all files'size againts the message'size
-        # tougher: compare all files'sum  againts the message'sum
-        # WARN FOR DIFFERENCE ONLY ... NOT TO COMPROMISE WITH FLOW TEST COUNT
+        # some integrity testing of the product in all these paths
+        # could be performed here...  WARN FOR DIFFERENCE ONLY ...
+        # but do not return False ... NOT TO COMPROMISE WITH FLOW TEST COUNT
 
         # remove unneeded file
 
@@ -120,7 +117,7 @@ class Msg_Clean_F90(object):
 
         if   testid != 3 : os.unlink(subs_f30_path)
 
-        logger.warning("OK")
+        #logger.warning("OK %s" % msg.headers['clean_f90'])
 
         # IF the flow test number is N... 
         # the watched events should be N * ( 1 original + 1 test + 1 remove original + 1 remove test)

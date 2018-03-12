@@ -125,6 +125,8 @@ class File_Total(object):
         parent.file_total_bytecount = int  (words[3])
         parent.file_total_lag       = float(words[4])
 
+        return True
+
     # saving accounting variables
     def on_stop(self,parent):
 
@@ -137,6 +139,8 @@ class File_Total(object):
         fp=open(parent.file_total_cache_file,'w')
         fp.write(line)
         fp.close()
+
+        return True
 
 self.plugin = 'File_Total'
 

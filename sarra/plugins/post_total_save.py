@@ -109,7 +109,7 @@ class Post_Total(object):
         parent.post_total_cache_file  = parent.user_cache_dir + os.sep
         parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
 
-        if not os.path.isfile(parent.post_total_cache_file) : return
+        if not os.path.isfile(parent.post_total_cache_file) : return True
 
         fp=open(parent.post_total_cache_file,'r')
         line = fp.read(8192)
@@ -124,6 +124,8 @@ class Post_Total(object):
         parent.post_total_bytecount = int  (words[3])
         parent.post_total_lag       = float(words[4])
 
+        return True
+
     # saving accounting variables
     def on_stop(self,parent):
 
@@ -136,6 +138,8 @@ class Post_Total(object):
         fp=open(parent.post_total_cache_file,'w')
         fp.write(line)
         fp.close()
+
+        return True
 
 self.plugin='Post_Total'
 
