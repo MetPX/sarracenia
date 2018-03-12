@@ -239,10 +239,10 @@ class sr_config:
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
-        self.logger.info( "\tpreserve_mode=%s preserve_time=%s post_realpath=%s base_dir=%s follow_symlinks=%s" % \
-           ( self.preserve_mode, self.preserve_time, self.post_realpath, self.base_dir, self.follow_symlinks ) )
-        self.logger.info( "\tmirror=%s flatten=%s post_realpath=%s strip=%s base_dir=%s report_back=%s" % \
-           ( self.mirror, self.flatten, self.post_realpath, self.strip, self.base_dir, self.reportback ) )
+        self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
+           ( self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
+        self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
+           ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
 
         if self.post_broker :
             self.logger.info( "\tpost_base_dir=%s post_base_url=%s sum=%s blocksize=%s " % \
@@ -682,8 +682,8 @@ class sr_config:
         self.pump_flag            = False
 
         self.randomize            = False
-        self.post_realpath        = False
-        self.filter_realpath      = False
+        self.realpath_post        = False
+        self.realpath_filter      = False
         self.reconnect            = False
         self.reportback           = True
         self.restore              = False
@@ -1363,7 +1363,7 @@ class sr_config:
 
                 elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     if self.post_realpath:
+                     if self.realpath_post:
                          path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.base_dir = path.replace('\\','/')
@@ -1497,7 +1497,7 @@ class sr_config:
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
                      path = os.path.abspath(words1)
-                     if self.post_realpath:
+                     if self.realpath_post:
                          path = os.path.realpath(path)
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
@@ -1584,12 +1584,12 @@ class sr_config:
                      self.currentFileOption = words[1]
                      n = 2
 
-                elif words0 in ['filter_realpath','fr']: # FIXME: MG new
+                elif words0 in ['realpath_filter','fr']: # FIXME: MG new
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        self.filter_realpath = True
+                        self.realpath_filter = True
                         n = 1
                      else :
-                        self.filter_realpath = self.isTrue(words[1])
+                        self.realpath_filter = self.isTrue(words[1])
                         n = 2
 
                 elif words0 in [ 'flatten' ]: # See: sr_poll.1, sr_sender.1
@@ -1889,7 +1889,7 @@ class sr_config:
                                  if pbd and not pbd in path: path = pbd + os.sep + path
 
                                  path = os.path.abspath(path)
-                                 if self.post_realpath:
+                                 if self.realpath_post:
                                      path = os.path.realpath(path)
                                  self.postpath.append(path)
                                  n = n + 1
@@ -1989,12 +1989,12 @@ class sr_config:
                         self.randomize = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['post_realpath','realpath','real']: # See: sr_post.1, sr_watch.1
+                elif words0 in ['realpath_post','realpath','real']: # See: sr_post.1, sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        self.post_realpath = True
+                        self.realpath_post = True
                         n = 1
                      else :
-                        self.post_realpath = self.isTrue(words[1])
+                        self.realpath_post = self.isTrue(words[1])
                         n = 2
 
                 elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8

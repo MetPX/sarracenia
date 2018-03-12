@@ -408,7 +408,7 @@ class sr_post(sr_instances):
 
         urlstr = self.post_base_url + '/' + self.post_relpath
 
-        if self.filter_realpath and not self.post_realpath :
+        if self.realpath_filter and not self.realpath_post :
            if os.path.exist(path) :
               fltr_post_relpath = os.path.realpath(path)
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
@@ -820,7 +820,7 @@ class sr_post(sr_instances):
         src = src.replace(os.sep + '.' + os.sep, os.sep )
         dst = dst.replace(os.sep + '.' + os.sep, os.sep )
 
-        if os.path.islink(dst) and self.post_realpath:
+        if os.path.islink(dst) and self.realpath_post:
            dst = os.path.realpath(dst)
 
         # file
@@ -1086,7 +1086,7 @@ class sr_post(sr_instances):
 
         # how to proceed with symlink
 
-        if os.path.islink(src) and self.post_realpath :
+        if os.path.islink(src) and self.realpath_post :
            src = os.path.realpath(src)
 
         # walk src directory, this walk is depth first... there could be a lot of time
@@ -1114,7 +1114,7 @@ class sr_post(sr_instances):
         if os.path.islink(p):
             realp = os.path.realpath(p)
             self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
-            if self.post_realpath:
+            if self.realpath_post:
                 d=realp
             else:
                 d=p + os.sep + '.'
@@ -1242,7 +1242,7 @@ class sr_post(sr_instances):
 
         # apply accept/reject
 
-        if self.filter_realpath and not self.post_realpath :
+        if self.realpath_filter and not self.realpath_post :
            path = post_relpath
            if self.post_base_dir : path = self.post_base_dir + '/' + path
            if os.path.exist(path) :
@@ -1320,8 +1320,8 @@ class sr_post(sr_instances):
     def run(self):
         self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
               ( self.program_name, self.partflg, self.sumflg, self.caching ))
-        self.logger.info("%s post_realpath=%s follow_links=%s force_polling=%s"  % \
-              ( self.program_name, self.post_realpath, self.follow_symlinks, self.force_polling ) )
+        self.logger.info("%s realpath_post=%s follow_links=%s force_polling=%s"  % \
+              ( self.program_name, self.realpath_post, self.follow_symlinks, self.force_polling ) )
 
         self.connect()
 
