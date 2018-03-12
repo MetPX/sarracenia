@@ -109,15 +109,7 @@ class sr_subscribe(sr_instances):
 
         # exchange
 
-        if self.program_name == 'sr_report' :
-           if self.exchange == None :
-              self.exchange == 'xs_%s' % self.broker.username
-              if self.broker.username in self.users.keys():
-                 if self.users[self.broker.username] in [ 'feeder', 'admin' ]:
-                    self.exchange = 'xreport'
-
-        if self.exchange_suffix :
-           self.exchange = 'xs_%s' % self.broker.username + '_' + self.exchange_suffix
+        self.exchange = self.get_exchange_option()
 
         if self.exchange == None :
            self.logger.error("no exchange given")

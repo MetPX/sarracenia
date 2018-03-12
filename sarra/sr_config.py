@@ -917,7 +917,21 @@ class sr_config:
 
         return True
 
+    def get_exchange_option(self):
 
+        if not self.broker : return self.exchange
+
+        if self.program_name == 'sr_report' :
+           if self.exchange == None :
+              self.exchange == 'xs_%s' % self.broker.username
+              if self.broker.username in self.users.keys():
+                 if self.users[self.broker.username] in [ 'feeder', 'admin' ]:
+                    self.exchange = 'xreport'
+
+        if self.exchange_suffix :
+           self.exchange = 'xs_%s' % self.broker.username + '_' + self.exchange_suffix
+
+        return self.exchange
 
     def general(self):
         self.logger.debug("sr_config general")
@@ -2128,6 +2142,7 @@ class sr_config:
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
                      self.subtopic = words1
                      key = self.topic_prefix + '.' + self.subtopic
+                     self.exchange = self.get_exchange_option()
                      self.bindings.append( (self.exchange,key) )
                      self.logger.debug("BINDINGS")
                      self.logger.debug("BINDINGS %s"% self.bindings)
