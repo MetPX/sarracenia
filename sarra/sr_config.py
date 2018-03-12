@@ -271,6 +271,8 @@ class sr_config:
         self.logger.info( '\t\ton_post: %s'      % ''.join( map( self.xcl , self.on_post_list ) ) )
         self.logger.info( '\t\ton_heartbeat: %s' % ''.join( map( self.xcl , self.on_heartbeat_list ) ) )
         self.logger.info( '\t\ton_report: %s'    % ''.join( map( self.xcl , self.on_report_list ) ) )
+        self.logger.info( '\t\ton_start: %s'     % ''.join( map( self.xcl , self.on_start_list ) ) )
+        self.logger.info( '\t\ton_stop: %s'      % ''.join( map( self.xcl , self.on_stop_list ) ) )
 
         self.logger.info('log_settings end.')
 
