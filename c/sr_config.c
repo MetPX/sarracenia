@@ -816,9 +816,14 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
       sr_cfg->prefetch = atoi(argument);
       retval=(2);
 
-  } else if ( !strcmp( option, "realpath" ) ) {
+  } else if ( !strcmp( option, "realpath" ) || !strcmp( option, "realpath_post" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->realpath = val&2;
+      retval=(1+(val&1));
+
+  } else if ( !strcmp( option, "realpath_filter" ) {
+      val = StringIsTrue(argument);
+      sr_cfg->realpath_filter = val&2;
       retval=(1+(val&1));
 
   /*
@@ -1005,6 +1010,7 @@ void sr_config_init( struct sr_config_t *sr_cfg, const char *progname )
 
   sr_cfg->queuename=NULL;
   sr_cfg->realpath=0;
+  sr_cfg->realpath_filter=0;
   sr_cfg->recursive=1;
   sr_cfg->sleep=0.0;
   sr_cfg->heartbeat=300.0;

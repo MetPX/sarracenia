@@ -140,6 +140,7 @@ struct sr_config_t {
   char               *post_exchange_suffix;
   char               *queuename;
   int                 realpath;
+  int                 realpath_filter;
   int                 recursive;
   float               sleep;
   char                sumalgo; // checksum algorithm to use.
