@@ -168,19 +168,44 @@ int ts_newer( struct timespec a, struct timespec b)
 
 void do1file( struct sr_context *sr_c, char *fn ) 
 {
+    char *s;
     DIR *dir;
     int w;
     struct dirent *e;
     struct stat sb;
     struct sr_mask_t *mask;
     char ep[PATH_MAXNUL];
+    char fnreal[PATH_MAXNUL];
+    char tmpname[PATH_MAXNUL];
 
     //if (sr_c->cfg->debug)
     //    log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
     /* apply the accept/reject clauses */
 
     // FIXME BUG: pattern to match is supposed to be complete URL, not just path...
-    mask = isMatchingPattern( sr_c->cfg, fn );
+
+    if ( sr_c->cfg->realpath_filter) {
+
+       if ( lstat(fn, &sb) < 0 ) {
+          strcpy( tmpname, fn );
+          s=rindex( tmpname, '/' );
+          if (s) {
+             *s='\0';
+             s++;
+          }
+          realpath( tmpname, fnreal ); // apply to directory, not final path entry.
+          if (s) {
+             strcat( fnreal, "/" );
+             strcat( fnreal, s );
+          }
+       } else {
+         realpath( fn, fnreal );
+       }
+       mask = isMatchingPattern( sr_c->cfg, fnreal );
+    }  else {
+       mask = isMatchingPattern( sr_c->cfg, fn );
+    }
+
     if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) )
     {
           log_msg( LOG_DEBUG, "rejecting: %s\n", fn );
