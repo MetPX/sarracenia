@@ -821,7 +821,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
       sr_cfg->realpath = val&2;
       retval=(1+(val&1));
 
-  } else if ( !strcmp( option, "realpath_filter" ) {
+  } else if ( !strcmp( option, "realpath_filter" ) ) {
       val = StringIsTrue(argument);
       sr_cfg->realpath_filter = val&2;
       retval=(1+(val&1));

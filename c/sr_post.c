@@ -497,29 +497,37 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   struct sr_mask_t *mask;
   char *s;
   char oldname[PATH_MAX];
+  char oldreal[PATH_MAX];
   char newname[PATH_MAX];
+  char newreal[PATH_MAX];
+  char tmpname[PATH_MAX];
 
-  if (sr_c->cfg->realpath) {
-     strcpy( newname, o );
-     s=rindex( newname, '/' );
+  strcpy( oldname, o );
+  strcpy( newname, n );
+
+  if (sr_c->cfg->realpath || sr_c->cfg->realpath_filter) {
+     strcpy( tmpname, o );
+     s=rindex( tmpname, '/' );
      if (s) 
      {
         *s='\0';
         s++;
      }
-     realpath( newname, oldname ); // apply to directory, not final path entry.
+     realpath( tmpname, oldreal ); // apply to directory, not final path entry.
      if (s)
      {
-        strcat( oldname, "/" );
-        strcat( oldname, s );
+        strcat( oldreal, "/" );
+        strcat( oldreal, s );
      }
-     log_msg( LOG_DEBUG, "applying realpath to old: %s -> %s\n", o, oldname );
+     log_msg( LOG_DEBUG, "applying realpath to old: %s -> %s\n", o, oldreal );
 
-     realpath( n, newname);
-     log_msg( LOG_DEBUG, "applying realpath to new: %s -> %s\n", n, newname );
-  } else {
-     strcpy( oldname, o );
-     strcpy( newname, n );
+     realpath( n, newreal);
+     log_msg( LOG_DEBUG, "applying realpath to new: %s -> %s\n", n, newreal );
+  } 
+
+  if (sr_c->cfg->realpath ) {
+     strcpy( oldname, oldreal );
+     strcpy( newname, oldreal );
   }
       
   log_msg( LOG_DEBUG, "sr_%s %s starting rename: %s %s \n", sr_c->cfg->progname, __sarra_version__, oldname, newname );
@@ -540,7 +548,11 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   first_user_header.key = strdup( "newname" );
   first_user_header.value = strdup( newname );
 
-  mask = isMatchingPattern( sr_c->cfg, oldname );
+  if (sr_c->cfg->realpath || sr_c->cfg->realpath_filter) {
+     mask = isMatchingPattern( sr_c->cfg, oldreal );
+  } else {
+    mask = isMatchingPattern( sr_c->cfg, oldname );
+  }
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
       log_msg( LOG_DEBUG, "rejecting: %s\n", oldname );
   else 
@@ -558,7 +570,11 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   first_user_header.key = strdup( "oldname" );
   first_user_header.value = strdup( oldname );
 
-  mask = isMatchingPattern( sr_c->cfg, newname );
+  if (sr_c->cfg->realpath || sr_c->cfg->realpath_filter) {
+     mask = isMatchingPattern( sr_c->cfg, newreal );
+  } else {
+    mask = isMatchingPattern( sr_c->cfg, newname );
+  }
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
       log_msg( LOG_DEBUG, "rejecting: %s\n", newname );
   else 
