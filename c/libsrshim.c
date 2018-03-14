@@ -404,6 +404,86 @@ int renameorlink(int olddirfd, const char *oldpath, int newdirfd, const char *ne
 
 }
 
+static int dup2_init_done = 0;
+typedef int (*dup2_fn) ( int, int  );
+static dup2_fn dup2_fn_ptr = dup2;
+
+int dup2(int oldfd, int newfd )
+{   
+
+    int fdstat;
+    char fdpath[32];
+    char real_path[PATH_MAX+1];
+    char *real_return;
+    int fd_dup;
+    int status;
+    
+    if (!dup2_init_done) {
+        dup2_fn_ptr = (dup2_fn) dlsym(RTLD_NEXT, "dup2");
+        dup2_init_done = 1;
+        if (getenv("SR_POST_READS"))
+           srshim_initialize( "post" );
+    }
+    
+    /* here document are done in stdout fd = 1 so check for a path and post */
+    if ( newfd == 1 ) {
+
+         fdstat = fcntl(newfd, F_GETFL);
+
+         if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
+                return dup2_fn_ptr(oldfd, newfd);
+
+         snprintf(fdpath, 32, "/proc/self/fd/%d", newfd);
+         real_return = realpath(fdpath, real_path);
+
+         status = 0;
+         fd_dup = dup2_fn_ptr (oldfd, newfd);
+         if (fd_dup == -1) status = fd_dup;
+
+         if (!real_return) return(status);
+
+         if ( !strncmp(real_path,"/dev/", 5) ) return(status);
+         if ( !strncmp(real_path,"/proc/", 6) ) return(status);
+
+         if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 %s\n", real_path );
+
+         status = shimpost(real_path, status) ;
+
+         return fd_dup;
+
+    }
+
+
+    status = dup2_fn_ptr( oldfd, newfd );
+    
+    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 continue %d %d\n", oldfd, newfd );
+    
+    return status;
+ 
+}
+
+static int dup3_init_done = 0;
+typedef int (*dup3_fn) ( int, int, int );
+static dup3_fn dup3_fn_ptr = dup3;
+
+int dup3(int oldfd, int newfd, int flags )
+{   
+    int fd_dup;
+    
+    if (!dup3_init_done) {
+        dup3_fn_ptr = (dup3_fn) dlsym(RTLD_NEXT, "dup3");
+        dup3_init_done = 1;
+        if (getenv("SR_POST_READS"))
+           srshim_initialize( "post" );
+    }
+    
+    fd_dup = dup3_fn_ptr( oldfd, newfd, flags );
+    
+    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 continue %d %d %d\n", oldfd, newfd, flags );
+    
+    return fd_dup;
+}
+
 
 int link(const char *target, const char* linkpath) 
 {
