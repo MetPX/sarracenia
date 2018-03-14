@@ -1,3 +1,18 @@
+metpx-sarracenia (2.18.03a3) unstable; urgency=medium
+
+  * bugfix sr using cleanup_parent (was cleanup)
+  * bugfix unlink cache_file under try:except
+  * bugfix sender posting fix from msg.new_*
+  * bugfix with exchange_suffix
+  * bugfix on plugins (return T/F) for on_start/on_stop incomplete
+  *        show on_stop/start plugin/modules at startup
+  * C      realpath_post T/F, realpath_filter T/F
+  * C      libsrshim processes  here document
+  * subscribe on_report plugin implemented... and report_log plugin given as an example
+  * subscribe module check_consumer_options
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed Mar 14 17:39:30 +0000
+
 metpx-sarracenia (2.18.03a2) unstable; urgency=medium
 
   * bugfix: C: revert stat passed to sr_post because used for hardlink
