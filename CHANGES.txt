@@ -4,6 +4,19 @@
 
 lists all changes between versions.
 
+**2.18.03a3**
+
+* bugfix sr using cleanup_parent (was cleanup)
+* bugfix unlink cache_file under try:except
+* bugfix sender posting fix from msg.new_*
+* bugfix with exchange_suffix
+* bugfix on plugins (return T/F) for on_start/on_stop incomplete
+*        show on_stop/start plugin/modules at startup
+* C      realpath_post T/F, realpath_filter T/F
+* C      libsrshim processes  here document 
+* subscribe on_report plugin implemented... and report_log plugin given as an example
+* subscribe module check_consumer_options
+
 **2.18.03a2**
 
 * bugfix: C: revert stat passed to sr_post because used for hardlink
