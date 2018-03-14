@@ -59,7 +59,6 @@
  */
 #define HDRMAX (255)
 
-
 amqp_table_entry_t headers[HDRMAX];
 
 int hdrcnt = 0 ;
@@ -140,7 +139,6 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
       }
 
 }
-
 
 void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 {
@@ -415,7 +413,6 @@ struct sr_message_t *sr_file2message_seq(const char *pathspec, int seq, struct s
   return(m);
 }
 
-
 void sr_post(struct sr_context *sr_c, const char *pathspec, struct stat *sb ) 
 {
   static struct sr_message_t m;
@@ -527,7 +524,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
 
   if (sr_c->cfg->realpath ) {
      strcpy( oldname, oldreal );
-     strcpy( newname, oldreal );
+     strcpy( newname, newreal );
   }
       
   log_msg( LOG_DEBUG, "sr_%s %s starting rename: %s %s \n", sr_c->cfg->progname, __sarra_version__, oldname, newname );
@@ -548,8 +545,8 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   first_user_header.key = strdup( "newname" );
   first_user_header.value = strdup( newname );
 
-  if (sr_c->cfg->realpath || sr_c->cfg->realpath_filter) {
-     mask = isMatchingPattern( sr_c->cfg, oldreal );
+  if ( sr_c->cfg->realpath_filter) {
+    mask = isMatchingPattern( sr_c->cfg, oldreal );
   } else {
     mask = isMatchingPattern( sr_c->cfg, oldname );
   }
@@ -570,7 +567,7 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   first_user_header.key = strdup( "oldname" );
   first_user_header.value = strdup( oldname );
 
-  if (sr_c->cfg->realpath || sr_c->cfg->realpath_filter) {
+  if ( sr_c->cfg->realpath_filter) {
      mask = isMatchingPattern( sr_c->cfg, newreal );
   } else {
     mask = isMatchingPattern( sr_c->cfg, newname );
@@ -585,7 +582,6 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   
 
 }
-
 
 int sr_post_cleanup( struct sr_context *sr_c )
 {
