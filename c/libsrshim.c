@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <math.h>
 #include <stdarg.h>
 
@@ -410,13 +411,12 @@ static dup2_fn dup2_fn_ptr = dup2;
 
 int dup2(int oldfd, int newfd )
 {   
-
-    int fdstat;
+    int  fdstat;
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
-    int fd_dup;
-    int status;
+    int  fd_dup;
+    int  status;
     
     if (!dup2_init_done) {
         dup2_fn_ptr = (dup2_fn) dlsym(RTLD_NEXT, "dup2");
@@ -722,6 +722,7 @@ FILE *fopen(const char *pathname, const char *mode)
     
 }
 
+// MG modified open for 2 or 3 args
 
 static int open_init_done = 0;
 typedef int (*open_fn) (const char *, int, ...  );
@@ -729,7 +730,12 @@ static open_fn open_fn_ptr = open;
 
 int open(const char *pathname, int flags, ... )
 {
-    int status;
+    int status = 0;
+    int fd;
+
+    // to support 2 or 3 args
+    va_list args;
+    va_start(args,flags);
 
     if (!open_init_done) {
         open_fn_ptr = (open_fn) dlsym(RTLD_NEXT, "open");
@@ -739,13 +745,15 @@ int open(const char *pathname, int flags, ... )
     }
 
     if ( (flags & O_RDONLY) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
-        return open_fn_ptr( pathname, flags );
+        return open_fn_ptr( pathname, flags, args );
 
-    status = open_fn_ptr( pathname, flags );
+    fd = open_fn_ptr( pathname, flags, args );
+    if ( fd == -1 ) status = -1;
     
     if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG open continue %s %04x\n", pathname, flags );
 
-    return( shimpost( pathname, status ) );
+    status = shimpost( pathname, status );
+    return fd;
  
 }
 
