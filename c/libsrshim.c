@@ -78,22 +78,24 @@ void srshim_realpost(const char *path)
   char *s;
   char rn[PATH_MAX+1];
   char fn[PATH_MAX+1];
+  char fnreal[PATH_MAX+1];
 
   if (!path || !sr_c) return;
+  //log_msg( LOG_INFO, "ICI1 PATH %s\n", path);
  
   statres = lstat( path, &sb ) ;
 
   strcpy( fn, path );
 
-  if (sr_cfg.realpath)
+  if (sr_cfg.realpath || sr_cfg.realpath_filter)
   {
       if (!statres) 
       {
           /* realpath of a link might result in a file or directory
              the stat must be reassigned
            */
-          realpath( path, fn );
-          statres = lstat( fn, &sb ) ;
+          realpath( path, fnreal );
+          statres = lstat( fnreal, &sb ) ;
       } else {
           /* If the stat failed, assume ENOENT (normal for removal or move), do realpath the directory containing the entry.
              then add the filename onto the that.
@@ -102,17 +104,25 @@ void srshim_realpost(const char *path)
           s=rindex( rn, '/' );
           *s='\0';
           s++;
-          if ( realpath( rn, fn ) )
+          if ( realpath( rn, fnreal ) )
           {
-              strcat( fn, "/" );
-              strcat( fn, s );
+              strcat( fnreal, "/" );
+              strcat( fnreal, s );
           } else {
-              strcpy( fn, path );
+              strcpy( fnreal, path );
           }
       }
   }
 
-  mask = isMatchingPattern(&sr_cfg, fn);
+  if ( sr_cfg.realpath ) strcpy( fn, fnreal );
+
+  if ( sr_cfg.realpath_filter) {
+     //log_msg( LOG_INFO, "ICI2 FNREAL %s\n", fnreal);
+     mask = isMatchingPattern(&sr_cfg, fnreal);
+  } else {
+     mask = isMatchingPattern(&sr_cfg, fn);
+  }
+
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_cfg.accept_unmatched)) )
   { //reject.
       log_msg( LOG_INFO, "mask: %p, mask->accepting=%d accept_unmatched=%d\n", 
@@ -143,6 +153,8 @@ int shimpost( const char *path, int status )
 {
     char *cwd=NULL;
     char *real_path=NULL;
+
+    //log_msg( LOG_INFO, "ICI0 PATH %s\n", path);
 
     if (in_librshim_already_dammit) return(status);
 
