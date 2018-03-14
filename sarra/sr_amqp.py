@@ -120,8 +120,12 @@ class HostConnect:
                       self.connection = pika.BlockingConnection(parameters)
                else:
                       self.logger.debug("AMQPLIB is used")
-                      self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
-                                                        virtual_host=self.vhost,ssl=self.ssl)
+                      # dont know why... need to raise an exception when problem
+                      try   :
+                              self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
+                                                                virtual_host=self.vhost,ssl=self.ssl)
+                      except: raise Exception("amqp.Connection failed")
+
                self.channel    = self.new_channel()
                self.logger.debug("Connected ")
                for func in self.rebuilds:
