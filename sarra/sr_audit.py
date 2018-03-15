@@ -682,7 +682,10 @@ class sr_audit(sr_instances):
         # loop : audit should never stop working   ;-)
 
         while True  :
-                     #  is it sleeping ?
+                      #  heartbeat 
+                      ok = self.heartbeat_check()
+
+                      #  is it sleeping ?
                       if not self.has_vip() :
                          self.logger.debug("sr_audit does not have vip=%s, is sleeping" % self.vip)
                          time.sleep(5)
