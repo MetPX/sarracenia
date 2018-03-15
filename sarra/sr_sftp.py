@@ -191,7 +191,7 @@ class sr_sftp(sr_proto):
 
         if not self.credentials() : return False
 
-        alarm_set(3*self.iotime)
+        alarm_set(self.iotime)
         try:
 
                 logger = logging.getLogger('paramiko')

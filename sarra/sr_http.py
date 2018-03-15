@@ -206,7 +206,7 @@ class sr_http(sr_proto):
         self.req       = None
         self.urlstr    = path
 
-        alarm_set(3*self.iotime)
+        alarm_set(self.iotime)
 
         try:
                 # when credentials are needed.

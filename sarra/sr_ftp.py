@@ -173,7 +173,7 @@ class sr_ftp(sr_proto):
 
 
         # timeout alarm 100 secs to connect
-        alarm_set(3*self.iotime)
+        alarm_set(self.iotime)
         try:
                 expire  = -999
                 if self.parent.timeout : expire = self.parent.timeout
