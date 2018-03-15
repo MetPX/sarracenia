@@ -1,3 +1,10 @@
+metpx-sarracenia (2.18.03a4) unstable; urgency=medium
+
+  * C      libsrshim dup3 (like dup2 for redirection)
+  * bugfix amqp.connection not working now showing reference to 'msg'
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Thu Mar 15 14:12:58 +0000
+
 metpx-sarracenia (2.18.03a3) unstable; urgency=medium
 
   * bugfix sr using cleanup_parent (was cleanup)
