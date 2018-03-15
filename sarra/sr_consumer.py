@@ -276,7 +276,7 @@ class sr_consumer:
 
         self.retry.add_msg_to_state_file(self.raw_msg,done=True)
 
-        self.logger.info("confirmed removed from the retry process %s" % self.raw_msg.body)
+        self.logger.debug("confirmed removed from the retry process %s" % self.raw_msg.body)
 
     def publish_back(self):
         self.logger.debug("sr_consumer publish_back")
