@@ -4,6 +4,11 @@
 
 lists all changes between versions.
 
+**2.18.03a4**
+
+* C      libsrshim dup3 (like dup2 for redirection)
+* bugfix amqp.connection not working now showing reference to 'msg'
+
 **2.18.03a3**
 
 * bugfix sr using cleanup_parent (was cleanup)
@@ -13,7 +18,7 @@ lists all changes between versions.
 * bugfix on plugins (return T/F) for on_start/on_stop incomplete
 *        show on_stop/start plugin/modules at startup
 * C      realpath_post T/F, realpath_filter T/F
-* C      libsrshim processes  here document 
+* C      libsrshim processes  redirections  (dup2)
 * subscribe on_report plugin implemented... and report_log plugin given as an example
 * subscribe module check_consumer_options
 
