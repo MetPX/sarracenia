@@ -272,7 +272,7 @@ class sr_consumer:
     def msg_worked(self):
         self.last_msg_failed = False
 
-        if self.raw_msg == None and not self.raw_msg.isRetry : return
+        if self.raw_msg == None or not self.raw_msg.isRetry : return
 
         self.retry.add_msg_to_state_file(self.raw_msg,done=True)
 
