@@ -1565,8 +1565,8 @@ class sr_subscribe(sr_instances):
 
               except:
                       (stype, svalue, tb) = sys.exc_info()
-                      self.logger.error( "sr_subscribe/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
-                          (going_badly, stype, svalue) )
+                      self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
+                          (self.program_name,going_badly, stype, svalue) )
                       time.sleep(going_badly)
                       if (going_badly < 5):  going_badly*=2 
 

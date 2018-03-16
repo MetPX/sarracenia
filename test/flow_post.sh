@@ -34,14 +34,25 @@ function do_sr_post {
    # TODO - consider if .httpdocroot ends with a '/' ?
    find . -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
    # Obtain file listing delta
-   srpostdelta=`comm -23 $srpostlstfile_new $srpostlstfile_old`
+
+   rm    /tmp/diffs.txt 2> /dev/null
+   touch /tmp/diffs.txt
+   comm -23 $srpostlstfile_new $srpostlstfile_old > /tmp/diffs.txt
+
+   srpostdelta=`cat /tmp/diffs.txt`
 
    if [ "$srpostdelta" == "" ]; then
       return
    fi
 
-   sr_post -c test2_f61.conf -p $srpostdelta 
-   LD_PRELOAD="libsrshim.so.1" cp -p --parents $srpostdelta  ${httpdocroot}/posted_by_shim
+   # loop on each line to properly post filename with space
+
+   while read relpath;
+   do
+         fix_relpath=`echo $relpath| sed 's/ /\\\\ /'`
+         sr_post -c test2_f61.conf -p "$relpath"
+         LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim
+   done < /tmp/diffs.txt
    
    cp -p $srpostlstfile_new $srpostlstfile_old
 
