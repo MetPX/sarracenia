@@ -239,6 +239,11 @@ echo $httpserverpid >.httpserverpid
 echo $testdocroot >.httpdocroot
 echo $flowpostpid >.flowpostpid
 
+if [ ${#} -ge 1 ]; then
+export MAX_MESSAGES=${1}
+echo $MAX_MESSAGES
+fi
+
 echo "Starting up all components (sr start)..."
 sr start >$LOGDIR/sr_start_f00.log 2>&1
 echo "done."
