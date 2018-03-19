@@ -829,6 +829,7 @@ def main():
     elif action == 'start'      : audit.start_parent()
     elif action == 'stop'       : audit.stop_parent()
     elif action == 'status'     : audit.status_parent()
+    elif action == 'sanity'     : audit.status_parent(sanity=True)
 
     elif action == 'cleanup'    : audit.cleanup()
     elif action == 'declare'    : audit.declare()

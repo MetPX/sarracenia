@@ -160,6 +160,7 @@ class sr_instances(sr_config):
            elif action == 'start'    : self.exec_action_on_all(action)
            elif action == 'stop'     : self.exec_action_on_all(action)
            elif action == 'status'   : self.exec_action_on_all(action)
+           elif action == 'sanity'   : self.exec_action_on_all(action)
            else :
                 self.logger.warning("Should invoke 4: %s [args] action config" % sys.argv[0])
            os._exit(0)
@@ -185,6 +186,7 @@ class sr_instances(sr_config):
         elif action == 'start'      : self.start_parent()
         elif action == 'stop'       : self.stop_parent()
         elif action == 'status'     : self.status_parent()
+        elif action == 'sanity'     : self.status_parent(sanity=True)
 
         elif action == 'cleanup'    : self.cleanup_parent()
 
@@ -526,9 +528,9 @@ class sr_instances(sr_config):
              self.start()
         sys.exit(0)
 
-    def status_instance(self):
+    def status_instance(self,sanity=False):
         if self.pid == None :
-           self.logger.info("%s is stopped" % self.instance_str)
+           if not sanity : self.logger.info("%s is stopped" % self.instance_str)
            return
 
         try    : 
@@ -537,20 +539,23 @@ class sr_instances(sr_config):
                  if not isinstance(p.status,str): status = p.status()
                  status = status.lower()
                  status = status.replace('sleeping','running')
-                 self.logger.info("%s is %s" % (self.instance_str,status))
+                 if not sanity : self.logger.info("%s is %s" % (self.instance_str,status))
                  return
         except : pass
 
         self.logger.info("%s no status ... strange state" % self.instance_str)
+        if sanity :
+           self.logger.info("%s restart" % self.instance_str)
+           self.restart_instance()
 
-    def status_parent(self):
+    def status_parent(self, sanity=False):
 
         # instance 0 is the parent... child starts at 1
 
         i=1
         while i <= self.nbr_instances :
               self.build_instance(i)
-              self.status_instance()
+              self.status_instance(sanity)
               i = i + 1
 
         # the number of instances has decreased... stop excedent

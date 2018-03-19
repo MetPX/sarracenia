@@ -121,6 +121,12 @@ def invoke(dirconf,pgm,confname,action):
     program = 'sr_' + pgm
     config  = re.sub(r'(\.conf)','',confname)
 
+    # c does not implement action sanity yet
+    cfg.logger.info("action %s" % action)
+    if action == 'sanity' and pgm in ['cpost','cpump'] :
+       cfg.logger.warning("%s %s %s : sanity Not Implemented" % ("sr_" + pgm,action,confname))
+       return
+
     try :
              # anything but sr_post
              if program != 'sr_post' :
@@ -180,7 +186,7 @@ def scandir(dirconf,pgm,action):
 def main():
 
     # actions supported
-    actions_supported = ['start', 'stop', 'status', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'remove']
+    actions_supported = ['start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'remove']
 
     # actions extended (actions on config)
     actions_supported.extend( ['list'] )
