@@ -1003,7 +1003,7 @@ class sr_subscribe(sr_instances):
         newname = None
         if 'newname' in self.msg.headers :
            #self.logger.warning("%s doit_download - newname=%s" % (self.program_name, self.msg.headers['newname']) )
-           newname = self.msg.headers
+           newname = self.msg.headers['newname']
 
            # it means that the message notice contains info about oldpath
            oldpath = self.msg.new_dir + '/' + self.msg.new_file
@@ -1428,6 +1428,19 @@ class sr_subscribe(sr_instances):
         if self.msg.isRetry: self.consumer.msg_worked()
         return True
 
+    def LOG_TRACE(self):
+        import io, traceback
+
+        tb_output = io.StringIO()
+        traceback.print_stack(None, None, tb_output)
+        self.logger.info("\n\n****************************************\n" + \
+                             "***** PRINTING TRACEBACK FROM STOP *****\n" + \
+                             "****************************************\n" + \
+                           "\n" + tb_output.getvalue()             + "\n" + \
+                           "\n****************************************\n")
+        tb_output.close()
+
+
     def restore_messages(self):
         self.logger.info("%s restore_messages" % self.program_name)
 
@@ -1564,6 +1577,7 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
+                      if self.debug : self.LOG_TRACE()
                       (stype, svalue, tb) = sys.exc_info()
                       self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
                           (self.program_name,going_badly, stype, svalue) )
