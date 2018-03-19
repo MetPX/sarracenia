@@ -303,16 +303,21 @@ while [ $totsarra -lt $smin ]; do
 done
 printf  "\nSufficient!\n" 
 
+# if msg_stopper plugin is used this should not happen
 if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
    echo "stopping shovels and waiting..."
    sr_shovel stop t_dd2_f00 &
    sr_shovel stop t_dd1_f00 
-   if [ "${C_ALSO}" ]; then
-         sr_cpump stop pelle_dd1_f04 &
-         sr_cpump stop pelle_dd2_f05
-   fi
+fi
 
-   sleep 10
+if [ "${C_ALSO}" ]; then
+      sr_cpump stop pelle_dd1_f04 &
+      sr_cpump stop pelle_dd2_f05
+fi
+
+sleep 10
+
+if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
