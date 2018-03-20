@@ -32,7 +32,8 @@ function do_sr_post {
 
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
-   find . -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
+   find . -type f -print | sort | grep -v '.tmp$' >  $srpostlstfile_new
+   find . -type l -print | sort | grep -v '.tmp$' >> $srpostlstfile_new
    # Obtain file listing delta
 
    rm    /tmp/diffs.txt 2> /dev/null
@@ -49,9 +50,11 @@ function do_sr_post {
 
    while read relpath;
    do
-         fix_relpath=`echo $relpath| sed 's/ /\\\\ /'`
-         sr_post -c test2_f61.conf -p "$relpath"
-         LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim
+         if [ ${relpath:-4} != ".tmp" ] ; then
+                fix_relpath=`echo $relpath| sed 's/ /\\\\ /'`
+                sr_post -c test2_f61.conf -p "$relpath"
+                LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim
+         fi
    done < /tmp/diffs.txt
    
    cp -p $srpostlstfile_new $srpostlstfile_old
