@@ -197,12 +197,6 @@ class sr_consumer:
            else:
               urlstr=self.msg.urlstr
 
-           if urlstr.startswith('file:') and self.parent.realpath_filter :
-              path = urlstr[5:]
-              if os.path.exist(path) :
-                 fltr_post_relpath = os.path.realpath(path)
-                 urlstr = 'file:/' + fltr_post_relpath
-
            self.logger.debug("sr_consumer, path being matched: %s " % ( urlstr )  ) 
 
            if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
