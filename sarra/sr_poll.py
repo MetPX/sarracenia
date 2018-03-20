@@ -274,7 +274,6 @@ class sr_poll(sr_post):
           "\ton_post           <script>        (default None)\n" +
           "" )
 
-  
         print("OPTIONS:")
         print("DEBUG:")
         print("-debug")
@@ -291,7 +290,8 @@ class sr_poll(sr_post):
                 for line in lines :
                     parts = line.split()
                     fil   = parts[-1]
-                    lsold[fil] = line[:-1]
+                    if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
+                    lsold[fil] = line
 
                 return lsold
 

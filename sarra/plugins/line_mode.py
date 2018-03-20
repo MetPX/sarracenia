@@ -39,7 +39,16 @@ class Line_Mode(object):
 
     def perform(self,parent):
 
-        ( modstr , links, uid, gid, size, dom, mona, t, name ) = parent.line.split()
+        # filename with space is processed correctly
+
+        parts = parent.line.split()
+
+        name  = parts[-1]
+
+        if not parent.ls_file_index in [-1,len(parts)-1] :
+           name = ' '.join(parts[parent.ls_file_index:])
+
+        ( modstr , links, uid, gid, size, dom, mona, t ) = parts[:8]
     
         mode=0
         mode += self.modstr2num(modstr[1:4]) << 6

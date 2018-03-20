@@ -709,6 +709,7 @@ class sr_config:
 
         self.do_poll              = None
         self.do_polls             = {}
+        self.ls_file_index        = -1
 
         self.do_send              = None
         self.do_sends             = {}
@@ -1694,6 +1695,12 @@ class sr_config:
                      else :
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
+
+                elif words0 == 'ls_file_index': # FIX ME to document... position of file in ls
+                                                #        use when space in filename is expected
+                     self.ls_file_index = int(words[1])
+                     n = 2
+
 
                 elif words0 == 'pipe' : # See: FIXME
                      if (words1 is None) or words[0][0:1] == '-' : 
