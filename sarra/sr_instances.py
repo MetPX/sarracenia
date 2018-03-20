@@ -186,7 +186,9 @@ class sr_instances(sr_config):
         elif action == 'start'      : self.start_parent()
         elif action == 'stop'       : self.stop_parent()
         elif action == 'status'     : self.status_parent()
-        elif action == 'sanity'     : self.status_parent(sanity=True)
+        elif action == 'sanity'     : 
+                                      self.status_parent(sanity=True)
+                                      self.logtim_parent()
 
         elif action == 'cleanup'    : self.cleanup_parent()
 
@@ -405,7 +407,35 @@ class sr_instances(sr_config):
         except :
                  self.logger.warning("%s no reload ... strange state; restarting" % self.instance_str)
                  self.restart_instance()
+
+    def log_age_parent(self):
+
+        # instance 0 is the parent... child starts at 1
+
+        i=1
+        while i <= self.nbr_instances :
+              self.build_instance(i)
+              self.log_age_instance()
+              i = i + 1
+
+        # the number of instances has decreased... stop excedent
+        if i <= self.last_nbr_instances:
+           self.stop_instances(i,self.last_nbr_instances)
+
+        # write nbr_instances
+        self.file_set_int(self.statefile,self.nbr_instances)
     
+    def log_age_instance(self):
+
+        log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+        now      = time.time()
+
+        elapse   = now - log_age
+
+        if elapse > self.heartbeat * 1.5 :
+           self.logger.warning("logfile older than 1.5 * heartbeat; restarting %s" % self.instance_str)
+           self.restart_instance()
+
     def reload_parent(self):
 
         # instance 0 is the parent... child starts at 1
