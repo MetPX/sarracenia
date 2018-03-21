@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-  Msg_Clean_F90
+  Msg_Pclean_F90
   
   plugin that is used in shovel clean_f90 ... for each product... python side
   - it checks if the propagation was ok.
@@ -19,7 +19,7 @@
 """
 import os,stat,time
 
-class Msg_Clean_F90(object): 
+class Msg_Pclean_F90(object): 
 
     def __init__(self,parent):
         pass
@@ -32,7 +32,7 @@ class Msg_Clean_F90(object):
         if not os.path.isfile(self.send_f50_path) : logger.warning("%s not found" % self.send_f50_path) 
         if not os.path.isfile(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
         if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
-        if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f71_path) 
+        if not os.path.isfile(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
         logger.warning("propagated = %d" % propagated) 
 
     def on_message(self,parent):
@@ -43,18 +43,20 @@ class Msg_Clean_F90(object):
         root   = parent.currentDir
         relp   = msg.relpath
 
+        logger.info("msg_pclean_f90.py on_message")
+
         # build all 6 paths of a successfull propagated path
 
         if relp[0] != '/' : relp = '/' + relp
 
-        self.sarr_f20_path = root                             + relp
-        self.subs_f30_path = root + '/downloaded_by_sub_t'    + relp
+        self.sarr_f20_path = root                             + relp   # sarra
+        self.subs_f30_path = root + '/downloaded_by_sub_t'    + relp   # subscribe t_sub
         # f40 is watch... no file
-        self.send_f50_path = root + '/sent_by_tsource2send'   + relp
-        self.subs_f60_path = root + '/downloaded_by_sub_u'    + relp
+        self.send_f50_path = root + '/sent_by_tsource2send'   + relp   # sender
+        self.subs_f60_path = root + '/downloaded_by_sub_u'    + relp   # subscribe u_sftp_f60
         # at f60 there is a post and a poll... no file
-        self.subs_f70_path = root + '/posted_by_srpost_test2' + relp
-        self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp
+        self.subs_f70_path = root + '/posted_by_srpost_test2' + relp   # subscribe ftp_f70
+        self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp   # subscribe q_f71
 
         # propagated count 
 
@@ -90,24 +92,26 @@ class Msg_Clean_F90(object):
 
         testid =  random.randint(0,3)
 
-        # make sure each has 2 posts for an equal post_count
+        # expand tests
 
         if   testid == 0 :
                            shutil.copy(watched_file,watched_file +'.S P C')
-                           msg.headers['clean_f90'] = '.S P C'
+                           msg.headers['pclean_f90'] = '.S P C'
 
         elif testid == 1 :
                            os.symlink( watched_file,watched_file +'.slink')
-                           msg.headers['clean_f90'] = '.slink'
+                           msg.headers['pclean_f90'] = '.slink'
 
         elif testid == 2 :
                            os.link   ( watched_file,watched_file +'.hlink')
-                           msg.headers['clean_f90'] = '.hlink'
+                           msg.headers['pclean_f90'] = '.hlink'
 
         elif testid == 3 :
-                           os.rename ( watched_file,watched_file +'.moved')
-                           msg.headers['clean_f90'] = '.moved'
+                           os.rename ( watched_file ,watched_file +'.moved')
+                           msg.headers['pclean_f90'] = '.moved'
+
+        del msg.headers['toolong']
 
         return True
 
-self.plugin='Msg_Clean_F90'
+self.plugin='Msg_Pclean_F90'

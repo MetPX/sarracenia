@@ -20,6 +20,23 @@ class Msg_Clean_F91(object):
     def __init__(self,parent):
         pass
 
+    def log_state(self,parent,propagated,ext=None):
+        logger = parent.logger
+
+        if not ext :
+           if not os.path.isfile(self.subs_f30_path) : logger.warning("%s not found" % self.subs_f30_path) 
+           if not os.path.isfile(self.send_f50_path) : logger.warning("%s not found" % self.send_f50_path) 
+           if not os.path.isfile(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
+           if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
+           if not os.path.isfile(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
+        else:
+           if not os.path.isfile(self.subs_f30_path+ext) : logger.warning("%s not found" % self.subs_f30_path+ext) 
+           if not os.path.isfile(self.send_f50_path+ext) : logger.warning("%s not found" % self.send_f50_path+ext) 
+           if not os.path.isfile(self.subs_f60_path+ext) : logger.warning("%s not found" % self.subs_f60_path+ext) 
+           if not os.path.isfile(self.subs_f70_path+ext) : logger.warning("%s not found" % self.subs_f70_path+ext) 
+           if not os.path.isfile(self.subs_f71_path+ext) : logger.warning("%s not found" % self.subs_f71_path+ext) 
+        logger.warning("propagated = %d" % propagated) 
+
     def on_message(self,parent):
         import shutil
 
@@ -28,10 +45,11 @@ class Msg_Clean_F91(object):
         root   = parent.currentDir
         relp   = msg.relpath
 
-        if 'clean_f90' in msg.headers :
-           ext = msg.headers['clean_f90']
-           del   msg.headers['clean_f90']
-           msg.headers['clean_f91'] = ext
+        logger.info("msg_pclean_f91.py on_message")
+
+        if 'pclean_f90' in msg.headers :
+           ext = msg.headers['pclean_f90']
+           msg.headers['pclean_f91'] = ext
 
         else:
            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
@@ -42,36 +60,66 @@ class Msg_Clean_F91(object):
 
         # build all 3 paths of a successfull propagated path
 
-        if relp[0] != '/' : relp = '/' + relp + ext
+        if relp[0] != '/' : relp = '/' + relp
 
-        subs_f30_path = root + '/downloaded_by_sub_t'    + relp
-        send_f50_path = root + '/sent_by_tsource2send'   + relp
-        subs_f60_path = root + '/downloaded_by_sub_u'    + relp
+        self.sarr_f20_path = root                             + relp   # sarra
+        self.subs_f30_path = root + '/downloaded_by_sub_t'    + relp   # subscribe t_sub
+        # f40 is watch... no file
+        self.send_f50_path = root + '/sent_by_tsource2send'   + relp   # sender
+        self.subs_f60_path = root + '/downloaded_by_sub_u'    + relp   # subscribe u_sftp_f60
+        # at f60 there is a post and a poll... no file
+        self.subs_f70_path = root + '/posted_by_srpost_test2' + relp   # subscribe ftp_f70
+        self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp   # subscribe q_f71
 
         # propagated count 
 
         propagated = 0
-        try   :
-                if os.path.isfile(subs_f30_path) : propagated += 1
-        except: pass
-        try   :
-                if os.path.isfile(send_f50_path) : propagated += 1
-        except: pass
-        try   :
-                if os.path.isfile(subs_f60_path) : propagated += 1
-        except: pass
+        if os.path.isfile(self.subs_f30_path+ext) : propagated += 1
+        if os.path.isfile(self.send_f50_path+ext) : propagated += 1
+        if os.path.isfile(self.subs_f60_path+ext) : propagated += 1
+        if os.path.isfile(self.subs_f70_path+ext) : propagated += 1
+        if os.path.isfile(self.subs_f71_path+ext) : propagated += 1
+
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if propagated != 3 :
+        if propagated != 5 :
+           logger.warning("%s not fully propagated" % relp )
+           # if testing
+           self.log_state(parent,propagated,ext)
            parent.consumer.msg_to_retry()
            return False
 
-        # everything worked ... remove the watch file
+        # ok it is everywhere ...  # do big cleanup
 
-        os.unlink(subs_f30_path)
+        if ext != '.moved' : os.unlink(self.sarr_f20_path)
+
+        try   : os.unlink( self.subs_f30_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f30_path+ext)
+
+        try   : os.unlink( self.subs_f30_path)
+        except: logger.warning("%s already deleted ?" % self.subs_f30_path)
+
+        # deletion propagation ... we skip theses
+
+        #os.unlink( self.subs_f50_path.ext)
+        #os.unlink( self.subs_f50_path)
+        #os.unlink( self.subs_f60_path.ext)
+        #os.unlink( self.subs_f60_path)
+
+        try   : os.unlink( self.subs_f70_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f70_path+ext)
+        try   : os.unlink( self.subs_f70_path)
+        except: logger.warning("%s already deleted ?" % self.subs_f70_path)
+
+        try   : os.unlink( self.subs_f71_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f71_path+ext)
+        try   : os.unlink( self.subs_f71_path)
+        except: logger.warning("%s already deleted ?" % self.subs_f71_path)
+
+        del msg.headers['pclean_f90']
 
         return True
 
