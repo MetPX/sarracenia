@@ -279,9 +279,11 @@ Should you want to implement tasks in various part of the execution of the progr
 
 The **on_line** plugin gives scripts that can read each line of an 'ls' on the polled
 site, to interpret it further.  return True, if the line should be further processed,
-or False to reject it.  by default, there is a line_mode plugin included with the package
+or False to reject it.  By default, there is a line_mode plugin included with the package
 which implements the comparison of file permission on the remote server against
-the **chmod** mask.
+the **chmod** mask. The program assumes that the very last word of the ls line is the
+filename. This might not be the case if filenames might contains spaces. For this purpose, 
+the option **ls_file_index** can be used to set the first word where the filename starts.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
 an html page. The default plugin **html_page** provided with the package, gives an idea
