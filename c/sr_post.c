@@ -142,10 +142,11 @@ unsigned long int set_blocksize( long int bssetting, size_t fsz )
 
 void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
 {
+    char fn[PATH_MAXNUL];
     char message_body[1024];
     char smallbuf[256];
     char thisexchange[256];
-    //char *c,*d;
+    char *c,*d;
     amqp_table_t table;
     amqp_basic_properties_t props;
     amqp_tx_commit_ok_t *commit_status;
@@ -154,13 +155,25 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     struct sr_header_t *uh;
     time_t to_sleep = 1;
 
+    // MG white space in filename
+    strcpy(fn, m->path);
+    c = strchr(m->path,' ');
+    if ( c != NULL )
+    {
+    c = fn;
+    d = m->path;
+    while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+    *c='\0';
+    }
+
+    //  resume posting
     while(1) 
     {
         strcpy( message_body, m->datestamp);
         strcat( message_body, " " );
         strcat( message_body, m->url );
         strcat( message_body, " " );
-        strcat( message_body, m->path );
+        strcat( message_body, fn  );
         strcat( message_body, " \n" );
      
         header_reset();
@@ -218,7 +231,7 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     
         if ( status < 0 ) 
         {
-            log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, m->path );
+            log_msg( LOG_ERROR, "sr_%s: publish of message for  %s%s failed.\n", sr_c->cfg->progname, m->url, fn );
             goto restart;
         }
     
