@@ -46,6 +46,10 @@ Parameters:
      - if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
        this involves \n as termination character, and other charater substitutions.
 
+ msg_filter_use_symlink on|off
+
+     - if on, instead of copying the bulletin is will be symlink from is original filepath
+
 NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
       including hints about debugging.
 
@@ -89,6 +93,9 @@ class Xwmo2msc(object):
 
         if hasattr(parent,'msg_filter_wmo2msc_convert'):
            parent.convert2msc=parent.isTrue(parent.msg_filter_convert[0])
+
+        if hasattr(parent,'msg_filter_use_symlink'):
+           parent.use_symlink=parent.isTrue(parent.msg_filter_use_symlink[0])
 
         self.trimre=re.compile(b" +\n")
         parent.logger.info('msg_filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
@@ -184,7 +191,6 @@ class Xwmo2msc(object):
         if len(self.bintxt) < lenb:
            print('Trimmed %d trailing blanks!' % (lenb - len(self.bintxt)) )
 
-
     def on_message(self,parent):
         logger = parent.logger
         msg    = parent.msg
@@ -257,21 +263,30 @@ class Xwmo2msc(object):
             d = d + os.sep + self.bulletin[0][2:4].decode('ascii') 
             logger.info( 'filter_wmo2msc check %s' % (d) )
             if not os.path.isdir( d ):
-                os.mkdir( d, parent.chmod_dir ) 
+                os.makedirs( d, parent.chmod_dir, True ) 
 
             d = d + os.sep + self.bulletin[0][14:16].decode('ascii') 
             logger.info( 'filter_wmo2msc check %s' % (d) )
             if not os.path.isdir( d ):
-                os.mkdir( d, parent.chmod_dir ) 
+                os.makedirs( d, parent.chmod_dir, True ) 
 
             local_file = d + os.sep + AHLfn
         else:
             local_file = parent.currentDir + os.sep + AHLfn
 
         # write the data.
-        d = open( local_file, 'wb+') 
-        d.write(self.bintxt)
-        d.close()
+        fileOK = False
+
+        if not parent.convert2msc :
+           try   :
+                   os.link(input_file,localfile)
+                   fileOK = True
+           except: pass
+        
+        if parent.convert2msc or not fileOK :
+           d = open( local_file, 'wb+') 
+           d.write(self.bintxt)
+           d.close()
 
         logger.info( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
 
