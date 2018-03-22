@@ -4,6 +4,20 @@
 
 lists all changes between versions.
 
+**2.18.03b1**
+
+* testing: changes derived expanded flow_test coverage
+*        plugin msg_stopper with env MAX_MESSAGES
+*        filename with spaces: ls_file_index (poll,sftp,ftp), sr_post.c, flow_post.sh
+*        flow config changes : reject (hourly,today,yesterday xml)
+*        plugins   : msg_pclean_f9*.py
+*        sr_subscribe logging fix
+* new    realpath_filter (PY and C), realpath also named realpath_post
+*        sr sanity  check pid/process  and log age if older than heartbeat * 1.5
+*        sr_audit not finished (heartbeat)
+* bugfix Rotation of retry messages ajusted under certain conditions
+* update msg_filter_wmo2msc.py requiered operationnaly now
+
 **2.18.03a4**
 
 * C      libsrshim dup3 (like dup2 for redirection)
