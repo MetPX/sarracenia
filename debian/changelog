@@ -3,7 +3,7 @@ metpx-sarracenia (2.18.03a4) unstable; urgency=medium
   * C      libsrshim dup3 (like dup2 for redirection)
   * bugfix amqp.connection not working now showing reference to 'msg'
 
- -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Thu Mar 15 14:12:58 +0000
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Thu, 15 Mar 2018 14:12:58 +0000
 
 metpx-sarracenia (2.18.03a3) unstable; urgency=medium
 
@@ -18,7 +18,7 @@ metpx-sarracenia (2.18.03a3) unstable; urgency=medium
   * subscribe on_report plugin implemented... and report_log plugin given as an example
   * subscribe module check_consumer_options
 
- -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed Mar 14 17:39:30 +0000
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed, 14 Mar 2018 17:39:30 +0000
 
 metpx-sarracenia (2.18.03a2) unstable; urgency=medium
 
