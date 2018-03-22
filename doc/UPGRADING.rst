@@ -38,6 +38,13 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.03b1
+---------
+
+*NOTICE*: just make sure the exchange is declared before any subtopic declarations...
+          As they are bind together in the consumer queue and define the messages to receive
+          Improper setting may lead to a process that seems to be hung.
+
 2.18.02a1
 ---------
 
