@@ -189,15 +189,15 @@ class Xwmo2msc(object):
         logger = parent.logger
         msg    = parent.msg
 
-        if msg.urlstr[0:5] != 'file:' :
-            logger.error( 'filter_wmo2msc needs local files invalid url: %s ' % (msg.urlstr) )
+        if msg.baseurl != 'file:' :
+            logger.error( 'filter_wmo2msc needs local files invalid url: %s ' % (msg.baseurl + msg.relpath) )
             return False
 
-        input_file = msg.urlstr.replace("file:","")        
+        input_file = msg.relpath
 
         # read once to get headers and type.
 
-        logger.debug( 'filter_wmo2msc reading file: %s' % (msg.urlstr) )
+        logger.debug( 'filter_wmo2msc reading file: %s' % (input_file) )
 
         with open( input_file, 'rb' ) as s:
             self.bulletin = [ s.readline(), s.read(4) ]
@@ -252,7 +252,7 @@ class Xwmo2msc(object):
             d = d.replace( parent.filter_olddir, parent.filter_newdir )
             logger.info( 'filter_wmo2msc check %s after replace' % (d) )
             if not os.path.isdir( d ):
-                os.mkdir( d, parent.chmod_dir ) 
+                os.makedirs( d, parent.chmod_dir, True ) 
 
             d = d + os.sep + self.bulletin[0][2:4].decode('ascii') 
             logger.info( 'filter_wmo2msc check %s' % (d) )
