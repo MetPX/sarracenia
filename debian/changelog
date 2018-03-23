@@ -1,3 +1,19 @@
+metpx-sarracenia (2.18.03b1) unstable; urgency=medium
+
+  * expanded flow_test coverage:
+  *        plugin msg_stopper with env MAX_MESSAGES
+  *        filename with spaces: ls_file_index (poll,sftp,ftp), sr_post.c, flow_post.sh
+  *        flow config changes : reject (hourly,today,yesterday xml)
+  *        plugins   : msg_pclean_f9*.py
+  *        sr_subscribe logging fix
+  * new    realpath_filter (PY and C), realpath also named realpath_post
+  *        sr sanity  check pid/process  and log age if older than heartbeat * 1.5
+  *        sr_audit not finished (heartbeat)
+  * bugfix Rotation of retry messages ajusted under certain conditions
+  * update msg_filter_wmo2msc.py requiered operationally now
+
+ -- Peter Silva <peter@idefix>  Fri, 23 Mar 2018 11:57:09 -0400
+
 metpx-sarracenia (2.18.03a4) unstable; urgency=medium
 
   * C      libsrshim dup3 (like dup2 for redirection)
