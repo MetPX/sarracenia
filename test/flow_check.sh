@@ -174,46 +174,69 @@ function countall {
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
-  totmsgt="${tot}"
-
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
-  totfilet="${tot}"
-
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
   totshovel1="${tot}"
 
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
   totshovel2="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
-  totwatch="${tot}"
+  countthem "`grep post_log "$LOGDIR"/sr_winnow*.log* | wc -l`"
+  totwinpost="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
   totshortened="${tot}"
 
+  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
+  totwatch="${tot}"
+
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  totmsgt="${tot}"
+
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  totfilet="${tot}"
+
   countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_000*.log* | wc -l`"
   totsent="${tot}"
 
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  totsubu="${tot}"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  totsubu=$(( totsubu + tot ))
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  totsubu=$(( totsubu + tot ))
+
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
   totsubq="${tot}"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
+  totsubq=$(( totsubq + tot ))
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
+  totsubq=$(( totsubq + tot ))
+
   countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_000*.log* | wc -l`"
   totpoll1="${tot}"
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
-  totsubr="${tot}"
-
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
-  totsubu="${tot}"
+  totsubftp="${tot}"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
+  totsubftp=$(( totsubftp + tot ))
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
+  totsubftp=$(( totsubftp + tot ))
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
   totsubcp="${tot}"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
+  totsubcp=$(( totsubcp + tot ))
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
+  totsubcp=$(( totsubcp + tot ))
 
-  countthem "`grep 'post_log notice' $LOGDIR/srposter.log | wc -l`"
+  countthem "`grep 'post_log notice' $LOGDIR/srposter.log | grep -v shim | wc -l`"
   totpost1="${tot}"
 
-  countthem "`grep 'published: 2' $LOGDIR/srposter.log | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/srposter.log | grep shim | wc -l`"
   totshimpost1="${tot}"
+
+  countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
+  totsarp="${tot}"
 
   if [ ! "$C_ALSO" ]; then
      return
@@ -246,17 +269,13 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log* | wc -l`"
   totcfile="${tot}"
 
-  audit_state="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $5; };'`"
-  audit_t1="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0001.log | tail -1 | awk ' { print $12; };'`"
-  audit_t2="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0002.log | tail -1 | awk ' { print $12; };'`"
-  audit_t3="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0003.log | tail -1 | awk ' { print $12; };'`"
-  audit_t4="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0004.log | tail -1 | awk ' { print $12; };'`"
-  audit_t5="`grep 'INFO\].*msg_auditflow' $LOGDIR/sr_subscribe_clean_f90_0005.log | tail -1 | awk ' { print $12; };'`"
+  sumlogs post_total $LOGDIR/sr_shovel_pclean_f90*.log
+  totpropagated="${tot}"
 
-  totaudit=$(( audit_t1 + audit_t2 + audit_t3 + audit_t4 + audit_t5 ))
-  #countthem "`grep 'msg_auditflow: GOOD ' $LOGDIR/sr_subscribe_clean_f90_000*.log* | wc -l`"
-  #totaudit="${tot}"
+  sumlogs post_total $LOGDIR/sr_shovel_pclean_f92*.log
+  totremoved="${tot}"
 
+  # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
   awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
@@ -319,6 +338,15 @@ sleep 10
 
 if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
 
+   retry_msgcnt="`cat "$CACHEDIR"/*/*/*retry* 2>/dev/null | wc -l`"
+   ((retry_msgcnt=retry_msgcnt/2))
+   while [ $retry_msgcnt -gt 0 ]; do
+        printf "Still %4s messages to retry, waiting...\r" "$retry_msgcnt"
+        sleep 10
+        retry_msgcnt="`cat "$CACHEDIR"/*/*/*retry* 2> /dev/null | wc -l`"
+        ((retry_msgcnt=retry_msgcnt/2))
+   done
+
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
         printf "Still %4s messages flowing, waiting...\r" "$queued_msgcnt"
@@ -358,61 +386,35 @@ fi
 printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
 
 
-calcres "${totshovel1}" "${totshovel2}" "shovels t_dd1_f00 (${totshovel1}) and t_dd2_f00 (${totshovel2}) should have about the same number of items read"  
 
+tot2shov=$(( ${totshovel1} + ${totshovel2} ))
+t4=$(( ${totfilet}*4 ))
+t5=$(( ${totsent}/2 ))
 
+echo "                 | dd.weather routing |"
+calcres ${totshovel1} ${totshovel2} "sr_shovel (${totshovel1}) t_dd1 should have the same number of items as t_dd2 (${totshovel2})"
+calcres ${totwinnow}  ${tot2shov}   "sr_winnow (${totwinnow}) should have the sum of the number of items of shovels (${tot2shov})"
+calcres ${totsarp}    ${totwinpost} "sr_sarra (${totsarp}) should have the same number of items as winnows'post (${totwinpost})"
+calcres ${totfilet}   ${totsarp}    "sr_subscribe (${totfilet}) should have the same number of items as sarra (${totsarp})"
+echo "                 | watch      routing |"
+calcres ${totwatch}   ${t4}         "sr_watch (${totwatch}) should be 4 times subscribe t_f30 (${totfilet})"
+calcres ${totsent}    ${totwatch}   "sr_sender (${totsent}) should have about the same number of items as sr_watch (${totwatch})"
+calcres ${totsubu}    ${totsent}    "sr_subscribe u_sftp_f60 (${totsubu}) should have the same number of items as sr_sender (${totsent})"
+calcres ${totsubcp}   ${totsent}    "sr_subscribe cp_f61 (${totsubcp}) should have the same number of items as sr_sender (${totsent})"
+echo "                 | poll       routing |"
+calcres ${totpoll1}   ${t5}         "sr_poll test1_f62 (${totpoll1}) should have half the same number of items of sr_sender(${t5})"
+calcres ${totsubq}    ${totpoll1}   "sr_subscribe q_f71 (${totsubq}) should have about the same number of items as sr_poll test1_f62(${totpoll1})"
+echo "                 | flow_post  routing |"
+calcres ${totpost1}   ${t5}         "sr_post test2_f61 (${totpost1}) should have half the same number of items of sr_sender(${t5})"
+calcres ${totsubftp}  ${totpost1}   "sr_subscribe ftp_f70 (${totsubftp}) should have about the same number of items as sr_post test2_f61(${totpost1})"
+calcres ${totpost1} ${totshimpost1} "sr_post test2_f61 (${totpost1}) should have about the same number of items as shim_f63 ${totshimpost1}"
 
-t2=$(( ${totsarra}*2 ))
-
-calcres ${totwinnow} ${t2} "sarra tsarra ($totsarra) should be reading about half as many items as (both) winnows (${totwinnow})" 
-
-calcres  ${totsarra} ${totfilet} "tsarra (${totsarra}) and sub t_f30 (${totfilet}) should have about the same number of items" 
-
-# this test fails a lot, because it's wrong... if we did it with 3, it would work, but some data has no checksum, so
-# there is always more in 00 than in any other.  if we could compare 01 and 02, it would probably work.
-#calcres ${totwinnow00} ${totwinnow01} \
-#   "winnow00 and (${totwinnow00}) and winnow01 (${totwinnow01}) should have about the same number of items" 
-
-calcres ${maxshovel} ${totfilet} "max shovel (${maxshovel}) and subscriber t_f30 (${totfilet}) should have about the same number of items" 
-
+echo "                 | py infos   routing |"
+calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows'post (${totwinpost})"
+calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}}) should have the same number of removed items winnows'post (${totwinpost})"
+zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
 calcres ${totshortened} ${totfilet} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
-
-calcres ${totfilet} ${totmsgt} "count of downloads by subscribe t_f30 (${totfilet}) and messages received (${totmsgt}) should be about the same" 
-
-t3=$(( ${totfilet}*2 ))
-
-while ! calcres ${t3} ${totwatch}  "same downloads by subscribe t_f30 (${t3}) and files posted (add+remove) by sr_watch (${totwatch}) should be about the same" retry ; do
-    printf "info: retrying... waiting for totwatch to catchup\n"
-    sleep 5
-    oldtotwatch=${totwatch}
-    countall
-    t3=$(( ${totfilet}*2 ))
-    if [ "${oldtotwatch}" -eq "${totwatch}"  ]; then
-       printf "error: giving up on this test\n"
-       tno=$((${tno}+1))
-       break
-    fi
-done
-
-t4=$(( ${totsubcp}*2 ))
-calcres ${totwatch} ${t4} "posted by watch(${totwatch}) and subscribed cp_f60 (${totsubcp}) should be about half as many"
-calcres ${totwatch} ${totsent} "posted by watch(${totwatch}) and sent by sr_sender (${totsent}) should be about the same"
-
-zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
-#calcres "${audit_t1}" "${audit_t2}" "comparing audit file totals, instances 1 (${audit_t1}) and 2 (${audit_t2}) should be about the same."
-#calcres "${audit_t2}" "${audit_t3}" "comparing audit file totals, instances 2 (${audit_t2}) and 3 (${audit_t3}) should be about the same."
-#calcres "${audit_t3}" "${audit_t4}" "comparing audit file totals, instances 3 (${audit_t3}) and 4 (${audit_t4}) should be about the same."
-#calcres "${audit_t4}" "${audit_t5}" "comparing audit file totals, instances 4 (${audit_t4}) and 5 (${audit_t5}) should be about the same."
-t3=$(( ${totaudit}/4 ))
-calcres "${totsarra}" "${t3}" "sarra tsarra ($totsarra) and good audit ${t3} should be the same."
-
-calcres ${totpoll1} ${totsubq} "poll test1_f62 ${totpoll1} and subscribe q_f71 ${totsubq} run together. Should have equal results."
-
-calcres ${totpost1} ${totsubr} "post test2_f61 ${totpost1} and subscribe r_ftp_f70 ${totsubr} run together. Should be about the same."
-
-calcres ${totpost1} ${totshimpost1} "posts test2_f61 ${totpost1} and shim_f63 ${totshimpost1} Should be the same."
-
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
@@ -423,6 +425,7 @@ calcres ${totpost1} ${totshimpost1} "posts test2_f61 ${totpost1} and shim_f63 ${
 
 if [ "$C_ALSO" ]; then
 
+echo "                 | C          routing |"
   calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
 
   totcvan=$(( ${totcvan14p} + ${totcvan15p} ))

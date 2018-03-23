@@ -94,7 +94,8 @@ class Msg_Clean_F91(object):
 
         # ok it is everywhere ...  # do big cleanup
 
-        if ext != '.moved' : os.unlink(self.sarr_f20_path)
+        try   : os.unlink( self.sarr_f20_path)
+        except: logger.warning("%s already deleted ?" % self.sarr_f20_path)
 
         try   : os.unlink( self.subs_f30_path+ext)
         except: logger.warning("%s already deleted ?" % self.subs_f30_path+ext)

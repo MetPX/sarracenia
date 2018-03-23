@@ -24,6 +24,18 @@ class Msg_Pclean_F90(object):
     def __init__(self,parent):
         pass
 
+    def log_compare(self,parent):
+        import os,filecmp
+        logger  = parent.logger
+        original= self.sarr_f20_path
+
+        # compare all files againts the first one downloaded
+        if not filecmp.cmp(original,self.subs_f30_path): logger.error("file %s and %s differs" % original,self.subs_f30_path)
+        if not filecmp.cmp(original,self.send_f50_path): logger.error("file %s and %s differs" % original,self.send_f50_path)
+        if not filecmp.cmp(original,self.subs_f60_path): logger.error("file %s and %s differs" % original,self.subs_f60_path)
+        if not filecmp.cmp(original,self.subs_f70_path): logger.error("file %s and %s differs" % original,self.subs_f70_path)
+        if not filecmp.cmp(original,self.subs_f71_path): logger.error("file %s and %s differs" % original,self.subs_f71_path)
+
     def log_state(self,parent,propagated):
         logger = parent.logger
 
@@ -68,7 +80,6 @@ class Msg_Pclean_F90(object):
         if os.path.isfile(self.subs_f70_path) : propagated += 1
         if os.path.isfile(self.subs_f71_path) : propagated += 1
 
-
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
@@ -80,8 +91,11 @@ class Msg_Pclean_F90(object):
            parent.consumer.msg_to_retry()
            return False
 
-        # ok it is everywhere ...
-        # increase coverage for : watch f30 / sender f50 / subscribe f60
+        # ok it is everywhere ... compare files
+
+        self.log_compare(parent)
+
+        # increase coverage for : put under watched dir a different flavor of that file
 
         watched_dir  = os.path.dirname( self.subs_f30_path)
         watched_file = os.path.basename(self.subs_f30_path)
