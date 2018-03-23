@@ -175,7 +175,7 @@ sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-qchk 18 "queues existing after 1st audit" "show overview" 
+qchk 20 "queues existing after 1st audit" "show overview" 
 xchk "exchanges for flow test created."
 
 if [ "$1" = "declare" ]; then
