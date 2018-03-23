@@ -69,11 +69,6 @@ class sr_winnow(sr_subscribe):
            self.logger.error("post_exchange (output) not properly set...exitting")
            sys.exit(1)
 
-        # post_exchange must be different from exchange if on same broker
-        if self.broker.geturl() == self.post_broker.geturl() and self.post_exchange == self.exchange :
-           self.logger.error("post_exchange (output) not properly set...exitting")
-           sys.exit(1)
-
         # no vip given... so should not matter ?
         if self.vip == None :
            self.logger.debug("vip missing... standalone mode")
