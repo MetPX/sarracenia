@@ -59,14 +59,13 @@ class Msg_Cclean_F90(object):
         # propagated count 
 
         propagated = 0
-        if os.path.isfile(self.subs_f21_path) : propagated += 1
         if os.path.isfile(self.subs_f44_path) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if propagated != 2 :
+        if propagated != 1 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
            self.log_state(parent,propagated)

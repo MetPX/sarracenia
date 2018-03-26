@@ -46,17 +46,14 @@ class Msg_Cclean_F92(object):
         # removed count 
 
         removed = 0
-        if not os.path.isfile(self.subs_f21_path    ) : removed += 1
         if not os.path.isfile(self.subs_f44_path    ) : removed += 1
-
-        if not os.path.isfile(self.subs_f21_path+ext) : removed += 1
         if not os.path.isfile(self.subs_f44_path+ext) : removed += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if removed != 4 :
+        if removed != 2 :
            logger.warning("%s not fully cleaned up" % relp )
            parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
