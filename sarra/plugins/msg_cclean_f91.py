@@ -3,7 +3,7 @@
 """
   Msg_Cclean_F91
   
-  plugin that receives a message from shovel cclean_f90 ... for each product... python side
+  plugin that receives a message from shovel clean_f90 ... for each product... python side
   - it checks if the propagation was ok.
   - it removes the product instances at the watch level
   - it posts the product again (shovel clean_f92 )
@@ -24,11 +24,11 @@ class Msg_Cclean_F91(object):
         logger = parent.logger
 
         if not ext :
-           if not os.path.isfile(self.cpost_f30_path) : logger.warning("%s not found" % self.cpost_f30_path)
-           if not os.path.isfile(self.csubs_f40_path) : logger.warning("%s not found" % self.csubs_f40_path) 
+           if not os.path.isfile(self.subs_f21_path) : logger.warning("%s not found" % self.subs_f21_path) 
+           if not os.path.isfile(self.subs_f44_path) : logger.warning("%s not found" % self.subs_f44_path) 
         else:
-           if not os.path.isfile(self.cpost_f30_path+ext) : logger.warning("%s not found" % self.cpost_f30_path+ext)
-           if not os.path.isfile(self.csubs_f40_path+ext) : logger.warning("%s not found" % self.csubs_f40_path+ext) 
+           if not os.path.isfile(self.subs_f21_path+ext) : logger.warning("%s not found" % self.subs_f21_path+ext) 
+           if not os.path.isfile(self.subs_f44_path+ext) : logger.warning("%s not found" % self.subs_f44_path+ext) 
         logger.warning("propagated = %d" % propagated) 
 
     def on_message(self,parent):
@@ -39,7 +39,7 @@ class Msg_Cclean_F91(object):
         root   = parent.currentDir
         relp   = msg.relpath
 
-        logger.info("msg_cclean_f91.py on_message")
+        logger.info("msg_pclean_f91.py on_message")
 
         if 'cclean_f90' in msg.headers :
            ext = msg.headers['cclean_f90']
@@ -56,34 +56,33 @@ class Msg_Cclean_F91(object):
 
         if relp[0] != '/' : relp = '/' + relp
 
-        self.cpost_f30_path = root + '/cfr'      + relp   # sarra
-        self.csubs_f40_path = root + '/cfile'    + relp   # subscribe t_sub
+        self.subs_f21_path = relp                             # subscribe cdlnd_f21
+        self.subs_f44_path = relp.replace('/cfr/','/cfile/')  # subscribe cfile_f44
 
         # propagated count 
 
         propagated = 0
-        if os.path.isfile(self.cpost_f30_path+ext) : propagated += 1
-        if os.path.isfile(self.csubs_f40_path+ext) : propagated += 1
+        if os.path.isfile(self.subs_f44_path+ext) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if propagated != 2 :
+        if propagated != 1 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
            self.log_state(parent,propagated,ext)
+           parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
            return False
 
         # ok it is everywhere ...  # do big cleanup
-        # should propagate to sr_subscribe c f40
 
-        try   : os.unlink( self.cpost_f30_path)
-        except: logger.warning("%s already deleted ?" % self.cpost_f30_path)
+        try   : os.unlink( self.subs_f21_path)
+        except: logger.warning("%s already deleted ?" % self.subs_f21_path)
 
-        try   : os.unlink( self.cpost_f30_path+ext)
-        except: logger.warning("%s already deleted ?" % self.cpost_f30_path+ext)
+        try   : os.unlink( self.subs_f21_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f21_path+ext)
 
         del msg.headers['cclean_f90']
 

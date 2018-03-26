@@ -32,7 +32,7 @@ class Msg_Cclean_F92(object):
         else:
            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
            tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
-           logger.error("The message received is incorrect not from shovel cclean_f91")
+           logger.error("The message received is incorrect not from shovel clean_f91")
            return False
 
 
@@ -40,17 +40,17 @@ class Msg_Cclean_F92(object):
 
         if relp[0] != '/' : relp = '/' + relp
 
-        self.cpost_f30_path = root + '/cfr'      + relp   # sarra
-        self.csubs_f40_path = root + '/cfile'    + relp   # subscribe t_sub
+        self.subs_f21_path = relp                             # subscribe cdlnd_f21
+        self.subs_f44_path = relp.replace('/cfr/','/cfile/')  # subscribe cfile_f44
 
         # removed count 
 
         removed = 0
-        if not os.path.isfile(self.cpost_f30_path    ) : removed += 1
-        if not os.path.isfile(self.csubs_f40_path    ) : removed += 1
+        if not os.path.isfile(self.subs_f21_path    ) : removed += 1
+        if not os.path.isfile(self.subs_f44_path    ) : removed += 1
 
-        if not os.path.isfile(self.cpost_f30_path+ext) : removed += 1
-        if not os.path.isfile(self.csubs_f40_path+ext) : removed += 1
+        if not os.path.isfile(self.subs_f21_path+ext) : removed += 1
+        if not os.path.isfile(self.subs_f44_path+ext) : removed += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
@@ -58,8 +58,7 @@ class Msg_Cclean_F92(object):
 
         if removed != 4 :
            logger.warning("%s not fully cleaned up" % relp )
-           # if testing
-           # self.log_state(parent,propagated,ext)
+           parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
            return False
 

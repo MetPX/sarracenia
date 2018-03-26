@@ -3,11 +3,11 @@
 """
   Msg_Cclean_F90
   
-  plugin that is used in shovel clean_f90 ... for each product... python side
+  plugin that is used in shovel cclean_f90 ... for each product... C side
   - it checks if the propagation was ok.
-  - it randomly set a test in the watch f40.conf for propagation
+  - it randomly set a test in the veille_f34.conf for propagation
   - it remove the original product ... which is propagated too
-  - it posts the product again (more test in shovel clean_f91)
+  - it posts the product again (more test in shovel cclean_f91)
 
   when a product is not fully propagated, it is put in the retry list
 
@@ -19,7 +19,7 @@
 """
 import os,stat,time
 
-class Msg_Pclean_F90(object): 
+class Msg_Cclean_F90(object): 
 
     def __init__(self,parent):
         pass
@@ -27,17 +27,16 @@ class Msg_Pclean_F90(object):
     def log_compare(self,parent):
         import os,filecmp
         logger  = parent.logger
-        original= self.cpost_f30_path
+        original= self.subs_f21_path
 
         # compare all files againts the first one downloaded
-        self.csubs_f40_path = root + '/cfile' + relp
-        if not filecmp.cmp(original,self.csubs_f40_path): logger.error("file %s and %s differs" % original,self.csubs_f40_path)
+        if not filecmp.cmp(original,self.subs_f44_path): logger.error("file %s and %s differs" % original,self.subs_f44_path)
 
     def log_state(self,parent,propagated):
         logger = parent.logger
 
-        if not os.path.isfile(self.cpost_f30_path) : logger.warning("%s not found" % self.cpost_f30_path)
-        if not os.path.isfile(self.csubs_f40_path) : logger.warning("%s not found" % self.csubs_f40_path)
+        if not os.path.isfile(self.subs_f21_path) : logger.warning("%s not found" % self.subs_f21_path) 
+        if not os.path.isfile(self.subs_f44_path) : logger.warning("%s not found" % self.subs_f44_path) 
         logger.warning("propagated = %d" % propagated) 
 
     def on_message(self,parent):
@@ -54,14 +53,14 @@ class Msg_Pclean_F90(object):
 
         if relp[0] != '/' : relp = '/' + relp
 
-        self.cpost_f30_path = root + '/cfr' + relp
-        self.csubs_f40_path = root + '/cfile' + relp
+        self.subs_f21_path = relp                             # subscribe cdlnd_f21
+        self.subs_f44_path = relp.replace('/cfr/','/cfile/')  # subscribe cfile_f44
 
         # propagated count 
 
         propagated = 0
-        if os.path.isfile(self.cpost_f30_path) : propagated += 1
-        if os.path.isfile(self.csubs_f40_path) : propagated += 1
+        if os.path.isfile(self.subs_f21_path) : propagated += 1
+        if os.path.isfile(self.subs_f44_path) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
@@ -70,7 +69,8 @@ class Msg_Pclean_F90(object):
         if propagated != 2 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
-           #self.log_state(parent,propagated)
+           self.log_state(parent,propagated)
+           parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
            return False
 
@@ -80,8 +80,8 @@ class Msg_Pclean_F90(object):
 
         # increase coverage for : put under watched dir a different flavor of that file
 
-        watched_dir  = os.path.dirname( self.cpost_f30_path)
-        watched_file = os.path.basename(self.cpost_f30_path)
+        watched_dir  = os.path.dirname( self.subs_f21_path)
+        watched_file = os.path.basename(self.subs_f21_path)
 
         os.chdir(watched_dir)
 
@@ -107,7 +107,7 @@ class Msg_Pclean_F90(object):
                            os.rename ( watched_file ,watched_file +'.moved')
                            msg.headers['cclean_f90'] = '.moved'
 
-        del msg.headers['toolong']
+        logger.debug("extension = %s" % msg.headers['cclean_f90'])
 
         return True
 

@@ -74,6 +74,7 @@ class Msg_Clean_F92(object):
            logger.warning("%s not fully cleaned up" % relp )
            # if testing
            # self.log_state(parent,propagated,ext)
+           parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
            return False
 
