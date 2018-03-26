@@ -72,7 +72,7 @@ def instantiate(dirconf,pgm,confname,action):
 
     # c stuff always requiere to spawn a call
 
-    if pgm in ['cpost','cpump'] :
+    if pgm in ['audit','cpost','cpump'] :
        cfg.logger.debug("%s %s %s" % ("sr_" + pgm,action,confname))
        subprocess.check_call([ "sr_" + pgm, action, confname])
        return
@@ -96,6 +96,7 @@ def instantiate(dirconf,pgm,confname,action):
             elif  pgm == 'watch':     inst = sr_watch    (config,[action])
             elif  pgm == 'winnow':    inst = sr_winnow   (config,[action])
             elif  pgm == 'report':    inst = sr_report   (config,[action])
+            elif  pgm == 'audit':     inst = sr_audit    (config,[action])
             else: 
                   print("code not configured for process type sr_%s" % pgm)
                   sys.exit(1)
@@ -168,7 +169,12 @@ def scandir(dirconf,pgm,action):
 
     path = dirconf + os.sep + pgm
 
-    if not os.path.isdir(path) : return
+    if not os.path.isdir(path) or len(os.listdir(path)) == 0 : 
+       if pgm == 'audit' :
+          cfg.logger.info("%s %s" % (pgm,action))
+          subprocess.check_call(['sr_'+pgm,action])
+       return
+
     for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue
@@ -224,17 +230,10 @@ def main():
 
        sys.exit(0)
 
-    # sarracenia program that may start without config file
-    REPORT_PROGRAMS=['audit']
-    for d in REPORT_PROGRAMS:
-        pgm = d
-        if nbr_config(cfg.user_config_dir+os.sep+d) != 0 :
-           scandir(cfg.user_config_dir,pgm,action)
-        else :
-           cfg.logger.info("%s %s" % ('sr_'+ d,sys.argv[-1]))
-           subprocess.check_call(['sr_'+pgm,action])
-
-    for d in cfg.programs:
+    # loop on all possible programs ... add audit
+    programs = ['audit']
+    programs.extend(cfg.programs)
+    for d in programs:
         pgm = d
         scandir(cfg.user_config_dir,pgm,action)
 
