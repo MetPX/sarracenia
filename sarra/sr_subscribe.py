@@ -1428,16 +1428,16 @@ class sr_subscribe(sr_instances):
         if self.msg.isRetry: self.consumer.msg_worked()
         return True
 
-    def LOG_TRACE(self):
+    def LOG_TRACE(self,tb):
         import io, traceback
 
         tb_output = io.StringIO()
-        traceback.print_stack(None, None, tb_output)
-        self.logger.info("\n\n****************************************\n" + \
-                             "***** PRINTING TRACEBACK FROM STOP *****\n" + \
-                             "****************************************\n" + \
-                           "\n" + tb_output.getvalue()             + "\n" + \
-                           "\n****************************************\n")
+        traceback.print_tb(tb, None, tb_output)
+        self.logger.error("\n\n****************************************\n" + \
+                              "******* ERROR PRINTING TRACEBACK *******\n" + \
+                              "****************************************\n" + \
+                            "\n" + tb_output.getvalue()             + "\n" + \
+                            "\n****************************************\n")
         tb_output.close()
 
 
@@ -1577,8 +1577,8 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
-                      if self.debug : self.LOG_TRACE()
                       (stype, svalue, tb) = sys.exc_info()
+                      if self.debug : self.LOG_TRACE(tb)
                       self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
                           (self.program_name,going_badly, stype, svalue) )
                       time.sleep(going_badly)
