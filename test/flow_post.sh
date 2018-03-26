@@ -50,8 +50,8 @@ function do_sr_post {
 
    while read relpath;
    do
-         sr_post -c test2_f61.conf -p "$relpath"
-         LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim
+         sr_post -c test2_f61.conf -p "$relpath"    &
+         LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim      &
    done < /tmp/diffs.txt
    
    cp -p $srpostlstfile_new $srpostlstfile_old
