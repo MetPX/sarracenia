@@ -888,6 +888,7 @@ class sr_config:
 
 
     def heartbeat_check(self):
+        self.logger.debug("heartbeat_check")
         now    = time.time()
         elapse = now - self.last_heartbeat
         if elapse > self.heartbeat :

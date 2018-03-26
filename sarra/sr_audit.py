@@ -516,12 +516,12 @@ class sr_audit(sr_instances):
             #            first : it is 'status' for older version of rabbitmq
             #            second: it is most of the time 'running' whatever the
             #                    state of the queue...
-            #            so all queues are discarded (no further check)
+            #            so all queues are considered ok (no further check)
             # skip running queue
             try    : s = edict['state']
             except : s= ''
             if s == 'running' :
-               self.logger.debug("running queue %s (%d) discarded" % (q,qsize))
+               self.logger.debug("running queue %s (%d) is ok" % (q,qsize))
                continue
             self.logger.debug("verifying queue %s (%d)" % (q,qsize))
 
@@ -682,6 +682,7 @@ class sr_audit(sr_instances):
         # loop : audit should never stop working   ;-)
 
         while True  :
+                      self.logger.info("sr_audit waking up")
                       #  heartbeat 
                       ok = self.heartbeat_check()
 
@@ -693,8 +694,12 @@ class sr_audit(sr_instances):
                       else:
                          self.logger.debug("sr_audit is active on vip=%s" % self.vip)
 
-                      self.logger.info("sr_audit waking up")
+                      # we need to run configure in case some users/queues... etc were modified
+                      # reconfiguring involves resetting... so keep last_heartbeat or else heartbeat would not work
+
+                      last_heartbeat = self.last_heartbeat
                       self.configure()
+                      self.last_heartbeat = last_heartbeat
 
                       # do pump admin stuff ... if we are admin
 
