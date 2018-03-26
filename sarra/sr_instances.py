@@ -427,14 +427,20 @@ class sr_instances(sr_config):
     
     def log_age_instance(self):
 
+        # program is stopped ... 
+
+        if self.pid == None : return
+
+        # check log age 
+
         log_age  = os.stat(self.logpath)[stat.ST_MTIME]
         now      = time.time()
-
         elapse   = now - log_age
 
-        if elapse > self.heartbeat * 1.5 :
-           self.logger.warning("logfile older than 1.5 * heartbeat; restarting %s" % self.instance_str)
-           self.restart_instance()
+        if elapse <= self.heartbeat * 1.5 : return
+
+        self.logger.warning("logfile older than 1.5 * heartbeat; restarting %s" % self.instance_str)
+        self.restart_instance()
 
     def reload_parent(self):
 
