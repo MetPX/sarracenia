@@ -188,7 +188,7 @@ class sr_instances(sr_config):
         elif action == 'status'     : self.status_parent()
         elif action == 'sanity'     : 
                                       self.status_parent(sanity=True)
-                                      self.logtim_parent()
+                                      self.log_age_parent()
 
         elif action == 'cleanup'    : self.cleanup_parent()
 
