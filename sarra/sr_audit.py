@@ -703,13 +703,8 @@ class sr_audit(sr_instances):
 
                       if self.users_flag or self.pump_flag : return
 
-                      self.run_processes_sanity()
-
                       self.logger.info("audit is sleeping %d seconds " % self.sleep)
                       time.sleep(self.sleep)
-
-    def run_processes_sanity(self):
-        self.logger.info("sr_audit run_processes_sanity")
 
     def run_pump_admin(self):
         self.logger.info("sr_audit run_pump_admin")
@@ -771,6 +766,7 @@ class sr_audit(sr_instances):
 
     def start(self):
         self.logger.info("%s %s start" % (self.program_name, sarra.__version__) )
+        self.log_settings()
         self.run()
 
     def stop(self):
