@@ -32,9 +32,16 @@ class Transformer():
               parent.logger.info("msg_replace_new_dir is %s " % p )
               msg.new_dir = msg.new_dir.replace(b, a)
 
+              # adjust oldname/newname/link  if related to strings to replace
+
+              if 'oldname' in msg.headers : msg.headers['oldname'] = msg.headers['oldname'].replace(b, a)
+              if 'newname' in msg.headers : msg.headers['newname'] = msg.headers['newname'].replace(b, a)
+              if 'link'    in msg.headers : msg.headers['link'   ] = msg.headers['link'   ].replace(b, a)
+
               # adjust new_relpath if posting
 
               if not parent.post_broker : return True
+
               msg.new_relpath = msg.new_dir + os.sep + msg.new_file
               if parent.post_base_dir : msg.new_relpath = msg.new_relpath.replace(parent.post_base_dir,'')
 
