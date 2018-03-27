@@ -9,9 +9,9 @@ fi
 set -x
 
 echo "FIXME: KNOWN ISSUE redirection close does not get posted!"
-bash -c 'echo "hoho" >>~/test/hoho'
+bash -c 'echo "hoho" >> ./hoho'
 
-truncate --size=2 ~/test/hoho
+truncate --size=2 ./hoho
 
 /usr/bin/python2.7 pyiotest
 grep lovely pyiotest
