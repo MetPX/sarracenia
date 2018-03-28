@@ -417,7 +417,7 @@ int dup2(int oldfd, int newfd )
     char *real_return;
     int  fd_dup;
     int  status;
-    
+
     if (!dup2_init_done) {
         dup2_fn_ptr = (dup2_fn) dlsym(RTLD_NEXT, "dup2");
         dup2_init_done = 1;
@@ -427,8 +427,14 @@ int dup2(int oldfd, int newfd )
     
     fdstat = fcntl(newfd, F_GETFL);
 
+    if (oldfd == newfd || fdstat == -1 ) {
+       return dup2_fn_ptr (oldfd, newfd);
+    }
+
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return dup2_fn_ptr(oldfd, newfd);
+
+    fprintf( stderr, "SR_SHIMDEBUG dup3 %d\n", ((fdstat & O_ACCMODE) == O_RDONLY ) );
 
     snprintf(fdpath, 32, "/proc/self/fd/%d", newfd);
     real_return = realpath(fdpath, real_path);
@@ -470,6 +476,10 @@ int dup3(int oldfd, int newfd, int flags )
     }
     
     fdstat = fcntl(newfd, F_GETFL);
+
+    if (oldfd == newfd || fdstat == -1 ) {
+       return dup3_fn_ptr (oldfd, newfd, flags);
+    }
 
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return dup2_fn_ptr(oldfd, newfd);
