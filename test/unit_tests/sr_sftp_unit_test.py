@@ -42,6 +42,7 @@ def self_test():
 
     msg = sr_message(cfg)
     msg.filesize = None
+    msg.lastchunk = True
     msg.onfly_checksum = False
 
     # 1 bytes par 5 secs
