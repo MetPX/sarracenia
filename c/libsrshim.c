@@ -424,12 +424,8 @@ int dup2(int oldfd, int newfd )
         if (getenv("SR_POST_READS"))
            srshim_initialize( "post" );
     }
-    
-    fdstat = fcntl(newfd, F_GETFL);
 
-    if (oldfd == newfd || fdstat == -1 ) {
-       return dup2_fn_ptr (oldfd, newfd);
-    }
+    fdstat = fcntl(newfd, F_GETFL);
 
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return dup2_fn_ptr(oldfd, newfd);
@@ -474,12 +470,8 @@ int dup3(int oldfd, int newfd, int flags )
         if (getenv("SR_POST_READS"))
            srshim_initialize( "post" );
     }
-    
-    fdstat = fcntl(newfd, F_GETFL);
 
-    if (oldfd == newfd || fdstat == -1 ) {
-       return dup3_fn_ptr (oldfd, newfd, flags);
-    }
+    fdstat = fcntl(newfd, F_GETFL);
 
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return dup2_fn_ptr(oldfd, newfd);
