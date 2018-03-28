@@ -160,11 +160,7 @@ class sr_proto():
         # flush,sync, remember current position, truncate = no sparce, close
 
         self.fpos = dst.tell()
-
-        if not hasattr(self.parent,'msg')   : dst.truncate()
-        elif self.parent.msg.lastchunk      : dst.truncate()
-        elif self.parent.msg.partflg == 'p' : dst.truncate()
-
+        dst.truncate()
         dst.close()
 
         # finalize checksum

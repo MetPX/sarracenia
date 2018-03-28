@@ -90,6 +90,7 @@ class Msg_Pclean_F90(object):
            #self.log_state(parent,propagated)
            parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
+           parent.msg.isRetry = False
            return False
 
         # ok it is everywhere ... compare files

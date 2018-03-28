@@ -19,7 +19,7 @@ class Msg_Stopper(object):
         maxstr = os.environ.get('MAX_MESSAGES')
         if maxstr : msg_max = int(maxstr)
 
-        if self.msg_count >= msg_max : self.stop(parent)
+        if self.msg_count > msg_max : self.stop(parent)
 
         self.msg_count += 1
 

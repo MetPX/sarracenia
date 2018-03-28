@@ -63,7 +63,7 @@ function do_sr_post {
 # sr_post initial end
 
 while true; do
-   sleep 1
+   sleep 0.1
    do_sr_post
 done
 

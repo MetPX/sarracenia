@@ -57,7 +57,6 @@ class Msg_Clean_F91(object):
            logger.error("The message received is incorrect not from shovel clean_f90")
            return False
 
-
         # build all 3 paths of a successfull propagated path
 
         if relp[0] != '/' : relp = '/' + relp
@@ -91,6 +90,7 @@ class Msg_Clean_F91(object):
            self.log_state(parent,propagated,ext)
            parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
+           parent.msg.isRetry = False
            return False
 
         # ok it is everywhere ...  # do big cleanup

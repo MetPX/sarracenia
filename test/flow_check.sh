@@ -338,13 +338,27 @@ sleep 10
 
 if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
 
+   stalled=0
+   stalled_value=-1
    retry_msgcnt="`cat "$CACHEDIR"/*/*/*retry* 2>/dev/null | wc -l`"
-   ((retry_msgcnt=retry_msgcnt/2))
+   ((retry_msgcnt=retry_msgcnt/3))
    while [ $retry_msgcnt -gt 0 ]; do
         printf "Still %4s messages to retry, waiting...\r" "$retry_msgcnt"
         sleep 10
         retry_msgcnt="`cat "$CACHEDIR"/*/*/*retry* 2> /dev/null | wc -l`"
-        ((retry_msgcnt=retry_msgcnt/2))
+        ((retry_msgcnt=retry_msgcnt/3))
+
+        if [ "${stalled_value}" == "${retry_msgcnt}" ]; then
+              stalled=$((stalled+1));
+              if [ "${stalled}" == 5 ]; then
+                 printf "\n    Warning some retries stalled, skipping..., might want to check the logs\n\n"
+                 retry_msgcnt=0
+              fi
+        else
+              stalled_value=$retry_msgcnt
+              stalled=0
+        fi
+
    done
 
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
