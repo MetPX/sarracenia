@@ -266,9 +266,6 @@ class sr_retry:
     def on_heartbeat(self,parent):
         self.logger.info("sr_retry on_heartbeat")
 
-        # no activity... but needed to add : still retries to do
-        if not self.activity and os.path.isfile(self.retry_path) : return
-
         now          = time.time()
         marker_body  = self.last_body
         marker_valid = marker_body != None
