@@ -50,8 +50,6 @@ class sr_retry:
 
         self.retry_ttl  = self.parent.retry_ttl
 
-        self.activity   = True
-
         # message to work with
 
         self.message    = raw_message(self.logger)
@@ -126,8 +124,6 @@ class sr_retry:
 
         while not ok :
               ok, message = self.get_retry()
-
-        self.activity = True
 
         return message
 
@@ -241,8 +237,6 @@ class sr_retry:
         fp.write( line )
         fp.flush()
 
-        self.activity = True
-
         return fp
 
     def msg_get_from_file(self,fp,path):
@@ -265,6 +259,12 @@ class sr_retry:
 
     def on_heartbeat(self,parent):
         self.logger.info("sr_retry on_heartbeat")
+
+        # finish retry before reshuffling all retries entries
+
+        if os.path.isfile(self.retry_path) : 
+           self.logger.info("sr_retry resuming with retry file")
+           return
 
         now          = time.time()
         marker_body  = self.last_body
@@ -407,7 +407,6 @@ class sr_retry:
         except: pass
 
         self.last_body = None
-        self.activity  = False
         elapse         = time.time()-now
         self.logger.info("sr_retry on_heartbeat elapse %f" % elapse)
 
