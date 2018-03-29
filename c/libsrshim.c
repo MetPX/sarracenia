@@ -427,6 +427,9 @@ int dup2(int oldfd, int newfd )
 
     fdstat = fcntl(newfd, F_GETFL);
 
+    if ( oldfd == newfd  ||  fdstat == -1 )
+           return dup2_fn_ptr(oldfd, newfd);
+
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return dup2_fn_ptr(oldfd, newfd);
 
@@ -473,8 +476,11 @@ int dup3(int oldfd, int newfd, int flags )
 
     fdstat = fcntl(newfd, F_GETFL);
 
+    if ( oldfd == newfd  ||  fdstat == -1 )
+           return dup3_fn_ptr(oldfd, newfd, flags);
+
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
-           return dup2_fn_ptr(oldfd, newfd);
+           return dup3_fn_ptr(oldfd, newfd, flags);
 
     snprintf(fdpath, 32, "/proc/self/fd/%d", newfd);
     real_return = realpath(fdpath, real_path);
