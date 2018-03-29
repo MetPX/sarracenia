@@ -20,6 +20,7 @@ fi
 
 # sr_post initial start
 srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
+srpostlstfile_new=$httpdocroot/srpostlstfile
 srpostlstfile_new=$httpdocroot/srpostlstfile.new
 srpostlstfile_old=$httpdocroot/srpostlstfile.old
 
@@ -32,8 +33,10 @@ function do_sr_post {
 
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
-   find . -type f -print | sort | grep -v '.tmp$' > $srpostlstfile_new
-   find . -type l -print | sort | grep -v '.tmp$' >> $srpostlstfile_new
+   find . -type f -print | grep -v '.tmp$' > $srpostlstfile
+   find . -type l -print | grep -v '.tmp$' >> $srpostlstfile
+   cat $srpostlstfile    | sort > $srpostlstfile_new
+
    # Obtain file listing delta
 
    rm    /tmp/diffs.txt 2> /dev/null
