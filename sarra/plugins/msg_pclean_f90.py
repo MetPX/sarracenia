@@ -87,7 +87,7 @@ class Msg_Pclean_F90(object):
         if propagated != 6 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
-           #self.log_state(parent,propagated)
+           self.log_state(parent,propagated)
            parent.consumer.sleep_now = parent.consumer.sleep_min
            parent.consumer.msg_to_retry()
            parent.msg.isRetry = False
