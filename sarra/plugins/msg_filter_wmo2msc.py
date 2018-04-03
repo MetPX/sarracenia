@@ -290,8 +290,20 @@ class Xwmo2msc(object):
 
         logger.info( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
 
-        # change the file being announced.
-        parent.msg.set_file( local_file, 'd,' + sumstr )
+        # set how the file will be announced
+
+        basedir    =  parent.basedir
+        if basedir == None : basedir = parent.post_base_dir
+
+        relpath = local_file
+        if bd  != None : relpath = local_file.replace(basedir,'')
+
+        baseurl = 'file:'
+        # from msg_2local.py if used
+        if hasattr(msg,'savedurl') : baseurl = msg.savedurl
+
+        msg.set_topic(parent.topic_prefix,relpath)
+        msg.set_notice(baseurl,relpath)
 
         return True
 
