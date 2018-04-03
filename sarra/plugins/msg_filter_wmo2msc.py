@@ -300,7 +300,9 @@ class Xwmo2msc(object):
 
         baseurl = 'file:'
         # from msg_2local.py if used
-        if hasattr(msg,'savedurl') : baseurl = msg.savedurl
+        if hasattr(msg,'savedurl')      : baseurl = msg.savedurl
+        # from msg_2localfile.py if used
+        if hasattr(msg,'saved_baseurl') : baseurl = msg.saved_baseurl
 
         msg.set_topic(parent.topic_prefix,relpath)
         msg.set_notice(baseurl,relpath)
