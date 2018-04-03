@@ -104,8 +104,9 @@ void srshim_realpost(const char *path)
   char fn[PATH_MAX+1];
   char fnreal[PATH_MAX+1];
 
+  log_msg( LOG_INFO, "ICI1 PATH %s\n", path);
+
   if (!path || !sr_c) return;
-  //log_msg( LOG_INFO, "ICI1 PATH %s\n", path);
  
   statres = lstat( path, &sb ) ;
 
@@ -113,6 +114,7 @@ void srshim_realpost(const char *path)
 
   if (sr_cfg.realpath || sr_cfg.realpath_filter)
   {
+      log_msg( LOG_INFO, "ICI2 realpath (_filter) \n");
       if (!statres) 
       {
           /* realpath of a link might result in a file or directory
@@ -139,9 +141,10 @@ void srshim_realpost(const char *path)
   }
 
   if ( sr_cfg.realpath ) strcpy( fn, fnreal );
+  log_msg( LOG_INFO, "ICI3 fn %s\n",fn);
+  log_msg( LOG_INFO, "ICI4 fn %s\n",fnreal);
 
   if ( sr_cfg.realpath_filter) {
-     //log_msg( LOG_INFO, "ICI2 FNREAL %s\n", fnreal);
      mask = isMatchingPattern(&sr_cfg, fnreal);
   } else {
      mask = isMatchingPattern(&sr_cfg, fn);
@@ -156,6 +159,7 @@ void srshim_realpost(const char *path)
   }
 
   if ( statres )  {
+      log_msg( LOG_INFO, "ICI5 sr_post %s\n",fn);
       sr_post( sr_c, fn, NULL );
       return;
   }
@@ -438,7 +442,6 @@ int dup2(int oldfd, int newfd )
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
-    int  fd_dup;
     int  status;
 
     if (!dup2_init_done) {
@@ -468,9 +471,7 @@ int dup2(int oldfd, int newfd )
     if (!getenv("SR_POST_READS"))
        srshim_initialize( "post" );
 
-    status = 0;
-    fd_dup = dup2_fn_ptr (oldfd, newfd);
-    if (fd_dup == -1) status = fd_dup;
+    status = dup2_fn_ptr (oldfd, newfd);
 
     if (!real_return) return(status);
 
@@ -479,9 +480,7 @@ int dup2(int oldfd, int newfd )
 
     if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 %s\n", real_path );
 
-    status = shimpost(real_path, status) ;
-
-    return fd_dup;
+    return shimpost(real_path, status) ;
 }
 
 static int dup3_init_done = 0;
@@ -494,7 +493,6 @@ int dup3(int oldfd, int newfd, int flags )
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
-    int  fd_dup;
     int  status;
     
     if (!dup3_init_done) {
@@ -520,9 +518,7 @@ int dup3(int oldfd, int newfd, int flags )
     if (!getenv("SR_POST_READS"))
        srshim_initialize( "post" );
 
-    status = 0;
-    fd_dup = dup3_fn_ptr (oldfd, newfd, flags);
-    if (fd_dup == -1) status = fd_dup;
+    status = dup3_fn_ptr (oldfd, newfd, flags);
 
     if (!real_return) return(status);
 
@@ -531,9 +527,7 @@ int dup3(int oldfd, int newfd, int flags )
 
     if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 %s\n", real_path );
 
-    status = shimpost(real_path, status) ;
-
-    return fd_dup;
+    return shimpost(real_path, status) ;
 }
 
 
