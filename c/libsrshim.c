@@ -41,17 +41,26 @@ static struct sr_context *sr_c = NULL;
 static struct sr_config_t sr_cfg; 
 
 
+
+static int close_init_done = 0;
+typedef int  (*close_fn) (int);
+static close_fn close_fn_ptr = close;
+
 void srshim_initialize(const char* progname) 
 {
 
   static int config_read = 0;
   char *setstr;
+  int   psdup1;
+  int   psdup2;
+  int   psdup3;
 
   if (sr_c) return;
 
   setstr = getenv( "SR_POST_CONFIG" ) ;
   if ( setstr != NULL )
   { 
+
      if ( config_read == 0 ) 
      {
        sr_config_init(&sr_cfg,progname);
@@ -60,8 +69,22 @@ void srshim_initialize(const char* progname)
      }
      if ( !sr_config_finalize( &sr_cfg, 0 )) return;
 
+     if (!close_init_done) {
+         close_fn_ptr = (close_fn) dlsym(RTLD_NEXT, "close");
+         close_init_done = 1;
+     }
+
+     // making use of 3 FD to try to avoid stepping over stdout stderr
+     psdup1 = open("/dev/null",O_APPEND);
+     psdup2 = dup(psdup1);
+     psdup3 = dup(psdup1);
+
      sr_c = sr_context_init_config(&sr_cfg);
      sr_c = sr_context_connect( sr_c );
+
+     if (psdup1 != -1) close_fn_ptr(psdup1);
+     if (psdup2 != -1) close_fn_ptr(psdup2);
+     if (psdup3 != -1) close_fn_ptr(psdup3);
 
   } 
 }
@@ -425,6 +448,8 @@ int dup2(int oldfd, int newfd )
            srshim_initialize( "post" );
     }
 
+    if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 newfd %d\n",newfd );
+
     fdstat = fcntl(newfd, F_GETFL);
 
     if ( oldfd == newfd || fdstat == -1 ) {
@@ -612,11 +637,6 @@ int copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size
 }
 
 
-
-static int close_init_done = 0;
-typedef int  (*close_fn) (int);
-static close_fn close_fn_ptr = close;
-
 int close(int fd) 
 {
 
@@ -655,7 +675,6 @@ int close(int fd)
 
     return shimpost(real_path, status) ;
 }
-
 
 static int fclose_init_done = 0;
 typedef int  (*fclose_fn) (FILE *);
