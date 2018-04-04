@@ -565,15 +565,13 @@ void sr_post_rename(struct sr_context *sr_c, const char *o, const char *n)
   }
   if ( (mask && !(mask->accepting)) || (!mask && !(sr_c->cfg->accept_unmatched)) ) 
       log_msg( LOG_DEBUG, "rejecting: %s\n", oldname );
-  else 
-/*    FIXME MG ...
-      on rename oldname is never there... so no sb should be NULL
-      not too sure why sb  could possibly be there ... I think the MD5 sum that memory fault on oldname for Dominic
-      has its root cause in this 
-      sr_post( sr_c,  oldname, (!access(oldname, F_OK) && S_ISREG(sb.st_mode))?(&sb):NULL );
-*/
-      sr_post( sr_c,  oldname, NULL );
- 
+  else {
+       if ( !access(oldname, F_OK) && (S_ISREG(sb.st_mode) || S_ISLNK(sb.st_mode) ) ) {
+            sr_post( sr_c,  oldname, &sb  );
+       } else {
+            sr_post( sr_c,  oldname, NULL );
+       }
+  }
 
   free(first_user_header.key);  
   free(first_user_header.value);  

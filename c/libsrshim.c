@@ -442,7 +442,7 @@ int dup2(int oldfd, int newfd )
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
-    int  status, tmpstatus;
+    int  status;
 
     if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 oldfd %d newfd %d\n",oldfd,newfd );
 
@@ -492,7 +492,7 @@ int dup2(int oldfd, int newfd )
     // because shimpost posts when:    if (!status)
     // we use a tmpstatus and call shimpost with status=0
 
-    tmpstatus = shimpost(real_path, 0) ;
+    shimpost(real_path, 0) ;
 
     return status;
 }
@@ -507,10 +507,10 @@ int dup3(int oldfd, int newfd, int flags )
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
-    int  status, tmpstatus;
+    int  status;
 
-    if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 oldfn %d newfd %d flags %d\n",oldfd,newfd,flags );
-    
+    if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 oldfd %d newfd %d flags %d\n",oldfd,newfd,flags );
+
     if (!dup3_init_done) {
         dup3_fn_ptr = (dup3_fn) dlsym(RTLD_NEXT, "dup3");
         dup3_init_done = 1;
@@ -518,45 +518,49 @@ int dup3(int oldfd, int newfd, int flags )
            srshim_initialize( "post" );
     }
 
+    if ( oldfd == newfd ) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST oldfd = newfd \n" );
+         return dup3_fn_ptr(oldfd, newfd, flags);
+    }
+
     fdstat = fcntl(newfd, F_GETFL);
 
-    //if ( oldfd == newfd || fdstat == -1 ) {
-    //       if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST\n" );
-    //       return dup3_fn_ptr(oldfd, newfd, flags);
-    //}
-
-    if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) ){
-           if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST!\n" );
-           return dup3_fn_ptr(oldfd, newfd, flags);
+    if ( (fdstat & O_ACCMODE) == O_RDONLY  && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) ){
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST read mode !\n" );
+         return dup3_fn_ptr(oldfd, newfd, flags);
     }
 
     snprintf(fdpath, 32, "/proc/self/fd/%d", newfd);
     real_return = realpath(fdpath, real_path);
+
+    if ( !real_return ){
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST no path from fd !\n" );
+         return dup3_fn_ptr(oldfd, newfd, flags);
+    }
+
+    if ( !strncmp(real_path,"/dev/", 5) || !strncmp(real_path,"/proc/", 6) ) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST path device or proc !\n" );
+         return dup3_fn_ptr(oldfd, newfd, flags);
+    }
 
     if (!getenv("SR_POST_READS"))
        srshim_initialize( "post" );
 
     status = dup3_fn_ptr (oldfd, newfd, flags);
 
-    if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 status %d\n", status );
+    // if error ... return
 
-    if (!real_return){
-        fprintf( stderr, "SR_SHIMDEBUG dup3 newfd not a real_path\n");
-       return(status);
-    }
+    if ( status < 0 ) return status;
 
-    if ( !strncmp(real_path,"/dev/", 5) ) return(status);
-    if ( !strncmp(real_path,"/proc/", 6) ) return(status);
+    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 posting %s %d\n", real_path, status );
 
-    if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 %s\n", real_path );
+    // because shimpost posts when:    if (!status)
+    // we use a tmpstatus and call shimpost with status=0
 
-    tmpstatus = 0;
-    if ( status < 0 ) tmpstatus = status;
-    shimpost(real_path, tmpstatus) ;
+    shimpost(real_path, 0) ;
 
-    return  status ;
+    return status;
 }
-
 
 int link(const char *target, const char* linkpath) 
 {
