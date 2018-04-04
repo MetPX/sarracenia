@@ -253,7 +253,9 @@ int symlink(const char *target, const char* linkpath)
     if ( !strncmp(linkpath,"/dev/", 5) ) return(status);
     if ( !strncmp(linkpath,"/proc/", 6) ) return(status);
 
-    return(shimpost(linkpath, status));
+    shimpost(linkpath, 0);
+
+    return (status);
 }
 
 
@@ -626,7 +628,9 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
     if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
-    return(shimpost(real_path,status));
+    shimpost(real_path,0);
+
+    return(status);
 }
 
 
@@ -658,7 +662,9 @@ int copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
     if ( !strncmp(real_path,"/proc/", 6) ) return(status);
 
-    return(shimpost(real_path,status));
+    shimpost(real_path,0);
+
+    return(status);
 }
 
 
