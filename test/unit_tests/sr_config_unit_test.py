@@ -573,10 +573,16 @@ def self_test():
     # options 'accept','get','reject']
     # option  'accept_unmatched'
     # def isMatchingPattern(self, str, accept_unmatch = False): 
-    #def sundew_dirPattern(self,basename,destDir,destName) :
     #def sundew_getDestInfos(self, filename):
     #def validate_urlstr(self,urlstr):
 
+    # example of output for next test : new_dir = /20180404140433/SACN04CWAO140251RRA
+
+    dDir    = '/${RYYYY}${RMM}${RDD}${RHH}${RMM}${RSS}/${T1}${T2}${A1}${A2}${ii}${CCCC}${YY}${GG}${Gg}${BBB}/'
+    new_dir = cfg.sundew_dirPattern(urlstr='',basename='SACN04_CWAO_140251_RRA',destDir=dDir,destName='aaa')
+    if not new_dir.endswith('/SACN04CWAO140251RRA') :
+       cfg.logger.error("test 59: sundew_dirPattern new_dir %s should end with /SACN04CWAO140251RRA" % new_dir)
+       failed = True
 
     if not failed :
                     print("sr_config.py TEST PASSED")
