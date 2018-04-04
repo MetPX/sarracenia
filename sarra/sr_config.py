@@ -1239,6 +1239,10 @@ class sr_config:
 
     # modified from metpx SenderFTP
     def sundew_matchPattern(self,BN,EN,BP,keywd,defval) :
+
+        BN6 = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+        if len(BN) >= 7 : BN6 = BN[6]
+
         if   keywd[:4] == "{T1}"    : return (EN[0])[0:1]   + keywd[4:]
         elif keywd[:4] == "{T2}"    : return (EN[0])[1:2]   + keywd[4:]
         elif keywd[:4] == "{A1}"    : return (EN[0])[2:3]   + keywd[4:]
@@ -1250,12 +1254,12 @@ class sr_config:
         elif keywd[:4] == "{Gg}"    : return (EN[2])[4:6]   + keywd[4:]
         elif keywd[:5] == "{BBB}"   : return (EN[3])[0:3]   + keywd[5:]
         # from pds'datetime suffix... not sure
-        elif keywd[:7] == "{RYYYY}" : return (BN[6])[0:4]   + keywd[7:]
-        elif keywd[:5] == "{RMM}"   : return (BN[6])[4:6]   + keywd[5:]
-        elif keywd[:5] == "{RDD}"   : return (BN[6])[6:8]   + keywd[5:]
-        elif keywd[:5] == "{RHH}"   : return (BN[6])[8:10]  + keywd[5:]
-        elif keywd[:5] == "{RMN}"   : return (BN[6])[10:12] + keywd[5:]
-        elif keywd[:5] == "{RSS}"   : return (BN[6])[12:14] + keywd[5:]
+        elif keywd[:7] == "{RYYYY}" : return BN6[0:4]       + keywd[7:]
+        elif keywd[:5] == "{RMM}"   : return BN6[4:6]       + keywd[5:]
+        elif keywd[:5] == "{RDD}"   : return BN6[6:8]       + keywd[5:]
+        elif keywd[:5] == "{RHH}"   : return BN6[8:10]      + keywd[5:]
+        elif keywd[:5] == "{RMN}"   : return BN6[10:12]     + keywd[5:]
+        elif keywd[:5] == "{RSS}"   : return BN6[12:14]     + keywd[5:]
 
         # Matching with basename parts if given
 
