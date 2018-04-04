@@ -54,6 +54,7 @@ void srshim_initialize(const char* progname)
   int   psdup1;
   int   psdup2;
   int   psdup3;
+  int finalize_good;
 
   if (sr_c) return;
 
@@ -67,17 +68,26 @@ void srshim_initialize(const char* progname)
        config_read = sr_config_read(&sr_cfg,setstr,1,1);
        if (!config_read) return;
      }
-     if ( !sr_config_finalize( &sr_cfg, 0 )) return;
 
      if (!close_init_done) {
          close_fn_ptr = (close_fn) dlsym(RTLD_NEXT, "close");
          close_init_done = 1;
      }
 
-     // making use of 3 FD to try to avoid stepping over stdout stderr
+     // making use of 3 FD to try to avoid stepping over stdout stderr, for logs & broker connection.
      psdup1 = open("/dev/null",O_APPEND);
      psdup2 = dup(psdup1);
      psdup3 = dup(psdup1);
+
+     finalize_good = sr_config_finalize( &sr_cfg, 0 );
+
+     if ( !finalize_good ) 
+     {
+        if (psdup1 != -1) close_fn_ptr(psdup1);
+        if (psdup2 != -1) close_fn_ptr(psdup2);
+        if (psdup3 != -1) close_fn_ptr(psdup3);
+        return;
+     }
 
      sr_c = sr_context_init_config(&sr_cfg);
      sr_c = sr_context_connect( sr_c );
@@ -636,12 +646,12 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
 
 
 static int copy_file_range_init_done = 0;
-typedef int  (*copy_file_range_fn) (int, loff_t *, int, loff_t *, size_t, unsigned int);
+typedef ssize_t  (*copy_file_range_fn) (int, loff_t *, int, loff_t *, size_t, unsigned int);
 static copy_file_range_fn copy_file_range_fn_ptr = NULL;
 
-int copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags)
+ssize_t copy_file_range(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags)
 {
-    int status;
+    ssize_t status;
     char fdpath[32];
     char real_path[PATH_MAX+1];
     char *real_return;
