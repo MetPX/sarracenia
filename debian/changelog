@@ -1,3 +1,19 @@
+metpx-sarracenia (2.18.04b1) unstable; urgency=medium
+
+  * testing:retries on python side to validate products and routing
+  *         flow_post: loop on sorted individial products (spaces in path)... symlinks considered
+  * new     sr_subscribe: traceback logs when doing badly
+  *         sr_audit heartbeat works ... needs a config in audit/x.conf for now.
+  *         plugins: hp_sanity  uses sr sanity to check if program in strange state and log age to restart
+  *                  do_simulation logs protocol steps... instead of doing the actual download or send of a product
+  *         sr_config sundew_dirpattern provide a mean to use $RYYYY... etc in directory
+  * bugfix  C changes to return proper status of shimmed functions
+  *         C Get log file descriptor out of the danger zone also
+  *         C renameorlink put back code when oldname exists and processes it if link too
+  *         sr_retry : no more uses of self.activity and conditional retry heartbeat changed
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Thu, 05 Apr 2018 18:07:58 +0000
+
 metpx-sarracenia (2.18.03b1) unstable; urgency=medium
 
   * expanded flow_test coverage:
