@@ -472,6 +472,11 @@ int dup2(int oldfd, int newfd )
 
     fdstat = fcntl(newfd, F_GETFL);
 
+    if ( fdstat == -1) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 NO POST not valid fd !\n" );
+         return dup2_fn_ptr(oldfd, newfd);
+    }
+
     if ( (fdstat & O_ACCMODE) == O_RDONLY  && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) ){
          //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 NO POST read mode !\n" );
          return dup2_fn_ptr(oldfd, newfd);
@@ -536,6 +541,11 @@ int dup3(int oldfd, int newfd, int flags )
     }
 
     fdstat = fcntl(newfd, F_GETFL);
+
+    if ( fdstat == -1) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST not valid fd !\n" );
+         return dup3_fn_ptr(oldfd, newfd, flags);
+    }
 
     if ( (fdstat & O_ACCMODE) == O_RDONLY  && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) ){
          //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 NO POST read mode !\n" );
@@ -696,6 +706,11 @@ int close(int fd)
     
     fdstat = fcntl(fd, F_GETFL);
 
+    if ( fdstat == -1) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG close NO POST not valid fd !\n" );
+         return close_fn_ptr(fd);
+    }
+
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return close_fn_ptr(fd);
   
@@ -740,6 +755,11 @@ int fclose(FILE *f)
     fd = fileno(f);
  
     fdstat = fcntl(fd, F_GETFL);
+
+    if ( fdstat == -1) {
+         //if (getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG fclose NO POST not valid fd !\n" );
+         return fclose_fn_ptr(f);
+    }
 
     if ( ((fdstat & O_ACCMODE) == O_RDONLY ) && ( !sr_c || !( SR_READ & sr_c->cfg->events ) ) )
            return fclose_fn_ptr(f);
