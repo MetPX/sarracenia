@@ -3,6 +3,9 @@
 """
 this plugin use ENV  MAX_MESSAGES to stop the process when this limit of messages is reatch
 
+CAUTION: puts the process in strange state once limit is reached
+         trying to  start/restart  the process will simply stop.
+
 """
 
 class Msg_Stopper(object): 
