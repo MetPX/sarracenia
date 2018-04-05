@@ -12,7 +12,7 @@ class Hb_Sanity(object):
         parent.logger.debug( "hb_sanity initialized" )
           
     def perform(self,parent):
-        parent.logger.debug( "hb_sanity launching sr sanity" )
+        parent.logger.info( "hb_sanity launched" )
         subprocess.check_call(['sr','sanity'])
         return True
 
