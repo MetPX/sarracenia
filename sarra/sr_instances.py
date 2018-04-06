@@ -142,6 +142,8 @@ class sr_instances(sr_config):
     def exec_action(self,action,old=False):
         self.logger.debug("config = %s" % self.user_config)
 
+        self.action = action
+
         if old :
            self.logger.warning("Should invoke 3: %s [args] action config" % sys.argv[0])
 
@@ -427,9 +429,13 @@ class sr_instances(sr_config):
     
     def log_age_instance(self):
 
-        # program is stopped ... 
+        # program is stopped ...  or no sanity_log_dead set
 
-        if self.pid == None : return
+        if self.pid           == None : return
+        if self.sanity_log_dead  <= 0 : return
+
+        # in case it is from a plugin
+        if self.action == 'foreground': return
 
         # check log age 
 
@@ -437,9 +443,9 @@ class sr_instances(sr_config):
         now      = time.time()
         elapse   = now - log_age
 
-        if elapse <= self.heartbeat * 1.5 : return
+        if elapse <= self.sanity_log_dead : return
 
-        self.logger.warning("logfile older than 1.5 * heartbeat; restarting %s" % self.instance_str)
+        self.logger.warning("logfile older than %d; restarting %s" % (self.sanity_log_dead, self.instance_str))
         self.restart_instance()
 
     def reload_parent(self):
