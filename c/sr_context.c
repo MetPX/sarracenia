@@ -108,12 +108,19 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
   amqp_channel_open_ok_t *open_status;
   amqp_tx_select_ok_t *select_status;
   time_t to_sleep=1;
+  int   psdup1;
+  int   psdup2;
+  int   psdup3;
 
   if ( !(broker->password) ) {
     log_msg(  LOG_ERROR, "No broker password found.\n" );
     return(NULL);
   }
 
+  // making use of 3 FD to try to avoid stepping over stdout stderr, for logs & broker connection.
+  psdup1 = open("/dev/null",O_APPEND);
+  psdup2 = dup(psdup1);
+  psdup3 = dup(psdup1);
 
   while(1) {
      broker->conn = amqp_new_connection();
@@ -169,6 +176,12 @@ struct sr_broker_t *sr_broker_connect(struct sr_broker_t *broker) {
        }
        goto have_channel;
      }
+
+  // holding 3 FD until it works
+  if (psdup1 != -1) close(psdup1);
+  if (psdup2 != -1) close(psdup2);
+  if (psdup3 != -1) close(psdup3);
+
   broker->started=0;
   return(broker);
 

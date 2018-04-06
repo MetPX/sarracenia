@@ -51,9 +51,6 @@ void srshim_initialize(const char* progname)
 
   static int config_read = 0;
   char *setstr;
-  int   psdup1;
-  int   psdup2;
-  int   psdup3;
   int finalize_good;
 
   if (sr_c) return;
@@ -74,27 +71,15 @@ void srshim_initialize(const char* progname)
          close_init_done = 1;
      }
 
-     // making use of 3 FD to try to avoid stepping over stdout stderr, for logs & broker connection.
-     psdup1 = open("/dev/null",O_APPEND);
-     psdup2 = dup(psdup1);
-     psdup3 = dup(psdup1);
-
      finalize_good = sr_config_finalize( &sr_cfg, 0 );
 
      if ( !finalize_good ) 
      {
-        if (psdup1 != -1) close_fn_ptr(psdup1);
-        if (psdup2 != -1) close_fn_ptr(psdup2);
-        if (psdup3 != -1) close_fn_ptr(psdup3);
         return;
      }
 
      sr_c = sr_context_init_config(&sr_cfg);
      sr_c = sr_context_connect( sr_c );
-
-     if (psdup1 != -1) close_fn_ptr(psdup1);
-     if (psdup2 != -1) close_fn_ptr(psdup2);
-     if (psdup3 != -1) close_fn_ptr(psdup3);
 
   } 
 }
