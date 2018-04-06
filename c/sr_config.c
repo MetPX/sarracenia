@@ -968,7 +968,7 @@ void sr_config_free( struct sr_config_t *sr_cfg )
        free(tmpp);
   }
 
-  while (ev=vars_putenved) {
+  while ( ( ev=vars_putenved ) ) {
      vars_putenved=vars_putenved->n;
      free(ev->var);
      free(ev);

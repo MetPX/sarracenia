@@ -132,6 +132,17 @@ int dir_stack_push( char *fn, int wd, dev_t dev, ino_t ino )
    }
 }
 
+void dir_stack_free() 
+{
+   struct dir_stack *s ;
+
+   while( (s = dir_stack_top)  )
+   {
+       dir_stack_top = s->next;
+       free(s->path);
+       free(s);
+   }
+}
 char evstr[80];
 
 char *inotify_event_2string( uint32_t mask )
@@ -177,6 +188,12 @@ void do1file( struct sr_context *sr_c, char *fn )
     char ep[PATH_MAXNUL];
     char fnreal[PATH_MAXNUL];
     char tmpname[PATH_MAXNUL];
+
+    // attempted mollification of valgrind: nope!
+    // memset(&sb,0,sizeof(struct stat));
+    // try 2:
+    //sb.st_mtim.tv_sec=0;
+    //sb.st_mtim.tv_nsec=0;
 
     //if (sr_c->cfg->debug)
     //    log_msg( LOG_DEBUG, "do1file starting on: %s\n", fn );
@@ -824,5 +841,6 @@ int main(int argc, char **argv)
     sr_context_close(sr_c);
     free(sr_c);
     sr_config_free(&sr_cfg);  
+    dir_stack_free();    
     return(0);
 }

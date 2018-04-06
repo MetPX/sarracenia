@@ -376,15 +376,23 @@ char *sr_time2str( struct timespec *tin )
      when = ts.tv_sec;
      nsec = ts.tv_nsec ;
    }
-   sprintf( nsstr, "%09ld", nsec );
 
-   // remove trailing 0's, not relevant after a decimal place.
-   nsl=strlen(nsstr)-1;
-   while ( nsstr[nsl] == '0' ) 
+   if (nsec > 0)
    {
+     nsstr[0]='\0';
+     sprintf( nsstr, "%09ld", nsec );
+
+     // remove trailing 0's, not relevant after a decimal place.
+     nsl=strlen(nsstr)-1;
+     while ( nsstr[nsl] == '0' ) 
+     {
        nsstr[nsl]='\0';
        nsl--;
+     }
+   } else {
+     strcpy( nsstr, "0" );
    }
+
 
    gmtime_r(&when,&s);
    /*                         YYYY  MM  DD  hh  mm  ss */

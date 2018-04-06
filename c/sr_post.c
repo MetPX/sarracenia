@@ -367,6 +367,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       m->mode = sb->st_mode & 07777 ;
 
       m->sum[0]='L';
+      linkstr[0]='\0';
       linklen = readlink( fn, linkstr, PATH_MAX );
       linkstr[linklen]='\0';
       if ( sr_c->cfg->realpath ) 
