@@ -30,12 +30,12 @@ class Msg_Pclean_F90(object):
         original= self.sarr_f20_path
 
         # compare all files againts the first one downloaded
-        if not filecmp.cmp(original,self.subs_f30_path): logger.error("file %s and %s differs" % original,self.subs_f30_path)
-        if not filecmp.cmp(original,self.send_f50_path): logger.error("file %s and %s differs" % original,self.send_f50_path)
-        if not filecmp.cmp(original,self.subs_f60_path): logger.error("file %s and %s differs" % original,self.subs_f60_path)
-        if not filecmp.cmp(original,self.subs_f70_path): logger.error("file %s and %s differs" % original,self.subs_f70_path)
-        if not filecmp.cmp(original,self.subs_f71_path): logger.error("file %s and %s differs" % original,self.subs_f71_path)
-        if not filecmp.cmp(original,self.flow_post_cp ): logger.error("file %s and %s differs" % original,self.flow_post_cp )
+        if not filecmp.cmp(original,self.subs_f30_path): logger.error("file %s and %s differs" % (original,self.subs_f30_path))
+        if not filecmp.cmp(original,self.send_f50_path): logger.error("file %s and %s differs" % (original,self.send_f50_path))
+        if not filecmp.cmp(original,self.subs_f60_path): logger.error("file %s and %s differs" % (original,self.subs_f60_path))
+        if not filecmp.cmp(original,self.subs_f70_path): logger.error("file %s and %s differs" % (original,self.subs_f70_path))
+        if not filecmp.cmp(original,self.subs_f71_path): logger.error("file %s and %s differs" % (original,self.subs_f71_path))
+        if not filecmp.cmp(original,self.flow_post_cp ): logger.error("file %s and %s differs" % (original,self.flow_post_cp ))
 
     def log_state(self,parent,propagated):
         logger = parent.logger
