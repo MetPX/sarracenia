@@ -615,6 +615,9 @@ class sr_config:
         self.save_fp              = None
         self.save_count           = 1
 
+        # sanify
+        self.sanity_log_dead      = int(1.5*self.heartbeat)
+
         # counter
 
         self.message_count        = 0
@@ -898,8 +901,8 @@ class sr_config:
            ratio   = hb_last/self.heartbeat
            # heartbeat needs to be adjusted (to the nearest higher rounded minute)
            if ratio > 0.1 :
+              self.logger.warning("on_heartbeat spent more than 10% of heartbeat (%d)" % self.heartbeat)
               self.heartbeat = int(ratio * 10 * self.heartbeat/60 + 1) * 60
-              self.logger.warning("on_heartbeat spent more than 10% of heartbeat")
               self.logger.warning("heartbeat set to %f" % self.heartbeat)
            
 
@@ -2089,6 +2092,12 @@ class sr_config:
                         name, value = words2.split('=')
                         os.environ[ name ] = value
                      n = 3
+
+                elif words0 in ['sanity_log_dead','sld'] :   # FIXME ... to document
+                     # sanity_log_dead setting is in sec 
+                     self.sanity_log_dead = self.duration_from_str(words1,'s')
+                     if self.sanity_log_dead <= 0 : self.sanity_log_dead = 0
+                     n = 2
 
                 elif words0 == 'save' : # See: sr_config.7 
                      #-- report_daemons left for transition, should be removed in 2017

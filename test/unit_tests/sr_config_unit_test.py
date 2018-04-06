@@ -584,6 +584,21 @@ def self_test():
        cfg.logger.error("test 59: sundew_dirPattern new_dir %s should end with /SACN04CWAO140251RRA" % new_dir)
        failed = True
 
+    # retry_ttl in mins 
+    opt1 = "sanity_log_dead 1D"
+    cfg.option(opt1.split())
+    if cfg.sanity_log_dead != 86400 :
+       cfg.logger.error("test 60: option sanity_log_dead or module duration_from_str did not work")
+       failed = True
+
+    # retry_ttl in mins 
+    opt1 = "heartbeat ${sanity_log_dead}"
+    cfg.option(opt1.split())
+    if cfg.heartbeat != 86400 :
+       cfg.logger.error("test 61: option evaluated self.${} did not work")
+       failed = True
+
+
     if not failed :
                     print("sr_config.py TEST PASSED")
     else :          
