@@ -20,22 +20,15 @@ class Msg_Clean_F91(object):
     def __init__(self,parent):
         pass
 
-    def log_state(self,parent,propagated,ext=None):
+    def log_state(self,parent,propagated,ext):
         logger = parent.logger
 
-        if not ext :
-           if not os.path.isfile(self.subs_f30_path) : logger.warning("%s not found" % self.subs_f30_path) 
-           if not os.path.isfile(self.send_f50_path) : logger.warning("%s not found" % self.send_f50_path) 
-           if not os.path.isfile(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
-           if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
-           if not os.path.isfile(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
-        else:
-           if not os.path.isfile(self.subs_f30_path+ext) : logger.warning("%s not found" % self.subs_f30_path+ext) 
-           if not os.path.isfile(self.send_f50_path+ext) : logger.warning("%s not found" % self.send_f50_path+ext) 
-           if not os.path.isfile(self.subs_f60_path+ext) : logger.warning("%s not found" % self.subs_f60_path+ext) 
-           if not os.path.isfile(self.subs_f70_path+ext) : logger.warning("%s not found" % self.subs_f70_path+ext) 
-           if not os.path.isfile(self.subs_f71_path+ext) : logger.warning("%s not found" % self.subs_f71_path+ext) 
-        logger.warning("propagated = %d" % propagated) 
+        if not os.path.isfile(self.subs_f30_path+ext) : logger.warning("%s not found" % self.subs_f30_path+ext) 
+        if not os.path.isfile(self.send_f50_path+ext) : logger.warning("%s not found" % self.send_f50_path+ext) 
+        if not os.path.isfile(self.subs_f60_path+ext) : logger.warning("%s not found" % self.subs_f60_path+ext) 
+        if not os.path.isfile(self.subs_f70_path+ext) : logger.warning("%s not found" % self.subs_f70_path+ext) 
+        if not os.path.isfile(self.subs_f71_path+ext) : logger.warning("%s not found" % self.subs_f71_path+ext) 
+        if not os.path.isfile(self.flow_post_cp +ext) : logger.warning("%s not found" % self.flow_post_cp +ext) 
 
     def on_message(self,parent):
         import shutil
@@ -49,7 +42,6 @@ class Msg_Clean_F91(object):
 
         if 'pclean_f90' in msg.headers :
            ext = msg.headers['pclean_f90']
-           msg.headers['pclean_f91'] = ext
 
         else:
            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
@@ -69,6 +61,7 @@ class Msg_Clean_F91(object):
         # at f60 there is a post and a poll... no file
         self.subs_f70_path = root + '/posted_by_srpost_test2' + relp   # subscribe ftp_f70
         self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp   # subscribe q_f71
+        self.flow_post_cp  = root + '/posted_by_shim'         + relp   # flow_post cp
 
         # propagated count 
 
@@ -78,13 +71,14 @@ class Msg_Clean_F91(object):
         if os.path.isfile(self.subs_f60_path+ext) : propagated += 1
         if os.path.isfile(self.subs_f70_path+ext) : propagated += 1
         if os.path.isfile(self.subs_f71_path+ext) : propagated += 1
+        if os.path.isfile(self.flow_post_cp +ext) : propagated += 1
 
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if propagated != 5 :
+        if propagated != 6 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
            self.log_state(parent,propagated,ext)
@@ -93,34 +87,51 @@ class Msg_Clean_F91(object):
            parent.msg.isRetry = False
            return False
 
-        # ok it is everywhere ...  # do big cleanup
+        # ok it is everywhere ...  delete original
 
         try   : os.unlink( self.sarr_f20_path)
         except: logger.warning("%s already deleted ?" % self.sarr_f20_path)
 
-        try   : os.unlink( self.subs_f30_path+ext)
-        except: logger.warning("%s already deleted ?" % self.subs_f30_path+ext)
-
         try   : os.unlink( self.subs_f30_path)
-        except: logger.warning("%s already deleted ?" % self.subs_f30_path)
+        except:
+                if ext != '.moved' : logger.warning("%s already deleted ?" % self.subs_f30_path)
 
-        # deletion propagation ... we skip theses
-
-        #os.unlink( self.subs_f50_path.ext)
+        # by deleting self.subs_f30_path, watch should propagate the removal of theses two.
         #os.unlink( self.subs_f50_path)
-        #os.unlink( self.subs_f60_path.ext)
         #os.unlink( self.subs_f60_path)
 
-        try   : os.unlink( self.subs_f70_path+ext)
-        except: logger.warning("%s already deleted ?" % self.subs_f70_path+ext)
         try   : os.unlink( self.subs_f70_path)
         except: logger.warning("%s already deleted ?" % self.subs_f70_path)
 
-        try   : os.unlink( self.subs_f71_path+ext)
-        except: logger.warning("%s already deleted ?" % self.subs_f71_path+ext)
         try   : os.unlink( self.subs_f71_path)
         except: logger.warning("%s already deleted ?" % self.subs_f71_path)
 
+        try   : os.unlink( self.flow_post_cp )
+        except: logger.warning("%s already deleted ?" % self.flow_post_cp )
+
+
+        # delete original with extension where it makes sense
+
+        # extension file was generated at next level
+        #os.unlink( self.sarr_f20_path)
+
+        try   : os.unlink( self.subs_f30_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f30_path+ext)
+
+        # by deleting self.subs_f30_path+ext, watch should propagate the removal of theses two.
+        #os.unlink( self.subs_f50_path+ext)
+        #os.unlink( self.subs_f60_path+ext)
+
+        try   : os.unlink( self.subs_f70_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f70_path+ext)
+
+        try   : os.unlink( self.subs_f71_path+ext)
+        except: logger.warning("%s already deleted ?" % self.subs_f71_path+ext)
+
+        try   : os.unlink( self.flow_post_cp +ext)
+        except: logger.warning("%s already deleted ?" % self.flow_post_cp+ext )
+
+        msg.headers['pclean_f91'] = ext
         del msg.headers['pclean_f90']
 
         return True

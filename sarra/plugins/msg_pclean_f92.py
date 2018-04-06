@@ -27,7 +27,6 @@ class Msg_Clean_F92(object):
 
         if 'pclean_f91' in msg.headers :
            ext = msg.headers['pclean_f91']
-           msg.headers['pclean_f92'] = ext
 
         else:
            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
@@ -47,29 +46,33 @@ class Msg_Clean_F92(object):
         # at f60 there is a post and a poll... no file
         self.subs_f70_path = root + '/posted_by_srpost_test2' + relp   # subscribe ftp_f70
         self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp   # subscribe q_f71
+        self.flow_post_cp  = root + '/posted_by_shim'         + relp   # flow_post cp
 
         # removed count 
 
         removed = 0
         if not os.path.isfile(self.sarr_f20_path    ) : removed += 1
+
         if not os.path.isfile(self.subs_f30_path    ) : removed += 1
         if not os.path.isfile(self.send_f50_path    ) : removed += 1
         if not os.path.isfile(self.subs_f60_path    ) : removed += 1
         if not os.path.isfile(self.subs_f70_path    ) : removed += 1
         if not os.path.isfile(self.subs_f71_path    ) : removed += 1
+        if not os.path.isfile(self.flow_post_cp     ) : removed += 1
 
         if not os.path.isfile(self.subs_f30_path+ext) : removed += 1
         if not os.path.isfile(self.send_f50_path+ext) : removed += 1
         if not os.path.isfile(self.subs_f60_path+ext) : removed += 1
         if not os.path.isfile(self.subs_f70_path+ext) : removed += 1
         if not os.path.isfile(self.subs_f71_path+ext) : removed += 1
+        if not os.path.isfile(self.flow_post_cp +ext) : removed += 1
 
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if removed != 11 :
+        if removed != 13 :
            logger.warning("%s not fully cleaned up" % relp )
            # if testing
            # self.log_state(parent,propagated,ext)
@@ -78,6 +81,7 @@ class Msg_Clean_F92(object):
            parent.msg.isRetry = False
            return False
 
+        msg.headers['pclean_f92'] = ext
         del msg.headers['pclean_f91']
 
         return True

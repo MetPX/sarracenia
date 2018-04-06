@@ -35,6 +35,7 @@ class Msg_Pclean_F90(object):
         if not filecmp.cmp(original,self.subs_f60_path): logger.error("file %s and %s differs" % original,self.subs_f60_path)
         if not filecmp.cmp(original,self.subs_f70_path): logger.error("file %s and %s differs" % original,self.subs_f70_path)
         if not filecmp.cmp(original,self.subs_f71_path): logger.error("file %s and %s differs" % original,self.subs_f71_path)
+        if not filecmp.cmp(original,self.flow_post_cp ): logger.error("file %s and %s differs" % original,self.flow_post_cp )
 
     def log_state(self,parent,propagated):
         logger = parent.logger
@@ -45,6 +46,7 @@ class Msg_Pclean_F90(object):
         if not os.path.isfile(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
         if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
         if not os.path.isfile(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
+        if not os.path.isfile(self.flow_post_cp ) : logger.warning("%s not found" % self.flow_post_cp ) 
         logger.warning("propagated = %d" % propagated) 
 
     def on_message(self,parent):
@@ -69,6 +71,7 @@ class Msg_Pclean_F90(object):
         # at f60 there is a post and a poll... no file
         self.subs_f70_path = root + '/posted_by_srpost_test2' + relp   # subscribe ftp_f70
         self.subs_f71_path = root + '/recd_by_srpoll_test1'   + relp   # subscribe q_f71
+        self.flow_post_cp  = root + '/posted_by_shim'         + relp   # flow_post cp
 
         # propagated count 
 
@@ -79,12 +82,13 @@ class Msg_Pclean_F90(object):
         if os.path.isfile(self.subs_f60_path) : propagated += 1
         if os.path.isfile(self.subs_f70_path) : propagated += 1
         if os.path.isfile(self.subs_f71_path) : propagated += 1
+        if os.path.isfile(self.flow_post_cp ) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
 
-        if propagated != 6 :
+        if propagated != 7 :
            logger.warning("%s not fully propagated" % relp )
            # if testing
            self.log_state(parent,propagated)
