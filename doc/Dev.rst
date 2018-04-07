@@ -618,6 +618,124 @@ to identify more issues. sample run to 100,000 entries::
 
 This test was fired up at the end of the day, as it takes several hours, and results examined the next morning.
 
+Flow Test Stuck
+~~~~~~~~~~~~~~~
+
+Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get 
+the same name, and so earlier versions remove later versions and then retries will always fail.  Eventually, we will succeed in cleaning
+up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required,
+and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
+
+To recover from this state without discarding the results of a long test, do::
+
+  ^C to interrupt the flow_check.sh 100000
+  blacklab% sr stop
+  blacklab% cd ~/.cache/sarra
+  blacklab% ls */*/*retry*
+  shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
+  shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
+  shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
+  blacklab% rm */*/*retry*
+  blacklab% sr start
+  blacklab% 
+  Sufficient!
+  stopping shovels and waiting...
+  2018-04-07 10:50:16,167 [INFO] sr_shovel t_dd2_f00 0001 stopped
+  2018-04-07 10:50:16,177 [INFO] sr_shovel t_dd1_f00 0001 stopped
+  2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
+  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  implemented, ignored.
+  2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
+  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  implemented, ignored.
+  running instance for config pelle_dd1_f04 (pid 12435) stopped.
+  running instance for config pelle_dd2_f05 (pid 12428) stopped.
+  Traceback (most recent call last):ing...
+    File "/usr/bin/rabbitmqadmin", line 1012, in <module>
+      main()
+    File "/usr/bin/rabbitmqadmin", line 413, in main
+      method()
+    File "/usr/bin/rabbitmqadmin", line 593, in invoke_list
+      format_list(self.get(uri), cols, obj_info, self.options)
+    File "/usr/bin/rabbitmqadmin", line 710, in format_list
+      formatter_instance.display(json_list)
+    File "/usr/bin/rabbitmqadmin", line 721, in display
+      (columns, table) = self.list_to_table(json.loads(json_list), depth)
+    File "/usr/bin/rabbitmqadmin", line 775, in list_to_table
+      add('', 1, item, add_to_row)
+    File "/usr/bin/rabbitmqadmin", line 742, in add
+      add(column, depth + 1, subitem, fun)
+    File "/usr/bin/rabbitmqadmin", line 742, in add
+      add(column, depth + 1, subitem, fun)
+    File "/usr/bin/rabbitmqadmin", line 754, in add
+      fun(column, subitem)
+    File "/usr/bin/rabbitmqadmin", line 761, in add_to_row
+      row[column_ix[col]] = maybe_utf8(val)
+    File "/usr/bin/rabbitmqadmin", line 431, in maybe_utf8
+      return s.encode('utf-8')
+  AttributeError: 'float' object has no attribute 'encode'
+  
+  
+  
+  maximum of the shovels is: 100075
+  
+                   | dd.weather routing |
+  test  1 success: sr_shovel (100075) t_dd1 should have the same number
+  of items as t_dd2 (100068)
+  test  2 success: sr_winnow (200143) should have the sum of the number
+  of items of shovels (200143)
+  test  3 success: sr_sarra (98075) should have the same number of items
+  as winnows'post (100077)
+  test  4 success: sr_subscribe (98068) should have the same number of
+  items as sarra (98075)
+                   | watch      routing |
+  test  5 success: sr_watch (397354) should be 4 times subscribe t_f30 (98068)
+  test  6 success: sr_sender (392737) should have about the same number
+  of items as sr_watch (397354)
+  test  7 success: sr_subscribe u_sftp_f60 (361172) should have the same
+  number of items as sr_sender (392737)
+  test  8 success: sr_subscribe cp_f61 (361172) should have the same
+  number of items as sr_sender (392737)
+                   | poll       routing |
+  test  9 success: sr_poll test1_f62 (195408) should have half the same
+  number of items of sr_sender(196368)
+  test 10 success: sr_subscribe q_f71 (195406) should have about the
+  same number of items as sr_poll test1_f62(195408)
+                   | flow_post  routing |
+  test 11 success: sr_post test2_f61 (193541) should have half the same
+  number of items of sr_sender(196368)
+  test 12 success: sr_subscribe ftp_f70 (193541) should have about the
+  same number of items as sr_post test2_f61(193541)
+  test 13 success: sr_post test2_f61 (193541) should have about the same
+  number of items as shim_f63 195055
+                   | py infos   routing |
+  test 14 success: sr_shovel pclean_f90 (97019) should have the same
+  number of watched items winnows'post (100077)
+  test 15 success: sr_shovel pclean_f92 (94537}) should have the same
+  number of removed items winnows'post (100077)
+  test 16 success: 0 messages received that we don't know what happenned.
+  test 17 success: count of truncated headers (98075) and subscribed
+  messages (98075) should have about the same number of items
+                   | C          routing |
+  test 18 success: cpump both pelles (c shovel) should receive about the
+  same number of messages (161365) (161365)
+  test 19 success: cdnld_f21 subscribe downloaded (47950) the same
+  number of files that was published by both van_14 and van_15 (47950)
+  test 20 success: veille_f34 should post twice as many files (95846) as
+  subscribe cdnld_f21 downloaded (47950)
+  test 21 success: veille_f34 should post twice as many files (95846) as
+  subscribe cfile_f44 downloaded (47896)
+  test 22 success: Overall 21 of 21 passed (sample size: 100077) !
+  
+  NB retries for sr_subscribe t_f30 0
+  NB retries for sr_sender 36
+  
+
+So, in this case, the results are still good in spite of not quite being 
+able to terminate. If there was a significant problem, the cumulation
+would indicate it.
+
+
 
 Building a Release
 ------------------
