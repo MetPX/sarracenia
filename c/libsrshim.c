@@ -705,8 +705,8 @@ int close(int fd)
        srshim_initialize( "post" );
 
     status = close_fn_ptr(fd);
-
-    if (!real_return) return(status);
+    if ( status == -1 ) return status;
+    if (!real_return  ) return status;
 
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
     if ( !strncmp(real_path,"/proc/", 6) ) return(status);
@@ -751,7 +751,7 @@ int fclose(FILE *f)
     snprintf(fdpath, 32, "/proc/self/fd/%d", fd);
     real_return = realpath(fdpath, real_path);
     status = fclose_fn_ptr(f);
-
+    if ( status != 0) return status;
     if (!real_return) return(status);
 
     if ( !strncmp(real_path,"/dev/", 5) ) return(status);
