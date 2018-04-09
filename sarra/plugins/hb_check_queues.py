@@ -21,7 +21,7 @@ class Hb_Check_Queues(object):
 
                 # could not connect ?
 
-                if not parent.amqp_is_connected() :
+                if not parent.amqp_isconnected():
                    parent.logger.error("no connection to broker with admin %s" % parent.admin.geturl())
                    parent.amqp_close()
                    return
