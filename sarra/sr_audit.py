@@ -179,8 +179,9 @@ class sr_audit(sr_instances):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_audit overwrite_defaults")
-        self.sleep = 60
-        self.hc    = None
+        self.heartbeat = 59
+        self.sleep     = 60
+        self.hc        = None
 
         # sanity check by default
 
@@ -615,6 +616,8 @@ class sr_audit(sr_instances):
                     self.verify_users()
                     # verify overall exchanges (once everything created)
                     self.verify_exchanges()
+                    # verify queues
+                    self.verify_queues()
                     # close connection
                     self.amqp_close()
                     # setup all exchanges and queues from configs
@@ -641,8 +644,19 @@ class sr_audit(sr_instances):
                       time.sleep(self.sleep)
 
         except:
+                import io, traceback
                 (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_audit/run_pump_admin Type: %s, Value: %s,  ..." % (stype, svalue))
+
+                tb_output = io.StringIO()
+                traceback.print_tb(tb, None, tb_output)
+                self.logger.error("\n\n****************************************\n" + \
+                                      "******* ERROR PRINTING TRACEBACK *******\n" + \
+                                      "****************************************\n" + \
+                                    "\n" + tb_output.getvalue()             + "\n" + \
+                                    "\n****************************************\n")
+                tb_output.close()
+
+                self.logger.error("sr_audit Type: %s, Value: %s,  ..." % (stype, svalue))
 
 
     def reload(self):
