@@ -59,6 +59,71 @@ def exec_rabbitmqadmin(url,options,logger=None):
 
     return 0,None
     
+
+def rabbitmq_add_user( url, role, user, passwd, logger  ):
+    
+    # properly declare user
+
+    declare = "declare user name='%s' password=" % user
+
+    if passwd !=  None: declare += "'%s' "  % passwd
+    if role == 'admin': declare += " tags=administrator "
+    else:               declare += ' tags="" '
+
+    dummy = run_rabbitmqadmin( url,declare,logger )
+    
+    # admin and feeder gets the same permissions
+
+    if role in ['admin,','feeder','manager']:
+       c="configure=.*"
+       w="write=.*"
+       r="read=.*"
+       logger.info("permission user '%s' role %s  %s %s %s " % (user,'feeder',c,w,r))
+       declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
+       dummy   = run_rabbitmqadmin( url,declare,logger)
+       return
+
+    # source
+
+    if role == 'source':
+       c="configure='^q_%s.*|^xs_%s.*'" % ( user, user )
+       w="write='^q_%s.*|^xs_%s.*'" % ( user, user )
+       r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( user, user )
+       logger.info("permission user '%s' role %s  %s %s %s " % (user,'source',c,w,r))
+       declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
+       dummy = run_rabbitmqadmin( url,declare,logger)
+       return
+
+    # subscribe
+
+    if role == 'subscribe':
+       c="configure='^q_%s.*'"%user
+       w="write='^q_%s.*|^xs_%s$'"%(user,user)
+       r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (user,user)
+       logger.info("permission user '%s' role %s  %s %s %s " % (user,'source',c,w,r))
+       declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
+       dummy = run_rabbitmqadmin( url,declare,logger )
+
+def rabbitmq_del_user( url, user, logger  ):
+    logger.info("deleting user %s" % user)
+    delete = "delete user name='%s'"%user
+    dummy  = run_rabbitmqadmin( url,delete,logger )
+
+def rabbitmq_get_exchanges( url, logger  ):
+    logger.info("geting exchanges")
+    cmd = "list exchanges name"
+    return run_rabbitmqadmin( url, cmd, logger )
+
+def rabbitmq_get_queues( url, logger  ):
+    logger.info("geting queues")
+    cmd = "list queues name messages state"
+    return run_rabbitmqadmin( url, cmd, logger )
+
+def rabbitmq_get_users( url, logger  ):
+    logger.info("geting users")
+    cmd = "list users name"
+    return run_rabbitmqadmin( url, cmd, logger )
+
 #===========================
 # direct access to rabbitmq management plugin
 # this is what rabbitmqadmin does under the cover

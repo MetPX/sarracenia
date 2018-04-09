@@ -47,11 +47,37 @@ except :
 
 class sr_audit(sr_instances):
 
-    def add_exchange(self,e):
+    def amqp_add_exchange(self,e):
         self.logger.info("adding exchange '%s'" % e)
         self.hc.exchange_declare(e)
 
-    def add_user(self,u,role):
+    def amqp_close(self):
+        if self.hc :
+           self.hc.close()
+           self.hc = None
+
+    def amqp_connect(self):
+        try:
+                self.hc = HostConnect(logger = self.logger)
+                self.hc.loop = False
+                self.hc.set_pika(self.use_pika)
+                self.hc.set_url(self.admin)
+                self.hc.connect()
+        except: pass
+
+    def amqp_del_exchange(self,e):
+        self.logger.info("deleting exchange %s" % e)
+        self.hc.exchange_delete(e)
+
+    def amqp_del_queue(self,q):
+        self.logger.info("deleting queue %s" % q)
+        self.hc.queue_delete(q)
+
+    def amqp_isconnected(self):
+        return not ( self.hc == None or self.hc.asleep or self.hc.connection == None)
+
+
+    def audit_add_user(self,u,role):
         self.logger.info("adding user %s, reset: %s, set_passwords: %s" % (u, self.reset, self.set_passwords) )
 
         user_cred_qurl = self.admin.scheme + '://' + u + '@' + self.admin.hostname + '/'
@@ -63,87 +89,37 @@ class sr_audit(sr_instances):
            return
 
         upw = details.url.password
+
+        # rabbitmq_add_user
+
+        rabbitmq_add_user(self.admin,role,u,upw,self.logger)
          
-        declare = "declare user name='%s' password=" % u
-        if self.set_passwords:
-            declare += "'%s' "  % upw
-
-        if role == 'admin' :
-           declare += " tags=administrator "
-        else:
-           declare += ' tags="" '
-
-        dummy = run_rabbitmqadmin( self.admin,declare,self.logger )
-
-        # admin and feeder gets the same permissions
-
-        if role in ['admin,','feeder','manager']:
-           # MG: before we had '.*' and it caused problem
-           c="configure=.*"
-           w="write=.*"
-           r="read=.*"
-           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'feeder',c,w,r))
-           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
-           dummy = run_rabbitmqadmin( self.admin,declare,self.logger)
-           return
-
         # source
 
         if role == 'source':
-           c="configure='^q_%s.*|^xs_%s.*'" % ( u, u )
-           w="write='^q_%s.*|^xs_%s.*'" % ( u, u )
-           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( u, u )
-           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
-           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
-           dummy = run_rabbitmqadmin( self.admin,declare,self.logger)
            # setting up default exchanges for a source
-           self.hc.exchange_declare('xs_%s'%u)
-           self.hc.exchange_declare('xr_%s'%u)
+           self.amqp_add_exchange('xs_%s'%u)
+           self.amqp_add_exchange('xr_%s'%u)
            # deprecated
-           self.hc.exchange_declare('xl_%s'%u)
+           self.amqp_add_exchange('xl_%s'%u)
            return
-
-        # PS asked not to implement this (Fri Mar  4 2016)
-        # anonymous was special at a certain time ... historical reasons
-        # anonymous should only be a subscribe... but it is a special case...
-        # to work with old versions of subscribe : queue cmc* and configure permission on xpublic
-        # this anonymous code will be deprecated at a certain point...
-
-        #if u == 'anonymous' :
-        #   c="configure='^q_%s.*|xpublic|^cmc.*$'"%u
-        #   w="write='^q_%s.*|^xs_%s$|xlog|xreport|^cmc.*$'"%(u,u)
-        #   r="read='^q_%s.*|^xr_%s$|xlog|xpublic|^cmc.*$'"%(u,u)
-        #   self.logger.info("permission user %s role %s  %s %s %s " % (u,'source',c,w,r))
-        #   declare = "declare permission vhost=/ user=%s %s %s %s"%(u,c,w,r)
-        #   dummy = rabbitmqadmin( self.admin,declare,self.logger)
-        #   return
 
         # subscribe
 
         if role == 'subscribe':
-           c="configure='^q_%s.*'"%u
-           w="write='^q_%s.*|^xs_%s$'"%(u,u)
-           r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (u,u)
-           self.logger.info("permission user '%s' role %s  %s %s %s " % (u,'source',c,w,r))
-           declare = "declare permission vhost=/ user='%s' %s %s %s"%(u,c,w,r)
-           dummy = run_rabbitmqadmin( self.admin,declare,self.logger )
            # setting up default exchanges for a subscriber
-           self.hc.exchange_declare('xs_%s'%u)
-           self.hc.exchange_declare('xr_%s'%u)
+           self.amqp_add_exchange('xs_%s'%u)
+           self.amqp_add_exchange('xr_%s'%u)
            # deprecated
-           self.hc.exchange_declare('xl_%s'%u)
+           self.amqp_add_exchange('xl_%s'%u)
            return
 
     def close(self):
         self.logger.debug("sr_audit close")
-        if self.hc :
-           self.hc.close()
-           self.hc = None
+        self.amqp_close()
 
     def check(self):
         self.logger.debug("sr_audit check")
-
-        self.hc = None
 
         # only one audit around
         self.nbr_instances = 1
@@ -152,6 +128,9 @@ class sr_audit(sr_instances):
         self.pump_admin = hasattr(self,'admin')
         if not self.pump_admin :
            return
+
+        # queue check by default when admin
+        self.execfile("on_heartbeat",'hb_check_queues')
 
         # get other admins  users
 
@@ -198,25 +177,14 @@ class sr_audit(sr_instances):
             if not user in picked :
                 self.logger.error("unknown role '%s' for user '%s' " % (roles,user) )
 
-
-
-
-    def delete_exchange(self,e):
-        self.logger.info("deleting exchange %s" % e)
-        self.hc.exchange_delete(e)
-
-    def delete_queue(self,q):
-        self.logger.info("deleting queue %s" % q)
-        self.hc.queue_delete(q)
-
-    def delete_user(self,u):
-        self.logger.info("deleting user %s" % u)
-        delete = "delete user name='%s'"%u
-        dummy  = run_rabbitmqadmin( self.admin,delete,self.logger )
-
     def overwrite_defaults(self):
         self.logger.debug("sr_audit overwrite_defaults")
         self.sleep = 60
+        self.hc    = None
+
+        # sanity check by default
+
+        self.execfile("on_heartbeat",'hb_sanity')
 
     def run_sr_setup(self):
         self.logger.debug("setting up exchanges and queues from all config")
@@ -228,8 +196,7 @@ class sr_audit(sr_instances):
 
         # get exchanges name (a list of dictionnaries)
 
-        listdict = "list exchanges name"
-        lst_dict = run_rabbitmqadmin( self.admin,listdict,self.logger )
+        lst_dict = rabbitmq_get_exchanges( self.admin, self.logger )
 
         # loop build list of exchanges of interest
         # empty or rabbitmq-server defaults 'amq.' are taken off
@@ -252,7 +219,7 @@ class sr_audit(sr_instances):
             if e in exchange_lst :
                exchange_lst.remove(e)
                continue
-            self.add_exchange(e)
+            self.amqp_add_exchange(e)
 
         # all sources should have: xs_ and xr_"user"
 
@@ -263,7 +230,7 @@ class sr_audit(sr_instances):
 
             se = 'xs_' + u
 
-            if not se in exchange_lst: self.add_exchange(se)
+            if not se in exchange_lst: self.amqp_add_exchange(se)
             
             for e in exchange_lst:
                if e.startswith(se) :  
@@ -272,7 +239,7 @@ class sr_audit(sr_instances):
 
             se = 'xr_' + u
 
-            if not se in exchange_lst: self.add_exchange(se)
+            if not se in exchange_lst: self.amqp_add_exchange(se)
 
             for e in exchange_lst:
                if e.startswith(se) :  
@@ -282,7 +249,7 @@ class sr_audit(sr_instances):
             # remove once all users using version > 2.16.08a
             se = 'xl_' + u
 
-            if not se in exchange_lst: self.add_exchange(se)
+            if not se in exchange_lst: self.amqp_add_exchange(se)
 
             for e in exchange_lst:
                if e.startswith(se) :  
@@ -316,12 +283,12 @@ class sr_audit(sr_instances):
             # deprecated exchanges  (from deleted users?)
             if 'xs_' in e or 'xr_' in e or 'xl_' in e :
                self.logger.warning("exchange from no known user %s" % e)
-               self.delete_exchange(e)
+               self.amqp_del_exchange(e)
 
             # weird exchange... not starting with 'x'
             elif e[0] != 'x' :
                self.logger.warning("unknown exchange %s" % e)
-               self.delete_exchange(e)
+               self.amqp_del_exchange(e)
 
             # leading 'x' exchanges that might be there for a reason
             # leave but notify ...
@@ -440,8 +407,7 @@ class sr_audit(sr_instances):
 
         # get users name (a list of dictionnaries)
 
-        listuser = "list users name"
-        lst_dict = run_rabbitmqadmin( self.admin,listuser,self.logger )
+        lst_dict = rabbitmq_get_users( self.admin, self.logger )
         self.logger.info("sr_audit verify_users, defined: %s" % lst_dict )
 
         user_lst = []
@@ -460,7 +426,7 @@ class sr_audit(sr_instances):
                user_lst.remove(u)
                if not self.reset:
                   continue
-            self.add_user(u,'admin')
+            self.audit_add_user(u,'admin')
 
         # feeders
 
@@ -470,7 +436,7 @@ class sr_audit(sr_instances):
                user_lst.remove(u)
                if not self.reset:
                   continue
-            self.add_user(u,'feeder')
+            self.audit_add_user(u,'feeder')
 
         # sources
 
@@ -480,7 +446,7 @@ class sr_audit(sr_instances):
                user_lst.remove(u)
                if not self.reset:
                   continue
-            self.add_user(u,'source')
+            self.audit_add_user(u,'source')
 
         # subscribes
 
@@ -490,19 +456,17 @@ class sr_audit(sr_instances):
                user_lst.remove(u)
                if not self.reset:
                   continue
-            self.add_user(u,'subscribe')
+            self.audit_add_user(u,'subscribe')
 
         # delete leftovers
         for u in user_lst :
             self.logger.warning("unnecessary user %s" % u)
-            self.delete_user(u)
-
+            rabbitmq_del_user(self.admin,u,self.logger)
 
     def verify_queues(self):
         self.logger.debug("sr_audit verify_queues")
 
-        listq    = "list queues name messages state"
-        lst_dict = run_rabbitmqadmin( self.admin,listq,self.logger )
+        lst_dict = rabbitmq_get_queues( self.admin, self.logger )
         self.logger.debug("lst_dict = %s" % lst_dict)
 
         for edict in lst_dict :
@@ -528,7 +492,7 @@ class sr_audit(sr_instances):
             # queue bigger than max_queue_size are deleted right away
             if qsize >= self.max_queue_size :
                self.logger.debug("queue too big %s (%d)" % (q,qsize))
-               self.delete_queue(q)
+               self.amqp_del_queue(q)
                continue
 
             # queue name starting with cmc are tolerated for now
@@ -544,7 +508,7 @@ class sr_audit(sr_instances):
 
             if lq < 2 or q[:2] != 'q_'  :
                self.logger.debug("queue %s deleted: invalid name" % q)
-               self.delete_queue(q)
+               self.amqp_del_queue(q)
                continue
 
             # extract username from queuename... 
@@ -563,7 +527,7 @@ class sr_audit(sr_instances):
 
                # queue of with invalid or obsolete username
                self.logger.debug("queue %s deleted: invalid username" % q)
-               self.delete_queue(q)
+               self.amqp_del_queue(q)
 
 
     def verify_pump(self):
@@ -582,8 +546,7 @@ class sr_audit(sr_instances):
 
         # verify admin user works
         else:
-           listu = "list users name"
-           lst   = run_rabbitmqadmin( self.admin,listu,self.logger )
+           lst   =  rabbitmq_get_users( self.admin, self.logger )
            if lst != [] :
               self.logger.info("**** admin account verified *****")
               self.logger.info("admin %s"   % self.admin.geturl())
@@ -623,65 +586,45 @@ class sr_audit(sr_instances):
            self.logger.error("source users are also used in sr_log2source to make products log available to them")
            error += 1
 
-        # verify if the pump have a cluster name set
-        #if self.cluster :
-        #   self.logger.info("**** cluster (pump name) defined *****")
-        #   self.logger.info("cluster %s"   % self.cluster)
-        #else :
-        #   self.logger.error("**** cluster (pump name) undefined *****")
-        #   self.logger.error("cluster clustername")
-        #   self.logger.error("The cluster name must be set in default.conf")
-        #   self.logger.error("AMQP message headers target one or a list of clusters")
-        #   self.logger.error("If not set, no message can be processed.")
-        #   error += 1
-
-        #if self.cluster_aliases != [] :
-        #   self.logger.info("**** cluster_aliases declared *****")
-        #   self.logger.info("cluster_aliases %s"   % self.cluster_aliases)
-        #else :
-        #   self.logger.warning("**** cluster_aliases undefined but not mandatory *****")
-        #   self.logger.warning("cluster_aliases clusteralias1,clusteralias2,...")
-        #   self.logger.warning("It can be set in default.conf")
-        #   self.logger.warning("It should be used when the cluster can be named in different ways. Ex.:")
-        #   self.logger.warning("   cluster ddi")
-        #   self.logger.warning("   cluster_aliases DDIDOR,ddi1.cmc,ddi2.cmc")
-        #   warning += 1
-
-        #if self.gateway_for != [] :
-        #   self.logger.info("**** gateway_for declared *****")
-        #   self.logger.info("gateway_for %s" % self.gateway_for)
-        #else :
-        #   self.logger.warning("**** gateway_for undeclared but not mandatory *****")
-        #   self.logger.warning("gateway_for clustername1,clustername2,...")
-        #   self.logger.warning("It can be set in default.conf")
-        #   self.logger.warning("Use this option if this pump is a hop to other pumps for messages")
-        #   self.logger.warning("Declare the pumps using their cluster names like this:")
-        #   self.logger.warning("   gateway_for ddi.edm,ddi1.edm,ddi2.edm")
-        #   warning += 1
-
-        #if self.report_clusters != {} :
-        #   self.logger.info("**** log2clusters.conf file present *****")
-        #   self.logger.info("log2clusters.conf")
-        #   for  i in self.report_clusters :
-        #        cluster,broker,exchange = self.report_clusters[i]
-        #        self.logger.info("name %s  url %s exchange %s" % (cluster,broker.geturl(),exchange))
-        #else :
-        #   self.logger.warning("**** log2clusters.conf file not present but not mandatory *****")
-        #   self.logger.warning("Use this file if this cluster is a hop to other pumps'log.")
-        #   self.logger.warning("Logs going back to clusters may need to go through this cluster ")
-        #   self.logger.warning("You would set to target a cluster like this (one per line):")
-        #   self.logger.warning("    #cluster_name url                                exchange")
-        #   self.logger.warning("    ddi.edm       amqp://mgr_user@ddi.edm.ec.gc.ca   xreport")
-        #   warning += 1
-
         self.logger.info(" %d error(s) and %d warning(s)" % (error,warning))
 
     def run(self):
         self.logger.info("sr_audit run")
 
-        # loop : audit should never stop working   ;-)
+        try :
 
-        while True  :
+              # vip and admin
+              if self.has_vip() and self.pump_admin :
+
+                 # pump_flag : verify pump users
+
+                 if self.pump_flag:
+                    self.verify_pump()
+                    return
+
+                 # verify setup : users/exchanges/queues
+
+                 if self.users_flag : 
+                    # establish an amqp connection using admin
+                    self.amqp_connect()
+                    # create report shovel configs first
+                    self.verify_report_routing()
+                    # create pulse configs
+                    self.verify_pulse()
+                    # verify users from default/credentials
+                    self.verify_users()
+                    # verify overall exchanges (once everything created)
+                    self.verify_exchanges()
+                    # close connection
+                    self.amqp_close()
+                    # setup all exchanges and queues from configs
+                    self.run_sr_setup()
+                    return
+
+              # loop : audit should never stop working   ;-)
+              # heartbeat has hb_sanity and perhaps  hb_check_queues
+
+              while True  :
                       self.logger.info("sr_audit waking up")
                       #  heartbeat 
                       ok = self.heartbeat_check()
@@ -694,69 +637,8 @@ class sr_audit(sr_instances):
                       else:
                          self.logger.debug("sr_audit is active on vip=%s" % self.vip)
 
-                      # we need to run configure in case some users/queues... etc were modified
-                      # reconfiguring involves resetting... so keep last_heartbeat or else heartbeat would not work
-
-                      last_heartbeat = self.last_heartbeat
-                      self.configure()
-                      self.last_heartbeat = last_heartbeat
-
-                      # do pump admin stuff ... if we are admin
-
-                      if self.pump_admin :
-                         self.run_pump_admin()
-
-                      if self.users_flag or self.pump_flag : return
-
                       self.logger.info("audit is sleeping %d seconds " % self.sleep)
                       time.sleep(self.sleep)
-
-    def run_pump_admin(self):
-        self.logger.info("sr_audit run_pump_admin")
-
-        try   :
-                # establish an amqp connection using admin
-
-                self.hc = None
-
-                try:
-                        self.hc = HostConnect(logger = self.logger)
-                        self.hc.loop = False
-                        self.hc.set_pika(self.use_pika)
-                        self.hc.set_url(self.admin)
-                        self.hc.connect()
-                except: pass
-
-                if self.hc == None or self.hc.asleep or self.hc.connection == None:
-                   self.logger.error("no connection to broker with admin %s" % self.admin.geturl())
-                   try : self.hc.close()
-                   except: pass
-                   time.sleep(5)
-                   return
-
-                # verify pump before anything else...
-
-                if self.pump_flag  : self.verify_pump()
-
-                # verify setup : users/exchanges/queues
-
-                if self.users_flag : 
-                    # create report shovel configs first
-                    self.verify_report_routing()
-                    # create pulse configs
-                    self.verify_pulse()
-                    # verify users from default/credentials
-                    self.verify_users()
-                    # verify overall exchanges (once everything created)
-                    self.verify_exchanges()
-                    # setup all exchanges and queues from configs
-                    self.run_sr_setup()
-
-                # verify overall queues
-                self.verify_queues()
-
-                try : self.hc.close()
-                except: pass
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
