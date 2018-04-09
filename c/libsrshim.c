@@ -221,6 +221,8 @@ int truncate(const char *path, off_t length)
         truncate_init_done = 1;
     }
     status = truncate_fn_ptr(path,length);
+    if ( status == -1) return status;
+
     if ( !strncmp(path,"/dev/", 5) ) return(status);
     if ( !strncmp(path,"/proc/", 6) ) return(status);
 
@@ -245,12 +247,12 @@ int symlink(const char *target, const char* linkpath)
         symlink_init_done = 1;
     }
     status = symlink_fn_ptr(target,linkpath);
+    if ( status == -1) return status;
+
     if ( !strncmp(linkpath,"/dev/", 5) ) return(status);
     if ( !strncmp(linkpath,"/proc/", 6) ) return(status);
 
-    shimpost(linkpath, 0);
-
-    return (status);
+    return(shimpost(linkpath, status));
 }
 
 
@@ -273,6 +275,7 @@ int unlinkat(int dirfd, const char *path, int flags)
     }
 
     status = unlinkat_fn_ptr(dirfd, path, flags);
+    if ( status == -1) return status;
 
     if ( dirfd == AT_FDCWD ) 
        return(shimpost(path,status));
@@ -304,6 +307,8 @@ int unlink(const char *path)
         unlink_init_done = 1;
     }
     status = unlink_fn_ptr(path);
+    if ( status == -1) return status;
+
     if ( !strncmp(path,"/dev/", 5) ) return(status);
 
     return(shimpost(path,status));
@@ -484,10 +489,7 @@ int dup2(int oldfd, int newfd )
        srshim_initialize( "post" );
 
     status = dup2_fn_ptr (oldfd, newfd);
-
-    // if error ... return
-
-    if ( status < 0 ) return status;
+    if ( status == -1 ) return status;
 
     if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup2 posting %s %d\n", real_path, status );
 
@@ -554,10 +556,7 @@ int dup3(int oldfd, int newfd, int flags )
        srshim_initialize( "post" );
 
     status = dup3_fn_ptr (oldfd, newfd, flags);
-
-    // if error ... return
-
-    if ( status < 0 ) return status;
+    if ( status == -1 ) return status;
 
     if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG dup3 posting %s %d\n", real_path, status );
 
