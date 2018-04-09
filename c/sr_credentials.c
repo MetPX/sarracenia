@@ -119,6 +119,10 @@ void sr_credentials_init() {
 
 }
 
+void sr_credentials_cleanup() {
+
+  if (sr_credentials) free(sr_credentials);
+}
 /* 
 
 void main() {

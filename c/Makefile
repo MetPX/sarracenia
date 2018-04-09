@@ -73,3 +73,4 @@ test: all
 	./sr_configtest test_post.conf 
 	./sr_utiltest 
 	./sr_cachetest
+	@valgrind --show-reachable=yes --track-origins=yes ./sr_cpost -c local_post.conf uthash.h

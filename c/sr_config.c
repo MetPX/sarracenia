@@ -44,6 +44,13 @@ status:
 
 #include "sr_version.h"
 
+struct envvar_t {
+   char *var;
+   struct envvar_t *n;
+};
+
+struct envvar_t *vars_putenved = NULL;
+
 void sr_add_path( struct sr_config_t *sr_cfg, const char* option )
    /* Append to linked list of paths to post
     */
@@ -340,6 +347,7 @@ int sr_add_decl(struct sr_config_t *cfg, char *what, char *s)
    */
 {
   char *eq;
+  struct envvar_t *spare_vars_putenved;
 
   if (!strcmp(what,"env")||!strcmp(what,"var")) {
       eq=strchr(s, '=');
@@ -349,7 +357,14 @@ int sr_add_decl(struct sr_config_t *cfg, char *what, char *s)
       }
 
       // FIXME: valgrind will call this a memory leak, but I will never overwrite or reassign this...
-      putenv( strdup(s) );
+
+      spare_vars_putenved = vars_putenved?vars_putenved:NULL;
+
+      vars_putenved = malloc( sizeof(struct envvar_t) );
+      vars_putenved->n = spare_vars_putenved;
+      vars_putenved->var=strdup(s);
+      
+      putenv( vars_putenved->var );
       return(3);
   } else if (!strcmp(what,"source")) {
       log_msg( LOG_INFO, "FIXME: declare source %s ignored\n", s );
@@ -901,6 +916,7 @@ int sr_config_parse_option(struct sr_config_t *sr_cfg, char* option, char* arg, 
 void sr_config_free( struct sr_config_t *sr_cfg )
 {
   struct sr_mask_t *e;
+  struct envvar_t *ev;
 
   if (sr_cfg->action) free(sr_cfg->action);
   if (sr_cfg->configname) free(sr_cfg->configname);
@@ -952,6 +968,13 @@ void sr_config_free( struct sr_config_t *sr_cfg )
        free(tmpp);
   }
 
+  while ( ( ev=vars_putenved ) ) {
+     vars_putenved=vars_putenved->n;
+     free(ev->var);
+     free(ev);
+  }
+
+  sr_credentials_cleanup();
   log_cleanup();
   free(sr_cfg->logfn);
 
