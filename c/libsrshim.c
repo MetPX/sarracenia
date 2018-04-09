@@ -386,7 +386,7 @@ int renameorlink(int olddirfd, const char *oldpath, int newdirfd, const char *ne
        }
     }
 
-    if (status) 
+    if (status == -1) 
     {
          if ( getenv("SR_SHIMDEBUG")) fprintf( stderr, "SR_SHIMDEBUG renameorlink %s %s failed, no post\n", oldpath, newpath );
          return(status);
@@ -622,6 +622,7 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
         sendfile_init_done = 1;
     }
     status = sendfile_fn_ptr( out_fd, in_fd, offset, count );
+    if ( status == -1 ) return status;
 
     snprintf( fdpath, 32, "/proc/self/fd/%d", out_fd );
     real_return = realpath(fdpath, real_path);
