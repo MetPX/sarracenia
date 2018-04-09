@@ -274,7 +274,8 @@ class sr_message():
 
         token        = self.notice.split(' ')
         self.baseurl = token[2]
-        self.relpath = token[3].replace('%20',' ')
+        self.relpath = token[3].replace(    '%20',' ')
+        self.relpath = self.relpath.replace('%23','#')
 
         self.set_notice(token[2],token[3])
 
@@ -312,7 +313,8 @@ class sr_message():
         token        = self.notice.split(' ')
         self.time    = token[0]
         self.baseurl = token[1]
-        self.relpath = token[2].replace('%20',' ')
+        self.relpath = token[2].replace(    '%20',' ')
+        self.relpath = self.relpath.replace('%23','#')
         self.urlstr  = token[1]+token[2]
         self.url     = urllib.parse.urlparse(self.urlstr)
 
@@ -365,7 +367,7 @@ class sr_message():
                 self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
-                
+
         # AMQP limits topic to 255 characters, so truncate and warn.
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
@@ -566,7 +568,8 @@ class sr_message():
         self.time   = time
         if time    == None : self.set_time()
         path        = url.path.strip('/')
-        notice_path = path.replace(' ','%20')
+        notice_path = path.replace(       ' ','%20')
+        notice_path = notice_path.replace('#','%23')
 
         if url.scheme == 'file' :
            self.notice = '%s %s %s' % (self.time,'file:','/'+notice_path)
@@ -591,7 +594,8 @@ class sr_message():
         self.relpath = relpath
         if not time  : self.set_time()
 
-        notice_relpath = relpath.replace(' ','%20')
+        notice_relpath = relpath.replace(       ' ','%20')
+        notice_relpath = notice_relpath.replace('#','%23')
 
         self.notice = '%s %s %s' % (self.time,baseurl,notice_relpath)
 
