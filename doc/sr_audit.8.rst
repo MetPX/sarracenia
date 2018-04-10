@@ -28,11 +28,11 @@ DESCRIPTION
 
 Sr_audit configures a broker to reflect sarracenia configuration settings.
 **Sr_audit** takes one argument: the action to perform.  One can also set
-a few option in a configuration file: **debug**, **max_queue_size** and **sleep**
+a few option in a configuration file: **debug**, **max_queue_size**.
 
 When **Sr_audit** is *started*, it connects to the broker using the **admin** account. 
 
-It sleeps **sleep** seconds.
+It sleeps the time required to trigger the next heartbeat.
 
 The default behavior of **sr_audit** is to manage and control the queues on the broker.
 The queues are validated and deleted if there is no client connected to it and has more 
@@ -96,8 +96,6 @@ There are very few options that **sr_audit** uses:
 **reset          <boolean> (default: False)**
 
 **set_passwords  <boolean> (default: True)** 
-
-**sleep          <int>     (default: 60 in seconds)** 
 
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 

@@ -6,13 +6,13 @@
 
 """
 
-class Hb_Check_Queues(object): 
+class Hb_Police_Queues(object): 
 
     def __init__(self,parent):
-        parent.logger.debug( "hb_check_queues initialized" )
+        parent.logger.debug( "hb_police_queues initialized" )
           
     def perform(self,parent):
-        parent.logger.info( "hb_check_queues launched" )
+        parent.logger.info( "hb_police_queues launched" )
 
         try   :
                 # establish an amqp connection using admin
@@ -34,9 +34,9 @@ class Hb_Check_Queues(object):
 
         except:
                 (stype, svalue, tb) = sys.exc_info()
-                parent.logger.error("hb_check_queues Type: %s, Value: %s,  ..." % (stype, svalue))
+                parent.logger.error("hb_police_queues Type: %s, Value: %s,  ..." % (stype, svalue))
 
         return True
 
-hb_check_queues = Hb_Check_Queues(self)
-self.on_heartbeat = hb_check_queues.perform
+hb_police_queues = Hb_Police_Queues(self)
+self.on_heartbeat = hb_police_queues.perform

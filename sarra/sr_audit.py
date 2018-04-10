@@ -130,7 +130,7 @@ class sr_audit(sr_instances):
            return
 
         # queue check by default when admin
-        self.execfile("on_heartbeat",'hb_check_queues')
+        self.execfile("on_heartbeat",'hb_police_queues')
 
         # get other admins  users
 
@@ -179,8 +179,6 @@ class sr_audit(sr_instances):
 
     def overwrite_defaults(self):
         self.logger.debug("sr_audit overwrite_defaults")
-        self.heartbeat = 59
-        self.sleep     = 60
         self.hc        = None
 
         # sanity check by default
@@ -640,8 +638,12 @@ class sr_audit(sr_instances):
                       else:
                          self.logger.debug("sr_audit is active on vip=%s" % self.vip)
 
-                      self.logger.info("audit is sleeping %d seconds " % self.sleep)
-                      time.sleep(self.sleep)
+                      sleep = self.heartbeat - ( time.time() - self.last_heartbeat ) + 0.01
+                      if sleep < 0 : sleep = 1
+
+                      self.logger.info("audit is sleeping %d seconds (for next heartbeat) " % sleep)
+
+                      time.sleep(sleep)
 
         except:
                 import io, traceback
