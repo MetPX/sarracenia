@@ -598,6 +598,15 @@ def self_test():
        cfg.logger.error("test 61: option evaluated self.${} did not work")
        failed = True
 
+    # retry_ttl in mins 
+    opt1 = "subtopic aaa.vv\ ww.hh##bb.aaa.#"
+    w = opt1.split()
+    w = cfg.backslash_space(w)
+    cfg.option(w)
+    if cfg.heartbeat != 86400 :
+       cfg.logger.error("test 61: option evaluated self.${} did not work")
+       failed = True
+
 
     if not failed :
                     print("sr_config.py TEST PASSED")
@@ -614,9 +623,19 @@ def main():
 
     try:    self_test()
     except: 
+            import io, traceback
             (stype, svalue, tb) = sys.exc_info()
+            tb_output = io.StringIO()
+            traceback.print_tb(tb, None, tb_output)
+            print("\n\n****************************************\n" + \
+                      "******* ERROR PRINTING TRACEBACK *******\n" + \
+                      "****************************************\n" + \
+                    "\n" + tb_output.getvalue()             + "\n" + \
+                    "\n****************************************\n")
+            tb_output.close()
             print("%s, Value: %s" % (stype, svalue))
             print("sr_config.py TEST FAILED")
+
             sys.exit(1)
 
     sys.exit(0)

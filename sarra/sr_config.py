@@ -305,6 +305,18 @@ class sr_config:
                  self.first_arg=i+1
               i = i + n
 
+    def backslash_space(self,iwords):
+        words = []
+        lst   = -1
+        for w in iwords:
+            if lst >= 0 and words[lst].endswith('\\') :
+               rw =  words[lst][:-1]
+               words[lst] = rw + ' ' + w
+            else:
+               words.append(w)
+               lst += 1
+        return words
+
     def check(self):
         self.logger.debug("sr_config check")
 
@@ -364,6 +376,9 @@ class sr_config:
             for line in f.readlines():
                 words = line.split()
                 if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
+                    self.logger.info("words1 = %s" % words)
+                    words = self.backslash_space(words)
+                    self.logger.info("words2 = %s" % words)
                     self.option(words)
             f.close()
 
@@ -2161,7 +2176,14 @@ class sr_config:
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
                      self.subtopic = words1
+
                      key = self.topic_prefix + '.' + self.subtopic
+                     key = key.replace(' ','%20')
+                     if key[-2:] == '.#' :
+                        key = key[:-2].replace('#','%23') + '.#'
+                     else:               
+                        key = key.replace('#','%23') 
+
                      self.exchange = self.get_exchange_option()
                      self.bindings.append( (self.exchange,key) )
                      self.logger.debug("BINDINGS")
