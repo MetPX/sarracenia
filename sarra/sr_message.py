@@ -160,6 +160,8 @@ class sr_message():
         if msg :
            self.exchange  = msg.delivery_info['exchange']
            self.topic     = msg.delivery_info['routing_key']
+           self.topic     = self.topic.replace('%20',' ')
+           self.topic     = self.topic.replace('%23','#')
            self.headers   = msg.properties['application_headers']
            self.notice    = msg.body
            self.isRetry   = msg.isRetry
@@ -368,7 +370,9 @@ class sr_message():
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
 
-        # AMQP limits topic to 255 characters, so truncate and warn.
+        # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
+        self.topic = self.topic.replace(' ','%20')
+        self.topic = self.topic.replace('#','%23')
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
@@ -730,7 +734,7 @@ class sr_message():
            self.subtopic = '.'.join(words[:-1])
            self.topic   += '.' + self.subtopic
 
-        self.topic        = self.topic.replace('..','.')
+        self.topic       = self.topic.replace('..','.')
 
     def set_topic_url(self,topic_prefix,url):
         self.topic_prefix = topic_prefix
@@ -749,14 +753,12 @@ class sr_message():
 
         self.topic        = self.topic.replace('..','.')
         self.logger.debug("set_topic_url topic %s" % self.topic )
-       
 
     def set_topic_usr(self,topic_prefix,subtopic):
         self.topic_prefix = topic_prefix
         self.subtopic     = subtopic
         self.topic        = topic_prefix + '.' + self.subtopic
         self.topic        = self.topic.replace('..','.')
-
 
     def start_timer(self):
         self.tbegin = time.time()
