@@ -76,14 +76,25 @@ void header_reset() {
 
 void amqp_header_add( char *tag, const char * value ) {
 
+  char value2[AMQP_MAX_SS];
+
   if ( hdrcnt >= HDRMAX ) 
   {
-     log_msg( LOG_ERROR, "ERROR too many headers! ignoring %s=%s\n", tag, value );
+     log_msg( LOG_ERROR, "too many headers! ignoring %s=%s\n", tag, value );
      return;
   }
   headers[hdrcnt].key = amqp_cstring_bytes(tag);
   headers[hdrcnt].value.kind = AMQP_FIELD_KIND_UTF8;
-  headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
+
+  if ( strlen(value) > AMQP_MAX_SS ) 
+  {
+     strncpy( value2, value, AMQP_MAX_SS );
+     value2[AMQP_MAX_SS] = '\0';
+     log_msg( LOG_WARNING, "header %s too long (%d bytes), truncating to: %s=%s\n", tag, strlen(value), value2 );
+     headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value2);
+  } else {
+     headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
+  }
   hdrcnt++;
   //log_msg( LOG_DEBUG, "Adding header: %s=%s hdrcnt=%d\n", tag, value, hdrcnt );
 }
