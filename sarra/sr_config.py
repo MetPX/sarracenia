@@ -376,9 +376,7 @@ class sr_config:
             for line in f.readlines():
                 words = line.split()
                 if (len(words) >= 1 and not re.compile('^[ \t]*#').search(line)):
-                    self.logger.info("words1 = %s" % words)
                     words = self.backslash_space(words)
-                    self.logger.info("words2 = %s" % words)
                     self.option(words)
             f.close()
 
