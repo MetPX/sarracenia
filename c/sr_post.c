@@ -90,7 +90,7 @@ void amqp_header_add( char *tag, const char * value ) {
   {
      strncpy( value2, value, AMQP_MAX_SS );
      value2[AMQP_MAX_SS] = '\0';
-     log_msg( LOG_WARNING, "header %s too long (%d bytes), truncating to: %s=%s\n", tag, strlen(value), value2 );
+     log_msg( LOG_WARNING, "header %s too long (%d bytes), truncating to: %s\n", tag, strlen(value), value2 );
      headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value2);
   } else {
      headers[hdrcnt].value.value.bytes = amqp_cstring_bytes(value);
