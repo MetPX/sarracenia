@@ -162,7 +162,18 @@ void sr_post_message( struct sr_context *sr_c, struct sr_message_t *m )
     {
     c = fn;
     d = m->path;
-    while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+    //while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+
+    while ( *d )
+          {
+          if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; }
+          else
+             {
+             if ( *d == '#' ) { *c++='%'; *c++='2'; *c++='3'; }
+             else *c++ = *d;
+             }
+          d++;
+          }
     *c='\0';
     }
 
@@ -270,6 +281,7 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
   int   linklen;
   char *linkp;
   char  linkstr[PATH_MAXNUL];
+  char  tmprk[PATH_MAXNUL+100];
    
     if (*pathspec != '/' ) // need absolute path.
     { 
@@ -309,7 +321,17 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
    */
   c = m->path;
   d = fn;
-  while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+  //while ( *d ) { if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; } else *c++ = *d; d++; }
+  while ( *d )
+        {
+        if ( *d == ' ' ) { *c++='%'; *c++='2'; *c++='0'; }
+        else
+           {
+           if ( *d == '#' ) { *c++='%'; *c++='2'; *c++='3'; }
+           else *c++ = *d;
+           }
+        d++;
+        }
   *c='\0';
   //strcpy( m->path, fn );
 
@@ -324,12 +346,15 @@ int sr_file2message_start(struct sr_context *sr_c, const char *pathspec, struct 
       } 
   } 
 
-  // 255 AMQP_SS_LEN limit respected
-  strcpy( m->routing_key, sr_c->cfg->topic_prefix );
-  strcat( m->routing_key, "." );
-  strcat( m->routing_key, m->path + (*(m->path)=='/') );
+  // use tmprk variable to fix  255 AMQP_SS_LEN limit
+  strcpy( tmprk, sr_c->cfg->topic_prefix );
+  strcat( tmprk, "." );
+  strcat( tmprk, m->path + (*(m->path)=='/') );
 
-  if ( strlen(m->routing_key) >= 255 ) m->routing_key[255] = '\0';
+  if ( strlen(tmprk) > 255 ) tmprk[255] = '\0';
+
+  strcpy( m->routing_key, tmprk);
+
 
   lasti=0;
   for( int i=strlen(sr_c->cfg->topic_prefix) ; i< strlen(m->routing_key) ; i++ )
