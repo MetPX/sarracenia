@@ -1,3 +1,21 @@
+metpx-sarracenia (2.18.04b2) unstable; urgency=medium
+
+  *  * testing: Added recovery of flow_test stuck in retrying state.
+  * bugfix  C Truncate all headers and topic so they don't exceed 255 (AMQP limit.)
+  *         C Try to avoid being in conflict with stdin/out/err  open/close + 2 dup
+  *         C Valgrind hygiene: if nanosecond timestamp was 0, weird stuff happenned.  Fixed.
+  *           now valgrind does not complain at all.
+  *         C libsrshim enforced checks on commands'status
+  *         C any Python, topic and path with # encoded into %23 (as blank into %20)
+  * update  sr_audit hb_police_queues to check queue as admin, 
+  *           hb_sanity to check processes and sanity_log_dead option added     
+       
+  *           no sleep option, sleep computed to trigger next heartbeat
+  *         sr_rabbit rabbit dependant commands placed in this file
+  * new     plugin do_send_log
+
+ -- Peter Silva <peter@idefix>  Tue, 10 Apr 2018 11:17:31 -0400
+
 metpx-sarracenia (2.18.04b1) unstable; urgency=medium
 
   * testing:retries on python side to validate products and routing
