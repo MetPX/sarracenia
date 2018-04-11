@@ -160,18 +160,23 @@ class sr_poll(sr_post):
         desclst  = {}
 
         for f in new_lst :
+            #self.logger.debug("checking %s (%s)" % (f,ls[f]))
 
             # keep a newer entry
             if not f in old_ls:
+               #self.logger.debug("IS NEW %s" % f)
                filelst.append(f)
                desclst[f] = ls[f]
                continue
 
             # keep a modified entry
             if ls[f] != old_ls[f] :
+               #self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
                filelst.append(f)
                desclst[f] = ls[f]
                continue
+
+            #self.logger.debug("IS IDENTICAL %s" % f)
 
         return filelst,desclst
 
@@ -288,6 +293,7 @@ class sr_poll(sr_post):
                 file.close()
 
                 for line in lines :
+                    line = line.strip('\n')
                     parts = line.split()
                     fil   = parts[-1]
                     if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
@@ -328,7 +334,7 @@ class sr_poll(sr_post):
                    if mask_regexp.match(f):
                        if accepting:
                            matched=True
-                           new_ls[f] = self.line
+                           new_ls[f] = self.line.strip('\n')
                        break
 
 
@@ -691,7 +697,12 @@ class sr_poll(sr_post):
                       ok = self.__do_poll__()
 
               except:
+                      import io, traceback
                       (stype, svalue, tb) = sys.exc_info()
+                      tb_output = io.StringIO()
+                      traceback.print_tb(tb, None, tb_output)
+                      self.logger.error("%s\n" %  tb_output.getvalue())
+                      tb_output.close()
                       self.logger.error("sr_poll/run Type: %s, Value: %s,  ..." % (stype, svalue))
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
