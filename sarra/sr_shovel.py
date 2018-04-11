@@ -93,10 +93,6 @@ class sr_shovel(sr_subscribe):
         # or it consumes message from another pump
         # we cannot define a default broker exchange
 
-        # default broker and exchange None
-
-        self.topic_prefix = None
-
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are
 
