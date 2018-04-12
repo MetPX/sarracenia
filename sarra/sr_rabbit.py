@@ -51,7 +51,13 @@ def exec_rabbitmqadmin(url,options,logger=None):
 
            # (status, answer) = subprocess.getstatusoutput(command)
            if logger != None : logger.debug("command = %s" % command)
-           return subprocess.getstatusoutput(command)
+           cmdlin = command.replace("'",'')
+           cmdlst = cmdlin.split()
+           rclass = subprocess.run(cmdlst,stdout=subprocess.PIPE)
+           if rclass.returncode == 0 : 
+              output =rclass.stdout
+              if type(output) == bytes: output = output.decode("utf-8")
+              return rclass.returncode,output
     except :
            #(stype, svalue, tb) = sys.exc_info()
            #print("sr_rabbitmq/exec_rabbitmqadmin Type: %s, Value: %s" % (stype, svalue))
