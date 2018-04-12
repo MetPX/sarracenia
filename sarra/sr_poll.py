@@ -669,30 +669,31 @@ class sr_poll(sr_post):
 
         while True :
 
-              #  heartbeat (may be used to check if program is alive if not "has_vip")
-              ok = self.heartbeat_check()
-
-              # if vip provided, check if has vip
-              if self.vip :
-                 self.sleeping = not self.has_vip()
-
-                 #  sleeping
-                 if self.sleeping:
-                    if not last: self.logger.info("%s is sleeping without vip=%s"% (self.program_name,self.vip))
-                 #  active
-                 else:
-                    if last:     self.logger.info("%s is active on vip=%s"%        (self.program_name,self.vip))
-
-                 last  = self.sleeping
-
-              if not self.sleeping: self.logger.debug("poll %s is waking up" % self.config_name )
-
-              # if pull is sleeping and we delete files... nothing to do
-              # if we don't delete files, we will keep the directory state
-
-              ok = False
-
               try  :
+
+                      #  heartbeat (may be used to check if program is alive if not "has_vip")
+                      ok = self.heartbeat_check()
+
+                      # if vip provided, check if has vip
+                      if self.vip :
+                         self.sleeping = not self.has_vip()
+
+                         #  sleeping
+                         if self.sleeping:
+                            if not last: self.logger.info("%s is sleeping without vip=%s"% (self.program_name,self.vip))
+                         #  active
+                         else:
+                            if last:     self.logger.info("%s is active on vip=%s"%        (self.program_name,self.vip))
+
+                         last  = self.sleeping
+
+                      if not self.sleeping: self.logger.debug("poll %s is waking up" % self.config_name )
+
+                      # if pull is sleeping and we delete files... nothing to do
+                      # if we don't delete files, we will keep the directory state
+
+                      ok = False
+
                       #  do poll stuff
                       ok = self.__do_poll__()
 
@@ -707,6 +708,10 @@ class sr_poll(sr_post):
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)
+
+        # should never be here
+
+        self.close()
 
 # ===================================
 # MAIN
