@@ -55,6 +55,7 @@ class sr_consumer:
         self.parent         = parent
         self.broker         = parent.broker
 
+        self.hc              = None
         self.retry           = sr_retry(parent)
         self.last_msg_failed = False
 
@@ -125,7 +126,9 @@ class sr_consumer:
         self.msg_queue.build()
 
     def close(self):
-        self.hc.close()
+        if self.hc :
+           self.hc.close()
+           self.hc = None
         self.retry.close()
 
     def consume(self):

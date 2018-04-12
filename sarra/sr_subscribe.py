@@ -1845,7 +1845,7 @@ class sr_subscribe(sr_instances):
 
         if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping setup for %s" % self.config_name)
-           self.close
+           self.close()
            return
 
         # consumer setup
