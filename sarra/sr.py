@@ -107,6 +107,9 @@ def instantiate(dirconf,pgm,confname,action):
 
             elif  action == 'remove':  inst.exec_action('remove',False)
 
+            try   : inst.stop()
+            except: pass
+
             sys.argv[0] = orig
 
     except:
