@@ -23,12 +23,20 @@
 class Hb_Pulse(object): 
 
     def __init__(self,parent):
+        self.init(parent)
+        self.skip_first         = True
+
+    def init(self,parent):
         self.last_time          = time.time()
         self.last_message_count = parent.message_count
         self.last_publish_count = parent.publish_count
         self.last_pulse_count   = parent.pulse_count
           
     def perform(self,parent):
+
+        if self.skip_first :
+           self.init(parent)
+           self.skip_first = False
 
         self.logger     = parent.logger
         self.logger.info( "hb_pulse message_count %d publish_count %d " %  \
