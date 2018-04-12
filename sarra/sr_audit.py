@@ -621,6 +621,8 @@ class sr_audit(sr_instances):
                     self.amqp_close()
                     # setup all exchanges and queues from configs
                     self.run_sr_setup()
+                    # send a message to say everything is done (in case it is not obvious :-(    )
+                    self.logger.info("sr_audit --users  ... DONE")
                     return
 
               # loop : audit should never stop working   ;-)
