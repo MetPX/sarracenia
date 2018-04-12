@@ -52,6 +52,7 @@ class sr_audit(sr_instances):
         self.hc.exchange_declare(e)
 
     def amqp_close(self):
+        self.logger.debug("audit close")
         if self.hc :
            self.hc.close()
            self.hc = None
