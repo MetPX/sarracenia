@@ -17,7 +17,7 @@ English
    The product's URL is described by the last two fields.
    Any application which can subscribe to an AMQP service can
    receive notification of products being published and then retrieve
-   them in real time via http.  Message format is fully described here:
+   them in real time via http. Message format is fully described here:
    ( https://github.com/MetPX/sarracenia/blob/master/doc/sr_post.1.rst )
 
 3. Datamart clients.

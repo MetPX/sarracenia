@@ -80,7 +80,7 @@ Sarracenia's has multiple implementations:
 
 - node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
 
-- dd_subscribe ( https://github.com/sarracenia ) python2 stripped down download only client.  The predecessor of Sarracenia. still compatible.
+- dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped down download only client.  The predecessor of Sarracenia. still compatible.
 
 More implementations are welcome.
 
