@@ -93,12 +93,22 @@ class ACCEL_SCP(object):
 
       import subprocess
 
+      logger.debug("cd %s" % msg.new_dir )
+      try    : os.makedirs(msg.new_dir,parent.chmod_dir,True)
+      except : pass
       os.chdir( msg.new_dir )
 
-      arg1 = msg.baseurl.replace("download://",'') + ':' + msg.relpath
-      arg2 = msg.new_file
+      arg1 = msg.baseurl.replace("download://",'')
+      if arg1[-1] == '/' : arg1 = arg1[:-1]
+      arg1 += ':' + msg.relpath
+
+      arg2  = msg.new_file
+      if ':' in arg2 :
+         tmp2 = arg2.split(':')[0]
+         arg2 = tmp2
+
       cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
-      logger.debug("cd %s; cmd = %s" % ( msg.new_dir, cmd ) )
+      logger.debug("%s" % ' '.join(cmd))
 
       msg.baseurl = msg.baseurl.replace("download:","sftp:")
       if msg.baseurl[-1] == os.sep : msg.baseurl = msg.baseurl[:-1]
@@ -110,18 +120,22 @@ class ACCEL_SCP(object):
       outstr, dummy = p.communicate()
       result = p.returncode
 
-      if result == 0:  # Success!
-         logger.info("%s" % outstr)
-         logger.info("scp Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
+      if result != 0:  # Failed!
+         logger.error("%s" % outstr)
          if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         return True
+            msg.report_publish(499,'scp download failed')
+         return False 
 
-      logger.error("%s" % outstr)
-         
+      if arg2 != msg.new_file :
+         logger.debug("rename %s %s" % ( arg2, msg.new_file ) )
+         os.rename(arg2,msg.new_file)
+
+      logger.info("scp Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
+
       if parent.reportback:
-         msg.report_publish(499,'scp download failed')
-      return False 
+         msg.report_publish(201,'Downloaded')
+
+      return True
 
 self.plugin='ACCEL_SCP'
 
