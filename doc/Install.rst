@@ -31,6 +31,7 @@ On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
   sudo apt-get update
   sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install python3-paramiko   # adds SFTP support.
+  sudo apt-get install sarrac # C-version.
 
 
 On Ubuntu 12.04::
@@ -92,13 +93,15 @@ Packages
 ~~~~~~~~
 
 Debian packages and python wheels can be downloaded directly 
-from `Sourceforge <https://sourceforge.net/projects/metpx/files/sarracenia/>`_
+from: `launchpad <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx/+packages>`_
+or (perhaps): `Sourceforge <https://sourceforge.net/projects/metpx/files/sarracenia/>`_
 
-Linux C Client
---------------
+Sarrac
+------
 
-There is a Linux only C implementation, which is not currently packaged for any distribution because
-it depends on librabbitmq-c >= 0.8.0, which is only present on ubuntu >= 17.10. So one must manually
-build librabbitmq=c and install it, then one can build the sarrac tools.  
+The C client is available in prebuilt binaries in the launchpad repositories alongside the python packages.
+The librabbitmq-0.8.0 has been backported to ubuntu 16.04 and 14.04 to satisfy sarrac's dependency.
+For other architectures or distributions, git clone https://github.com/MetPX/sarrac and compile 
+on any linux system, as long as librabbitmq dependency is satisfied.
 
 
