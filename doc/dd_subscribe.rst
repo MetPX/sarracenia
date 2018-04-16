@@ -1,8 +1,9 @@
 
 Le français suit (recherchez FRANCAIS)
 
-
-Sarracenia/dd_subscribe release notes
+------------------
+dd_subscribe Guide
+------------------
 
 1- dd.weather.gc.ca (the MSC Datamart) is Environment Canada's public
 meteorological data access repository.
@@ -18,9 +19,21 @@ platforms whereby this procedure can be implemented. Here you will
 find a simple demonstration client, "dd_subscribe". It is implemented
 in the Python language.
 
-3- dd_subscribe is a python2 program that uses python-amqplib to receive
-these amqp notification messages, retrieve the products from the
-datamart via HTTP and place them in a chosen local directory.
+3- Download clients:
+
+* Sarracenia ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. 
+  It runs on Linux, Mac, and Windows. This is the best choice to use, if you can.
+* Sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch.) 
+  It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with 
+  this tool, and libsarra allows C programs to post directly. There is consumer code as well 
+  (to read queues) so messages can be passed to the downloader of your choice, but no built-in 
+  downloading so far. This subset is meant to be used where python3 environments are 
+  impractical (example: high performance computing environments.), or where memory & cpu is usage
+  is particularly important such as in embedded systems.
+* node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
+* dd_subscribe is a python2 program that uses python-amqplib to receive these amqp notification 
+  messages, retrieve the products from the datamart via HTTP and place them in a 
+  chosen local directory.
 
 4- dd_subscribe's usage is : dd_subscribe [-n] [-l logdir] config_file.
 By default, the program will automatically initiate product download
