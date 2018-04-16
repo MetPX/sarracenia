@@ -709,7 +709,9 @@ class sr_subscribe(sr_instances):
         if self.new_relpath != self.pbc_new_relpath:
            self.msg.new_relpath = self.new_relpath
 
-        # value changes derives to other changes
+        # FIXME MG put the following elsewhere... must be survive compat stuff 
+        # These lines automate the value of new_relpath. It needs to be changed
+        # when new_dir and,or new_file get modified in a plugin.
 
         if self.msg.new_dir  != self.pbc_new_dir or \
            self.msg.new_file != self.pbc_new_file   :
@@ -723,6 +725,13 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __plugin_backward_compat_setup__(self):
+
+
+        # FIXME MG put the 2 following elsewhere... must be survive compat stuff 
+        # see related FIXME in  __plugin_backward_compat_repare__
+
+        self.pbc_new_dir     = self.msg.new_dir
+        self.pbc_new_file    = self.msg.new_file
 
         # saved values
 
