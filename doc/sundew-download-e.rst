@@ -39,6 +39,11 @@ Sundew Binaries
 
 MetPx-Sundew is available for download from our `Launchpad PPA <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_.
 Please follow the instructions on in our PPA site on how to add the PPA to your
-Ubuntu system and install the latest vesrion of MetPx-Sundew.
+Ubuntu system and install the latest vesrion of MetPx-Sundew::
+
+   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+   sudo apt-get update
+   sudo apt-get install python3-metpx-sundew 
+
 
 MetPx-Sundew is also available for download from the `sundew section  <https://sourceforge.net/projects/metpx/files/sundew/>`_ of the project's SourceForge file storage, .
