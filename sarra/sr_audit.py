@@ -574,13 +574,13 @@ class sr_audit(sr_instances):
            for u in self.users :
                self.logger.info("user %15s  roles %s" % (u,self.users[u]))
         else :
-           self.logger.error("**** users.conf file not present *****")
-           self.logger.error("Users should be defined in users.conf, ex.:")
+           self.logger.error("Users should be defined in admin.conf, ex.:")
            self.logger.error("root         admin")
            self.logger.error("feeder       feeder")
-           self.logger.error("nws-internet source")
-           self.logger.error("anonymous    subscribe")
-           self.logger.error("After having declared users and roles in users.conf")
+           self.logger.error("declare source nws-internet")
+           self.logger.error("declare subscriber anonymous")
+           self.logger.error("After having declared users and roles in admin.conf")
+           self.logger.error("you should put the needed credentials in credentials.conf")
            self.logger.error("use: sr_audit --users foreground")
            self.logger.error("it creates users, set their permissions and declare their exchanges")
            self.logger.error("source users are also used in sr_log2source to make products log available to them")

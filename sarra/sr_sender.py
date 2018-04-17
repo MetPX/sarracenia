@@ -178,7 +178,10 @@ class sr_sender(sr_subscribe):
                      self.logger.debug("using registered do_send for %s" % scheme)
                      do_send = self.do_sends[scheme]
                      ok = do_send(self)
-                     return ok
+                     # if ok == None  it means that the scheme was one
+                     # of the supported python one (sftp,ftp[s])
+                     # and the plugin decided to go with the python defaults
+                     if ok != None : return ok
         except: pass
 
 

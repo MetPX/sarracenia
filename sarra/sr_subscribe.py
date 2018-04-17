@@ -284,7 +284,10 @@ class sr_subscribe(sr_instances):
                      self.logger.debug("using registered do_download for %s" % scheme)
                      do_download = self.do_downloads[scheme]
                      ok = do_download(self)
-                     return ok
+                     # if ok == None  it means that the scheme was one
+                     # of the supported python one (http[s],sftp,ftp[s])
+                     # and the plugin decided to go with the python defaults
+                     if ok != None : return ok
         except: pass
 
         # try supported hardcoded download
