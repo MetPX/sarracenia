@@ -31,8 +31,7 @@ On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
   sudo apt-get update
   sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install python3-paramiko   # adds SFTP support.
-  sudo apt-get install sarrac # C-version.
-
+  sudo apt-get install sarrac # optional C client.
 
 On Ubuntu 12.04::
 
