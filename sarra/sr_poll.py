@@ -293,7 +293,7 @@ class sr_poll(sr_post):
                 file.close()
 
                 for line in lines :
-                    line = line.strip('\n')
+                    line  = line.strip('\n')
                     parts = line.split()
                     fil   = parts[-1]
                     if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
@@ -670,7 +670,6 @@ class sr_poll(sr_post):
         while True :
 
               try  :
-
                       #  heartbeat (may be used to check if program is alive if not "has_vip")
                       ok = self.heartbeat_check()
 
@@ -692,10 +691,17 @@ class sr_poll(sr_post):
                       # if pull is sleeping and we delete files... nothing to do
                       # if we don't delete files, we will keep the directory state
 
-                      ok = False
+                      ok  = False
+                      now = time.time()
 
                       #  do poll stuff
                       ok = self.__do_poll__()
+
+                      #  check if sleep is to short
+                      poll_time = time.time() - now
+                      ratio     = self.sleep/poll_time
+                      if ratio < 0.1 :
+                         self.logger.warning("sr_poll sleep too low (%d) secs is less than 10%% of poll time (%f)" % (self.sleep, poll_time))
 
               except:
                       import io, traceback
@@ -706,12 +712,9 @@ class sr_poll(sr_post):
                       tb_output.close()
                       self.logger.error("sr_poll/run Type: %s, Value: %s,  ..." % (stype, svalue))
 
+
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)
-
-        # should never be here
-
-        self.close()
 
 # ===================================
 # MAIN
