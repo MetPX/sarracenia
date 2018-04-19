@@ -257,12 +257,14 @@ class sr_config:
 
         elif self.program_name == 'sr_sender' :
             self.logger.info( '\t\tdo_send: %s' % ''.join( map( self.xcl , self.do_send_list ) ) )
+            self.logger.info( '\t\tdo_put : %s' % ''.join( map( self.xcl , self.do_put_list  ) ) )
 
         elif self.program_name in [ 'sr_watch', 'sr_post' ]:
             self.logger.info( '\t\ton_watch: %s' % ''.join( map( self.xcl , self.on_watch_list ) ) )
 
         else :
             self.logger.info( '\t\tdo_download: %s' % ''.join( map( self.xcl , self.do_download_list ) ) )
+            self.logger.info( '\t\tdo_get     : %s' % ''.join( map( self.xcl , self.do_get_list  ) ) )
 
 
         self.logger.info( '\t\ton_message: %s'   % ''.join( map( self.xcl , self.on_message_list ) ) )
@@ -723,9 +725,15 @@ class sr_config:
         self.do_download          = None
         self.do_downloads         = {}
 
+        self.do_get               = None
+        self.do_gets              = {}
+
         self.do_poll              = None
         self.do_polls             = {}
         self.ls_file_index        = -1
+
+        self.do_put               = None
+        self.do_puts              = {}
 
         self.do_send              = None
         self.do_sends             = {}
@@ -760,7 +768,8 @@ class sr_config:
 
         self.plugin_times = [ 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
             'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
-            'do_download', 'do_send', 'do_task', 'on_report', 'on_start', 'on_stop' ]
+            'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
+            'on_start', 'on_stop' ]
 
         for t in self.plugin_times + [ 'plugin' ]:
             exec( 'self.'+t+' = None' )
@@ -1083,6 +1092,17 @@ class sr_config:
                    self.logger.debug("registering do_download with '%s'" % r )
                    self.do_downloads[r] = do_download
 
+        # registering gets
+
+        for do_get in self.do_get_list :
+            parent_class = do_get.__self__
+            if hasattr(parent_class,'registered_as') :
+               register_name = parent_class.registered_as()
+               if not isinstance(register_name,list): register_name = [register_name]
+               for r in register_name:
+                   self.logger.debug("registering do_get with '%s'" % r )
+                   self.do_gets[r] = do_get
+
         # registering pools
 
         for do_poll in self.do_poll_list :
@@ -1094,9 +1114,19 @@ class sr_config:
                    self.logger.debug("registering do_poll with '%s'" % r )
                    self.do_polls[r] = do_poll
 
+        # registering puts
+
+        for do_put in self.do_put_list :
+            parent_class = do_put.__self__
+            if hasattr(parent_class,'registered_as') :
+               register_name = parent_class.registered_as()
+               if not isinstance(register_name,list): register_name = [register_name]
+               for r in register_name:
+                   self.logger.debug("registering do_put with '%s'" % r )
+                   self.do_puts[r] = do_put
+
         # registering sends
 
-        self.do_sends = {}
         for do_send in self.do_send_list :
             parent_class = do_send.__self__
             if hasattr(parent_class,'registered_as') :
@@ -1397,13 +1427,15 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
-                     path = os.path.abspath(words1)
-                     if self.realpath_post:
-                         path = os.path.realpath(path)
-                     if sys.platform == 'win32':
-                         self.base_dir = path.replace('\\','/')
+                     if words1.lower() == 'none' : self.base_dir = None
                      else:
-                         self.base_dir = path
+                           path = os.path.abspath(words1)
+                           if self.realpath_post:
+                               path = os.path.realpath(path)
+                           if sys.platform == 'win32':
+                               self.base_dir = path.replace('\\','/')
+                           else:
+                               self.base_dir = path
                      # FIXME MG should we test if directory exists ? and warn if not 
                      n = 2
 
@@ -1468,6 +1500,7 @@ class sr_config:
 
                 elif words0 in ['cluster','cl','from_cluster','fc']: # See: sr_config.7
                      self.cluster = words1 
+                     if words1.lower() == 'none' : self.cluster = None
                      n = 2
 
                 elif words0 in ['cluster_aliases','ca']: # See: sr_config.7
@@ -1542,6 +1575,14 @@ class sr_config:
 
                 elif words0 == 'do_download': # See sr_config.7, sr_warra, shovel, subscribe
                      ok = self.execfile("do_download",words1)
+                     n = 2
+
+                elif words0 == 'do_get': # FIXME MG to document
+                     ok = self.execfile("do_get",words1)
+                     n = 2
+
+                elif words0 == 'do_put': # FIXME MG to document
+                     ok = self.execfile("do_put",words1)
                      n = 2
 
                 elif words0 == 'do_task': # See: sr_config.1, others...
@@ -1947,10 +1988,12 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['post_base_dir','pbd']: # See: sr_sarra,sender,shovel,winnow
-                     if sys.platform == 'win32':
-                         self.post_base_dir = words1.replace('\\','/')
+                     if words1.lower() == 'none' : self.post_base_dir = None
                      else:
-                         self.post_base_dir = words1
+                           if sys.platform == 'win32':
+                               self.post_base_dir = words1.replace('\\','/')
+                           else:
+                               self.post_base_dir = words1
                      n = 2
 
 
@@ -2016,6 +2059,7 @@ class sr_config:
 
                 elif words0 in ['queue', 'queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
                      self.queue_name = words1
+                     if words1.lower() == 'none' : self.queue_name = None
                      n = 2
 
                 elif words0 in ['queue_suffix'] : # See: sr_consumer.1 : but not very usefull... could be removed
@@ -2087,7 +2131,10 @@ class sr_config:
                         n = 2
 
                 elif words0 in ['retry_ttl']:  # FIXME to be documented
-                     self.retry_ttl = int(self.duration_from_str(words1,'s'))
+                     if words1.lower() == 'none' :
+                           self.retry_ttl = None
+                     else:
+                           self.retry_ttl = int(self.duration_from_str(words1,'s'))
                      n = 2
 
                 elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
@@ -2209,8 +2256,10 @@ class sr_config:
 
                 elif words0 in ['post_base_url','pbu','url','u','post_url']: # See: sr_config.7 
                      if words0 in ['url','u'] : self.logger.warning("option url deprecated please use post_base_url")
-                     self.url = urllib.parse.urlparse(words1)
-                     self.post_base_url = words1
+                     if words1.lower() == 'none' : self.post_base_url = None
+                     else:
+                           self.url = urllib.parse.urlparse(words1)
+                           self.post_base_url = words1
                      n = 2
 
                 elif words0 == 'use_pika': # See: FIX ME
