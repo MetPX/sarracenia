@@ -4,6 +4,23 @@
 
 lists all changes between versions.
 
+**2.18.04b3**
+
+  * testing flow_test standardisation of messages
+  * bugfix  hb_retry no more dependency with on_start
+  *         sr_poll make sure all comparaisons are done without of trailing \n
+  * new     registered do_get,do_put
+  *         registered plugin, if return None, let python do it
+  *         plugin accel_scp.py
+  *         C has its own sarrac git repo
+  *         sr_config.py  '\ ' backslash_space allowed in options 
+  *         sr_config.py/sr_message.py  topic encodes  ' ' '#' with %20 %23
+  * update  flow_test standardisation of messages
+  *         sr_poll logs a warning when sleep time makes no sense
+  *         documentation launchpat for sundew
+  *         sr_audit log a message when --users all is done
+  *                   make sure heartbeat is in try/except 
+
 **2.18.04b2**
 
   * testing: Added recovery of flow_test stuck in retrying state.
