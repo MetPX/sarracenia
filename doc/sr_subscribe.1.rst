@@ -1312,14 +1312,28 @@ Users can place their own scripts in the script sub-directory
 of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
 
 There are three varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
-to implement functions, replacing built-in functionality, for example, to implement
+to implement functions, adding or replacing built-in functionality, for example, to implement
 additional transfer protocols.
 
 - do_download - to implement additional download protocols.
 
+- do_get  - under ftp/ftps/http/sftp implement the get part of the download process
+
 - do_poll - to implement additional polling protocols and processes.
 
+- do_put  - under ftp/ftps/http/sftp implement the put part of the send process
+
 - do_send - to implement additional sending protocols and processes.
+
+These transfer protocol scripts should be declared using the **plugin** option.
+Aside the targetted built-in function(s), a module **registered_as** that defines
+a list of protocols that theses functions supports.  Exemple :
+
+def registered_as(self) :
+       return ['ftp','ftps']
+
+Registering in such a way a plugin, if function **do_download** was provided in that plugin
+than for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
 On\_* plugins are used more often. They allow actions to be inserted to augment the default
@@ -1367,7 +1381,7 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
       def __init__(self):
           pass
 
-      def perform(self,parent):
+      def on_file(self,parent):
           logger = parent.logger
 
           logger.info("I have no effect but adding this log line")
@@ -1390,6 +1404,57 @@ structure containing all the settings, as **parent.<setting>**, and
 the content of the message itself as **parent.msg** and the headers
 are available as **parent.msg[ <header> ]**.  The path to write a file
 to is available as There is also **parent.msg.new_dir** / **parent.msg.new_file**
+
+There is also registered plugins used to add or overwrite built-in 
+transfer protocol scripts. They should be declared using the **plugin** option.
+They must register the protocol (url scheme) that they indent to provide services for.
+The script for transfer protocols are :
+
+- do_download - to implement additional download protocols.
+
+- do_get  - under ftp/ftps/http/sftp implement the get part of the download process
+
+- do_poll - to implement additional polling protocols and processes.
+
+- do_put  - under ftp/ftps/http/sftp implement the put part of the send process
+
+- do_send - to implement additional sending protocols and processes.
+
+The registration is done with a module named **registered_as** . It defines
+a list of protocols that the provided module supports.
+
+The simplest example of a plugin: A do_nothing.py script for **on_file**::
+
+  class Transformer(object): 
+      def __init__(self):
+          pass
+
+      def on_put(self,parent):
+          msg = parent.msg
+
+          if ':' in msg.relpath : return None
+
+          netloc = parent.destination.replace("sftp://",'')
+          if netloc[-1] == '/' : netloc = netloc[:-1]
+
+          cmd = '/usr/bin/scp ' + msg.relpath + ' ' +  netloc + ':' + msg.new_dir + os.sep + msg.new_file
+
+          status, answer = subprocess.getstatusoutput(cmd)
+
+          if status == 0 : return True
+
+          return False
+
+      def registered_as(self) :
+          return ['sftp']
+
+  self.plugin = 'Transformer'
+
+
+This plugin registers for sftp. A sender with such a plugin would put the product using scp.
+It would be confusing for scp to have the source path with a ':' in the filename... Here the
+case is handled by returning None and letting python sending the file over. The **parent**
+argument holds all the needed program informations.
 Some other available variables::
 
   parent.msg.new_file     :  name of the file to write.
@@ -1400,11 +1465,6 @@ Some other available variables::
   parent.msg.in_partfile  :  T/F file temporary in part file
   parent.msg.local_url    :  url for reannouncement
 
-
-
-When downloading, this would be a local file combination. In the sender
-case, these would give the path on the remote server.  All of these
-fields can be modified by plugins.
 
 See the `Programming Guide <Prog.rst>`_ for more details.
 
