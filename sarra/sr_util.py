@@ -426,17 +426,17 @@ class sr_transport():
                 proto.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
-                   proto.get(remote_file,new_file,remote_offset,msg.local_offset,msg.length)
+                   self.get(remote_file,new_file,remote_offset,msg.local_offset,msg.length)
 
                 elif parent.inflight == '.' :
                    new_lock = '.' + new_file
-                   proto.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
                       
                 elif parent.inflight[0] == '.' :
                    new_lock  = new_file + parent.inflight
-                   proto.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
 
@@ -480,6 +480,44 @@ class sr_transport():
         msg.report_publish(498,'%s download failed' % self.scheme)
     
         return False
+
+    # generalized get...
+    def get( self, remote_file, local_file, remote_offset, local_offset, length ):
+        msg = self.parent.msg
+
+        ok = None
+        if self.scheme in self.parent.do_gets :
+           self.logger.debug("using registered do_get for %s" % self.scheme)
+           do_get = self.parent.do_gets[self.scheme]
+           new_file     = msg.new_file
+           msg.new_file = local_file
+           ok = do_get(self.parent)
+           msg.new_file = new_file
+           if ok : return
+           if ok == False: raise
+           self.logger.debug("ok == NONE")
+           # ok == none let python do it
+
+        self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
+
+    # generalized put...
+    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
+        msg = self.parent.msg
+
+        ok = None
+        if self.scheme in self.parent.do_puts :
+           self.logger.debug("using registered do_put for %s" % self.scheme)
+           new_file     = msg.new_file
+           msg.new_file = remote_file
+           do_put = self.parent.do_puts[self.scheme]
+           ok = do_put(self.parent)
+           msg.new_file = new_file
+           if ok : return
+           if ok == False: raise
+           self.logger.debug("ok == NONE")
+           # ok == none let python do it
+
+        self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
     def send( self, parent ):
@@ -581,18 +619,18 @@ class sr_transport():
                 #upload file
     
                 if inflight == None or msg.partflg == 'i' :
-                   proto.put(local_file, new_file, offset, offset, msg.length)
+                   self.put(local_file, new_file, offset, offset, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
-                   proto.put(local_file, new_lock )
+                   self.put(local_file, new_lock )
                    proto.rename(new_lock, new_file)
                 elif inflight[0] == '.' :
                    new_lock = new_file + inflight
-                   proto.put(local_file, new_lock )
+                   self.put(local_file, new_lock )
                    proto.rename(new_lock, new_file)
                 elif inflight == 'umask' :
                    proto.umask()
-                   proto.put(local_file, new_file)
+                   self.put(local_file, new_file)
 
                 # fix permission 
 

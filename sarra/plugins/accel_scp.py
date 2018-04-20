@@ -40,32 +40,18 @@ class ACCEL_SCP(object):
 
    def __init__(self,parent):
 
+      self.registered_list = [ 'sftp' ]
+
       parent.declare_option( 'accel_scp_command' )
       parent.declare_option( 'accel_scp_threshold' )
       parent.declare_option( 'accel_scp_protocol' )
 
-   def on_start(self,parent):
-
-      if not hasattr(parent,'accel_scp_command'):
-         parent.download_accel_scp_command= [ '/usr/bin/scp' ]
-
-      if not hasattr( parent, "accel_scp_threshold" ):
-             parent.accel_scp_threshold = [ "10M" ]
-
-      if not hasattr( parent, "accel_scp_protocol" ):
-             parent.accel_scp_protocol = [ "sftp" ]
-          
-      if type(parent.accel_scp_threshold) is list:
-          parent.accel_scp_threshold = parent.chunksize_from_str( parent.accel_scp_threshold[0] )
-
-      return True
-
-   def on_message(self,parent):
+   def check_surpass_threshold(self,parent):
 
       logger = parent.logger
       msg    = parent.msg
 
-      if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return True
+      if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return False
 
       parts = msg.partstr.split(',')
       if parts[0] == '1':
@@ -75,67 +61,96 @@ class ACCEL_SCP(object):
 
       urlstr = msg.baseurl + os.sep + msg.relpath
 
-      logger.debug("scp sz: %d, threshold: %d download: %s to %s, " % ( \
-          sz, parent.accel_scp_threshold, urlstr, msg.new_file ) )
-      if sz >= parent.accel_scp_threshold :
-          for p in parent.accel_scp_protocol :
-              msg.baseurl = msg.baseurl.replace(p,"download")
+      logger.debug("scp sz: %d, threshold: %d" % ( sz, parent.accel_scp_threshold))
 
-          urlstr = msg.baseurl + os.sep + msg.relpath
-          parent.msg.url = urllib.parse.urlparse(urlstr)
-          logger.info("scp triggering alternate method for: %s to %s, " % (urlstr, msg.new_file))
+      if sz < parent.accel_scp_threshold : return False
 
       return True
 
-   def do_download(self,parent):
-      logger = parent.logger
-      msg    = parent.msg
+   def on_start(self,parent):
+      parent.logger.info("on_start accel_scp2")
 
-      import subprocess
+      if not hasattr(parent,'accel_scp_command'):
+         parent.download_accel_scp_command= [ '/usr/bin/scp' ]
 
-      logger.debug("cd %s" % msg.new_dir )
-      try    : os.makedirs(msg.new_dir,parent.chmod_dir,True)
-      except : pass
-      os.chdir( msg.new_dir )
+      if not hasattr( parent, "accel_scp_threshold" ):
+             parent.accel_scp_threshold = [ "10b" ]
 
-      arg1 = msg.baseurl.replace("download://",'')
-      if arg1[-1] == '/' : arg1 = arg1[:-1]
-      arg1 += ':' + msg.relpath
-
-      arg2  = msg.new_file
-      if ':' in arg2 :
-         tmp2 = arg2.split(':')[0]
-         arg2 = tmp2
-
-      cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
-      logger.debug("%s" % ' '.join(cmd))
-
-      msg.baseurl = msg.baseurl.replace("download:","sftp:")
-      if msg.baseurl[-1] == os.sep : msg.baseurl = msg.baseurl[:-1]
-
-      urlstr  = msg.baseurl + os.sep + msg.relpath
-      msg.url = urllib.parse.urlparse(urlstr)
-
-      p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      outstr, dummy = p.communicate()
-      result = p.returncode
-
-      if result != 0:  # Failed!
-         logger.error("%s" % outstr)
-         if parent.reportback:
-            msg.report_publish(499,'scp download failed')
-         return False 
-
-      if arg2 != msg.new_file :
-         logger.debug("rename %s %s" % ( arg2, msg.new_file ) )
-         os.rename(arg2,msg.new_file)
-
-      logger.info("scp Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
-
-      if parent.reportback:
-         msg.report_publish(201,'Downloaded')
+      if not hasattr( parent, "accel_scp_protocol" ):
+             parent.accel_scp_protocol = [ "sftp" ]
+          
+      if type(parent.accel_scp_threshold) is list:
+          parent.accel_scp_threshold = parent.chunksize_from_str( parent.accel_scp_threshold[0] )
 
       return True
+
+   def do_get(self,parent):
+       import subprocess
+       logger = parent.logger
+       msg    = parent.msg
+
+       if not self.check_surpass_threshold(parent): return None
+
+       netloc = msg.baseurl.replace("sftp://",'')
+       if netloc[-1] == '/' : netloc = netloc[:-1]
+
+       arg1  = netloc + ':' + msg.relpath
+       arg1  = arg1.replace(' ','\ ')
+
+       arg2  = msg.new_dir + os.sep + msg.new_file
+       # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
+
+       # if the source file contains a : ... let python do it
+       if ':' in arg2 : return None
+
+       cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
+       logger.info("accel_scp :  %s" % ' '.join(cmd))
+
+       p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+       outstr, dummy = p.communicate()
+       result = p.returncode
+
+       if result != 0:  # Failed!
+          logger.error("%s" % outstr)
+          return False 
+
+       return True
+
+
+   def do_put(self,parent):
+       import subprocess
+       logger = parent.logger
+       msg    = parent.msg
+
+       if not self.check_surpass_threshold(parent): return None
+
+       netloc = parent.destination.replace("sftp://",'')
+       if netloc[-1] == '/' : netloc = netloc[:-1]
+
+       arg1  = msg.relpath
+       # strangely not requiered for arg1 : arg1  = arg1.replace(' ','\ ')
+
+       arg2  = netloc + ':' + msg.new_dir + os.sep + msg.new_file
+       arg2  = arg2.replace(' ','\ ')
+
+       # if the target file contains a : ... let python do it
+       if ':' in arg1 : return None
+
+       cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
+       logger.info("accel_scp :  %s" % ' '.join(cmd))
+
+       p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+       outstr, dummy = p.communicate()
+       result = p.returncode
+
+       if result != 0:  # Failed!
+          logger.error("%s" % outstr)
+          return False 
+
+       return True
+
+   def registered_as(self) :
+       return self.registered_list
 
 self.plugin='ACCEL_SCP'
 
