@@ -841,17 +841,23 @@ Launchpad
 Automated Build
 +++++++++++++++
 
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
+* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* once the repository is uptodate, proceed with the build request.
+* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarrac <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarrac/+git/master>`_
+* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
+* once the repository is upto date, proceed with the build request.
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
+* Click on the **Request build(s)** button to create a new release
+* Go to the `Sarrac release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac>`_ recipe
 * Click on the **Request build(s)** button to create a new release
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
 Daily Builds
 ++++++++++++
 
-Daily builds are configured using `this recipe <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily>`_ and 
+Daily builds are configured 
+using `this recipe for python <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily>`_ 
+and `this recipe for C <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac-daily>`_ and 
 are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
 One can also **Request build(s)** on demand if desired.
 
@@ -880,6 +886,13 @@ However, the steps below are a summary of what the script does:
     dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
 
 **Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
+
+Backporting a Dependency
+++++++++++++++++++++++++
+
+Example::
+
+  backportpackage -k<key id> -s bionic -d xenial -u ppa:ssc-hpc-chp-spc/ubuntu/metpx-daily librabbitmq
 
 
 
