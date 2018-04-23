@@ -38,7 +38,7 @@
 #
 #============================================================
 
-import json,os,random,sys,time
+import json,os,random,sys,time,xattr
 
 from collections import *
 
@@ -502,38 +502,57 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
-        # sumstr
+        # xattr ... check if sum is set in extended fileattributes
 
-        sumflg = self.sumflg
+        sumstr = ''
 
-        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
-           sumstr = sumflg
+        try :
+                attr = xattr.xattr(path)
+                if 'user.sr_sum' in attr and 'user.sr_size' in attr and int(attr['user.sr_size'].decode("utf-8")) == fsiz :
+                   self.logger.debug("sum set by xattr")
+                   sumstr = attr['user.sr_sum'].decode("utf-8")
+        except: pass
 
-        else:
+        if sumstr == '' :
+          
 
-           if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+              # sumstr
 
-           self.set_sumalgo(sumflg)
-           sumalgo = self.sumalgo
-           sumalgo.set_path(path)
+              sumflg = self.sumflg
 
-           # compute checksum
+              if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+                 sumstr = sumflg
 
-           if sumflg in ['d','s'] :
+              else:
 
-              fp = open(path,'rb')
-              i  = 0
-              while i<fsiz :
-                    buf = fp.read(self.bufsize)
-                    if not buf: break
-                    sumalgo.update(buf)
-                    i  += len(buf)
-              fp.close()
+                 if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
 
-           # setting sumstr
+                 self.set_sumalgo(sumflg)
+                 sumalgo = self.sumalgo
+                 sumalgo.set_path(path)
 
-           checksum = sumalgo.get_value()
-           sumstr   = '%s,%s' % (sumflg,checksum)
+                 # compute checksum
+
+                 if sumflg in ['d','s'] :
+
+                    fp = open(path,'rb')
+                    i  = 0
+                    while i<fsiz :
+                          buf = fp.read(self.bufsize)
+                          if not buf: break
+                          sumalgo.update(buf)
+                          i  += len(buf)
+                    fp.close()
+
+                 # setting sumstr
+
+                 checksum = sumalgo.get_value()
+                 sumstr   = '%s,%s' % (sumflg,checksum)
+
+                 # setting extended attributes
+                 self.logger.debug("xattr set for size and sum")
+                 attr['user.sr_size'] = bytes( "%d" % fsiz, encoding='utf-8')
+                 attr['user.sr_sum' ] = bytes( sumstr,      encoding='utf-8')
 
         # caching
 

@@ -74,7 +74,7 @@ class ACCEL_SCP(object):
          parent.download_accel_scp_command= [ '/usr/bin/scp' ]
 
       if not hasattr( parent, "accel_scp_threshold" ):
-             parent.accel_scp_threshold = [ "10b" ]
+             parent.accel_scp_threshold = [ "10M" ]
 
       if not hasattr( parent, "accel_scp_protocol" ):
              parent.accel_scp_protocol = [ "sftp" ]
