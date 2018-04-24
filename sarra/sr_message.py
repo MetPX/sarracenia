@@ -79,8 +79,18 @@ class sr_message():
         self.add_headers   = self.parent.headers_to_add
         self.del_headers   = self.parent.headers_to_del
 
-        self.isPulse         = False
-        self.isRetry         = False
+        self.isPulse       = False
+        self.isRetry       = False
+
+        # important working attributes set to None at startup
+        
+        self.baseurl       = None
+        self.relpath       = None
+        self.new_dir       = None
+        self.new_file      = None
+        self.new_baseurl   = None
+        self.new_relpath   = None
+
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
