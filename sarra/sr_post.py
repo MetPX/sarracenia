@@ -38,7 +38,8 @@
 #
 #============================================================
 
-import json,os,random,sys,time,xattr
+import json,os,random,sys,time
+#import xattr
 
 from collections import *
 
@@ -502,20 +503,20 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
+        # xattr turned off  PS 20180423
         # xattr ... check if sum is set in extended fileattributes
 
         sumstr = ''
 
-        try :
-                attr = xattr.xattr(path)
-                if 'user.sr_sum' in attr and 'user.sr_size' in attr and int(attr['user.sr_size'].decode("utf-8")) == fsiz :
-                   self.logger.debug("sum set by xattr")
-                   sumstr = attr['user.sr_sum'].decode("utf-8")
-        except: pass
+        #try :
+        #       attr = xattr.xattr(path)
+        #       if 'user.sr_sum' in attr :
+        #          self.logger.debug("sum set by xattr")
+        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
+        #except: pass
 
         if sumstr == '' :
           
-
               # sumstr
 
               sumflg = self.sumflg
@@ -549,10 +550,11 @@ class sr_post(sr_instances):
                  checksum = sumalgo.get_value()
                  sumstr   = '%s,%s' % (sumflg,checksum)
 
+                 # xattr turned off PS 20180424
                  # setting extended attributes
-                 self.logger.debug("xattr set for size and sum")
-                 attr['user.sr_size'] = bytes( "%d" % fsiz, encoding='utf-8')
-                 attr['user.sr_sum' ] = bytes( sumstr,      encoding='utf-8')
+                 #self.logger.debug("xattr set for time and sum")
+                 #sr_attr = self.msg.time + ' ' + sumstr
+                 #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
 
         # caching
 
