@@ -654,18 +654,33 @@ unreliable transfers, and care must be taken.  See `Delivery Completion`_ for mo
 
 The value can be a file name suffix, which is appended to create a temporary name during 
 the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
-the standard for "hidden" files on unix/linux.  In either case, when the transfer is 
+the standard for "hidden" files on unix/linux.  
+If **inflight**  ends in **/** (exampl: *tmp/* ), then it is a prefix, and specifies a 
+sub-directory of the destination into which the file should be written while in flight. 
+
+Whether a prefix or suffix is specified, when the transfer is 
 complete, the file is renamed to it's permanent name to allow further processing.
 
-The  **inflight**  option can also be specified as a time interval, for example, 10 for
-10 seconds.  When set to a time interval, a reader of a file ensures that it waits until
-the file has not been modified in that interval. So a file woll not be processed until
-it has stayed the same for at least 10 seconds. 
+The  **inflight**  option can also be specified as a time interval, for example, 
+10 for 10 seconds.  When set to a time interval, a reader of a file ensures that 
+it waits until the file has not been modified in that interval. So a file woll 
+not be processed until it has stayed the same for at least 10 seconds. 
+
+Lastly, **inflight** can be set to *NONE*, which case the file is written directly
+with the final name, where the recipient will wait to receive a post notifying it
+of the file's arrival.  This is the fastest, lowest overhead option when it is available.
+It is also the default when a *post_broker* is given, indicating that some
+other process is to be notified after delivery.
 
 When the **delete** option is set, after a download has completed successfully, the subscriber
 will delete the file at the upstream source.  Default is false.
 
-The **batch** option is used to indicate how many files should be transferred over a connection, before it is torn down, and re-established.  On very low volume transfers, where timeouts can occur between transfers, this should be lowered to 1.  For most usual situations the default is fine. for higher volume cases, one could raise it to reduce transfer overhead. It is only used for file transfer protocols, not HTTP ones at the moment.
+The **batch** option is used to indicate how many files should be transferred 
+over a connection, before it is torn down, and re-established.  On very low 
+volume transfers, where timeouts can occur between transfers, this should be
+lowered to 1.  For most usual situations the default is fine. for higher volume
+cases, one could raise it to reduce transfer overhead. It is only used for file
+transfer protocols, not HTTP ones at the moment.
 
 The option directory  defines where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
