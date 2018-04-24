@@ -1332,11 +1332,11 @@ additional transfer protocols.
 
 - do_download - to implement additional download protocols.
 
-- do_get  - under ftp/ftps/http/sftp implement the get part of the download process
+- do_get  - under ftp/ftps/http/sftp implement the get file part of the download process
 
 - do_poll - to implement additional polling protocols and processes.
 
-- do_put  - under ftp/ftps/http/sftp implement the put part of the send process
+- do_put  - under ftp/ftps/http/sftp implement the put file part of the send process
 
 - do_send - to implement additional sending protocols and processes.
 
