@@ -69,6 +69,7 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
+    "xattr",
     "psutil" ],
     
 )
