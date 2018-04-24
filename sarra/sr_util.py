@@ -440,6 +440,16 @@ class sr_transport():
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
 
+                elif parent.inflight[-1] == '/' :
+                   try :  
+                          os.mkdir(parent.inflight)
+                          os.chmod(parent.inflight,parent.chmod_dir)
+                   except:pass
+                   new_lock  = parent.inflight + new_file
+                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                   if os.path.isfile(new_file) : os.remove(new_file)
+                   os.rename(new_lock, new_file)
+
                 msg.onfly_checksum = proto.checksum
 
                 # fix permission 
@@ -627,6 +637,14 @@ class sr_transport():
                 elif inflight[0] == '.' :
                    new_lock = new_file + inflight
                    self.put(local_file, new_lock )
+                   proto.rename(new_lock, new_file)
+                elif parent.inflight[-1] == '/' :
+                   try :
+                          proto.cd_forced(775,new_dir+'/'+parent.inflight)
+                          proto.cd_forced(775,new_dir)
+                   except:pass
+                   new_lock  = parent.inflight + new_file
+                   self.put(local_file,new_lock)
                    proto.rename(new_lock, new_file)
                 elif inflight == 'umask' :
                    proto.umask()
