@@ -33,7 +33,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-import logging, os, os.path, shutil, subprocess, sys, time
+import logging, os, os.path, shutil, sys, time
 
 try :    
          from sr_config          import *
@@ -74,8 +74,7 @@ def instantiate(dirconf,pgm,confname,action):
 
     if pgm in ['audit','cpost','cpump'] :
        cfg.logger.debug("%s %s %s" % ("sr_" + pgm,action,confname))
-       try :   subprocess.check_call([ "sr_" + pgm, action, confname])
-       except: cfg.logger.error("%s %s %s returned a bad status code" % ("sr_" + pgm,action,confname))
+       cfg.run_command([ "sr_" + pgm, action, confname])
        return
 
     #print(dirconf,pgm,confname,action)
@@ -133,8 +132,7 @@ def invoke(dirconf,pgm,confname,action):
              # anything but sr_post
              if program != 'sr_post' :
                 cfg.logger.debug("%s %s %s" % (program,action,config))
-                try   : subprocess.check_call([program,action,config])
-                except: cfg.logger.error("%s %s %s returned a bad status code" % (program,action,config))
+                cfg.run_command([program,action,config])
                 return
 
              # sr_post needs -c with absolute confpath
@@ -143,8 +141,7 @@ def invoke(dirconf,pgm,confname,action):
              post = sr_post(confpath)
 
              cfg.logger.debug("INVOKE %s %s %s %s" % (program,'-c',confpath,action))
-             try   : subprocess.check_call([program,'-c',confpath,action])
-             except: cfg.logger.error("%s %s %s %s returned a bad status code" % (program,'-c',confpath,action))
+             cfg.run_command([program,'-c',confpath,action])
              return
 
     except :
@@ -175,8 +172,7 @@ def scandir(dirconf,pgm,action):
     if not os.path.isdir(path) or len(os.listdir(path)) == 0 : 
        if pgm == 'audit' :
           cfg.logger.info("%s %s" % (pgm,action))
-          try   : subprocess.check_call(['sr_'+pgm,action])
-          except: cfg.logger.error("%s %s returned a bad status code" % (pgm,action))
+          cfg.run_command(['sr_'+pgm,action])
        return
 
     for confname in os.listdir(path) :

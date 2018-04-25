@@ -1075,8 +1075,17 @@ class sr_config:
         cmd = os.environ.get('PAGER')
         if cmd == None: cmd="/bin/more"
 
-        try   : subprocess.check_call([ cmd, path ] )
-        except: self.logger.error("could not %s %s" % ( cmd, path ) )
+        self.run_command([ cmd, path ] )
+
+    def run_command(self,cmd_list):
+        try   :
+                if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
+                        self.logger.debug("using subprocess.check_call")
+                        subprocess.check_call(cmd_list)
+                else :
+                        self.logger.debug("using subprocess.run")
+                        subprocess.run(cmd_list,check=True)
+        except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_lst) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1262,8 +1271,8 @@ class sr_config:
                  destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
                  old_destfn_script  = self.destfn_script
-                 saved_new_file    = self.msg.new_file
-                 self.msg.new_file   = destFileName
+                 saved_new_file     = self.msg.new_file
+                 self.msg.new_file  = destFileName
                  self.destfn_script = None
                  script = spec[13:]
                  self.execfile('destfn_script',script)
@@ -1271,7 +1280,7 @@ class sr_config:
                     ok = self.destfn_script(self)
                  destFileName       = self.msg.new_file
                  self.destfn_script = old_destfn_script
-                 self.msg.new_file   = saved_new_file
+                 self.msg.new_file  = saved_new_file
                  if destFileName == None : destFileName = old_destFileName
             elif spec == 'TIME':
                 if destFileName != filename :

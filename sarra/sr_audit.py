@@ -188,10 +188,8 @@ class sr_audit(sr_instances):
 
     def run_sr_setup(self):
         self.logger.debug("setting up exchanges and queues from all config")
-        try :
-                subprocess.check_call(['sr','declare'])
-                subprocess.check_call(['sr','setup'])
-        except: self.logger.error("something went wrong when running setup (sr declare/setup)")
+        self.run_command(['sr','declare'])
+        self.run_command(['sr','setup'])
 
     def verify_exchanges(self):
         self.logger.debug("sr_audit verify_exchanges")

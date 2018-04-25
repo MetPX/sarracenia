@@ -49,19 +49,21 @@ def exec_rabbitmqadmin(url,options,logger=None):
                command += ' --ssl --port=15671 ' 
            command += ' '    + options
 
-           # (status, answer) = subprocess.getstatusoutput(command)
            if logger != None : logger.debug("command = %s" % command)
-           cmdlin = command.replace("'",'')
-           cmdlst = cmdlin.split()
-           rclass = subprocess.run(cmdlst,stdout=subprocess.PIPE)
-           if rclass.returncode == 0 : 
-              output =rclass.stdout
-              if type(output) == bytes: output = output.decode("utf-8")
-              return rclass.returncode,output
+           if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
+                   if logger : logger.debug("using subprocess.getstatusoutput")
+                   return subprocess.getstatusoutput(command)
+           else :
+                   if logger : logger.debug("using subprocess.run")
+                   cmdlin = command.replace("'",'')
+                   cmdlst = cmdlin.split()
+                   rclass = subprocess.run(cmdlst,stdout=subprocess.PIPE)
+                   if rclass.returncode == 0 : 
+                       output =rclass.stdout
+                       if type(output) == bytes: output = output.decode("utf-8")
+                   return rclass.returncode,output
     except :
-           #(stype, svalue, tb) = sys.exc_info()
-           #print("sr_rabbitmq/exec_rabbitmqadmin Type: %s, Value: %s" % (stype, svalue))
-           pass
+           if logger : logger.error("trying run command %s %s" %  ' '.join(cmd_lst) )
 
     return 0,None
     
