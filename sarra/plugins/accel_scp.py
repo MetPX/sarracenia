@@ -68,7 +68,7 @@ class ACCEL_SCP(object):
       return True
 
    def on_start(self,parent):
-      parent.logger.info("on_start accel_scp2")
+      parent.logger.info("on_start accel_scp")
 
       if not hasattr(parent,'accel_scp_command'):
          parent.download_accel_scp_command= [ '/usr/bin/scp' ]
