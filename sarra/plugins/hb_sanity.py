@@ -13,7 +13,7 @@ class Hb_Sanity(object):
           
     def perform(self,parent):
         parent.logger.info( "hb_sanity launched" )
-        subprocess.check_call(['sr','sanity'])
+        parent.run_command(['sr','sanity'])
         return True
 
 hb_sanity = Hb_Sanity(self)

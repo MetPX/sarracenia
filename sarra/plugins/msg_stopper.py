@@ -71,7 +71,7 @@ class Msg_Stopper(object):
         cmd.append('stop')
 
         parent.logger.info("msg_stopper triggering %s" % cmd)
-        subprocess.check_call( cmd )
+        parent.run_command( cmd )
 
         return
 

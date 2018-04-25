@@ -111,7 +111,7 @@ class Hb_Memory(object):
         cmd.append('restart')
 
         parent.logger.info("hb_memory triggering %s" % cmd)
-        subprocess.check_call( cmd )
+        parent.run_command( cmd )
 
         return
 
