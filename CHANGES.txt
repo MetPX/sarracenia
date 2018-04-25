@@ -4,6 +4,12 @@
 
 lists all changes between versions.
 
+**2.18.04b4**
+
+  * bugfix  destfn_script was not working
+  * update  sr_config.run_command presents subprocess check_call or run depending on python version
+  * new     inflight tmp/
+
 **2.18.04b3**
 
   * testing flow_test standardisation of messages
