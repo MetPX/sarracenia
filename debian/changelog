@@ -1,3 +1,13 @@
+metpx-sarracenia (2.18.04b4) unstable; urgency=medium
+
+  * bugfix  destfn_script was not working
+  * update  sr_config.run_command presents subprocess check_call or run depending 
+  * on python version
+  * new     inflight tmp/
+
+
+ -- Peter Silva <peter@idefix>  Wed, 25 Apr 2018 10:51:00 -0400
+
 metpx-sarracenia (2.18.04b3) unstable; urgency=medium
 
   * testing flow_test standardisation of messages
@@ -28,7 +38,7 @@ metpx-sarracenia (2.18.04b2) unstable; urgency=medium
   *         C any Python, topic and path with # encoded into %23 (as blank into %20)
   * update  sr_audit hb_police_queues to check queue as admin, 
   *           hb_sanity to check processes and sanity_log_dead option added     
-       
+  *
   *           no sleep option, sleep computed to trigger next heartbeat
   *         sr_rabbit rabbit dependant commands placed in this file
   * new     plugin do_send_log
