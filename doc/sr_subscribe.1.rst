@@ -16,7 +16,7 @@ Select and Conditionally Download Posted Files
 SYNOPSIS
 ========
 
- **sr_subscribe** foreground|start|stop|restart|reload|status configfile
+ **sr_subscribe** foreground|start|stop|restart|reload|sanity|status configfile
 
  **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
 
@@ -60,10 +60,12 @@ When any component is invoked, an operation and a configuration file are specifi
 
  - foreground: run a single instance in the foreground logging to stderr
  - restart: stop and then start the configuration.
+ - sanity: looks for instances which have crashed or gotten stuck and restarts them.
  - start:  start the configuration running
  - status: check if the configuration is running.
  - stop: stop the configuration from running
 
+Note that the sanity check is invoked by heartbeat processing in sr_audit on a regular basis.
 The remaining operations manage the resources (exchanges,queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
