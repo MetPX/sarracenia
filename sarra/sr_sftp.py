@@ -34,6 +34,7 @@
 
 import logging, paramiko, os,sys,time
 from   paramiko import *
+from   stat     import *
 
 try :
          from sr_util            import *
@@ -278,17 +279,28 @@ class sr_sftp(sr_proto):
         return False
 
     # delete
+    # MG sneak rmdir here in case 'R' message implies a directory (remote mirroring)
     def delete(self, path):
         self.logger.debug("sr_sftp rm %s" % path)
+
         alarm_set(self.iotime)
         # check if the file is there... if not we are done,no error
         try   :
-                s = self.sftp.stat(path)
+                s = self.sftp.lstat(path)
         except: 
                 alarm_cancel()
                 return
-        # proceed with file removal
-        self.sftp.remove(path)
+
+        # proceed with file/link removal
+        if not S_ISDIR(s.st_mode) :
+           self.logger.debug("sr_sftp remove %s" % path)
+           self.sftp.remove(path)
+
+        # proceed with directory removal
+        else:
+           self.logger.debug("sr_sftp rmdir %s" % path)
+           self.sftp.rmdir(path)
+
         alarm_cancel()
 
     # symlink
