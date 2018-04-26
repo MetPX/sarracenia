@@ -226,9 +226,9 @@ class sr_poll(sr_post):
 
         self.dest = None
 
-        if   scheme == 'file'        : self.dest = sr_file(self)
-        elif scheme in ['ftp','ftps']: self.dest = sr_ftp(self)
-        elif scheme == 'http'        : self.dest = sr_http(self)
+        if   scheme == 'file'          : self.dest = sr_file(self)
+        elif scheme in ['ftp','ftps']  : self.dest = sr_ftp(self)
+        elif scheme in ['http','https']: self.dest = sr_http(self)
         elif scheme == 'sftp' :
              try    : from sr_sftp       import sr_sftp
              except : from sarra.sr_sftp import sr_sftp
