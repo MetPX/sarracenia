@@ -140,7 +140,7 @@ class sr_proto():
 
         # local_file opening and seeking if needed
 
-        src = open(local_file,'r+b')
+        src = open(local_file,'rb')
         if local_offset != 0 : src.seek(local_offset,0)
 
         # initialize sumalgo
@@ -536,10 +536,19 @@ class sr_transport():
         msg         = parent.msg
         self.logger.debug("%s_transport send" % self.scheme)
 
-        local_file = msg.relpath
+        local_path = msg.relpath
+        local_dir  = os.path.dirname( local_path)
+        local_file = os.path.basename(local_path)
         new_dir    = msg.new_dir
         new_file   = msg.new_file
-    
+        new_lock   = None
+
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != local_dir:
+           os.chdir(local_dir)
+
         try :
 
                 proto = self.proto
@@ -619,6 +628,9 @@ class sr_transport():
                 # send event
                 #=================================
 
+                if not os.path.exists(local_file):
+                   self.logger.error("file to send does not exist %s" % local_file)
+
                 offset = 0
                 if  msg.partflg == 'i': offset = msg.offset
     
@@ -663,6 +675,12 @@ class sr_transport():
                 return True
                 
         except:
+
+                #removing lock if left over
+                if new_lock != None and hasattr(proto,'delete') :
+                   try   : proto.delete(new_lock)
+                   except: pass
+
                 #closing on problem
                 try    : self.close()
                 except : pass
@@ -672,6 +690,11 @@ class sr_transport():
                 msg.report_publish(497,'%s delivery failed' % self.scheme)
     
                 return False
+
+        #removing lock if left over
+        if new_lock != None and hasattr(proto,'delete') :
+           try   : proto.delete(new_lock)
+           except: pass
     
         #closing on problem
         try    : self.close()
