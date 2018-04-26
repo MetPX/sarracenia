@@ -51,21 +51,21 @@ class Msg_Clean_F92(object):
         # removed count 
 
         removed = 0
-        if not os.path.isfile(self.sarr_f20_path    ) : removed += 1
+        if not os.path.exists(self.sarr_f20_path    ) : removed += 1
 
-        if not os.path.isfile(self.subs_f30_path    ) : removed += 1
-        if not os.path.isfile(self.send_f50_path    ) : removed += 1
-        if not os.path.isfile(self.subs_f60_path    ) : removed += 1
-        if not os.path.isfile(self.subs_f70_path    ) : removed += 1
-        if not os.path.isfile(self.subs_f71_path    ) : removed += 1
-        if not os.path.isfile(self.flow_post_cp     ) : removed += 1
+        if not os.path.exists(self.subs_f30_path    ) : removed += 1
+        if not os.path.exists(self.send_f50_path    ) : removed += 1
+        if not os.path.exists(self.subs_f60_path    ) : removed += 1
+        if not os.path.exists(self.subs_f70_path    ) : removed += 1
+        if not os.path.exists(self.subs_f71_path    ) : removed += 1
+        if not os.path.exists(self.flow_post_cp     ) : removed += 1
 
-        if not os.path.isfile(self.subs_f30_path+ext) : removed += 1
-        if not os.path.isfile(self.send_f50_path+ext) : removed += 1
-        if not os.path.isfile(self.subs_f60_path+ext) : removed += 1
-        if not os.path.isfile(self.subs_f70_path+ext) : removed += 1
-        if not os.path.isfile(self.subs_f71_path+ext) : removed += 1
-        if not os.path.isfile(self.flow_post_cp +ext) : removed += 1
+        if not os.path.exists(self.subs_f30_path+ext) : removed += 1
+        if not os.path.exists(self.send_f50_path+ext) : removed += 1
+        if not os.path.exists(self.subs_f60_path+ext) : removed += 1
+        if not os.path.exists(self.subs_f70_path+ext) : removed += 1
+        if not os.path.exists(self.subs_f71_path+ext) : removed += 1
+        if not os.path.exists(self.flow_post_cp +ext) : removed += 1
 
 
         # propagation unfinished ... (or test error ?)

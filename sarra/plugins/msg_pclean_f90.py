@@ -40,13 +40,13 @@ class Msg_Pclean_F90(object):
     def log_state(self,parent,propagated):
         logger = parent.logger
 
-        if not os.path.isfile(self.sarr_f20_path) : logger.warning("%s not found" % self.sarr_f20_path) 
-        if not os.path.isfile(self.subs_f30_path) : logger.warning("%s not found" % self.subs_f30_path) 
-        if not os.path.isfile(self.send_f50_path) : logger.warning("%s not found" % self.send_f50_path) 
-        if not os.path.isfile(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
-        if not os.path.isfile(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
-        if not os.path.isfile(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
-        if not os.path.isfile(self.flow_post_cp ) : logger.warning("%s not found" % self.flow_post_cp ) 
+        if not os.path.exists(self.sarr_f20_path) : logger.warning("%s not found" % self.sarr_f20_path) 
+        if not os.path.exists(self.subs_f30_path) : logger.warning("%s not found" % self.subs_f30_path) 
+        if not os.path.exists(self.send_f50_path) : logger.warning("%s not found" % self.send_f50_path) 
+        if not os.path.exists(self.subs_f60_path) : logger.warning("%s not found" % self.subs_f60_path) 
+        if not os.path.exists(self.subs_f70_path) : logger.warning("%s not found" % self.subs_f70_path) 
+        if not os.path.exists(self.subs_f71_path) : logger.warning("%s not found" % self.subs_f71_path) 
+        if not os.path.exists(self.flow_post_cp ) : logger.warning("%s not found" % self.flow_post_cp ) 
         logger.warning("propagated = %d" % propagated) 
 
     def on_message(self,parent):
@@ -76,13 +76,13 @@ class Msg_Pclean_F90(object):
         # propagated count 
 
         propagated = 0
-        if os.path.isfile(self.sarr_f20_path) : propagated += 1
-        if os.path.isfile(self.subs_f30_path) : propagated += 1
-        if os.path.isfile(self.send_f50_path) : propagated += 1
-        if os.path.isfile(self.subs_f60_path) : propagated += 1
-        if os.path.isfile(self.subs_f70_path) : propagated += 1
-        if os.path.isfile(self.subs_f71_path) : propagated += 1
-        if os.path.isfile(self.flow_post_cp ) : propagated += 1
+        if os.path.exists(self.sarr_f20_path) : propagated += 1
+        if os.path.exists(self.subs_f30_path) : propagated += 1
+        if os.path.exists(self.send_f50_path) : propagated += 1
+        if os.path.exists(self.subs_f60_path) : propagated += 1
+        if os.path.exists(self.subs_f70_path) : propagated += 1
+        if os.path.exists(self.subs_f71_path) : propagated += 1
+        if os.path.exists(self.flow_post_cp ) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry

@@ -23,12 +23,12 @@ class Msg_Clean_F91(object):
     def log_state(self,parent,propagated,ext):
         logger = parent.logger
 
-        if not os.path.isfile(self.subs_f30_path+ext) : logger.warning("%s not found" % self.subs_f30_path+ext) 
-        if not os.path.isfile(self.send_f50_path+ext) : logger.warning("%s not found" % self.send_f50_path+ext) 
-        if not os.path.isfile(self.subs_f60_path+ext) : logger.warning("%s not found" % self.subs_f60_path+ext) 
-        if not os.path.isfile(self.subs_f70_path+ext) : logger.warning("%s not found" % self.subs_f70_path+ext) 
-        if not os.path.isfile(self.subs_f71_path+ext) : logger.warning("%s not found" % self.subs_f71_path+ext) 
-        if not os.path.isfile(self.flow_post_cp +ext) : logger.warning("%s not found" % self.flow_post_cp +ext) 
+        if not os.path.exists(self.subs_f30_path+ext) : logger.warning("%s not found" % self.subs_f30_path+ext) 
+        if not os.path.exists(self.send_f50_path+ext) : logger.warning("%s not found" % self.send_f50_path+ext) 
+        if not os.path.exists(self.subs_f60_path+ext) : logger.warning("%s not found" % self.subs_f60_path+ext) 
+        if not os.path.exists(self.subs_f70_path+ext) : logger.warning("%s not found" % self.subs_f70_path+ext) 
+        if not os.path.exists(self.subs_f71_path+ext) : logger.warning("%s not found" % self.subs_f71_path+ext) 
+        if not os.path.exists(self.flow_post_cp +ext) : logger.warning("%s not found" % self.flow_post_cp +ext) 
 
     def on_message(self,parent):
         import shutil
@@ -66,12 +66,12 @@ class Msg_Clean_F91(object):
         # propagated count 
 
         propagated = 0
-        if os.path.isfile(self.subs_f30_path+ext) : propagated += 1
-        if os.path.isfile(self.send_f50_path+ext) : propagated += 1
-        if os.path.isfile(self.subs_f60_path+ext) : propagated += 1
-        if os.path.isfile(self.subs_f70_path+ext) : propagated += 1
-        if os.path.isfile(self.subs_f71_path+ext) : propagated += 1
-        if os.path.isfile(self.flow_post_cp +ext) : propagated += 1
+        if os.path.exists(self.subs_f30_path+ext) : propagated += 1
+        if os.path.exists(self.send_f50_path+ext) : propagated += 1
+        if os.path.exists(self.subs_f60_path+ext) : propagated += 1
+        if os.path.exists(self.subs_f70_path+ext) : propagated += 1
+        if os.path.exists(self.subs_f71_path+ext) : propagated += 1
+        if os.path.exists(self.flow_post_cp +ext) : propagated += 1
 
 
         # propagation unfinished ... (or test error ?)
