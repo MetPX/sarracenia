@@ -211,10 +211,12 @@ class sr_retry:
     def is_valid(self,message):
         # validation
 
+        # log is info... it is good to log a retry message that expires
         if self.is_expired(message):
-           self.logger.debug("expired message skipped %s" % message.body)
+           self.logger.info("expired message skipped %s" % message.body)
            return False
 
+        # log is debug... the retry message was processed
         if self.is_done(message):
            self.logger.debug("done message skipped %s" % message.body)
            return False
