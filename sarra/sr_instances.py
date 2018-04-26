@@ -611,11 +611,35 @@ class sr_instances(sr_config):
 
         self.logger.info("%s stopping" % self.instance_str)
 
+        sleep_max = 70.0
+        sleep_now = 0.5
+
         # try sigterm and let the program finish
 
-        try    : os.kill(self.pid, signal.SIGTERM)
-        except : self.logger.debug("SIGTERM %s pid = %d, will check if still alive" % (self.instance_str,self.pid))
-        time.sleep(0.01)
+        stillAlive = True
+
+        while stillAlive :
+
+              # check if program is still alive
+
+              try    : 
+                       p=psutil.Process(self.pid)
+                       self.logger.debug("stillAlive %s pid = %d" % (self.instance_str,self.pid))
+                       stillAlive = True
+              except :
+                       stillAlive = False
+                       break
+
+              # SIGTERM
+
+              try    : os.kill(self.pid, signal.SIGTERM)
+              except : self.logger.debug("SIGTERM %s pid = %d did not work" % (self.instance_str,self.pid))
+
+              # sleep
+
+              if sleep_now > sleep_max : break
+              time.sleep(sleep_now)
+              sleep_now = sleep_now * 2
 
         # check if program is still alive
 
