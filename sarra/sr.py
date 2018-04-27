@@ -73,6 +73,8 @@ def instantiate(dirconf,pgm,confname,action):
     # c stuff always requiere to spawn a call
 
     if pgm in ['audit','cpost','cpump'] :
+       # try to avoid error code while running sanity
+       if action == 'sanity' : return
        cfg.logger.debug("%s %s %s" % ("sr_" + pgm,action,confname))
        cfg.run_command([ "sr_" + pgm, action, confname])
        return
