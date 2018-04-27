@@ -407,7 +407,7 @@ Setting the queue on broker :
 
 - **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
 - **durable       <boolean>      (default: False)**
-- **expire        <duration>      (default: 5m  == five minutes)**
+- **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message-ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
@@ -430,8 +430,17 @@ The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
 
 The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections.  A raw integer is expressed in seconds, if the suffix m,h.d,w
-are used, then the interval is in minutes, hours, days, or weeks.
+a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
+are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
+the contents is dropped, and so gaps in the download data flow can arise.  A value of
+1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
+the subscriber is expected to shutdown, and not suffer data loss.
+
+The **expire** setting must be overridden for operational use. 
+The default is set low because it defines how long resources on the broker will be assigned,
+and in early use (when default was 1 week) brokers would often get overloaded with very 
+long queues for left-over experiments.  
+
 
 The  **durable** option set to True, means writes the queue
 on disk if the broker is restarted.
