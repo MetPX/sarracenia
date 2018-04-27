@@ -163,70 +163,70 @@ function sumlogs {
 
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_000*.log
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_000*.log
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log
   totwinnow00="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_000*.log 
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log 
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_000*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_000*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log
   totshovel2="${tot}"
 
   countthem "`grep post_log "$LOGDIR"/sr_winnow*.log* | wc -l`"
   totwinpost="${tot}"
 
-  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
+  countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_*.log* | wc -l`"
   totshortened="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_000*.log
+  sumlogs post_total $LOGDIR/sr_watch_f40_*.log
   totwatch="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log
   totmsgt="${tot}"
 
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_000*.log
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_*.log
   totfilet="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_000*.log* | wc -l`"
+  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_000*.log* | wc -l`"
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_*.log* | wc -l`"
   totsubq="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_q_f71_*.log* | wc -l`"
   totsubq=$(( totsubq + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_q_f71_000*.log* | wc -l`"
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_q_f71_*.log* | wc -l`"
   totsubq=$(( totsubq + tot ))
 
-  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_000*.log* | wc -l`"
+  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_*.log* | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | wc -l`"
   totsubftp="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | wc -l`"
   totsubftp=$(( totsubftp + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_ftp_f70_000*.log* | wc -l`"
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | wc -l`"
   totsubftp=$(( totsubftp + tot ))
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
+  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
+  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_000*.log* | wc -l`"
+  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
 
   countthem "`grep 'post_log notice' $LOGDIR/srposter.log | grep -v shim | wc -l`"
@@ -235,7 +235,7 @@ function countall {
   countthem "`grep 'published:' $LOGDIR/srposter.log | grep shim | wc -l`"
   totshimpost1="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_000*.log* | wc -l`"
+  countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_*.log* | wc -l`"
   totsarp="${tot}"
 
   if [ ! "$C_ALSO" ]; then
@@ -263,10 +263,10 @@ function countall {
   countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_0001.log* | wc -l`"
   totcveille="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_000*.log* | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_*.log* | wc -l`"
   totcdnld="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_000*.log* | wc -l`"
+  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | wc -l`"
   totcfile="${tot}"
 
   sumlogs post_total $LOGDIR/sr_shovel_pclean_f90*.log
@@ -278,7 +278,7 @@ function countall {
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
-  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_000*.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
+  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_0*.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
   missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
 
 }
@@ -298,7 +298,7 @@ printf "initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_0001.log | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_01.log | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
    printf "waiting to start...\n"
 done
@@ -384,7 +384,7 @@ if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stoppe
 
 fi
 
-#sleep 10
+sleep 60
 
 countall
 
