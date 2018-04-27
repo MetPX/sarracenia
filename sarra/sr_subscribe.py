@@ -1589,6 +1589,7 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
+                      if self.retry_mode : self.consumer.msg_to_retry()
                       (stype, svalue, tb) = sys.exc_info()
                       if self.debug : self.LOG_TRACE(tb)
                       self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
