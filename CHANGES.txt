@@ -4,6 +4,22 @@
 
 lists all changes between versions.
 
+**2.18.04b5**
+
+* bugfix  open local file read rb (instead of r+b)
+*         remove .tmp file if upload does not work
+*         sftp link and directory removal (from message)
+* update  instance string using 2 digits (and code to migrate to)
+*         switch for subprocess.check_call or subprocess.run 
+*         give all chances to sigterm to complete
+* new     inflight tmp/
+*         If things go badly (general exception catch) keep message in retry
+*         log when a retry message is dropped because it expires
+*         poll accepts https (more test to do...not working with japan)
+* doc     expanded description of *expire* setting.
+*         Adding hint about use of *expire* option, how it is necessary for operations.
+*         default setting is to avoid broker overload, too low for operational use.
+
 **2.18.04b4**
 
 * bugfix  destfn_script was not working
