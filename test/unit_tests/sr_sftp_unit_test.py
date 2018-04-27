@@ -75,16 +75,29 @@ def self_test():
           logger.info("TEST 01: failed ... not connected")
           failed = True
 
-    logger.info("TEST 02: mkdir,chmod,cd")
+    logger.info("TEST 02: mkdir,rmdir,chmod,cd")
+
+    sftp.mkdir("txtx")
+    ls = sftp.ls()
+    if "txtx" in ls :
+          sftp.chmod(0o775,"txtx")
+          sftp.delete("txtx")
+
+    ls = sftp.ls()
+    if "txtx" in ls :
+          logger.info("TEST 02: failed1")
+          failed = True
+    else:
+          logger.info("TEST 02: OK1")
 
     sftp.mkdir("tztz")
     ls = sftp.ls()
     if "tztz" in ls :
           sftp.chmod(0o775,"tztz")
           sftp.cd("tztz")
-          logger.info("TEST 02: OK")
+          logger.info("TEST 02: OK2")
     else:
-          logger.info("TEST 02: failed")
+          logger.info("TEST 02: failed2")
           failed = True
 
     logger.info("TEST 03: put local aaa to remote bbb, chmod bbb, rename bbb ccc")
