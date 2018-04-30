@@ -629,7 +629,7 @@ class sr_transport():
                 #=================================
 
                 if not os.path.exists(local_file):
-                   self.logger.error("file to send does not exist %s" % local_file)
+                   self.logger.warning("file %s does not exist... attempt anyway" % local_file)
 
                 offset = 0
                 if  msg.partflg == 'i': offset = msg.offset
