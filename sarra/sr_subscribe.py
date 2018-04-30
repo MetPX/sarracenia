@@ -783,8 +783,8 @@ class sr_subscribe(sr_instances):
 
         if self.source_from_exchange :
            source = self.get_source_from_exchange(self.msg.exchange)
-           if source : self.msg.headers['source'] = source
-           else      : del self.msg.headers['source']
+           if   source : self.msg.headers['source'] = source
+           elif source in self.msg.headers: del self.msg.headers['source']
            if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
  
         # apply default to a message without a source
