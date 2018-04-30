@@ -667,7 +667,7 @@ class sr_transport():
                 self.set_remote_file_attributes(proto,new_file,msg)
     
                 msg.logger.info('Sent: %s %s into %s/%s %d-%d' % 
-                    (parent.local_file,str_range,new_dir,new_file,offset,offset+msg.length-1))
+                    (local_path,str_range,new_dir,new_file,offset,offset+msg.length-1))
 
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
