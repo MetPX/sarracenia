@@ -200,6 +200,8 @@ function countall {
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu="${tot}"
+  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
+  totsubu=$(( totsubu + tot ))
   countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
   countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
@@ -224,6 +226,8 @@ function countall {
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp="${tot}"
+  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
+  totsubcp=$(( totsubcp + tot ))
   countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
   countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
