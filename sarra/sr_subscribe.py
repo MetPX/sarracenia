@@ -783,8 +783,8 @@ class sr_subscribe(sr_instances):
 
         if self.source_from_exchange :
            source = self.get_source_from_exchange(self.msg.exchange)
-           if source : self.msg.headers['source'] = source
-           else      : del self.msg.headers['source']
+           if   source : self.msg.headers['source'] = source
+           elif source in self.msg.headers: del self.msg.headers['source']
            if 'from_cluster' in self.msg.headers : del self.msg.headers['from_cluster']
  
         # apply default to a message without a source
@@ -1280,8 +1280,14 @@ class sr_subscribe(sr_instances):
 
            # N attempts to download
 
-           i  = 1
-           while i <= self.attempts :
+           i  = 0
+           while i < self.attempts :
+                 # it is confusing to see in log for the same product
+                 # Download failed on one line than... 
+                 # downloaded on next line
+                 # so insert a warning about subsequent  attempts
+                 if i != 0  : self.logger.warning("attempt %d" % i+1)
+
                  ok = self.__do_download__()
                  if ok : break
                  # dont force on retry 

@@ -295,12 +295,6 @@ class sr_sender(sr_subscribe):
            self.logger.error("protocol should be 'file:' message ignored")
            return False
 
-        if self.msg.sumflg != 'R' and \
-           not (os.path.isfile(self.msg.relpath) or os.path.islink(self.msg.relpath)) :
-           self.logger.error("The file to send is not found: %s" % self.msg.relpath)
-           self.consumer.msg_to_retry()
-           return False
-
         #=================================
         # proceed to send :  has to work
         #=================================
@@ -309,6 +303,12 @@ class sr_sender(sr_subscribe):
 
         i  = 0
         while i < self.attempts :
+              # it is confusing to see in log for the same product
+              # Delivery failed on one line than... 
+              # Sent on next line
+              # so insert a warning about subsequent  attempts
+              if i != 0  : self.logger.warning("attempt %d" % i+1)
+
               ok = self.__do_send__()
               if ok : break
               # dont force on retry 
