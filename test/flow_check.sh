@@ -242,25 +242,25 @@ function countall {
      return
   fi
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log* | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_01.log* | wc -l`"
   totcpelle04r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_0001.log* | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_01.log* | wc -l`"
   totcpelle04p="${tot}"
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log* | wc -l`"
+  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_01.log* | wc -l`"
   totcpelle05r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_0001.log* | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_01.log* | wc -l`"
   totcpelle05p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_0001.log* | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_01.log* | wc -l`"
   totcvan14p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_0001.log* | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_01.log* | wc -l`"
   totcvan15p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_0001.log* | wc -l`"
+  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_01.log* | wc -l`"
   totcveille="${tot}"
 
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_*.log* | wc -l`"
