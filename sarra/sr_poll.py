@@ -121,9 +121,12 @@ class sr_poll(sr_post):
            self.help()
            sys.exit(1)
 
-        self.post_base_url = self.details.url.geturl()
-        if self.post_base_url[-1] != '/' : self.post_base_url += '/'
-        if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
+        if self.post_base_url == None :
+           self.post_base_url = self.details.url.geturl()
+           if self.post_base_url[-1] != '/' : self.post_base_url += '/'
+           if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
+           if self.details.url.password :
+              self.post_base_url = self.post_base_url.replace(':'+self.details.url.password,'')
 
         sr_post.check(self)
 
