@@ -57,6 +57,7 @@ class sr_consumer:
 
         self.hc              = None
         self.retry           = sr_retry(parent)
+        self.raw_msg         = None
         self.last_msg_failed = False
 
         reporting = self.isReporting()
