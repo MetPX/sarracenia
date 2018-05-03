@@ -275,7 +275,8 @@ class Consumer:
    def build(self):
        self.logger.debug("building consumer")
        self.channel = self.hc.new_channel()
-       self.channel.basic_recover(requeue=True)
+       # MG : seems important to have, but behave correctly without it
+       #self.channel.basic_recover(requeue=True)
        if self.prefetch != 0 :
           prefetch_size = 0      # dont care
           a_global      = False  # only apply here
