@@ -1280,13 +1280,13 @@ class sr_subscribe(sr_instances):
 
            # N attempts to download
 
-           i  = 0
-           while i < self.attempts :
+           i  = 1
+           while i <= self.attempts :
                  # it is confusing to see in log for the same product
                  # Download failed on one line than... 
                  # downloaded on next line
                  # so insert a warning about subsequent  attempts
-                 if i != 0  : self.logger.warning("attempt %d" % i+1)
+                 if i != 1 : self.logger.warning("attempt %d" % i)
 
                  ok = self.__do_download__()
                  if ok : break
