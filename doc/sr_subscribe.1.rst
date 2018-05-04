@@ -44,7 +44,7 @@ output can be piped to other processes in classic UNIX text filter style.
 Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
-`sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
+`sr_sender(1) <sr_sender.1.rst>`_ - send local files to a remote host.
 `sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
 `sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
 `sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
@@ -119,7 +119,7 @@ Administrators:
 
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Installation <Install.rst>`_ - initial installation.
-* `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
+* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
 and contributors:
 
