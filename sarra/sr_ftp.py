@@ -139,6 +139,10 @@ class sr_ftp(sr_proto):
            self.close()
            return False
 
+        # really connected
+        try    : cwd = self.getcwd()
+        except : return False
+
         return True
 
     # chmod

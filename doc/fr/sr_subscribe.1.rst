@@ -1,145 +1,153 @@
+
 ==============
  SR_Subscribe 
 ==============
 
 -----------------------------------------------
-Select and Conditionally Download Posted Files
+Sélectionner et télécharger conditionnellement les fichiers postés.
 -----------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
-:Version: @Version@
-:Manual group: Metpx-Sarracenia Suite
-
-.. contents::
+:Version: Version@ @Version
+:Manuel group: Metpx-Sarracenia Suite
 
 SYNOPSIS
 ========
 
- **sr_subscribe** foreground|start|stop|restart|reload|sanity|status configfile
+ sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status configfile
 
- **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
+ sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove configfile
 
- (formerly **dd_subscribe** )
+ (anciennement **dd_subscribe**))
 
 DESCRIPTION
 ===========
 
 .. contents::
 
-Sr_subscribe is a program to download files from websites or file servers 
-that provide `sr_post(7) <sr_post.7.rst>`_ protocol notifications.  Such sites 
-publish messages for each file as soon as it is available.  Clients connect to a
-*broker* (often the same as the server itself) and subscribe to the notifications.
-The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
-and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications. Sr_subscribe can be configured to post messages after they are downloaded,
-to make them available to consumers for further processing or transfers.
 
-**sr_subscribe** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
-suppress the download behaviour and only post the URL on standard output.  The standard
-output can be piped to other processes in classic UNIX text filter style.  
+Sr_subscribe est un programme pour télécharger des fichiers à partir de sites Web ou de serveurs de fichiers.
+qui fournissent `sr_post(7) <sr_post.7.rst>`_ notifications de protocole. Ces sites
+publier des messages pour chaque fichier dès qu'il est disponible.  Les clients se connectent à un
+*Courtier* (souvent le même que le serveur lui-même) et s'abonnent aux notifications.
+Les notifications *sr_post* fournissent de véritables notifications *push* pour les dossiers accessibles 
+sur la toile  (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage périodique 
+des annuaires ou le style ATOM/RSS. Les notifications. Sr_subscribe peut être configuré pour poster des 
+messages après leur téléchargement, pour les mettre à la disposition des consommateurs en 
+vue d'un traitement ultérieur ou de transferts.
 
-Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
+**sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, (par exemple pour
+à un programme externe) en spécifiant le -n (*notify_only*, ou *notify_only*, ou *no download*).
+supprimer le téléchargement et n'afficher l'URL que sur la sortie standard.  La sortie standard
+peut être relié à d'autres processus dans le style classique d'un filtre de texte UNIX.
 
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
-`sr_sender(1) <sr_sender.1.rst>`_ - send local files to a remote host.
-`sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
-`sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
-`sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
+Sr_subscribe est très configurable et constitue la base des autres composants de la sarracénie :
 
-All of these components accept the same options, with the same effects.
-There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implements a
-subset of the options here, but where they are implemented, they have the same effect.
+`sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
+`sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
+`sr_winnow(8) <sr_winnow.8.rst>`_ - supprimer les doublons
+`sr_shovel(8) <sr_shovel.8.rst>`_ - copier des messages
+`sr_sarra(8) <sr_sarra.8.rst>`_ - - S'abonner, acquérir, et recursivement Re-annoncer Ad nauseam.
 
-The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
-followed by an a configuration file. 
+Tous ces composants acceptent les mêmes options, avec les mêmes effets.
+Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version de C qui implémente un
+sous-ensemble des options ici, mais lorsqu'elles sont présentes, ont le même effet.
 
-When any component is invoked, an operation and a configuration file are specified. The operation is one of:
+La commande **sr_subscribe** prend deux arguments : une action start|stop|stop|restart|reload|reload|status,
+suivi d'un fichier de configuration.
 
- - foreground: run a single instance in the foreground logging to stderr
- - restart: stop and then start the configuration.
- - sanity: looks for instances which have crashed or gotten stuck and restarts them.
- - start:  start the configuration running
- - status: check if the configuration is running.
- - stop: stop the configuration from running
+Lorsqu'un composant est invoqué, une action et un fichier de configuration sont spécifiés. L'action en est une de :
 
-Note that the sanity check is invoked by heartbeat processing in sr_audit on a regular basis.
-The remaining operations manage the resources (exchanges,queues) used by the component on
-the rabbitmq server, or manage the configurations.
-
- - cleanup:  deletes the component's resources on the server
- - declare:  creates the component's resources on the server
- - setup:    like declare, additionally does queue bindings
- - add:      copy to the list of available configurations.
- - list:     List all the configurations available.
- - edit:     modify an existing configuration.
- - remove:   Remove a configuration
- - disable:  mark a configuration as ineligible to run. 
- - enable:   mark a configuration as eligible to run. 
+ - foreground: exécuter une seule instance dans le journal de premier plan à l´erreur standard.
+ - restart: arrêter puis démarrer la configuration.
+ - sanity: recherche les instances qui se sont plantées ou bloquées et les redémarre.
+ - start:  démarrer la configuration
+ - status: vérifier si la configuration est en cours d'exécution.
+ - stop: arrêter la configuration.
 
 
-For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with
-the dd configuration as a single foreground instance.
 
-The **foreground** action is used when building a configuration or for debugging.
-The **foreground** instance will run regardless of other instances which are currently
-running.  Should instances be running, it shares the same message queue with them.
-A user stop the **foreground** instance by simply using <ctrl-c> on linux
-or use other means to kill the process.
+Notez que *sanity* est invoqué par le traitement Heartbeat dans sr_audit sur une base régulière.
+Les action restantes gèrent les ressources (échanges, files d'attente) utilisées par le composant sur
+le serveur rabbitmq, ou gérent les configurations.
 
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally binds the queues.
+ - cleanup:  supprime les ressources du composant sur le serveur
+ - declare:  crée les ressources du composant sur le serveur.
+ - setup:    comme declare, fait en plus des liaisons de file d'attente.
+ - add:      copie une configuration à la liste des configurations disponibles.
+ - list:     Énumérer toutes les configurations disponibles.
+ - edit:     modifier une configuration existante.
+ - remove:   Supprimer une configuration
+ - disable:  marquer une configuration comme non éligible à l'exécution.
+ - enable:   marquer une configuration comme éligible à l'exécution.
 
-The **add, remove, list, edit, enable & disable** actions are used to manage the list 
-of configurations.  One can see all of the configurations available using the **list**
-action.  using the **edit** option, one can work on a particular configuarion.
-A *disabled* configuration will not be started or restarted by the **start**,  
-**foreground**, or **restart** actions. It can be used to set aside a configuration
-temporarily.
+
+Par exemple :  *sr_subscribe foreground dd* exécute le composant sr_subcribe avec la commande suivante
+la configuration dd en tant qu'instance de premier plan unique.
+
+L'action **foreground** est utilisée lors de la construction d'une configuration ou pour le débogage.
+L'instance **foreground** sera exécutée indépendamment des autres instances qui sont en cours d'exécution.
+en train de courir.  Si des instances sont en cours d'exécution, il partage la même file d'attente de messages avec eux.
+Un utilisateur arrête l'instance **foreground** en utilisant simplement <ctrl-c> sur linux.
+ou utiliser d'autres moyens pour tuer le processus.
+
+
+Les actions **cleanup**, **declare**, **setup**, **setup** peuvent être utilisées pour gérer les 
+ressources sur le courtier rabbitmq. Les ressources sont soit des files d'attente, soit des échanges. 
+**Declar** crée les ressources. **setup** crée et lie en outre les files d'attente.
+
+Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste.
+de configurations. On peut voir toutes les configurations disponibles en utilisant l´action *list*.
+en utilisant l'option **edit**, on peut travailler sur une configuration particulière.
+Une configuration *disabled* ne sera pas démarrée ou redémarrée par le **start**,
+ou **restart** actions. Il peut être utilisé pour mettre de côté une configuration.
+temporairement.
+
 
 Documentation
 -------------
 
-When the command line is invoked with either the *help* action, or *-help* op
-**help** has a component print a list of valid options. While the manual pages provide
-reference material, that is the ability to locate specific information quickly, it
-is not meant as a starting point for using the package.  There guides available
-at the sourceforge site that provide a better introduction:
+Lorsque la ligne de commande est invoquée avec l'action *help*, ou *-help* op
+**help** a un composant qui imprime une liste d'options valides. Bien que les pages du manuel fournissent
+le matériel de référence, c'est-à-dire la capacité de localiser rapidement des informations spécifiques.
+n'est pas un point de départ pour l'utilisation du paquet.  Il y a des guides disponibles
+sur le site sourceforge qui fournissent une meilleure introduction :
 
-users:
+utilisateurs :
 
-* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
-* `Source Guide <source.rst>`_ - effective uploading to a pump
-* `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
+`Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
+`Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
+`Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
 
-Administrators:
+Administrateurs :
 
-* `Admin Guide <Admin.rst>`_ - Configuration of Pumps
-* `Installation <Install.rst>`_ - initial installation.
-* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
- 
-and contributors:
+`Guide d'administration <Admin.rst>`_ - Configuration des pompes.
+`Installation <Install.rst>`_ - installation initiale.
+`Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
 
-* `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
+et les contributeurs :
 
-There are also other manual pages available here: `See Also`_
+`Guide du développeur <Dev.rst>`_ - contribuant au développement de la sarracénie.
+
+FIXME
+
 
 
 Configurations
 --------------
 
-If one has a ready made configuration called *q_f71.conf*, it can be 
-added to the list of known ones with::
+Si on a une configuration prête à l'emploi appelée *q_f71.conf*, il peut être
+ajouté à la liste des noms connus avec: :
 
   sr_subscribe add q_f71.conf
 
-In this case, xvan_f14 is included with examples provided, so *add* finds it in the examples
-directory and copies into the active configuration one. 
-Each configuration file manages the consumers for a single queue on
-the broker. To view the available configurations, use::
+
+Dans ce cas, xvan_f14 est inclus avec les exemples fournis, donc *add* le trouve dans les exemples.
+et copie dans le répertoire de configuration actif.
+Chaque fichier de configuration gère les consommateurs pour une seule file d'attente sur
+le courtier. Pour visualiser les configurations disponibles, utilisez::
+
 
   blacklab% sr_subscribe list
 
@@ -173,43 +181,46 @@ the broker. To view the available configurations, use::
           t_f30.conf      u_sftp_f60.conf
   blacklab%
 
-one can then modify it using::
+On peut ensuite le modifier à l'aide de: :
 
   sr_subscribe edit q_f71.conf
 
-(The edit command uses the EDITOR environment variable, if present.)
-Once satisfied, one can start the the configuration running::
+(La commande d'édition utilise la variable d'environnement EDITOR, si elle est présente.
+Une fois satisfait, on peut démarrer la configuration en cours d'exécution: :
 
   sr_subscibe foreground q_f71.conf
 
-What goes into the files? See next section:
+Que contiennent les fichiers ? Voir la section suivante :
 
 
-Option Syntax
--------------
+Syntaxe des options
+-------------------
 
-Options are placed in configuration files, one per line, in the form:
+Les options sont placées dans les fichiers de configuration, une par ligne, dans le formulaire :
 
-  **option <value>**
+  option <valeur>******.
 
-For example::
+Par exemple::
 
-  **debug true**
-  **debug**
+  **debug true****
+  **debug****
 
-sets the *debug* option to enable more verbose logging.  If no value is specified,
-the value true is implicit. so the above are equivalent.  An second example 
-configuration line::
+définit l'option *debug* pour activer la journalisation plus verbale.  Si aucune valeur n'est spécifiée,
+la valeur true est implicite. les valeurs ci-dessus sont donc équivalentes.  Un deuxième exemple
+ligne de configuration::
 
   broker amqp://anonymous@dd.weather.gc.ca
 
-In the above example, *broker* is the option keyword, and the rest of the line is the 
-value assigned to the setting. Configuration files are a sequence of settings, one per line. 
-Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
-Example::
+Dans l'exemple ci-dessus, *broker* est le mot clé de l'option, et le reste de la 
+ligne est la valeur assignée au réglage. Les fichiers de configuration sont 
+une séquence de réglages, un par ligne.  Notez que les fichiers sont lus en 
+ordre, surtout pour les clauses *directory* et *accept*.
+Exemple::
 
     directory A
     accept X
+
+FIXME:
 
 Places files matching X in directory A.
 
