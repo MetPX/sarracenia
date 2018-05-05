@@ -3,9 +3,9 @@
  SR_Subscribe 
 ==============
 
------------------------------------------------
-Sélectionner et télécharger conditionnellement les fichiers postés.
------------------------------------------------
+--------------------------------------------------------------------
+Sélectionner et télécharger conditionnellement les fichiers annoncés
+--------------------------------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -26,6 +26,16 @@ DESCRIPTION
 
 .. contents::
 
+Translation questions:
+
+  need to review some terms words given a translation that is reasonable but do not
+  make terminological sense.
+
+   topic  --> sujet    thème 
+   exchange --> échange ... is plain old *exchange* better?
+   published --> poster? publier?   afficher? annoncer?
+   Sarracenia --> Sarracénie ... should not change...        
+    
 
 Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
 Web ou de serveurs de fichiers qui publient des notifications en format `sr_post(7) <sr_post.7.rst>`_ 
@@ -405,7 +415,7 @@ partie " consommateur " de les programmes de sarracénie.
 
 
 Réglage du courtier 
-------------------
+-------------------
 
 broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>*****.
 
@@ -518,120 +528,121 @@ Si **restore_to_queue** est spécifié, alors plutôt que de déclencher le mode
 les messages restaurés sont enregistrés dans un échange temporaire.
 à la file d'attente donnée.  Pour un exemple, voir `Shovel Save/Restore`_.
 
-FIXME:
 
 AMQP QUEUE BINDINGS
 -------------------
 
-Once one has a queue, it must be bound to an exchange.
-Users almost always need to set these options. Once a queue exists
-on the broker, it must be bound to an exchange. Bindings define which
-messages (URL notifications) the program receives. The root of the topic
-tree is fixed to indicate the protocol version and type of the
-message (but developers can override it with the **topic_prefix**
+Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
+Les utilisateurs ont presque toujours besoin de définir ces options. Une 
+fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à 
+une bourse. Les liaisons (*bindings*) définissent ce que l'on entend par
+les messages (notifications d'URL) que le programme reçoit. La racine du thème
+est fixe, indiquant la version du protocole et le type de l'arborescence.
+(mais les développeurs peuvent l'écraser avec le **topic_prefix****.
 option.)
 
-These options define which messages (URL notifications) the program receives:
+Ces options définissent les messages (notifications URL) que le programme reçoit :
+
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
- - **subtopic      <amqp pattern> (subtopic need to be set)** 
+ - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
+ - **subtopic      <amqp pattern> (sousthème au choix de l´utilisateur)** 
 
-The convention on data pumps is to use the *xpublic* exchange. Users can establish
-private data flow for their own processing. Users can declare their own exchanges
-that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just declare *exchange_suffix kk* which will result in the exchange
-being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
+La convention sur les pompes de données est d'utiliser l'échange *xpublic*. 
+Les utilisateurs peuvent établir les flux de données privées pour leur propre 
+traitement. Les utilisateurs peuvent déclarer leurs propres échanges,
+qui commencent toujours par *xs_<nom_utilisateur>*. Pour éviter d'avoir à 
+spécifier que chaque temps, on peut déclarer *exchange_suffix kk* qui se 
+traduira résultera dans la déclaration de l´échange: *xs_<username>_kkk* (remplaçant 
+la valeur par défaut *xpublic*).
 
-Several topic options may be declared. To give a correct value to the subtopic,
+Plusieurs options de thème peuvent être déclarées. Donner une valeur correcte au sous-thème,
 
-One has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
-length limited to 255 encoded bytes, or the more powerful regular expression 
-based  **accept/reject**  mechanisms described below. The difference being that the 
-AMQP filtering is applied by the broker itself, saving the notices from being delivered 
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber. In other words,  **accept/reject**  are client side filters, 
-whereas **subtopic** is server side filtering.  
+On a le choix de filtrer en utilisant **subtopic** avec seulement les *wildcard* (caractères 
+de substitution) limité de l'AMQP et longueur limitée à 255 octets codés, ou bien les
+expressions régulières plus puissantes, avec les options **accept/reject** décrits 
+ci-dessous. Tandis que Le filtrage AMQP est appliqué par le courtier lui-même, 
+ce qui permet d'éviter que les avis ne soient livrés au client du tout, les 
+modèles **accepter/rejeter** s'appliquent aux messages envoyés par le du courtier 
+à l´abonné. En d'autres termes, **accept/reject** sont des filtres côté client,
+alors que **subtopic** est le filtrage côté serveur.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
-client side mechanisms, saving bandwidth and processing for all.
+Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
+d'annonces envoyées au client à un petit sur-ensemble de ce qui est pertinent, 
+et n'effectuer qu'un réglage fin avec l'outil mécanismes côté client, économisant 
+la bande passante et le traitement pour tous.
 
-topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
-specify a non-default protocol version of messages to subscribe to. 
+topic_prefix est principalement d'intérêt pendant les transitions de version 
+de protocole, où l'on souhaite spécifier une version sans protocole par défaut 
+des messages auxquels s'abonner, ou bien pour manipuler des rapports de disposition,
+au lieu de notifications ( *v02.report* )
 
-Usually, the user specifies one exchange, and several subtopic options.
-**Subtopic** is what is normally used to indicate messages of interest.
-To use the subtopic to filter the products, match the subtopic string with
-the relative path of the product.
+Habituellement, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
+**subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt.
+Pour utiliser le sous-thème pour filtrer les produits, faites correspondre la 
+chaîne de sous-thèmes avec le chemin relatif dans l´arborescence de répertoires sur le serveur.
 
-For example, consuming from DD, to give a correct value to subtopic, one can
-browse the our website  **http://dd.weather.gc.ca** and write down all directories
-of interest.  For each directory tree of interest, write a  **subtopic**
-option as follow:
+Par exemple, en consommant à partir de DD, pour donner une valeur correcte au sous-thème, on peut
+Parcourez notre site Web **http://dd.weather.gc.ca**** et notez tous les annuaires.
+d'intérêt.  Pour chaque arborescence de répertoires d'intérêt, écrivez un **subtopic****.
+comme suit :
+
 
  **subtopic  directory1.*.subdirectory3.*.subdirectory5.#**
 
 ::
+  où :  
+       - * (asterisk) remplace le nom d'un seul répertoire.
+       - # (dièse) correspond a n´importe lequel restant d´arborescence.
 
- where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
+Note :
+  Lorsque les répertoires ont ces caractères génériques, ou des espaces dans leur nom, ils
+  sera codé par URL ('#' devient %23)
+  Lorsque les répertoires ont des points dans leur nom, cela changera.
+  la hiérarchie des sujets.
 
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
-header length limited to 255 encoded bytes, or the more powerful regular expression based  **accept/reject**
-mechanisms described below, which are not length limited.  The difference being that
-the AMQP filtering is applied by the broker itself, saving the notices from being delivered
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the
-broker to the subscriber.  In other words,  **accept/reject**  are
-client side filters, whereas  **subtopic**  is server side filtering.
-
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all.
-
-topic_prefix is primarily of interest during protocol version transitions, where one wishes to
-specify a non-default protocol version of messages to subscribe to.
+FIXME :
+      les dièses sont encodés, mais pas vu le code pour les autres valeurs.
+      Vérifiez si les astérisques dans les noms de répertoires des sujets doivent être codés par URL.
+      Vérifiez si les périodes dans les noms de répertoires dans les rubriques doivent être codées par URL.
 
 
+Filtrage des messages Regexp 
+----------------------------
 
-Regexp Message Filtering 
-------------------------
+Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
+Le courtier met les messages correspondants dans notre file d'attente (*queue*).
+Le composant télécharge ces messages.
 
-We have selected our messages through **exchange**, **subtopic** and
-perhaps patterned  **subtopic** with AMQP's limited wildcarding. 
-The broker puts the corresponding messages in our queue.
-The component downloads the these messages.
+Les clients Sarracenia implémentent un filtrage plus puissant côté client.
+en utilisant des mécanismes basés sur les expressions régulières.
 
-Sarracenia clients implement a the more powerful client side filtering
-using regular expression based mechanisms.
+- **accept <expression régulière (regexp)>  (facultatif)**.
+- **reject <expression régulière (regexp)> (facultatif)**.
+- **accept_unmatch <boolean> (par défaut : False (faux))**.
 
-- **accept    <regexp pattern> (optional)**
-- **reject    <regexp pattern> (optional)**
-- **accept_unmatch   <boolean> (default: False)**
+Les options **accept** et **reject** utilisent des expressions régulières (regexp).
+La regexp est appliquée à l'URL du message pour une correspondance.
 
-The  **accept**  and  **reject**  options use regular expressions (regexp).
-The regexp is applied to the the message's URL for a match.
+Si l'URL du message d'un fichier correspond à un motif **reject**, on informe
+le courtier que le message a été consommé et on abandonne son traitement.
 
-If the message's URL of a file matches a **reject**  pattern, the message
-is acknowledged as consumed to the broker and skipped.
+Celui qui correspond à un motif **accept** est traité par le composant.
 
-One that matches an **accept** pattern is processed by the component.
+Dans de nombreuses configurations, les options **accept** et **reject**
+sont spécifiés ensembles, et avec l'option **répertoire**.  Ils relient 
+ensuite les messages acceptés à la valeur **répertoire** sous laquelle 
+ils sont spécifiés.
 
-In many configurations, **accept** and **reject** options are mixed
-with the **directory** option.  They then relate accepted messages
-to the **directory** value they are specified under.
+Après que toutes les options **accept** / **reject** sont traitées normalement.
+l'accusé de réception du message tel qu'il a été consommé et ignoré. Pour 
+outrepasser ce comportement de défaut, définissez **accept_unmatch** à True.   
 
-After all **accept** / **reject**  options are processed, normally
-the message acknowledged as consumed and skipped. To override that
-default, set **accept_unmatch** to True.   However,  if
-no **accept** / **reject** are specified, the program assumes it
-should accept all messages and sets **accept_unmatch** to True.
+Les **accept/rejet** sont interprétés dans l'ordre qu´ils apparaissent
+dans le fichier de configuration.  Chaque option est traitée en ordre 
+de haut en bas.  par exemple :
 
-The **accept/reject** are interpreted in order.
-Each option is processed orderly from top to bottom.
-for example:
 
 sequence #1::
 
@@ -644,109 +655,129 @@ sequence #2::
   reject .*\.gif
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés.  
+Dans la séquence #2, l'option accept .* (regexp qui veut dire accepte tout) est 
+rencontré avant la déclaration de rejet, de sorte que le rejet n'a aucun effet.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the component to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all. more details on how
-to apply the directives follow:
+Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
+d'annonces envoyées au composant à un petit sur-ensemble de ce qui est 
+pertinent, et n'effectuer qu'un réglage fin avec les mécanismes *accept/reject* 
+côté client, économisant la bande passante et le traitement pour tous. 
 
 
-DELIVERY SPECIFICATIONS
------------------------
 
-These options set what files the user wants and where it will be placed,
-and under which name.
+OPTIONS DE LIVRAISON
+--------------------
 
-- **accept    <regexp pattern> (must be set)** 
-- **accept_unmatch   <boolean> (default: False)**
-- **attempts     <count>          (default: 3)**
-- **batch     <count>          (default: 100)**
-- **default_mode     <octalint>       (default: 0 - umask)**
-- **default_dir_mode <octalint>       (default: 0755)**
-- **delete    <boolean>>       (default: False)**
-- **directory <path>           (default: .)** 
-- **discard   <boolean>        (default: false)**
-- **base_dir <path>       (default: /)**
-- **flatten   <string>         (default: '/')** 
-- **heartbeat <count>                 (default: 300 seconds)**
-- **inplace       <boolean>        (default: true)**
-- **kbytes_ps <count>               (default: 0)**
-- **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
-- **mirror    <boolean>        (default: false)** 
-- **overwrite <boolean>        (default: true)** 
-- **recompute_chksum <boolean> (default: False)**
+Ces options définissent quels fichiers l'utilisateur veut et où il sera placé,
+et sous quel nom. (un booléen est un option qui a une valeur logique: vrai/faux)
+
+- **accept    <patron regexp>  (requis sauf si accept_unmatch est True)** 
+- **accept_unmatch   <booléan> (défaut: False)**
+- **attempts     <compte>      (défaut: 3)**
+- **batch     <compte>         (défaut: 100)**
+- **défaut_mode     <octalint> (défaut: 0 - umask)**
+- **défaut_dir_mode <octalint> (défaut: 0755)**
+- **delete    <booléan>>       (défaut: False)**
+- **directory <chemin>         (défaut: .)** 
+- **discard   <booléan>        (défaut: false)**
+- **base_dir <chemin>          (défaut: /)**
+- **flatten   <string>         (défaut: '/')** 
+- **heartbeat <durée>          (défaut: 300 secondes)**
+- **inplace       <booléan>    (défaut: true)**
+- **kbytes_ps <count>          (défaut: 0)**
+- **inflight  <chaine>         (défaut: .tmp où NONE si post_broker est setté)** 
+- **mirror    <booléan>        (défaut: false)** 
+- **overwrite <booléan>        (défaut: true)** 
+- **recompute_chksum <booléan> (défaut: False)**
 - **reject    <regexp pattern> (optional)** 
-- **retry    <boolean>         (default: True)** 
-- **retry_ttl    <duration>         (default: same as expire)** 
-- **source_from_exchange  <boolean> (default: False)**
-- **strip     <count|regexp>   (default: 0)**
-- **suppress_duplicates   <off|on|999>     (default: off)**
-- **timeout     <float>         (default: 0)**
+- **retry    <booléan>         (défaut: True)** 
+- **retry_ttl    <durée>         (défaut: pareil que expire)** 
+- **source_from_exchange  <booléan> (défaut: False)**
+- **strip     <compte|regexp>   (défaut: 0)**
+- **suppress_duplicates   <off|on|999>     (défaut: off)**
+- **timeout     <numéro flottante>         (défaut: 0.0)**
 
 
-The **attempts** option indicates how many times to 
-attempt downloading the data before giving up.  The default of 3 should be appropriate 
-in most cases.  When the **retry** option is false, the file is then dropped immediately.
+L'option **attempts** indique combien de fois pour tenter de télécharger 
+les données avant d'abandonner.  La valeur par défaut de 3 devrait être appropriée.
+dans la plupart des cas.  Lorsque l'option **retry** est fausse, le fichier 
+est alors immédiatement abandonné.
 
-When The **retry** option is set (default), a failure to download after prescribed number
-of **attempts** (or send, in a sender) will cause the message to be added to a queue file 
-for later retry.  When there are no messages ready to consume from the AMQP queue, 
-the retry queue will be queried.
+Lorsque l'option **retry** est activée (par défaut), l'échec du 
+téléchargement après les **attempts** tentatives (où d'envoi, dans un 
+expéditeur) entraînera l'ajout du message dans un fichier de file d'attente,
+pour réessayer plus tard.  Lorsqu'il n'y a pas de messages prêts à consommer 
+dans la file d'attente de l'AMQP, la file d'attente de réessai sera interrogée.
 
-The **retry_ttl** (retry time to live) option indicates how long to keep trying to send 
-a file before it is aged out of a the queue.  Default is two days.  If a file has not 
-been transferred after two days of attempts, it is discarded.
+L'option **retry_ttl** (temps de réessai à vivre) indique combien de 
+temps il faut continuer à essayer d'envoyer.  Un fichier avant qu'il ne 
+soit vieilli d'une file d'attente.  La valeur par défaut est de deux jours.
+Si un fichier n'a pas de a été transféré après deux jours de tentatives, 
+il est jeté.
 
-The **timeout** option, sets the number of seconds to wait before aborting a
-connection or download transfer (applied per buffer during transfer.)
+L'option **timeout**, définit le nombre de secondes d'attente avant l'annulation d'un appel.
+connexion ou transfert de téléchargement (appliqué par tampon pendant le transfert).
 
-The  **inflight**  option sets how to ignore files when they are being transferred
-or (in mid-flight betweeen two systems.) Incorrect setting of this option causes
-unreliable transfers, and care must be taken.  See `Delivery Completion`_ for more details.
+L'option **inflight** définit comment ignorer les fichiers lors de leur transfert
+(*en vol* entre deux systèmes.) Un mauvais réglage de cette option provoque
+des transferts peu corrompus, ou insertent de délais inutiles. alors il faut 
+faire attention.  Voir `Assurer la livraison`_ FIXME pour plus de détails.
 
-The value can be a file name suffix, which is appended to create a temporary name during 
-the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
-the standard for "hidden" files on unix/linux.  
-If **inflight**  ends in **/** (exampl: *tmp/* ), then it is a prefix, and specifies a 
-sub-directory of the destination into which the file should be written while in flight. 
+La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer 
+un nom temporaire lors de la création d'un nom de fichier.  Si **inflight** est 
+réglé à **.**, alors il s'agit d'un préfixe, afin de se conformer à le standard 
+pour les fichiers "cachés" sur unix/linux.  Si **inflight** se termine 
+par **/** (exemple : *tmp/*), alors il s'agit d'un préfixe, et spécifie un
+sous-répertoire de la destination dans laquelle le fichier doit être écrit 
+pendant le vol.
 
-Whether a prefix or suffix is specified, when the transfer is 
-complete, the file is renamed to it's permanent name to allow further processing.
+Si un préfixe ou un suffixe est spécifié, quand le transfert est complet, le 
+fichier est renommé en son nom permanent pour permettre un traitement ultérieur.
 
-The  **inflight**  option can also be specified as a time interval, for example, 
-10 for 10 seconds.  When set to a time interval, a reader of a file ensures that 
-it waits until the file has not been modified in that interval. So a file woll 
-not be processed until it has stayed the same for at least 10 seconds. 
+L'option **inflight** peut également être spécifiée comme intervalle de temps, 
+par exemple, 10 pendant 10 secondes. Lorsqu'il est réglé sur un intervalle de 
+temps, le lecteur d'un fichier s'assure que il attend que le fichier n'ait pas 
+été modifié dans cet intervalle. Donc un fichier ne sera pas être traité tant 
+qu'il n'est pas modifié pendant au moins 10 secondes.
 
-Lastly, **inflight** can be set to *NONE*, which case the file is written directly
-with the final name, where the recipient will wait to receive a post notifying it
-of the file's arrival.  This is the fastest, lowest overhead option when it is available.
-It is also the default when a *post_broker* is given, indicating that some
-other process is to be notified after delivery.
+Enfin, **inflight** peut être réglé sur *NONE*, auquel cas le fichier est 
+écrit directement avec son nom final, où le destinataire attendra de recevoir
+un message l'avisant de l'envoi de l'arrivée du fichier. Il s'agit de l'option
+la plus rapide et la moins coûteuse lorsqu'elle est disponible.
+C'est aussi la valeur par défaut lorsqu'un *post_broker* est donné, ce qui 
+indique qu'un autre processus va être notifié après la livraison, par un
+message affiché au post_broker.
 
-When the **delete** option is set, after a download has completed successfully, the subscriber
-will delete the file at the upstream source.  Default is false.
+Lorsque l'option **supprimer** est activée, une fois le téléchargement 
+terminé avec succès, l'abonné supprimera le fichier à la source amont.  
+utile pour des tests, mais la valeur par défaut est false.
 
-The **batch** option is used to indicate how many files should be transferred 
-over a connection, before it is torn down, and re-established.  On very low 
-volume transfers, where timeouts can occur between transfers, this should be
-lowered to 1.  For most usual situations the default is fine. for higher volume
-cases, one could raise it to reduce transfer overhead. It is only used for file
-transfer protocols, not HTTP ones at the moment.
 
-The option directory  defines where to put the files on your server.
-Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence. (see the  **mirror**
-option for more directory settings).
+L'option **batch** est utilisée pour indiquer le nombre de fichiers à 
+transférer avec une connexion, avant qu'elle ne soit démolie et rétablie.
+En cas de très faible volume de transferts, où des délais d'attente 
+peuvent se produire entre les transferts, cela devrait être abaissé à 1.
+Pour la plupart des situations habituelles, la valeur par défaut est très bien.
+on pourrait l'augmenter pour réduire les frais généraux de transfert. 
+Il ne sert que pour le fichiers les protocoles de transfert (e.g. SFTP), pas 
+les protocoles HTTP pour le moment.
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-Theses options are processed sequentially. 
-The URL of a file that matches a  **reject**  pattern is never downloaded.
-One that match an  **accept**  pattern is downloaded into the directory
-declared by the closest  **directory**  option above the matching  **accept** option.
-**accept_unmatch** is used to decide what to do when no reject or accept clauses matched.
+L´option *directory* définit où placer les fichiers sur votre serveur.
+Combiné avec les options **accept** / **reject**, l'utilisateur peut sélectionner 
+les fichiers à télécharger et leurs répertoires de résidence. (voir **mirror**
+pour plus de paramètres de répertoire).
+
+Les options **accept** et **reject** utilisent des expressions régulières 
+(regexp) pour correspondre à l'URL. Ces options sont traitées
+séquentiellement. L'URL d'un fichier qui correspond à un motif **reject** n'est
+jamais téléchargé.  Celui qui correspond à un patron **accept** est téléchargé
+et placé dans le répertoire indiqué par l'option **répertoire** la plus proche 
+au-dessus de l'option **accept** correspondante.
+
+**accept_unmatch** est utilisé pour décider ce qu'il faut faire lorsqu'aucune 
+clause de rejet ou d'acceptation ne correspond.
+
 
 ::
 
@@ -757,11 +788,14 @@ declared by the closest  **directory**  option above the matching  **accept** op
         reject    .*Reg.*
         accept    .*GRIB.*
 
-The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
-If set to  **True**  the directory given by the  **directory**  option
-will be the basename of a tree. Accepted files under that directory will be
-placed under the subdirectory tree leaf where it resides under dd.weather.gc.ca.
-For example retrieving the following url, with options::
+
+L'option **mirror** peut être utilisée pour refléter l'arborescence dd.weather.gc.ca des fichiers.
+Si réglé sur **True** le répertoire donné par l'option **directory**,
+sera le nom de la racine d'un arborescence de répertoires. Les fichiers acceptés dans 
+ce répertoire seront placés sous le sous-répertoire feuille d'arbre pareil que où 
+il réside sous dd.weather.gc.gc.ca.  Par exemple en récupérant l'url suivante, 
+avec des options::
+
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -769,12 +803,13 @@ For example retrieving the following url, with options::
    directory /mylocaldirectory
    accept    .*RADAR.*
 
-would result in the creation of the directories and the file
-/mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-You can modify the mirrored directoties with the option **strip**  .
-If set to N  (an integer) the first 'N' directories are withdrawn.
-For example ::
+se traduirait par la création des répertoires et du fichier
+/mylocaldirectory/radar/PRECIP/GIF/WGJ/20131214141900_WGJ_PRECIP_PRECIP_SNOW.gif
+
+Vous pouvez modifier les répertoires en miroir avec l'option **strip***.
+S'il est réglé sur N (un entier), les premiers ´N´ répertoires sont retirés.
+Par exemple ::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -783,28 +818,34 @@ For example ::
    directory /mylocaldirectory
    accept    .*RADAR.*
 
-would result in the creation of the directories and the file
-/mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
-when a regexp is provide in place of a number, it indicates a pattern to be removed
-from the relative path.  for example if::
+
+se traduirait par la création des répertoires et du fichier
+/mylocaldirectory/WGJ/20131214141900_WGJ_PRECIP_PRECIP_SNOW.gif
+lorsqu'un regexp est fourni à la place d'un nombre, il indique un motif à supprimer.
+du chemin relatif. par exemple si: :
+
 
    strip  .*?GIF/
 
-Will also result in the file being placed the same location. 
+
+Le fichier sera également placé au même endroit.
 
 NOTE::
-    with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
-    It ensures the shortest match is used.
+    avec **strip**, l'utilisation de **?** modificateur (pour éviter l'expression 
+    régulière *greediness*) est souvent utile. Il garantit l'utilisation de la 
+    correspondance la plus courte.
 
-    For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
-    The expression:  .*?GIF   matches: radar/PRECIP/GIF
-    whereas the expression: .*GIF matches the entire name.
+    Par exemple, en donnant un nom de fichier : radar/PRECIP/GIF/WGJ/20131214141900_WGJ_PRECIP_SNOW.GIF
+    L'expression : .*?GIF : radar/PRECIP/GIF
+    alors que l'expression : .*GIF correspond au nom entier.
 
 
-The  **flatten**  option is use to set a separator character. The default value ( '/' )
-nullifies the effect of this option.  This character replaces the '/' in the url 
-directory and create a "flatten" filename form its dd.weather.gc.ca path.  
-For example retrieving the following url, with options::
+L'option **flatten** (aplatir) est utilisée pour définir un caractère de 
+séparation. La valeur par défaut ('/') annule l'effet de cette option.  
+Ce caractère remplace le'/' dans l'url.  et créer un fichier "flatten" à 
+partir de son chemin dd.weather.gc.ca. Par exemple, en récupérant l'url suivante, avec des options::
+
+
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
@@ -812,75 +853,75 @@ For example retrieving the following url, with options::
    directory /mylocaldirectory
    accept    .*model_gem_global.*
 
-would result in the creation of the filepath ::
+entraînerait la création du chemin d'accès au fichier::
+
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
-One can also specify variable substitutions to be performed on arguments to the directory 
-option, with the use of *${..}* notation::
 
-   SOURCE   - the amqp user that injected data (taken from the message.)
-   DR       - the document root 
-   PBD      - the post base dir
-   YYYYMMDD - the current daily timestamp.
-   HH       - the current hourly timestamp.
-   *var*    - any environment variable.
+On peut aussi spécifier des substitutions de variables à effectuer sur les arguments du répertoire.
+avec l'utilisation de *${..}* notation::
 
-The YYYYMMDD and HH time stamps refer to the time at which the data is processed, it 
-is not decoded or derived from the content of the files delivered.  All date/times
-in Sarracenia are in UTC.
+   SOURCE - l'utilisateur amqp qui a injecté des données (tirées du message.)
+   DR     - la *document root* (répertoir corréspondant à '/' sur un serveur web.)
+   PBD    - le répertoire de la base ou les message sera publier. 
+   YYYYMMDD - l'horodatage quotidien en cours. (Y-Année, M-Mois, D-Jour du mois)
+   HH - l'horodatage horaire actuel.
+   *var* - toute variable d'environnement.
 
-Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
-built-in value takes precedence over a variable of the same name in the environment.
+Les horodatages YYYYYYMMDD et HH se réfèrent à l'heure à laquelle les données 
+sont traitées par Sarracenia, c'est-à-dire à l'heure à laquelle les données sont traitées.
+n'est pas décodé ou dérivé du contenu des fichiers livrés. Toutes les dates 
+et heures en Sarracénie sont en UTC.
 
-**base_dir** supplies the directory path that, when combined with the relative
-one in the selected notification gives the absolute path of the file to be sent.
-The defaults is None which means that the path in the notification is the absolute one.
+Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez que toute 
+option explicite dans un fichier de confiuguration sarracénie prime sur une variable 
+du même nom dans l'environnement.
 
-**FIXME**::
-    cannot explain this... do not know what it is myself. This is taken from sender.
-    in a subscriber, if it is set... will it download? or will it assume it is local?
-    in a sender.
-   
+**base_dir** fournit le chemin d'accès au répertoire qui, lorsqu'il est combiné avec 
+le chemin d'accès relatif dans la notification donne le chemin absolu du fichier à envoyer.
+La valeur par défaut est None, ce qui signifie que le chemin d'accès dans la 
+notification est le chemin absolu.
 
-Large files may be sent as a series of parts, rather than all at once.
-When downloading, if **inplace** is true, these parts will be appended to the file 
-in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
-There are some deployments of sarracenia where one pump will only ever see a few parts, and
-not the entirety, of multi-part files. :q
+**FIXME**: :
+    ne peut pas expliquer cela.... je ne sais pas ce que c'est moi-même. Ceci est 
+    pris de l'expéditeur.  Dans un sr_subscriber, si elle est définie.... est-ce 
+    qu'elle se téléchargera ? ou supposera-t-elle qu'elle est locale ?
+    dans un expéditeur.
 
+Les fichiers volumineux peuvent être envoyés en une série de parties, plutôt que tous en même temps.
+Lors du téléchargement, si **inplace** est vrai, ces parties seront ajoutées au fichier.
+d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est annoncée aux abonnés.
+Il peut être setté à *false* dans déploiements de sarracénie où une seule pompe 
+ne verra jamais que quelques pièces, pas l'intégralité, des fichiers en plusieurs parties.
 
-The **inplace** option defaults to True. 
-Depending of **inplace** and if the message was a part, the path can
-change again (adding a part suffix if necessary).
+L'option **inplace** est *True* par défaut.
+En fonction de **inplace** et si le message était une partie, le chemin d'accès peut
+changer à nouveau (en ajoutant un suffixe de pièce si nécessaire).
 
+L'option **overwrite**,si elle est définie sur false, évitez les téléchargements 
+inutiles dans ces conditions:
+1- le fichier à télécharger se trouve déjà sur le système de fichiers de l'utilisateur au bon endroit et au bon endroit
+2- la somme de contrôle du message amqp correspond à celle du fichier.
+La valeur par défaut est True (écraser sans vérifier).
 
-The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
-1- the file to be downloaded is already on the user's file system at the right place and
-2- the checksum of the amqp message matched the one of the file.
-The default is True (overwrite without checking).
+L'option **discard**, si elle est réglée sur true, supprime le fichier une 
+fois téléchargé. Cette option peut être utile pour déboguer ou tester une
+configuration.
 
-The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
-usefull when debugging or testing a configuration.
+L'option **source_from_exchange** est principalement destinée aux administrateurs.
+Si les messages sont reçus directement d'une *source* de données, l'échange utilisé 
+peut être 'xs_<brokerSourceUsername>'. Un tel message peut manqué l´en-tête *from_cluster*, 
+ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
+Pour se protéger contre les deux problèmes, les administrateurs sélectionnent 
+l'option **source_from_exchange**.
 
-The **source_from_exchange** option is mainly for use by administrators.
-If messages is received posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
-Such message be missing a source from_cluster headings, or a malicious user may set the values incorrectly.
-To protect against malicious settings, administrators should set the **source_from_exchange** option.
+Lorsque l'option est définie, les valeurs du message pour les en-têtes *source* et *from_cluster* seront alors remplacées par::
 
-When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden.
-self.msg.headers['source']       = <brokerUser>
-self.msg.headers['from_cluster'] = cluster
+  self.msg.headers['source']       = <brokerUser>
+  self.msg.headers['from_cluster'] = cluster
 
-replacing any values present in the message. This setting should always be used when ingesting data from a
-user exchange. These fields are used to return reports to the origin of injected data.
-It is commonly combined with::
-
-       *mirror true*
-       *source_from_exchange true*
-       *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
-  
-To have data arrive in the standard format tree.
+--
 
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
@@ -896,12 +937,49 @@ the cache size limited. Different settings are appropriate for different use cas
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
 One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-**Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the 
-first time a posting is received, it could be picked by one instance, and if a duplicate one is received
-it would likely be picked up by another instance. **For effective duplicate suppression with instances**, 
-one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate 
-suppression turned off and output with *post_exchange_split*, which route posts by checksum to 
-a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
+
+remplacer toute valeur présente dans le message. Ce paramètre doit toujours 
+être utilisé lors de l'acquisition de données provenant d'un fichier échange 
+d'utilisateurs. Ces champs sont utilisés pour renvoyer les rapports à l'origine 
+des données injectées. Il est généralement combiné avec: :
+
+       *mirror true*
+       *source_from_exchange true*
+       *directory ${PBD}/${YYYYYYYMMDD}/${SOURCE}*
+  
+Pour que les données arrivent dans l'arbre de format standard.
+
+L'option **heartbeat** définit la fréquence d'exécution du traitement périodique 
+déterminé par la liste des plugins on_heartbeat. Par défaut, il imprime un message 
+de journal à chaque intervale.
+
+Lorsque **suppress_duplicates** (aussi **cache**) est mis à une valeur non nulle, 
+chaque nouveau message est comparé aux précédents reçus, pour voir s'il s'agit d'un 
+duplicata. Si le message est considéré comme un duplicata, il est sauté. Qu'est-ce 
+qu'un duplicata ? Un fichier portant le même nom (incluant en-tête des pièces) 
+et la somme de contrôle. Chaque intervalle *hearbeat*, un processus de nettoyage
+recherche les fichiers dans le répertoire qui n'ont pas été référencés dans 
+**cache** secondes, et les efface, afin de les conserver.  la taille du cache
+est limitée. Différents réglages sont appropriés pour différents cas d'utilisation.
+
+FIXME **L'utilisation du cache est incompatible avec la stratégie par défaut *blocksize 0*,**
+il faut préciser un stratégie alternative.  Il faut soit utiliser un bloc de
+taille fixe, ou ne jamais partitionner les fichiers *(blocksize 1.)*  Il faut éviter
+l'algorithme dynamique qui changera la taille de la partition utilisée au fur
+et à mesure que le fichier grandit.
+
+**la cache pour supprimer les doublons est local pour chaque instance.** Lorsque **N**
+instances partagent une file d'attente, la première fois qu'un message est reçu, il 
+pourrait être choisi par une instance, et si une copie est reçue, il est 
+probable qu'il sera pris en charge par une autre instance. Pour une suppression 
+efficace des doublons avec les instances**, il faut **déployer deux couches d'abonnés**. 
+Il faut une **première couche d'abonnés (sr_shovels)** avec suppression des doublons désactivée,
+et l´option *post_exchange_split* activé, ce qui route les messages aux instance
+selon leur checksum vers une **seconde couche de d´abonnés (sr_winnow) dont les 
+caches de suppression de doublons sont actives. 
+
+---
+
 
   
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery
@@ -930,521 +1008,605 @@ the checksums with MD5.   There are also cases, where, for various reasons, the 
 checksums are simply wrong, and should be overridden for downstream consumers.
 
 
-Delivery Completion 
--------------------
 
-Failing to properly set file completion protocols is a common source of intermittent and
-difficult to diagnose file transfer issues. For reliable file transfers, it is 
-critical that both the sender and receiver agree on how to represent a file that isn't complete.
-The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
-many protocols appropriate for different situations:
+Lorsque **kbytes_ps** est supérieur à 0, le processus tente de respecter cette limite de
+vitesse en kilo-octets par seconde... ftp,ftps,ou sftp)
+
+**FIXME** : kbytes_ps.... implémenté uniquement par l'expéditeur ? ou l'abonné également, uniquement les données, ou les messages également ?
+
+**default_mode, default_dir_mode, preserve_modes**,
+
+Les bits de permission sur les fichiers de destination écrits sont contrôlés 
+par les directives *preserve_mode*.  *preserve_modes* appliquera les permissions de 
+mode affichées par la source du fichier. Si aucun mode source n'est disponible, le 
+mode *default_mode* sera appliqué aux fichiers, et l'option *default_dir_dir_mode* sera 
+appliqué aux répertoires. Si aucune valeur par défaut n'est spécifiée, alors le 
+système d'exploitation par défaut (sur linux, contrôlé par les paramètres umask)
+déterminera les permissions de fichiers. (notez que l'option *chmod* est 
+interprétée comme un synonyme de *default_mode*, et *chmod_dir* est un 
+synonyme de *default_dir_mode*).
+
+Pour chaque téléchargement, la somme de contrôle est calculée lors du 
+transfert. Si **recompute_chksum** est réglé sur Vrai, et la somme de contrôle
+recalculée diffère de la somme de contrôle dans le message, la nouvelle 
+valeur écrasera celle du message amqp entrant. Ceci est utilisé lorsqu'un 
+fichier est extrait d'une source distante non sarracénienne, auquel cas un lieu
+la somme de contrôle du titulaire 0 est spécifiée. Dès réception, une somme 
+de contrôle appropriée devrait être placée dans le fichier pour les 
+consommateurs en aval. On peut également utiliser cette méthode pour 
+remplacer le choix de la somme de contrôle. Par exemple, les anciennes 
+versions de la sarracénie n'ont pas le support du hachage SHA-512, donc 
+on pourrait les remplacer par les sommes de contrôle avec MD5.   Il y a 
+aussi des cas où, pour diverses raisons, l'amont de l'activité de la Les 
+sommes de contrôle sont tout simplement erronées et devraient être 
+remplacées pour les consommateurs en aval.
+
+
+
+
+Assurer la livraison 
+--------------------
+
+Le fait de ne pas établir correctement les protocoles de complétion de fichiers est 
+une source commune d'incohérences intermittentes, difficile de diagnostiquer.
+Pour des transferts de fichiers fiables, Il est essentiel que l'expéditeur et 
+le destinataire s'entendent sur la façon de représenter un fichier qui n'est pas complet.
+L'option *inflight* (c'est-à-dire qu'un fichier est *en vol* entre l'expéditeur et
+le destinataire) s´offre pour accommoder différentes situations :
+
 
 +--------------------------------------------------------------------------------------------+
 |                                                                                            |
-|               Delivery Completion Protocols (in Order of Preference)                       |
+|            Protocoles d'assurance de la livraison (par ordre de préférence)                | 
 |                                                                                            |
 +-------------+---------------------------------------+--------------------------------------+
-| Method      | Description                           | Application                          |
+|Méthode      | Description                           | Application                          |
 +=============+=======================================+======================================+
-|             |File sent with right name              |Sending to Sarracenia, and            |
-|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_     |post only when file is complete       |
-|             |by AMQP after file is complete.        |                                      |
-|             |                                       |(Best when available)                 |
-|             | - fewer round trips (no renames)      | - Default on sr_sarra.               |
-|             | - least overhead / highest speed      | - Default on sr_subscribe and sender |
-|             |                                       |   when post_broker is set.           |
+|             |Fichier envoyé avec le bon nom         |Envoyer à Sarracénie, et              |
+| NONE        |message `sr_post(7) <sr_post.7.rst>`_  |publié quand le fichier est complet   |
+|             |AMQP après que le transfert.           |                                      |
+|             |                                       | (Meilleur quand disponible)          |
+|             | - moins d´aller-retours               | défaut pour sr_sarra.                |
+|             | - plus efficace / vite                | défaut sur sr_subscribe et sender    | 
+|             |                                       | quand post_broker est spécifié.      |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Files transferred with a *.tmp* suffix.|sending to most other systems         |
-| .tmp        |When complete, renamed without suffix. |(.tmp support built-in)               |
-| (Suffix)    |Actual suffix is settable.             |Use to send to Sundew                 |
+|             |avec un suffixe *.tmp*.                |Envoi à la plupart des autres systèmes|
+| .tmp        |Lorsqu'il est complet, renommé au fin  |(.tmp intégré)                        |
+| (Suffixe)   |Le suffixe réel est réglable.          |Utiliser pour envoyer à Sundew.       |
 |             |                                       |                                      |
-|             | - requires extra round trips for      |(usually a good choice)               |
-|             |   rename (a little slower)            | - default when no post broker set    |
+|             | -voyages aller-retour supplémentaires |(généralement un bon choix)           |
+|             |  pour renommer (un peu plus lent)     | - défaut quand il n´y a pas de       |
+|             |                                       |   post_broker                        | 
 +-------------+---------------------------------------+--------------------------------------+
-|             |Use Linux convention to *hide* files.  |Sending to systems that               |
-| .           |Prefix names with '.'                  |do not support suffix.                |
-| (Prefix)    |that need that. (compatibility)        |                                      |
-|             |same performance as Suffix method.     |sources.                              |
+|             |Fichier placés dans un sous-répertoire |Envoi à des systèmes qui n´acceptent  |
+| tmp/        |Déplacé au fin de transfert            |les suffixes                          |
+| (subdir)    |                                       |                                      | 
+|             |Même performance que Suffixe           |                                      |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Minimum age (modification time)        |Last choice, guarantees delay only if |
-|  number     |of the file before it is considered    |no other method works.                |
-|  (mtime)    |complete.                              |                                      |
-|             |                                       |Receiving from uncooperative          |
-|             |Adds delay in every transfer.          |sources.                              |
-|             |Vulnerable to network failures.        |                                      |
-|             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
+|             |la convention Linux pour *masquer* les |Envoi à des systèmes qui n´acceptent  |
+| .           |fichiers. renommé au fin de transfert  |les suffixes                          |
+| (Préfixe)   |Préfixer les noms par '.'              |                                      | 
+|             |Même performance que Suffixe           |                                      |
++-------------+---------------------------------------+--------------------------------------+
+|             |Âge minimum (temps de modification)    |Dernier choix, ne garantit un délai   |
+| entier      |du fichier avant que le transfer soit  |que si aucun autre moyen peut servir  |
+| (mtime)     |considéré Complèté.                    |                                      |
+|             |                                       |Réception de ceux qui ne coopèrent pas|
+|             | Retard des annonces                   |                                      |
+|             | Vulnérable aux pannes de réseau.      | (choix acceptable pour PDS)          |
+|             | vulnérable aux horloges en désaccord  |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 
-By default ( when no *inflight* option is given ), if the post_broker is set, then a value of NONE
-is used because it is assumed that it is delivering to another broker. If no post_broker
-is set, the value of '.tmp' is assumed as the best option.
+Par défaut ( quand aucune option *inflight* n'est donnée), si le post_broker est défini, 
+alors une valeur de NONE est utilisée parce qu'on suppose qu'elle est livrée à un autre 
+courtier. S´il n´y a pas de post_broker est définie, la valeur de '.tmp' est supposée être 
+la meilleure option.
 
-NOTES:
+NOTES :
  
-  On versions of sr_sender prior to 2.18, the default was NONE, but was documented as '.tmp'
-  To ensure compatibility with later versions, it is likely better to explicitly write
-  the *inflight* setting.
+  Sur les versions de sr_sender antérieures à 2.18, la valeur par défaut était AUCUNE, mais 
+  était documentée par '.tmp''. Pour assurer la compatibilité avec les versions ultérieures, 
+  il est probablement préférable d'écrire explicitement le réglage *inflight*. 
  
-  *inflight* was renamed from the old *lock* option in January 2017. For compatibility with
-  older versions, can use *lock*, but name is deprecated.
+  *inflight* a été renommé de l'ancienne option *lock* en janvier 2017. Pour la compatibilité avec
+  les versions plus anciennes, peuvent utiliser *lock*, mais le nom est obsolète.
   
-  The old *PDS* software (which predates MetPX Sundew) only supports FTP. The completion protocol 
-  used by *PDS* was to send the file with permission 000 initially, and then chmod it to a 
-  readable file. This cannot be implemented with SFTP protocol, and is not supported at all
-  by Sarracenia.
+  L'ancien logiciel *PDS* (qui précède MetPX Sundew) ne supporte que le FTP. Le protocole d'achèvement 
+  utilisé par *PDS* était d'envoyer le fichier avec la permission 000 dans un premier temps, puis chmod à un fichier 
+  fichier lisible. Ceci ne peut pas être implémenté avec le protocole SFTP, et n'est pas supporté du tout.
+  par Sarracénie.
 
+**Erreurs de configuration fréquentes:** 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Frequent Configuration Errors:**
+**Réglage de NONE lors de l'envoi à Sundew.**
 
-**Setting NONE when sending to Sundew.**
+   Le réglage correct ici est '.tmp'.  Sans cela, presque tous les fichiers passeront correctement,
+   mais les dossiers incomplets seront parfois ramassés par Sundew.  
 
-   The proper setting here is '.tmp'.  Without it, almost all files will get through correctly,
-   but incomplete files will occasionally picked up by Sundew.  
+**En utilisant la méthode mtime pour recevoir de Sundew ou Sarracenia**
 
-**Using mtime method to receive from Sundew or Sarracenia:**
-
-   Using mtime is last resort. This approach injects delay and should only be used when one 
-   has no influence to have the other end of the transfer use a better method. 
+   L'utilisation de mtime est le dernier recours. Cette approche injecte du retard 
+   et ne devrait être utilisée que lorsque l'un des éléments suivants n'a aucune influence 
+   pour que l'autre extrémité du transfert utilise une meilleure méthode. 
  
-   mtime is vulnerable to systems whose clocks differ (causing incomplete files to be picked up.)
-
-   mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a 
-   networking issue interrupting or delaying transfers. 
-
-
-**Setting NONE when delivering to non-Sarracenia destination.**
-
-   NONE is to be used when there is some other means to figure out if a file is delivered.
-   For example, when sending to another pump, the sender will inform the receiver that the
-   file is complete by posting the delivered file to that broker, so there is no danger
-   of it being picked up early.
-
-   When used in-appropriately, one will suffer occasionally incomplete files being
-   delivered.
+   mtime est vulnérable aux systèmes dont les horloges diffèrent (fichiers incomplets).
+   mtime est vulnérable aux transferts lents, où les fichiers incomplets peuvent être 
+   ramassés à cause d'un problème de réseautage interrompant ou retardant les transferts. 
 
 
+- ** NONE lors de la livraison à une destination autre que Sarracénie **
+
+   NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
+   est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
+   le destinataire que l'appareil est en mode le fichier est complet en affichant le
+   fichier livré à ce courtier, il n'y a donc aucun danger d'être ramassé trop tôt.
+
+   Lorsqu'il est mal-utilisé, il arrive que des fichiers incomplets soient traitée 
+   par la réception.
+   
 
 
+TRAITEMENT PÉRIODIQUE
+=====================
+
+La plupart des traitements ont lieu à la réception d'un message, mais il y a aussi
+un traitement périodique, du travail qui se produit à chaque *battement de coeur* (par 
+défaut est de 5 minutes.) Chaque *heartbeat*, tous les les *plugins* 
+configurés *on_heartbeat* sont exécutés. Par défaut, il y en a trois :
+
+ heartbeat_log - imprime "heartbeat" dans le journal.
+ heartbeat_cache - vieillit par rapport aux anciennes entrées dans le cache, afin de minimiser sa taille.
+ heartbeat_memory - vérifie l'utilisation de la mémoire de processus, et redémarre si elle est trop grande.
+ heartbeat_pulse - confirme que la connectivité avec les courtiers est toujours bonne. Restauration si nécessaire.
+
+Le journal contiendra les messages des trois plugins à chaque intervalle de battement de coeur, 
+et si un traitement périodique supplémentaire est nécessaire, l'utilisateur peut ajouter davantage
+de *plugins* à executer avec l'option *on_heartbeat*. 
 
 
-PERIODIC PROCESSING
-===================
+REPRISE EN CAS D´ERREUR
+=======================
 
-Most processing occurs on receipt of a message, but there is some periodic maintenance
-work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
-configured *on_heartbeat* plugins are run. By default there are three present:
-
- * heartbeat_log - prints "heartbeat" in the log.
- * heartbeat_cache - ages out old entries in the cache, to minimize its size.
- * heartbeat_memory - checks the process memory usage, and restart if too big.
- * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
-
-The log will contain messages from all three plugins every heartbeat interval, and
-if additional periodic processing is needed, the user can add configure addition
-plugins to run with the *on_heartbeat* option. 
-
-ERROR RECOVERY
-==============
-
-The tools are meant to work well un-attended, and so when transient errors occur, they do
-their best to recover elegantly.  There are timeouts on all operations, and when a failure
-is detected, the problem is noted for retry.  Errors can happen at many times:
+Les outils sont conçus pour bien fonctionner sans surveillance, et lorsque des 
+erreurs transitoires se produisent, l´application fait de leur mieux pour se rétablir les flots.
+Il y a des délais d'attente sur toutes les opérations, et lorsqu'une panne est détecté, 
+le problème est noté pour réessayer. Des erreurs peuvent se produire à plusieurs reprises :
  
- * Establishing a connection to the broker.
- * losing a connection to the broker
- * establishing a connection to the file server for a file (for download or upload.)
- * losing a connection to the server.
- * during data transfer.
+ * Établissement d'un lien avec le courtier.
+ * la perte d'une connexion avec le courtier
+ * l'établissement d'une connexion au serveur de fichiers pour un fichier (à télécharger ou à télécharger.)
+ * perte d'une connexion au serveur.
+ * pendant le transfert de données.
  
-Initially, the programs try to download (or send) a file a fixed number (*attempts*, default: 3) times.
-If all three attempts to process the file are unsuccessful, then the file is placed in an instance's
-retry file. The program then continues processing of new items. When there are no new items to
-process, the program looks for a file to process in the retry queue. It then checks if the file
-is so old that it is beyond the *retry_expire* (default: 2 days.) If the file is not expired, then
-it triggers a new round of attempts at processing the file. If the attempts fail, it goes back
-on the retry queue.
+Initialement, les programmes essaient de télécharger (ou d'envoyer) un fichier un 
+nombre fixe (*attempts*, par défaut : 3) fois.  Si les trois tentatives de traitement du 
+fichier échouent, le fichier est placé dans le fichier de réessai d'une instance.
+Le programme poursuit ensuite le traitement des nouveaux postes. Lorsqu'il n'y a pas de 
+nouveaux transfers en attente, le programme recherche un fichier à traiter dans la 
+file d'attente de réessai. Il vérifie ensuite si le fichier est si vieux qu'il est 
+au-delà de la *retry_expire* (par défaut : 2 jours.) Si le fichier n'est pas expiré, 
+alors il déclenche une nouvelle série de tentatives de traitement du dossier. Si 
+les tentatives échouent, il reste dans la file d'attente de réessai.
 
-This algorithm ensures that programs do not get stuck on a single bad product that prevents
-the rest of the queue from being processed, and allows for reasonable, gradual recovery of 
-service, allowing fresh data to flow preferentially, and sending old data opportunistically
-when there are gaps.
+Cet algorithme garantit que les programmes ne sont pas bloqués sur un seul mauvais 
+produit qui empêche le reste de la file d'attente et permet une récupération 
+raisonnable et graduelle de l'ensemble de la file d'attente permettant la circulation 
+préférentielle de données fraîches et l'envoi opportuniste d'anciennes données.
+lorsqu'il y a des lacunes.
 
-While fast processing of good data is very desirable, it is important to slow down when errors
-start occurring. Often errors are load related, and retrying quickly will just make it worse.
-Sarracenia uses exponential back-off in many points to avoid overloading a server when there
-are errors. The back-off can accumulate to the point where retries could be separated by a minute
-or two. Once the server begins responding normally again, the programs will return to normal
-processing speed.
+Bien qu'un traitement rapide de bonnes données soit très souhaitable, il est important 
+de ralentir lorsque des erreurs se produisent.  Souvent, les erreurs sont liées à la 
+charge, et le fait de réessayer rapidement ne fera qu'empirer les choses.  Sarracenia 
+utilise un *exponentiel back-off* en de nombreux points pour éviter la surcharge d'un 
+serveur lorsqu'il y a des erreurs. Le back-off peut s'accumuler jusqu'au point où les 
+tentatives pourraient être séparées par une minute ou deux. Une fois que le serveur 
+recommence à répondre normalement, les programmes reviendront à la vitesse normale
+de traitement.
 
 
 EXAMPLES
 ========
 
-Here is a short complete example configuration file:: 
+Voici un court exemple complet de fichier de configuration:: 
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqp://dd.weather.gc.gc.ca/
 
-  subtopic model_gem_global.25km.grib2.#
+  subtopic model_gem_global.25km.grib2.#.
   accept .*
 
-This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
-files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
-All files which arrive in that directory or below it will be downloaded 
-into the current directory (or just printed to standard output if -n option 
-was specified.) 
+Le fichier ci-dessus se connectera au courtier dd.weather.gc.ca, en tant que
+*anonymous* avec mot de passe *anonymous* (par défaut) pour obtenir des 
+annonces à propos de dans le répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
+Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés. 
+dans le répertoire courant (ou simplement imprimé sur la sortie standard si l'option -n). 
+a été spécifié.) 
 
-A variety of example configuration files are available here:
+Une variété d'exemples de fichiers de configuration sont disponibles ici :
 
  `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
 
 
+QUEUES - FILES D´ATTENTES et EXECUTION MULTIPLE
+===============================================
 
-QUEUES and MULTIPLE STREAMS
-===========================
+Lorsqu'il est exécuté, **sr_subscribe** choisit un nom de file d'attente qu'il écrit
+à un fichier nommé d'après le fichier de configuration donné en argument à sr_subscribe****.
+avec un suffixe.queue ( ."nom de configuration".queue). 
+Si sr_subscribe est arrêté, les messages affichés continuent de s'accumuler sur 
+le courtier dans cette file d'attente (jusqu´a son *expire* -ation).  Lorsque le 
+programme est redémarré, il utilise le nom de la file d'attente stocké dans ce 
+fichier pour se connecter à la même file d'attente et ne pas perdre de messages.
 
-When executed,  **sr_subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to sr_subscribe**
-with a .queue suffix ( ."configfile".queue). 
-If sr_subscribe is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, it uses the queuename 
-stored in that file to connect to the same queue, and not lose any messages.
+Les téléchargements de fichiers peuvent être mis en parallèle en exécutant plusieurs 
+processus sr_subscribe qui partageront la file d'attente, et chacun s´occupera d´une
+fraction du travail à faire.  Lancez simplement plusieurs instances de sr_subscribe 
+dans le même utilisateur/répertoire en utilisant le même fichier de configuration, 
 
-File downloads can be parallelized by running multiple sr_subscribes using
-the same queue.  The processes will share the queue and each download 
-part of what has been selected.  Simply launch multiple instances
-of sr_subscribe in the same user/directory using the same configuration file, 
+Vous pouvez également exécuter plusieurs sr_subscribe avec différents fichiers 
+de configuration pour avoir plusieurs flux de téléchargements ciblant le même répertoire,
+et chaque flux de téléchargement peut utliser l´éxecution multiple.
 
-You can also run several sr_subscribe with different configuration files to
-have multiple download streams delivering into the the same directory,
-and that download stream can be multi-streamed as well.
+.. Note: :
 
-.. Note::
-
-  While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not accessed for 
-  a long (implementation dependent) period will be destroyed.  A queue which is not
-  accessed and has too many (implementation defined) files queued will be destroyed.
-  Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.
+  Tandis que les courtiers gardent les files d'attente disponibles pendant un 
+  certain temps, les files d'attente prennent les ressources suivantes et sont nettoyés 
+  de temps à autre. Une file d'attente à laquelle on n'accède pas pour une longue 
+  période (dépendant de la mise en œuvre) sera détruite. Une file d'attente qui 
+  n'est pas accédé et a trop de fichiers (définis par l'implémentation) mis en 
+  file d'attente seront détruits. Les processus qui meurent devraient être 
+  redémarrés dans un délai raisonnable afin d'éviter la perte de notifications.
+  Il faut aussi porter attention à l´option *expire*.
 
 
-REPORTING
+RAPPORTS
+========
+
+Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
+Ceci est fait avec l'option :
+
+report_back <boolean> (par défaut : True)**. 
+rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )****.
+
+Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
+les composants administratifs publient directement sur *xreport*, tandis que les 
+composants utilisateur postent sur leur propre compte. Les démons de rapport
+copient ensuite les messages dans *xreport* après validation.
+
+Ces rapports sont utilisés pour le réglage de la livraison et pour les sources 
+de données afin de générer des informations statistiques. Régler cette option à **Faux**, 
+pour empêcher la génération de rapports. 
+
+
+JOURNEAUX
 =========
 
-For each download, by default, an amqp report message is sent back to the broker.
-This is done with option :
+Les composants écrivent dans des fichiers journaux qui se trouvent par 
+défaut dans ~/.cache/sarra/var/log/<component>_<config>_<config>_<instance>.log.
+à la fin de la journée, ces journaux sont tournés automatiquement 
+par les composants, et l'ancien journal obtient un suffixe de date.
+Le répertoire dans lequel les logs sont stockés peut être écrasé par 
+l'option **log**, et le nombre de logs de jours à conserver est défini par le paramètre *logrotate*.  
+Les fichiers journaux dont l´age est supérieure à **logrotate** sont 
+supprimés.  Une durée prend un suffixe d'unité de temps, tel que'd' pour 
+les jours,'w' pour les semaines ou'h' pour les heures.
 
-- **report_back <boolean>        (default: True)** 
-- **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
+- L'option de débogage **debug** est identique à l'utilisation **loglevel debug**.
 
-When a report is generated, it is sent to the configured *report_exchange*. Administrive
-components post directly to *xreport*, whereas user components post to their own 
-exchanges (xs_*username*.) The report daemons then copy the messages to *xreport* after validation.
+- **Log** le répertoire ou les fichiers journaux seront placés.  Valeur par défaut : ~/.cache/sarra/var/log (sous Linux)
 
-These reports are used for delivery tuning and for data sources to generate statistical information.
-Set this option to **False**, to prevent generation of reports for this usage.
+- **logrotate** combien de temps garder les logs en ligne, généralement exprimée en jours (par défaut : 5d).
 
+- **loglevel** le niveau de journalisation exprimé par la journalisation de python.
+               les valeurs possibles sont : critical, error, info, warning, debug.
 
+- **Chmod_log** les bits de permission à mettre sur les fichiers journaux (par défaut 0600).
 
-LOGS
-====
-
-Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
-at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
-The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep
-is set by the 'logrotate' parameter.  Log files older than **logrotate** duration are deleted.  A duration takes a time unit suffix, such as 'd' for days, 'w' for weeks, or 'h' for hours.
-
-- **debug**  setting option debug is identical to use  **loglevel debug**
-
-- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
-
-- **logrotate** duration to keep logs online, usually expressed in days ( default: 5d )
-
-- **loglevel** the level of logging as expressed by python's logging.
-               possible values are :  critical, error, info, warning, debug.
-
-- **chmod_log** the permission bits to set on log files (default 0600 )
-
-placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
+le placement est conforme à : XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) définissant la variable d'environnement XDG_CACHE_HOME.
 
 
 INSTANCES
 =========
 
-Sometimes one instance of a component and configuration is not enough to process & send all available notifications.
+Parfois, une seule instance d'un composant et d'une configuration n'est pas suffisante pour 
+traiter et envoyer toutes les notifications disponibles.
 
-**instances      <integer>     (default:1)**
+(par défaut : 1)**instances <entier> (par défaut : 1)**.
 
-The instance option allows launching serveral instances of a component and configuration.
-When running sr_sender for example, a number of runtime files that are created.
-In the ~/.cache/sarra/sender/configName directory::
+L'option instance permet de lancer plusieurs instances d'un composant et d'une configuration.
+Lors de l'exécution de sr_sender par exemple, un certain nombre de fichiers d'exécution qui sont créés.
+Dans le répertoire ~/.cache/sarra/sarra/sender/configName: :
 
-  A .sr_sender_configname.state         is created, containing the number instances.
-  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  Un .sr_sender_configfigname.state est créé, contenant le nombre d'instances.
+  Un .sr_sender_configuration_$instance.pid est créé, contenant le processus PID de $instance.
 
-In directory ~/.cache/sarra/var/log::
+Dans le répertoire ~/.cache/sarra/var/log: :
 
-  A .sr_sender_configname_$instance.log  is created as a log of $instance process.
+  Un fichier.sr_sender_configuration_$instance.log est créé en tant que journal du processus $instance.
 
-The logs can be written in another directory than the default one with option :
+Les logs peuvent être écrits dans un autre répertoire que celui par défaut avec l'option :
 
-**log            <directory logpath>  (default:~/.cache/sarra/var/log)**
+Log <répertoire logpath> (par défaut : ~/.cache/sarra/var/log)**.
 
-.. note::  
-  FIXME: indicate windows location also... dot files on windows?
+... note: :  
+  CORRECTIF : indiquer l'emplacement des fenêtres aussi.... fichiers de points sur les fenêtres ?
 
-
-.. Note::
-
-  While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not
-  accessed and has too many (implementation defined) files queued will be destroyed.
-  Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.  A queue which is not accessed for a long (implementation dependent)
-  period will be destroyed. 
 
 .. Note::
-   FIXME  The last sentence is not really right...sr_audit does track the queues'age... 
-          sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
-          
 
-ACTIVE/PASSIVE OPTIONS
+  Tandis que les courtiers gardent les files d'attente disponibles pendant un 
+  certain temps, les files d'attente prennent les ressources suivantes 
+  et sont nettoyés de temps à autre.  Une file d'attente qui n'est pas
+  accédé et a trop de fichiers (définis par l'implémentation) mis en file d'attente seront détruits.
+  Les processus qui meurent devraient être redémarrés dans un délai raisonnable afin d'éviter
+  la perte de notifications.  Une file d'attente qui n'est pas accessible pendant une longue période (dépendant de l'implémentation).
+  la période sera détruite. 
+
+.. Note::
+   FIXME La dernière phrase n'est pas vraiment correcte. 
+    sr_audit agit lorsqu'une file d'attente atteint la taille max_queue_size et ne s'exécute pas.
+
+
+
+OPTIONS ACTIVE/PASSIVE 
 ----------------------
 
-**sr_subscribe** can be used on a single server node, or multiple nodes
-could share responsibility. Some other, separately configured, high availability
-software presents a **vip** (virtual ip) on the active server. Should
-the server go down, the **vip** is moved on another server.
-Both servers would run **sr_subscribe**. It is for that reason that the
-following options were implemented:
+sr_subscribe** peut être utilisé sur un seul nœud de serveur ou sur plusieurs nœuds.
+pourrait partager la responsabilité. D'autres, configurés séparément, haute disponibilité
+présente un **vip** (ip virtuel) sur le serveur actif. Devrait
+le serveur tombe en panne, le **vip** est déplacé sur un autre serveur.
+Les deux serveurs fonctionneraient **sr_subscribe**. Les options suivants contrôle
+de genre de comportement:
 
- - **vip          <string>          (None)**
+ - **vip <cordes> (Aucune)**.
 
-When you run only one **sr_subscribe** on one server, these options are not set,
-and sr_subscribe will run in 'standalone mode'.
+Lorsque vous n'exécutez qu'un seul **sr_subscribe** sur un serveur, ces options ne 
+sont pas définies et sr_subscribe fonctionnera en mode 'standalone'.
 
-In the case of clustered brokers, you would set the options for the
-moving vip.
+Dans le cas des courtiers en grappe, vous devez définir les options pour l'option
+vip en mouvement.
 
-**vip 153.14.126.3**
+**vip 153.14.126.126.3****
 
-When **sr_subscribe** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and process a message and than rechecks for the vip.
+Lorsque **sr_subscribe** ne trouve pas le vip, il dort pendant 5 secondes et réessaie.
+S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
 
 
-POSTING OPTIONS
-===============
 
-When advertising files downloaded for downstream consumers, one must set 
-the rabbitmq configuration for an output broker.
 
-The post_broker option sets all the credential information to connect to the
-  output **RabbitMQ** server
+OPTIONS DE PUBLICATION
+======================
 
-**post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+Lorsque des fichiers publicitaires sont téléchargés pour les consommateurs en aval, 
+il faut paramétrer la configuration rabbitmq pour un courtier de sortie.
 
-Once connected to the source AMQP broker, the program builds notifications after
-the download of a file has occured. To build the notification and send it to
-the next hop broker, the user sets these options :
+L'option **post_broker** définit toutes les informations d'authentification 
+pour se connecter à courtier sortie **AMQP**.
 
- - **[--blocksize <value>]            (default: 0 (auto))**
- - **[--outlet <post|json|url>]            (default: post)**
- - **[-pbd|--post_base_dir <path>]     (optional)**
- - **post_exchange     <name>         (default: xpublic)**
- - **post_exchange_split   <number>   (default: 0)**
+amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>*****.
+
+Une fois connecté au courtier AMQP source, le programme construit des notifications après que
+le téléchargement d'un fichier a eu lieu. Pour construire la notification et l'envoyer à
+le courtier suivant, l'utilisateur définit les options suivantes :
+
+ - **[--blocksize <valeur>]            (défaut: 0 (auto))**
+ - **[--outlet <post|json|url>]            (défaut: post)**
+ - **[-pbd|--post_base_dir <path>]     (optionelle)**
+ - **post_exchange     <name>         (défaut: xpublic)**
+ - **post_exchange_split   <number>   (défaut: 0)**
  - **post_url          <url>          (MANDATORY)**
- - **on_post           <script>       (default: None)**
+ - **on_post           <script>       (défaut: None)**
 
+L´option **blocksize** contrôle la stratégie de partitionnement utilisée pour poster des fichiers.
+la valeur doit être l'une des valeurs suivantes: :
 
-This **blocksize** option controls the partitioning strategy used to post files.
-the value should be one of::
+   0 - calcul automatique d'une stratégie de partitionnement appropriée (par défaut)
+   1 - toujours envoyer des fichiers entiers en une seule partie.
+   <taille du bloc> - utilisation d'une taille de partition fixe (exemple : 1M)
 
-   0 - autocompute an appropriate partitioning strategy (default)
-   1 - always send entire files in a single part.
-   <blocksize> - used a fixed partition size (example size: 1M )
+Les fichiers peuvent être annoncés comme plusieurs parties.  Chaque partie 
+a une somme de contrôle séparée. Les pièces et leurs sommes de contrôle sont 
+stockées dans le cache. Les cloisons peuvent traverser le réseau séparément, 
+et en parallèle.  Lorsque les fichiers changent, les transferts sont 
+optimisé en n'envoyant que des portions qui ont changé.
 
-Files can be announced as multiple parts.  Each part has a separate checksum.
-The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in paralllel.  When files change, transfers are
-optimized by only sending parts which have changed.
+L'option *outlet*, implémentée uniquement dans *sr_cpump*, permet la sortie finale.
+d'être autre chose qu'un message AMQP.  Voir `sr_cpump(1) <sr_cpump.1.rst>`_ pour 
+plus de détails.
 
-The *outlet* option, implemented only in *sr_cpump*, allows the final output
-to be other than a post.  See `sr_cpump(1) <sr_cpump.rst>`_ for details.
+L'option *post_base_dir* fournit le chemin du répertoire qui, lorsqu'il est 
+combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local 
+vers le fichier de données à enregistrer. La partie racine du chemin sera 
+supprimée de l'annonce postée. Pour sftp : url's il peut être approprié de 
+spécifier un chemin relatif à un compte utilisateur.
+Un exemple de cette utilisation serait :  -pdr ~user -url sftp:user@host
+pour file : url's, base_dir n'est généralement pas approprié.  Pour afficher un chemin absolu,
+omettez le paramètre -dr, et spécifiez simplement le chemin complet en argument.
 
-The *post_base_dir* option supplies the directory path that, when combined (or found) 
-in the given *path*, gives the local absolute path to the data file to be posted.
-The post document root part of the path will be removed from the posted announcement.
-for sftp: url's it can be appropriate to specify a path relative to a user account.
-Example of that usage would be:  -pdr ~user  -url sftp:user@host
-for file: url's, base_dir is usually not appropriate.  To post an absolute path,
-omit the -dr setting, and just specify the complete path as an argument.
+L'option **url** définit comment obtenir le fichier.... il définit le protocole,
+hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne pas
+notifier les pouvoirs et informer séparément les consommateurs à ce sujet.
 
-The **url** option sets how to get the file... it defines the protocol,
-host, port, and optionally, the user.  It is a good practice not to
-notify the credentials and separately inform the consumers about it.
+L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
+sera affiché.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 
-The **post_exchange** option set under which exchange the new notification
-will be posted.  Im most cases it is 'xpublic'.
+Chaque fois qu'une publication se produit pour un produit, un utilisateur peut 
+définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
+une telle configuration.
 
-Whenever a publish happens for a product, a user can set to trigger a script.
-The option **on_post** would be used to do such a setup.
-
-The **post_exchange_split** option appends a two digit suffix resulting from 
-hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
-instanced in the normal way.  example::
+L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant de la 
+formule suivante hashing the last character of the checksum to the post_exchange name,
+afin de répartir la production entre un certain nombre d'échanges.  C'est ce qui 
+est actuellement utilisé dans les pompes à trafic élevé pour permettre des instances 
+multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple: :
 
     post_exchange_split 5
     post_exchange xwinnow
+
+
+se traduira par l'envoi de messages à cinq bourses nommées xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 et xwinnow04, où chaque bourse ne recevra qu'un cinquième de ce montant.
+du flux total.
 
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
 
-Remote Configurations
----------------------
 
-One can specify URI's as configuration files, rather than local files. Example:
+Configurations à distance
+-------------------------
 
-  - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
+On peut spécifier des URI comme fichiers de configuration, plutôt que des fichiers locaux. Exemple :
 
-On startup, sr_subscribe check if the local file cap.conf exists in the 
-local configuration directory.  If it does, then the file will be read to find
-a line like so:
+  - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf*****.
 
-  - **--remote_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf**
+Au démarrage, sr_subscribe vérifie si le fichier local cap.conf existe dans le répertoire 
+répertoire de configuration local.  Si c'est le cas, alors le fichier sera lu pour trouver
+une ligne comme ça :
 
-In which case, it will check the remote URL and compare the modification time
-of the remote file against the local one. The remote file is not newer, or cannot
-be reached, then the component will continue with the local file.
+  **--remote_config_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf*****.
 
-If either the remote file is newer, or there is no local file, it will be downloaded, 
-and the remote_config_url line will be prepended to it, so that it will continue 
-to self-update in future.
+Dans ce cas, il vérifiera l'URL distante et comparera le temps de modification.
+du fichier distant contre le fichier local. Le fichier distant n'est pas plus récent ou ne peut pas être modifié.
+est atteint, alors le composant continuera avec le fichier local.
+
+Si le fichier distant est plus récent ou s'il n'y a pas de fichier local, il sera téléchargé, 
+et la ligne remote_config_url_config_url y sera pré-pendue, de façon à ce qu'elle continue 
+pour se mettre à jour à l'avenir.
 
 
-ROUTING
+POMPAGE
 =======
 
-*This is of interest to administrators only*
+*Ceci n'intéresse que les administrateurs*.
 
-Sources of data need to indicate the clusters to which they would like data to be delivered.
-Routing is implemented by administrators, and refers copying data between pumps. Routing is
-accomplished using on_message plugins which are provided with the package.
+Les sources de données peuvent indiquer les grappes auxquelles elles aimeraient que les 
+données soient envoyées. Le pompage est implanté par les administrateurs quand ils
+arrange pour la copie de données entre des pompes. C´est accompli par moyen des 
+plugins on_message qui sont fournis avec le paquet.
 
-when messages are posted, if not destination is specified, the delivery is assumed to be 
-only the pump itself.  To specify the further destination pumps for a file, sources use 
-the *to* option on the post.  This option sets the to_clusters field for interpretation 
-by administrators.
+lorsque les messages sont affichés, si aucune destination n'est spécifiée, la 
+livraison est présumée être seulement la pompe elle-même.  Pour spécifier les 
+pompes de destination supplémentaires pour un fichier, les sources utilisent la 
+commande l'option *to* quand on publie.  Cette option définit le champ 
+to_clusters pour l'interprétation par les administrateurs de pompes en aval.
 
-Data pumps, when ingesting data from other pumps (using shovel, subscribe or sarra components)
-should include the *msg_to_clusters* plugin and specify the clusters which are reachable from
-the local pump, which should have the data copied to the local pump, for further dissemination.
-sample settings::
+Les Pompes de données, lors de l'acquisition de données provenant d'autres 
+pompes (en utilisant une pelle, un subscribe ou un sarra) devrait inclure le 
+plugin *msg_to_clusters* et spécifier les clusters qui sont accessibles à partir 
+de la pompe locale, dont les données devraient être copiées dans la pompe 
+locale, en vue d'une diffusion ultérieure.
+réglages de l'échantillon: :
 
   msg_to_clusters DDI
   msg_to_clusters DD
 
   on_message msg_to_clusters
 
-Given this example, the local pump (called DDI) would select messages destined for the DD or DDI clusters,
-and reject those for DDSR, which isn't in the list.  This implies that there DD pump may flow
-messages to the DD pump.
+Dans cet exemple, la pompe locale (appelée DDI) sélectionnerait les messages 
+destinés aux clusters DD ou DDI, et les rejeter pour le DDSR, qui n'est pas 
+dans la liste.  Cela implique que les données destinée au grappe DDI ou bien DD
+devraient être accepter.
 
-The above takes care of forward routing of messages and data to data consumers.  Once consumers
-obtain data, they generate reports, and those reports need to propagate in the opposite direction,
-not necessarily by the same route, back to the sources.  report routing is done using the *from_cluster*
-header.  Again, this defaults to the pump where the data is injected, but may be overridden by
-administrator action.
+Ce qui précède s'occupe de l'acheminement des messages et des données vers 
+les consommateurs de données.  Une fois que les consommateurs ont obtenus les données, 
+ils génèrent des rapports, et ces rapports se propagent dans la direction opposée,
+pas nécessairement par le même itinéraire, retour aux sources. Le routage des 
+rapports se fait à l'aide de la fonction *from_cluster*.  en-tête.  Encore une 
+fois, cette valeur par défaut est celle de la pompe où les données sont 
+injectées, mais peut être remplacée par action de l'administrateur.
 
-Administrators configure report routing shovels using the msg_from_cluster plugin. Example::
+Les administrateurs configurent les pelles de routage de rapports à l'aide
+du plugin msg_from_cluster. Exemple::
 
   msg_from_cluster DDI
   msg_from_cluster DD
 
-  on_message msg_from_cluster
+  on_message msg_from_cluster_cluster
 
-so that report routing shovels will obtain messages from downstream consumers and make
-them available to upstream sources.
+afin que le rapport d'acheminement des pelles obtienne des messages de la
+part des consommateurs en aval et qu'il fasse à la disposition des sources en amont.
 
-
-PLUGIN SCRIPTS
+SCRIPTS PLUGIN
 ==============
 
-One can override or add functionality with python plugins scripts.
-Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
-such as logging (implemented by default use of msg_log, file_log, post_log plugins. )
+On peut remplacer ou ajouter des fonctionnalités avec des scripts de plugins python.
+Sarracenia est livré avec une variété de plugins d'exemple, et en utilise certains 
+pour implémenter les fonctionnalités de base comme les fichiers journeaux (implémenté 
+par défaut en utilisant msg_log, file_log, post_log, post_log plugins. ).
 
-Users can place their own scripts in the script sub-directory
-of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
+Les utilisateurs peuvent placer leurs propres scripts dans le sous-répertoire script.
+de leur arborescence de répertoire de configuration ( sous Linux, le ~/.config/sarra/plugins.) 
 
-There are three varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
-to implement functions, adding or replacing built-in functionality, for example, to implement
-additional transfer protocols.
+Il y a deux variétés de scripts : do\_* et on\_*.  Les scripts Do\_* sont utilisés
+pour remplacer des fonctions, en ajoutant ou en remplaçant des fonctionnalités intégrées, 
+par exemple pour mettre en œuvre des protocoles de transfert supplémentaires.
 
-- do_download - to implement additional download protocols.
+do_download - pour implémenter des protocoles de téléchargement supplémentaires.
 
-- do_get  - under ftp/ftps/http/sftp implement the get file part of the download process
+do_get - sous ftp/ftps/http/sftp, implémenter la partie get file du processus de téléchargement.
 
-- do_poll - to implement additional polling protocols and processes.
+do_poll - do_poll - pour mettre en œuvre des protocoles et des processus d'interrogation supplémentaires.
 
-- do_put  - under ftp/ftps/http/sftp implement the put file part of the send process
+do_put - sous ftp/ftps/http/sftp implémenter la partie fichier put du processus d'envoi.
 
-- do_send - to implement additional sending protocols and processes.
+do_send - pour mettre en œuvre des protocoles et processus d'envoi supplémentaires.
 
-These transfer protocol scripts should be declared using the **plugin** option.
-Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that theses functions supports.  Exemple :
+Ces scripts de protocole de transfert doivent être déclarés à l'aide de l'option **plugin**.
+En plus de la ou des fonctions intégrées ciblées, un module **registered_as** qui définit
+une liste des protocoles pris en charge par ces fonctions.  Exemple :
 
 def registered_as(self) :
-       return ['ftp','ftps']
+       return ['ftp','ftps']].
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
-than for any download of a message with an ftp or ftps url, it is that function that would be called.
+Enregistrer de cette façon un plugin, si la fonction **do_download** a été fournie dans ce plugin.
+que pour tout téléchargement d'un message avec une url ftp ou ftps, c'est cette fonction qui serait appelée.
+
+Les plugins On\_* sont utilisés plus souvent. Ils permettent d'insérer des actions pour 
+augmenter la valeur par défaut. Pour divers cas d'utilisation spécialisée. Les scripts 
+sont invoqués en ayant une valeur de spécifie une option on_<event>. L'événement peut être 
+l'un des :
+
+- plugin -- declarer un ensemble plugins pour réaliser une fonction collective.
+
+- on_file -- Lorsque la réception d'un fichier est terminée, déclencher une action de suivi.
+  L'option **on_file** est par défaut file_log, qui écrit un message d'état de téléchargement.
+
+- on_heartbeat -- déclenche une action de suivi périodique (toutes les *heartbeat* secondes).
+  par défaut à heatbeat_cache, et heartbeat_log. heartbeat_cache nettoie le cache périodiquement,
+  et heartbeat_log imprime un message de journal (utile pour détecter la différence entre les problèmes).
+  et l'inactivité. ) 
+
+- on_html_page -- Dans **sr_poll**, transforme une page html en un dictionnaire python utilisé pour garder à l'esprit les éléments suivants
+  les fichiers déjà publiés. Le paquet fournit un exemple de fonctionnement sous plugins/html_page.py.
+
+- on_line -- Dans **sr_poll**, une ligne du ls de l'hôte distant est lue.
+
+- on_message -- quand un message sr_post(7) a été reçu.  Par exemple, un message a été reçu.
+  et d'autres critères sont en cours d'évaluation pour le téléchargement du fichier correspondant. si la commande on_msg
+  retourne false, alors il n'est pas téléchargé.  (voir, par exemple, Discard_when_lagging.py,
+  qui décide que des données trop anciennes ne valent pas la peine d'être téléchargées).
+
+- on_part -- Les transferts de fichiers volumineux sont divisés en plusieurs parties.  Chaque pièce est transférée séparément.
+  Lorsqu'une pièce terminée est reçue, on peut spécifier un traitement supplémentaire.
+
+- on_post -- lorsqu'une source de données (ou sarra) est sur le point d'envoyer un message, autorisez la personnalisation du message.
+  Ajustements du message. on_part a aussi pour valeur par défaut post_log, qui imprime un message.
+  chaque fois qu'un fichier doit être publié.
+
+- on_start - on_start -- s'exécute au démarrage, pour quand un plugin a besoin de récupérer son état.
+
+- on_stop -- s'exécute au démarrage, pour quand un plugin a besoin d'enregistrer l'état.
+
+- on_watch -- lorsque le rassemblement des événements **sr_watch** commence, le plugin on_watch est invoqué.
+  Il pourrait être utilisé
+  Il pourrait être utilisé pour mettre un fichier dans un des répertoires de surveillance 
+  et le faire publier quand c'est nécessaire.
 
 
-On\_* plugins are used more often. They allow actions to be inserted to augment the default
-processing for various specialized use cases. The scripts are invoked by having a given
-configuration file specify an on_<event> option. The event can be one of:
-
-- plugin -- declare a set of plugins to achieve a collective function.
-
-- on_file -- When the reception of a file has been completed, trigger followup action.
-  The **on_file** option defaults to file_log, which writes a downloading status message.
-
-- on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
-  defaults to heatbeat_cache, and heartbeat_log.  heartbeat_cache cleans the cache periodically,
-  and heartbeat_log prints a log message ( helpful in detecting the difference between problems
-  and inactivity. ) 
-
-- on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
-  the files already published. The package provide a working example under plugins/html_page.py.
-
-- on_line -- In **sr_poll** a line from the ls on the remote host is read in.
-
-- on_message -- when an sr_post(7) message has been received.  For example, a message has been received
-  and additional criteria are being evaluated for download of the corresponding file.  if the on_msg
-  script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
-  which decides that data that is too old is not worth downloading.)
-
-- on_part -- Large file transfers are split into parts.  Each part is transferred separately.
-  When a completed part is received, one can specify additional processing.
-
-- on_post -- when a data source (or sarra) is about to post a message, permit customized
-  adjustments of the post. on_part also defaults to post_log, which prints a message
-  whenever a file is to be posted.
-
-- on_start -- runs on startup, for when a plugin needs to recover state.
-
-- on_stop -- runs on startup, for when a plugin needs to save state.
-
-- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
-  It could be used to put a file in one of the watch directory and have it published when needed.
 
 
-The simplest example of a plugin: A do_nothing.py script for **on_file**::
+L'exemple le plus simple d'un plugin : Un script do_nothing.py pour **on_file**::
 
   class Transformer(object): 
       def __init__(self):
@@ -1459,40 +1621,46 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
   self.plugin = 'Transformer'
 
-The last line of the script is specific to the kind of plugin being
-written, and must be modified to correspond (on_file or an on_file, on_message 
-for an on_message, etc...) The plugins stack. For example, one can have 
-multiple *on_message* plugins specified, and they will be invoked in the order 
-given in the configuration file.  Should one of these scripts return False, 
-the processing of the message/file will stop there.  Processing will only 
-continue if all configured plugins return True.  One can specify *on_message None* to 
-reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt.)
+La dernière ligne du script est spécifique au type de plugin étant
+écrit, et doit être modifié pour correspondre (on_file ou on_file ou on_file, on_message, on_message 
+pour un message on_message, etc...) La pile de plugins. Par exemple, on peut avoir 
+multiples *on_message* plugins spécifiés, et ils seront invoqués dans l'ordre. 
+donnée dans le fichier de configuration. Si l'un de ces scripts renvoie False, 
+le traitement du message/fichier s'arrêtera là. Le traitement n'aura lieu que 
+continuer si tous les plugins configurés retournent True. On peut spécifier *on_message None* à 
+réinitialiser la liste à aucun plugin (supprime msg_log, ce qui supprime 
+l'enregistrement de la réception des messages).
 
-The only argument the script receives is **parent**, which is a data
-structure containing all the settings, as **parent.<setting>**, and
-the content of the message itself as **parent.msg** and the headers
-are available as **parent.msg[ <header> ]**.  The path to write a file
-to is available as There is also **parent.msg.new_dir** / **parent.msg.new_file**
+Le seul argument que le script reçoit est **parent**, qui est une donnée.
+structure contenant tous les paramètres, comme **parent.<setting>**, et
+le contenu du message en tant que **parent.msg** et les en-têtes.
+sont disponibles sous la forme **parent.msg[ <header> <header> ]**.  
+Le chemin d'accès pour écrire un fichier to est disponible car il y a 
+aussi **parent.msg.new_dir** / **parent.msg.new_file****.
 
-There is also registered plugins used to add or overwrite built-in 
-transfer protocol scripts. They should be declared using the **plugin** option.
-They must register the protocol (url scheme) that they indent to provide services for.
-The script for transfer protocols are :
+Il y a aussi des plugins enregistrés utilisés pour ajouter ou écraser des plugins intégrés. 
+scripts de protocole de transfert. Ils doivent être déclarés à l'aide de l'option **plugin**.
+Ils doivent enregistrer le protocole (url scheme) pour lequel ils s'engagent à fournir des services.
+Le script pour les protocoles de transfert sont :
 
-- do_download - to implement additional download protocols.
 
-- do_get  - under ftp/ftps/http/sftp implement the get part of the download process
+- do_download - pour implémenter des protocoles de téléchargement supplémentaires.
 
-- do_poll - to implement additional polling protocols and processes.
+- do_get  - sous ftp/ftps/http/sftp, implémenter la partie get du processus de téléchargement.
 
-- do_put  - under ftp/ftps/http/sftp implement the put part of the send process
+- do_poll - pour mettre en œuvre des protocoles et des processus d'interrogation supplémentaires.
 
-- do_send - to implement additional sending protocols and processes.
+- do_put  - sous ftp/ftps/http/sftp, implémenter la partie put du processus d'envoi.
 
-The registration is done with a module named **registered_as** . It defines
-a list of protocols that the provided module supports.
+- do_send - pour mettre en œuvre des protocoles et processus d'envoi supplémentaires.
 
-The simplest example of a plugin: A do_nothing.py script for **on_file**::
+
+L'enregistrement se fait avec un module nommé **registered_as****... Il définit
+une liste des protocoles pris en charge par le module fourni.
+
+
+Un exemple de plugin pour **on_file**::
+
 
   class Transformer(object): 
       def __init__(self):
@@ -1519,77 +1687,82 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
   self.plugin = 'Transformer'
 
-
-This plugin registers for sftp. A sender with such a plugin would put the product using scp.
-It would be confusing for scp to have the source path with a ':' in the filename... Here the
-case is handled by returning None and letting python sending the file over. The **parent**
-argument holds all the needed program informations.
-Some other available variables::
-
-  parent.msg.new_file     :  name of the file to write.
-  parent.msg.new_dir      :  name of the directory in which to write the file.
-  parent.msg.local_offset :  offset position in the local file
-  parent.msg.offset       :  offset position of the remote file
-  parent.msg.length       :  length of file or part
-  parent.msg.in_partfile  :  T/F file temporary in part file
-  parent.msg.local_url    :  url for reannouncement
+Ce plugin s'enregistre pour sftp. Un expéditeur avec un tel plugin mettrait le produit en utilisant scp.
+Il serait déroutant pour scp d'avoir le chemin de la source avec un ':' dans le nom de fichier,,  
+Ici, le est géré en retournant None et en laissant python envoyer le fichier. Le **parent**
+contient toutes les informations nécessaires sur le programme.
+Quelques autres variables disponibles: :
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+  parent.msg.new_file : nom du fichier à écrire.
+  parent.msg.new_dir : nom du répertoire dans lequel écrire le fichier.
+  parent.msg.local_offset : position du décalage dans le fichier local.
+  parent.msg.offset : position de décalage du fichier distant
+  parent.msg.length : longueur du fichier ou de la partie de fichier
+  parent.msg.in_partfile : Fichier T/F temporaire dans le fichier partiel
+  parent.msg.local_url : url pour une nouvelle annonce
 
 
-Queue Save/Restore
-==================
+Voir le `Guide de programmation <Prog.rst>`_ pour plus de détails.
 
 
-Sender Destination Unavailable
-------------------------------
 
-If the server to which the files are being sent is going to be unavailable for
-a prolonged period, and there is a large number of messages to send to them, then
-the queue will build up on the broker. As the performance of the entire broker
-is affected by large queues, one needs to minimize such queues.
+File d'attente Sauvegarde/Restauration
+======================================
 
-The *-save* and *-restore* options are used get the messages away from the broker
-when too large a queue will certainly build up.
-The *-save* option copies the messages to a (per instance) disk file (in the same directory
-that stores state and pid files), as json encoded strings, one per line.
-When a queue is building up::
+
+Destination non-disponible
+--------------------------
+
+Si le serveur auquel les fichiers sont envoyés est indisponible pour
+une période prolongée, et il ya un grand nombre de messages à leur envoyer, 
+la file d'attente s'accumulera sur le courtier. Comme la performance de l'ensemble du courtier
+est affecté par de grandes files d'attente, il faut les minimiser. 
+
+Les options *-save* et *-restore* servent à éloigner les messages du courtier
+quand une file d'attente trop longue s'accumulera certainement.
+L'option *-save* copie les messages dans un fichier disque (par instance) (dans le même répertoire).
+qui stocke les fichiers state et pid), sous forme de chaînes codées json, une par ligne.
+Quand une file d'attente s'accumule: :
 
    sr_sender stop <config> 
    sr_sender -save start <config> 
 
-And run the sender in *save* mode (which continually writes incoming messages to disk)
-in the log, a line for each message written to disk::
+
+Et exécutez l'expéditeur en mode *save* (qui écrit continuellement les messages entrants sur le disque).
+dans le journal, une ligne pour chaque message écrit sur le disque: :
 
   2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
-Continue in this mode until the absent server is again available.  At that point::
+Continuez dans ce mode jusqu'à ce que le serveur absent soit à nouveau disponible.  A ce moment-là::
 
    sr_sender stop <config> 
    sr_sender -restore start <config> 
 
-While restoring from the disk file, messages like the following will appear in the log::
+Lors de la restauration à partir du fichier disque, des messages tels que les suivants apparaîtront dans le journal::
 
   2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
-
-After the last one::
+Après le dernier::
 
   2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
 
 
-and the sr_sender will function normally thereafter.
+et le sr_sender fonctionnera normalement par la suite.
+
+
+
 
 
 
 Shovel Save/Restore
 -------------------
 
-If a queue builds up on a broker because a subscriber is unable to process
-messages, overall broker performance will suffer, so leaving the queue lying around
-is a problem. As an administrator, one could keep a configuration like this
-around::
+Si une file d'attente s'accumule sur un courtier parce qu'un abonné n'est pas en mesure 
+de traiter sa demande. La performance globale du courtier en souffrira si on laisse ainsi 
+la file d'attente traîner. En tant qu'administrateur, on pourrait conserver une 
+configuration::
+
 
   % more ~/tools/save.conf
   broker amqp://tfeed@localhost/
@@ -1600,9 +1773,10 @@ around::
   on_post post_rate_limit
   post_broker amqp://tfeed@localhost/
 
-The configuration relies on the use of an administrator or feeder account.
-note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consumer messages from the queue
-and save them to disk::
+
+La configuration repose sur l'utilisation d'un compte d'administrateur ou d'alimentation.
+Notez la file d'attente qui contient des messages, dans ce cas q_tsub.sr_subscribe.t.99524171.43129428.  Invoquer la pelle en mode de sauvegarde des messages des consommateurs de la file d'attente.
+et les sauvegarder sur disque::
 
   % cd ~/tools
   % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
@@ -1630,13 +1804,17 @@ and save them to disk::
   189 /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
   % 
 
-The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   the file is in
-json format, one message per line (lines are very long.) and so filtering with other tools
-is possible to modify the list of saved messages.  Note that a single save file per
-configuration is automatically set, so to save multiple queues, one would need one configurations
-file per queue to be saved.  Once the subscriber is back in service, one can return the messages
-saved to a file into the same queue::
+Les messages sont écrits dans un fichier dans le répertoire de mise en cache 
+pour une utilisation future, avec les éléments suivants le nom du fichier 
+étant basé sur le nom de configuration utilisé. le fichier est dans le 
+répertoire format json, un message par ligne (les lignes sont très 
+longues) et apte au filtrage avec d'autres outils.
+Notez qu'un seul fichier de sauvegarde par fichier la configuration est 
+automatiquement définie, de sorte que pour sauvegarder plusieurs files 
+d'attente, il faudrait une seule configuration.  par file d'attente à 
+enregistrer. Une fois que l'abonné est de nouveau en service, on peut
+replacer les messages qui avaient enregistré dans un fichier dans la file d'attente
+d´origine::
 
   % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
 
@@ -1659,202 +1837,208 @@ saved to a file into the same queue::
   2017-03-18 13:19:26,991 [INFO] sr_shovel stop
   % 
 
-All the messages saved are returned to the named *return_to_queue*. Note that the use of the *post_rate_limit*
-plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
-to be tuned in practice.
+Tous les messages enregistrés sont renvoyés au *return_to_to_queue* nommé. Notez que 
+l'utilisation de la limite *post_rate_limit* empêche la file d'attente d'être inondée 
+de centaines de messages par seconde. La limite de taux d'utilisation aura besoin de
+d'être accordé dans la pratique.
 
-by default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
-To Choose a different destination, *save_file* option is available::
+par défaut, le nom du fichier de sauvegarde est choisi 
+dans ~/.cache/sarra/shovel/<config>_<instance>.save.
+Pour choisir une destination différente, l'option *save_file* est disponible::
 
-  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
+  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428./save.conf premier plan
 
-will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
-
-
+créera les fichiers de sauvegarde dans le répertoire courant nommé here_000x.save où x est le numéro d'instance (0 pour le premier plan).
 
 
 ROLES
 =====
 
-*of interest only to administrators*
 
-Administrative options are set using::
+*d'intérêt uniquement pour les administrateurs*
+
+Les options d'administration sont définies à l'aide de::
 
   sr_subscribe edit admin
 
-The *feeder* option specifies the account used by default system transfers for components such as
-sr_shovel, sr_sarra and sr_sender (when posting).
+L'option *feeder* spécifie le compte utilisé par défaut pour les transferts 
+système pour les composants tels que sr_shovel, sr_sarra et sr_sender (lors de publication).
 
-- **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
+-- **feeder amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>** (valeur par défaut : Aucun)
+-- **admin <nom> (par défaut : Aucun)**
 
-- **admin   <name>        (default: None)**
+Lorsqu'elle est définie, l'option admin permet à sr de démarrer le démon sr_audit. 
+FIXME: a cet heure, tout le monde roule sr_audit... 
+La plupart des utilisateurs sont définis à l'aide de l'option *déclarer*.
 
-When set, the admin option will cause sr start to start up the sr_audit daemon.
-
-Most users are defined using the *declare* option.
-
-- **declare <role> <name>   (no defaults)**
-
-Role:
+-- **declare <rôle> <nom> (pas de valeurs par défaut)**.
 
 subscriber
+----------
 
-  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
-  not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
-  where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an sr_subscribe process will send it's report messages.
+  Un *subscriber* (abonné) est un utilisateur qui ne peut s'abonner qu'aux données 
+  et renvoyer des messages de rapport. Les abonnés ne sont pas autorisés à injecter des données.
+  Chaque abonné a un central xs_<user>nommé sur la pompe, où si un utilisateur est 
+  nommé *Acme*, l'échange correspondant sera *xs_Acme*.  Cet échange
+  est l'endroit où un processus sr_subscribe enverra ses messages de rapport.
 
-  By convention/default, the *anonymous* user is created on all pumps to permit subscription without
-  a specific account.
+  Par convention/défaut, l'utilisateur *anonyme* est créé sur toutes les pompes pour 
+  permettre l'abonnement sans un compte spécifique.
+
 
 source
-
-  A user permitted to subscribe or originate data.  A source does not necessarily represent
-  one person or type of data, but rather an organization responsible for the data produced.
-  So if an organization gathers and makes available ten kinds of data with a single contact
-  email or phone number for questions about the data and it's availability, then all of
-  those collection activities might use a single 'source' account.
-
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send report messages about processing and receipt of data. source may also have an xl_<user>
-  exchange where, as per report routing configurations, report messages of consumers will be sent.
-
-User credentials are placed in the credentials files, and *sr_audit* will update
-the broker to accept what is specified in that file, as long as the admin password is
-already correct.
+------
 
 
-CONFIGURATION FILES
--------------------
+  Un utilisateur autorisé à s'abonner ou à générer des données. Une source ne représente 
+  pas nécessairement une personne ou un type de données, mais plutôt une organisation 
+  responsable des données produites. Ainsi, si une organisation recueille et met à 
+  disposition dix types de données avec un seul interlocuteur email ou numéro de 
+  téléphone pour des questions sur les données et leur disponibilité, alors tous les
+  ces activités de recouvrement pourraient utiliser un seul compte " source ".
 
-While one can manage configuration files using the *add*, *remove*,
-*list*, *edit*, *disable*, and *enable* actions, one can also do all
-of the same activities manually by manipulating files in the settings
-directory.  The configuration files for an sr_subscribe configuration 
-called *myflow* would be here:
+  Chaque source reçoit un échange xs_<user> pour l'injection de postes de données 
+  et, comme un abonné.  pour envoyer des messages de rapport sur le traitement et 
+  la réception des données. la source peut aussi avoir un xl_<utilisateur>>.  échange 
+  où, selon les configurations d'acheminement des rapports, les messages de rapport 
+  des consommateurs seront envoyés.
 
- - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) 
-
-
- - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
-   C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
-
- - MAC: FIXME.
-
-The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
-are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
-
-One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
-individual configuration files can be placed in any directory and invoked with the 
-complete path.   When components are invoked, the provided file is interpreted as a 
-file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
-component will look in the component's config directory ( **config_dir** / **component** )
-for a matching .conf file.
-
-If it is still not found, it will look for it in the site config dir
-(linux: /usr/share/default/sarra/**component**).
-
-Finally, if the user has set option **remote_config** to True and if he has
-configured web sites where configurations can be found (option **remote_config_url**),
-The program will try to download the named file from each site until it finds one.
-If successful, the file is downloaded to **config_dir/Downloads** and interpreted
-by the program from there.  There is a similar process for all *plugins* that can
-be interpreted and executed within sarracenia components.  Components will first
-look in the *plugins* directory in the users config tree, then in the site
-directory, then in the sarracenia package itself, and finally it will look remotely.
+Les identifiants d'utilisateur sont placés dans les fichiers d'identifiants, 
+et *sr_audit* mettra à jour. Le courtier va être aligner avec ce qui est spécifié dans 
+ce fichier, à condition que le mot de passe administrateur soit déjà correct.
+(L´alignement se fait avec sr_audit --users foreground)
 
 
 
+FICHIERS DE CONFIGURATION
+=========================
 
-SEE ALSO
---------
+Alors qu'on peut gérer les fichiers de configuration à l'aide de la fonction *add*, *remove*,
+*list*, *edit*, *disable*, et *enable* actions, on peut aussi tout faire.
+des mêmes activités manuellement en manipulant les fichiers dans les paramètres.
+dans l'annuaire de l'entreprise.  Les fichiers de configuration pour une configuration sr_subscribe. 
+appelé *myflow* serait ici :
 
+ - linux : ~/.config/sarra/subscribe/myflow.conf (selon : XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) 
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - process messages (no downloading.)
+ - Windows : %AppDir%/science.gc.ca/sarra/myflow.conf, cela pourrait être :
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\myflow.conf
 
-`sr_winnow(1) <sr_winnow.1.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
+ - MAC : FIXME.
 
-`sr_sender(1) <sr_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
+Le sommet de l'arborescence a *~/.config/sarra/default.conf* qui contient les paramètres suivants
+sont lus par défaut pour tout composant au démarrage. Dans le même répertoire, *~/.config/sarra/credentials.conf* contient des informations d'identification (mots de passe) à utiliser par sarracenia ("CREDENTIALS" pour plus de détails. ).
 
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
+On peut également définir la variable d'environnement XDG_CONFIG_HOME pour remplacer 
+le placement par défaut, ou bien Les fichiers de configuration individuels peuvent 
+être placés dans n'importe quel répertoire et invoqués avec la commande chemin complet.
+Lorsque des composants sont invoqués, le fichier fourni est interprété comme un fichier 
+(avec un suffixe.conf conf supposé.) S'il n'est pas trouvé comme chemin d'accès au 
+fichier, alors l'option recherchera dans le répertoire de configuration du 
+composant ( **config_dir** / **component******) pour un fichier.conf correspondant.
 
-`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
+S'il n'est toujours pas trouvé, il le recherchera dans le répertoire de configuration du site.
+(linux : /usr/share/default/sarra/**component**).
 
-`sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
-
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
-
-
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
-
-`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
-
-`sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
-
-`https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
-
-
-SUNDEW COMPATIBILITY OPTIONS
-----------------------------
-
-For compatibility with sundew, there are some additional delivery options which can be specified.
-
-**destfn_script <script> (default:None)**
-
-This option defines a script to be run when everything is ready
-for the delivery of the product.  The script receives the sr_sender class
-instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.msg.new_file**  will change the name of the file written locally.
-
-**filename <keyword> (default:WHATFN)**
-
-From **metpx-sundew** the support of this option give all sorts of possibilities
-for setting the remote filename. Some **keywords** are based on the fact that
-**metpx-sundew** filenames are five (to six) fields strings separated by for colons.
-The possible keywords are :
+Enfin, si l'utilisateur a défini l'option **remote_config** sur True et s'il 
+dispose de sites web configurés où l'on peut trouver des configurations 
+(option **remote_config_config_url**), Le programme essaiera de télécharger 
+le fichier nommé à partir de chaque site jusqu'à ce qu'il en trouve un.
+En cas de succès, le fichier est téléchargé dans **config_dir/Downloads** et 
+interprété par le programme à partir de là.  Il y a un processus similaire 
+pour tous les *plugins* qui peuvent être interprété et exécuté à l'intérieur 
+des composantes de la sarracénie.  Les composants chercheront en premier lieu
+dans le répertoire *plugins* dans l'arbre de configuration des 
+utilisateurs, puis dans le site, puis dans le paquet sarracenia lui-même, 
+et finalement il regardera à distance.
 
 
-**WHATFN**
- - the first part of the sundew filename (string before first :)
+
+
+
+
+
+AUSSI VOIR
+----------
+
+
+`sr_shovel(1) <sr_shovel.1.rst>`_ - messages de processus (pas de téléchargement).
+
+`sr_winnow(1) <sr_winnow.1.rst>`_ - une pelle avec cache dessus, pour séparer le blé de l'ivraie.
+
+`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux messages pointant vers les fichiers locaux, et les envoie aux systèmes distants et les annonce à nouveau.
+
+`sr_report(1) <sr_report.1.rst>`_ - messages de rapport de processus.
+
+`sr_post(1) <sr_post.1.rst>`_ - affiche les annonces de fichiers spécifiques.
+
+`sr_watch(1) <sr_watch.1.rst>`_ - postez cette boucle, en veillant sur les répertoires.
+
+`sr_sarra(1) <sr_sarra.1.rst>`_ - Outil pour S´abonner, acquérir, et renvoyer récursivement ad nauseam.
+
+`sr_post(7) <sr_post.7.rst>`_ - Le format des messages d'annonce.
+
+`sr_report(7) <sr_report.7.rst>`_ - le format des messages de rapport.
+
+`sr_pulse(7) <sr_pulse.7.rst>`_ - Le format des messages d'impulsion.
+
+`https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe est un composant de MetPX-Sarracenia, la pompe de données basée sur AMQP.
+
+
+COMPATIBILITE avec SUNDEW
+-------------------------
+
+Pour la compatibilité avec sundew, il existe des options de livraison supplémentaires qui peuvent être spécifiées.
+
+**destfn_script <script <script> (par défaut : Aucun)**.
+
+Cette option définit un script à exécuter lorsque tout est prêt.
+pour la livraison du produit.  Le script reçoit la classe sr_sender.
+de l'instance.  Le script prend le parent comme un argument, et par exemple, n'importe quel
+modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
+
+**filename <mot-clé> (par défaut:WHATFN)**
+
+De **metpx-sundew** le support de cette option offre toutes sortes de possibilités.
+pour régler le nom de fichier distant. Certains **mots-clés** sont basés sur le fait que
+Les noms de fichiers **metpx-sundew** sont des chaînes de cinq (à six) champs séparés 
+par des deux-points.  Les mots-clés possibles sont:
+
+*WHATFN**
+ - la première partie du nom de fichier sundew (chaîne de caractères avant le premier :)
 
 **HEADFN**
- - HEADER part of the sundew filename
+ - HEADER fait partie du nom de fichier sundew.
 
 **SENDER**
- - the sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - le nom de fichier sundew peut se terminer par une chaîne de caractères SENDER=<<string> dans ce cas, la chaîne <string> sera le nom de fichier distant.
 
 **NONE**
- - deliver with the complete sundew filename (without :SENDER=...)
+ - Livraison avec le nom complet du fichier sundew (sans :SENDER=....)
 
 **NONESENDER**
- - deliver with the complete sundew filename (with :SENDER=...)
+ - Livraison avec le nom complet du fichier sundew (avec :SENDER=....)
 
 **TIME**
- - time stamp appended to filename. Example of use: WHATFN:TIME
+ - l'horodatage ajouté au nom du fichier. Exemple d'utilisation : WHATFN:TIME
 
 **DESTFN=str**
- - direct filename declaration str
-
-**SATNET=1,2,3,A**
- - cmc internal satnet application parameters
-
-**DESTFNSCRIPT=script.py**
- - invoke a script (same as destfn_script) to generate the name of the file to write
+ - déclaration directe du nom de fichier str
 
 
-**accept <regexp pattern> [<keyword>]**
+**accept <expression régulière> [<keyword>]**
 
-keyword can be added to the **accept** option. The keyword is any one of the **filename**
-tion.  A message that matched against the accept regexp pattern, will have its remote_file
-plied this keyword option.  This keyword has priority over the preceeding **filename** one.
+un mot clé peut être ajouté à l'option **accept**. Le mot-clé est l'un des options **FILENAME**.
+Un message qui correspond au *accept* regexp, On appliqera l´option indiqué.
+Ce mot-clé a priorité sur le mot-clé précédent **filename**.
 
-The **regexp pattern** can be use to set directory parts if part of the message is put
-to parenthesis. **sr_sender** can use these parts to build the directory name. The
-rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
-the second **${1}** etc.
+Le motif **regexp** peut être utilisé pour définir les parties du répertoire si 
+une partie du message est mise en place.  à la parenthèse. **sr_sender** peut utiliser 
+ces parties pour construire le nom du répertoire. Les premières chaînes de parenthèses 
+jointes remplaceront le mot-clé **${0}****$ dans le nom du répertoire
+le second **${1}**** etc.
 
-example of use::
-
+exemple d'utilisation: :
 
       filename NONE
 
@@ -1873,22 +2057,142 @@ example of use::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-A selected message by the first accept would be delivered unchanged to the first directory.
+Un message sélectionné par la première acceptation serait livré inchangé dans le premier répertoire.
 
-A selected message by the second accept would be delivered unchanged to the second directory.
+Un message sélectionné par la deuxième acceptation serait livré inchangé dans le deuxième répertoire.
 
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+Un message sélectionné par le troisième accept serait renommé "file_of_type3" dans le deuxième répertoire.
 
-A selected message by the forth accept would be delivered unchanged to a directory.
+Un message sélectionné par le quatrième accepter serait livré inchangé dans un répertoire nommé
 
-named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+*/this/20160160123/pattern/RAW_MERGER_GRIB/directory* si le message aurait une notice comme :
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
-Field Replacements
-~~~~~~~~~~~~~~~~~~
 
+
+Substitutions OMM
+~~~~~~~~~~~~~~~~~
+
+
+Dans MetPX Sundew, il y a une norme de nommage de fichiers beaucoup plus stricte, 
+spécialisée pour une utilisation avec Données de l'Organisation météorologique mondiale (OMM).   
+Notez que la convention d'appellation de fichier est antérieure, et n'a aucun rapport 
+avec la convention de dénomination des fichiers de l'OMM actuellement approuvée, 
+mais il s'agit strictement d'une convention interne.  Les fichiers sont séparés en 
+six champs par des caractères deux-points.  Le premier champ, DESTFN, inclue un
+nom familier aux experts des données de  l'OMM (style 386), un *Abbreviated Header Line (AHL)* 
+avec des soulignements remplaçant les blancs::
+
+   TTAAii CCCC YYGGGGg BBB....  
+
+(voir les manuel 386 et 306 de l'OMM pour plus de détails) suivi de chiffres pour rendre le 
+produit unique car dans la pratique, (en contraste avec la théorie) il y a un grand nombre 
+de produits qui ont les mêmes identificateurs. 
+La signification du cinquième champ est une priorité, et le dernier champ est un horodatage.
+La signification des autres champs varie selon le contexte.  
+Si un fichier est envoyé à Sarracenia et il est nommé selon les conventions Sundew, 
+alors les champs de sous-partition suivants sont disponibles: :
+
+  ${T1} remplacer par T1 du bulletin.
+  ${T2} remplacer par le bulletin T2 du bulletin T2
+  ${A1} remplacer par l'A1 du bulletin.
+  ${A2} remplacer par A2 du bulletin.
+  ${ii} remplacer par ii du bulletin.
+  ${CCCC} remplacer par le CCCC du bulletin.
+  ${YY} remplacer par YY du bulletin (jour du mois)
+  ${GG} remplacer par le GG du bulletin (heure du jour, UTC)
+  ${gg} remplacer par le Gg du bulletin (minute de l´heure.)
+  ${BBBB} remplacer par bbb du bulletin.
+  ${RYYYY} Remplacer par l'année de réception.
+  ${RMM} remplacer par le mois de réception
+  ${RDD} remplacer par le jour de réception
+  ${RHH} Remplacer par l'heure de réception.
+  ${RMM} remplacer par minutes de réception.
+  ${RSS} remplacer par réception seconde
+
+
+Les champs'R' du sixième champ, et les autres champs proviennent du premier champs.
+Lorsque des données sont injectées dans la sarracénie à partir de 
+Sundew, l'en-tête de message *sundew_extension* est inclu.  Cet entête fournira la 
+source de ces sous-titres même si les champs ont été supprimés dans les noms
+de fichiers actuels utilisés sur le serveur.
+
+
+
+PARAMÈTRES OBSOLÈTES
+---------------------
+
+Ces paramètres concernent les versions précédentes du client et ont été supplantées.
+
+- **host          <hôte du courtier> (inclue dans broker)**
+- **amqp-user     <usager du courtier>  (inclue dans broker)**
+- **amqp-password <mot de pass pour l´usage du courtier>  (inclue dans broker)**
+- **http-user     <usager pour http>  (inclue dans credentials.conf)**
+- **http-password <mot de passe pour http>  (inclu dans credentials.conf)**
+- **topic         <amqp pattern> (remplacé par topic_prefix et subtopic)**
+- **exchange_type <type>         (default: topic)**
+- **exchange_key  <patron AMQP> (calculé par topic_prefix et subtopic)**
+- **lock      <locktext>         (changer de nom à inflight)**
+
+
+
+HISTORY
+-------
+
+Dd_subscribe a été initialement conçu pour **dd.weather.gc.ca**, un site 
+Web d'Environnement Canada où une grande variété de produits météorologiques 
+sont mis à la disposition du public. C'est de le nom de ce site que la suite
+Sarracenia prend le préfixe dd\_ pour ses outils.  La première a été 
+déployée en 2013 à titre expérimental. L'année suivante, prise en charge 
+des sommes de contrôle a été ajouté, et à l'automne 2015, les flux ont 
+été mis à jour en v02. dd_subscribe still works, mais il utilise les 
+paramètres obsolètes décrits ci-dessus.  Il est implémenté en 
+python2, alors qu'il est implémenté en python2.  La boîte à outils 
+Sarracenia est en python3.
+
+En 2007, lorsque le MetPX était à l'origine open source, le personnel 
+responsable faisait partie de Environnement Canada.  En l'honneur de 
+la Loi sur les espèces en péril (LEP), afin de mettre en lumière la 
+situation critique. d'espèces en voie de disparition qui ne sont pas 
+à fourrure (les espèces à fourrure reçoivent toute l'attention) et
+parce que les moteurs de recherche trouveront plus facilement des 
+références à des noms plus inhabituels, le commutateur MetPX WMO 
+original a été nommé d'après une plante carnivore sur l'espèce At
+Registre des risques :  Le *Thread-leaved Sundew*.
+
+L'organisation à l'origine de Metpx a depuis déménagé à Services 
+partagés Canada.  Il est venu le temps de nommer un nouveau module, 
+nous avons gardé avec un thème de plantes carnivores, et a choisi 
+un autre indigène dans certaines régions du Canada : *Sarracénie* 
+N'importe laquelle d'une variété de sarracénies insectivores. 
+Nous aimons les plantes qui mangent de la viande !
+
+
+dd_subscribe Renommage
+~~~~~~~~~~~~~~~~~~~~~~
+
+Le nouveau module (MetPX-Sarracenia) a de nombreux composants, est 
+utilisé pour plus que et plus d'un site web, et cause de la confusion pour la
+pensée sys-admins.  il est associé à la commande dd(1) (pour convertir et 
+copier des fichiers).  Donc, on a échangé tous les composants pour utiliser
+le préfixe sr\_.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+priorité, et le dernier champ est un horodatage.  Un échantillon
 In MetPX Sundew, there is a much more strict file naming standard, specialised for use with 
 World Meteorological Organization (WMO) data.   Note that the file naming convention predates, and 
 bears no relation to the WMO file naming convention currently approved, but is strictly an internal 

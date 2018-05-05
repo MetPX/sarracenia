@@ -489,7 +489,7 @@ These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
@@ -512,8 +512,9 @@ It is best practice to use server side filtering to reduce the number of announc
 to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
 client side mechanisms, saving bandwidth and processing for all.
 
-topic_prefix is primarily of interest during protocol version transitions, where one wishes to 
-specify a non-default protocol version of messages to subscribe to. 
+topic_prefix is primarily of interest during protocol version transitions, 
+where one wishes to specify a non-default protocol version of messages to 
+subscribe to. 
 
 Usually, the user specifies one exchange, and several subtopic options.
 **Subtopic** is what is normally used to indicate messages of interest.
@@ -530,25 +531,20 @@ option as follow:
 ::
 
  where:  
-       *                replaces a directory name 
-       #                stands for the remaining possibilities
+       *                matches a single directory name 
+       #                matches any remaining tree of directories.
 
-One has the choice of filtering using  **subtopic**  with only AMQP's limited wildcarding and
-header length limited to 255 encoded bytes, or the more powerful regular expression based  **accept/reject**
-mechanisms described below, which are not length limited.  The difference being that
-the AMQP filtering is applied by the broker itself, saving the notices from being delivered
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the
-broker to the subscriber.  In other words,  **accept/reject**  are
-client side filters, whereas  **subtopic**  is server side filtering.
+note:
+  When directories have these wild-cards, or spaces in their names, they 
+  will be URL-encoded ( '#' becomes %23 )
+  When directories have periods in their name, this will change
+  the topic hierarchy.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all.
-
-topic_prefix is primarily of interest during protocol version transitions, where one wishes to
-specify a non-default protocol version of messages to subscribe to.
-
-
+  FIXME: 
+      hash marks are URL substituted, but did not see code for other values.
+      Review whether asterisks in directory names in topics should be URL-encoded.
+      Review whether periods in directory names in topics should be URL-encoded.
+ 
 
 Regexp Message Filtering 
 ------------------------
@@ -579,13 +575,9 @@ to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
 the message acknowledged as consumed and skipped. To override that
-default, set **accept_unmatch** to True.   However,  if
-no **accept** / **reject** are specified, the program assumes it
-should accept all messages and sets **accept_unmatch** to True.
-
-The **accept/reject** are interpreted in order.
-Each option is processed orderly from top to bottom.
-for example:
+default, set **accept_unmatch** to True. The **accept/reject** 
+settings are interpreted in order. Each option is processed orderly 
+from top to bottom. For example:
 
 sequence #1::
 
@@ -671,7 +663,7 @@ complete, the file is renamed to it's permanent name to allow further processing
 
 The  **inflight**  option can also be specified as a time interval, for example, 
 10 for 10 seconds.  When set to a time interval, a reader of a file ensures that 
-it waits until the file has not been modified in that interval. So a file woll 
+it waits until the file has not been modified in that interval. So a file will 
 not be processed until it has stayed the same for at least 10 seconds. 
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
@@ -690,7 +682,7 @@ lowered to 1.  For most usual situations the default is fine. for higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
 
-The option directory  defines where to put the files on your server.
+The *directory* option defines where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
 files of interest and their directories of residence. (see the  **mirror**
 option for more directory settings).
@@ -780,9 +772,9 @@ option, with the use of *${..}* notation::
    HH       - the current hourly timestamp.
    *var*    - any environment variable.
 
-The YYYYMMDD and HH time stamps refer to the time at which the data is processed, it 
-is not decoded or derived from the content of the files delivered.  All date/times
-in Sarracenia are in UTC.
+The YYYYMMDD and HH time stamps refer to the time at which the data is processed by
+the component, it is not decoded or derived from the content of the files delivered.
+All date/times in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
@@ -800,8 +792,8 @@ The defaults is None which means that the path in the notification is the absolu
 Large files may be sent as a series of parts, rather than all at once.
 When downloading, if **inplace** is true, these parts will be appended to the file 
 in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
-There are some deployments of sarracenia where one pump will only ever see a few parts, and
-not the entirety, of multi-part files. :q
+This can be set to false for some deployments of sarracenia where one pump will 
+only ever see a few parts, and not the entirety, of multi-part files. 
 
 
 The **inplace** option defaults to True. 
@@ -818,13 +810,17 @@ The  **discard**  option,if set to true, deletes the file once downloaded. This 
 usefull when debugging or testing a configuration.
 
 The **source_from_exchange** option is mainly for use by administrators.
-If messages is received posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
-Such message be missing a source from_cluster headings, or a malicious user may set the values incorrectly.
-To protect against malicious settings, administrators should set the **source_from_exchange** option.
+If messages is received posted directly from a source, the exchange used 
+is 'xs_<brokerSourceUsername>'. Such messages be missing *source* and *from_cluster* 
+headings, or a malicious user may set the values incorrectly.
+To protect against both problems, administrators should set the **source_from_exchange** option.
 
-When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden.
-self.msg.headers['source']       = <brokerUser>
-self.msg.headers['from_cluster'] = cluster
+When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden::
+
+  self.msg.headers['source']       = <brokerUser>
+  self.msg.headers['from_cluster'] = cluster
+
+HERE
 
 replacing any values present in the message. This setting should always be used when ingesting data from a
 user exchange. These fields are used to return reports to the origin of injected data.
@@ -850,13 +846,14 @@ the cache size limited. Different settings are appropriate for different use cas
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
 One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-**Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the 
-first time a posting is received, it could be picked by one instance, and if a duplicate one is received
-it would likely be picked up by another instance. **For effective duplicate suppression with instances**, 
-one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate 
-suppression turned off and output with *post_exchange_split*, which route posts by checksum to 
+**Note that the duplicate suppresion cache is local to each instance**. When N 
+instances share a queue, the first time a posting is received, it could be 
+picked by one instance, and if a duplicate one is received it would likely 
+be picked up by another instance. **For effective duplicate suppression with instances**, 
+one must **deploy two layers of subscribers**. Use 
+a **first layer of subscribers (sr_shovels)** with duplicate suppression turned 
+off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
-
   
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
@@ -915,10 +912,16 @@ many protocols appropriate for different situations:
 |             | - requires extra round trips for      |(usually a good choice)               |
 |             |   rename (a little slower)            | - default when no post broker set    |
 +-------------+---------------------------------------+--------------------------------------+
+|             |Files transferred to a subdir          |sending to some other systems         |
+| tmp/        |When complete, renamed to parent dir   |                                      |
+| (subdir)    |Actual subdir is settable.             |                                      |
+|             |                                       |                                      |
+|             |same performance as Suffix method.     |                                      |
++-------------+---------------------------------------+--------------------------------------+
 |             |Use Linux convention to *hide* files.  |Sending to systems that               |
 | .           |Prefix names with '.'                  |do not support suffix.                |
 | (Prefix)    |that need that. (compatibility)        |                                      |
-|             |same performance as Suffix method.     |sources.                              |
+|             |same performance as Suffix method.     |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Minimum age (modification time)        |Last choice, guarantees delay only if |
 |  number     |of the file before it is considered    |no other method works.                |
@@ -1058,7 +1061,7 @@ QUEUES and MULTIPLE STREAMS
 ===========================
 
 When executed,  **sr_subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to sr_subscribe**
+to a file named after the configuration file given as an argument to **sr_subscribe**
 with a .queue suffix ( ."configfile".queue). 
 If sr_subscribe is stopped, the posted messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, it uses the queuename 
@@ -1097,7 +1100,7 @@ components post directly to *xreport*, whereas user components post to their own
 exchanges (xs_*username*.) The report daemons then copy the messages to *xreport* after validation.
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
-Set this option to **False**, to prevent generation of reports for this usage.
+Set this option to **False**, to prevent generation of reports.
 
 
 
@@ -1159,8 +1162,8 @@ The logs can be written in another directory than the default one with option :
   period will be destroyed. 
 
 .. Note::
-   FIXME  The last sentence is not really right...sr_audit does track the queues'age... 
-          sr_audit acts when a queue gets to the max_queue_size and not running ... nothing more.
+   FIXME  The last sentence is not really right...sr_audit does track the queues'age. 
+          sr_audit acts when a queue gets to the max_queue_size and not running.
           
 
 ACTIVE/PASSIVE OPTIONS
@@ -1193,8 +1196,8 @@ POSTING OPTIONS
 When advertising files downloaded for downstream consumers, one must set 
 the rabbitmq configuration for an output broker.
 
-The post_broker option sets all the credential information to connect to the
-  output **RabbitMQ** server
+The post_broker option sets all the credential information to connect to the 
+output **AMQP** broker.
 
 **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -1224,7 +1227,7 @@ the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 The *outlet* option, implemented only in *sr_cpump*, allows the final output
-to be other than a post.  See `sr_cpump(1) <sr_cpump.rst>`_ for details.
+to be other than a post.  See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 
 The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
@@ -1279,13 +1282,13 @@ and the remote_config_url line will be prepended to it, so that it will continue
 to self-update in future.
 
 
-ROUTING
+PUMPING
 =======
 
 *This is of interest to administrators only*
 
 Sources of data need to indicate the clusters to which they would like data to be delivered.
-Routing is implemented by administrators, and refers copying data between pumps. Routing is
+PUMPING is implemented by administrators, and refers copying data between pumps. Pumping is
 accomplished using on_message plugins which are provided with the package.
 
 when messages are posted, if not destination is specified, the delivery is assumed to be 
@@ -1394,7 +1397,7 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_stop -- runs on startup, for when a plugin needs to save state.
 
-- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is envoked.
+- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is invoked.
   It could be used to put a file in one of the watch directory and have it published when needed.
 
 
@@ -1644,14 +1647,13 @@ sr_shovel, sr_sarra and sr_sender (when posting).
 - **admin   <name>        (default: None)**
 
 When set, the admin option will cause sr start to start up the sr_audit daemon.
-
+FIXME: current versions, all users run sr_audit to notice dead subscribers.
 Most users are defined using the *declare* option.
 
 - **declare <role> <name>   (no defaults)**
 
-Role:
-
 subscriber
+~~~~~~~~~~
 
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
@@ -1853,8 +1855,8 @@ gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replaci
 
 (see WMO manuals for details) followed by numbers to render the product unique (as in practice, 
 though not in theory, there are a large number of products which have the same identifiers.)
-The meanings of the fifth field is a priority, and the last field is a date/time stamp.  A sample 
-file name::
+The meanings of the fifth field is a priority, and the last field is a date/time stamp.  
+The other fields vary in meaning depending on context.  A sample file name::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
 
