@@ -27,22 +27,26 @@ DESCRIPTION
 .. contents::
 
 
-Sr_subscribe est un programme pour télécharger des fichiers à partir de sites Web ou de serveurs de fichiers.
-qui fournissent `sr_post(7) <sr_post.7.rst>`_ notifications de protocole. Ces sites
-publier des messages pour chaque fichier dès qu'il est disponible.  Les clients se connectent à un
-*Courtier* (souvent le même que le serveur lui-même) et s'abonnent aux notifications.
-Les notifications *sr_post* fournissent de véritables notifications *push* pour les dossiers accessibles 
-sur la toile  (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage périodique 
-des annuaires ou le style ATOM/RSS. Les notifications. Sr_subscribe peut être configuré pour poster des 
-messages après leur téléchargement, pour les mettre à la disposition des consommateurs en 
-vue d'un traitement ultérieur ou de transferts.
+Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
+Web ou de serveurs de fichiers qui publient des notifications en format `sr_post(7) <sr_post.7.rst>`_ 
+dès que chaque fichier est disponible.  Les clients se connectent à un
+*Courtier* (souvent le même que le serveur lui-même) et s'abonnent aux 
+notifications. Les notifications *sr_post* fournissent de véritables 
+notifications *push* pour les dossiers accessibles sur la toile  
+(*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage
+périodique des annuaires ou le style ATOM/RSS. Les notifications. Sr_subscribe
+peut être configuré pour poster des messages après leur téléchargement, pour
+les mettre à la disposition des consommateurs en vue d'un traitement ultérieur
+ou de transferts.
 
-**sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, (par exemple pour
-à un programme externe) en spécifiant le -n (*notify_only*, ou *notify_only*, ou *no download*).
-supprimer le téléchargement et n'afficher l'URL que sur la sortie standard.  La sortie standard
-peut être relié à d'autres processus dans le style classique d'un filtre de texte UNIX.
+**sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, 
+(par exemple pour à un programme externe) en spécifiant le -n (*notify_only*, 
+ou *notify_only*, ou *no download*). supprimer le téléchargement et n'afficher
+l'URL que sur la sortie standard.  La sortie standard peut être relié à d'autres
+processus dans le style classique d'un filtre de texte UNIX.
 
-Sr_subscribe est très configurable et constitue la base des autres composants de la sarracénie :
+Sr_subscribe est très configurable et constitue la base des autres composants
+de la sarracénie :
 
 `sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
 `sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
@@ -51,13 +55,15 @@ Sr_subscribe est très configurable et constitue la base des autres composants d
 `sr_sarra(8) <sr_sarra.8.rst>`_ - - S'abonner, acquérir, et recursivement Re-annoncer Ad nauseam.
 
 Tous ces composants acceptent les mêmes options, avec les mêmes effets.
-Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version de C qui implémente un
-sous-ensemble des options ici, mais lorsqu'elles sont présentes, ont le même effet.
+Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version de C qui 
+implémente un sous-ensemble des options ici, mais lorsqu'elles sont présentes,
+ont le même effet.
 
-La commande **sr_subscribe** prend deux arguments : une action start|stop|stop|restart|reload|reload|status,
-suivi d'un fichier de configuration.
+La commande **sr_subscribe** prend deux arguments : une action 
+start|stop|stop|restart|reload|reload|status, suivi d'un fichier de configuration.
 
-Lorsqu'un composant est invoqué, une action et un fichier de configuration sont spécifiés. L'action en est une de :
+Lorsqu'un composant est invoqué, une action et un fichier de configuration sont
+spécifiés. L'action en est une de:
 
  - foreground: exécuter une seule instance dans le journal de premier plan à l´erreur standard.
  - restart: arrêter puis démarrer la configuration.
@@ -67,10 +73,10 @@ Lorsqu'un composant est invoqué, une action et un fichier de configuration sont
  - stop: arrêter la configuration.
 
 
-
-Notez que *sanity* est invoqué par le traitement Heartbeat dans sr_audit sur une base régulière.
-Les action restantes gèrent les ressources (échanges, files d'attente) utilisées par le composant sur
-le serveur rabbitmq, ou gérent les configurations.
+Notez que *sanity* est invoqué par le traitement périodique *Heartbeat* dans
+sr_audit sur une base régulière. Les action restantes gèrent les ressources 
+(échanges, files d'attente) utilisées par le composant sur le serveur 
+rabbitmq, ou gérent les configurations.
 
  - cleanup:  supprime les ressources du composant sur le serveur
  - declare:  crée les ressources du composant sur le serveur.
@@ -83,14 +89,16 @@ le serveur rabbitmq, ou gérent les configurations.
  - enable:   marquer une configuration comme éligible à l'exécution.
 
 
-Par exemple :  *sr_subscribe foreground dd* exécute le composant sr_subcribe avec la commande suivante
-la configuration dd en tant qu'instance de premier plan unique.
+Par exemple :  *sr_subscribe foreground dd* exécute le composant sr_subcribe
+avec la commande suivante la configuration dd en tant qu'instance de premier
+plan unique.
 
-L'action **foreground** est utilisée lors de la construction d'une configuration ou pour le débogage.
-L'instance **foreground** sera exécutée indépendamment des autres instances qui sont en cours d'exécution.
-en train de courir.  Si des instances sont en cours d'exécution, il partage la même file d'attente de messages avec eux.
-Un utilisateur arrête l'instance **foreground** en utilisant simplement <ctrl-c> sur linux.
-ou utiliser d'autres moyens pour tuer le processus.
+L'action **foreground** est utilisée lors de la construction d'une 
+configuration ou pour le débogage. L'instance **foreground** sera exécutée
+indépendamment des autres instances qui sont en cours d'exécution.
+Si des instances sont en cours d'exécution, il partage la même file d'attente
+de messages avec eux. Un utilisateur arrête l'instance **foreground** en
+utilisant simplement <ctrl-c> sur linux. ou utiliser d'autres moyens pour tuer le processus.
 
 
 Les actions **cleanup**, **declare**, **setup**, **setup** peuvent être utilisées pour gérer les 
@@ -130,9 +138,6 @@ et les contributeurs :
 
 `Guide du développeur <Dev.rst>`_ - contribuant au développement de la sarracénie.
 
-FIXME
-
-
 
 Configurations
 --------------
@@ -143,10 +148,11 @@ ajouté à la liste des noms connus avec: :
   sr_subscribe add q_f71.conf
 
 
-Dans ce cas, xvan_f14 est inclus avec les exemples fournis, donc *add* le trouve dans les exemples.
-et copie dans le répertoire de configuration actif.
-Chaque fichier de configuration gère les consommateurs pour une seule file d'attente sur
-le courtier. Pour visualiser les configurations disponibles, utilisez::
+Dans ce cas, xvan_f14 est inclus avec les exemples fournis, donc *add* le trouve
+dans les exemples et le copie dans le répertoire de configurations actif.
+Chaque fichier de configuration gère les consommateurs pour une seule file 
+d'attente sur le courtier. Pour visualiser les configurations disponibles, 
+utilisez::
 
 
   blacklab% sr_subscribe list
@@ -220,39 +226,40 @@ Exemple::
     directory A
     accept X
 
-FIXME:
+Place les fichiers correspondant à X dans le répertoire A.
 
-Places files matching X in directory A.
+versus::
 
-vs::
     accept X
     directory A
 
-Places files matching X in the current working directory, and the *directory A* setting 
-does nothing in relation to X.
+Place les fichiers correspondant à X dans le répertoire de travail actuel, 
+et le paramètre *répertoire A*.  ne fait rien par rapport à X.
 
-To provide non-functional description of configuration, or comments, use lines that begin with a **#**.
+Pour fournir une description non fonctionnelle de la configuration ou des 
+commentaires, utilisez des lignes commençant par **#****.  Toutes les options
+sont sensibles aux majuscules et minuscules. ** **Debug** n'est pas le même
+que **debug** ou **DEBUG**. Il s'agit de trois options différentes (dont deux
+n'existent pas et n'auront aucun effet, mais devrait générer une 
+avertissement ´unknown option´).
 
-**All options are case sensitive.**  **Debug** is not the same as **debug** or **DEBUG**.
-Those are three different options (two of which do not exist and will have no effect,
-but should generate an ´unknown option warning´.)
+Les options et les arguments de ligne de commande sont équivalents.  Chaque 
+argument de ligne de commande a une version longue correspondante commençant 
+par'--'.  Par exemple, *-u* a l'attribut sous forme longue *--url*. On peut
+aussi spécifier cette option dans un fichier de configuration. Pour ce faire, 
+tilisez le formulaire long sans le'--', et mettez sa valeur séparée par un 
+espace. Les éléments suivants sont tous équivalents :
 
-Options and command line arguments are equivalent.  Every command line argument
-has a corresponding long version starting with '--'.  For example *-u* has the
-long form *--url*. One can also specify this option in a configuration file.
-To do so, use the long form without the '--', and put its value separated by a space.
-The following are all equivalent:
+  **url <url>**.
+  **-u <url>**.
+  **--url <url <url>**.
 
-  - **url <url>**
-  - **-u <url>**
-  - **--url <url>**
+Les paramètres d'un fichier.conf individuel sont lus après le fichier *default.conf*.
+et peut donc remplacer les valeurs par défaut. Options spécifiées sur
+la ligne de commande priment sur le contenu de fichiers de configuration.
 
-Settings in an individual .conf file are read in after the default.conf
-file, and so can override defaults.   Options specified on
-the command line override configuration files.
-
-Settings are interpreted in order.  Each file is read from top to bottom.
-for example:
+Les réglages sont interprétés dans l'ordre.  Chaque fichier est lu de haut en bas.
+par exemple :
 
 sequence #1::
 
@@ -266,227 +273,252 @@ sequence #2::
   reject .*\.gif
 
 
+
 .. note::
-   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
-   will it match something like .gif2 ? is there an assumed .* at the end?
+   FIXME : est-ce que cela ne correspond qu'aux fichiers se terminant par'gif' ou devrions-nous y ajouter un $ ?
+   correspondra-t-il à quelque chose comme.gif2 ? y a-t-il un .* supposé à la fin ?
 
 
-In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
-accept .* (which accepts everything) is encountered before the reject statement, 
-so the reject has no effect.
+Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés. Dans la séquence #2, le 
+accept .* (qui accepte tout) est rencontré avant l'instruction *reject*, qui n'a donc aucun effet.
 
-Several options that need to be reused in different config file can be grouped in a file.
-In each config where the options subset should appear, the user would then use :
+Plusieurs options qui doivent être réutilisées dans différents fichiers de configuration peuvent 
+être regroupées dans un fichier. Dans chaque configuration où le sous-ensemble
+d'options devrait apparaître, l'utilisateur utiliserait alors:
 
-  - **--include <includeConfigPath>**
+  **--include <IncludeConfigPath>**
 
-The includeConfigPath would normally reside under the same config dir of its
-master configs. There is no restriction, any option can be placed in a config file
-included. The user must be aware that, for many options, several declarations
-means overwriting their values.
+L'includeConfigPath devrait normalement résider sous le même répertoire de 
+configuration de son fichier configs maître. Il n'y a pas de restriction, 
+n'importe quelle option peut être placée dans un fichier de configuration.
+inclus. L'utilisateur doit être conscient que, pour beaucoup d'options, 
+multiples déclarations signifie que les occurrence subséquents prime sur les
+valeurs rencontré plus tôt.
 
-    
 LOG FILES
 ---------
 
-As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) 
-one normally examines its log file to find out how processing is going.  When only
-a single instance is running, one can normally view the log of the running process
-like so::
+Comme sr_subscribe fonctionne généralement comme un démon (à moins d'être 
+invoqué en mode *foreground*). On examine normalement son fichier journal pour
+savoir comment se déroule le traitement.  Quand seulement une seule instance 
+est en cours d'exécution, on peut normalement visualiser le journal du
+processus en cours d'exécution.  comme ça::
 
-   sr_subscribe log *myconfig*
+   sr_subscribe log *myconfig *myconfig*
 
-Where *myconfig* is the name of the running configuration.  Log files 
-are placed, as per the XDG Open Directory Specification, There will be a log file 
-for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
+Où *myconfig* est le nom de la configuration en cours d'exécution. les Fichiers
+journaux sont placés conformément à la spécification XDG Open Directory. Il y 
+a un fichier journal pour chaque *instance* (processus de téléchargement) 
+sr_subscribe exécutant la configuration myflow::
 
-   linux in linux: ~/.cache/sarra/log/sr_subscribe_myflow_0001.log
-   Windows: FIXME? dunno.
+   sur linux : ~/.cache/sarra/log/sr_subscribe_subscribe_myflow_01.log
 
-One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+On peut outrepasser le placement sur linux en définissant la variable 
+d'environnement XDG_CACHE_HOME.
 
 
 CREDENTIALS
 -----------
 
-One normally does not specify passwords in configuration files.  Rather they are placed 
-in the credentials file::
+Normalement, on ne spécifie pas de mots de passe dans les fichiers de 
+configuration. Ils sont plutôt placés dans le fichier d´information d´identifcation::
 
    sr_subscribe edit credentials
 
-For every url specified that requires a password, one places 
-a matching entry in credentials.conf.
-The broker option sets all the credential information to connect to the  **RabbitMQ** server 
+Pour chaque url spécifiée qui nécessite un mot de passe, on place une entrée
+correspondante dans *credentials.conf*. L'option broker définit toutes les 
+informations d'identification pour se connecter au serveur **RabbitMQ**.
 
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+  broker amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>****.
 
 ::
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (par défaut : amqp://anonymous:anonymous@dd.weather.gc.ca/) 
 
-For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
-passwords and settings needed by components.  The format is one entry per line.  Examples:
+Pour tous les programmes de **sarracenia**, les parties confidentielles 
+des justificatifs d'identité sont stockées uniquement dans 
+~/.config/sarra/credentials.conf. Cela comprend la destination et le courtier.
+mots de passe et paramètres nécessaires aux composants.  Le format 
+est d'une entrée par ligne.  Exemples :
 
-- **amqp://user1:password1@host/**
-- **amqps://user2:password2@host:5671/dev**
+- **amqp://user1:password1@host/**.
+- **amqps://user2:password2@host:5671/dev**.
 
 - **sftp://user5:password5@host**
-- **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+- **sftp://user6:password6@host:22 ssh_keyfile=/users/local/.ssh/.ssh/id_dsa**
 
-- **ftp://user7:password7@host  passive,binary**
-- **ftp://user8:password8@host:2121  active,ascii**
+- **ftp://user7:password7@host passive,binaire**
+- **ftp://user8:password8@host:2121 active,ascii**
 
-- **ftps://user7:De%3Aize@host  passive,binary,tls**
-- **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
+- **ftp://user7:De%3Aize@host passive,binaire,tls***
+- **ftps://user8:%2fdot8@host:2121 active,ascii,tls,prot_p**
 
 
-In other configuration files or on the command line, the url simply lacks the
-password or key specification.  The url given in the other files is looked
-up in credentials.conf.
+Dans d'autres fichiers de configuration ou sur la ligne de commande, l'url 
+n'inclut pas le mot de passe ou spécification de clé.  L'url donnée dans les 
+autres fichiers est utilisé comme index pour le recherche dans credentials.conf.
 
-Note::
- SFTP credentials are optional, in that sarracenia will look in the .ssh directory
- and use the normal SSH credentials found there.
 
- These strings are URL encoded, so if an account has a password with a special 
- character, its URL encoded equivalent can be supplied.  In the last example above, 
- **%2f** means that the actual password isi: **/dot8**
- The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
+Note: :
+ Les informations d'identification SFTP sont optionnelles, en ce sens que 
+ sarracenia cherchera dans le répertoire .ssh et utilisers les identifiants 
+ SSH normaux qui s'y trouvent.
+
+ Ces chaînes sont codées par URL, donc si un compte a un mot de passe avec un
+ mot de passe spécial. Son équivalent URL encodé peut être fourni.  Dans le 
+ dernier exemple ci-dessus, %2f**** signifie que le mot de passe actuel 
+ esti : **/dot8**
+ L'avant-dernier mot de passe est :  **De:olonize**. ( %3a étant la valeur 
+ codée en url d'un caractère deux-points. )
 
 
 CONSUMER
 ========
 
-Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.rst>`_ 
-messages, announcing the availability of a file by publishing it´s URL ( or a part 
-of a file ), but there are also `sr_report(7) <sr_report.7.rst>`_ messages which 
-can be processed using the same tools. AMQP messages are published to an exchange 
-on a broker (AMQP server.) The exchange delivers messages to queues. To receive 
-messages, one must provide the credentials to connect to the broker (AMQP message 
-pump). Once connected, a consumer needs to create a queue to hold pending messages.
-The consumer must then bind the queue to one or more exchanges so that they put 
-messages in its queue.
+La plupart des composants Metpx Sarracenia boucle sur la réception et la 
+consommation de messages AMQP. Habituellement, les messages d'intérêt sont 
+dans le format `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité 
+d'un fichier en publiant l'URL it´s (ou une partie de celle-ci).
+Il y a également le format `sr_report(7) <sr_report.7.rst>`_ qui peuvent 
+être traités avec les mêmes outils. Les messages AMQP sont publiés avec
+un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange 
+délivre des messages aux files d'attente. Pour recevoir de messages,  
+on doit fournir les informations d'identification pour se connecter au 
+courtier (message AMQP).  Une fois connecté, un consommateur doit créer 
+une file d'attente pour retenir les messages en attente. Le consommateur 
+doit ensuite lier la file d'attente à une ou plusieurs bourses de manière
+à ce qu'il mette dans sa file d'attente.
 
-Once the bindings are set, the program can receive messages. When a message is received,
-further filtering is possible using regular expression onto the AMQP messages.
-After a message passes this selection process, and other internal validation, the
-component can run an **on_message** plugin script to perform additional message 
-processing. If this plugin returns False, the message is discarded. If True, 
-processing continues.
+Une fois les liaisons (anglais: *bindings*) établies, le programme peut 
+recevoir des messages. Lorsqu'un message est reçu, un filtrage 
+supplémentaire est possible en utilisant des expressions régulières sur
+les messages AMQP.  Après qu'un message a passé avec succès ce processus
+de sélection et d'autres validations internes, le processus peut exécuter
+un script de plugin **on_message** pour traiter le message davantage
+de façon spécialisé. Si ce plugin retourne False comme résultat, le 
+message est rejeté. Si c'est vrai, le traitement du message se poursuit.
 
-The following sections explains all the options to set this "consuming" part of
-sarracenia programs.
+Les sections suivantes expliquent toutes les options pour régler cette 
+partie " consommateur " de les programmes de sarracénie.
 
 
 
-Setting the Broker 
+
+Réglage du courtier 
 ------------------
 
-**broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
+broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>*****.
 
-An AMQP URI is used to configure a connection to a message pump (aka AMQP broker.)
-Some sarracenia components set a reasonable default for that option. 
-You provide the normal user,host,port of connections.  In most configuration files,
-the password is missing.  The password is normally only included in the credentials.conf file.
+Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages 
+(AMQP broker). Certains composants de sarracénie définissent une valeur par 
+défaut raisonnable pour cette option. Vous fournissez l'utilisateur normal,
+l'hôte, le port des connexions. Dans la plupart des fichiers de configuration,
+le mot de passe est manquant. Le mot de passe n'est normalement inclus que dans
+le fichier credentials.conf.
 
-Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
+L´application Sarracenia n'a pas utilisé vhosts, donc **vhost** devrait toujours être **/**.
 
-for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
+pour plus d'informations sur le format URI de l'AMQP : ( https://www.rabbitmq.com/uri-spec.html))
 
 
-either in the default.conf or each specific configuration file.
-The broker option tell each component which broker to contact.
+soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
+L'option courtier indique à chaque composante quel courtier contacter.
 
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>****.
 
 ::
-      (default: None and it is mandatory to set it ) 
+      (par défaut : Aucun et il est obligatoire de le définir) 
 
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
-
-
-
-Creating the Queue
-------------------
-
-Once connected to an AMQP broker, the user needs to create a queue.
-
-Setting the queue on broker :
-
-- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
-- **durable       <boolean>      (default: False)**
-- **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
-- **message-ttl   <duration>      (default: None)**
-- **prefetch      <N>            (default: 1)**
-- **reset         <boolean>      (default: False)**
-- **restore       <boolean>      (default: False)**
-- **restore_to_queue <queuename> (default: None)**
-- **save          <boolean>      (default: False)**
-
-Usually components guess reasonable defaults for all these values
-and users do not need to set them.  For less usual cases, the user
-may need to override the defaults.  The queue is where the notifications
-are held on the server for each subscriber.
-
-By default, components create a queue name that should be unique. The default queue_name
-components create follows :  **q_<brokerUser>.<programName>.<configName>** .
-Users can override the defaul provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
-
-The  **durable** option, if set to True, means writes the queue
-on disk if the broker is restarted.
-
-The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
-the contents is dropped, and so gaps in the download data flow can arise.  A value of
-1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
-the subscriber is expected to shutdown, and not suffer data loss.
-
-The **expire** setting must be overridden for operational use. 
-The default is set low because it defines how long resources on the broker will be assigned,
-and in early use (when default was 1 week) brokers would often get overloaded with very 
-long queues for left-over experiments.  
+Une fois connecté à un courtier AMQP, l'utilisateur doit lier une file d'attente.
+à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
 
 
-The  **durable** option set to True, means writes the queue
-on disk if the broker is restarted.
+Création de la file d'attente
+-----------------------------
 
-The  **message-ttl**  option set the time a message can live in the queue.
-Past that time, the message is taken out of the queue by the broker.
+Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'attente.
 
-The **prefetch** option sets the number of messages to fetch at one time.
-When multiple instances are running and prefetch is 4, each instance will obtain upto four
-messages at a time.  To minimize the number of messages lost if an instance dies and have
-optimal load sharing, the prefetch should be set as low as possible.  However, over long
-haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
-of 10 or more may be needed.
+Mise en file d'attente sur broker :
 
-When **reset** is set, and a component is (re)started, its queue is
-deleted (if it already exists) and recreated according to the component's
-queue options.  This is when a broker option is modified, as the broker will
-refuse access to a queue declared with options that differ from what was
-set at creation.  It can also be used to discard a queue quickly when a receiver 
-has been shut down for a long period. if duplicate suppression is active, then
-the reception cache is also discarded.
+- **nom_de_queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **durable <boolean> (par défaut : False)**
+- **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
+- **message - **message-ttl <durée> (par défaut : Aucun)**
+- **prefetch <N> (par défaut : 1)****
+- **reset <boolean> (par défaut : False)**
+- **restaurer <boolean> (par défaut : False)**
+- **restore_to_to_queue <queuename> (par défaut : Aucun)**
+- **sauvegarder <boolean> (par défaut : False)**
 
-The AMQP protocol defines other queue options which are not exposed
-via sarracenia, because sarracenia itself picks appropriate values.
+Habituellement, les composants devinent des valeurs par défaut raisonnables pour
+toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
+les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
+par défaut. La file d'attente est l'endroit où les notifications sont conservés
+sur le serveur pour chaque abonné.
 
-The **save** option is used to read messages from the queue and write them
-to a local file, saving them for future processing, rather than processing
-them immediately.  See the `Sender Destination Unavailable`_ section for more details.
-The **restore** option implements the reverse function, reading from the file
-for processing.  
+Par défaut, les composants créent un nom de file d'attente qui doit être unique.
+Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
+**q_<brokerUser>.<programName>.<configName><configName>** . Les utilisateurs 
+peuvent remplacer la valeur par défaut à condition qu'elle commence par 
+**q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
+le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
 
-If **restore_to_queue** is specified, then rather than triggering local
-processing, the messages restored are posted to a temporary exchange 
-bound to the given queue.  For an example, see `Shovel Save/Restore`_ 
+L'option **durable**, si elle est définie sur True, signifie que la file d'attente est écrite.
+sur disque si le courtier est redémarré.
 
+L'option **expire** est exprimée sous forme de durée.... elle fixe la durée de vie...
+une file d'attente sans connexions. Un entier brut est exprimé en secondes, si le suffixe m,h.d,w
+sont utilisés, alors l'intervalle est en minutes, heures, jours ou semaines. Après 
+l'expiration de la file d'attente, le contenu est supprimé, ce qui peut 
+entraîner des lacunes dans le flux de données de téléchargement.  Une valeur de
+1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. 
+Ça dépend de combien de temps on s'attend à ce que l'abonné s'arrête et 
+ne subisse aucune perte de données.
+
+Le réglage **expire** doit être remplacé pour une utilisation opérationnelle.
+La valeur par défaut est basse parce qu'elle définit la durée pendant laquelle
+les ressources du courtier seront assignées, et au début de l'utilisation 
+(lorsque le défaut était d'une semaine), les courtiers étaient souvent 
+surchargés de très peu d'argent. de longues files d'attente pour les 
+expériences restantes.
+
+
+L'option **message-ttl** définit le temps pendant lequel un message peut vivre 
+dans la file d'attente. Passé ce délai, le message est retiré de la file d'attente 
+par le courtier.
+
+L'option **prefetch** définit le nombre de messages à récupérer en une seule fois. 
+Lorsque plusieurs instances sont en cours d'exécution et que prefetch est 4, 
+chaque instance obtiendra jusqu'à quatre messages à la fois.  Pour réduire au 
+minimum le nombre de messages perdus si une instance meurt et que vous avez
+Partage optimal de la charge, le préréglage doit être réglé aussi bas que possible. 
+Cependant, dans les cas de connexion longue distance, il est nécessaire d'augmenter 
+ce nombre, afin de cacher la latence de l'aller-retour, donc un paramètre
+de 10 ou plus peut être nécessaire.
+
+Lorsque **reset** est réglé et qu'un composant est (re)démarré, sa file d'attente 
+est supprimé (s'il existe déjà) et recréé d'après les données du composant au démarrage.
+C'est à ce moment qu'une option de courtier est modifiée, car le courtier va
+refuser l'accès à une file d'attente déclarée avec des options différentes de ce qui a été déclaré
+à sa création. Il peut également être utilisé pour éliminer rapidement une file 
+d'attente lorsqu'un récepteur a été arrêtée pendant une longue période. Si la 
+suppression des doublons est active, alors le cache de réception est également
+effacé.
+
+Le protocole AMQP définit d'autres options de file d'attente qui ne sont pas exposées.
+via Sarracenia, car l´application choisit les valeurs appropriées.
+
+L'option **sauve** est utilisée pour lire les messages de la file d'attente, les écrire
+dans un fichier local, afin de les sauvegarder pour un traitement ultérieur, au lieu de les traiter
+immédiatement.  Voir la section " Destination de l'expéditeur non disponible " pour plus de détails.
+L'option **restore** met en œuvre la fonction inverse, la lecture à partir du fichier.
+pour traitement.
+
+Si **restore_to_queue** est spécifié, alors plutôt que de déclencher le mode local
+les messages restaurés sont enregistrés dans un échange temporaire.
+à la file d'attente donnée.  Pour un exemple, voir `Shovel Save/Restore`_.
+
+FIXME:
 
 AMQP QUEUE BINDINGS
 -------------------
@@ -915,7 +947,7 @@ many protocols appropriate for different situations:
 | Method      | Description                           | Application                          |
 +=============+=======================================+======================================+
 |             |File sent with right name              |Sending to Sarracenia, and            |
-|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_    |post only when file is complete       |
+|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_     |post only when file is complete       |
 |             |by AMQP after file is complete.        |                                      |
 |             |                                       |(Best when available)                 |
 |             | - fewer round trips (no renames)      | - Default on sr_sarra.               |

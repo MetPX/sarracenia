@@ -44,7 +44,7 @@ output can be piped to other processes in classic UNIX text filter style.
 Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
-`sr_sender(1) <sr_sender.1.rst>`_ - send local files to a remote host.
+`sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
 `sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
 `sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
 `sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
@@ -119,7 +119,7 @@ Administrators:
 
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Installation <Install.rst>`_ - initial installation.
-* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
+* `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
  
 and contributors:
 
@@ -285,12 +285,11 @@ like so::
 
    sr_subscribe log *myconfig*
 
-Where *myconfig* is the name of the running configuration.  Log files 
-are placed, as per the XDG Open Directory Specification, There will be a log file 
+Where *myconfig* is the name of the running configuration. Log files 
+are placed as per the XDG Open Directory Specification. There will be a log file 
 for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
 
-   linux in linux: ~/.cache/sarra/log/sr_subscribe_myflow_0001.log
-   Windows: FIXME? dunno.
+   in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
 
 One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
 
@@ -377,8 +376,8 @@ Setting the Broker
 
 An AMQP URI is used to configure a connection to a message pump (aka AMQP broker.)
 Some sarracenia components set a reasonable default for that option. 
-You provide the normal user,host,port of connections.  In most configuration files,
-the password is missing.  The password is normally only included in the credentials.conf file.
+You provide the normal user,host,port of connections. In most configuration files,
+the password is missing. The password is normally only included in the credentials.conf file.
 
 Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
 
@@ -442,8 +441,6 @@ and in early use (when default was 1 week) brokers would often get overloaded wi
 long queues for left-over experiments.  
 
 
-The  **durable** option set to True, means writes the queue
-on disk if the broker is restarted.
 
 The  **message-ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
@@ -904,7 +901,7 @@ many protocols appropriate for different situations:
 | Method      | Description                           | Application                          |
 +=============+=======================================+======================================+
 |             |File sent with right name              |Sending to Sarracenia, and            |
-|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_    |post only when file is complete       |
+|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_     |post only when file is complete       |
 |             |by AMQP after file is complete.        |                                      |
 |             |                                       |(Best when available)                 |
 |             | - fewer round trips (no renames)      | - Default on sr_sarra.               |
