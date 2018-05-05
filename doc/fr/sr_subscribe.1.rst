@@ -4,7 +4,7 @@
 ==============
 
 --------------------------------------------------------------------
-Sélectionner et télécharger conditionnellement les fichiers annoncés
+Sélectionner et télécharger conditionnellement les fichiers dépêchés
 --------------------------------------------------------------------
 
 :Manual section: 1
@@ -26,16 +26,6 @@ DESCRIPTION
 
 .. contents::
 
-Translation questions:
-
-  need to review some terms words given a translation that is reasonable but do not
-  make terminological sense.
-
-   topic  --> sujet    thème 
-   exchange --> échange ... is plain old *exchange* better?
-   published --> poster? publier?   afficher? annoncer?
-   Sarracenia --> Sarracénie ... should not change...        
-    
 
 Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
 Web ou de serveurs de fichiers qui publient des notifications en format `sr_post(7) <sr_post.7.rst>`_ 
@@ -56,7 +46,7 @@ l'URL que sur la sortie standard.  La sortie standard peut être relié à d'aut
 processus dans le style classique d'un filtre de texte UNIX.
 
 Sr_subscribe est très configurable et constitue la base des autres composants
-de la sarracénie :
+de la Sarracenia :
 
 `sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
 `sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
@@ -99,8 +89,8 @@ rabbitmq, ou gérent les configurations.
  - enable:   marquer une configuration comme éligible à l'exécution.
 
 
-Par exemple :  *sr_subscribe foreground dd* exécute le composant sr_subcribe
-avec la commande suivante la configuration dd en tant qu'instance de premier
+Par exemple: *sr_subscribe foreground dd* exécute le composant sr_subcribe
+avec la commande en se servant de la configuration dd en tant qu'instance de premier
 plan unique.
 
 L'action **foreground** est utilisée lors de la construction d'une 
@@ -146,7 +136,7 @@ Administrateurs :
 
 et les contributeurs :
 
-`Guide du développeur <Dev.rst>`_ - contribuant au développement de la sarracénie.
+`Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
 
 Configurations
@@ -409,7 +399,7 @@ de façon spécialisé. Si ce plugin retourne False comme résultat, le
 message est rejeté. Si c'est vrai, le traitement du message se poursuit.
 
 Les sections suivantes expliquent toutes les options pour régler cette 
-partie " consommateur " de les programmes de sarracénie.
+partie " consommateur " de les programmes de Sarracenia.
 
 
 
@@ -420,7 +410,7 @@ Réglage du courtier
 broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>*****.
 
 Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages 
-(AMQP broker). Certains composants de sarracénie définissent une valeur par 
+(AMQP broker). Certains composants de Sarracenia définissent une valeur par 
 défaut raisonnable pour cette option. Vous fournissez l'utilisateur normal,
 l'hôte, le port des connexions. Dans la plupart des fichiers de configuration,
 le mot de passe est manquant. Le mot de passe n'est normalement inclus que dans
@@ -569,7 +559,7 @@ modèles **accepter/rejeter** s'appliquent aux messages envoyés par le du court
 alors que **subtopic** est le filtrage côté serveur.
 
 Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
-d'annonces envoyées au client à un petit sur-ensemble de ce qui est pertinent, 
+de dépêches envoyées au client à un petit sur-ensemble de ce qui est pertinent, 
 et n'effectuer qu'un réglage fin avec l'outil mécanismes côté client, économisant 
 la bande passante et le traitement pour tous.
 
@@ -660,7 +650,7 @@ Dans la séquence #2, l'option accept .* (regexp qui veut dire accepte tout) est
 rencontré avant la déclaration de rejet, de sorte que le rejet n'a aucun effet.
 
 Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
-d'annonces envoyées au composant à un petit sur-ensemble de ce qui est 
+de dépêches envoyées au composant à un petit sur-ensemble de ce qui est 
 pertinent, et n'effectuer qu'un réglage fin avec les mécanismes *accept/reject* 
 côté client, économisant la bande passante et le traitement pour tous. 
 
@@ -747,7 +737,7 @@ un message l'avisant de l'envoi de l'arrivée du fichier. Il s'agit de l'option
 la plus rapide et la moins coûteuse lorsqu'elle est disponible.
 C'est aussi la valeur par défaut lorsqu'un *post_broker* est donné, ce qui 
 indique qu'un autre processus va être notifié après la livraison, par un
-message affiché au post_broker.
+message dépêché au post_broker.
 
 Lorsque l'option **supprimer** est activée, une fois le téléchargement 
 terminé avec succès, l'abonné supprimera le fichier à la source amont.  
@@ -864,7 +854,7 @@ avec l'utilisation de *${..}* notation::
 
    SOURCE - l'utilisateur amqp qui a injecté des données (tirées du message.)
    DR     - la *document root* (répertoir corréspondant à '/' sur un serveur web.)
-   PBD    - le répertoire de la base ou les message sera publier. 
+   PBD    - le répertoire de la base ou les message sera dépêcher. 
    YYYYMMDD - l'horodatage quotidien en cours. (Y-Année, M-Mois, D-Jour du mois)
    HH - l'horodatage horaire actuel.
    *var* - toute variable d'environnement.
@@ -875,7 +865,7 @@ n'est pas décodé ou dérivé du contenu des fichiers livrés. Toutes les dates
 et heures en Sarracénie sont en UTC.
 
 Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez que toute 
-option explicite dans un fichier de confiuguration sarracénie prime sur une variable 
+option explicite dans un fichier de confiuguration Sarracenia prime sur une variable 
 du même nom dans l'environnement.
 
 **base_dir** fournit le chemin d'accès au répertoire qui, lorsqu'il est combiné avec 
@@ -891,8 +881,8 @@ notification est le chemin absolu.
 
 Les fichiers volumineux peuvent être envoyés en une série de parties, plutôt que tous en même temps.
 Lors du téléchargement, si **inplace** est vrai, ces parties seront ajoutées au fichier.
-d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est annoncée aux abonnés.
-Il peut être setté à *false* dans déploiements de sarracénie où une seule pompe 
+d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est dépêchée aux abonnés.
+Il peut être setté à *false* dans déploiements de Sarracenia où une seule pompe 
 ne verra jamais que quelques pièces, pas l'intégralité, des fichiers en plusieurs parties.
 
 L'option **inplace** est *True* par défaut.
@@ -1018,7 +1008,7 @@ vitesse en kilo-octets par seconde... ftp,ftps,ou sftp)
 
 Les bits de permission sur les fichiers de destination écrits sont contrôlés 
 par les directives *preserve_mode*.  *preserve_modes* appliquera les permissions de 
-mode affichées par la source du fichier. Si aucun mode source n'est disponible, le 
+mode en viguer à la source du fichier. Si aucun mode source n'est disponible, le 
 mode *default_mode* sera appliqué aux fichiers, et l'option *default_dir_dir_mode* sera 
 appliqué aux répertoires. Si aucune valeur par défaut n'est spécifiée, alors le 
 système d'exploitation par défaut (sur linux, contrôlé par les paramètres umask)
@@ -1030,12 +1020,12 @@ Pour chaque téléchargement, la somme de contrôle est calculée lors du
 transfert. Si **recompute_chksum** est réglé sur Vrai, et la somme de contrôle
 recalculée diffère de la somme de contrôle dans le message, la nouvelle 
 valeur écrasera celle du message amqp entrant. Ceci est utilisé lorsqu'un 
-fichier est extrait d'une source distante non sarracénienne, auquel cas un lieu
+fichier est extrait d'une source distante non Sarracenia, auquel cas un lieu
 la somme de contrôle du titulaire 0 est spécifiée. Dès réception, une somme 
 de contrôle appropriée devrait être placée dans le fichier pour les 
 consommateurs en aval. On peut également utiliser cette méthode pour 
 remplacer le choix de la somme de contrôle. Par exemple, les anciennes 
-versions de la sarracénie n'ont pas le support du hachage SHA-512, donc 
+versions de la Sarracenia n'ont pas le support du hachage SHA-512, donc 
 on pourrait les remplacer par les sommes de contrôle avec MD5.   Il y a 
 aussi des cas où, pour diverses raisons, l'amont de l'activité de la Les 
 sommes de contrôle sont tout simplement erronées et devraient être 
@@ -1092,9 +1082,9 @@ le destinataire) s´offre pour accommoder différentes situations :
 | entier      |du fichier avant que le transfer soit  |que si aucun autre moyen peut servir  |
 | (mtime)     |considéré Complèté.                    |                                      |
 |             |                                       |Réception de ceux qui ne coopèrent pas|
-|             | Retard des annonces                   |                                      |
-|             | Vulnérable aux pannes de réseau.      | (choix acceptable pour PDS)          |
-|             | vulnérable aux horloges en désaccord  |                                      |
+|             |Retard tous les dépêches               |                                      |
+|             |Vulnérable aux pannes de réseau.       | (choix acceptable pour PDS)          |
+|             |Vulnérable aux horloges en désaccord   |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 
 Par défaut ( quand aucune option *inflight* n'est donnée), si le post_broker est défini, 
@@ -1139,7 +1129,7 @@ NOTES :
 
    NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
    est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
-   le destinataire que l'appareil est en mode le fichier est complet en affichant le
+   le destinataire que l'appareil est en mode le fichier est complet en dépêchant le
    fichier livré à ce courtier, il n'y a donc aucun danger d'être ramassé trop tôt.
 
    Lorsqu'il est mal-utilisé, il arrive que des fichiers incomplets soient traitée 
@@ -1217,7 +1207,7 @@ Voici un court exemple complet de fichier de configuration::
 
 Le fichier ci-dessus se connectera au courtier dd.weather.gc.ca, en tant que
 *anonymous* avec mot de passe *anonymous* (par défaut) pour obtenir des 
-annonces à propos de dans le répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
+dépêches à propos des fichiers qui arrivent dans le répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
 Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés. 
 dans le répertoire courant (ou simplement imprimé sur la sortie standard si l'option -n). 
 a été spécifié.) 
@@ -1233,7 +1223,7 @@ QUEUES - FILES D´ATTENTES et EXECUTION MULTIPLE
 Lorsqu'il est exécuté, **sr_subscribe** choisit un nom de file d'attente qu'il écrit
 à un fichier nommé d'après le fichier de configuration donné en argument à sr_subscribe****.
 avec un suffixe.queue ( ."nom de configuration".queue). 
-Si sr_subscribe est arrêté, les messages affichés continuent de s'accumuler sur 
+Si sr_subscribe est arrêté, les messages dépêchés continuent de s'accumuler sur 
 le courtier dans cette file d'attente (jusqu´a son *expire* -ation).  Lorsque le 
 programme est redémarré, il utilise le nom de la file d'attente stocké dans ce 
 fichier pour se connecter à la même file d'attente et ne pas perdre de messages.
@@ -1404,7 +1394,7 @@ la valeur doit être l'une des valeurs suivantes: :
    1 - toujours envoyer des fichiers entiers en une seule partie.
    <taille du bloc> - utilisation d'une taille de partition fixe (exemple : 1M)
 
-Les fichiers peuvent être annoncés comme plusieurs parties.  Chaque partie 
+Les fichiers peuvent être dépêchés en plusieurs parties.  Chaque partie 
 a une somme de contrôle séparée. Les pièces et leurs sommes de contrôle sont 
 stockées dans le cache. Les cloisons peuvent traverser le réseau séparément, 
 et en parallèle.  Lorsque les fichiers changent, les transferts sont 
@@ -1417,18 +1407,19 @@ plus de détails.
 L'option *post_base_dir* fournit le chemin du répertoire qui, lorsqu'il est 
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local 
 vers le fichier de données à enregistrer. La partie racine du chemin sera 
-supprimée de l'annonce postée. Pour sftp : url's il peut être approprié de 
+supprimée du dépêche. Pour sftp : url's il peut être approprié de 
 spécifier un chemin relatif à un compte utilisateur.
 Un exemple de cette utilisation serait :  -pdr ~user -url sftp:user@host
-pour file : url's, base_dir n'est généralement pas approprié.  Pour afficher un chemin absolu,
-omettez le paramètre -dr, et spécifiez simplement le chemin complet en argument.
+pour file : url's, base_dir n'est généralement pas approprié.  Pour dépêcher 
+un chemin absolu, omettez le paramètre -dr, et spécifiez simplement le chemin 
+complet en argument.
 
 L'option **url** définit comment obtenir le fichier.... il définit le protocole,
 hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne pas
 notifier les pouvoirs et informer séparément les consommateurs à ce sujet.
 
 L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
-sera affiché.  Dans la plupart des cas, il s'agit d'un'xpublic'.
+sera dépêcher.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 
 Chaque fois qu'une publication se produit pour un produit, un utilisateur peut 
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
@@ -1485,7 +1476,7 @@ données soient envoyées. Le pompage est implanté par les administrateurs quan
 arrange pour la copie de données entre des pompes. C´est accompli par moyen des 
 plugins on_message qui sont fournis avec le paquet.
 
-lorsque les messages sont affichés, si aucune destination n'est spécifiée, la 
+lorsque les messages sont dépêcher, si aucune destination n'est spécifiée, la 
 livraison est présumée être seulement la pompe elle-même.  Pour spécifier les 
 pompes de destination supplémentaires pour un fichier, les sources utilisent la 
 commande l'option *to* quand on publie.  Cette option définit le champ 
@@ -1601,7 +1592,7 @@ l'un des :
 - on_watch -- lorsque le rassemblement des événements **sr_watch** commence, le plugin on_watch est invoqué.
   Il pourrait être utilisé
   Il pourrait être utilisé pour mettre un fichier dans un des répertoires de surveillance 
-  et le faire publier quand c'est nécessaire.
+  et le faire dépêcher quand c'est nécessaire.
 
 
 
@@ -1700,7 +1691,7 @@ Quelques autres variables disponibles: :
   parent.msg.offset : position de décalage du fichier distant
   parent.msg.length : longueur du fichier ou de la partie de fichier
   parent.msg.in_partfile : Fichier T/F temporaire dans le fichier partiel
-  parent.msg.local_url : url pour une nouvelle annonce
+  parent.msg.local_url : url pour une nouvelle dépêche
 
 
 Voir le `Guide de programmation <Prog.rst>`_ pour plus de détails.
@@ -1947,7 +1938,7 @@ le fichier nommé à partir de chaque site jusqu'à ce qu'il en trouve un.
 En cas de succès, le fichier est téléchargé dans **config_dir/Downloads** et 
 interprété par le programme à partir de là.  Il y a un processus similaire 
 pour tous les *plugins* qui peuvent être interprété et exécuté à l'intérieur 
-des composantes de la sarracénie.  Les composants chercheront en premier lieu
+des composantes de la Sarracenia.  Les composants chercheront en premier lieu
 dans le répertoire *plugins* dans l'arbre de configuration des 
 utilisateurs, puis dans le site, puis dans le paquet sarracenia lui-même, 
 et finalement il regardera à distance.
@@ -1966,11 +1957,11 @@ AUSSI VOIR
 
 `sr_winnow(1) <sr_winnow.1.rst>`_ - une pelle avec cache dessus, pour séparer le blé de l'ivraie.
 
-`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux messages pointant vers les fichiers locaux, et les envoie aux systèmes distants et les annonce à nouveau.
+`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux messages pointant vers les fichiers locaux, et les envoie aux systèmes distants et les dépêche à nouveau.
 
 `sr_report(1) <sr_report.1.rst>`_ - messages de rapport de processus.
 
-`sr_post(1) <sr_post.1.rst>`_ - affiche les annonces de fichiers spécifiques.
+`sr_post(1) <sr_post.1.rst>`_ - dépêche les annonces de fichiers spécifiques.
 
 `sr_watch(1) <sr_watch.1.rst>`_ - postez cette boucle, en veillant sur les répertoires.
 
@@ -2114,7 +2105,7 @@ alors les champs de sous-partition suivants sont disponibles: :
 
 
 Les champs'R' du sixième champ, et les autres champs proviennent du premier champs.
-Lorsque des données sont injectées dans la sarracénie à partir de 
+Lorsque des données sont injectées dans la Sarracenia à partir de 
 Sundew, l'en-tête de message *sundew_extension* est inclu.  Cet entête fournira la 
 source de ces sous-titres même si les champs ont été supprimés dans les noms
 de fichiers actuels utilisés sur le serveur.
@@ -2180,108 +2171,45 @@ copier des fichiers).  Donc, on a échangé tous les composants pour utiliser
 le préfixe sr\_.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-priorité, et le dernier champ est un horodatage.  Un échantillon
-In MetPX Sundew, there is a much more strict file naming standard, specialised for use with 
-World Meteorological Organization (WMO) data.   Note that the file naming convention predates, and 
-bears no relation to the WMO file naming convention currently approved, but is strictly an internal 
-format.   The files are separated into six fields by colon characters.  The first field, DESTFN, 
-gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replacing blanks::
-
-   TTAAii CCCC YYGGGg BBB ...  
-
-(see WMO manuals for details) followed by numbers to render the product unique (as in practice, 
-though not in theory, there are a large number of products which have the same identifiers.)
-The meanings of the fifth field is a priority, and the last field is a date/time stamp.  A sample 
-file name::
-
-   SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
-
-If a file is sent to sarracenia and it is named according to the sundew conventions, then the 
-following substition fields are available::
-
-  ${T1}    replace by bulletin's T1
-  ${T2}    replace by bulletin's T2
-  ${A1}    replace by bulletin's A1
-  ${A2}    replace by bulletin's A2
-  ${ii}    replace by bulletin's ii
-  ${CCCC}  replace by bulletin's CCCC
-  ${YY}    replace by bulletin's YY   (obs. day)
-  ${GG}    replace by bulletin's GG   (obs. hour)
-  ${Gg}    replace by bulletin's Gg   (obs. minute)
-  ${BBB}   replace by bulletin's bbb
-  ${RYYYY} replace by reception year
-  ${RMM}   replace by reception month
-  ${RDD}   replace by reception day
-  ${RHH}   replace by reception hour
-  ${RMN}   replace by reception minutes
-  ${RSS}   replace by reception second
-
-The 'R' fields from from the sixth field, and the others come from the first one.
-When data is injected into sarracenia from Sundew, the *sundew_extension* message header
-will provide the source for these substitions even if the fields have been removed
-from the delivered file names.
-
-
-
-
-DEPRECATED SETTINGS
+Notes de Traduction
 -------------------
 
-These settings pertain to previous versions of the client, and have been superceded.
-
-- **host          <broker host>  (unsupported)** 
-- **amqp-user     <broker user>  (unsupported)** 
-- **amqp-password <broker pass>  (unsupported)** 
-- **http-user     <url    user>  (now in credentials.conf)** 
-- **http-password <url    pass>  (now in credentials.conf)** 
-- **topic         <amqp pattern> (deprecated)** 
-- **exchange_type <type>         (default: topic)** 
-- **exchange_key  <amqp pattern> (deprecated)** 
-- **lock      <locktext>         (renamed to inflight)** 
+La traduction n´est pas tellement poli en ce moment. Il y a des termes dont 
+le mot juste en français n´est pas tellement claire.  On a commencé avec
+www.deepl.com, et ajuster après avec un peu de révision, mais ce n´est pas
+super réussi.  Il faut un peu plus de travail.
 
 
-
-HISTORY
--------
-
-Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. It is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
-version was deployed in 2013 on an experimental basis.  The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02.  dd_subscribe still works,
-but it uses the deprecated settings described above.  It is implemented python2, whereas
-the sarracenia toolkit is in python3.
-
-In 2007, when the MetPX was originally open sourced, the staff responsible were part of
-Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
-of disappearing species which are not furry (the furry ones get all the attention) and
-because search engines will find references to names which are more unusual more easily, 
-the original MetPX WMO switch was named after a carnivorous plant on the Species At
-Risk Registry:  The *Thread-leaved Sundew*.  
-
-The organization behind Metpx have since moved to Shared Services Canada, but when
-it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
-of insectivorous pitcher plants. We like plants that eat meat!  
+Topic
+~~~~~
+  
+des fois ca devient *sujet*, des fois *thème*,  
 
 
-dd_subscribe Renaming
-~~~~~~~~~~~~~~~~~~~~~
+Exchange
+~~~~~~~~
 
-The new module (MetPX-Sarracenia) has many components, is used for more than 
-distribution, and more than one web site, and causes confusion for sys-admins thinking
-it is associated with the dd(1) command (to convert and copy files).  So, we switched
-all the components to use the sr\_ prefix.
+Exchange est traduit comme échange, mais c´est plus dans le sens boursière... bourse?
+Peut-être garder le mot original sera plus claire?
 
+
+Publish/Post/Announced
+~~~~~~~~~~~~~~~~~~~~~~
+
+Un des problèmes, même en anglais, est qu´on n´a pas choisi un seul mot 
+pour l´activité d´envoyer un message à un courtier.  Il y a au moins trois 
+familles de mots:
+
+Des fois, *post* qui devrait être compris dans le sense *dépêche*, mais qui 
+est des fois traduit comme *poteau.* 
+
+On utilise *advertised* qui devient *annoncer*, ce qui n´est pas pire.
+
+On utilse *publish* qui devient *publier*. 
+
+des fois on vois *affiché*.
+
+Il me semble qu´on devrait choisir un mot pour facilité la compréhension,
+et il me semble que *dépêche* est le plus juste. 
+
+conseils bienvenus.
