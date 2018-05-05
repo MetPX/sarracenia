@@ -2084,29 +2084,29 @@ de produits qui ont les mêmes identificateurs.
 La signification du cinquième champ est une priorité, et le dernier champ est un horodatage.
 La signification des autres champs varie selon le contexte.  
 Si un fichier est envoyé à Sarracenia et il est nommé selon les conventions Sundew, 
-alors les champs de sous-partition suivants sont disponibles: :
+alors les champs de sous-partition suivants sont disponibles::
 
-  ${T1} remplacer par T1 du bulletin.
-  ${T2} remplacer par le bulletin T2 du bulletin T2
-  ${A1} remplacer par l'A1 du bulletin.
-  ${A2} remplacer par A2 du bulletin.
-  ${ii} remplacer par ii du bulletin.
-  ${CCCC} remplacer par le CCCC du bulletin.
-  ${YY} remplacer par YY du bulletin (jour du mois)
-  ${GG} remplacer par le GG du bulletin (heure du jour, UTC)
-  ${gg} remplacer par le Gg du bulletin (minute de l´heure.)
-  ${BBBB} remplacer par bbb du bulletin.
-  ${RYYYY} Remplacer par l'année de réception.
-  ${RMM} remplacer par le mois de réception
-  ${RDD} remplacer par le jour de réception
-  ${RHH} Remplacer par l'heure de réception.
-  ${RMM} remplacer par minutes de réception.
-  ${RSS} remplacer par réception seconde
+  ${T1}    remplacer par T1 du bulletin.
+  ${T2}    remplacer par le bulletin T2 du bulletin T2
+  ${A1}    remplacer par l'A1 du bulletin.
+  ${A2}    remplacer par A2 du bulletin.
+  ${ii}    remplacer par ii du bulletin.
+  ${CCCC}  remplacer par le CCCC du bulletin.
+  ${YY}    remplacer par YY du bulletin (jour du mois)
+  ${GG}    remplacer par le GG du bulletin (heure du jour, UTC)
+  ${gg}    remplacer par le Gg du bulletin (minute de l´heure.)
+  ${BBBB}  remplacer par bbb du bulletin.
+  ${RYYYY} remplacer par l'année de réception.
+  ${RMM}   remplacer par le mois de réception
+  ${RDD}   remplacer par le jour de réception
+  ${RHH}   Remplacer par l'heure de réception.
+  ${RMM}   remplacer par minutes de réception.
+  ${RSS}   remplacer par réception seconde
 
 
-Les champs'R' du sixième champ, et les autres champs proviennent du premier champs.
+Les champs 'R' du sixième champ, et les autres champs proviennent du premier champs.
 Lorsque des données sont injectées dans la Sarracenia à partir de 
-Sundew, l'en-tête de message *sundew_extension* est inclu.  Cet entête fournira la 
+Sundew, l'en-tête de message *sundew_extension* est inclu. Cet entête fournira la 
 source de ces sous-titres même si les champs ont été supprimés dans les noms
 de fichiers actuels utilisés sur le serveur.
 

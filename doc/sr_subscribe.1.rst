@@ -1886,8 +1886,6 @@ will provide the source for these substitions even if the fields have been remov
 from the delivered file names.
 
 
-
-
 DEPRECATED SETTINGS
 -------------------
 
