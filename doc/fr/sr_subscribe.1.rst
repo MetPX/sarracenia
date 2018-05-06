@@ -3,9 +3,9 @@
  SR_Subscribe 
 ==============
 
---------------------------------------------------------------------
-Sélectionner et télécharger conditionnellement les fichiers dépêchés
---------------------------------------------------------------------
+-------------------------------------------------
+Sélectionner et télécharger les fichiers dépêchés
+-------------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -26,9 +26,10 @@ DESCRIPTION
 
 
 Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
-Web ou de serveurs de fichiers qui publient des notifications en format `sr_post(7) <sr_post.7.rst>`_ 
-dès que chaque fichier est disponible.  Les clients se connectent à un
-*Courtier* (souvent le même que le serveur lui-même) et s'abonnent aux 
+Web ou de serveurs de fichiers qui publient des notifications en 
+format `sr_post(7) <sr_post.7.rst>`_ dès que chaque fichier est disponible.
+Les clients se connectent à un
+*courtier* (souvent le même que le serveur lui-même) et s'abonnent aux 
 notifications. Les notifications *sr_post* fournissent de véritables 
 notifications *push* pour les dossiers accessibles sur la toile  
 (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage
