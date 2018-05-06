@@ -1652,7 +1652,7 @@ Most users are defined using the *declare* option.
 - **declare <role> <name>   (no defaults)**
 
 subscriber
-~~~~~~~~~~
+----------
 
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
@@ -1663,6 +1663,7 @@ subscriber
   a specific account.
 
 source
+------
 
   A user permitted to subscribe or originate data.  A source does not necessarily represent
   one person or type of data, but rather an organization responsible for the data produced.
