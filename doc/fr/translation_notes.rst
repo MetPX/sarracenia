@@ -8,17 +8,22 @@ www.deepl.com, et ajuster après avec un peu de révision, mais ce n´est pas
 super réussi.  Il faut un peu plus de travail.
 
 
-Topic
-=====
-  
-des fois ca devient *sujet*, des fois *thème*,  
++---------------+---------------------+-----------------+-------------------+
+| Term          | literal translations| Pick            | reasoning         |
++===============+=====================+=================+===================+
+| topic         | sujet, thème, objet | thème           |Daniel used it     |
++---------------+---------------------+-----------------+-------------------+
+| Exchange      | échange, bourse?    | échange?        |probable plain     |
+|               |                     |                 |English *exchange* |
+|               |                     |                 |is better?         |
++---------------+---------------------+-----------------+-------------------+
+| publish       | publier, annoncer   | dépêcher v.     |It is supposed to  |
+| post          | poteau, afficher    | annonce n.?     |be fast.           |
+| announce      |                     |                 |should noun be     |
+|               |                     |                 |a dépêche?         |
++---------------+---------------------+-----------------+-------------------+
 
 
-Exchange
-========
-
-Exchange est traduit comme échange, mais c´est plus dans le sens boursière... bourse?
-Peut-être garder le mot original sera plus claire?
 
 
 Publish/Post/Announced

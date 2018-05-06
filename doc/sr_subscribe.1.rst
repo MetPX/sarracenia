@@ -1904,7 +1904,7 @@ These settings pertain to previous versions of the client, and have been superce
 
 
 HISTORY
--------
+=======
 
 Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. It is from
@@ -1928,7 +1928,7 @@ of insectivorous pitcher plants. We like plants that eat meat!
 
 
 dd_subscribe Renaming
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The new module (MetPX-Sarracenia) has many components, is used for more than 
 distribution, and more than one web site, and causes confusion for sys-admins thinking
