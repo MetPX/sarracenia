@@ -498,8 +498,7 @@ time, one can just declare *exchange_suffix kk* which will result in the exchang
 being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
 
 Several topic options may be declared. To give a correct value to the subtopic,
-
-One has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
+one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the more powerful regular expression 
 based  **accept/reject**  mechanisms described below. The difference being that the 
 AMQP filtering is applied by the broker itself, saving the notices from being delivered 
@@ -1260,8 +1259,8 @@ for file: url's, base_dir is usually not appropriate.  To post an absolute path,
 omit the -dr setting, and just specify the complete path as an argument.
 
 The **url** option sets how to get the file... it defines the protocol,
-host, port, and optionally, the user.  It is a good practice not to
-notify the credentials and separately inform the consumers about it.
+host, port, and optionally, the user. It is best practice to not include 
+passwords in urls.
 
 The **post_exchange** option set under which exchange the new notification
 will be posted.  Im most cases it is 'xpublic'.

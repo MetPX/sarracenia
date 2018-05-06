@@ -584,11 +584,11 @@ Note :
   Lorsque les répertoires ont ces caractères génériques, ou des espaces dans leur nom, ils
   sera codé par URL ('#' devient %23)
   Lorsque les répertoires ont des points dans leur nom, cela changera.
-  la hiérarchie des sujets.
+  la hiérarchie des thèmes.
 
 FIXME :
       les dièses sont encodés, mais pas vu le code pour les autres valeurs.
-      Vérifiez si les astérisques dans les noms de répertoires des sujets doivent être codés par URL.
+      Vérifiez si les astérisques dans les noms de répertoires des thèmes doivent être codés par URL.
       Vérifiez si les périodes dans les noms de répertoires dans les rubriques doivent être codées par URL.
 
 
@@ -1392,8 +1392,8 @@ un chemin absolu, omettez le paramètre -dr, et spécifiez simplement le chemin
 complet en argument.
 
 L'option **url** définit comment obtenir le fichier.... il définit le protocole,
-hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne pas
-notifier les pouvoirs et informer séparément les consommateurs à ce sujet.
+hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne 
+pas inclure les mots de passe dans l´URL.
 
 L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
 sera dépêcher.  Dans la plupart des cas, il s'agit d'un'xpublic'.

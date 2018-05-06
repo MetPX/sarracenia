@@ -11,7 +11,10 @@ super réussi.  Il faut un peu plus de travail.
 +---------------+---------------------+-----------------+-------------------+
 | Term          | literal translations| Pick            | reasoning         |
 +===============+=====================+=================+===================+
-| topic         | sujet, thème, objet | thème           |Daniel used it     |
+|binding        |liaison              |                 |good.              |
++---------------+---------------------+-----------------+-------------------+
+|checksum       |somme de contrôle    |                 |um, ok will french |
+|               |                     |                 |people get that?   |
 +---------------+---------------------+-----------------+-------------------+
 |Exchange       | échange, bourse?    | échange?        |probable plain     |
 |               |                     |                 |English *exchange* |
@@ -22,8 +25,9 @@ super réussi.  Il faut un peu plus de travail.
 |announce       |publication          |                 |should noun be     |
 |notifications  |notifications        |                 |a dépêche?         |
 +---------------+---------------------+-----------------+-------------------+
-|checksum       |somme de contrôle    |                 |um, ok will french |
-|               |                     |                 |people get that?   |
+|subscribe      |abonner              |                 |good.              |
++---------------+---------------------+-----------------+-------------------+
+| topic         |sujet, thème, objet  | thème           |Daniel used it     |
 +---------------+---------------------+-----------------+-------------------+
 
 
