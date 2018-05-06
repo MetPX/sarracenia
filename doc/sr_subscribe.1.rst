@@ -20,7 +20,6 @@ SYNOPSIS
 
  **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
 
- (formerly **dd_subscribe** )
 
 DESCRIPTION
 ===========
@@ -41,14 +40,14 @@ supplying to an external program) specifying the -n (*notify_only*, or *no downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-Sr_subscribe is very configurable and is the basis for other components of sarracenia: 
+Sr_subscribe is very configurable and is the basis for other components of sarracenia:
 
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
-`sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
-`sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
-`sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
-`sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
-
+ - `sr_report(1) <sr_report.1.rst>`_ - process report messages.
+ - `sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
+ - `sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
+ - `sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
+ - `sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
+ 
 All of these components accept the same options, with the same effects.
 There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implements a
 subset of the options here, but where they are implemented, they have the same effect.

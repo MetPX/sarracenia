@@ -9,8 +9,8 @@ Sélectionner et télécharger conditionnellement les fichiers dépêchés
 
 :Manual section: 1
 :Date: @Date@
-:Version: Version@ @Version
-:Manuel group: Metpx-Sarracenia Suite
+:Version: @Version@
+:Manuel group: la Suite Metpx-Sarracenia
 
 SYNOPSIS
 ========
@@ -18,8 +18,6 @@ SYNOPSIS
  sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status configfile
 
  sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove configfile
-
- (anciennement **dd_subscribe**))
 
 DESCRIPTION
 ===========
@@ -43,16 +41,14 @@ ou de transferts.
 (par exemple pour à un programme externe) en spécifiant le -n (*notify_only*, 
 ou *notify_only*, ou *no download*). supprimer le téléchargement et n'afficher
 l'URL que sur la sortie standard.  La sortie standard peut être relié à d'autres
-processus dans le style classique d'un filtre de texte UNIX.
+processus dans le style classique d'un filtre de texte UNIX. Sr_subscribe est 
+très configurable et constitue la base plusieurs autres composants de Sarracenia:
 
-Sr_subscribe est très configurable et constitue la base des autres composants
-de la Sarracenia :
-
-`sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
-`sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
-`sr_winnow(8) <sr_winnow.8.rst>`_ - supprimer les doublons
-`sr_shovel(8) <sr_shovel.8.rst>`_ - copier des messages
-`sr_sarra(8) <sr_sarra.8.rst>`_ - - S'abonner, acquérir, et recursivement Re-annoncer Ad nauseam.
+ - `sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
+ - `sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
+ - `sr_winnow(8) <sr_winnow.8.rst>`_ - supprimer les doublons
+ - `sr_shovel(8) <sr_shovel.8.rst>`_ - copier des messages
+ - `sr_sarra(8) <sr_sarra.8.rst>`_ - - S'abonner, acquérir, et recursivement Re-annoncer Ad nauseam.
 
 Tous ces composants acceptent les mêmes options, avec les mêmes effets.
 Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version de C qui 
@@ -124,19 +120,19 @@ sur le site sourceforge qui fournissent une meilleure introduction :
 
 utilisateurs :
 
-`Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
-`Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
-`Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
+* `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
+* `Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
+* `Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
 
 Administrateurs :
 
-`Guide d'administration <Admin.rst>`_ - Configuration des pompes.
-`Installation <Install.rst>`_ - installation initiale.
-`Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
+* `Guide d'administration <Admin.rst>`_ - Configuration des pompes.
+* `Installation <Install.rst>`_ - installation initiale.
+* `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
 
 et les contributeurs :
 
-`Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
+* `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
 
 Configurations
@@ -1950,7 +1946,7 @@ et finalement il regardera à distance.
 
 
 AUSSI VOIR
-----------
+==========
 
 
 `sr_shovel(1) <sr_shovel.1.rst>`_ - messages de processus (pas de téléchargement).
@@ -1977,7 +1973,7 @@ AUSSI VOIR
 
 
 COMPATIBILITE avec SUNDEW
--------------------------
+=========================
 
 Pour la compatibilité avec sundew, il existe des options de livraison supplémentaires qui peuvent être spécifiées.
 
@@ -2064,7 +2060,7 @@ Un message sélectionné par le quatrième accepter serait livré inchangé dans
 
 
 Substitutions OMM
-~~~~~~~~~~~~~~~~~
+-----------------
 
 
 Dans MetPX Sundew, il y a une norme de nommage de fichiers beaucoup plus stricte, 
@@ -2129,8 +2125,8 @@ Ces paramètres concernent les versions précédentes du client et ont été sup
 
 
 
-HISTORY
--------
+Histoire
+========
 
 Dd_subscribe a été initialement conçu pour **dd.weather.gc.ca**, un site 
 Web d'Environnement Canada où une grande variété de produits météorologiques 
@@ -2162,7 +2158,7 @@ Nous aimons les plantes qui mangent de la viande !
 
 
 dd_subscribe Renommage
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 Le nouveau module (MetPX-Sarracenia) a de nombreux composants, est 
 utilisé pour plus que et plus d'un site web, et cause de la confusion pour la
@@ -2172,7 +2168,7 @@ le préfixe sr\_.
 
 
 Notes de Traduction
--------------------
+===================
 
 La traduction n´est pas tellement poli en ce moment. Il y a des termes dont 
 le mot juste en français n´est pas tellement claire.  On a commencé avec
@@ -2181,20 +2177,20 @@ super réussi.  Il faut un peu plus de travail.
 
 
 Topic
-~~~~~
+-----
   
 des fois ca devient *sujet*, des fois *thème*,  
 
 
 Exchange
-~~~~~~~~
+--------
 
 Exchange est traduit comme échange, mais c´est plus dans le sens boursière... bourse?
 Peut-être garder le mot original sera plus claire?
 
 
 Publish/Post/Announced
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 Un des problèmes, même en anglais, est qu´on n´a pas choisi un seul mot 
 pour l´activité d´envoyer un message à un courtier.  Il y a au moins trois 
