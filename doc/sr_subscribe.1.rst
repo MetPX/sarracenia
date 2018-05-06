@@ -64,7 +64,7 @@ When any component is invoked, an operation and a configuration file are specifi
  - status: check if the configuration is running.
  - stop: stop the configuration from running
 
-Note that the sanity check is invoked by heartbeat processing in sr_audit on a regular basis.
+Note that the *sanity* check is invoked by heartbeat processing in sr_audit on a regular basis.
 The remaining operations manage the resources (exchanges,queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
@@ -545,22 +545,48 @@ note:
       Review whether periods in directory names in topics should be URL-encoded.
  
 
-Regexp Message Filtering 
-------------------------
+Client-side Filtering
+---------------------
 
 We have selected our messages through **exchange**, **subtopic** and
-perhaps patterned  **subtopic** with AMQP's limited wildcarding. 
-The broker puts the corresponding messages in our queue.
-The component downloads the these messages.
+perhaps patterned  **subtopic** with AMQP's limited wildcarding which
+is all done by the broker (server-side.) The broker puts the 
+corresponding messages in our queue. The subscribed component 
+downloads the these messages.  Once the message is downloaded, Sarracenia 
+clients apply more flexible client side filtering using regular expressions.
 
-Sarracenia clients implement a the more powerful client side filtering
-using regular expression based mechanisms.
+Brief Introduction to Regular Expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regular expressions are a very powerful way of expressing pattern matches. 
+They provide extreme flexibility, but in these examples we will only use a
+very trivial subset: The . is a wildcard matching any single character. If it
+is followed by an occurrence count, it indicates how many letters will match
+the pattern. the * (asterisk) character, means any number of occurrences.
+so:
+
+ - .* means any sequence of characters of any length. In other words, match anything.
+ - cap.* means any sequence of characters that starts with cap.
+ - .*CAP.* means any sequence of characters with CAP somewhere in it. 
+ - .*cap means any sequence of characters that ends with CAP.  In case where multiple portions of the string could match, the longest one is selected.
+ - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
+
+Please consult various internet resources for more information on the full
+variety of matching possible with regular expressions:
+
+ - https://docs.python.org/3/library/re.html
+ - https://en.wikipedia.org/wiki/Regular_expression
+ - http://www.regular-expressions.info/ 
+
+
+Regexp in Sarracenia
+~~~~~~~~~~~~~~~~~~~~
 
 - **accept    <regexp pattern> (optional)**
 - **reject    <regexp pattern> (optional)**
 - **accept_unmatch   <boolean> (default: False)**
 
-The  **accept**  and  **reject**  options use regular expressions (regexp).
+The  **accept**  and  **reject**  options process regular expressions (regexp).
 The regexp is applied to the the message's URL for a match.
 
 If the message's URL of a file matches a **reject**  pattern, the message
@@ -819,8 +845,6 @@ When the option is set, values in the message for the *source* and *from_cluster
   self.msg.headers['source']       = <brokerUser>
   self.msg.headers['from_cluster'] = cluster
 
-HERE
-
 replacing any values present in the message. This setting should always be used when ingesting data from a
 user exchange. These fields are used to return reports to the origin of injected data.
 It is commonly combined with::
@@ -975,8 +999,7 @@ NOTES:
    file is complete by posting the delivered file to that broker, so there is no danger
    of it being picked up early.
 
-   When used in-appropriately, one will suffer occasionally incomplete files being
-   delivered.
+   When used in-appropriately, there will occasionally be incomplete files delivered.
 
 
 

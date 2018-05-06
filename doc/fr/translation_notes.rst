@@ -13,14 +13,17 @@ super réussi.  Il faut un peu plus de travail.
 +===============+=====================+=================+===================+
 | topic         | sujet, thème, objet | thème           |Daniel used it     |
 +---------------+---------------------+-----------------+-------------------+
-| Exchange      | échange, bourse?    | échange?        |probable plain     |
+|Exchange       | échange, bourse?    | échange?        |probable plain     |
 |               |                     |                 |English *exchange* |
 |               |                     |                 |is better?         |
 +---------------+---------------------+-----------------+-------------------+
-| publish       | publier, annoncer   | dépêcher v.     |It is supposed to  |
-| post          | poteau, afficher    | annonce n.?     |be fast.           |
-| announce      |                     |                 |should noun be     |
-|               |                     |                 |a dépêche?         |
+|publish        |publier, annoncer    | dépêcher v.     |It is supposed to  |
+|post           |poteau, afficher     | dépêche n.?     |be fast.           |
+|announce       |publication          |                 |should noun be     |
+|notifications  |notifications        |                 |a dépêche?         |
++---------------+---------------------+-----------------+-------------------+
+|checksum       |somme de contrôle    |                 |um, ok will french |
+|               |                     |                 |people get that?   |
 +---------------+---------------------+-----------------+-------------------+
 
 

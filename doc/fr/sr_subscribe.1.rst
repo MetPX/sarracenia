@@ -15,9 +15,9 @@ Sélectionner et télécharger les fichiers dépêchés
 SYNOPSIS
 ========
 
- sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status configfile
+ sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status fichierDeConfiguration
 
- sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove configfile
+ sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove fichierDeConfiguration
 
 DESCRIPTION
 ===========
@@ -26,17 +26,16 @@ DESCRIPTION
 
 
 Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
-Web ou de serveurs de fichiers qui publient des notifications en 
+Web ou de serveurs de fichiers qui publient des *dépêches* en 
 format `sr_post(7) <sr_post.7.rst>`_ dès que chaque fichier est disponible.
 Les clients se connectent à un
 *courtier* (souvent le même que le serveur lui-même) et s'abonnent aux 
-notifications. Les notifications *sr_post* fournissent de véritables 
-notifications *push* pour les dossiers accessibles sur la toile  
+*dépêches*. Le mécanisme de *sr_post* est du *push* véritable
+pour les dossiers accessibles sur la toile  
 (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage
-périodique des annuaires ou le style ATOM/RSS. Les notifications. Sr_subscribe
-peut être configuré pour poster des messages après leur téléchargement, pour
-les mettre à la disposition des consommateurs en vue d'un traitement ultérieur
-ou de transferts.
+périodique des répertoires ou le style ATOM/RSS. Sr_subscribe
+peut être configuré aussie pour dépêcher à sont tour après le téléchargement, 
+pour informer d´autres processus locales de la disponibilité de fichiers.
 
 **sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, 
 (par exemple pour à un programme externe) en spécifiant le -n (*notify_only*, 
@@ -52,7 +51,7 @@ très configurable et constitue la base plusieurs autres composants de Sarraceni
  - `sr_sarra(8) <sr_sarra.8.rst>`_ - - S'abonner, acquérir, et recursivement Re-annoncer Ad nauseam.
 
 Tous ces composants acceptent les mêmes options, avec les mêmes effets.
-Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version de C qui 
+Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version en C qui 
 implémente un sous-ensemble des options ici, mais lorsqu'elles sont présentes,
 ont le même effet.
 
@@ -68,7 +67,6 @@ spécifiés. L'action en est une de:
  - start:  démarrer la configuration
  - status: vérifier si la configuration est en cours d'exécution.
  - stop: arrêter la configuration.
-
 
 Notez que *sanity* est invoqué par le traitement périodique *Heartbeat* dans
 sr_audit sur une base régulière. Les action restantes gèrent les ressources 
@@ -94,7 +92,7 @@ L'action **foreground** est utilisée lors de la construction d'une
 configuration ou pour le débogage. L'instance **foreground** sera exécutée
 indépendamment des autres instances qui sont en cours d'exécution.
 Si des instances sont en cours d'exécution, il partage la même file d'attente
-de messages avec eux. Un utilisateur arrête l'instance **foreground** en
+de dépêches avec eux. Un utilisateur arrête l'instance **foreground** en
 utilisant simplement <ctrl-c> sur linux. ou utiliser d'autres moyens pour tuer le processus.
 
 Les actions **cleanup**, **declare**, **setup**, **setup** peuvent être utilisées pour gérer les 
@@ -374,9 +372,9 @@ CONSUMER
 
 La plupart des composants Metpx Sarracenia boucle sur la réception et la 
 consommation de messages AMQP. Habituellement, les messages d'intérêt sont 
-dans le format `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité 
-d'un fichier en publiant l'URL it´s (ou une partie de celle-ci).
-Il y a également le format `sr_report(7) <sr_report.7.rst>`_ qui peuvent 
+dans le format d´une *dépêche* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité 
+d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
+Il y a également le format *rappor* `sr_report(7) <sr_report.7.rst>`_ qui peuvent 
 être traités avec les mêmes outils. Les messages AMQP sont publiés avec
 un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange 
 délivre des messages aux files d'attente. Pour recevoir de messages,  
@@ -389,7 +387,7 @@ doit ensuite lier la file d'attente à une ou plusieurs bourses de manière
 Une fois les liaisons (anglais: *bindings*) établies, le programme peut 
 recevoir des messages. Lorsqu'un message est reçu, un filtrage 
 supplémentaire est possible en utilisant des expressions régulières sur
-les messages AMQP.  Après qu'un message a passé avec succès ce processus
+les messages AMQP. Après qu'un message a passé avec succès ce processus
 de sélection et d'autres validations internes, le processus peut exécuter
 un script de plugin **on_message** pour traiter le message davantage
 de façon spécialisé. Si ce plugin retourne False comme résultat, le 
@@ -440,7 +438,7 @@ Mise en file d'attente sur broker :
 - **nom_de_queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **durable <boolean> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
-- **message - **message-ttl <durée> (par défaut : Aucun)**
+- **message-ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)****
 - **reset <boolean> (par défaut : False)**
 - **restaurer <boolean> (par défaut : False)**
@@ -450,7 +448,7 @@ Mise en file d'attente sur broker :
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
 les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
-par défaut. La file d'attente est l'endroit où les notifications sont conservés
+par défaut. La file d'attente est l'endroit où les dépêches sont conservés
 sur le serveur pour chaque abonné.
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
@@ -480,9 +478,9 @@ surchargés de très peu d'argent. de longues files d'attente pour les
 expériences restantes.
 
 
-L'option **message-ttl** définit le temps pendant lequel un message peut vivre 
-dans la file d'attente. Passé ce délai, le message est retiré de la file d'attente 
-par le courtier.
+L'option **message-ttl** (*message time to live*) définit la durée de vie
+d´un message dans la file d'attente. Passé ce délai, le message est retiré de 
+la file d'attente par le courtier.
 
 L'option **prefetch** définit le nombre de messages à récupérer en une seule fois. 
 Lorsque plusieurs instances sont en cours d'exécution et que prefetch est 4, 
@@ -516,14 +514,14 @@ les messages restaurés sont enregistrés dans un échange temporaire.
 à la file d'attente donnée.  Pour un exemple, voir `Shovel Save/Restore`_.
 
 
-AMQP QUEUE BINDINGS
--------------------
+Liaisons de file d´attente AMQP 
+-------------------------------
 
 Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une 
 fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à 
 une bourse. Les liaisons (*bindings*) définissent ce que l'on entend par
-les messages (notifications d'URL) que le programme reçoit. La racine du thème
+les dépêches que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
 (mais les développeurs peuvent l'écraser avec le **topic_prefix****.
 option.)
@@ -545,7 +543,6 @@ traduira résultera dans la déclaration de l´échange: *xs_<username>_kkk* (re
 la valeur par défaut *xpublic*).
 
 Plusieurs options de thème peuvent être déclarées. Donner une valeur correcte au sous-thème,
-
 On a le choix de filtrer en utilisant **subtopic** avec seulement les *wildcard* (caractères 
 de substitution) limité de l'AMQP et longueur limitée à 255 octets codés, ou bien les
 expressions régulières plus puissantes, avec les options **accept/reject** décrits 
@@ -563,7 +560,7 @@ la bande passante et le traitement pour tous.
 topic_prefix est principalement d'intérêt pendant les transitions de version 
 de protocole, où l'on souhaite spécifier une version sans protocole par défaut 
 des messages auxquels s'abonner, ou bien pour manipuler des rapports de disposition,
-au lieu de notifications ( *v02.report* )
+au lieu de dépêches ( *v02.report* )
 
 Habituellement, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
 **subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt.
@@ -595,22 +592,52 @@ FIXME :
       Vérifiez si les périodes dans les noms de répertoires dans les rubriques doivent être codées par URL.
 
 
-Filtrage des messages Regexp 
-----------------------------
+Filtrage Côté Client
+--------------------
 
 Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
 Le courtier met les messages correspondants dans notre file d'attente (*queue*).
 Le composant télécharge ces messages.
 
-Les clients Sarracenia implémentent un filtrage plus puissant côté client.
-en utilisant des mécanismes basés sur les expressions régulières.
+Les clients Sarracenia implémentent un filtrage plus flexible côté client
+en utilisant les expressions régulières.
+
+
+Brève introduction aux expressions régulières
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Les expressions régulières sont un moyen très puissant d'exprimer les correspondances de motifs. 
+Ils offrent une flexibilité extrême, mais dans ces exemples, nous utiliserons seulement un
+petit sous-ensemble : Le point (.) est un joker qui correspond à n'importe quel caractère 
+unique. S'il est suivi d'un nombre d'occurrences, il indique le nombre de lettres 
+qui correspondent. Le caractère * (astérisque), signifie un nombre quelconque d'occurrences.
+alors :
+
+ - .* signifie n'importe quelle séquence de caractères de n'importe quelle longueur. 
+   En d'autres termes, faire correspondre n'importe quoi.
+ - cap.* signifie toute séquence de caractères commençant par cap.
+ - .*CAP.* signifie n'importe quelle séquence de caractères avec CAP quelque part dedans. 
+ - .*CAP signifie toute séquence de caractères qui se termine par CAP.  
+ - Dans le cas où plusieurs portions de la chaîne de caractères pourraient correspondre, la plus longue est sélectionnée.
+ - .*?CAP comme ci-dessus, mais *non-greedy*, ce qui signifie que le match le plus court est choisi.
+ - noter que l'implantaions de regexp en C n'inclu pas le *greediness*, alors certains expressions
+   ne seront pas interpretés pareilles par les outils implanté en C: sr_cpost, sr_cpump, où libsrshim.
+
+Veuillez consulter diverses ressources Internet pour obtenir de plus amples renseignements: 
+
+ - `https://docs.python.org/fr/3/library/re.html <https://docs.python.org/fr/3/library/re.html>`_
+ - `https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re <https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re>`_
+
+
+Regexp en Sarracenia
+~~~~~~~~~~~~~~~~~~~~
 
 - **accept <expression régulière (regexp)>  (facultatif)**.
 - **reject <expression régulière (regexp)> (facultatif)**.
 - **accept_unmatch <boolean> (par défaut : False (faux))**.
 
-Les options **accept** et **reject** utilisent des expressions régulières (regexp).
-La regexp est appliquée à l'URL du message pour une correspondance.
+Les options **accept** et **reject** traitent des expressions régulières (regexp).
+La regexp est appliquée à l'URL du message pour détecter une correspondance.
 
 Si l'URL du message d'un fichier correspond à un motif **reject**, on informe
 le courtier que le message a été consommé et on abandonne son traitement.
@@ -618,8 +645,8 @@ le courtier que le message a été consommé et on abandonne son traitement.
 Celui qui correspond à un motif **accept** est traité par le composant.
 
 Dans de nombreuses configurations, les options **accept** et **reject**
-sont spécifiés ensembles, et avec l'option **répertoire**.  Ils relient 
-ensuite les messages acceptés à la valeur **répertoire** sous laquelle 
+sont spécifiés ensembles, et avec l'option **directory**.  Ils relient 
+ensuite les messages acceptés à la valeur **directory** sous laquelle 
 ils sont spécifiés.
 
 Après que toutes les options **accept** / **reject** sont traitées normalement.
@@ -629,7 +656,6 @@ outrepasser ce comportement de défaut, définissez **accept_unmatch** à True.
 Les **accept/rejet** sont interprétés dans l'ordre qu´ils apparaissent
 dans le fichier de configuration.  Chaque option est traitée en ordre 
 de haut en bas.  par exemple :
-
 
 sequence #1::
 
@@ -657,7 +683,8 @@ OPTIONS DE LIVRAISON
 --------------------
 
 Ces options définissent quels fichiers l'utilisateur veut et où il sera placé,
-et sous quel nom. (un booléen est un option qui a une valeur logique: vrai/faux)
+et sous quel nom. (un `booléen <https://fr.wikipedia.org/wiki/Alg%C3%A8bre_de_Boole_(logique)>`_
+est un option qui a une valeur logique: vrai/faux)
 
 - **accept    <patron regexp>  (requis sauf si accept_unmatch est True)** 
 - **accept_unmatch   <booléan> (défaut: False)**
@@ -759,7 +786,7 @@ Les options **accept** et **reject** utilisent des expressions régulières
 (regexp) pour correspondre à l'URL. Ces options sont traitées
 séquentiellement. L'URL d'un fichier qui correspond à un motif **reject** n'est
 jamais téléchargé.  Celui qui correspond à un patron **accept** est téléchargé
-et placé dans le répertoire indiqué par l'option **répertoire** la plus proche 
+et placé dans le répertoire indiqué par l'option **directory** la plus proche 
 au-dessus de l'option **accept** correspondante.
 
 **accept_unmatch** est utilisé pour décider ce qu'il faut faire lorsqu'aucune 
@@ -903,29 +930,13 @@ ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
 Pour se protéger contre les deux problèmes, les administrateurs sélectionnent 
 l'option **source_from_exchange**.
 
-Lorsque l'option est définie, les valeurs du message pour les en-têtes *source* et *from_cluster* seront alors remplacées par::
+Lorsque l'option est définie, les valeurs du message pour les en-têtes *source* 
+et *from_cluster* seront alors remplacées par::
 
-  self.msg.headers['source']       = <brokerUser>
+  self.msg.headers['source']       = <usager du courtier>
   self.msg.headers['from_cluster'] = cluster
 
---
-
-The **heartbeat** option sets how often to execute periodic processing as determined by 
-the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
-
-When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
-is compared against previous ones received, to see if it is a duplicate. If the message is 
-considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including 
-parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
-cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
-the cache size limited. Different settings are appropriate for different use cases.
-
-**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
-alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.
-
-
-remplacer toute valeur présente dans le message. Ce paramètre doit toujours 
+primant sur toute valeur présente dans le message. Ce paramètre doit toujours 
 être utilisé lors de l'acquisition de données provenant d'un fichier échange 
 d'utilisateurs. Ces champs sont utilisés pour renvoyer les rapports à l'origine 
 des données injectées. Il est généralement combiné avec: :
@@ -942,8 +953,8 @@ de journal à chaque intervale.
 
 Lorsque **suppress_duplicates** (aussi **cache**) est mis à une valeur non nulle, 
 chaque nouveau message est comparé aux précédents reçus, pour voir s'il s'agit d'un 
-duplicata. Si le message est considéré comme un duplicata, il est sauté. Qu'est-ce 
-qu'un duplicata ? Un fichier portant le même nom (incluant en-tête des pièces) 
+doublon. Si le message est considéré comme un doublon, il est sauté. Qu'est-ce 
+qu'un doublon? Un fichier portant le même nom (incluant en-tête des pièces) 
 et la somme de contrôle. Chaque intervalle *hearbeat*, un processus de nettoyage
 recherche les fichiers dans le répertoire qui n'ont pas été référencés dans 
 **cache** secondes, et les efface, afin de les conserver.  la taille du cache
@@ -955,7 +966,7 @@ taille fixe, ou ne jamais partitionner les fichiers *(blocksize 1.)*  Il faut é
 l'algorithme dynamique qui changera la taille de la partition utilisée au fur
 et à mesure que le fichier grandit.
 
-**la cache pour supprimer les doublons est local pour chaque instance.** Lorsque **N**
+**La cache pour supprimer les doublons est local pour chaque instance.** Lorsque **N**
 instances partagent une file d'attente, la première fois qu'un message est reçu, il 
 pourrait être choisi par une instance, et si une copie est reçue, il est 
 probable qu'il sera pris en charge par une autre instance. Pour une suppression 
@@ -964,37 +975,6 @@ Il faut une **première couche d'abonnés (sr_shovels)** avec suppression des do
 et l´option *post_exchange_split* activé, ce qui route les messages aux instance
 selon leur checksum vers une **seconde couche de d´abonnés (sr_winnow) dont les 
 caches de suppression de doublons sont actives. 
-
----
-
-
-  
-**kbytes_ps** is greater than 0, the process attempts to respect this delivery
-speed in kilobytes per second... ftp,ftps,or sftp)
-
-**FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
-
-**default_mode, default_dir_mode, preserve_modes**, 
-
-Permission bits on the destination files written are controlled by the *preserve_mode* directives.
-*preserve_modes* will apply the mode permissions posted by the source of the file.
-If no source mode is available, the *default_mode* will be applied to files, and the
-*default_dir_mode* will be applied to directories. If no default is specified,
-then the operating system  defaults (on linux, controlled by umask settings)
-will determine file permissions. (note that the *chmod* option is interpreted as a synonym
-for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
-
-For each download, the checksum is computed during transfer. If **recompute_chksum**
-is set to True, and the recomputed checksum differ from the on in the message,
-the new value will overwrite the one from the incoming amqp message. This is used
-when a file is being pulled from a remote non-sarracenia source, in which case a place
-holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
-message for downstream consumers. On can also use this method to override checksum choice.
-For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
-the checksums with MD5.   There are also cases, where, for various reasons, the upstream
-checksums are simply wrong, and should be overridden for downstream consumers.
-
-
 
 Lorsque **kbytes_ps** est supérieur à 0, le processus tente de respecter cette limite de
 vitesse en kilo-octets par seconde... ftp,ftps,ou sftp)
@@ -1047,7 +1027,7 @@ le destinataire) s´offre pour accommoder différentes situations :
 |            Protocoles d'assurance de la livraison (par ordre de préférence)                | 
 |                                                                                            |
 +-------------+---------------------------------------+--------------------------------------+
-|Méthode      | Description                           | Application                          |
+|Méthode      |Description                            |Application                           |
 +=============+=======================================+======================================+
 |             |Fichier envoyé avec le bon nom         |Envoyer à Sarracénie, et              |
 | NONE        |message `sr_post(7) <sr_post.7.rst>`_  |publié quand le fichier est complet   |
@@ -1361,11 +1341,11 @@ S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
 
 
 
-OPTIONS DE PUBLICATION
-======================
+OPTIONS DE DEPECHE
+==================
 
-Lorsque des fichiers publicitaires sont téléchargés pour les consommateurs en aval, 
-il faut paramétrer la configuration rabbitmq pour un courtier de sortie.
+Lorsque des fichiers sont téléchargés pour ensuite les dépêché aux consommateurs en aval, 
+il faut indiquer un courtier on on enverra les dépêches.
 
 L'option **post_broker** définit toutes les informations d'authentification 
 pour se connecter à courtier sortie **AMQP**.
@@ -1418,27 +1398,23 @@ notifier les pouvoirs et informer séparément les consommateurs à ce sujet.
 L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
 sera dépêcher.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 
-Chaque fois qu'une publication se produit pour un produit, un utilisateur peut 
+Chaque fois qu'une dépêche se produit pour un produit, un utilisateur peut 
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
 une telle configuration.
 
-L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant de la 
-formule suivante hashing the last character of the checksum to the post_exchange name,
-afin de répartir la production entre un certain nombre d'échanges.  C'est ce qui 
-est actuellement utilisé dans les pompes à trafic élevé pour permettre des instances 
-multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple: :
+L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant d'une
+division entière du dernier digit de la somme de contrôle, afin de répartir les 
+dépêches entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
+C'est utilisé dans les pompes à trafic élevé pour permettre des instances 
+multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
 
     post_exchange_split 5
     post_exchange xwinnow
 
-
 se traduira par l'envoi de messages à cinq bourses nommées xwinnow00, xwinnow01,
-xwinnow02, xwinnow03 et xwinnow04, où chaque bourse ne recevra qu'un cinquième de ce montant.
-du flux total.
-
-will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
-xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
-of the total flow.
+xwinnow02, xwinnow03 et xwinnow04, où chaque bourse ne recevra qu'un cinquième du flux total.
+xinnow01 recevra tous les messages dont la reste quand sa somme de contrôle est divisé par 5 
+est 1.
 
 
 Configurations à distance
@@ -1950,21 +1926,21 @@ AUSSI VOIR
 ==========
 
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - messages de processus (pas de téléchargement).
+`sr_shovel(1) <sr_shovel.1.rst>`_ - copier des dépêches (pas les fichiers).
 
-`sr_winnow(1) <sr_winnow.1.rst>`_ - une pelle avec cache dessus, pour séparer le blé de l'ivraie.
+`sr_winnow(1) <sr_winnow.1.rst>`_ - une sr_shovel(1) avec *cache* pour vaner (séparer le blé de l'ivraie.)
 
-`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux messages pointant vers les fichiers locaux, et les envoie aux systèmes distants et les dépêche à nouveau.
+`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux dépêches des fichiers locaux, envoie les aux systèmes distants, et les dépêcher à nouveau.
 
 `sr_report(1) <sr_report.1.rst>`_ - messages de rapport de processus.
 
-`sr_post(1) <sr_post.1.rst>`_ - dépêche les annonces de fichiers spécifiques.
+`sr_post(1) <sr_post.1.rst>`_ - dépêcher les dépêches de fichiers.
 
-`sr_watch(1) <sr_watch.1.rst>`_ - postez cette boucle, en veillant sur les répertoires.
+`sr_watch(1) <sr_watch.1.rst>`_ -  sr_post(1) en boucle, veillant sur les répertoires.
 
 `sr_sarra(1) <sr_sarra.1.rst>`_ - Outil pour S´abonner, acquérir, et renvoyer récursivement ad nauseam.
 
-`sr_post(7) <sr_post.7.rst>`_ - Le format des messages d'annonce.
+`sr_post(7) <sr_post.7.rst>`_ - Le format des dépêches (messages d'annonce AMQP)
 
 `sr_report(7) <sr_report.7.rst>`_ - le format des messages de rapport.
 
