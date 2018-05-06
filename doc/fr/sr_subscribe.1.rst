@@ -1810,9 +1810,9 @@ par défaut, le nom du fichier de sauvegarde est choisi
 dans ~/.cache/sarra/shovel/<config>_<instance>.save.
 Pour choisir une destination différente, l'option *save_file* est disponible::
 
-  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428./save.conf premier plan
+  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428./save.conf foreground
 
-créera les fichiers de sauvegarde dans le répertoire courant nommé here_000x.save où x est le numéro d'instance (0 pour le premier plan).
+créera les fichiers de sauvegarde dans le répertoire courant nommé here_000x.save où x est le numéro d'instance (0 pour le foreground).
 
 
 ROLES
