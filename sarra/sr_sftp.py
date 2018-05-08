@@ -401,25 +401,25 @@ class sr_sftp(sr_proto):
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
-        # this cannot be used : no throttling, no timeout on buffer ... etc
-        #if length == 0 :
-        #   self.sftp.put(local_file,remote_file)
-        #   return
-
-        # write : remote file open, seek if needed
-
-        alarm_set(self.iotime)
-        try   : self.sftp.stat(remote_file)
-        except: 
-                rfp = self.sftp.file(remote_file,'wb',self.bufsize)
-                rfp.settimeout(1.0*self.iotime)
-                rfp.close()
-        alarm_cancel()
+        # simple file
 
         alarm_set(2*self.iotime)
-        rfp = self.sftp.file(remote_file,'r+b',self.bufsize)
-        rfp.settimeout(1.0*self.iotime)
-        if remote_offset != 0 : rfp.seek(remote_offset,0)
+
+        if length == 0 :
+           rfp = self.sftp.file(remote_file,'wb',self.bufsize)
+           rfp.settimeout(1.0*self.iotime)
+
+        # parts
+        else:
+           try   : self.sftp.stat(remote_file)
+           except: 
+                   rfp = self.sftp.file(remote_file,'wb',self.bufsize)
+                   rfp.close()
+
+           rfp = self.sftp.file(remote_file,'r+b',self.bufsize)
+           rfp.settimeout(1.0*self.iotime)
+           if remote_offset != 0 : rfp.seek(remote_offset,0)
+
         alarm_cancel()
 
         # read from local_file and write to rfp
@@ -430,7 +430,7 @@ class sr_sftp(sr_proto):
 
         alarm_set(self.iotime)
         self.fpos = remote_offset + rw_length
-        rfp.truncate(self.fpos)
+        if length != 0 : rfp.truncate(self.fpos)
 
         # close
 
@@ -440,9 +440,9 @@ class sr_sftp(sr_proto):
     # rename
     def rename(self,remote_old,remote_new) :
         self.logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
-        alarm_set(self.iotime)
-        try    : self.sftp.remove(remote_new)
+        try    : self.delete(remote_new)
         except : pass
+        alarm_set(self.iotime)
         self.sftp.rename(remote_old,remote_new)
         alarm_cancel()
 
