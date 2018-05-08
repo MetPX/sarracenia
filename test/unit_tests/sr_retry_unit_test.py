@@ -99,6 +99,7 @@ def test_retry_msg_append_get_file(retry,message):
           r = i%2
 
           message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),i)
+          message.properties['application_headers']['sum'] = message.body
 
           # message to retry
           if r == 0 : fp = retry.msg_append_to_file(fp,path,message)
@@ -163,6 +164,7 @@ def test_retry_get_simple(retry,message):
     while i < 3 :
           i = i+1
           message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),i)
+          message.properties['application_headers']['sum'] = message.body
           fp = retry.msg_append_to_file(fp,path,message)
     fp.close()
 
@@ -192,6 +194,7 @@ def test_retry_overall(retry,message):
     msg_count = 0 
     while msg_count < 10 :
           message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),msg_count)
+          message.properties['application_headers']['sum'] = message.body
           fp = retry.msg_append_to_file(fp,retry.retry_path,message)
           msg_count = msg_count + 1
     fp.close()
@@ -233,6 +236,7 @@ def test_retry_overall(retry,message):
              try   : del message.properties['application_headers']['_retry_tag_']
              except: pass
              message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),msg_count)
+             message.properties['application_headers']['sum'] = message.body
              retry.add_msg_to_new_file(message)
              msg_count = msg_count + 1
 
@@ -259,6 +263,7 @@ def test_retry_ctrl_c(retry,message):
     msg_count = 0 
     while msg_count < 10 :
           message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),msg_count)
+          message.properties['application_headers']['sum'] = message.body
           fp = retry.msg_append_to_file(fp,retry.retry_path,message)
           msg_count = msg_count + 1
     fp.close()
@@ -301,6 +306,7 @@ def test_retry_ctrl_c(retry,message):
              try   : del message.properties['application_headers']['_retry_tag_']
              except: pass
              message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),msg_count)
+             message.properties['application_headers']['sum'] = message.body
              retry.add_msg_to_new_file(message)
              msg_count = msg_count + 1
              a_count   = a_count + 1
@@ -342,6 +348,7 @@ def test_retry_ctrl_c(retry,message):
              try   : del message.properties['application_headers']['_retry_tag_']
              except: pass
              message.body = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),msg_count)
+             message.properties['application_headers']['sum'] = message.body
              retry.add_msg_to_new_file(message)
              msg_count = msg_count + 1
              
@@ -378,10 +385,11 @@ def self_test():
     cfg.debug          = True
     cfg.retry_path     = retry_path
 
-    headers = {}
-    headers['my_header_attr'] = 'my_header_attr_value'
-
     notice = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),0)
+
+    headers = {}
+    headers['sum'] = notice
+    headers['my_header_attr'] = 'my_header_attr_value'
 
     message = raw_message(logger)
 

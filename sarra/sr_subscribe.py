@@ -1543,6 +1543,11 @@ class sr_subscribe(sr_instances):
         if self.restore or self.restore_queue :
            self.restore_messages()
 
+        # retry messages straighten up at start up
+
+        if self.retry_mode : 
+           self.consumer.retry.on_heartbeat(self)
+
         # processing messages
 
         if self.vip : last = not self.has_vip()
