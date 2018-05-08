@@ -6,10 +6,10 @@ lists all changes between versions.
 
 **2.18.05b1**
 
-* bugfix       sr_sftp  differentiate put part vs put file               
+* bugfix       sr_sftp  differentiate put part vs put file 
 * new          sr_retry uses caching for message uniqueness
 *              sr_ftp,sr_sftp better connection test
-* update       sr_poll  default post_base_url from destination url without password 
+* update       sr_poll  default post_base_url from destination url without password
 *              sr_subscribe,sr_sender  log attempt
 *              sr_subscribe retry.on_heartbeat on startup
 *              sr_sender/sr_util if file to send does not exist... give it "attempt" chances
