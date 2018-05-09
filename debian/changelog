@@ -1,3 +1,17 @@
+metpx-sarracenia (2.18.05b1) unstable; urgency=medium
+
+  * bugfix       sr_sftp  differentiate put part vs put file
+  * new          sr_retry uses caching for message uniqueness
+  *              sr_ftp,sr_sftp better connection test
+  * update       sr_poll  default post_base_url from destination url without password
+  *              sr_subscribe,sr_sender  log attempt
+  *              sr_subscribe retry.on_heartbeat on startup
+  *              sr_sender/sr_util if file to send does not exist... give it "attempt" chances
+  * doc          fixes and translation into french in progress
+  *              updated examples link, and samples directory cleanup
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Wed, 09 May 2018 12:47:28 +0000
+
 metpx-sarracenia (2.18.04b5) unstable; urgency=medium
 
   * 
