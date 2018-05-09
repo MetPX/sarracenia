@@ -139,12 +139,7 @@ class sr_file():
 def file_insert( parent,msg ) :
     parent.logger.debug("file_insert")
 
-    # file must exists
-    if not os.path.isfile(msg.relpath):
-       fp = open(msg.relpath,'w')
-       fp.close()
-
-    fp = open(msg.relpath,'r+b')
+    fp = open(msg.relpath,'rb')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
     ok = file_write_length(fp, msg, parent.bufsize, msg.filesize, parent )
@@ -295,6 +290,27 @@ def file_process( parent ) :
     parent.logger.debug("file_process")
 
     msg = parent.msg
+
+    # FIXME - MG - DOMINIC's LOCAL FILE MIRRORING BUG CASE
+    # say file.txt does not exist
+    # sequential commands in script
+    # touch file.txt
+    # mv file.txt newfile.txt
+    # under libsrshim generate 3 amqp messages : 
+    # 1- download/copy file.txt
+    # 2- move message 1 :  remove file.txt with newname newfile.txt
+    # 3- move message 2 :  download newfile.txt with oldname file.txt
+    # message (1) will never be processed fast enough ... and will fail
+    # message (2) removing of a file not there is considered successfull
+    # message (3) is the one that will guaranty the the newfile.txt is there and mirroring is ok.
+    #
+    # message (1) fails.. in previous version a bug was preventing an error (and causing file.txt rebirth with size 0)
+    # In current version, returning that this message fails would put it under the retry process for ever and for nothing.
+    # I decided for the moment to warn and to return success... it preserves old behavior without the 0 byte file generated
+
+    if not os.path.isfile(msg.relpath): 
+       parent.logger.warning("%s moved or removed since announced" % msg.relpath)
+       return True
 
     try:    curdir = os.getcwd()
     except: curdir = None
