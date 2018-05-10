@@ -157,7 +157,9 @@ class sr_sftp(sr_proto):
 
         # really connected
         try    : cwd = self.getcwd()
-        except : return False
+        except :
+                 self.close()
+                 return False
 
         return True
 
