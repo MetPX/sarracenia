@@ -31,7 +31,8 @@ class Html_parser():
            return
 
         sdate = words[0] + ' ' + words[1]
-        t = time.strptime(sdate,'%d-%b-%Y %H:%M')
+        try   : t = time.strptime(sdate,'%d-%b-%Y %H:%M')
+        except: t = time.strptime(sdate,'%Y-%m-%d %H:%M')
         mydate = time.strftime('%b %d %H:%M',t)
 
         mysize = words[-1]
