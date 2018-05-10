@@ -1711,6 +1711,18 @@ class sr_subscribe(sr_instances):
            except:  self.logger.error("problem with accept file option %s" % self.currentFileOption )
            token[-1] = [filename]
 
+        # MG this was taken from the sr_sender when not derived from sr_subscribe.
+        # if a desftn_script is set in a plugin, it is going to be applied on all file
+        # this might be confusing
+
+        if self.destfn_script :
+           self.new_file = filename
+           ok = self.destfn_script(self)
+           if filename != self.new_file :
+              self.logger.debug("destfn_script : %s becomes %s "  % (filename,self.new_file) )
+              filename = self.new_file
+              token[-1] = [filename]
+
         # not mirroring
 
         if not self.mirror :
@@ -1731,10 +1743,12 @@ class sr_subscribe(sr_instances):
 
         # resolution of sundew's dirPattern
 
+        tfname = filename
         if 'sundew_extension' in self.msg.headers.keys() :
             tfname  = filename.split(':')[0] + ':' + self.msg.headers[ 'sundew_extension' ]
-            new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
+        # when sr_sender did not derived from sr_subscribe it was always called
+        new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
         # reset relpath from new_dir
 
