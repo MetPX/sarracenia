@@ -206,6 +206,13 @@ class sr_http(sr_proto):
         self.req       = None
         self.urlstr    = path
 
+        # have noticed that some site does not allow // in path
+        if path.startswith('http://')  and '//' in path[7:] :
+           self.urlstr = 'http://' + path[7:].replace('//','/')
+           
+        if path.startswith('https://') and '//' in path[8:] :
+           self.urlstr = 'https://' + path[8:].replace('//','/')
+
         alarm_set(self.iotime)
 
         try:
