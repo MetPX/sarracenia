@@ -155,8 +155,11 @@ class sr_sftp(sr_proto):
            self.close()
            return False
 
-        # really connected
-        try    : cwd = self.getcwd()
+        # really connected, getcwd would not work, send_ignore would not work... so chdir used
+        try    :
+                 alarm_set(self.iotime)
+                 self.sftp.chdir(self.originalDir)
+                 alarm_cancel()
         except :
                  self.close()
                  return False
