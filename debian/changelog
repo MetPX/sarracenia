@@ -1,3 +1,13 @@
+metpx-sarracenia (2.18.05b2) unstable; urgency=medium
+
+  * bugfix       sr_sftp use chdir to see if connection is still alive
+  *              sr_http some site do not tolerate '//' in path
+  *              sr_subscribe some code added for sr_sender (lost in inheritance)
+  *              sr_file if a file does not exist and should be copied/linked just warn (Dominic)
+  * update       flow_test test2_f61.conf no use of post_total_save (race condition)
+
+ -- local michel <aspymjg@grogne1.cmc.ec.gc.ca>  Mon, 14 May 2018 14:41:23 +0000
+
 metpx-sarracenia (2.18.05b1) unstable; urgency=medium
 
   * bugfix       sr_sftp  differentiate put part vs put file
