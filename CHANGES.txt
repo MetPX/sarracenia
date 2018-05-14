@@ -4,6 +4,14 @@
 
 lists all changes between versions.
 
+**2.18.05b2**
+
+* bugfix       sr_sftp use chdir to see if connection is still alive
+*              sr_http some site do not tolerate '//' in path
+*              sr_subscribe some code added for sr_sender (lost in inheritance)
+*              sr_file if a file does not exist and should be copied/linked just warn (Dominic)
+* update       flow_test test2_f61.conf no use of post_total_save (race condition)
+
 **2.18.05b1**
 
 * bugfix       sr_sftp  differentiate put part vs put file 
