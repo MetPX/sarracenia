@@ -185,27 +185,98 @@ class sr_poll(sr_post):
 
 
     # check for pattern matching in directory name
+    # FIXME MG  this set_dir_pattern starts with the same as the one in sr_subscribe
+    #           to which I added things that sr_poll was supporting
+    #           this set_dir_pattern should be placed in sr_config.py
+    #           and than remove in sr_poll and in sr_subscribe.
+    #           I left it here because v2.18.05b2 was deployed on px[1-8]-ops
+    #           and I wanted to tell that this mod would not touch any processes
+    #           on these servers...
 
-    def dirPattern(self,path) :
-        """
-        Replace pattern in directory... 
-        """
+    def set_dir_pattern(self,cdir):
 
-        ndestDir = ''
+        new_dir = cdir
 
-        DD = path.split("/")
-        for  ddword in DD[1:] :
-             ndestDir += '/'
-             if ddword == "" : continue
+        if '${BD}' in cdir and self.base_dir != None :
+           new_dir = new_dir.replace('${BD}',self.base_dir)
 
-             nddword = ""
-             DW = ddword.split("$")
-             for dwword in DW :
-                 nddword += self.matchPattern(dwword,dwword)
+        if '${PBD}' in cdir and self.post_base_dir != None :
+           new_dir = new_dir.replace('${PBD}',self.post_base_dir)
 
-             ndestDir += nddword
+        if '${DR}' in cdir and self.document_root != None :
+           self.logger.warning("DR = document_root should be replaced by BD for base_dir")
+           new_dir = new_dir.replace('${DR}',self.document_root)
 
-        return ndestDir
+        if '${PDR}' in cdir and self.post_base_dir != None :
+           self.logger.warning("PDR = post_document_root should be replaced by PBD for post_base_dir")
+           new_dir = new_dir.replace('${PDR}',self.post_base_dir)
+
+        if '${YYYYMMDD}' in cdir :
+           YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
+           new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
+
+        if '${SOURCE}' in cdir :
+           new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
+
+        if '${HH}' in cdir :
+           HH = time.strftime("%H", time.gmtime()) 
+           new_dir = new_dir.replace('${HH}',HH)
+
+        if '${YYYY}' in cdir : 
+           YYYY = time.strftime("%Y", time.gmtime())
+           new_dir = new_dir.replace('${YYYY}',YYYY)
+
+        if '${YYYY-1D}' in cdir : 
+           epoch  = time.mktime(time.gmtime()) - 24*60*60
+           YYYY1D = time.strftime("%Y", time.localtime(epoch) ) 
+           new_dir = new_dir.replace('${YYYY-1D}',YYYY1D)
+
+        if '${MM}' in cdir : 
+           MM = time.strftime("%m", time.gmtime())
+           new_dir = new_dir.replace('${MM}',MM)
+
+        if '${MM-1D}' in cdir : 
+           epoch = time.mktime(time.gmtime()) - 24*60*60
+           MM1D  =  time.strftime("%m", time.localtime(epoch) ) 
+           new_dir = new_dir.replace('${MM-1D}',MM1D)
+
+        if '${JJJ}' in cdir : 
+           JJJ = time.strftime("%j", time.gmtime()) 
+           new_dir = new_dir.replace('${JJJ}',JJJ)
+
+        if '${JJJ-1D}' in cdir : 
+           epoch = time.mktime(time.gmtime()) - 24*60*60
+           JJJ1D = time.strftime("%j", time.localtime(epoch) )
+           new_dir = new_dir.replace('${JJJ-1D}',JJJ1D)
+
+        if '${YYYYMMDD-1D}' in cdir :
+           epoch  = time.mktime(time.gmtime()) - 24*60*60
+           YYYYMMDD1D = time.strftime("%Y%m%d", time.localtime(epoch) )
+           new_dir = new_dir.replace('${YYYYMMDD-1D}',YYYYMMDD1D)
+
+        if '${YYYYMMDD-2D}' in cdir :
+           epoch  = time.mktime(time.gmtime()) - 2*24*60*60
+           YYYYMMDD2D = time.strftime("%Y%m%d", time.localtime(epoch) )
+           new_dir = new_dir.replace('${YYYYMMDD-2D}',YYYYMMDD2D)
+
+        if '${YYYYMMDD-3D}' in cdir :
+           epoch  = time.mktime(time.gmtime()) - 3*24*60*60
+           YYYYMMDD3D = time.strftime("%Y%m%d", time.localtime(epoch) )
+           new_dir = new_dir.replace('${YYYYMMDD-3D}',YYYYMMDD3D)
+
+        if '${YYYYMMDD-4D}' in cdir :
+           epoch  = time.mktime(time.gmtime()) - 4*24*60*60
+           YYYYMMDD4D = time.strftime("%Y%m%d", time.localtime(epoch) )
+           new_dir = new_dir.replace('${YYYYMMDD-4D}',YYYYMMDD4D)
+
+        if '${YYYYMMDD-5D}' in cdir :
+           epoch  = time.mktime(time.gmtime()) - 5*24*60*60
+           YYYYMMDD5D = time.strftime("%Y%m%d", time.localtime(epoch) )
+           new_dir = new_dir.replace('${YYYYMMDD-5D}',YYYYMMDD5D)
+
+        new_dir = self.varsub(new_dir)
+
+        return new_dir
 
     # =============
     # __do_poll__
@@ -348,60 +419,6 @@ class sr_poll(sr_post):
             self.logger.warning("sr_poll/lsdir Type: %s, Value: %s" % (stype ,svalue))
 
         return False, {}, {}
-
-    def matchPattern(self,keywd,defval) :
-        """
-        Matching keyword with different patterns
-        """
-        if keywd[:6] == "{YYYY}"         : 
-                                           return   time.strftime("%Y", time.gmtime()) + keywd[6:]
-
-        if keywd[:9] == "{YYYY-1D}"      : 
-                                           epoch  = time.mktime(time.gmtime()) - 24*60*60
-                                           return   time.strftime("%Y", time.localtime(epoch) ) + keywd[9:]
-
-        if keywd[:4] == "{MM}"           : 
-                                           return   time.strftime("%m", time.gmtime()) + keywd[4:]
-
-        if keywd[:7] == "{MM-1D}"        : 
-                                           epoch  = time.mktime(time.gmtime()) - 24*60*60
-                                           return   time.strftime("%m", time.localtime(epoch) ) + keywd[7:]
-
-        if keywd[:5] == "{JJJ}"          : 
-                                           return   time.strftime("%j", time.gmtime()) + keywd[5:]
-
-        if keywd[:8] == "{JJJ-1D}"       : 
-                                           epoch  = time.mktime(time.gmtime()) - 24*60*60
-                                           return   time.strftime("%j", time.localtime(epoch) ) + keywd[8:]
-
-        if keywd[:4] == "{HH}"           : 
-                                           return   time.strftime("%H", time.gmtime()) + keywd[4:]
-
-
-        if keywd[:10] == "{YYYYMMDD}"    : 
-                                           return   time.strftime("%Y%m%d", time.gmtime()) + keywd[10:]
-
-        if keywd[:13] == "{YYYYMMDD-1D}" :
-                                           epoch  = time.mktime(time.gmtime()) - 24*60*60
-                                           return   time.strftime("%Y%m%d", time.localtime(epoch) ) + keywd[13:]
-
-        if keywd[:13] == "{YYYYMMDD-2D}" :
-                                           epoch  = time.mktime(time.gmtime()) - 48*60*60
-                                           return   time.strftime("%Y%m%d", time.localtime(epoch) ) + keywd[13:]
-
-        if keywd[:13] == "{YYYYMMDD-3D}" :
-                                           epoch  = time.mktime(time.gmtime()) - 72*60*60
-                                           return   time.strftime("%Y%m%d", time.localtime(epoch) ) + keywd[13:]
-
-        if keywd[:13] == "{YYYYMMDD-4D}" :
-                                           epoch  = time.mktime(time.gmtime()) - 96*60*60
-                                           return   time.strftime("%Y%m%d", time.localtime(epoch) ) + keywd[13:]
-
-        if keywd[:13] == "{YYYYMMDD-5D}" : 
-                                           epoch  = time.mktime(time.gmtime()) - 120*60*60
-                                           return   time.strftime("%Y%m%d", time.localtime(epoch) ) + keywd[13:]
-
-        return defval
 
     def overwrite_defaults(self):
         sr_post.overwrite_defaults(self)
@@ -617,7 +634,7 @@ class sr_poll(sr_post):
             path         = path.replace('/','_')
             lsPath       = self.user_cache_dir + os.sep + 'ls' + path
 
-            currentDir   = self.dirPattern(destDir)
+            currentDir   = self.set_dir_pattern(destDir)
 
             if currentDir == '' : currentDir = destDir
 
