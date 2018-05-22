@@ -296,7 +296,7 @@ class Xwmo2msc(object):
         if basedir == None : basedir = parent.post_base_dir
 
         relpath = local_file
-        if bd  != None : relpath = local_file.replace(basedir,'')
+        if basedir != None : relpath = local_file.replace(basedir,'')
 
         baseurl = 'file:'
         # from msg_2local.py if used
