@@ -1383,12 +1383,12 @@ plus de détails.
 
 L'option *post_base_dir* fournit le chemin du répertoire qui, lorsqu'il est 
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local 
-vers le fichier de données à enregistrer. La partie racine du chemin sera 
+vers le fichier de données à enregistrer. La *post_document_root* du chemin sera 
 supprimée du dépêche. Pour sftp : url's il peut être approprié de 
 spécifier un chemin relatif à un compte utilisateur.
-Un exemple de cette utilisation serait :  -pdr ~user -url sftp:user@host
+Un exemple de cette utilisation serait :  -pbd ~user -url sftp:user@host
 pour file : url's, base_dir n'est généralement pas approprié.  Pour dépêcher 
-un chemin absolu, omettez le paramètre -dr, et spécifiez simplement le chemin 
+un chemin absolu, omettez le paramètre -pbd, et spécifiez simplement le chemin 
 complet en argument.
 
 L'option **url** définit comment obtenir le fichier.... il définit le protocole,
