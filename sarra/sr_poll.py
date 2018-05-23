@@ -680,6 +680,18 @@ class sr_poll(sr_post):
 
         self.connect()
 
+        # caching
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           if self.reset:
+              self.cache.close(unlink=True)
+           self.cache.open()
+           if not hasattr(self,'heartbeat_cache_installed') or not self.heartbeat_cache_installed :
+              self.execfile("on_heartbeat",'hb_cache')
+              self.on_heartbeat_list.append(self.on_heartbeat)
+              self.heartbeat_cache_installed = True
+
         # do pulls instructions
 
         if self.vip : last = self.has_vip()
