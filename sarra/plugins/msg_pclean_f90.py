@@ -49,6 +49,13 @@ class Msg_Pclean_F90(object):
         if not os.path.exists(self.flow_post_cp ) : logger.warning("%s not found" % self.flow_post_cp ) 
         logger.warning("propagated = %d" % propagated) 
 
+    def is_propagated(self,parent,path):
+        if not os.path.exists(path) : return False
+        now    = time.time()
+        elapse = now - os.stat(path)[stat.ST_MTIME]
+        if elapse > 10 : return True
+        return False
+
     def on_message(self,parent):
         import shutil
 
@@ -76,13 +83,13 @@ class Msg_Pclean_F90(object):
         # propagated count 
 
         propagated = 0
-        if os.path.exists(self.sarr_f20_path) : propagated += 1
-        if os.path.exists(self.subs_f30_path) : propagated += 1
-        if os.path.exists(self.send_f50_path) : propagated += 1
-        if os.path.exists(self.subs_f60_path) : propagated += 1
-        if os.path.exists(self.subs_f70_path) : propagated += 1
-        if os.path.exists(self.subs_f71_path) : propagated += 1
-        if os.path.exists(self.flow_post_cp ) : propagated += 1
+        if self.is_propagated(parent,self.sarr_f20_path) : propagated += 1
+        if self.is_propagated(parent,self.subs_f30_path) : propagated += 1
+        if self.is_propagated(parent,self.send_f50_path) : propagated += 1
+        if self.is_propagated(parent,self.subs_f60_path) : propagated += 1
+        if self.is_propagated(parent,self.subs_f70_path) : propagated += 1
+        if self.is_propagated(parent,self.subs_f71_path) : propagated += 1
+        if self.is_propagated(parent,self.flow_post_cp ) : propagated += 1
 
         # propagation unfinished ... (or test error ?)
         # retry message screened out of on_message is taken out of retry
