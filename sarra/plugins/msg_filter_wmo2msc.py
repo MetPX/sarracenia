@@ -254,19 +254,19 @@ class Xwmo2msc(object):
         if parent.treeify :
             #d = parent.currentDir + os.sep + self.bulletin[0][0:2].decode('ascii') 
             d = os.path.dirname(input_file)
-            logger.info( 'filter_wmo2msc check %s start match: %s' % (d, parent.filter_olddir) )
+            logger.debug( 'filter_wmo2msc check %s start match: %s' % (d, parent.filter_olddir) )
             d = d.replace( parent.filter_olddir, parent.filter_newdir )
-            logger.info( 'filter_wmo2msc check %s after replace' % (d) )
+            logger.debug( 'filter_wmo2msc check %s after replace' % (d) )
             if not os.path.isdir( d ):
                 os.makedirs( d, parent.chmod_dir, True ) 
 
             d = d + os.sep + self.bulletin[0][2:4].decode('ascii') 
-            logger.info( 'filter_wmo2msc check %s' % (d) )
+            logger.debug( 'filter_wmo2msc check %s' % (d) )
             if not os.path.isdir( d ):
                 os.makedirs( d, parent.chmod_dir, True ) 
 
             d = d + os.sep + self.bulletin[0][14:16].decode('ascii') 
-            logger.info( 'filter_wmo2msc check %s' % (d) )
+            logger.debug( 'filter_wmo2msc check %s' % (d) )
             if not os.path.isdir( d ):
                 os.makedirs( d, parent.chmod_dir, True ) 
 
@@ -288,11 +288,11 @@ class Xwmo2msc(object):
            d.write(self.bintxt)
            d.close()
 
-        logger.info( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
+        logger.debug( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
 
         # set how the file will be announced
 
-        basedir    =  parent.basedir
+        basedir    =  parent.base_dir
         if basedir == None : basedir = parent.post_base_dir
 
         relpath = local_file
@@ -303,6 +303,9 @@ class Xwmo2msc(object):
         if hasattr(msg,'savedurl')      : baseurl = msg.savedurl
         # from msg_2localfile.py if used
         if hasattr(msg,'saved_baseurl') : baseurl = msg.saved_baseurl
+
+        relpath = relpath.replace('//','/')
+        logger.debug( 'filter_wmo2msc relpath %s' % relpath )
 
         msg.set_topic(parent.topic_prefix,relpath)
         msg.set_notice(baseurl,relpath)

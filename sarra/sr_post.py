@@ -112,13 +112,6 @@ class sr_post(sr_instances):
 
         if self.accept_unmatch == None : self.accept_unmatch = True
 
-        # caching
-
-        if self.caching :
-           self.cache      = sr_cache(self)
-           self.cache_stat = True
-           self.cache.open()
-
         # permanent message headers fields
 
         if self.to_clusters == None:
@@ -808,11 +801,11 @@ class sr_post(sr_instances):
         # caching
 
         if self.caching :
-           new_post = self.cache.check(str(sumstr),path,partstr)
-           self.cache.delete_path(path)  # dont keep link in cache
-           if not new_post :
-              self.logger.debug("already posted as a link %s %s"%(path,sumstr))
-              return False
+           new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
+           if new_post : self.logger.info("caching %s"% path)
+           else        : 
+                         self.logger.debug("already posted %s"% path)
+                         return False
 
         # complete headers
 
@@ -1346,9 +1339,17 @@ class sr_post(sr_instances):
 
         self.connect()
 
-        if self.reset and self.caching :
-           self.cache.close(unlink=True)
+        # caching
+        if self.caching :
+           self.cache      = sr_cache(self)
+           self.cache_stat = True
+           if self.reset:
+              self.cache.close(unlink=True)
            self.cache.open()
+           if not hasattr(self,'heartbeat_cache_installed') or not self.heartbeat_cache_installed :
+              self.execfile("on_heartbeat",'hb_cache')
+              self.on_heartbeat_list.append(self.on_heartbeat)
+              self.heartbeat_cache_installed = True
 
         pbd = self.post_base_dir
 
@@ -1456,10 +1457,6 @@ class sr_post(sr_instances):
            self.post_hc.set_url( self.post_broker )
            self.post_hc.connect()
            self.declare_exchanges()
-
-        if self.caching :
-           self.cache = sr_cache(self)
-           self.cache.open()
 
         self.close()
                  
