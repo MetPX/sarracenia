@@ -288,8 +288,7 @@ which results in a configuration like so::
 
   broker amqp://feeder@localhost/
   url http://blacklab/
-  document_root /var/www/project/outgoing
-  to blacklab
+  post_base_dir /var/www/project/outgoing
 
 
 then a watch is started::

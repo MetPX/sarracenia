@@ -145,6 +145,7 @@ To view a particular configuration, give sr_subscribe list the file as an argume
     blacklab% sr_subscribe list msg_log.py
 
 .. code:: python
+
     #!/usr/bin/python3
     
     """
@@ -171,11 +172,6 @@ To view a particular configuration, give sr_subscribe list the file as an argume
     
     blacklab% 
 
-The plugins start with descriptive documentation.  For older versions of sarracenia,
-one can refer to the git repository on sourceforge:
-
-  https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/sarra/examples/
-   
 
 
 A First Example
