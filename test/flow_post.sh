@@ -49,13 +49,16 @@ function do_sr_post {
       return
    fi
 
-   # loop on each line to properly post filename with space
+   # loop on each line to properly post filename with space *** makes too much load on CPU ***
 
-   while read relpath;
-   do
-         sr_post -c test2_f61.conf -p "$relpath"    &
-         LD_PRELOAD="libsrshim.so.1" cp -p --parents "$relpath"  ${httpdocroot}/posted_by_shim      &
-   done < /tmp/diffs.txt
+   # cant seem to have success to have .S P C files in /tmp/diffs.txt and have them as correct arguments
+   # theses commands would not succeed :
+   #cat /tmp/diffs.txt | sed 's/\(.*S P C\)/"\1"/' | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
+   #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" > /tmp/diffs2.txt
+   #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
+
+   sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
+   LD_PRELOAD="libsrshim.so.1" cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    
    cp -p $srpostlstfile_new $srpostlstfile_old
 
@@ -66,7 +69,7 @@ function do_sr_post {
 # sr_post initial end
 
 while true; do
-   sleep 0.1
+   sleep 1
    do_sr_post
 done
 

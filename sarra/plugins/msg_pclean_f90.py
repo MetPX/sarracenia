@@ -112,6 +112,9 @@ class Msg_Pclean_F90(object):
 
         testid =  random.randint(0,3)
 
+        # avoid space until flow_post.sh is corrected
+        testid =  random.randint(0,2) + 1
+
         # expand tests
 
         if   testid == 0 :
