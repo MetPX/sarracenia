@@ -38,6 +38,13 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.03b3
+---------
+
+*CHANGE*: sr_poll option directory : in some case you might need to get rid of the first /
+                  Previous version had a bug in code that caused it to be removed. This is
+                  mostly the case for a protocol that should use a directory in the user's home.
+
 2.18.03b1
 ---------
 
