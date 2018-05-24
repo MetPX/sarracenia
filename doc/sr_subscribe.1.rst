@@ -1252,7 +1252,7 @@ to be other than a post.  See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 
 The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_document_root* part of the path will be removed from the posted announcement.
+The *post_base_dir* part of the path will be removed from the posted announcement.
 for sftp: url's it can be appropriate to specify a path relative to a user account.
 Example of that usage would be:  -pbd ~user  -url sftp:user@host
 for file: url's, base_dir is usually not appropriate.  To post an absolute path,

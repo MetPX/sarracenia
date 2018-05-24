@@ -52,9 +52,9 @@ Glossaire
 |               |                     |                 |English *exchange* |
 |               |                     |                 |is better?         |
 +---------------+---------------------+-----------------+-------------------+
-|publish        |publier, annoncer    | dépêcher v.     |It is supposed to  |
-|post           |poteau, afficher     | dépêche n.?     |be fast.           |
-|announce       |publication          |                 |should noun be     |
+|publish        |publier, annoncer    | annoncer/publier|It is supposed to  |
+|post           |poteau, afficher     | (verbe)         |be fast.           |
+|announce       |publication          | avis (nom)      |should noun be     |
 |notifications  |notifications        |                 |a dépêche?         |
 +---------------+---------------------+-----------------+-------------------+
 |subscribe      |abonner              |                 |good.              |

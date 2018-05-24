@@ -13,6 +13,7 @@ watch a directory and post messages when files in it change
 
 .. contents::
 
+
 SYNOPSIS
 ========
 
@@ -441,7 +442,7 @@ File Detection Strategy Table
 |             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |File delivery advertised by            |User posts only when file is complete.|
-|Explicit     |`sr_post(1) <sr_post.1.rst>`_         |                                      |
+|Explicit     |`sr_post(1) <sr_post.1.rst>`_          |                                      |
 |posting by   |or other sr\_ components               |                                      |
 |clients      |after file writing complete.           |                                      |
 |             |                                       | - user has finest grain control.     |

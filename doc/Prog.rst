@@ -827,7 +827,66 @@ When the alternate schema is encountered, the component will invoke that plugin.
 Why Doesn't Import Work?
 ------------------------
 
-FIXME: describe case of bad import.
+There is an issue where the place in the code where plugins are read is different
+from where the plugin routines are executed, and so class level imports do not work as expected
+
+.. code:: python
+
+    #!/usr/bin/python3
+
+    import os,sys,stat,time,datetime,string,socket
+    from ftplib import FTP
+
+    class Renamer(object):
+        def __init__(self):
+            pass
+     
+        def perform(self,parent):
+            infile = parent.local_file
+            Path = os.path.dirname(infile)
+            Filename = os.path.basename(infile)
+     
+            # FTP upload
+            def uploadFile(ftp, upfile):
+                ftp.storbinary('STOR ' + upfile, open(upfile, 'rb'), 1024)
+                ftp.sendcmd('SITE CHMOD 666 ' + upfile)
+
+            # ftp = FTP('hoho.haha.ec.gc.ca')
+            ftp = FTP('127.272.44.184')
+            logon = ftp.login('px', 'pwgoeshere')
+            path = ftp.cwd('/apps/px/rxq/ont2/')
+            os.chdir( Path )
+            uploadFile(ftp, Filename)
+            ftp.quit()
+    
+    renamer=Renamer()
+    self.on_file = renamer.perform
+ 
+When the code is run, this happens::
+
+  2018-05-23 20:57:31,958 [ERROR] sr_subscribe/run going badly, so sleeping for 0.01 Type: <class 'NameError'>, Value: name 'FTP' is not defined,  ...
+  2018-05-23 20:57:32,091 [INFO] file_log downloaded to: /apps/urp/sr_data/TYX_N0S:NOAAPORT2:CMC:RADAR_US:BIN:20180523205529
+  2018-05-23 20:57:32,092 [INFO] confirmed added to the retry process 20180523205531.8 http://ddi1.cmc.ec.gc.ca/ 20180523/UCAR-UNIDATA/RADAR_US/NEXRAD3/N0S/20/TYX_N0S:NOAAPORT2:CMC:RADAR_US:BIN:20180523205529
+   
+  2018-05-23 20:57:32,092 [ERROR] sr_subscribe/run going badly, so sleeping for 0.02 Type: <class 'NameError'>, Value: name 'FTP' is not defined,  ...
+  2018-05-23 20:57:32,799 [INFO] file_log downloaded to: /apps/urp/sr_data/CXX_N0V:NOAAPORT2:CMC:RADAR_US:BIN:20180523205533
+  2018-05-23 20:57:32,799 [INFO] confirmed added to the retry process 20180523205535.46 http://ddi2.cmc.ec.gc.ca/ 20180523/UCAR-UNIDATA/RADAR_US/NEXRAD3/N0V/20/CXX_N0V:NOAAPORT2:CMC:RADAR_US:BIN:20180523205533
+  2018-05-23 20:57:32,799 [ERROR] sr_subscribe/run going badly, so sleeping for 0.04 Type: <class 'NameError'>, Value: name 'FTP' is not defined,  ...
+ 
+The solution is to move the import inside the perform routine as the first line, like so::
+
+	.
+	.
+	.
+
+        def perform(self,parent):
+            from ftplib import FTP
+            infile = parent.local_file
+            Path = os.path.dirname(infile)
+  	.
+	.
+	. 
+
 
 
 -------
