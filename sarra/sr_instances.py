@@ -719,7 +719,7 @@ class sr_instances(sr_config):
 
         self.logger.info("%s stopping" % self.instance_str)
 
-        sleep_max = 70.0
+        sleep_max = 7.0
         sleep_now = 0.5
 
         # try sigterm and let the program finish
