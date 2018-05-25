@@ -1,3 +1,17 @@
+metpx-sarracenia (2.18.05b4) unstable; urgency=medium
+
+  * bugfix       plugin msg_filter_wmo2msc.py fixed
+  *              sr_poll now uses its own set_dir_pattern to replace variables
+  *              sr_post/sr_poll/sr_watch fixed that a cache file for instance 000 was created
+  *              sr_post/sr_poll/sr_watch add caching of 'L' message
+  * new          sr_amqp for consumer sets channel.basic_recover(requeue=True)
+  * update       flow_post.sh posts lot of files within one call (load problem fixed)
+  *              flow_test does not test filename with space anymore
+  *              flow_test 5 instances for sender
+  * doc          miscellaneous doc fixups.
+
+ -- peter <peter@blacklab.bsqt.homeip.net>  Thu, 24 May 2018 19:45:58 -0400
+
 metpx-sarracenia (2.18.05b2) unstable; urgency=medium
 
   * bugfix       sr_sftp use chdir to see if connection is still alive

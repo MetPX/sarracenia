@@ -4,7 +4,7 @@
 
 lists all changes between versions.
 
-**2.18.05b3**
+**2.18.05b4**
 
 * bugfix       plugin msg_filter_wmo2msc.py fixed
 *              sr_poll now uses its own set_dir_pattern to replace variables
