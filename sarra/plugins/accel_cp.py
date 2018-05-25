@@ -59,7 +59,7 @@ class ACCEL_CP(object):
       return True
           
 
-   def on_msssage(self,parent):
+   def on_message(self,parent):
 
       logger = parent.logger
       msg    = parent.msg
