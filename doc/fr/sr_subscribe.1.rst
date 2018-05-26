@@ -4,7 +4,7 @@
 ==============
 
 -------------------------------------------------
-Sélectionner et télécharger les fichiers dépêchés
+Sélectionner et télécharger les fichiers publiés
 -------------------------------------------------
 
 :Manual section: 1
@@ -26,15 +26,15 @@ DESCRIPTION
 
 
 Sr_subscribe est un programme pour télécharger des fichiers à partir de sites 
-Web ou de serveurs de fichiers qui publient des *dépêches* en 
+Web ou de serveurs de fichiers qui publient des *avis* en 
 format `sr_post(7) <sr_post.7.rst>`_ dès que chaque fichier est disponible.
 Les clients se connectent à un
 *courtier* (souvent le même que le serveur lui-même) et s'abonnent aux 
-*dépêches*. Le mécanisme de *sr_post* est du *push* véritable
+*avis*. Le mécanisme de *sr_post* est du *push* véritable
 pour les dossiers accessibles sur la toile  
 (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage
 périodique des répertoires ou le style ATOM/RSS. Sr_subscribe
-peut être configuré aussie pour dépêcher à sont tour après le téléchargement, 
+peut être configuré aussie pour aviser à sont tour après le téléchargement, 
 pour informer d´autres processus locales de la disponibilité de fichiers.
 
 **sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, 
@@ -92,7 +92,7 @@ L'action **foreground** est utilisée lors de la construction d'une
 configuration ou pour le débogage. L'instance **foreground** sera exécutée
 indépendamment des autres instances qui sont en cours d'exécution.
 Si des instances sont en cours d'exécution, il partage la même file d'attente
-de dépêches avec eux. Un utilisateur arrête l'instance **foreground** en
+de avis avec eux. Un utilisateur arrête l'instance **foreground** en
 utilisant simplement <ctrl-c> sur linux. ou utiliser d'autres moyens pour tuer le processus.
 
 Les actions **cleanup**, **declare**, **setup**, **setup** peuvent être utilisées pour gérer les 
@@ -372,7 +372,7 @@ CONSUMER
 
 La plupart des composants Metpx Sarracenia boucle sur la réception et la 
 consommation de messages AMQP. Habituellement, les messages d'intérêt sont 
-dans le format d´une *dépêche* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité 
+dans le format d´une *avis* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité 
 d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
 Il y a également le format *rappor* `sr_report(7) <sr_report.7.rst>`_ qui peuvent 
 être traités avec les mêmes outils. Les messages AMQP sont publiés avec
@@ -381,7 +381,7 @@ délivre des messages aux files d'attente. Pour recevoir de messages,
 on doit fournir les informations d'identification pour se connecter au 
 courtier (message AMQP).  Une fois connecté, un consommateur doit créer 
 une file d'attente pour retenir les messages en attente. Le consommateur 
-doit ensuite lier la file d'attente à une ou plusieurs bourses de manière
+doit ensuite lier la file d'attente à une ou plusieurs échanges de manière
 à ce qu'il mette dans sa file d'attente.
 
 Une fois les liaisons (anglais: *bindings*) établies, le programme peut 
@@ -448,7 +448,7 @@ Mise en file d'attente sur broker :
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
 les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
-par défaut. La file d'attente est l'endroit où les dépêches sont conservés
+par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
@@ -520,8 +520,8 @@ Liaisons de file d´attente AMQP
 Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une 
 fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à 
-une bourse. Les liaisons (*bindings*) définissent ce que l'on entend par
-les dépêches que le programme reçoit. La racine du thème
+une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
+les avis que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
 (mais les développeurs peuvent l'écraser avec le **topic_prefix****.
 option.)
@@ -553,14 +553,14 @@ modèles **accepter/rejeter** s'appliquent aux messages envoyés par le du court
 alors que **subtopic** est le filtrage côté serveur.
 
 Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
-de dépêches envoyées au client à un petit sur-ensemble de ce qui est pertinent, 
+de avis envoyées au client à un petit sur-ensemble de ce qui est pertinent, 
 et n'effectuer qu'un réglage fin avec l'outil mécanismes côté client, économisant 
 la bande passante et le traitement pour tous.
 
 topic_prefix est principalement d'intérêt pendant les transitions de version 
 de protocole, où l'on souhaite spécifier une version sans protocole par défaut 
 des messages auxquels s'abonner, ou bien pour manipuler des rapports de disposition,
-au lieu de dépêches ( *v02.report* )
+au lieu de avis ( *v02.report* )
 
 Habituellement, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
 **subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt.
@@ -673,7 +673,7 @@ Dans la séquence #2, l'option accept .* (regexp qui veut dire accepte tout) est
 rencontré avant la déclaration de rejet, de sorte que le rejet n'a aucun effet.
 
 Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre 
-de dépêches envoyées au composant à un petit sur-ensemble de ce qui est 
+de avis envoyées au composant à un petit sur-ensemble de ce qui est 
 pertinent, et n'effectuer qu'un réglage fin avec les mécanismes *accept/reject* 
 côté client, économisant la bande passante et le traitement pour tous. 
 
@@ -761,7 +761,7 @@ un message l'avisant de l'envoi de l'arrivée du fichier. Il s'agit de l'option
 la plus rapide et la moins coûteuse lorsqu'elle est disponible.
 C'est aussi la valeur par défaut lorsqu'un *post_broker* est donné, ce qui 
 indique qu'un autre processus va être notifié après la livraison, par un
-message dépêché au post_broker.
+message publié au post_broker.
 
 Lorsque l'option **supprimer** est activée, une fois le téléchargement 
 terminé avec succès, l'abonné supprimera le fichier à la source amont.  
@@ -878,7 +878,7 @@ avec l'utilisation de *${..}* notation::
 
    SOURCE - l'utilisateur amqp qui a injecté des données (tirées du message.)
    DR     - la *document root* (répertoir corréspondant à '/' sur un serveur web.)
-   PBD    - le répertoire de la base ou les message sera dépêcher. 
+   PBD    - le répertoire de la base lors de publication.
    YYYYMMDD - l'horodatage quotidien en cours. (Y-Année, M-Mois, D-Jour du mois)
    HH - l'horodatage horaire actuel.
    *var* - toute variable d'environnement.
@@ -905,7 +905,7 @@ notification est le chemin absolu.
 
 Les fichiers volumineux peuvent être envoyés en une série de parties, plutôt que tous en même temps.
 Lors du téléchargement, si **inplace** est vrai, ces parties seront ajoutées au fichier.
-d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est dépêchée aux abonnés.
+d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est publié aux abonnés.
 Il peut être setté à *false* dans déploiements de Sarracenia où une seule pompe 
 ne verra jamais que quelques pièces, pas l'intégralité, des fichiers en plusieurs parties.
 
@@ -960,15 +960,16 @@ recherche les fichiers dans le répertoire qui n'ont pas été référencés dan
 **cache** secondes, et les efface, afin de les conserver.  la taille du cache
 est limitée. Différents réglages sont appropriés pour différents cas d'utilisation.
 
-FIXME **L'utilisation du cache est incompatible avec la stratégie par défaut *blocksize 0*,**
-il faut préciser un stratégie alternative.  Il faut soit utiliser un bloc de
+FIXME L'utilisation du cache est incompatible avec la stratégie par défaut *blocksize 0*
+Il faut sélectionner un autre stratégie. Il faut soit utiliser un bloc de
 taille fixe, ou ne jamais partitionner les fichiers *(blocksize 1.)*  Il faut éviter
 l'algorithme dynamique qui changera la taille de la partition utilisée au fur
 et à mesure que le fichier grandit.
 
-**La cache pour supprimer les doublons est local pour chaque instance.** Lorsque **N**
-instances partagent une file d'attente, la première fois qu'un message est reçu, il 
-pourrait être choisi par une instance, et si une copie est reçue, il est 
+**La cache pour supprimer les doublons est locale à chaque instance** 
+
+Lorsque N instances partagent une file d´attente, la première fois qu'un message est reçu, il 
+pourrait être choisi par une instance, et quand une copie sera reçue, il est 
 probable qu'il sera pris en charge par une autre instance. Pour une suppression 
 efficace des doublons avec les instances**, il faut **déployer deux couches d'abonnés**. 
 Il faut une **première couche d'abonnés (sr_shovels)** avec suppression des doublons désactivée,
@@ -1059,7 +1060,7 @@ le destinataire) s´offre pour accommoder différentes situations :
 | entier      |du fichier avant que le transfer soit  |que si aucun autre moyen peut servir  |
 | (mtime)     |considéré Complèté.                    |                                      |
 |             |                                       |Réception de ceux qui ne coopèrent pas|
-|             |Retard tous les dépêches               |                                      |
+|             |Retard tous les avis                   |                                      |
 |             |Vulnérable aux pannes de réseau.       | (choix acceptable pour PDS)          |
 |             |Vulnérable aux horloges en désaccord   |                                      |
 +-------------+---------------------------------------+--------------------------------------+
@@ -1106,7 +1107,7 @@ NOTES :
 
    NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
    est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
-   le destinataire que l'appareil est en mode le fichier est complet en dépêchant le
+   le destinataire que l'appareil est en mode le fichier est complet en publiant le
    fichier livré à ce courtier, il n'y a donc aucun danger d'être ramassé trop tôt.
 
    Lorsqu'il est mal-utilisé, il arrive que des fichiers incomplets soient traitée 
@@ -1172,7 +1173,7 @@ recommence à répondre normalement, les programmes reviendront à la vitesse no
 de traitement.
 
 
-EXAMPLES
+EXEMPLES
 ========
 
 Voici un court exemple complet de fichier de configuration:: 
@@ -1184,7 +1185,7 @@ Voici un court exemple complet de fichier de configuration::
 
 Le fichier ci-dessus se connectera au courtier dd.weather.gc.ca, en tant que
 *anonymous* avec mot de passe *anonymous* (par défaut) pour obtenir des 
-dépêches à propos des fichiers qui arrivent dans le répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
+avis à propos des fichiers qui arrivent dans le répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
 Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés. 
 dans le répertoire courant (ou simplement imprimé sur la sortie standard si l'option -n). 
 a été spécifié.) 
@@ -1194,13 +1195,56 @@ Une variété d'exemples de fichiers de configuration sont disponibles ici :
  `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
 
 
+
+NOMMER LES ÉCHANGES ET LES FILES D'ATTENTE
+==========================================
+
+Alors que dans la plupart des cas, une bonne valeur est générée par l'application, dans certains cas,
+c´est nécessaire de remplacer ces choix par une spécification utilisateur explicite.
+Pour ce faire, il faut connaître les règles de nommage des files d'attente :
+
+1. les noms de file d'attente commencent par q\_.
+2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la file d'attente).
+3. suivi d'un deuxième tiret de soulignement ( \_ )
+4. suivi d'une chaîne de caractères au choix de l'utilisateur.
+
+La longueur totale du nom de la file d'attente est limitée à 255 octets de caractères UTF-8.
+
+Il en va de même pour les échanges.  Les règles sont les suivantes :
+
+1. Les noms de échanges commencent par x
+2. Les échanges qui se terminent par *public* sont accessibles (pour lecture) par tout utilisateur authentifié.
+3. Les utilisateurs sont autorisés à créer des échanges avec le modèle : xs_<amqpUserName>_<<whatever> de tels échanges ne peuvent être écrits que par cet utilisateur. 
+4. Le système (sr_audit ou administrateurs) crée l'échange xr_<amqpUserName> comme lieu d'envoi de rapports pour un utilisateur donné. Il n'est lisible que par cet utilisateur.
+5. Les utilisateurs administratifs (rôles d'administrateur ou de serveur) peuvent poster ou s'abonner n'importe où.
+
+Par exemple, xpublic n'a pas de xs\_ et un modèle de nom d'utilisateur, donc il ne peut être posté que par les utilisateurs admin ou feeder.
+Puisqu'il se termine en public, n'importe quel utilisateur peut s'y lier pour s'abonner aux messages postés.
+Les utilisateurs peuvent créer des échanges tels que xs_<amqpUserName>_public qui peut être écrit par cet utilisateur (par la règle 3), 
+et lue par d'autres (par la règle 2.) Description du flux conventionnel de messages par le biais d'échanges sur une pompe.  
+Les abonnés se lient généralement à l'échange public pour obtenir le flux de données principal. C'est la valeur par défaut dans sr_subscribe.
+
+Un autre exemple, un utilisateur nommé Alice aura au moins deux échanges :
+
+  xs_Alice l'échange où Alice poste ses notifications de fichiers et ses messages de rapports.(via de nombreux outils)
+  xr_Alice l'échange où Alice lit ses messages de rapport (via sr_report).
+  Alice peut créer un nouvel échange en y postant simplement (avec sr_post ou sr_cpost.) s'il répond aux règles de nommage.
+
+généralement un sr_sarra exécuté par un administrateur de pompe lira à partir d'un échange tel que xs_Alice_mydata, 
+récupérer les données correspondant au message Alice´s *post* et les mettre à disposition sur la pompe, 
+en l'annonçant de nouveau sur l'échange public.
+
+
+
+
+
 QUEUES - FILES D´ATTENTES et EXECUTION MULTIPLE
 ===============================================
 
 Lorsqu'il est exécuté, **sr_subscribe** choisit un nom de file d'attente qu'il écrit
 à un fichier nommé d'après le fichier de configuration donné en argument à sr_subscribe****.
 avec un suffixe.queue ( ."nom de configuration".queue). 
-Si sr_subscribe est arrêté, les messages dépêchés continuent de s'accumuler sur 
+Si sr_subscribe est arrêté, les messages publiés continuent de s'accumuler sur 
 le courtier dans cette file d'attente (jusqu´a son *expire* -ation).  Lorsque le 
 programme est redémarré, il utilise le nom de la file d'attente stocké dans ce 
 fichier pour se connecter à la même file d'attente et ne pas perdre de messages.
@@ -1344,8 +1388,8 @@ S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
 OPTIONS DE DEPECHE
 ==================
 
-Lorsque des fichiers sont téléchargés pour ensuite les dépêché aux consommateurs en aval, 
-il faut indiquer un courtier on on enverra les dépêches.
+Lorsque des fichiers sont téléchargés pour ensuite les publiés aux consommateurs en aval, 
+il faut indiquer un courtier on on enverra les avis.
 
 L'option **post_broker** définit toutes les informations d'authentification 
 pour se connecter à courtier sortie **AMQP**.
@@ -1371,7 +1415,7 @@ la valeur doit être l'une des valeurs suivantes: :
    1 - toujours envoyer des fichiers entiers en une seule partie.
    <taille du bloc> - utilisation d'une taille de partition fixe (exemple : 1M)
 
-Les fichiers peuvent être dépêchés en plusieurs parties.  Chaque partie 
+Les fichiers peuvent être publiés en plusieurs parties.  Chaque partie 
 a une somme de contrôle séparée. Les pièces et leurs sommes de contrôle sont 
 stockées dans le cache. Les cloisons peuvent traverser le réseau séparément, 
 et en parallèle.  Lorsque les fichiers changent, les transferts sont 
@@ -1384,10 +1428,10 @@ plus de détails.
 L'option *post_base_dir* fournit le chemin du répertoire qui, lorsqu'il est 
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local 
 vers le fichier de données à enregistrer. La *post_document_root* du chemin sera 
-supprimée du dépêche. Pour sftp : url's il peut être approprié de 
+supprimée du avis. Pour sftp : url's il peut être approprié de 
 spécifier un chemin relatif à un compte utilisateur.
 Un exemple de cette utilisation serait :  -pbd ~user -url sftp:user@host
-pour file : url's, base_dir n'est généralement pas approprié.  Pour dépêcher 
+pour file : url's, base_dir n'est généralement pas approprié.  Pour publier 
 un chemin absolu, omettez le paramètre -pbd, et spécifiez simplement le chemin 
 complet en argument.
 
@@ -1396,23 +1440,23 @@ hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne
 pas inclure les mots de passe dans l´URL.
 
 L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
-sera dépêcher.  Dans la plupart des cas, il s'agit d'un'xpublic'.
+sera publié.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 
-Chaque fois qu'une dépêche se produit pour un produit, un utilisateur peut 
+Chaque fois qu'une avis se produit pour un produit, un utilisateur peut 
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
 une telle configuration.
 
 L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les 
-dépêches entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
+avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
 C'est utilisé dans les pompes à trafic élevé pour permettre des instances 
 multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
 
     post_exchange_split 5
     post_exchange xwinnow
 
-se traduira par l'envoi de messages à cinq bourses nommées xwinnow00, xwinnow01,
-xwinnow02, xwinnow03 et xwinnow04, où chaque bourse ne recevra qu'un cinquième du flux total.
+se traduira par l'envoi de messages à cinq échanges nommées xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu'un cinquième du flux total.
 xinnow01 recevra tous les messages dont la reste quand sa somme de contrôle est divisé par 5 
 est 1.
 
@@ -1449,7 +1493,7 @@ données soient envoyées. Le pompage est implanté par les administrateurs quan
 arrange pour la copie de données entre des pompes. C´est accompli par moyen des 
 plugins on_message qui sont fournis avec le paquet.
 
-lorsque les messages sont dépêcher, si aucune destination n'est spécifiée, la 
+lorsque les messages sont publiés, si aucune destination n'est spécifiée, la 
 livraison est présumée être seulement la pompe elle-même.  Pour spécifier les 
 pompes de destination supplémentaires pour un fichier, les sources utilisent la 
 commande l'option *to* quand on publie.  Cette option définit le champ 
@@ -1565,7 +1609,7 @@ l'un des :
 - on_watch -- lorsque le rassemblement des événements **sr_watch** commence, le plugin on_watch est invoqué.
   Il pourrait être utilisé
   Il pourrait être utilisé pour mettre un fichier dans un des répertoires de surveillance 
-  et le faire dépêcher quand c'est nécessaire.
+  et le faire publier quand c'est nécessaire.
 
 
 
@@ -1664,7 +1708,7 @@ Quelques autres variables disponibles: :
   parent.msg.offset : position de décalage du fichier distant
   parent.msg.length : longueur du fichier ou de la partie de fichier
   parent.msg.in_partfile : Fichier T/F temporaire dans le fichier partiel
-  parent.msg.local_url : url pour une nouvelle dépêche
+  parent.msg.local_url : url pour une nouvelle avis
 
 
 Voir le `Guide de programmation <Prog.rst>`_ pour plus de détails.
@@ -1926,21 +1970,21 @@ AUSSI VOIR
 ==========
 
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - copier des dépêches (pas les fichiers).
+`sr_shovel(1) <sr_shovel.1.rst>`_ - copier des avis (pas les fichiers).
 
 `sr_winnow(1) <sr_winnow.1.rst>`_ - une sr_shovel(1) avec *cache* pour vaner (séparer le blé de l'ivraie.)
 
-`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux dépêches des fichiers locaux, envoie les aux systèmes distants, et les dépêcher à nouveau.
+`sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux avis des fichiers locaux, envoie les aux systèmes distants, et les publier à nouveau.
 
 `sr_report(1) <sr_report.1.rst>`_ - messages de rapport de processus.
 
-`sr_post(1) <sr_post.1.rst>`_ - dépêcher les dépêches de fichiers.
+`sr_post(1) <sr_post.1.rst>`_ - publier les avis de fichiers.
 
 `sr_watch(1) <sr_watch.1.rst>`_ -  sr_post(1) en boucle, veillant sur les répertoires.
 
 `sr_sarra(1) <sr_sarra.1.rst>`_ - Outil pour S´abonner, acquérir, et renvoyer récursivement ad nauseam.
 
-`sr_post(7) <sr_post.7.rst>`_ - Le format des dépêches (messages d'annonce AMQP)
+`sr_post(7) <sr_post.7.rst>`_ - Le format des avis (messages d'annonce AMQP)
 
 `sr_report(7) <sr_report.7.rst>`_ - le format des messages de rapport.
 
