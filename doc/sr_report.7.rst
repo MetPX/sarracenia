@@ -26,7 +26,7 @@ SYNOPSIS
 
 **Body:** *<first line>*
 
-*<first line> == <date stamp> <srcpath> <relpath> <statuscode> <consuminghost> <consuminguser> <duration> <newline>*
+*<first line> == <date stamp> <base_url> <relpath> <statuscode> <consuminghost> <consuminguser> <duration> <newline>*
 
 *<rest of body is reserved for future use>*
 
@@ -61,7 +61,7 @@ There is a series of white space separated fields::
   Format: *YYYYMMDDHHMMSS.*<decimalseconds>*
   Note: The datestamp is always in UTC timezone.
 
-*<srcpath>* : -- the base URL used to retrieve the data.
+*<base_url>* : -- the base URL used to retrieve the data.
 
 This should be the URL consumers will use to download the data.  Example of a complete URL:
 
@@ -73,7 +73,7 @@ In the case where the URL does not end with a path separator ('/'), the src path
 
 If the URL ends with a path separator ('/'), then the src URL is considered a prefix for the variable part of the retrieval URL.
 
-*<relativepath>* :  the variable part of the URL, usually appended to *<srcpath>*
+*<relativepath>* :  the variable part of the URL, usually appended to *<base_url>*
 
 The above are the fields taken from the sr_post(7) format.  There are additional fields in the sr_report:
 
@@ -189,7 +189,7 @@ EXAMPLE
    complete relative download path:
                 NRDPS/GIF/NRDPS_HiRes_000.gif
 
-                -- takes file name from srcpath.
+                -- takes file name from base_url.
                 -- may be modified by validation process.
 
    message download succeeded (201) from host castor, as user anonymous, and took 0.006767 seconds.
