@@ -117,29 +117,19 @@ common settings, and methods of specifying them.
 
   A list of settings in a configuration file 
 
-**[--cache]**
-
-  When one is planning reposting directories, this option caches
-  what was posted and will post only files (or parts of files) that were new
-  when invoked again.   This is incompatible with the default *parts 0* strategy, one
-  must specify an alternate strategy.
-
-  If caching is in use,  **blocksize** should be set (to either 1 (announce entire file) 
-  or a fixed blocksize.) as otherwise blocksize will vary as a function of file size.
-
 **[-p|--path path1 path2 ... pathN]**
 
-**sr_post** evaluates the filesystem paths from the **path** option 
-and possibly the **base_dir** if the option is used.
+  **sr_post** evaluates the filesystem paths from the **path** option 
+  and possibly the **base_dir** if the option is used.
 
-If a path defines a file, this file is announced.
+  If a path defines a file, this file is announced.
 
-If a path defines a directory, then all files in that directory are
-announced... 
+  If a path defines a directory, then all files in that directory are
+  announced... 
 
-The AMQP announcements are made of the three fields, the announcement time,
-the **post_base_url** option value and the resolved paths to which were withdrawn from
-the *base_dir*, present and needed.
+  The AMQP announcements are made of the three fields, the announcement time,
+  the **post_base_url** option value and the resolved paths to which were withdrawn from
+  the *base_dir*, present and needed.
 
 **[-pb|--post_broker <broker>]**
 
@@ -167,65 +157,63 @@ the *base_dir*, present and needed.
 
 **[--blocksize <value>]**
 
-This option controls the partitioning strategy used to post files.
-the value should be one of::
+  This option controls the partitioning strategy used to post files.
+  the value should be one of::
 
-   0 - autocompute an appropriate partitioning strategy (default)
-   1 - always send entire files in a single part.
-   <blocksize> - used a fixed partition size (example size: 1M )
+     0 - autocompute an appropriate partitioning strategy (default)
+     1 - always send entire files in a single part.
+     <blocksize> - used a fixed partition size (example size: 1M )
 
-Files can be announced as multiple parts.  Each part has a separate checksum.
-The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in paralllel.  When files change, transfers are
-optimized by only sending parts which have changed.  
-
-The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
-Files bigger than this value will get announced with *blocksize* sized parts.
-
-The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
-for files of various sizes.  As the file size varies, the automatic computation will give different
-results.  this will result in resending information which has not changed as partitions of a different 
-size will have different sums, and therefore be tagged as different.  
-
-By default, **sr_post** computes a reasonable blocksize that depends on the file size.
-The user can set a fixed *blocksize* if it is better for its products or if he wants to
-take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
-it make sense to specify a fixed partition size so that the blocks in the cache will be the 
-same blocks as those generated when the file is larger, and so avoid re-transmission.  So use 
-of '10M' would make sense in that case.  
-
-In cases where a custom downloader is used which does not understand partitioning, it is necessary
-to avoid having the file split into parts, so one would specify '1' to force all files to be send
-as a single part.
+  Files can be announced as multiple parts.  Each part has a separate checksum.
+  The parts and their checksums are stored in the cache. Partitions can traverse
+  the network separately, and in paralllel.  When files change, transfers are
+  optimized by only sending parts which have changed.  
+  
+  The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+  for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+  Files bigger than this value will get announced with *blocksize* sized parts.
+  
+  The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
+  for files of various sizes.  As the file size varies, the automatic computation will give different
+  results.  this will result in resending information which has not changed as partitions of a different 
+  size will have different sums, and therefore be tagged as different.  
+  
+  By default, **sr_post** computes a reasonable blocksize that depends on the file size.
+  The user can set a fixed *blocksize* if it is better for its products or if he wants to
+  take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
+  it make sense to specify a fixed partition size so that the blocks in the cache will be the 
+  same blocks as those generated when the file is larger, and so avoid re-transmission.  So use 
+  of '10M' would make sense in that case.  
+  
+  In cases where a custom downloader is used which does not understand partitioning, it is necessary
+  to avoid having the file split into parts, so one would specify '1' to force all files to be send
+  as a single part.
 
 **[-pbu|--post_base_url <url>]**
 
-The **url** option sets the protocol, credentials, host and port under
-which the product can be fetched.
+  The **url** option sets the protocol, credentials, host and port under
+  which the product can be fetched.
 
-The AMQP announcememet is made of the three fields, the announcement time,
-this **url** value and the given **path** to which was withdrawn from the *base_dir*
-if necessary.
+  The AMQP announcememet is made of the three fields, the announcement time,
+  this **url** value and the given **path** to which was withdrawn from the *base_dir*
+  if necessary.
 
-The concatenation of the two last fields of the announcement defines
-what the subscribers will use to download the product. 
-
+  The concatenation of the two last fields of the announcement defines
+  what the subscribers will use to download the product. 
 
 **[-pipe <boolean>]**
 
-The pipe option is for sr_post to read the names of the files to post from standard input to read from
-redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
+  The pipe option is for sr_post to read the names of the files to post from standard input to read from
+  redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
 
 **[--pulse_message <message>]**
 
-Administrator option to send a message to all subscribers.  Similar to "wall" functionality.
-When this option is set, a pulse message is sent, ignoring any topic settings or files given as arguments.
+  Administrator option to send a message to all subscribers.  Similar to "wall" functionality.
+  When this option is set, a pulse message is sent, ignoring any topic settings or files given as arguments.
 
 **[--reset]**
 
-  When one has used **--cache** this option will get rid of the
-  cached informations.
+  When one has used **--suppress_duplicates|--cache**, this option empties the cache.
 
 
 **[-rn|--rename <path>]**
@@ -235,22 +223,37 @@ When this option is set, a pulse message is sent, ignoring any topic settings or
 
 **[--sleep <time> ]**
 
-**This option is only available in the c implementation (sr_cpost)**
-When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
-generating events.  When files are written frequently, it is counter productive to produce a post for 
-every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
-enough to keep up.  In such circumstances, one can group all changes made to a file
-in *sleep* time, and produce a single post.
+   **This option is only available in the c implementation (sr_cpost)**
 
-NOTE::
-    in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
-    interval should not be less than about five seconds, as it may miss posting some files.
+   When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
+   generating events.  When files are written frequently, it is counter productive to produce a post for 
+   every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
+   enough to keep up.  In such circumstances, one can group all changes made to a file
+   in *sleep* time, and produce a single post.
+
+   NOTE::
+       in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
+       interval should not be less than about five seconds, as it may miss posting some files.
 
    
 
 **[-sub|--subtopic <key>]**
 
-The subtopic default can be overwritten with the *subtopic* option.
+  The subtopic default can be overwritten with the *subtopic* option.
+
+
+**[--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]**
+
+  Avoid posting duplicates. When posting directories, this option caches
+  what was posted and will post only files (or parts of files) that were new
+  when invoked again. 
+ 
+  Over time the number of files in the cache can grow too large, and so it is cleaned out of
+  old entries.  The default lifetime of a cache entry is five minutes (300 seconds.) This
+  lifetime can be overridden with a time interval as argument ( the 999 above )
+
+  If duplicate suppression is in use,  **blocksize** should be set (to either 1 (announce entire file) 
+  or a fixed blocksize.) as otherwise blocksize will vary as a function of file size.
 
 **[-to|--to <destination>,<destination>,... ]** 
 
@@ -259,13 +262,12 @@ The subtopic default can be overwritten with the *subtopic* option.
 
   default: the hostname of the broker.
 
-.. note:: 
-  FIXME: a good list of destination should be discoverable.
+  *FIXME: a good list of destination should be discoverable.*
 
 **[-sum|--sum <string>]**
 
-All file posts include a checksum.  The *sum* option specifies how to calculate the it.
-It is a comma separated string.  Valid checksum flags are ::
+  All file posts include a checksum.  The *sum* option specifies how to calculate the it.
+  It is a comma separated string.  Valid checksum flags are ::
 
     [0|n|d|c=<scriptname>]
     where 0 : no checksum... value in post is random integer (for load balancing purposes.)
@@ -273,8 +275,8 @@ It is a comma separated string.  Valid checksum flags are ::
           d : do md5sum on file content (default... for compatibility with older releases.)
           s : do SHA512 on file content (future default)
 
-Then using a checksum script, it must be registered with the pumping network, so that consumers
-of the postings have access to the algorithm.
+  Then using a checksum script, it must be registered with the pumping network, so that consumers
+  of the postings have access to the algorithm.
 
 
 **[-tp|--topic_prefix <key>]**
@@ -288,7 +290,7 @@ of the postings have access to the algorithm.
 
 **[-header <name>=<value>]**
 
-Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
+  Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
 
 
 
@@ -298,19 +300,19 @@ ADMINISTRATOR SPECIFIC
 
 **[-queue_name]**
 
-If a client wants a product to be reannounced,
-the broker administrator can use *sr_post*  and publish
-directly into the client's queue. The client could provide
-his queue_name... or the administrator would find it on
-the broker... From the log where the product was processed on
-the broker, the administrator would find all the messages
-properties. The administrator should pay attention on slight
-differences between the logs properties and the *sr_post* arguments.
-The logs would mention *from_cluster*  *to_clusters* and associated
-values...  **sr_post** arguments would be *-cluster* and  *-to*
-respectively. The administrator would execute **sr_post**, providing
-all the options and setting everything found in the log plus the 
-targetted queue_name  *-queue_name q_....*
+  If a client wants a product to be reannounced,
+  the broker administrator can use *sr_post*  and publish
+  directly into the client's queue. The client could provide
+  his queue_name... or the administrator would find it on
+  the broker... From the log where the product was processed on
+  the broker, the administrator would find all the messages
+  properties. The administrator should pay attention on slight
+  differences between the logs properties and the *sr_post* arguments.
+  The logs would mention *from_cluster*  *to_clusters* and associated
+  values...  **sr_post** arguments would be *-cluster* and  *-to*
+  respectively. The administrator would execute **sr_post**, providing
+  all the options and setting everything found in the log plus the 
+  targetted queue_name  *-queue_name q_....*
 
 
 
@@ -319,35 +321,35 @@ DEVELOPER SPECIFIC OPTIONS
 
 **[-debug|--debug]**
 
-Active if *-debug|--debug* appears in the command line... or
-*debug* is set to True in the configuration file used.
+  Active if *-debug|--debug* appears in the command line... or
+  *debug* is set to True in the configuration file used.
 
 **[-r|--randomize]**
 
-Active if *-r|--randomize* appears in the command line... or
-*randomize* is set to True in the configuration file used.
-If there are several posts because the file is posted
-by block because the *blocksize* option was set, the block 
-posts are randomized meaning that the will not be posted
-ordered by block number.
+  Active if *-r|--randomize* appears in the command line... or
+  *randomize* is set to True in the configuration file used.
+  If there are several posts because the file is posted
+  by block because the *blocksize* option was set, the block 
+  posts are randomized meaning that the will not be posted
+  ordered by block number.
 
 **[-rc|--reconnect]**
 
-Active if *-rc|--reconnect* appears in the command line... or
-*reconnect* is set to True in the configuration file used.
-*If there are several posts because the file is posted
-by block because the *blocksize* option was set, there is a
-reconnection to the broker everytime a post is to be sent.
+  Active if *-rc|--reconnect* appears in the command line... or
+  *reconnect* is set to True in the configuration file used.
+  *If there are several posts because the file is posted
+  by block because the *blocksize* option was set, there is a
+  reconnection to the broker everytime a post is to be sent.
 
 **[--parts]**
 
-The usual usage of the *blocksize* option is described above, which is what is usually used to set
-the *parts* header in the messages produced, however there are a number of ways of using the parts flag 
-that are not generally useful aside from within development.
-In addition to the user oriented *blocksize* specifications listed before, any valid 'parts' header, as given in the 
-parts header (e.g. 'i,1,150,0,0') .  One can also specify an alternate basic blocksize for the automatic 
-algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 50M) as the basic block size, so one
-can see how the algorithm works.
+  The usual usage of the *blocksize* option is described above, which is what is usually used to set
+  the *parts* header in the messages produced, however there are a number of ways of using the parts flag 
+  that are not generally useful aside from within development.
+  In addition to the user oriented *blocksize* specifications listed before, any valid 'parts' header, as given in the 
+  parts header (e.g. 'i,1,150,0,0') .  One can also specify an alternate basic blocksize for the automatic 
+  algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 50M) as the basic block size, so one
+  can see how the algorithm works.
 
 
 ENVIRONMENT VARIABLES
