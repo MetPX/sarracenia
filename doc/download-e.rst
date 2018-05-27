@@ -12,13 +12,31 @@ basis. The source code contains both *sundew* and *sarracenia* components,
 although currently only *sarracenia* is under active development.
 
 With those explanations, feel free to grab a snapshot can be obtained using
-subversion via::
+git via::
 
     git clone https://github.com/MetPX/sarracenia sarracenia
 
 
 Available for anonymous read-only access. One can also obtain a stable release
-by checking out a release branch.
+by checking out a release branch::
+
+  blacklab% git tag
+    
+  .
+  .
+  .
+  v2.18.04b2
+  v2.18.04b3
+  v2.18.04b4
+  v2.18.04b5
+  v2.18.05b1
+  v2.18.05b2
+  v2.18.05b3
+  v2.18.05b4
+
+  blacklab% git checkout v2.18.05b4
+  
+
 
 Building From Source
 --------------------
@@ -48,7 +66,7 @@ Please refer to `Sarracenia developer guide <Dev.rst>`_ for instructions on buil
 Sundew Binaries
 ---------------
 
-MetPx-Sundew is only available for download from the `sundew section  <https://sourceforge.net/projects/metpx/files/sundew/>`_ of the project's SourceForge file storage, .
+MetPx-Sundew is available for download from the `Sundew <https://github.com/MetPX/Sundew/>`_ of the project's SourceForge file storage, .
 
 Sarracenia Binaries
 -------------------

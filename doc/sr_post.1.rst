@@ -160,7 +160,6 @@ the *base_dir*, present and needed.
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
   Use the *exchange* option to override that default.
-  Note that the administrator must have created the exchange before one can post to it.
 
 **[-h|-help|--help**
 

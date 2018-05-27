@@ -124,7 +124,6 @@ Here, sr_watch checks for file creation(modification) in /data/web/public_data/b
 (concatenating the base_dir and relative path of the source url to obtain the directory path).
 If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' 
-(default credentials) and sends the post to exchange 'amq.topic' (default exchange)
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
@@ -180,7 +179,6 @@ a tree can be traversed.  The scanning method needs to be chosen based on the pe
 The  *base_dir*  option supplies the directory path that,
 when combined with the relative one from  *source url* , 
 gives the local absolute path to the data file to be posted.
-.fi
 
 **[-e|--events <event|event|...>]**
 
@@ -193,12 +191,14 @@ If *link* is set, symbolic links will be posted as links so that consumers can c
 how to process them. if it is not set, then no symbolic link events will ever be posted.
 
 .. note::
-   move or rename events are treated as modify events
+   move or rename events result in a special double post pattern, with one post as the old name
+   and a field *newname* set, and a second post with the new name, and a field *oldname* set. 
+   This allows subscribers to perform an actual rename, and avoid triggering a download when possible.
 
 **[-ex|--exchange <exchange>]**
 
-By default, the exchange used is amq.topic. This exchange is provided on broker
-for general usage. It can be overwritten with this  *exchange*  option
+  sr_watch publishes to an exchange named *xs_*"broker_username" by default.
+  Use the *exchange* option to override that default.
 
 **[-fp|--force_polling <boolean>]**
 
@@ -262,6 +262,15 @@ The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
 the *post_base_dir* present and needed.
 
+**[-real|--realpath <boolean>]**  
+
+The realpath option resolves paths given to their canonical ones, eliminating 
+any indirection via symlinks. The behaviour improves the ability of sr_watch to 
+monitor trees, but the trees may have completely different paths than the arguments 
+given. This option also enforces traversing of symbolic links. This is implemented 
+to preserve the behaviour of an earlier iteration of sr_watch, but it is not 
+clear if it required or useful. Feedback welcome.
+
 **[-rn|--rename <path>]**
 
 With the  *rename*   option, the user can
@@ -302,15 +311,11 @@ You can overwrite the topic_prefix by setting this option.
 The **url** option sets the protocol, credentials, host and port under
 which the product can be fetched.
 
-The AMQP announcememet is made of the tree fields, the announcement time,
-this **url** value and the given **path** to which was withdrawn the *post_base_dir*
-if necessary.
+The post body contains three fields: the announcement time,
+this **base_url** value and the **path**, relative from *post_base_dir*, if necessary.
 
-If the concatenation of the two last fields of the announcement that defines
-what the subscribers will use to download the product. 
-
-
-
+The concatenation of the two last fields of the post gives the complete URL 
+subscribers use to download the file. 
 
 **[-sum|--sum <string>]**
 
@@ -319,14 +324,16 @@ entry *sum* with default value 'd,md5_checksum_on_data'.
 The *sum* option tell the program how to calculate the checksum.
 It is a comma separated string.  Valid checksum flags are ::
 
-    [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is a random integer
-          n : do checksum on filename
+    [0|n|d|s|N|z]
+    where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
           d : do md5sum on file content (default for now, compatibility)
+          n : do md5sum checksum on filename
+          N : do SHA512 checksum on filename
           s : do SHA512 on file content (default in future)
+          z,a : calculate checksum value using algorithm a and assign after download.
 
-Then using a checksum script, it must be registered with the pumping network, so that consumers
-of the postings have access to the algorithm.
+Other checksum algorithms can be added. See Programming Guide.
+
 
 
 File Detection Strategies
@@ -358,9 +365,7 @@ one must assume that on startup for such a directory tree it will take 20 second
 posting all files in the tree. After that initial scan, files are noticed with sub-second latency.
 So a **sleep of 0.1 (check for file changes every tenth of a second) is reasonable, as long as we accept
 the intial priming pass.**
-
-If one selects **force_polling** option, then that 20 second delay is incurred for each polling pass, 
-plus the time to perform the posting itself. **For the same tree, a *sleep* setting of 30 seconds would 
+If one selects **force_polling** option, then that 20 second delay is incurred for each polling pass, plus the time to perform the posting itself. **For the same tree, a *sleep* setting of 30 seconds would 
 be the minimum to recommend**. **Expect that files will be noticed about 1.5* the *sleep* settings on average.**
 In this example, about when they are about 45 seconds. Some will be picked up sooner, others later. 
 Apart from special cases where the default method misses files, it is much slower on medium sized trees than the default
@@ -521,11 +526,6 @@ by block because the *blocksize* option was set, the block
 posts are randomized meaning that the will not be posted
 ordered by block number.
 
-**[-real|--realpath <boolean>]**  EXPERIMENTAL
-
-The realpath option resolves paths given to their canonical ones, eliminating any indirection via symlinks.
-The behaviour improves the ability of sr_watch to monitor trees, but the trees may have completely different paths than the arguments given. This option also enforces traversing of symbolic links.   This is implemented to preserve the behaviour of an earlier iteration of sr_watch, but it is not clear if it required or useful.  Feedback welcome.
-
 **[-rr|--reconnect]**
 
 Active if *-rc|--reconnect* appears in the command line... or
@@ -562,12 +562,6 @@ events for changes to files with certain names:
 .. NOTE::
    FIXME: is this right?  need better does it ignore part files? should it?
 
-Another file operation which is not currently optimally managed is file renaming. When a file is renamed
-within a directory tree, sarracenia will simply announce it under the new name, and does not communicate
-that already transferred data has simply changed name.  Subscribers who have transferred the data under the 
-old name will transfer it again under the new name, with no relation being made with the old file.
-
-
 Inotify Instance
 ----------------
 
@@ -585,8 +579,6 @@ that is big enough.  More kernel memory will be allocated for this, no other eff
 SEE ALSO
 ========
 
-`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the format of configurations for MetPX-Sarracenia.
-
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
 `sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
@@ -597,8 +589,4 @@ SEE ALSO
 
 `sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
-
-`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
-
-
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - The download client (main manual page.)
