@@ -58,37 +58,6 @@ In general, the options for this component are described by the
 It fully explains the option configuration language, and how to find
 the option settings.
 
-CREDENTIAL OPTIONS
-------------------
-
-The broker option sets all the credential information to connect to the  **RabbitMQ** server
-
-- **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-
-::
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ )
-
-All sr\_ tools store all sensitive authentication info in the credentials.conf file.
-Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to thins such as private keys, or FTP modes.
-
-For more details, see: `sr_subscribe(1) <sr_subscribe.1.html#credentials>`__
-
-
-VIP, INTERFACE 
---------------
-
-sr_poll can be configured on multiple servers, where posting should occur only from
-whichever one owns the virtual IP address (VIP) at a given time.  
-As only one instance of sr_poll that should be used for each configuration, the *instances* option is forced to 1. 
-To check that the *vip* is present on any *interface* on the server periodically::
-
-**vip       <ip>         (None)**
-
-When these options are omitted, sr_poll is always active.
-
-
-
 DESTINATION OPTIONS
 -------------------
 
@@ -129,21 +98,21 @@ Ex.:
 
 **filename  rename=/naefs/grib2/**
 
-For all notification created, the *rename* option would be set to '/naefs/grib2/filename'
-because I specified a directory (ends with /)
+For all posts created, the *rename* option would be set to '/naefs/grib2/filename'
+because I specified a directory (path that ends with /)
 
 The option *directory*  defines where to get the files on the server.
 Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence. **get** is a synonym
-for **accept** and is defined for backward compatibility.
+files of interest and their directories of residence. 
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is never notified.
-One that match an  **accept**  pattern is notified from its residing directory.
+The URL of a file that matches a  **reject**  pattern is not published.
+Files matching an  **accept**  pattern are published.
 Again a *rename*  can be added to the *accept* option... matching products
 for that *accept* option would get renamed as described... unless the *accept* matches
-one file, the *rename* option should describe a directory.
+one file, the *rename* option should describe a directory into which the files
+will be placed (prepending instead of replacing the file name.)
 
 The directory can have some patterns. These supported patterns concern date/time .
 They are fixed...
@@ -208,62 +177,12 @@ Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification
 
 Here it is important to say that :
 
-The *sum=0,0* is used because no checksum computation was performed...
+The *sum=0,0* is used because no checksum computation was performed. It is often
+desirable use the *sum=z,s* to have downloaders calculate a useful checksum as
+they download for use by others.
 
 The *parts=1,fsiz,1,0,0* is used and the file's size is taken from the ls of the file.
 Under **sr_sarra** these fields could be reset.
-
-.. note::
-  **FIXME  recompute_checksum in sr_sarra is available ... but reset filesize does not exist**
-
-
-POSTING OPTIONS
-===============
-
-To notify about files available **sr_poll**
-sends the announcements to an AMQP server, also called a broker.
-The options are :
-
-**[-b|--broker <broker>]**
-
-  the broker to which the post is sent.
-
-
-**[-ex|--exchange <exchange>]**
-
-  By default, the exchange used is *xs_*"broker_username".
-  This exchange must be previously created on broker by its administrator.
-  The default can be overwritten with this *exchange* option.
-
-**[-f|--flow <string>]**
-
-  An arbitrary label that allows the user to identify a specific flow.
-  The flow string is sets in the amqp message header.  By default, there is no flow.
-
-**[-rn|--rename <path>]**
-
-  With the *rename*  option, the user can suggest a destination path to its files. If the given
-  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
-  In this case, the *directory, accept/reject* combination should target only one file.
-
-**[-to_clusters|--to <csv-string>]**
-
-  Once a messages is delivered to the first pump, the *to_clusters* option 
-  suggests other pumps to which the data should be disseminated.  The default 
-  value is the hostname of the broker being posted to.  Multiple pump 
-  identifiers can be specified by separating the names by commas. 
-
-**[-sub|--subtopic <key>]**
-
-  The subtopic default can be overwritten with the *subtopic* option.
-  The default being the file's path with '/' replaced by '.'
-
-**[-tp|--topic_prefix <key>]**
-
-  *Not usually used*
-  By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
-  followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-  You can overwrite the topic_prefix by setting this option.
 
 
 ADVANCED FEATURES
@@ -320,20 +239,13 @@ file, it would need to build its url, partstr, sumstr and  use
 to post the message, applying accept/reject clauses and triggering on_post processing. 
 
 
-DEVELOPER SPECIFIC OPTIONS
-==========================
-
-**[-debug|--debug]**
-
-Active if *-debug|--debug* appears in the command line... or
-*debug* is set to True in the configuration file used.
-
 DEPRECATED
 ==========
 
-The interface option used to be required with *vip*, now all interfaces are scanned.
+The *get* option is a deprecated synonym for accept.  Please use *accept*.
 
-**interface <string>     (None)**
+**get    <regexp pattern> [rename=] (must be set)**
+
 
 SEE ALSO
 --------

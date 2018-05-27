@@ -21,7 +21,7 @@ The format of file change announcements for sr_post.
 
 A sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
 
-**AMQP Topic:** *<version>.post.{<dir>.}*<filename>*
+**AMQP Topic:** *<version>.post.{<dir>.}*
 
 ::
 
@@ -33,19 +33,17 @@ A sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mess
 **AMQP Headers:** *<series of key-value pairs>*
 
 ::
-
-           "flow" = (optional) user defined tag.
            "parts" = size and partitioning information.
            "sum" = checksum algorithm and value.
 
-**Body:** *<first line> = <date stamp> <srcpath> <relpath> <newline>*
+**Body:** *<first line> = <date stamp> <base_url> <relpath> <newline>*
 
 
 ::
 
           <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
-          <srcpath>    - root of the url to download.
-          <relpath>    - relative path perhaps catenated to <srcpath>
+          <base_url>   - root of the url to download.
+          <relpath>    - relative path perhaps catenated to <base_url>
                          may instead be a rename.
 
 <*rest of body is reserved for future use*>
@@ -138,10 +136,9 @@ These two fields define the protocol that is in use for the rest of the message.
 The message type for post messages is "post".  After the fixed topic prefix, 
 the remaining sub-topics are the path elements of the file on the web server.  
 For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
-then the complete topic of the message will be:  *"v02.post.a.b.c.d.foo.txt"*
+then the complete topic of the message will be:  *v02.post.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
-encoded, so actual length limit may be less than that. Sarracenia truncates header fields
-to ensure the messages can be sent.
+encoded, so actual length limit may be less than that. 
 
 
 
@@ -152,24 +149,16 @@ the first line of a message contains all mandatory elements of an announcement.
 There is a series of white space separated fields:
 
 *<date stamp>*: the date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
+
  Note: The datestamp is always in the UTC timezone.
 
-*<srcpath>* -- the base URL used to retrieve the data.
+*<base_url>* -- the base URL used to retrieve the data.
 
-The URL consumers will use to download the data.  Example of a complete URL:
+The URL consumers will use to download the data.  Example of a complete URL::
 
  sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
 
-Where the URL does not end with a path separator ('/'), the src path is taken to 
-be the complete source of the file to retrieve.
-
- Static URL: sftp://afsiext@cmcdataserver/
-
-If the URL ends with a path separator ('/'), then the src URL is considered a prefix for the 
-variable part of the retrieval URL.
-
-
-*<relativepath>*  the variable part of the URL, usually appended to *srcpath*.
+*<relativepath>*  the variable part of the URL, usually appended to *base_url*.
 
 
 *<newline>* signals the end of the first line of the message and is denoted by a single line feed character.
@@ -187,25 +176,18 @@ AMQP HEADERS
 
 In addition to the first line of the message containing all mandatory fields, optional 
 elements are stored in AMQP headers (utf8 encoded key-value pairs limited to 255 bytes in length), included 
-in messages when appropriate.   Headers are a mandatory element included in later versions of the AMQP protocol.
-
-
-**flow=<flow>**
-
-   A user defined string used to group data transfers together, unused by the protocol.
-
+in messages when appropriate. 
 
 **from_cluster=<cluster_name>**
    The from_cluster defines the name of the source cluster where the data was introduced into the network.
-   The cluster name should be unique within all exchanging rabbitmq clusters.
    It is used to return the logs back to the cluster whenever its products are used.
 
 **link=<value of symbolic link>**
-   when the sum is the 'link' header is created to contain the body of the symbolic link.
+   when file to transfer is a symbolic link, the 'link' header is created to contain its value.
 
 .. _parts:
 
-**parts=<method>,<bsz>,<blktot>,<brem>,bno**
+**parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
 
  A header indicating the method and parameters for partitioning applied for the file.
  Partitioning is used to send a single file as a collection of segments, rather than as
@@ -258,34 +240,11 @@ in messages when appropriate.   Headers are a mandatory element included in late
  The relative path from the current directory in which to
  place the file.
 
- Two cases based on the end being a path separator or not.
-
- case 1: NURP/GIF/
-
- based on the current working directory of the downloading client,
- create a subdirectory called URP, and within that, a subdirectory
- called GIF will be created.  The file name will be taken from the
- srcpath.
-
- if the srcpath ends in pathsep, then the relpath here will be
- concatenated to the srcpath, forming the complete retrieval URL.
-
- case 2: NRP/GIF/mine.gif
-
- if the  srcpath ends in pathsep, then the relpath will be concatenated
- to srcpath for form the complete retrieval URL.
-
- if the src path does not end in pathsep, then the src URL is taken
- as complete, and the file is renamed on download according to the
- specification (in this case, mine.gif)
-
- This feature was never used in practice and is being phased out.
-
 **oldname=<path>**
 **newname=<path>**
 
  when a file is renamed at the source, to send it to subscribers, two posts 
- result: One message is announced with the new name as the srcpath, 
+ result: One message is announced with the new name as the base_url, 
  and the oldname header set to the previous file name.
  Another message is send with the old name as the src path, and the *newname* 
  as a header.  This ensures that *accept/reject* clauses are correctly
@@ -328,8 +287,6 @@ in messages when appropriate.   Headers are a mandatory element included in late
  |     z     | checksum on download, with algorithm as argument                    |
  |           | example:  z,d means download, applying d checksum, and advertise    |
  |           | with that calculated checksum when propagating further.             |
- |           | Used with sr_pooll of remotes sites, where checksums not initially  |
- |           | available.                                                          |
  +-----------+---------------------------------------------------------------------+
  |  *<name>* | checksum with a some other algorithm, named *<name>*                |
  |           | *<name>* should be *registered* in the data pumping network.        |
@@ -360,7 +317,7 @@ EXAMPLE
 
  Topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
  first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
- Headers: parts=p,457,1,0,0 sum=d,<md5sum> flow=exp13 source=ec_cmc
+ Headers: parts=p,457,1,0,0 sum=d,<md5sum> source=ec_cmc
 
         - v02 - version of protocol
         - post - indicates the type of message
@@ -371,7 +328,6 @@ EXAMPLE
         - remainder is 0.
         - block number is 0.
         - d - checksum was calculated on the body of the file.
-        - flow is exp13
         - complete source URL specified (does not end in '/')
         - relative path specified for
 
@@ -381,16 +337,16 @@ EXAMPLE
         complete relative download path:
                 NRDPS/GIF/NRDPS_HiRes_000.gif
 
-                -- takes file name from srcpath.
+                -- takes file name from base_url.
                 -- may be modified by validation process.
 
 
 Another example
 ---------------
 
-The post resulting from the following sr_watch command, noticing creation of the file 'foor':
+The post resulting from the following sr_watch command, noticing creation of the file 'foor'::
 
-sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+ sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
 Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
 When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.
@@ -407,11 +363,11 @@ The output of the command is as follows ::
   Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce source=guest
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
-The body consists of a time *20150813161959.854*, a size in bytes *256*,
+The body consists of a time *20150813161959.854*, followed by the two parts of the retrieval URL.
+The headers follow with firs the *parts*, a size in bytes *256*,
 the number of block of that size *1*, the remaining bytes *0*, the
 current block *0*, a flag *d* meaning the md5 checksum is
 performed on the data, the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*,
-a tag *default* and finally the source url of the product in the last 2 fields.
 
 
 MetPX-Sarracenia
