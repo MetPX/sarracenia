@@ -127,10 +127,6 @@ common settings, and methods of specifying them.
   If a path defines a directory, then all files in that directory are
   announced... 
 
-  The AMQP announcements are made of the three fields, the announcement time,
-  the **post_base_url** option value and the resolved paths to which were withdrawn from
-  the *base_dir*, present and needed.
-
 **[-pb|--post_broker <broker>]**
 
   the broker to which the post is sent.
@@ -252,8 +248,9 @@ common settings, and methods of specifying them.
   old entries.  The default lifetime of a cache entry is five minutes (300 seconds.) This
   lifetime can be overridden with a time interval as argument ( the 999 above )
 
-  If duplicate suppression is in use,  **blocksize** should be set (to either 1 (announce entire file) 
-  or a fixed blocksize.) as otherwise blocksize will vary as a function of file size.
+  If duplicate suppression is in use,  one should ensure that a fixed **blocksize** is
+  used ( set to a value other than 0 ) as otherwise blocksize will vary as files grow,
+  and much duplicate data transfer will result.
 
 **[-to|--to <destination>,<destination>,... ]** 
 
@@ -298,7 +295,7 @@ common settings, and methods of specifying them.
 ADMINISTRATOR SPECIFIC
 ======================
 
-**[-queue_name]**
+**[--queue|--queue_name|-qn] <queue>**
 
   If a client wants a product to be reannounced,
   the broker administrator can use *sr_post*  and publish
@@ -311,8 +308,8 @@ ADMINISTRATOR SPECIFIC
   The logs would mention *from_cluster*  *to_clusters* and associated
   values...  **sr_post** arguments would be *-cluster* and  *-to*
   respectively. The administrator would execute **sr_post**, providing
-  all the options and setting everything found in the log plus the 
-  targetted queue_name  *-queue_name q_....*
+  all the options and setting everything found in the log plus 
+  *-queue_name q_....*
 
 
 
@@ -321,25 +318,17 @@ DEVELOPER SPECIFIC OPTIONS
 
 **[-debug|--debug]**
 
-  Active if *-debug|--debug* appears in the command line... or
-  *debug* is set to True in the configuration file used.
+  put more messages in the log.
 
 **[-r|--randomize]**
 
-  Active if *-r|--randomize* appears in the command line... or
-  *randomize* is set to True in the configuration file used.
-  If there are several posts because the file is posted
-  by block because the *blocksize* option was set, the block 
-  posts are randomized meaning that the will not be posted
-  ordered by block number.
+  If a file is posted in several blocks, the posting order
+  is randomized so that the subcribe receives them out of order.
 
 **[-rc|--reconnect]**
 
-  Active if *-rc|--reconnect* appears in the command line... or
-  *reconnect* is set to True in the configuration file used.
-  *If there are several posts because the file is posted
-  by block because the *blocksize* option was set, there is a
-  reconnection to the broker everytime a post is to be sent.
+  If a file is posted in several blocks, reconnect to the broker
+  for every post. 
 
 **[--parts]**
 
