@@ -630,27 +630,28 @@ These options set what files the user wants and where it will be placed,
 and under which name.
 
 - **accept    <regexp pattern> (must be set)** 
-- **accept_unmatch   <boolean> (default: False)**
+- **accept_unmatch   <boolean> (default: off)**
 - **attempts     <count>          (default: 3)**
 - **batch     <count>          (default: 100)**
 - **default_mode     <octalint>       (default: 0 - umask)**
 - **default_dir_mode <octalint>       (default: 0755)**
-- **delete    <boolean>>       (default: False)**
+- **delete    <boolean>>       (default: off)**
 - **directory <path>           (default: .)** 
-- **discard   <boolean>        (default: false)**
+- **discard   <boolean>        (default: off)**
 - **base_dir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
-- **inplace       <boolean>        (default: true)**
+- **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
-- **mirror    <boolean>        (default: false)** 
-- **overwrite <boolean>        (default: true)** 
-- **recompute_chksum <boolean> (default: False)**
+- **mirror    <boolean>        (default: off)** 
+- **outlet    post|json|url    (default: post)** 
+- **overwrite <boolean>        (default: off)** 
+- **recompute_chksum <boolean> (default: off)**
 - **reject    <regexp pattern> (optional)** 
-- **retry    <boolean>         (default: True)** 
+- **retry    <boolean>         (default: On)** 
 - **retry_ttl    <duration>         (default: same as expire)** 
-- **source_from_exchange  <boolean> (default: False)**
+- **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
 - **suppress_duplicates   <off|on|999>     (default: off)**
 - **timeout     <float>         (default: 0)**
@@ -679,7 +680,7 @@ unreliable transfers, and care must be taken.  See `Delivery Completion`_ for mo
 The value can be a file name suffix, which is appended to create a temporary name during 
 the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
 the standard for "hidden" files on unix/linux.  
-If **inflight**  ends in **/** (exampl: *tmp/* ), then it is a prefix, and specifies a 
+If **inflight**  ends in / (example: *tmp/* ), then it is a prefix, and specifies a 
 sub-directory of the destination into which the file should be written while in flight. 
 
 Whether a prefix or suffix is specified, when the transfer is 
@@ -811,7 +812,6 @@ The defaults is None which means that the path in the notification is the absolu
     cannot explain this... do not know what it is myself. This is taken from sender.
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
-   
 
 Large files may be sent as a series of parts, rather than all at once.
 When downloading, if **inplace** is true, these parts will be appended to the file 
@@ -824,11 +824,43 @@ The **inplace** option defaults to True.
 Depending of **inplace** and if the message was a part, the path can
 change again (adding a part suffix if necessary).
 
+The **outlet** option is used to allow writing of posts to file instead of
+posting to a broker. The valid argument values are:
+
+**post:**
+
+  post messages to an post_exchange
+
+  **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+  **post_exchange     <name>         (MANDATORY)**
+  **on_post           <script>       (default: None)**
+
+  The **post_broker** defaults to the input broker if not provided.
+  Just set it to another broker if you want to send the notifications
+  elsewhere.
+
+  The **post_exchange** must be set by the user. This is the exchange under
+  which the notifications will be posted.
+
+**json:**
+
+  write each message to standard output, one per line in the same json format used for
+  queue save/restore by the python implementation.
+
+**url:**
+
+  just output the retrieval URL to standard output.
+
+FIXME: The **outlet** option came from the C implementation ( *sr_cpump*  ) and it has not
+been used much in the python implementation. 
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
+
 1- the file to be downloaded is already on the user's file system at the right place and
+
 2- the checksum of the amqp message matched the one of the file.
-The default is True (overwrite without checking).
+
+The default is False (overwrite without checking). 
 
 The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
 usefull when debugging or testing a configuration.
@@ -1287,8 +1319,8 @@ The parts and their checksums are stored in the cache. Partitions can traverse
 the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
-The *outlet* option, implemented only in *sr_cpump*, allows the final output
-to be other than a post.  See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
+The *outlet* option allows the final output to be other than a post.  
+See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 
 The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.

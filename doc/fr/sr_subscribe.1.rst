@@ -702,7 +702,8 @@ est un option qui a une valeur logique: vrai/faux)
 - **kbytes_ps <count>          (défaut: 0)**
 - **inflight  <chaine>         (défaut: .tmp où NONE si post_broker est setté)** 
 - **mirror    <booléan>        (défaut: false)** 
-- **overwrite <booléan>        (défaut: true)** 
+- **outlet    post|json|url    (defaut: post)** 
+- **overwrite <booléan>        (défaut: false)** 
 - **recompute_chksum <booléan> (défaut: False)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <booléan>         (défaut: True)** 
@@ -913,10 +914,44 @@ L'option **inplace** est *True* par défaut.
 En fonction de **inplace** et si le message était une partie, le chemin d'accès peut
 changer à nouveau (en ajoutant un suffixe de pièce si nécessaire).
 
-L'option **overwrite**,si elle est définie sur false, évitez les téléchargements 
+L'option **outlet** est utilisée pour permettre l'écriture des messages dans un fichier au lieu de
+l'affectation à un courtier. Les valeurs d'argument valables sont :
+
+**post:**
+
+  poster des messages sur un post_exchange
+
+  amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>*****.
+  post_exchange <nom> (OBLIGATOIRE)** **.
+  on_post <script> (par défaut : Aucun)**.
+
+  Le **post_broker** est par défaut le courtier d'entrée s'il n'est pas fourni.
+  Il suffit de le définir à un autre courtier si vous voulez envoyer les notifications.
+  ailleurs.
+
+  Le **post_exchange** doit être défini par l'utilisateur. Il s'agit de l'échange où
+  les avis qui seront publiés.
+
+**json:**
+
+  écrire chaque message à la sortie standard, un par ligne dans le même format json utilisé pour
+  Sauvegarde/restauration de la file d'attente par l'implémentation python.
+
+**url:**
+
+  il suffit de sortir l'URL de récupération vers la sortie standard.
+
+FIXME : L'option **outlet** est issue de l'implémentation C ( *sr_cpump*) et elle n'a pas
+a été beaucoup utilisé dans l'implémentation de python. 
+
+
+L'option **overwrite**,si elle est définie sur false, évite les téléchargements 
 inutiles dans ces conditions:
+
 1- le fichier à télécharger se trouve déjà sur le système de fichiers de l'utilisateur au bon endroit et au bon endroit
+
 2- la somme de contrôle du message amqp correspond à celle du fichier.
+
 La valeur par défaut est True (écraser sans vérifier).
 
 L'option **discard**, si elle est réglée sur true, supprime le fichier une 

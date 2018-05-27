@@ -108,39 +108,6 @@ and processing for all.
 See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
 
  
-OUTPUT NOTIFICATION OPTIONS
----------------------------
-
-sr_cpump has one option that is different from the python implementation:
-
-**outlet  <post|json|url>**
-
-the options are:
-
-post:
-
-  post messages to an post_exchange
-  
-  **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-  **post_exchange     <name>         (MANDATORY)** 
-  **on_post           <script>       (default: None)** 
-  
-  The **post_broker** defaults to the input broker if not provided.
-  Just set it to another broker if you want to send the notifications
-  elsewhere.
-  
-  The **post_exchange** must be set by the user. This is the exchange under
-  which the notifications will be posted.
-  
-json:
- 
-  write each message to standard output, one per line in the same json format used for 
-  queue save/restore by the python implementation.
-
-url:
-
-  just output the retrieval URL to standard output.
-
 
 ENVIRONMENT VARIABLES
 =====================
