@@ -50,10 +50,7 @@ The **sr_winnow** command takes two argument: an action start|stop|restart|reloa
 followed by a configuration file described below.
 
 The **foreground** is used when debugging a configuration, when the user wants to 
-run the program and its configfile interactively...   The **foreground** instance 
-is not concerned by other actions. 
-The user would stop using the **foreground** instance by simply pressing <ctrl-c> on linux 
-or use other means to kill its process.
+run the program and its configfile interactively. 
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
@@ -70,12 +67,6 @@ the option settings.
 See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
 
  
-DEPRECATED
-==========
-
-**interface -option formerly required in conjunction with *vip*.  **
-Now just scans all interfaces.
-
 SEE ALSO
 ========
 
