@@ -44,7 +44,7 @@ est ignorée. Si ce n'est pas le cas, le fichier est nouveau, et le **sum** est 
 dans le cache et l'avis est affiché.
 
 **sr_winnow** peut être utilisé pour couper les messages de `sr_post(1) <sr_post.1.rst>`_,
-`sr_poll(1) <sr_poll.1.rst>`_ ou `sr_watch(1) <sr_watch.1.html>`_ etc..... C'est
+`sr_poll(1) <sr_poll.1.rst>`_ ou `sr_watch(1) <sr_watch.1.rst>`_ etc..... C'est
 utilisé lorsqu'il y a plusieurs sources de données identiques, de sorte que les 
 clients ne téléchargent que le fichier une seule fois, à partir de la première 
 source qui les a publié.
@@ -66,7 +66,7 @@ CONFIGURATION
 =============
 
 En général, les options de cette composante sont décrites dans le manuel de l
-`sr_subscribe(1) <sr_sr_subscribe.1.rst>`_ page qui doit être lue en premier.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ page qui doit être lue en premier.
 Il explique en détail la langue de configuration de l'option, et comment trouver
 les paramètres de l'option.
 

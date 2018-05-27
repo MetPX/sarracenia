@@ -4,7 +4,7 @@ sr_pulse
 =========
 
 ---------------------------------------------
-Sarracenia v02 Report Message Format/Protocol
+Sarracenia v02 Pulse Message Format/Protocol
 ---------------------------------------------
 
 :Date: @Date@
