@@ -3,7 +3,7 @@
 ==========
 
 -----------------
-sr_subscribe in C
+sr_shovel in C
 -----------------
 
 :Manual section: 1 
@@ -36,9 +36,9 @@ It can therefore act as a drop-in replacement for:
 
    `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-   `sr_shovel(1) <sr_shovel.1.rst>`_ - process shovel messages.
+   `sr_shovel(8) <sr_shovel.8.rst>`_ - process shovel messages.
 
-   `sr_winnow(1) <sr_winnow.1.rst>`_ - process winnow messages.
+   `sr_winnow(8) <sr_winnow.8.rst>`_ - process winnow messages.
 
 The C implementation may be easier to make available in specialized environments, 
 such as High Performance Computing, as it has far fewer dependencies than the python version.
@@ -46,7 +46,7 @@ It also uses far less memory for a given role.  Normally the python version
 is recommended, but there are some cases where use of the C implementation is sensible.
 
 **sr_cpump** connects to a *broker* (often the same as the posting broker)
-and subscribes to the notifications of interest. On reception if a notification,
+and subscribes to the notifications of interest. On reception of a post,
 it looks up its **sum** in its cache.  if it is found, the file has already come through,
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
@@ -84,30 +84,6 @@ the option settings.
 one, and the grammar is slightly different from the python implementation.  Some
 adjustments may be needed.
 
-
-MESSAGE SELECTION OPTIONS
--------------------------
-
- - **accept        <regexp pattern> (default: False)** 
- - **reject        <regexp pattern> (default: False)** 
- - **on_message            <script> (default: None)** 
-
-One has the choice of filtering using  **subtopic**  with only AMQP's limited 
-wildcarding, and/or with the more powerful regular expression based  **accept/reject**  
-mechanisms described below.  The difference being that the AMQP filtering is 
-applied by the broker itself, saving the notices from being delivered to the 
-client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber.  In other words,  **accept/reject**  are client 
-side filters, whereas  **subtopic**  is server side filtering.  
-
-It is best practice to use server side filtering to reduce the number of 
-announcements sent to the client to a small superset of what is relevant, and 
-perform only a fine-tuning with the client side mechanisms, saving bandwidth 
-and processing for all.
-
-See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
-
- 
 
 ENVIRONMENT VARIABLES
 =====================

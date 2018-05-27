@@ -188,9 +188,9 @@ AUSSI VOIR
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - Sélectionner et télécharger des fichiers publiés.
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - copier des avis (pas les fichiers).
+`sr_shovel(8) <sr_shovel.8.rst>`_ - copier des avis (pas les fichiers).
 
-`sr_winnow(1) <sr_winnow.1.rst>`_ - une sr_shovel(1) avec *cache* pour vaner (séparer le blé de l'ivraie.)
+`sr_winnow(8) <sr_winnow.8.rst>`_ - une sr_shovel(1) avec *cache* pour vaner (séparer le blé de l'ivraie.)
 
 `sr_sender(1) <sr_sender.1.rst>`_ - s'abonne aux avis des fichiers locaux, envoie les aux systèmes distants, et les publier à nouveau.
 
@@ -200,7 +200,7 @@ AUSSI VOIR
 
 `sr_watch(1) <sr_watch.1.rst>`_ -  sr_post(1) en boucle, veillant sur les répertoires.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Outil pour S´abonner, acquérir, et renvoyer récursivement ad nauseam.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Outil pour S´abonner, acquérir, et renvoyer récursivement ad nauseam.
 
 `sr_post(7) <sr_post.7.rst>`_ - Le format des avis (messages d'annonce AMQP)
 
