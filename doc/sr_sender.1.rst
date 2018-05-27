@@ -2,9 +2,9 @@
  SR_Sender 
 ==========
 
---------------------------------------------------------------------------
-Sends file from messages to remote server (option repost to remote broker)
---------------------------------------------------------------------------
+-----------------------------------
+Send posted files to remote servers
+-----------------------------------
 
 :Manual section: 1 
 :Date: @Date@
@@ -136,12 +136,12 @@ The selected notification contains all the right informations
 notice... in our example :  **http://this.pump.com/**
 
 By default, **sr_sender** puts the **destination** in that field. 
-The user can overwrite this by specifying the option **url**. For example:
+The user can overwrite this by specifying the option **post_base_url**. For example:
 
-**url http://remote.apache.com**
+**post_base_url http://remote.apache.com**
 
-The user can provide an **on_post** script. Just before the message gets
-publish to the **post_broker** and under the **post_exchange**, the 
+The user can provide an **on_post** script. Just before the message is
+published on the **post_broker**  and **post_exchange**, the 
 **on_post** script is called... with the **sr_sender** class instance as argument.
 The script can perform whatever you want... if it returns False, the message will not 
 be published. If True, the program will continue processing from there.  

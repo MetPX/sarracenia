@@ -2004,6 +2004,7 @@ et finalement il regardera à distance.
 AUSSI VOIR
 ==========
 
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - Sélectionner et télécharger des fichiers publiés.
 
 `sr_shovel(1) <sr_shovel.1.rst>`_ - copier des avis (pas les fichiers).
 
@@ -2030,6 +2031,7 @@ AUSSI VOIR
 
 COMPATIBILITE avec SUNDEW
 =========================
+
 
 Pour la compatibilité avec sundew, il existe des options de livraison supplémentaires qui peuvent être spécifiées.
 
