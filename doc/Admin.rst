@@ -16,12 +16,6 @@ Revision Record
 :date: @Date@
 
 
-Missing
--------
-
-Listing of elements still missing from documentation.
-
-
 Pre-Requisites
 --------------
 

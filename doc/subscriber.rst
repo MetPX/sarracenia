@@ -88,8 +88,6 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
-If the package installed on your computer is version 2.17.12a7 or higher, 
-a bit of discovery has been added to the application, and 
 you should be able to list the available configurations with *sr_subscribe list* ::
 
   blacklab% sr_subscribe list
@@ -218,58 +216,16 @@ On the first line, *broker* indicates where to connect to get the
 stream of notifications. The term *broker* is taken from AMQP (http://www.amqp.org), 
 which is the protocol used to transfer the notifications.
 The notifications that will be received all have *topics* that correspond 
-to their URL. The notifications are sent by AMQP topic-based exchanges, 
-which are hierarchical and use '.' as a separator, so we need to translate
-the path hierarchy to a topic hierarchy.  Basically wherever there was a path 
-separator ( ´/´ on most operating systems, or ´\´ on Windows ) on the path 
-on the web server, to build the topic of a notification, the separator is 
-replaced by a period ( ´.´ ), as in AMQP period is the hierarchical 
-separator character. The top of the topic tree is used by sr_sarracenia,
-so usually users only deal with sub-topics, two levels down from the root.
+to their URL.  
 
-By default, the sub-topic is ´#´ which is a wildcard that matches all 
-subtopics. The other wildcard usable in the subtopic option is ´*´ which matches 
-anything between two periods (a single level of the topic hierarchy.)  The
-subtopic option tells the broker what notifications are of interest to a 
-subscriber.
-
-Let´s start up a subscriber (assume the config file was called dd_swob.conf)::
+Now start up a subscriber (assume the config file was called dd_swob.conf)::
 
   blacklab% sr_subscribe start dd_swob
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
   2015-12-03 06:53:35,269 [INFO] instances 1 
   2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
 
-The subscriber then runs in the background. To keep most of sr_subscribe´s
-working files out of the way, they it is stored elsewhere. example:
-Once sr_subscribe is started with the given config file,
-the following files are created::
-
-  blacklab% ls -al ~/.cache/sarra/
-  total 20
-  drwxrwxr-x  2 peter peter 4096 Dec  3 06:53 .
-  drwxrwxr-x 11 peter peter 4096 Dec  3 06:16 ..
-  -rw-rw-rw-  1 peter peter  623 Dec  3 06:53 sr_subscribe_dd_swob_0001.log
-  -rw-rw-rw-  1 peter peter    4 Dec  3 06:53 .sr_subscribe_dd_swob_0001.pid
-  -rw-rw-rw-  1 peter peter    1 Dec  3 06:53 .sr_subscribe_dd_swob.state
-  blacklab% 
-
-.. NOTE::
-   Directory is platform and configuration dependent. 
-   use a file manager to navigate somewhere like:
-
-   on Windows:  C:\\\\Users\\\\peter\\AppData\\\\Local\\\\science.gc.ca\\sarra
-
-   on Mac:      /Users/peter/Library/Caches/sarra
-
-Each process started will have a pid file and a log file indicating it´s progress.
-As each matching observation is posted on dd.weather.gc.ca, a notification will be
-posted on the AMQP broker there.  If we take a look at the swob file created, it 
-immediately gives an indication of whether it succeeded in connecting to the broker::
-
-  blacklab% tail ~/.cache/sarra/sr_subscribe_dd_swob_0001.log
-
-  *or*
+one can monitor activity with the *log* command::
 
   blacklab% sr_subscribe log dd_swob
   
@@ -285,29 +241,17 @@ immediately gives an indication of whether it succeeded in connecting to the bro
   blacklab% 
   
 The sr_subscribe will get the notification and download the file into the 
-current working directory. Only one download process is started, by default.  
-If higher performance is needed, then the *instance* option can be set 
-to a higher number, and that number of sr_subscribers will share
-the work of downloading, each with their own log file (0002,0003, etc...).
-As the start up is normal, that means the authentication information was good.
-Passwords are stored in the ~/.config/sarra/credentials.conf file.
-The format is just a complete url on each line.  Example for above would be::
+current working directory. As the start up is normal, that means the 
+authentication information was good. Passwords are stored in 
+the ~/.config/sarra/credentials.conf file. The format is just a complete 
+url on each line. Example for above would be::
   
   amqp://anonymous:anonymous@dd.weather.gc.ca/
 
 The password is located after the :, and before the @ in the URL as is standard
-practice.  This credentials.conf file should be private (linux octal permissions: 0600).  
+practice. This credentials.conf file should be private (linux octal permissions: 0600).  
 Also, if a .conf file is placed in the ~/.config/sarra/subscribe directory, then 
 sr_subscribe will find it without having to give the full path.
-
-
-.. note::
-   Directory where configuration is stored is platform and (on Windows)
-   configuration dependent. Reasonable places they might be:
-
-   on Windows:  C:\\\\Users\\\\peter\\AppData\\\\Local\\\\science.gc.ca\\sarra
-
-   Use *sr_subscribe list* to learn where the configuration files are stored.
 
 A normal download looks like this::
 
