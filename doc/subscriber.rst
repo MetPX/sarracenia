@@ -332,13 +332,12 @@ that directory: CMC.conf and NWS.conf, one could then run::
   2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
   2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
   2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
-  2016-01-14 18:13:01,427 [INFO] sr_subscribe CMC 0006 starting
   peter@idefix:~/test$ 
 
-and the configuration in the directory would be invoked. Also, one can use by
-using the sr command to start/stop multiple configurations at once. The sr 
-command will go through the default directories and start up all the 
-configurations it finds::
+to start the CMC downloading configuration.  One can use by
+using the sr command to start/stop multiple configurations at once. 
+The sr command will go through the default directories and start up 
+all the configurations it finds::
 
   peter@idefix:~/test$ sr start
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
@@ -355,6 +354,9 @@ configurations it finds::
 
 will start up some sr_subscribe processes as configured by CMC.conf and others 
 to match NWS.conf. Sr stop will also do what you would expect. As will sr status.  
+Note that there are 5 sr_subscribe processes start with the CMC 
+configuration and 3 NWS ones. These are *instances* and share the same 
+download queue. 
 
 
 High Priority Delivery
@@ -408,7 +410,7 @@ Where you want the mirror of the data mart to start at /data/web (presumably the
 server configured do display that directory.)  Likely, the *ddc_normal* configuration 
 will experience a lot of queueing, as there is a lot of data to download.  The *ddc_hipri.conf* is 
 only subscribed to weather warnings in Common Alerting Protocol format, so there will be
-little to no queueing for that configuration.
+little to no queueing for that data.
 
 
 
@@ -422,10 +424,11 @@ Refining Selection
   - broker at one end, and the subtopic apply there.  
   - client at the other end, and the accept/reject apply there.
 
-The *accept* option applies on the sr_subscriber processes themselves,
-providing regular expression based filtering of the notifications which are transferred.  
-In contrast to operating on the topic (a transformed version of the path), *accept* 
-operates on the actual path (well, URL), indicating what files within the 
+Pick *subtopics* ( which are applied on the broker with no message downloads ) to narrow
+the number of messages that traverse the network to get to the sarracenia client processes.
+The *reject* and *accept* options are evaluated by the sr_subscriber processes themselves,
+providing regular expression based filtering of the posts which are transferred.  
+*accept* operates on the actual path (well, URL), indicating what files within the 
 notification stream received should actually be downloaded. Look in the *Downloads* 
 line of the log file for examples of this transformed path.
 
@@ -450,11 +453,6 @@ line of the log file for examples of this transformed path.
   - https://docs.python.org/3/library/re.html
   - https://en.wikipedia.org/wiki/Regular_expression
   - http://www.regular-expressions.info/ 
-
-This is a different language than what is used in the subtopics, because the 
-simpler language in the subtopic directives comes from the AMQP specification.
-We are not able to provide full regular expressions for topic filtering.
-
 
 back to sample configuration files:
 
@@ -536,95 +534,6 @@ accept clauses.
   
   Yes, this is confusing.  No, it cannot be helped.  
 
-  Why: The syntax of wildcarding in AMQP (which defines suptopic syntax) is 
-  set by the international standard, and there are no other systems that 
-  use it.  Regular expressions are a well known pattern matching language 
-  with widespread support.
-
-
-Basic File Reception
---------------------
-
-So local files are being created in the account, how does one trigger processing?
-The following examples assume linux reception and a bash shell, but can be 
-readily understood and applied to other environments.
-
-If mirror is false, then a simple way would be to have a process that watches
-the current directory and give the file names which arrive to some other program.
-This can be done via either a traditional ´ls´ loop::
-
-  while true; do
-     ls | grep -v  "*.tmp" | do_something
-     sleep 5
-  done
-
-This will poll the directory every five seconds and feed file names to ''do_something'',
-excluding temporary files.  Temporary files are used to store file
-fragments until a complete file is received, so it is important to avoid processing 
-them until the complete file is received.  Sometimes existing software already scans 
-directories, and has fixed ideas about the files it will ingest and/or ignore.
-The *inflight* option allows one to set the name of the temporary files during transfer
-to conform to other software´s expectations.  the default setting is '.tmp' so
-that temporary files have that suffix.
-
-Setting *inflight* to ´.´ will cause the temporary files to begin with a dot, the tradition
-for making hidden files on linux.  Setting *inflight* to something other than that, 
-such as 'inflight .temp´ will cause the name of the temporary files to be suffixed with ´.temp´.
-When a file is completely received, it will be renamed, removing the *inflight* 
-.temp suffix.  Another possibility is to use *tempdir* dir option.  When software 
-is particularly stubborn about ingesting anything it sees::
-
- tempdir ../temp
-
-Setting the tempdir option to a tree outside the actual destination dir will cause 
-the file to be assembled elsewhere and only renamed into the destination directory 
-once it is complete.
-
-
-The 'ls' method works especially well if ''do_something'' erases the file after it 
-is processed, so that the 'ls' command is only ever processing a small directory 
-tree, and every file that shows up is *new*.
-
-For a hierarchy of files (when mirror is true), ls itself is a bit unwieldy.  Perhaps 
-the following is better::
-
-  while true; do
-     find . -print | grep -v "*.tmp" | do_something
-     sleep 5
-  done
-
-There is also the complexity that *do_something* might not delete files.  In that case,  
-one needs to filter out the files which have already been processed.  Perhaps rather than 
-listing all the files in a directory one wants only to be notified of the files which have 
-changed since the last poll::
-  
-  while true; do
-     touch .last_poll
-     sleep 5
-     find . -newer .last_poll -print | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something
-  done
-
-All of these methods have in common that one walks a file hierarchy every so often, 
-polling each directory by reading it's entirety to find new entries.  There is a 
-natural maximum rate one can poll a directory tree, and there is good deal of 
-overhead to walking trees, especially when they are large and deep. To avoid 
-polling, one can use the inotifywait command::
-
-  inotifywait -r `pwd` | grep -v sr_*.log | grep -v ".*/.sr_.*" | do_something 
-
-On a truly local file system, inotifywait is a lot more efficient than polling methods, 
-but the efficiency of inotify might not be all that different from polling on remote
-directories (where, in some cases it is actually implemented by polling under the 
-covers.) There is also a limit to the number of things that can be watched this 
-way on a system as a whole and the process of scanning a large directory tree to 
-start up an inotifywait can be quite significant.
-
-Regardless of the method used, the principle behind Basic File Reception is that 
-sr_subscribe writes the file to a directory, and an independent process does i/o to 
-find the new file. It is worth noting that it would be more efficient, in terms 
-of cpu and i/o of the system, if sr_subscribe would directly inform the processing 
-software that the file has arrived.
-
 
 Plugins
 -------
@@ -675,23 +584,7 @@ sample output::
 For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
 to be used with *on_file*, *Msg\_* plugins are to be used with on_message, etc...
 When plugins have options, the options must be placed before the plugin declaration
-in the configuration file.
-
-Plugins are all written in python, and users can create their own and create them
-with *sr_subscribe edit myplugin.py* (or just place them directly in ~/.config/sarra/plugins. 
-For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.rst>`_  
-
-
-to recap:
-
-* To view the plugins currently available on the system  *sr_subscribe list*
-* To view the contents a plugin: *sr_subscribe list <plugin>*
-* the beginning of the plugin describes it's function and settings.
-* plugins can have option settings, just like built-in ones.
-* to set them, place the options in the configuration file before the plugin call itself.
-* to make your own new plugin: *sr_subscribe edit <plugin>.py*
-
-example::
+in the configuration file. Example::
 
   msg_total_interval 5
   on_message msg_total
@@ -699,18 +592,26 @@ example::
 The *msg_total* plugin is invoked whenever a message is received, and the *msg_total_interval*
 option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
 
+Plugins are all written in python, and users can create their own and place them in ~/.config/sarra/plugins. 
+For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.rst>`_  
 
-Better File Reception
----------------------
 
-If, instead of data processors looking at a directory with an independent process 
-every second to see if new files have arrived, there were a process to directly 
-tell those processes the names of files which have arrived, processing could be 
-done far more quickly and efficiently.
+to recap:
 
-The file_rxpipe plugin for sr_subscribe makes all the instances co-operate by 
-writing the names of files downloaded to a named pipe. Setting this up required 
-two lines in an sr_subscribe configuration file::
+* To view the plugins currently available on the system  *sr_subscribe list*
+* To view the contents a plugin: *sr_subscribe list <plugin>*
+* the beginning of the plugin describes it's function and settings
+* plugins can have option settings, just like built-in ones
+* to set them, place the options in the configuration file before the plugin call itself
+* to make your own new plugin: *sr_subscribe edit <plugin>.py*
+
+
+file_rxpipe
+-----------
+
+The file_rxpipe plugin for sr_subscribe makes all the instances write the names 
+of files downloaded to a named pipe. Setting this up required two lines in 
+an sr_subscribe configuration file::
 
   blacklab% sr_subscribe edit swob 
 
@@ -728,14 +629,7 @@ two lines in an sr_subscribe configuration file::
 With the *on_file* option, one can specify a processing option such as rxpipe.  
 With rxpipe, every time a file transfer has completed and is ready for 
 post-processing, its name is written to the linux pipe (named .rxpipe) in the 
-current working directory.  The code for post-processing becomes::
-
-  tail -f  /home/peter/test/.rxpipe
-
-No listing of directories is needed, no filtering out of working files by the user 
-is required, and ingestion of partial files is completely avoided. A downstream 
-process is only given files that have been successfully downloaded, and typically 
-much faster than polling methods allow.
+current working directory.  
 
 .. NOTE::
    In the case where a large number of sr_subscribe instances are working

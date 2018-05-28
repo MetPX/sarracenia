@@ -1,6 +1,6 @@
 
 =================
- Guide D´abonnés
+ Guide d´abonnés
 =================
 
 -------------------------------------------------
@@ -320,5 +320,401 @@ Dans le temps, il peut accumuler un grand nombre de messages. Le nombre total de
 sur une pompe de données a un effet sur les performances de la pompe pour tous les utilisateurs. Il est donc
 Il est conseillé de demander à la pompe de décharger les ressources lorsqu'elles ne seront pas nécessaires.
 pendant des périodes prolongées, ou lors d'expériences avec différents réglages.
+
+
+Utiliser plusierus configurations
+---------------------------------
+
+Placez tous les fichiers de configuration, avec le suffixe.conf dans le
+repertoire: ~/.config/sarra/sarra/subscribe/ Par exemple, s'il y a deux 
+fichiers dans ce répertoire : CMC.conf et NWS.conf, on pourrait alors exécuter:: 
+
+  peter@idefix:~/test$ sr_subscribe start CMC.conf 
+  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
+  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
+  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
+  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
+  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
+  2016-01-14 18:13:01,427 [INFO] sr_subscribe CMC 0006 starting
+  peter@idefix:~/test$ 
+
+
+pour lancer la configuration de téléchargement CMC.  On peut utiliser 
+la commande sr pour démarrer/arrêter plusieurs configurations à la fois.
+La commande sr va passer par les répertoires par défaut et démarrer. 
+toutes les configurations qu'il trouve::
+
+  peter@idefix:~/test$ sr start
+  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
+  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
+  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
+  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
+  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0001 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0002 starting
+  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0003 starting
+  peter@idefix:~/test$ 
+
+
+lancera certains processus sr_subscribe tels que configurés par CMC.conf et d'autres.
+pour correspondre à NWS.conf. Sr stop fera aussi ce à quoi vous vous attendez. Tout comme le statut sr.
+Notez qu'il y a 5 processus sr_subscribe qui commencent avec le CMC. 
+et 3 NWS. Ce sont des *instances* et partagent la même chose
+file d'attente de téléchargement.
+
+
+
+Livraison prioritaire
+----------------------
+
+Bien que le protocole sur la sarracénie n'établisse pas explicitement un ordre 
+de priorité, l'utilisation de la de files d'attente multiples offre des 
+avantages similaires. Résultats de chaque configuration dans une 
+déclaration de file d'attente côté serveur. Grouper les produits à priorité 
+égale en une file d'attente en les sélectionnant à l'aide d'une 
+configuration commune. Plus les groupes sont petits, plus le délai de 
+traitement est faible. Alors que toutes les files d'attente sont traitées
+avec la même priorité, les données passent plus rapidement par des files 
+d'attente plus courtes. On peut résumer avec::
+
+  **Utiliser des configurations multiples pour établir des priorités**
+
+Pour concrétiser les conseils, prenez l'exemple des données d'Environnement Canada.
+mart ("dd.weather.gc.ca"), qui distribue des binaires grillagés, le satellite GOES.
+des milliers de prévisions de villes, d'observations, de produits RADAR, etc....
+Pour le temps réel, les alertes et les données RADAR sont la plus haute priorité. À certains
+moments de la journée, ou en cas pannes, plusieurs centaines de milliers de produits peuvent
+être en file d´attente et peut retarder la réception de produits hautement prioritaires 
+si une seule file d'attente est utilisée.
+
+Pour assurer un traitement rapide des données dans ce cas, définissez une 
+configuration pour vous abonner aux avertissements météorologiques (qui sont 
+un très petit nombre de produits), une seconde pour les RADARS (un groupe plus 
+grand mais encore relativement petit), et un troisième (le plus grand groupe) 
+pour tous les membres du les autres données. Chaque configuration utilisera une 
+file d'attente séparée. Les avertissements seront les plus rapides, RADARS se 
+mettront en file d'attente les uns contre les autres, ce qui leur permettra de 
+faire l'expérience d'un certain nombre d'entre eux plus de retard, et d'autres 
+produits partageront une seule file d'attente et seront sujets à plus de retard 
+dans les cas délais.
+
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_hipri.conf::
+
+  broker amqp://dd.weather.gc.ca/
+  mirror
+  directory /data/web
+  subtopic alerts.cap.#
+  accept .*
+
+
+
+https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_normal.conf::
+
+  broker amqp://dd.weather.gc.ca/
+  subtopic #
+  reject .*alerts/cap.*
+  mirror
+  directory /data/web
+  accept .*
+
+
+Où vous voulez que le miroir du data mart commence à /data/web (probablement 
+qu'il y a un serveur web configurés pour afficher ce répertoire.)  Probablement, 
+la configuration *ddc_normal* (fournit comme exemple) va connaître beaucoup 
+de files d'attente, car il y a beaucoup de données à télécharger.  Le 
+fichier *ddc_hipri.conf* est seulement abonné aux avertissements météorologiques 
+dans le format du CAP, il y aura donc peu ou pas de file d'attente pour ces données.
+
+Raffiner la sélection
+---------------------
+
+... avertissement: : 
+  **FIXME** : Faire une diagramme, avec: 
+
+  - le filtrage par sous-thème se fait sur le courtier ( *broker* ) 
+  - le accept/reject se fait dans le client sarracenia.
+
+Choisissez *subtopics* (qui sont appliqués sur le courtier sans 
+téléchargement de messages) pour réduire le nombre de messages qui traversent 
+le réseau.  Les options *reject* et *accept* sont évaluées par les processus 
+sr_subscriber eux-mêmes, qui fournissent un filtrage des avis transférés 
+basé sur des expressions régulières.  les expressions dans les
+options *accept* et *reject* sont évalués contre sur le chemin d'accès réel 
+(l´URL local complet), indiquant quels fichiers publiés devraient être 
+téléchargés. Regardez dans les *Downloads*.
+du fichier journal pour des exemples de ce chemin transformé. 
+
+
+.. Note:: Brève introduction aux expressions régulières
+
+  Les expressions régulières sont un moyen très puissant d'exprimer les correspondances de motifs. 
+  Ils offrent une flexibilité extrême, mais dans ces exemples, nous utiliserons seulement un
+  petit sous-ensemble : Le point (.) est un joker qui correspond à n'importe quel caractère 
+  unique. S'il est suivi d'un nombre d'occurrences, il indique le nombre de lettres 
+  qui correspondent. Le caractère * (astérisque), signifie un nombre quelconque d'occurrences.
+  alors :
+  
+   - .* signifie n'importe quelle séquence de caractères de n'importe quelle longueur. 
+     En d'autres termes, faire correspondre n'importe quoi.
+   - cap.* signifie toute séquence de caractères commençant par cap.
+   - .*CAP.* signifie n'importe quelle séquence de caractères avec CAP quelque part dedans. 
+   - .*CAP signifie toute séquence de caractères qui se termine par CAP.  
+   - Dans le cas où plusieurs portions de la chaîne de caractères pourraient correspondre, la plus longue est sélectionnée.
+   - .*?CAP comme ci-dessus, mais *non-greedy*, ce qui signifie que le match le plus court est choisi.
+   - noter que l'implantaions de regexp en C n'inclu pas le *greediness*, alors certains expressions
+     ne seront pas interpretés pareilles par les outils implanté en C: sr_cpost, sr_cpump, où libsrshim.
+  
+  Veuillez consulter diverses ressources Internet pour obtenir de plus amples renseignements: 
+  
+   - `https://docs.python.org/fr/3/library/re.html <https://docs.python.org/fr/3/library/re.html>`_
+   - `https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re <https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re>`_
+
+
+pour revenir aux exemples de fichiers de configuration :
+
+Notez ce qui suit::
+
+
+  blacklab% sr_subscribe edit swob
+
+  broker amqp://anonymous@dd.weather.gc.ca
+  subtopic observations.swob-ml.#
+  directory /tmp
+  mirror True
+  accept .*
+  #
+  # instead of writing to current working directory, write to /tmp.
+  # in /tmp. Mirror: create a hierarchy like the one on the source server.
+
+On peut aussi intercaler les directives *directory* et *accept/reject* pour 
+construire des directives une hiérarchie de répertoires arbitrairement 
+différente de ce qui se trouvait sur la pompe de données source.  Le fichier
+de configuration est lu de haut en bas, donc sr_subscribe_subscribe trouve 
+un réglage de l'option *directory*, seules les clauses *accept* après
+il fera en sorte que les fichiers soient placés relativement à ce répertoire: :
+
+  blacklab% sr_subscribe edit ddi_ninjo_part1.conf 
+
+  broker amqp://ddi.cmc.ec.gc.ca/
+  subtopic ec.ops.*.*.ninjo-a.#
+
+  directory /tmp/apps/ninjo/import/point/reports/in
+  accept .*ABFS_1.0.*
+  accept .*AQHI_1.0.*
+  accept .*AMDAR_1.0.*
+
+  directory /tmp/apps/ninjo/import/point/catalog_common/in
+  accept .*ninjo-station-catalogue.*
+
+  directory /tmp/apps/ninjo/import/point/scit_sac/in
+  accept .*~~SAC,SAC_MAXR.*
+
+  directory /tmp/apps/ninjo/import/point/scit_tracker/in
+  accept .*~~TRACKER,TRACK_MAXR.*
+
+Dans l'exemple ci-dessus, les données du catalogue de ninjo-station sont placées dans le répertoire
+catalog_common/in, plutôt que dans le répertoire *point/reports/in* ( la hiérarchie utilisée 
+pour stocker les données qui correspondent aux trois premiers clauses *accept* )
+
+.. Note::
+
+  Notez que .* dans la directive subtopic, où cela signifie ´match n'importe quel topic´ 
+  (c'est-à-dire qu'aucun caractère de point n'est permis dans le fichier ) a une 
+  signification différente de celle qu'il a dans une accept. 
+  où il s'agit de faire correspondre n'importe quelle chaîne de caractères.
+  
+  Oui, c'est déroutant.  Non, on ne peut rien y faire.  
+
+Plugins
+-------
+
+Le traitement des fichiers par défaut est souvent très bien, mais il y a 
+aussi des personnalisations pré-construites qui peut être utilisé pour 
+modifier le traitement effectué par les composants. La liste des plugins
+pré-construits est la suivante dans un répertoire 'plugins' où le paquet
+est installé (visible avec *sr_subscribe list*)
+sortie de l'échantillon::
+
+
+cklab% sr_subscribe list
+   
+   packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
+            __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
+        download_scp.py     download_wget.py          file_age.py        file_check.py 
+            file_log.py       file_rxpipe.py        file_total.py          hb_cache.py 
+              hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
+            line_log.py         line_mode.py         msg_2http.py        msg_2local.py 
+      msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py 
+           msg_delay.py        msg_delete.py      msg_download.py          msg_dump.py 
+          msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py     msg_hour_tree.py 
+             msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py 
+   msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
+        msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py 
+     msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py 
+          poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
+      post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
+           watch_log.py 
+   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
+               all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
+               cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
+          citypage.conf           clean.conf       clean_f90.conf            cmml.conf 
+   cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
+             q_f71.conf           radar.conf            rdps.conf            swob.conf 
+             t_f30.conf      u_sftp_f60.conf 
+     
+   user plugins: ( /home/peter/.config/sarra/plugins ) 
+           destfn_am.py         destfn_nz.py       msg_tarpush.py 
+   
+   general: ( /home/peter/.config/sarra ) 
+             admin.conf     credentials.conf         default.conf
+   
+   user configurations: ( /home/peter/.config/sarra/subscribe )
+        cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
+           ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
+   
+   blacklab% 
+
+Pour tous les plugins, le préfixe indique comment le plugin doit être utilisé : un file\_ plugin est
+à utiliser avec *on_file*, les plugins *Msg\_* sont à utiliser avec on_message, etc....
+Lorsque les plugins ont des options, les options doivent être placées avant la déclaration du plugin.
+dans le fichier de configuration.
+
+  msg_total_interval 5
+  on_message msg_total
+
+Le plugin *msg_total* est invoqué à chaque fois qu'un message est reçu, et l´option *msg_total_interval*.
+utilisée par ce plugin, a été fixée à 5. Pour en savoir plus : *sr_subscribe list msg_total.py* 
+
+Les plugins sont tous écrits en python, et les utilisateurs peuvent créer leurs 
+propres plugins et les placer directement dans ~/.config/sarra/plugins.
+Pour plus d'informations sur la création de nouveaux plugins 
+personnalisés, consultez: `Guide de programmation de Sarracenia <Prog.rst>`_
+
+pour récapituler :
+
+* Pour afficher les plugins actuellement disponibles sur le système *sr_subscribe list*
+* Pour visualiser le contenu d'un plugin : *sr_subscribe list <plugin>*
+* le début du plugin décrit sa fonction et ses paramètres
+* Les plugins peuvent avoir des paramètres d'options, tout comme les plugins intégrés
+* pour les définir, placez les options dans le fichier de configuration avant l'appel du plugin lui-même
+* pour créer votre propre plugin : *sr_subscribe edit <plugin>.py*
+
+Exemple : file_rxpipe
+---------------------
+
+Le plugin file_rxpipe pour sr_subscribe fait en sorte que toutes les instances écrivent les noms.
+de fichiers téléchargés dans un tube nommé. La mise en place de ce système nécessitait deux lignes en 
+un fichier de configuration sr_subscribe::
+
+  blacklab% sr_subscribe edit swob 
+
+  broker amqp://anonymous@dd.weather.gc.ca
+  subtopic observations.swob-ml.#
+
+  file_rxpipe_name /home/peter/test/.rxpipe
+  on_file file_rxpipe
+  directory /tmp
+  mirror True
+  accept .*
+  # file_rxpipe est un plugin fourni avec Sarracenia qui écrit le nom de chaque fichier
+  # téléchargé dans un *named pipe*
+
+Avec l'option *on_file*, on peut spécifier une option de traitement telle que rxpipe.
+Avec rxpipe, chaque fois qu'un transfert de fichier est terminé et qu'il est prêt pour
+post-traitement, son nom est écrit dans le tube linux (nommé .rxpipe) dans le fichier
+répertoire de travail actuel.  
+
+.. NOTE: :
+   Dans le cas où un grand nombre d'instances sr_subscribe fonctionnent.
+   Sur la même configuration, il y a une légère probabilité que les notifications
+   peuvent se corrompre l'un l'autre dans le tuyau nommé.  
+
+   **FIXME** Nous devrions probablement vérifier si cette probabilité est négligeable ou non.
+ 
+
+Exemple : Analyse antivirus
+----------------------------
+ 
+Un autre exemple d'utilisation facile d'un plugin est de réaliser une analyse antivirus.
+En supposant que ClamAV est installé, ainsi que python3-pyclamd
+alors on peut ajouter les éléments suivants à un sr_subscribe
+fichier de configuration::
+
+  broker amqp://dd.weather.gc.ca
+  on_part part_clamav_scan.py
+  subtopic observations.swob-ml.#
+  accept .*
+
+de sorte que chaque fichier téléchargé (ou chaque partie du fichier s'il est volumineux),
+pour être scanné AV. Échantillon::
+
+
+  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
+  clam_scan on_part plugin initialized
+  clam_scan on_part plugin initialized
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe start
+  2016-05-07 18:01:15,007 [INFO] sr_subscribe run
+  2016-05-07 18:01:15,007 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:01:15,846 [INFO] Received notice  20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:15,911 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CYYR 20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml 201 blacklab anonymous 0.258438 parts=1,4349,1,0,0 sum=d,399e3d9119821a30d480eeee41fe7749 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CYYR-MAN-swob.xml message=Downloaded 
+  2016-05-07 18:01:15,913 [INFO] part_clamav_scan took 0.00153089 seconds, no viruses in ./2016-05-07-2200-CYYR-MAN-swob.xml
+  2016-05-07 18:01:17,544 [INFO] Received notice  20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml
+  2016-05-07 18:01:17,607 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CVFS 20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml 201 blacklab anonymous 0.151982 parts=1,7174,1,0,0 sum=d,a8b14bd2fa8923fcdb90494f3c5f34a8 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CVFS-AUTO-swob.xml message=Downloaded 
+  
+  
+Métriques Speedo
+----------------
+
+l'activation du plugin speedo permet de comprendre la largeur de bande passante.
+et le nombre de messages par seconde d'un ensemble donné de critères de sélection.
+résultat ::
+
+
+  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe start
+  2016-05-07 18:05:52,097 [INFO] sr_subscribe run
+  2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
+  
+ 
+Mises à jour partielles des fichiers
+------------------------------------
+
+Lorsque les fichiers sont volumineux, ils sont divisés en plusieurs parties. 
+Chaque pièce est transférée séparément par sr_sarracenia. Ainsi, lorsqu'un gros 
+fichier est mis à jour, la nouvelle partie les notifications (messages) sont 
+créées. sr_subscribe vérifiera si le fichier sur disque correspond à la nouvelle 
+pièce en additionnant les données locales et en comparant les données locales.
+qu'au poste. S'ils ne correspondent pas, alors la nouvelle partie du fichier
+sera téléchargé.
+
+
+Réception redondant de fichiers
+-------------------------------
+
+Dans les environnements où une grande fiabilité est requise, plusieurs 
+serveurs sont souvent configurés pour fournir des services. L'approche 
+sarracénienne à l'égard de la La haute disponibilité est ´Active-Active´ 
+dans la mesure où toutes les sources sont en ligne et la production 
+de données se fait en parallèle. Chaque source publie des données,
+et les consommateurs l'obtiennent de la première source qui le rend 
+disponible, l'utilisation de sommes de contrôle pour déterminer si 
+la donnée est nouvelle ou non.
+
+Ce filtrage nécessite la mise en œuvre d'une pompe locale sans données avec
+sr_winnow. Consultez le Guide de l'administrateur pour plus d'informations.
+
+Plus d'informations
+-------------------
+
+Le `sr_subscribe(1) <sr_subscribe.1.rst>`_ est la source définitive de référence.
+des informations sur les options de configuration. Pour plus d'informations,
+consulter : `Documentation Sarracenia <sarra-docs-f.rst>`_ 
 
 
