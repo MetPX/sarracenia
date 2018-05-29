@@ -84,8 +84,8 @@ Et complétez les informations nécessaires dans le fichier d'informations d'ide
 **ftp://myself:mypassword@myserver:2121 passive,binaire***.
 
 
-PÉCIFICATIONS DE SONDAGE
-----------------------
+SPÉCIFICATIONS DE SONDAGE
+-------------------------
 
 Ces options définissent les fichiers pour lesquels l'utilisateur veut être 
 notifié et où il doit être notifié il sera placé, et sous quel nom.
@@ -184,7 +184,7 @@ Sous **sr_sarra**, ces champs peuvent être réinitialisés.
 
 
 FONCTIONNALITÉS AVANCÉES
------------------
+------------------------
 
 Il existe des moyens d'insérer des scripts dans le flux des messages et des téléchargements de fichiers :
 Si vous voulez mettre en œuvre des tâches dans les différentes parties de l'exécution du programme :
@@ -227,10 +227,10 @@ Un script do_nothing.py pour **on_post** pourrait être ::
 Les seuls arguments que le script reçoit **parent**, qui est une instance de
 la classe **sr_poll** classe
 
-Le script **do_poll** pourrait être écrit pour prendre en charge un protocole autre que le protocole
-ftp,ftps,sftp,sftp.  Encore une fois, ce script serait responsable de déterminer
-que faire dans le cadre de son protocole avec les différentes options **destination**,
-****, et s'il décide d'afficher un répertoire
+Le script **do_poll** pourrait être écrit pour prendre en charge un protocole 
+autre que le protocole ftp,ftps,sftp,sftp.  Encore une fois, ce script serait 
+responsable de déterminer que faire dans le cadre de son protocole avec les 
+différentes options **destination**, et s'il décide d'afficher un répertoire
 il aurait besoin de construire son url, partstr, sumstr, sumstr et peut se servir de:
 
 **parent.poster.post(parent.exchange,url,parent.to_clusters, \**

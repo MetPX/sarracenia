@@ -81,7 +81,7 @@ laissées intactes par un audit.
 
 
 VÉRIFIER LES RÉGLAGES DE LA POMPE
-====================
+=================================
 
 Utilisez **sr_audit** invoquer avec **--pump** pour valider sa configuration.  
 Il s'assure que l'utilisateur **feeder**, et **admin** sont définis et valides.  

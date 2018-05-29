@@ -2,20 +2,16 @@
  General Sarracenia Concepts
 =============================
 
-This document describes abstractions underlying the design and 
-usage of Sarracenia. Essentially, this is background material, but
-it is fairly detailed in that it gives motivation for why settings
-have the names they do, and why the software works the way it does.
+This document describes abstractions underlying Sarracenia. 
 It isn't clear how directly applicable this information is to normal usage, 
-but it seems this information should be available *somewhere*, while 
-keeping it separate from the more prescriptive directly applicable documents.
+but it seems this information should be available *somewhere*.
 
 .. contents::
 
 Introduction
 ------------
 
-Sarracenia pumps form a network. The network use rabbitmq brokers as a transfer
+Sarracenia pumps form a network. The network uses amqp brokers as a transfer
 manager which sends advertisements in one direction and report messages in the
 opposite direction. Administrators configure the paths that data flows through
 at each pump, as each broker acts independently, managing transfers from
@@ -33,9 +29,10 @@ different server from both ends of a given hop of a data transfer.
 The best way for data transfers to occur is to avoid polling. It is more
 efficient if writers can be coaxed into emitting appropriate sr_post messages.
 Similarly, when delivering, it is ideal if the receivers use sr_subscribe, and
-an on_file plugin to trigger their further processing, so that the file is handed to them without polling.
-This is the most efficient way of working, but it is understood that not all software
-can be made co-operative. Tools to poll for those cases are sr_poll, and sr_watch.
+an on_file plugin to trigger their further processing, so that the file is 
+handed to them without polling. This is the most efficient way of working, but
+it is understood that not all software can be made co-operative. Tools to poll
+in order to start transport flows are sr_poll, and sr_watch.
 
 Generally speaking, Linux is the main deployment target, and the only platform on which
 server configurations are deployed. Other platforms are used as client end points.
@@ -50,9 +47,9 @@ One thing that is safe to say is that one needs to understand a bit about AMQP t
 with Sarracenia. AMQP is a vast and interesting topic in it's own right. No attempt is
 made to explain all of it here. This section just provides a little context, and introduces
 only background concepts needed to understand and/or use Sarracenia. For more information
-on AMQP itself, a set of links is maintained at
-the `Metpx web site <http://metpx.sourceforge.net/sarra-e.html#amqp>`_ but a search engine
-will also reveal a wealth of material.
+on AMQP itself, a set of links is maintained at the 
+`Metpx web site <http://github.com/MetPX/sarracenia/blob/master/doc/sarra-e.html#amqp>`_ 
+but a search engine will also reveal a wealth of material.
 
 .. image:: AMQP4Sarra.svg
     :scale: 50%
@@ -75,14 +72,14 @@ An *exchange* is a matchmaker between *publisher* and *consumer* queues.
    - interested: compare message key to the bindings of *consumer queues*.
    - message is routed to interested *consumer queues*, or dropped if there aren't any.
 
-- Multiple processes can share a *queue*, they just take turns removing messages from it.
+Multiple processes can share a *queue*, they just take turns removing messages from it.
    - This is used heavily for sr_sarra and sr_subcribe multiple instances.
 
-- *Queues* can be *durable*, so even if your subscription process dies,
+*Queues* can be *durable*, so even if your subscription process dies,
   if you come back in a reasonable time and you use the same queue,
   you will not have missed any messages.
 
-- How to Decide if Someone is Interested.
+How to Decide if Someone is Interested.
    - For Sarracenia, we use (AMQP standard) *topic based exchanges*.
    - Subscribers indicate what topics they are interested in, and the filtering occurs server/broker side.
    - Topics are just keywords separated by a dot. wildcards: # matches anything, * matches one word.
@@ -90,7 +87,7 @@ An *exchange* is a matchmaker between *publisher* and *consumer* queues.
    - Resolution & syntax of server filtering is set by AMQP. (. separator, # and * wildcards)
    - Server side filtering is coarse, messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)
 
-- topic prefix?  We start the topic tree with fixed fields
+topic prefix?  We start the topic tree with fixed fields
      - v02 the version/format of sarracenia messages.
      - post ... the message type, this is an announcement
        of a file (or part of a file) being available.
@@ -126,8 +123,8 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
 
 
 
-Flow Through Exchanges
-----------------------
+Flow Through Pumps
+------------------
 
 .. image:: e-ddsr-components.jpg
     :scale: 100%

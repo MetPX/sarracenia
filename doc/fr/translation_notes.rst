@@ -43,7 +43,8 @@ Glossaire
 +---------------+---------------------+-----------------+-------------------+
 | Term          | literal translations| Pick            | reasoning         |
 +===============+=====================+=================+===================+
-|binding        |liaison              |                 |good.              |
+|binding        |liaison              |association?     |I liked Liaison... |
+|               |reliure?             |liaison?         |                   |
 +---------------+---------------------+-----------------+-------------------+
 |checksum       |somme de contrôle    |                 |um, ok will french |
 |               |                     |                 |people get that?   |
