@@ -951,7 +951,7 @@ many protocols appropriate for different situations:
 +-------------+---------------------------------------+--------------------------------------+
 | Method      | Description                           | Application                          |
 +=============+=======================================+======================================+
-|             |File sent with right name              |Sending to Sarracenia, and            |
+|             |File sent with right name.             |Sending to Sarracenia, and            |
 |   NONE      |Send `sr_post(7) <sr_post.7.rst>`_     |post only when file is complete       |
 |             |by AMQP after file is complete.        |                                      |
 |             |                                       |(Best when available)                 |
@@ -966,8 +966,8 @@ many protocols appropriate for different situations:
 |             | - requires extra round trips for      |(usually a good choice)               |
 |             |   rename (a little slower)            | - default when no post broker set    |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Files transferred to a subdir          |sending to some other systems         |
-| tmp/        |When complete, renamed to parent dir   |                                      |
+|             |Files transferred to a subdir.         |sending to some other systems         |
+| tmp/        |When complete, renamed to parent dir.  |                                      |
 | (subdir)    |Actual subdir is settable.             |                                      |
 |             |                                       |                                      |
 |             |same performance as Suffix method.     |                                      |
@@ -977,8 +977,8 @@ many protocols appropriate for different situations:
 | (Prefix)    |that need that. (compatibility)        |                                      |
 |             |same performance as Suffix method.     |                                      |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Minimum age (modification time)        |Last choice, guarantees delay only if |
-|  number     |of the file before it is considered    |no other method works.                |
+|             |Minimum age (modification time)        |Last choice                           |
+|  number     |of the file before it is considered    |guaranteed delay added                |
 |  (mtime)    |complete.                              |                                      |
 |             |                                       |Receiving from uncooperative          |
 |             |Adds delay in every transfer.          |sources.                              |
