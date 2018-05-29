@@ -1773,7 +1773,7 @@ already correct.
 
 
 CONFIGURATION FILES
--------------------
+===================
 
 While one can manage configuration files using the *add*, *remove*,
 *list*, *edit*, *disable*, and *enable* actions, one can also do all
@@ -1815,7 +1815,7 @@ directory, then in the sarracenia package itself, and finally it will look remot
 
 
 SEE ALSO
---------
+========
 
 
 `sr_shovel(1) <sr_shovel.1.rst>`_ - process messages (no downloading.)
@@ -1843,7 +1843,7 @@ SEE ALSO
 
 
 SUNDEW COMPATIBILITY OPTIONS
-----------------------------
+============================
 
 For compatibility with sundew, there are some additional delivery options which can be specified.
 
@@ -1935,7 +1935,7 @@ named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would h
 
 
 Field Replacements
-~~~~~~~~~~~~~~~~~~
+------------------
 
 In MetPX Sundew, there is a much more strict file naming standard, specialised for use with 
 World Meteorological Organization (WMO) data.   Note that the file naming convention predates, and 
