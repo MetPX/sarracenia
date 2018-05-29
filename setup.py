@@ -49,7 +49,7 @@ setup(
               ]
     },
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'Intended Audience :: System Administrators',
