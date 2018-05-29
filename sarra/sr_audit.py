@@ -719,11 +719,11 @@ def main():
     if old :
        audit.logger.warning("Should invoke 1: %s [args] action config" % sys.argv[0])
 
-    if hasattr( audit.admin, 'username') :
-        audit.logger.debug("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
-    else:
-        audit.logger.info("%s has no admin set..." % audit.program_name)
-        action = 'stop'
+    #if hasattr( audit.admin, 'username') :
+    #    audit.logger.debug("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )
+    #else:
+    #    audit.logger.info("%s has no admin set..." % audit.program_name)
+    #    action = 'stop'
 
     if   action == 'foreground' : audit.foreground_parent()
     elif action == 'reload'     : audit.reload_parent()

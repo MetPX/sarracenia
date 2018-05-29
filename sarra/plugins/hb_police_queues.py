@@ -12,6 +12,11 @@ class Hb_Police_Queues(object):
         parent.logger.debug( "hb_police_queues initialized" )
           
     def perform(self,parent):
+ 
+        if ( parent.admin == None ):
+           parent.logger.info( "hb_police_queues not running, no admin" )
+           return True
+
         parent.logger.info( "hb_police_queues launched" )
 
         try   :
