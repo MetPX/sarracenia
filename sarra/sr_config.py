@@ -1749,6 +1749,9 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
+                     if words0 in [ 'lock' ]: # FIXME: remove support in 2019.
+                        self.logger.warning( "Deprecated option. Please use *inflight* instead of *lock*" )
+
                      if words[1].lower() in [ 'none' ]: 
                          self.inflight=None
                      elif words[1][0].isnumeric() :
