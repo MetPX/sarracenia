@@ -141,7 +141,7 @@ MetPX-Sarracenia n'est qu'un léger enrobage autour de l'AMQP.
 Le flot à travers des Pompes
 ----------------------------
 
-.. image:: e-ddsr-components.jpg
+.. image:: f-ddsr-components.gif
     :scale: 100%
     :align: center
 
