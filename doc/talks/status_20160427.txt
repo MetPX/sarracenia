@@ -1,0 +1,81 @@
+
+I don't know if this is interesting, I needed to create most of this content for reporting purposes, and I thought I could just add a bit of context, and share it and see if there is interest.   This is likely too much for 99% of people, but a few nerds may take a ghoulish fascination for the pain we endured.  
+
+Disclaimer:  I wrote this, likely a lot is wrong with it... it isn't polished at all.  Mistakes are mine.
+
+
+Notes:
+ - HPCR is the High Performance Computing Replacement project, which is the vehicle used to provide supercomputing resources for environmental prediction.  It is another cluster beside GPSC.
+ - Science.gc.ca is a domain into which the HPCR systems are included as a LAN extension.
+ - there are no separate domains for HPCR, BUT: HPCR uses a lot of non-routable addresses
+   so there are many limitations in exchanging traffic in and out.
+ - protocol nodes are pools of servers that act allow external users using protocols other
+   than GPFS to access the site store (NFS, SSH, BBCP)
+ - the transfers here are all using SSH/SFTP mechanisms which are standard in technical computing domains.
+
+aside:
+The security design of science.gc.ca is to be a data sink.  Connections go in, but they never come out.  This means that no other domains have any trust relationships with anything in science.gc.ca.  This simplifies the firewall rules and security auditing, especially for a service that is to be used by multiple partners.  But it causes conceptual problems for staff who want to move data back into their departmental network. 
+
+Nutshell version of what HPCR is for: 24 hours a day every day, environmental sensor data from Space-based, terrestrial and marine sources is fed into HPCR.  HPCR turns that data into a best guess at what the atmosphere of the earth looks like currently, then runs a model of the physical processes at work to predict what the earth's atmosphere will be like at various points in the future.   A typical deadline for producing a forecast is 45 minutes.  So the ingest, modelling and output needs to happen in a very constrained period. 
+
+The data feed's job is to acquire files from many different sources all over the world, and feed them quickly into the HPCR for processing, and then reverse the process for outputs. 
+
+
+How data is fed to HPCR:
+- sr_sender processes running on ddsr pumps 
+- sr_senders obtain the list of files to send by connecting to the local broker (green loops)
+- sr_senders send the data to the protocol nodes. (black arcs)
+- the protocol nodes are connected to the site store, and the ADE etc... are running in the PPP.
+
+
+ECCC currently has all the data acquisition systems centralized into the cluster that implements the Deterministic Data Switching and Routing (DDSR) cluster.  The cluster has two nodes that run message brokers (rabbitmq AMQP brokers) where, for every file it learns about, a message is created.   Subscribers have look at the messages and download the ones of interest to them.
+
+Besides the two broker nodes, there are eight transfer nodes,  These nodes look at messages and either download files from remote servers to make them available locally (using sarra - Subscribe and Recursively Re-Advertise) or deliver files available locally to remote servers (sender)
+
+Since servers in the science domain cannot connect to servers in EC's network, the ddsr data pumps use senders to deliver the data to the science domain.   Over time, we will be complete commissioning of data pumps in the science domain, and users there will just be able to subscribe directly, without having to have analysts program a feed.  The dotted lines represent the partial feeds that are currently implemented.
+
+Note that there are two feeds, to ss1protoX and ss2protoX.  This is because the entire HPC configuration is doubled in order to support 24x7 operations.  If one cluster fails, the other cluster can take over production, and R&D basically stops.  When both are available, R&D can run on the resources that operations doesn't use.   The supercomputer is doubled, the site store (cluster-wide file system) is doubled, the pre-and-post processing systems are doubled.
+
+For data feeds, we need to feed both the site store 1 (ss1) and site store 2 (ss2) because ECCC operations has elected to run the data acquisition suite in parallel on both systems.  These feeds are only a subset of the total fed, and in some applications, the choice is made to run only one cluster, and mirror the results to the other site store.  Large scale mirroring is being tackled as follows:
+
+
+The sarracenia package has a tool called sr_watch, that uses the Linux kernel inotify feature to efficiently report on when a file has been modified or created.  We encountered a few problems:
+
+
+ -- While sr_watch works well for dozens of hundreds of directories, and a few thousand files, when it gets into many thousands of directories, the memory usage can climb to over a gigabyte.
+
+ -- The cluster file system in use, IBM's General Parallel File System, does not propagate inotify events to all nodes.  In order to monitor a directory on a system with one hundred compute nodes, one must run an sr_watch on every node (consuming one hundred nodes, 1 gigabyte of RAM on each one... blech!)
+
+
+While there are some approaches that could be taken to reduce memory usage, we ran out of time, and used an alternate approach.    The GPFS has a number of hooks that allow us run queries of the number of files modified in a given tree since at given point in time.  The API method for this is termed ''GPFS policies".  So we periodically run a GPFS policy script and announce the results with sr_post.
+
+
+Once we have the events available, it is just a matter of running a subscriber process on the opposite site store to download what it wants.
+
+
+To Mirror between site A and site B,  
+- protocol node on each side runs a 'policy' process that periodically obtains a list of changed files.
+- the policy process posts the list to the broker (ddsr) in a channel for that site store.
+- A subscribe process on a protocol node connects to the channel for the opposite site store.
+- The subscribe downloads the data advertised on that channel.
+ - Large data is downloaded using BBCP.
+ - BBCP is an enhanced transfer mechanism from Standford Linear Accellerator (SLAC.)
+ - BBCP is optimized for large file transfers, so the setup and teardown is relatively expensive.
+ - a separate setup and teardown with bbcp is required for each file transferred.
+ - sarracenia's built-in transfer mechanism uses a long-running sftp connection, so all setup and teardown is amortized over many files, so for small files, it is likely faster than bbcp.
+ - paramiko is the standard python library to understand SSH/SFTP.
+
+Right now, the subscribe process can only use bbcp to transfer files because paramiko is missing on the protocol nodes.  That should get fixed shortly.   Our tests so far show that the mirroring of many thousands of files is taking place within a minute or two, essentially takes place at wire speed for large files, meaning that the time to generate the announcement is the slowest part of the process.
+
+So that's a low-flying bird's eye view of some work that has been going on in SSC/Supercomputing working together with ECCC/MSC.  Setting up these data flows has occupied a bunch of us for about six months, and it will become operational over the next few months as a small part of HPCR.  
+
+Questions:
+   -- is this an interesting topic?  does it make any sense to have a 'discussion' in this forum?
+   -- Does anyone want to see "speeds" and "feeds" ?
+  
+I would actually appreciate people asking the obvious "why the heck did you do it that way" questions, because we have good answers, but writing it in one go would make it too long.
+
+
+
+
+
