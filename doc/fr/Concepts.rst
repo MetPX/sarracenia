@@ -307,8 +307,8 @@ l'une ou l'autre IP)) a été réalisée.
 
 
 
-Plans de Pomps
---------------
+Plans de Pompes
+---------------
 
 Il existe de nombreux arrangements différents dans lesquels la sarracénie peut
 être utilisée.
@@ -595,7 +595,7 @@ Les composants ont juste des réglages par défaut différents :
  |   télecharger un       | Filter                   |
  |   fichier d´une pompe. |                          |
  |   Si la machine locale | Do=Télécharger           |
- |   est une pompe.       |                          |
+ |   est une pompe,       |                          |
  |   publier l´avis       | Post=optionelle          |
  |   locale               |                          |
  |                        | Report=optionells        |
