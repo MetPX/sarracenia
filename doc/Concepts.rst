@@ -199,19 +199,22 @@ source
   email or phone number for questions about the data and it's availability, then all of
   those collection activities might use a single 'source' account.
 
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber,
-  to send report messages about processing and receipt of data.
+  Each source gets a xs_<user> exchange for injection of data posts, and, 
+  similar to a subscriber, to send report messages about processing and receipt
+  of data. Each source is able to view all of the messages for data it has 
+  injected, but the location where all of these messages are available varies
+  according to administrator configuration of report routing. A source may 
+  inject data on pumpA, but may subscribe to reports on a different pump. The
+  reports corresponding to the data the source injected are written in 
+  exchange xl_<user>.
 
-  Each source is able to view all of the messages for data it has injected, but the location where
-  all of these messages are available varies according to administrator configuration of report routing.
-  So a source may inject data on pumpA, but may subscribe to logs on a different pump. The logs
-  corresponding to the data the source injected are written in exchange xl_<user>.
-
-  When a route injects data, the path is modified by sarracenia to prepend a fixed upper part
-  of the directory tree. The first level directory is the day of ingest into the network in
-  YYYYMMDD format. The second level directory is the source name. So for a user Alice, injecting
-  data on May 4th, 2016, the root of the directory tree is:  20160504/Alice. Note that all
-  pumps are expected to run in the UTC timezone (widely, but inaccurately, referred to as GMT.)
+  When data is first injected, the path is modified by sarracenia to prepend a 
+  fixed upper part of the directory tree. The first level directory is the day
+  of ingest into the network in YYYYMMDD format. The second level directory is
+  the source name. So for a user Alice, injecting data on May 4th, 2016, the
+  root of the directory tree is:  20160504/Alice. Note that all pumps are 
+  expected to run in the UTC timezone (widely, but inaccurately, referred to
+  as GMT.)
 
   There are daily directories because there is a system-wide life-time for data, it is deleted
   after a standard number of days, data is just deleted from the root.
@@ -264,18 +267,19 @@ IPv6
 ~~~~
 
 A sample pumps was implemented on a small VPS with IPv6 enabled. A client
-from far away connected to the rabbitmq broker using IPv6, and the subscription to the apache httpd
-worked without issues. *It just works*. There is no difference between IPv4 and IPv6 for sarra tools,
-which are agnostic of IP addresses.
+from far away connected to the rabbitmq broker using IPv6, and the 
+subscription to the apache httpd worked without issues. *It just works*. There
+is no difference between IPv4 and IPv6 for sarra tools, which are agnostic of
+IP addresses.
 
-On the other hand, one is expected to use hostnames, since use of IP addresses will break certificate
-use for securing the transport layer (TLS, aka SSL) No testing of ip addresses in URLs (in either IP
-version) has been done.
+On the other hand, one is expected to use hostnames, since use of IP addresses
+will break certificate use for securing the transport layer (TLS, aka SSL) No
+testing of ip addresses in URLs (in either IP version) has been done.
 
 
 
-Configurations
---------------
+Pump Designs
+------------
 
 There are many different arrangements in which sarracenia can be used. 
 
@@ -360,9 +364,9 @@ itself on a single server. The *ddi* systems are generally configured this way.
 Switching/Routing
 ~~~~~~~~~~~~~~~~~
 
-In switching/routing configuration, there is a pair of machines running a single broker for a pool
-of transfer engines. So each transfer engine´s view of the file space is local, but the queues are
-global to the pump.  
+In switching/routing configuration, there is a pair of machines running a 
+single broker for a pool of transfer engines. So each transfer engine´s view of
+the file space is local, but the queues are global to the pump.  
 
 Note: On such clusters, all nodes that run a component with the
 same config file create by default an identical **queue_name**. Targetting the
@@ -371,10 +375,10 @@ the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**
 Each node will have its own queue, only shared by the node instances.
 ex.: queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
 
-Often there is internal traffic of data acquired before it is finally published.  As a means
-of scaling, often transfer engines will also have brokers to handle local traffic, and
-only publish final products to the main broker.  This is how *ddsr* systems are generally
-configured.
+Often there is internal traffic of data acquired before it is finally published.
+As a means of scaling, often transfer engines will also have brokers to handle
+local traffic, and only publish final products to the main broker.  This is how
+*ddsr* systems are generally configured.
 
 
 Security Considerations
@@ -453,7 +457,7 @@ constraints are a little different:
 - source doesn´t matter. (feeders can represent other users, so do not overwrite.)
 - ensure cluster is not local cluster (as that indicates either a loop or misuse.)
 
-If the message fails the non-local cluster test, it should be rejected, and logged (published ... hmm...)
+If the message fails the non-local cluster test, it should be rejected, and logged (FIME: published ... hmm... clarify)
 
 .. NOTE::
  FIXME:
@@ -586,51 +590,64 @@ Glossary
 Sarracenia documentation uses a number of words in a particular way.
 This glossary should make it easier to understand the rest of the documentation.
 
-Source
-  Someone who wants to ship data to someone else. They do that by advertise a trees of files that are copied from
-  the starting point to one or more pumps in the network. The advertisement sources produce tell others exactly
-  where and how to download the files, and Sources have to say where they want the data to go to.
 
-  Sources use programs like `sr_post.1 <sr_post.1.rst>`_, `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_
-  to create their advertisements.
+Source
+  Someone who wants to ship data to someone else. They do that by advertise a 
+  trees of files that are copied from the starting point to one or more pumps
+  in the network. The advertisement sources produce tell others exactly where 
+  and how to download the files, and Sources have to say where they want the 
+  data to go to.
+
+  Sources use programs like `sr_post.1 <sr_post.1.rst>`_, 
+  `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_ to create 
+  their advertisements.
+
 
 Subscribers
-  are those who examine advertisements about files that are available, and download the files
-  they are interested in.
+  are those who examine advertisements about files that are available, and 
+  download the files they are interested in.
 
   Subscribers use `sr_subscribe(1) <sr_subscribe.1.rst>`_
 
+
 Post, Notice, Notification, Advertisement, Announcement
-  These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users know that a particular
-  file is ready. The format of these AMQP messages is described by the `sr_post(7) <sr_post.7.rst>`_
-  manual page. All of these words are used interchangeably. Advertisements at each step preserve the
-  original source of the posting, so that report messages can be routed back to the source.
+  These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users
+  know that a particular file is ready. The format of these AMQP messages is 
+  described by the `sr_post(7) <sr_post.7.rst>`_ manual page. All of these 
+  words are used interchangeably. Advertisements at each step preserve the
+  original source of the posting, so that report messages can be routed back 
+  to the source.
 
 
 Report messages
-  These are AMQP messages (in `sr_report(7) <sr_report.7.rst>`_ format) built by consumers of messages, to indicate
-  what a given pump or subscriber decided to do with a message. They conceptually flow in the opposite
-  direction of notifications in a network, to get back to the source.
+  These are AMQP messages (in `sr_report(7) <sr_report.7.rst>`_ format) built 
+  by consumers of messages, to indicate what a given pump or subscriber decided
+  to do with a message. They conceptually flow in the opposite direction of 
+  notifications in a network, to get back to the source.
 
 
 Pump or broker
-  A pump is a host running Sarracenia, a rabbitmq AMQP server (called a *broker* in AMQP parlance)
-  The pump has administrative users and manage the AMQP broker as a dedicated resource.
-  Some sort of transport engine, like an apache server, or an openssh server, is used to support file transfers.
-  SFTP, and HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps copy files from
-  somewhere, and write them locally. They then re-advertised the local copy to it's neighbouring pumps, and end user
-  subscribers, they can obtain the data from this pump.
+  A pump is a host running Sarracenia, a rabbitmq AMQP server (called a *broker*
+  in AMQP parlance) The pump has administrative users and manage the AMQP broker
+  as a dedicated resource.  Some sort of transport engine, like an apache 
+  server, or an openssh server, is used to support file transfers. SFTP, and 
+  HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps
+  copy files from somewhere, and write them locally. They then re-advertised the
+  local copy to it's neighbouring pumps, and end user subscribers, they can 
+  obtain the data from this pump.
 
 .. Note::
-  For end users, a pump and a broker is the same thing for all practical purposes. When pump administrators
-  configure multi-host clusters, however, a broker might be running on two hosts, and the same broker could
-  be used by many transport engines. The entire cluster would be considered a pump. So the two words are not
-  always the same.
+  For end users, a pump and a broker is the same thing for all practical 
+  purposes. When pump administrators configure multi-host clusters, however, a 
+  broker might be running on two hosts, and the same broker could be used by 
+  many transport engines. The entire cluster would be considered a pump. So the
+  two words are not always the same.
 
 
 Dataless Pumps
-  There are some pumps that have no transport engine, they just mediate transfers for other servers, by
-  making messages available to clients and servers in their network area.
+  There are some pumps that have no transport engine, they just mediate 
+  transfers for other servers, by making messages available to clients and
+  servers in their network area.
 
 
 Dataless Transfers
@@ -638,10 +655,11 @@ Dataless Transfers
 
 
 Pumping Network
-  A number of interconnects servers running the sarracenia stack. Each stack determines how it routes items
-  to the next hop, so the entire size or extent of the network may not be known to those who put data into it.
+  A number of interconnects servers running the sarracenia stack. Each stack 
+  determines how it routes items to the next hop, so the entire size or extent
+  of the network may not be known to those who put data into it.
 
 
 Network Maps
-  Each pump should provide a network map to advise users of the known destination that they should
-  advertise to send to. *FIXME* undefined so far.
+  Each pump should provide a network map to advise users of the known destination
+  that they should advertise to send to. *FIXME* undefined so far.
