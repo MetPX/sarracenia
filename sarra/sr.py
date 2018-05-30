@@ -126,9 +126,6 @@ def invoke(dirconf,pgm,confname,action):
 
     # c does not implement action sanity yet
     cfg.logger.info("action %s" % action)
-    if action == 'sanity' and pgm in ['cpost','cpump'] :
-       cfg.logger.warning("%s %s %s : sanity Not Implemented" % ("sr_" + pgm,action,confname))
-       return
 
     try :
              # anything but sr_post
