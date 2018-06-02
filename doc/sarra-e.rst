@@ -182,7 +182,7 @@ that time, the application will rely on pre-1.0 standard message brokers, such a
 Downloading Sarracenia
 ----------------------
 
-Steps for downloading the latest version of Sarracenia are available on our `downloads page <download-e.rst>`_ .
+Steps for downloading the latest version of Sarracenia are available on our `downloads page <Install.rst>`_ .
 
 Getting The Source Code
 -----------------------
