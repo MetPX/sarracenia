@@ -133,6 +133,7 @@ et les contributeurs :
 
 * `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
+Pour les indexes de référence, `AUSSI VOIR`_
 
 Configurations
 --------------
