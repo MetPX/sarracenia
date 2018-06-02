@@ -77,7 +77,7 @@ the rabbitmq server, or manage the configurations.
  - enable:   mark a configuration as eligible to run. 
 
 
-For example:  *sr_subscribe foreground dd* runs the sr_subcribe component with
+For example:  *sr_subscribe foreground dd* runs the sr_subscribe component with
 the dd configuration as a single foreground instance.
 
 The **foreground** action is used when building a configuration or for debugging.

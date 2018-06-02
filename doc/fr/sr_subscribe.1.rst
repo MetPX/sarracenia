@@ -84,7 +84,7 @@ rabbitmq, ou gérent les configurations.
  - enable:   marquer une configuration comme éligible à l'exécution.
 
 
-Par exemple: *sr_subscribe foreground dd* exécute le composant sr_subcribe
+Par exemple: *sr_subscribe foreground dd* exécute le composant sr_subscribe
 avec la commande en se servant de la configuration dd en tant qu'instance de premier
 plan unique.
 
@@ -111,11 +111,9 @@ temporairement.
 Documentation
 -------------
 
-Lorsque la ligne de commande est invoquée avec l'action *help*, ou *-help* op
-**help** a un composant qui imprime une liste d'options valides. Bien que les pages du manuel fournissent
-le matériel de référence, c'est-à-dire la capacité de localiser rapidement des informations spécifiques.
-n'est pas un point de départ pour l'utilisation du paquet.  Il y a des guides disponibles
-sur le site sourceforge qui fournissent une meilleure introduction :
+Bien que les pages du manuel fournissent des informations exhaustives, 
+Les nouveaux utilisateurs à la recherche d´exemples et démonstrations
+seront plus heureux avec les guides:
 
 utilisateurs :
 
@@ -133,7 +131,11 @@ et les contributeurs :
 
 * `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
-Pour les indexes de référence, `AUSSI VOIR`_
+Pour tous les indexes de référence: `AUSSI VOIR`_. 
+Pour usage rapide, Lorsque la ligne de commande est invoquée avec 
+l'action *help*, ou *-help* op **help** a un composant qui imprime une 
+liste d'options valides. 
+
 
 Configurations
 --------------

@@ -192,4 +192,4 @@ The source code is available from our `git repository <https://github.com/MetPX/
 Documentation
 -------------
 
-The documentation for Sarracenia can be found on our `documentation page <sarra-docs-e.rst>`_ .
+The documentation for Sarracenia can be found on our `documentation <sr_subscribe.1.rst#documentation>`_ .

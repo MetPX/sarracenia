@@ -93,7 +93,19 @@ Packages
 
 Debian packages and python wheels can be downloaded directly 
 from: `launchpad <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx/+packages>`_
-or (perhaps): `Sourceforge <https://sourceforge.net/projects/metpx/files/sarracenia/>`_
+
+
+Source
+------
+
+Source code for each module is available https://github.com/MetPX::
+
+ git clone https://github.com/MetPX/sarracenia sarracenia
+ cd sarracenia
+ python3 setup.py bdist_wheel
+ pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
+
+
 
 Sarrac
 ------
@@ -101,6 +113,7 @@ Sarrac
 The C client is available in prebuilt binaries in the launchpad repositories alongside the python packages.
 The librabbitmq-0.8.0 has been backported to ubuntu 16.04 and 14.04 to satisfy sarrac's dependency.
 For other architectures or distributions, git clone https://github.com/MetPX/sarrac and compile 
-on any linux system, as long as librabbitmq dependency is satisfied.
+on any linux system, as long as librabbitmq dependency is satisfied. Note that the package does
+not build or run on non-linux systems.
 
 
