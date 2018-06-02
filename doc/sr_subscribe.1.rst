@@ -100,11 +100,9 @@ temporarily.
 Documentation
 -------------
 
-When the command line is invoked with either the *help* action, or *-help* op
-**help** has a component print a list of valid options. While the manual pages provide
-reference material, that is the ability to locate specific information quickly, it
-is not meant as a starting point for using the package.  There guides available
-at the sourceforge site that provide a better introduction:
+While manual pages provide an index or reference for all options,
+new users will find the guides provide more helpful examples and walk 
+throughs and should start with them.
 
 users:
 
@@ -116,13 +114,17 @@ Administrators:
 
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Installation <Install.rst>`_ - initial installation.
-* `Upgrade Guide <Admin.rst>`_ - MUST READ when upgrading pumps.
+* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
 and contributors:
 
 * `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
 
 There are also other manual pages available here: `See Also`_
+
+Some quick hints are also available When the command line is invoked with 
+either the *help* action, or *-help* op **help** to have a component print 
+a list of valid options. 
 
 
 Configurations
