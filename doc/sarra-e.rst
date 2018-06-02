@@ -66,7 +66,7 @@ platform (Linux, Windows, Mac)
 
 For more information about Sarra, view the
 `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
-or proceed to the detailed `documentation <sr_subscribe.1.rst#Documentation>`_
+or proceed to the detailed `documentation <sr_subscribe.1.rst#documentation>`_
 
 Implementations
 ---------------
