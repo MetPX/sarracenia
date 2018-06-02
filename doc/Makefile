@@ -4,9 +4,12 @@ RST2MAN = rst2man
 RST2HTML = rst2html
 MAKE = make
 
-all: man html
+all: man html french
 
-.PHONY: design man html
+.PHONY: design man html 
+
+french:
+	cd fr; $(MAKE) -C html
 
 design: 
 	$(MAKE) -C design
