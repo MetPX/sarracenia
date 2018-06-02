@@ -107,100 +107,17 @@ credentials safely::
 .. Note::
   Passwords are always stored in the credentials.conf file.
 
-Now we just need to figure out where to send the file to.  Sr_post makes
-the default guess that the only destination is the broker being posted to.
-One can override that to have the data forwarded to multiple data pumps.
-For a selection of labels to use to identify destinations, aim a browser at:
-
-.. warning::
-   **FIXME**: doc tree not implemented yet either... you have to talk to an admin
-   to get advice on this stuff.
-
-http://ddsr.cmc.ec.gc.ca/doc/Network.txt (and/or html)
-
-+--------------------+--------------------------------------------------------------+
-| DDIEDM             | Data Distribution Internal, Edmonton                         |
-|                    | Western Data Dissemination hub for Environment Canada        |
-|                    | Meteorological Service, 24x7 operations                      |
-|                    | Contact: SSC.DataInterchange-EchangeDonnees.SSC@canada.ca    |
-|                    | 1-514-421-9999                                               |
-+--------------------+--------------------------------------------------------------+
-| DDIDOR             | Data Distribution Internal, Dorval                           |
-|                    | Eastern Data Dissemination hub for Environment Canada        |
-|                    | Meteorological Service, 24x7 operations                      |
-|                    | Contact: SSC.DataInterchange-EchangeDonnees.SSC@canada.ca    |
-|                    | 1-514-421-9999                                               |
-+--------------------+--------------------------------------------------------------+
-| ARCHPC             | Central File Server in HPC Dorval.                           |
-|                    |                                                              |
-|                    | Contact: SSC.BigData-GrosDonnées.SPC@canada.ca               |
-|                    | 1-514-421-9999                                               |
-+--------------------+--------------------------------------------------------------+
-| ENVDATACQ          | All locations required to support Acquitision of Weather,    |
-|                    | Climate, Environment data.                                   |
-|                    | GEDS_                                                        |
-+--------------------+--------------------------------------------------------------+
-| OPWXPROD           | All locations required to support Operational Weather        |
-|                    | Prediction.                                                  |
-|                    | GEDS_                                                        |
-+--------------------+--------------------------------------------------------------+
-| WXDISSEM           | Weather dissemination, such as weater.gc.ca, dd.weather...   |
-|                    | EC.NIRT-ITRN.EC@canada.ca                                    |
-|                    | GEDS_                                                        |
-+--------------------+--------------------------------------------------------------+
-| NRCGAT             | National Research Council Gatineau DC                        |
-|                    | Contact: NRC.Helpdesk-BureaudeService.CNRC@canada.ca         |
-|                    | 1-613-421-9999                                               |
-+--------------------+--------------------------------------------------------------+
-| SCIHPC             | The site file systems of the science.gc.ca domain.           |
-|                    | Provides direct delivery into Government HPC environment.    |
-|                    | Contact: SSC.HPCOptimization-OptimisationCHP.SSC@canada.ca   |
-+--------------------+--------------------------------------------------------------+
-
-.. _GEDS: http://sage-geds.tpsgc-pwgsc.gc.ca/en/GEDS?pgid=015&dn=CN%3Dpeter.silva%40canada.ca%2COU%3DDI-ED%2COU%3DESIOS-SESES%2COU%3DSC-SI%2COU%3DSMDC-GSCD%2COU%3DSSC-SPC%2CO%3DGC%2CC%3DCA
-
-
-.. note::
-   These names correspond to business functions, not the machines that implement
-   them.  The names will be implemented as aliases on pumps.
-   ALLCAPS is just a convention to avoid confusion with hostnames, which are
-   generally lowercase, similar to C convention for macros.
-
-
-Lets assume the places you want to send to are:  DDIEDM,DDIDOR,ARCHPC.
-so the sr_post command will look like this::
-
-  sr_post -to DDIEDM,DDIDOR,ARCHPC \
-          -broker amqps://rnd@ddsr.cmc.ec.gc.ca/  \
-          -url sftp://peter@grumpy/treefrog/frog.dna
-
-If you find you are using the same arguments all the time,
-it might be convenient to store them in a central configuration::
-
-  blacklab% sr_post edit default.conf 
-
-  broker amqps://rnd@ddsr.cmc.ec.gc.ca/
-  to DDIEDM,DDIDOR,ARCHPC
-  url sftp://peter@grumpy
-
-
 So now the command line for sr_post is just the url to for ddsr to retrieve the
 file on grumpy::
 
-  sr_post -url treefrog/frog.dna
-
-a more real example::
-
-  sr_post -to test_cluster \
-  -broker amqp://guest:guest@localhost/ \
-  -dr /var/www/posts/ \
-  -u http://localhost:81/frog.dna
+  sr_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
+  -post_base_url http://localhost:81/frog.dna
 
   2016-01-20 14:53:49,014 [INFO] Output AMQP  broker(localhost) user(guest) vhost(/)
   2016-01-20 14:53:49,019 [INFO] message published :
   2016-01-20 14:53:49,019 [INFO] exchange xs_guest topic v02.post.frog.dna
   2016-01-20 14:53:49,019 [INFO] notice   20160120145349.19 http://localhost:81/ frog.dna
-  2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=localhost
 
 There is a sr_subscribe to subscribe to all ``*.dna`` posts. The subscribe log said. Here is the config file::
 
@@ -211,23 +128,23 @@ There is a sr_subscribe to subscribe to all ``*.dna`` posts. The subscribe log s
 
 and here is the related output from the subscribe log file::
 
-  2016-01-20 14:53:49,418 [INFO] Received notice  20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
+  2016-01-20 14:53:49,418 [INFO] Received notice  20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna
   2016-01-20 14:53:49,419 [INFO] downloading/copying into /var/www/subscribed/frog.dna
-  2016-01-20 14:53:49,420 [INFO] Downloads: http://localhost:80/20160120/guest/frog.dna  into /var/www/subscribed/frog.dna 0-16
-  2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.report.20160120.guest.frog.dna 20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
+  2016-01-20 14:53:49,420 [INFO] Downloads: http://grumpy:80/20160120/guest/frog.dna  into /var/www/subscribed/frog.dna 0-16
+  2016-01-20 14:53:49,424 [INFO] 201 Downloaded : v02.report.20160120.guest.frog.dna 20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna 201 sarra-server-trusty guest 0.404653 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster rename=/var/www/subscribed/frog.dna message=Downloaded
 
-Also here is the log from from the sr_sarra instance::
+Or alternatively, here is the log from an sr_sarra instance::
 
-  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://localhost:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://grumpy:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
   2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
-  2016-01-20 14:53:49,377 [INFO] Downloads: http://localhost:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16
-  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.report.frog.dna 20160120145349.19 http://localhost:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
+  2016-01-20 14:53:49,377 [INFO] Downloads: http://grumpy:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16
+  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.report.frog.dna 20160120145349.19 http://grumpy:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
   2016-01-20 14:53:49,381 [INFO] message published :
   2016-01-20 14:53:49,381 [INFO] exchange xpublic topic v02.post.20160120.guest.frog.dna
-  2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://localhost:80/ 20160120/guest/frog.dna
+  2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna
   @
 
-Either way, the command asks ddsr to retrieve the treefrog/frog.dna file by logging
+the command asks ddsr to retrieve the treefrog/frog.dna file by logging
 in to grumpy as peter (using the pump's private key.) to retrieve it, and posting it
 on the pump, for forwarding to the other pump destinations.
 
