@@ -67,7 +67,7 @@ initial, dd_subscribe, en service depuis 2013, a été remplacé en 2016 par
 l'ensemble Sarracenia entièrement soufflé, avec tous les composants nécessaires
 à la production ainsi qu'à la consommation d'arbres de fichiers.
 
-On s'attend à ce que la sarracénie soit une application beaucoup plus simple 
+On s'attend à ce que la Sarracenia soit une application beaucoup plus simple 
 de n´importe lequel point de vue : Opérateur, Développeur, Analyste,
 Sources de données, Consommateurs de données. Sarracenia impose un mécanisme
 d'interface unique, mais ce mécanisme est complètement portable et générique.
@@ -82,7 +82,7 @@ Implémentations
 ---------------
 
 Une partie de Sarracénie définit un message de couche d'application sur AMQP comme un transport.
-La sarracénie a des implémentations multiples :
+La Sarracenia a des implémentations multiples :
 
 - Sarracenia elle-même (http://github.com/MetPX/sarracenia) une implémentation de référence complète en Python >= 3.4. Il fonctionne sous Linux, Mac et Windows.
 
@@ -131,7 +131,7 @@ Pourquoi ne pas simplement utiliser Rsync ?
 Il existe un certain nombre d'outils de réplication d'arbres qui sont largement
 utilisés, pourquoi en inventer un autre ? `RSync <https://rsync.samba.org/>`_, 
 par exemple, est un outil fabuleux, et nous avons Il est fortement recommandé 
-pour de nombreux cas d'utilisation. mais il y a des moments où la sarracénie peut
+pour de nombreux cas d'utilisation. mais il y a des moments où la Sarracenia peut
 72 fois plus rapide que rsync : Étude de cas : `HPC Mirroring Use Case <mirroring_use_use_case.rst>`_
 
 Rsync et d'autres outils sont basés sur la comparaison (traitant d'une source et d'une destination 
@@ -140,7 +140,7 @@ unique) Sarracénie, bien qu´elle n'utilisent pas la multidiffusion, est orient
 récepteurs (pub/sub.) La synchronisation rsync est typiquement faite en marchant un à un.
 C'est-à-dire que l'intervalle de synchronisation est intrinsèquement limité à la fréquence 
 à laquelle on peut traverser (sonder?) l'arbre de fichiers (dans les grands arbres, cela peut être long).
-La sarracénie évite les promenades dans les arbres de fichiers en demandant
+La Sarracenia évite les promenades dans les arbres de fichiers en demandant
 aux sources de données de calculer les sommes de contrôle une fois pour toutes,
 et de les signaler directement aux lecteurs par des messages, réduisant ainsi 
 les frais généraux de plusieurs ordres de grandeur.  Lsyncd <https://github.com/axkibe/lsyncd>`_ 
@@ -153,7 +153,7 @@ les logs de manière simple.
 Un des objectifs de Sarracenia est d'être de bout en bout. Rsync est point-à-point,
 ce qui signifie qu'il ne prend pas en charge la *transitivité* des transferts
 de données entre plusieurs pompes de données qui est désiré. D'autre part, le
-premier cas d'utilisation de la sarracénie est la distribution du nouveaux 
+premier cas d'utilisation de la Sarracenia est la distribution du nouveaux 
 fichiers. Au départ, les mises à jour des dossiers n'étaient pas courantes. 
 `ZSync <http://zsync.moria.org.uk/>`_ est beaucoup plus proche dans l'esprit 
 de ce cas d'utilisation. Sarracenia divise les fichiers en block de facon similaire,
@@ -194,7 +194,7 @@ De nos jours, avec l'augmentation des préoccupations en matière de sécurité,
 l´arrivée d´instructions de cryptage danse les processeurs centrales
 et les noyaux multiples quelque on a, en quelque sort,  une surabondance de processeurs,
 et il n'est plus très logique de ne pas crypter le trafic. De plus, pour
-sarracénie utilise des plages d'octets, qui sont les suivantes
+Sarracenia utilise des plages d'octets, qui sont les suivantes
 fournis par les serveurs SFTP et HTTP, mais pas FTP. Nous ne pouvons donc pas 
 soutenir le fichier partitionnement sur FTP. Ainsi, bien que le FTP fonctionne
 en quelque sorte, ce n'est pas maintenant, ni ne le fera jamais.

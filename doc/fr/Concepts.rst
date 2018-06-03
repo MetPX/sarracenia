@@ -70,7 +70,7 @@ mais un moteur de recherche révèlera aussi une richesse matérielle.
 Un serveur AMQP s'appelle un courtier. Le mot *Courtier* est parfois utilisé pour 
 faire référence au logiciel, d'autres fois serveur exécutant le logiciel de 
 courtage (même confusion que *serveur web*).  ci-dessus, le vocabulaire de 
-l'AMQP est en orange, et les termes de sarracénie sont en bleu. Il y a
+l'AMQP est en orange, et les termes de Sarracenia sont en bleu. Il y a
 de nombreuses et différentes implémentations de logiciels de courtage. Nous 
 utilisons rabbitmq. Nous n'essayons pas d´être spécifique au rabbitmq, mais 
 les fonctions de gestion diffèrent d'une implémentation à l'autre.
@@ -96,7 +96,7 @@ Queues* peut être *durable*, donc même si votre processus d'abonnement meurt,
   - vous n'aurez manqué aucun message.
   
 Comment décider si quelqu'un est intéressé.
-   - Pour la sarracénie, nous utilisons (standard AMQP) *échanges thématiques*.
+   - Pour la Sarracenia, nous utilisons (standard AMQP) *échanges thématiques*.
    - Les abonnés indiquent les thèmes qui les intéressent et le filtrage se fait côté serveur/courtier.
    - Les thèmes sont juste des mots-clés séparés par un point. wildcards : # correspond à n'importe quoi, * correspond à un mot.
    - Nous créons la hiérarchie des thèmes à partir du nom du chemin d'accès (mappage à la syntaxe AMQP).
@@ -104,7 +104,7 @@ Comment décider si quelqu'un est intéressé.
    - Le filtrage côté serveur est grossier, les messages peuvent être filtrés après le téléchargement en utilisant regexp 
 
 topic_prefix ?  Nous commençons l'arborescence des sujets avec des champs fixes.
-     - v02 la version/format des messages de sarracénie.
+     - v02 la version/format des messages de Sarracenia.
      - post .... le type de message, il s'agit d'une annonce
        d'un fichier (ou d'une partie d'un fichier) disponible.
 
@@ -310,11 +310,11 @@ l'une ou l'autre IP)) a été réalisée.
 Plans de Pompes
 ---------------
 
-Il existe de nombreux arrangements différents dans lesquels la sarracénie peut
+Il existe de nombreux arrangements différents dans lesquels la Sarracenia peut
 être utilisée.
 
 Dataless
-  où l'on ne fait que de la sarracénie en plus d'un courtier sans moteur de 
+  où l'on ne fait que de la Sarracenia en plus d'un courtier sans moteur de 
   transfert local. Ceci est utilisé, par exemple pour exécuter sr_winnow sur 
   un site pour fournir des sources de données redondantes.
 
@@ -455,11 +455,11 @@ La méthode de transport la plus sûre est l'utilisation de SFTP avec des clés 
 le stockage des clés sftp est couvert dans la documentation de divers clients SSH ou SFTP. Les lettres de créance
 ne fait que pointer vers ces fichiers clés.
 
-Pour la sarracénie elle-même, l'authentification par mot de passe est utilisée pour communiquer avec le courtier de l'AMQP,
+Pour la Sarracenia elle-même, l'authentification par mot de passe est utilisée pour communiquer avec le courtier de l'AMQP,
 donc l'implémentation du transport de socket crypté (SSL/TLS) sur tout le trafic des courtiers est très forte.
 recommandé.
 
-Les utilisateurs de sarracénie sont en fait des utilisateurs définis sur des courtiers rabbitmq.
+Les utilisateurs de Sarracenia sont en fait des utilisateurs définis sur des courtiers rabbitmq.
 Chaque utilisateur Alice, sur un courtier auquel elle a accès :
 
  - a un échange xs_Alice_Alice, où elle écrit ses messages et lit ses journaux.
@@ -475,7 +475,7 @@ Alice ne peut pas créer d'échanges ou d'autres files d'attente qui ne figurent
 Rabbitmq fournit la granularité de la sécurité pour restreindre les noms de
 mais pas leurs types. Ainsi, étant donné la possibilité de créer une file d'attente nommée q_Alice,
 une Alice malveillante pourrait créer un échange nommé q_Alice_xspecial, et ensuite configurer
-Les files d'attente pour s'y lier, et établir un usage séparé du courtier non lié à la sarracénie.
+Les files d'attente pour s'y lier, et établir un usage séparé du courtier non lié à la Sarracenia.
 
 Pour éviter de telles utilisations abusives, sr_audit est un composant qui est 
 invoqué régulièrement à la recherche de mauvaise utilisation et de le nettoyer.
@@ -652,7 +652,7 @@ le sens `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ )
 Glossaire
 ---------
 
-La documentation sur la sarracénie utilise un certain nombre de mots d'une 
+La documentation sur la Sarracenia utilise un certain nombre de mots d'une 
 manière particulière. Ce glossaire devrait faciliter la compréhension du 
 reste de la documentation.
 
@@ -698,7 +698,7 @@ Pompe ou courtier
   en langage AMQP) La pompe a des utilisateurs administratifs et gère le courtier AMQP.
   en tant que ressource dédiée. Une sorte de moteur de transport, comme un apache.
   ou un serveur openssh, est utilisé pour supporter les transferts de fichiers. SFTP, et
-  HTTP/HTTPS sont les protocoles qui sont entièrement pris en charge par la sarracénie. Pompes
+  HTTP/HTTPS sont les protocoles qui sont entièrement pris en charge par la Sarracenia. Pompes
   copier des fichiers à partir de quelque part, et les écrire localement. Ils ont ensuite ré-annoncé l'initiative du
   de la copie locale à ses pompes voisines, et aux abonnés utilisateurs finaux, ils peuvent
   obtenir les données de cette pompe.

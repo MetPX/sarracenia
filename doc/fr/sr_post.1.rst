@@ -24,7 +24,7 @@ DESCRIPTION
 ===========
 
 **sr_post** affiche la disponibilité d'un fichier en créant un avis.
-Contrairement à la plupart des autres composants de la sarracénie qui agissent comme des démons,
+Contrairement à la plupart des autres composants de la Sarracenia qui agissent comme des démons,
 sr_post est une invocation intéractive qui publie et termine.
 Les abonnés utilisent `sr_subscribe <sr_subscribe.1.rst>`_ pour obtenir les avis,
 et télécharger les fichiers corréspondants.

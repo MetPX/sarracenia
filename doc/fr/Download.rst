@@ -9,13 +9,13 @@ Obtenir le code source
 ----------------------
 
 Le développement se fait sur la branche *master*, et les versions se font sur une branche fréquente.
-base. Le code source contient à la fois des composants *sundew* et *sarracenia*,
-bien qu'actuellement, seule la sarracénie* est en cours de développement.
+base. Le code source contient à la fois des composants *Sundew* et *Sarracenia*,
+bien qu'actuellement, seule la *Sarracenia* est en cours de développement.
 
 Avec ces explications, n'hésitez pas à saisir une version instantanée à l'aide de
 git via: :
 
-    git clone https://github.com/MetPX/sarracenia sarracenia sarracenia
+    git clone https://github.com/MetPX/sarracenia sarracenia
 
 
 Disponible pour un accès anonyme en lecture seule. On peut aussi obtenir une version stable.
@@ -68,7 +68,7 @@ Binaires Sundew
 
 MetPx-Sundew n'est disponible en téléchargement qu'à partir de la section `Sundew <https://github.com/MetPX/Sundew/>`_ du stockage de fichiers sourceforge du projet, .
 
-binaires sarracénie
+binaires Sarracenia
 -------------------
 
 Veuillez vous référer au `Guide d'installation de Sarracenia <Install.rst>`_ pour savoir comment télécharger et installer les binaires *Metpx-Sarracenia*.

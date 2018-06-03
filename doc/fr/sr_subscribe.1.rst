@@ -892,7 +892,7 @@ avec l'utilisation de *${..}* notation::
 Les horodatages YYYYYYMMDD et HH se réfèrent à l'heure à laquelle les données 
 sont traitées par Sarracenia, c'est-à-dire à l'heure à laquelle les données sont traitées.
 n'est pas décodé ou dérivé du contenu des fichiers livrés. Toutes les dates 
-et heures en Sarracénie sont en UTC.
+et heures en Sarracenia sont en UTC.
 
 Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez que toute 
 option explicite dans un fichier de confiuguration Sarracenia prime sur une variable 
@@ -1070,7 +1070,7 @@ le destinataire) s´offre pour accommoder différentes situations :
 +-------------+---------------------------------------+--------------------------------------+
 |Méthode      |Description                            |Application                           |
 +=============+=======================================+======================================+
-|             |Fichier envoyé avec le bon nom         |Envoyer à Sarracénie, et              |
+|             |Fichier envoyé avec le bon nom         |Envoyer à Sarracenia, et              |
 | NONE        |message `sr_post(7) <sr_post.7.rst>`_  |publié quand le fichier est complet   |
 |             |AMQP après que le transfert.           |                                      |
 |             |                                       | (Meilleur quand disponible)          |
@@ -1122,7 +1122,7 @@ NOTES :
   L'ancien logiciel *PDS* (qui précède MetPX Sundew) ne supporte que le FTP. Le protocole d'achèvement 
   utilisé par *PDS* était d'envoyer le fichier avec la permission 000 dans un premier temps, puis chmod à un fichier 
   fichier lisible. Ceci ne peut pas être implémenté avec le protocole SFTP, et n'est pas supporté du tout.
-  par Sarracénie.
+  par Sarracenia.
 
 **Erreurs de configuration fréquentes:** 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1132,10 +1132,10 @@ NOTES :
    Le réglage correct ici est '.tmp'.  Sans cela, presque tous les fichiers passeront correctement,
    mais les dossiers incomplets seront parfois ramassés par Sundew.  
 
-**En utilisant la méthode mtime pour recevoir de Sundew ou Sarracenia**
+**utilisant la méthode mtime pour recevoir de Sundew ou Sarracenia**
 
-   L'utilisation de mtime est le dernier recours. Cette approche injecte du retard 
-   et ne devrait être utilisée que lorsque l'un des éléments suivants n'a aucune influence 
+   L'utilisation de mtime est un dernier recours. Cette approche injecte du retard 
+   et ne devrait être utilisée que lorsque qu´on n'a aucune influence 
    pour que l'autre extrémité du transfert utilise une meilleure méthode. 
  
    mtime est vulnérable aux systèmes dont les horloges diffèrent (fichiers incomplets).
@@ -1143,7 +1143,7 @@ NOTES :
    ramassés à cause d'un problème de réseautage interrompant ou retardant les transferts. 
 
 
-- ** NONE lors de la livraison à une destination autre que Sarracénie **
+** NONE lors de la livraison à une destination autre que Sarracenia **
 
    NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
    est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
@@ -2219,7 +2219,7 @@ Registre des risques :  Le *Thread-leaved Sundew*.
 L'organisation à l'origine de Metpx a depuis déménagé à Services 
 partagés Canada.  Il est venu le temps de nommer un nouveau module, 
 nous avons gardé avec un thème de plantes carnivores, et a choisi 
-un autre indigène dans certaines régions du Canada : *Sarracénie* 
+un autre indigène dans certaines régions du Canada : *Sarracenia* 
 N'importe laquelle d'une variété de sarracénies insectivores. 
 Nous aimons les plantes qui mangent de la viande !
 

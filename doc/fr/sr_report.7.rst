@@ -91,7 +91,7 @@ Conformément au RFC, tout code retourné doit être interprété comme suit :
    que l'échec était du côté du courtier/serveur ?
 
 Les codes d'erreur spécifiques retournés et leur signification dépendent de l'implémentation.
-Pour la mise en œuvre de la sarracénie, les codes suivants sont définis :
+Pour la mise en œuvre de la Sarracenia, les codes suivants sont définis :
 
 +----------+--------------------------------------------------------------------------------------------+
 |   Code   | Corresponding text and meaning for sarracenia implementation                               |
@@ -198,7 +198,7 @@ LECTURE COMPLÉMENTAIRE
 
 https://github.com/MetPX - page d'accueil de metpx-sarracenia
 
-http://rabbitmq.net - page d'accueil du courtier de l'AMQP utilisé pour développer la sarracénie.
+http://rabbitmq.net - page d'accueil du courtier de l'AMQP utilisé pour développer la Sarracenia.
 
 
 AUSSI VOIR

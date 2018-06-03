@@ -26,8 +26,8 @@ DESCRIPTION
 ===========
 
 sr_report est un programme pour traiter efficacement les rapports de transferts de fichiers 
-à partir de sarracénie. Le format des rapports est indiqué dans le *man page* `sr_report(7) <sr_report.7.rst>`_
-Lorsque les clients téléchargent un message à partir d'un site de sarracénie, ils publient 
+à partir de Sarracenia. Le format des rapports est indiqué dans le *man page* `sr_report(7) <sr_report.7.rst>`_
+Lorsque les clients téléchargent un message à partir d'un site de Sarracenia, ils publient 
 un message d´information sur leur succès à le faire.
 
 La commande **sr_report** prend deux arguments : un fichier de configuration décrit ci-dessous,

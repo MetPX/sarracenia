@@ -89,7 +89,7 @@ Il s'assure que l'utilisateur **feeder**, et **admin** sont définis et valides.
 **sr_audit** s'assure que les utilisateurs configurés dans les configurations 
 sarracenia sont présents sur le broker. Les utilisateurs manquants sont ajoutés.... 
 avec les permissions requises pour leur rôle. Utilisateurs supplémentaires,
-non configurés dans la sarracénie, sont supprimés. 
+non configurés dans Sarracenia, sont supprimés. 
 
 Pour vérifier les échanges des utilisateurs, **sr_audit** obtient la liste des 
 échanges présentes sur le courtier.  A partir des utilisateurs et des rôles, **sr_audit** 

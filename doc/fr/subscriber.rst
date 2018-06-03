@@ -50,7 +50,7 @@ ou n'importe quelle URL que les sources choisissent d'afficher, il y a une mise
 en page conventionnelle.  Le serveur Web d'une pompe de données ne fera 
 qu'exposer les dossiers accessibles sur le Web et la racine de l'arbre 
 est la date, au format AAAAMMJJJ. Ces dates ne représentent quand il a 
-été mis dans le réseau de pompage, et sarracénie utilise toujours le 
+été mis dans le réseau de pompage, et Sarracenia utilise toujours le 
 temps universel coordonné, les dates peuvent ne pas correspondre à
 la date et l'heure actuelles dans la localité de l'abonné::
 
@@ -371,7 +371,7 @@ file d'attente de téléchargement.
 Livraison prioritaire
 ----------------------
 
-Bien que le protocole sur la sarracénie n'établisse pas explicitement un ordre 
+Bien que le protocole sur la Sarracenia n'établisse pas explicitement un ordre 
 de priorité, l'utilisation de la de files d'attente multiples offre des 
 avantages similaires. Résultats de chaque configuration dans une 
 déclaration de file d'attente côté serveur. Grouper les produits à priorité 
@@ -700,7 +700,7 @@ Réception redondant de fichiers
 
 Dans les environnements où une grande fiabilité est requise, plusieurs 
 serveurs sont souvent configurés pour fournir des services. L'approche 
-sarracénienne à l'égard de la La haute disponibilité est ´Active-Active´ 
+de Sarracenia à l'égard de la La haute disponibilité est ´Active-Active´ 
 dans la mesure où toutes les sources sont en ligne et la production 
 de données se fait en parallèle. Chaque source publie des données,
 et les consommateurs l'obtiennent de la première source qui le rend 

@@ -396,7 +396,7 @@ MetPX-Sarracénie
 Le projet Metpx ( https://github.com/MetPX) comporte un sous-projet appelé Sarracénie, qui est destiné à
 comme banc d'essai et mise en œuvre de référence pour ce protocole.  Cette implémentation est sous licence
 en utilisant la Licence Publique Générale (Gnu GPL v2), et est donc libre d'utilisation, et peut être utilisé pour
-confirmer l'interopérabilité avec toute autre mise en œuvre qui pourrait survenir.   Alors que la sarracénie
+confirmer l'interopérabilité avec toute autre mise en œuvre qui pourrait survenir.   Alors que Sarracenia
 lui-même devrait être très utilisable dans une variété de contextes, il n'y a pas d'intention pour cela.
 pour implémenter toute fonctionnalité non décrite dans cette documentation.  
 
@@ -410,9 +410,9 @@ Sélection des caractéristiques de l'AMQP
 ----------------------------------------
 
 AMQP est un protocole universel de transmission de messages avec beaucoup d´options afin d´accommoder
-de nombreux modèles de messagerie différents.  MetPX-sarracénie spécifie et utilise un
+de nombreux modèles de messagerie différents.  MetPX-Sarracenia spécifie et utilise un
 un petit sous-ensemble de modèles AMQP.  Un élément important du développement de la 
-sarracénie consistait à choisir parmi les nombreuses possibilités, un petit sous-ensemble 
+Sarracenia consistait à choisir parmi les nombreuses possibilités, un petit sous-ensemble 
 de méthodes est général et facile à comprendre, afin de maximiser le potentiel d'interopérabilité.
 
 Préciser l'utilisation d'un protocole à lui seul peut être insuffisant pour fournir 
@@ -477,7 +477,7 @@ LECTURE COMPLÉMENTAIRE
 
 https://github.com/MetPX - page d'accueil de metpx-sarracenia
 
-http://rabbitmq.net - page d'accueil du courtier de l'AMQP utilisé pour développer la sarracénie.
+http://rabbitmq.net - page d'accueil du courtier de l'AMQP utilisé pour développer la Sarracenia.
 
 
 AUSSI VOIR

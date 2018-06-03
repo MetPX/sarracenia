@@ -64,7 +64,7 @@ de paquet (pip) complet devrait s'installer avec toutes les fonctionnalités.
 
 Si vous n'avez pas un environnement python à portée de main, alors le plus facile à utiliser.
 est winpython, qui inclut de nombreux modules scientifiquement pertinents, et s'installera facilement.
-toutes les dépendances pour la sarracénie. Vous pouvez obtenir winpython à partir 
+toutes les dépendances pour Sarracenia. Vous pouvez obtenir winpython à partir 
 de `<http://winpython.github.io/>`_ (note : sélectionnez python version >3) Puis on peut 
 installer avec pip (comme ci-dessus).
 
