@@ -4,7 +4,7 @@
 MAKE = make
 VERSION = $(shell grep __version__ ../../sarra/__init__.py | sed -e 's/"//g' | cut -c14-)
 DATE = $(shell date "+%B %Y")
-$(shell cp ../../CHANGES.txt ../CHANGES.rst)
+$(shell cp ../../CHANGES.rst ../CHANGES.rst)
 
 HTML_SRCS = $(wildcard ../*.rst)
 HTML_TRGT = $(patsubst ../%.rst,%.html,$(HTML_SRCS))
