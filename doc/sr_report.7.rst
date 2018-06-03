@@ -215,7 +215,7 @@ SEE ALSO
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
 

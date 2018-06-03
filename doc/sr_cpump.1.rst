@@ -51,7 +51,7 @@ it looks up its **sum** in its cache.  if it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_cpump** can be used, like `sr_winnow(1) <sr_winnow.1.rst>`_,  to trim messages 
+**sr_cpump** can be used, like `sr_winnow(8) <sr_winnow.8.rst>`_,  to trim messages 
 from `sr_post(1) <sr_post.1.rst>`_, `sr_poll(1) <sr_poll.1.html>`_  
 or `sr_watch(1) <sr_watch.1.rst>`_  etc... It is used when there are multiple 
 sources of the same data, so that clients only download the source data once, from 

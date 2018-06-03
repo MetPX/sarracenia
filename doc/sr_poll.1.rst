@@ -39,7 +39,7 @@ a notification for that product and sends it to the *broker*. The matching conte
 of the *directory* is kept in a file for reference. Should a matching file be changed,
 or created at a later iteration, a new notification is sent.
 
-**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(1) <sr_sarra.1.rst>`_
+**sr_poll** can be used to acquire remote files in conjunction with an `sr_sarra(8) <sr_sarra.8.rst>`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
 The **sr_poll** command takes two argument: a configuration file described below,
@@ -260,7 +260,7 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 

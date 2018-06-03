@@ -116,7 +116,7 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
 
