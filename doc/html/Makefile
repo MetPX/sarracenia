@@ -29,7 +29,7 @@ img:
 # see site/Makefile
 %.html: ../%.rst	
 	rst2html --link-stylesheet --stylesheet=css/bootstrap.min.css,css/metpx-sidebar.css $(TEMPLATE) $< $@
-	sed -i 's/\.rst">/\.html">/' $@
+	#sed -i 's/\.rst">/\.html">/' $@
 	sed -i 's/&\#64;Date&\#64;/$(DATE)/' $@
 	sed -i 's/&\#64;Version&\#64;/$(VERSION)/' $@
 	sed -i 's/<a class="toc-backref" .*">\(.*\)<\/a>/\1/' $@	
