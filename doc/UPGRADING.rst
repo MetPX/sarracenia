@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+upto 2.18.05b4
+--------------
+
+only bug-fixes and improvements, no regressions or changes.
+
+
 2.18.03b3
 ---------
 
