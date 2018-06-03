@@ -10,14 +10,14 @@ Revision Record
 :date: @Date@
 
 
-Client Installation
+Installation Client
 -------------------
 
-The package is built for python version 3.4 or higher. On systems where
-they are available, debian packages are recommended. These can be obtained from the
-launchpad repository. If you cannot use debian packages, then consider pip packages
-avialable from PyPI. In both cases, the other python packages (or dependencies) needed
-will be installed by the package manager automatically.
+Le logiciel est construit pour python version 3.4 ou supérieure. Sur les systèmes où
+ils sont disponibles, les paquets debian sont recommandés. On peut se les procurer à l'adresse suivante
+launchpad repository. Si vous ne pouvez pas utiliser les paquets debian, alors considérez les paquets pip.
+disponible chez PyPI. Dans les deux cas, les autres paquets python (ou dépendances) nécessaires.
+sera installé automatiquement par le gestionnaire de paquets.
 
 
 Ubuntu/Debian (apt/dpkg)
