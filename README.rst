@@ -36,8 +36,8 @@ homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
 
-Documentation: `Here <doc/sarra-docs-e.rst>`_
-or the *master* location: https://github.com/MetPX/sarracenia/blob/master/doc/sarra-docs-e.rst.
+Documentation: `Here <doc/sr_subscribe.1.rst#documentation>`_
+or the *master* location: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation
 
 Sarracenia is an initiative of Shared Services Canada ( http://ssc-spc.gc.ca )
 in response to internal needs of the Government of Canada.
@@ -71,6 +71,10 @@ AMQP) est une approche beaucoup plus efficace pour la livraison d'annonces de
 nouveaux produits.
 
 Sarracenia est une initiative de Services Partagés Canada ( http://ssc-spc.gc.ca ) en réponse à des besoins interne du gouvernement du Canada.
+
+Documentation: `ici <doc/fr/sr_subscribe.1.rst#documentation>`_
+
+endroit principale: https://github.com/MetPX/sarracenia/blob/master/doc/fr/sr_subscribe.1.rst#documentation
 
 portail: http://github.com/MetPX/sarracenia
 
