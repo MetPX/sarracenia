@@ -630,6 +630,6 @@ SEE ALSO
 
 `sr_report(1) <sr_report.1.rst>`_ - consommateur des rapports.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Selectionner, acquérir, et Récursivement Reannoncer Ad vitam aeternam.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Selectionner, acquérir, et Récursivement Reannoncer Ad vitam aeternam.
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - Sélectionner et télécharger des fichiers publiés.

@@ -40,7 +40,7 @@ est conservé dans un fichier à titre de référence. Si un fichier corresponda
 ou créé lors d'une itération ultérieure, une nouvelle notification est envoyée.
 
 **sr_poll** peut être utilisé pour acquérir des fichiers distants en conjonction avec 
-un `sr_sarra(1) <sr_sarra.1.rst>`_ qui s´abonne aux notifications postées, télécharge les
+un `sr_sarra(8) <sr_sarra.8.rst>`_ qui s´abonne aux notifications postées, télécharge les
 fichiers et les rediffuse.
 
 La commande **sr_poll** prend deux arguments : un fichier de configuration décrit ci-dessous,
@@ -253,9 +253,9 @@ AUSSI VOIR
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - Sélectionner et télécharger des fichiers publiés. (page principale de référence.)
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - process messages (no downloading.)
+`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
 
-`sr_winnow(1) <sr_winnow.1.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
+`sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
 
 `sr_sender(1) <sr_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
 
@@ -265,8 +265,9 @@ AUSSI VOIR
 
 `sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
+`sr_audit(8) <sr_audit.8.rst>`_ - monitoring and configuration audit.
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 

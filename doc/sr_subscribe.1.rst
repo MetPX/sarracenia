@@ -1821,9 +1821,9 @@ SEE ALSO
 ========
 
 
-`sr_shovel(1) <sr_shovel.1.rst>`_ - process messages (no downloading.)
+`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
 
-`sr_winnow(1) <sr_winnow.1.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
+`sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
 
 `sr_sender(1) <sr_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
 
@@ -1833,8 +1833,11 @@ SEE ALSO
 
 `sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
 
-`sr_sarra(1) <sr_sarra.1.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
+`sr_audit(8) <sr_audit.8.rst>`_ - Monitoring daemon, audits running configurations, restarts missing instances.
+
+`sr_log2save(8) <sr_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
