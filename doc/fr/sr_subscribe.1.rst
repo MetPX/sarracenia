@@ -117,6 +117,7 @@ seront plus heureux avec les guides:
 
 utilisateurs :
 
+* `Survol <sarra.rst>`_ - Introduction à l´application.
 * `Installation <Install.rst>`_ - installation initiale.
 * `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
 * `Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
