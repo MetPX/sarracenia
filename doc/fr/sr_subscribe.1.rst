@@ -1143,7 +1143,7 @@ NOTES :
    ramassés à cause d'un problème de réseautage interrompant ou retardant les transferts. 
 
 
-** NONE lors de la livraison à une destination autre que Sarracenia **
+**NONE lors de la livraison à une destination autre que Sarracenia**
 
    NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
    est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
