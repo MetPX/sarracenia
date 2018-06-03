@@ -117,6 +117,7 @@ seront plus heureux avec les guides:
 
 utilisateurs :
 
+* `Installation <Install.rst>`_ - installation initiale.
 * `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
 * `Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
 * `Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
@@ -124,7 +125,6 @@ utilisateurs :
 Administrateurs :
 
 * `Guide d'administration <Admin.rst>`_ - Configuration des pompes.
-* `Installation <Install.rst>`_ - installation initiale.
 * `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
 
 et les contributeurs :

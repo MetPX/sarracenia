@@ -106,6 +106,7 @@ throughs and should start with them.
 
 users:
 
+* `Installation <Install.rst>`_ - initial installation.
 * `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
 * `Source Guide <source.rst>`_ - effective uploading to a pump
 * `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
@@ -113,7 +114,6 @@ users:
 Administrators:
 
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
-* `Installation <Install.rst>`_ - initial installation.
 * `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
 and contributors:
