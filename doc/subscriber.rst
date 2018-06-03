@@ -725,6 +725,6 @@ More Information
 
 The `sr_subscribe(1) <sr_subscribe.1.rst>`_ is the definitive source of reference
 information for configuration options. For additional information,
-consult: `Sarracenia Documentation <sarra-docs-e.rst>`_
+consult: `Sarracenia Documentation <sr_subscribe.1.rst#documentation>`_
 
 
