@@ -12,7 +12,7 @@ HTML_TRGT = $(patsubst ../%.rst,%.html,$(HTML_SRCS))
 SVG_SRCS = $(wildcard ../*.dia)
 SVG_TRGT = $(patsubst ../%.dia,%.svg,$(SVG_SRCS))
 
-TARGETS = CHANGES.html $(HTML_TRGT) $(SVG_TRGT)
+TARGETS = $(HTML_TRGT) $(SVG_TRGT)
 
 default: img plugins $(TARGETS) 
  
