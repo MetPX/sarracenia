@@ -81,8 +81,27 @@ Source code for each module is available https://github.com/MetPX::
 
  git clone https://github.com/MetPX/sarracenia sarracenia
  cd sarracenia
- python3 setup.py bdist_wheel
- pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
+
+Development happens on the master branch.  One probably wants real release,
+so run git tag, and checkout the last one (the latest stable release)::
+
+  blacklab% git tag
+    
+  .
+  .
+  .
+  v2.18.04b2
+  v2.18.04b3
+  v2.18.04b4
+  v2.18.04b5
+  v2.18.05b1
+  v2.18.05b2
+  v2.18.05b3
+  v2.18.05b4
+
+  blacklab% git checkout v2.18.05b4
+  blacklab% python3 setup.py bdist_wheel
+  blacklab%  pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
 
 
 
