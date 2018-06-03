@@ -742,7 +742,7 @@ connexion ou transfert de téléchargement (appliqué par tampon pendant le tran
 L'option **inflight** définit comment ignorer les fichiers lors de leur transfert
 (*en vol* entre deux systèmes.) Un mauvais réglage de cette option provoque
 des transferts peu corrompus, ou insertent de délais inutiles. alors il faut 
-faire attention.  Voir `Assurer la livraison`_ FIXME pour plus de détails.
+faire attention.  Voir `Assurer la livraison (inflight)`_ FIXME pour plus de détails.
 
 La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer 
 un nom temporaire lors de la création d'un nom de fichier.  Si **inflight** est 
@@ -1052,8 +1052,8 @@ remplacées pour les consommateurs en aval.
 
 
 
-Assurer la livraison 
---------------------
+Assurer la livraison (inflight)
+-------------------------------
 
 Le fait de ne pas établir correctement les protocoles de complétion de fichiers est 
 une source commune d'incohérences intermittentes, difficile de diagnostiquer.
@@ -1124,8 +1124,8 @@ NOTES :
   fichier lisible. Ceci ne peut pas être implémenté avec le protocole SFTP, et n'est pas supporté du tout.
   par Sarracenia.
 
-**Erreurs de configuration fréquentes:** 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Erreurs de configuration fréquentes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Réglage de NONE lors de l'envoi à Sundew.**
 
@@ -1143,12 +1143,12 @@ NOTES :
    ramassés à cause d'un problème de réseautage interrompant ou retardant les transferts. 
 
 
-**NONE lors de la livraison à une destination autre que Sarracenia**
+**utilisant NONE lors de la livraison à une destination autre que Sarracenia**
 
    NONE doit être utilisé seulement lorsqu'il existe d'autres moyens de déterminer si un fichier 
    est livré. Par exemple, lors de l'envoi à une autre pompe, l'expéditeur informera 
-   le destinataire que l'appareil est en mode le fichier est complet en publiant le
-   fichier livré à ce courtier, il n'y a donc aucun danger d'être ramassé trop tôt.
+   le destinataire le fichier est complet en publiant l´avis à ce courtier après 
+   sa livraison, il n'y a donc aucun danger d'être ramassé trop tôt.
 
    Lorsqu'il est mal-utilisé, il arrive que des fichiers incomplets soient traitée 
    par la réception.

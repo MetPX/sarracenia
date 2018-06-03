@@ -25,14 +25,21 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+Sr_audit is a daemon that runs periodically to examine what is running 
+on a system to fixes issues it sees.  When run as a non-administrative user, 
+it looks for components which state files indicate are running, but for 
+which the corresponding process is missing.  It will restart those. Any 
+running process should also be writing at least a heartbeat message 
+to it´s log file periodically, so if the log file is too old,
+the component will be assumed frozen, and restarted.
 
-Sr_audit configures a broker to reflect sarracenia configuration settings.
-**Sr_audit** takes one argument: the action to perform.  One can also set
+When run by an administrative user,  Sr_audit configures a broker to 
+reflect sarracenia configuration settings.  **Sr_audit** takes one argument: 
+the action to perform.  One can also set
 a few option in a configuration file: **debug**, **max_queue_size**.
 
-When **Sr_audit** is *started*, it connects to the broker using the **admin** account. 
-
-It sleeps the time required to trigger the next heartbeat.
+When **Sr_audit** is *started* in admin mode, it connects to the broker 
+using the **admin** account. It sleeps the time required to trigger the next heartbeat.
 
 The default behavior of **sr_audit** is to manage and control the queues on the broker.
 The queues are validated and deleted if there is no client connected to it and has more 

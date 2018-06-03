@@ -26,12 +26,25 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Sr_audit configure un courtier pour refléter les paramètres de configuration 
-de sarracenia.  **Sr_audit** prend un argument : l'action à effectuer.  On peut 
-aussi régler quelques options dans un fichier de configuration : **debug**, **max_queue_size**.
+
+Sr_audit est un démon qui s'exécute périodiquement pour examiner ce qui est
+en cours d'exécution sur un système pour résoudre les problèmes qu'il voit.
+Lorsqu'il est exécuté en tant qu'utilisateur non administrateur, il 
+recherche les composants dont les fichiers d'état indiquent qu'ils sont 
+en cours d'exécution, mais dont il manque au processus correspondant.  Il
+les redémarre. N'importe lequel en cours d'exécution devrait écrire au 
+moins un message Heartbeat de temps à autre dans son journal.  Donc,
+si le fichier journal est trop ancien, le composant sera présumé gelé 
+et redémarré.
+
+Lorques qu´il est parti par un administrateur, Sr_audit configure un courtier
+pour refléter les configurations de Sarracenia.  **Sr_audit** prend un 
+argument : l'action à effectuer.  On peut aussi régler quelques options dans un
+fichier de configuration : **debug**, **max_queue_size**.
 
 Lorsque **Sr_audit** est démarré (avec *start*), il se connecte au courtier en 
-utilisant le compte **admin**.  Il dort le temps nécessaire pour déclencher le prochain battement de cœur.
+utilisant le compte **admin**.  Il dort le temps nécessaire pour déclencher
+le prochain battement de cœur.
 
 Le comportement par défaut de **sr_audit** est de gérer et de contrôler les files 
 d'attente sur le courtier. Les files d'attente sont validées et supprimées s'il n'y 

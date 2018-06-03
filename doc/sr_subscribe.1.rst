@@ -676,7 +676,7 @@ connection or download transfer (applied per buffer during transfer.)
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.) Incorrect setting of this option causes
-unreliable transfers, and care must be taken.  See `Delivery Completion`_ for more details.
+unreliable transfers, and care must be taken.  See `Delivery Completion (inflight)`_ for more details.
 
 The value can be a file name suffix, which is appended to create a temporary name during 
 the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
@@ -936,8 +936,8 @@ the checksums with MD5.   There are also cases, where, for various reasons, the 
 checksums are simply wrong, and should be overridden for downstream consumers.
 
 
-Delivery Completion 
--------------------
+Delivery Completion (inflight)
+------------------------------
 
 Failing to properly set file completion protocols is a common source of intermittent and
 difficult to diagnose file transfer issues. For reliable file transfers, it is 
@@ -1006,7 +1006,8 @@ NOTES:
   by Sarracenia.
 
 
-**Frequent Configuration Errors:**
+Frequent Configuration Errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Setting NONE when sending to Sundew.**
 
@@ -1027,9 +1028,9 @@ NOTES:
 **Setting NONE when delivering to non-Sarracenia destination.**
 
    NONE is to be used when there is some other means to figure out if a file is delivered.
-   For example, when sending to another pump, the sender will inform the receiver that the
-   file is complete by posting the delivered file to that broker, so there is no danger
-   of it being picked up early.
+   For example, when sending to another pump, the sender will post the announcement to 
+   the destination after the file is complete, so there is no danger of it being 
+   picked up early.
 
    When used in-appropriately, there will occasionally be incomplete files delivered.
 
