@@ -107,7 +107,7 @@ Le code source est disponible dans notre `git repository <https://github.com/Met
 Documentation
 -------------
 
-La documentation pour Sarracenia est ici: `documentation <sr_sr_subscribe.1.rst#documentation>`_...
+La documentation pour Sarracenia est ici: `documentation <sr_subscribe.1.rst#documentation>`_...
 
 Usage/Déploiments
 -----------------
