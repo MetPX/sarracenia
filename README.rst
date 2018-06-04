@@ -2,11 +2,6 @@
  MetPX-Sarracenia
 ==================
 
-*Please pardon the dust* in February 2018, our hosting provider since 2007 ( sourceforge.net ) 
-has been having great difficulties, forcing our migration to github.com.  We have not 
-yet decided on an approach for web pages, and while most of the documentation is
-intact, there are some broken links.
-
 [ Français_ ]
 
 Overview
