@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="23cm" height="16cm" viewBox="12 16 442 314" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g id="Background">
+    <ellipse style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" cx="221.354" cy="141.35" rx="130.273" ry="103.025"/>
+    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="14.1421" y="120.717">
+      <tspan x="14.1421" y="120.717">sr_post,</tspan>
+      <tspan x="14.1421" y="136.717">sr_watch</tspan>
+      <tspan x="14.1421" y="152.717">sr_sara</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="26.163" y="51.067">
+      <tspan x="26.163" y="51.067"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="220.618" y="157.84">
+      <tspan x="220.618" y="157.84"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="221.354" y="141.35">
+      <tspan x="221.354" y="141.35"></tspan>
+    </text>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="78.8424" y1="86.4222" x2="120.159" y2="104.03"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="127.059,106.97 115.899,107.649 120.159,104.03 119.819,98.4499 "/>
+    </g>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="221.354" y="141.35">
+      <tspan x="221.354" y="141.35"></tspan>
+    </text>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="200.687" y1="121.517" x2="275.624" y2="120.306"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="283.123,120.185 273.205,125.346 275.624,120.306 273.044,115.347 "/>
+    </g>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="197.281" y1="134.591" x2="274.068" y2="162.206"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="281.126,164.744 270.024,166.065 274.068,162.206 273.408,156.655 "/>
+    </g>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="328.907" y1="100.062" x2="360.322" y2="65.2042"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="365.343,59.6328 362.363,70.4086 360.322,65.2042 354.934,63.7139 "/>
+    </g>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="336.626" y1="113.793" x2="358.488" y2="108.69"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="365.792,106.985 357.19,114.127 358.488,108.69 354.917,104.389 "/>
+    </g>
+    <g>
+      <line style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x1="333.9" y1="173.201" x2="356.044" y2="172.22"/>
+      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="363.537,171.888 353.768,177.326 356.044,172.22 353.325,167.335 "/>
+    </g>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="149.614" y="154.835">
+      <tspan x="149.614" y="154.835"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="366.194" y="205.404">
+      <tspan x="366.194" y="205.404">sr_subscribe</tspan>
+      <tspan x="366.194" y="221.404">sr_sara</tspan>
+      <tspan x="366.194" y="237.404">sr_log</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="366.194" y="126.914">
+      <tspan x="366.194" y="126.914">shared queue</tspan>
+      <tspan x="366.194" y="142.914">shares load</tspan>
+    </text>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="366.77" y="156.614" width="76.4989" height="26.8701" rx="0" ry="0"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="370.72" y="176.624">
+        <tspan x="370.72" y="176.624">Consumer</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="368.962" y="84.3114" width="72.8219" height="26.8701" rx="0" ry="0"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="372.982" y="102.802">
+        <tspan x="372.982" y="102.802">Consumer</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="366.84" y="44.5368" width="72.6805" height="26.8701" rx="0" ry="0"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="370.932" y="62.2144">
+        <tspan x="370.932" y="62.2144">Consumer</tspan>
+      </text>
+    </g>
+    <g>
+      <ellipse style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" cx="307.852" cy="174.356" rx="25.1023" ry="25.8094"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="286.982" y="163.325">
+        <tspan x="286.982" y="163.325"></tspan>
+        <tspan x="286.982" y="179.325">Queue</tspan>
+      </text>
+    </g>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="13.4355" y="251.476">
+      <tspan x="13.4355" y="251.476">AMQP Topic is</tspan>
+      <tspan x="13.4355" y="267.476">topic.subtopic.subsub....</tspan>
+      <tspan x="13.4355" y="283.476">mapped to dir/subdir/subsubdir...</tspan>
+      <tspan x="13.4355" y="299.476">used by exchange to pick queues</tspan>
+      <tspan x="13.4355" y="315.476">to put messages in.</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="242.236" y="262.982">
+      <tspan x="242.236" y="262.982">- Queues named by Consumers</tspan>
+      <tspan x="242.236" y="278.982">- Same Name == Shared Queue</tspan>
+      <tspan x="242.236" y="294.982">- 'durable' queues remain </tspan>
+      <tspan xml:space="preserve" x="242.236" y="310.982">  when consumer disconnects</tspan>
+      <tspan x="242.236" y="326.982"></tspan>
+    </text>
+    <g>
+      <ellipse style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" cx="162.634" cy="122.131" rx="37.0624" ry="29.1682"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="130.461" y="115.414">
+        <tspan xml:space="preserve" x="130.461" y="115.414">    Topic</tspan>
+        <tspan x="130.461" y="131.414">Exchange</tspan>
+      </text>
+    </g>
+    <g>
+      <ellipse style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" cx="311.18" cy="119.732" rx="25.1023" ry="25.8094"/>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="291.088" y="107.888">
+        <tspan x="291.088" y="107.888"></tspan>
+        <tspan x="291.088" y="123.888">Queue</tspan>
+      </text>
+    </g>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="277.246" y="252.062">
+      <tspan x="277.246" y="252.062"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="318.612" y="256.304">
+      <tspan x="318.612" y="256.304"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="14.9099" y="166.502">
+      <tspan x="14.9099" y="166.502">sr_* </tspan>
+      <tspan x="14.9099" y="182.502"></tspan>
+      <tspan x="14.9099" y="198.502">log messages.</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="55.5686" y="147.764">
+      <tspan x="55.5686" y="147.764"></tspan>
+    </text>
+    <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="13.7886" y="72.9872" width="65.0538" height="26.8701" rx="0" ry="0"/>
+    <text font-size="12.8016" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="16.9706" y="89.9578">
+      <tspan x="16.9706" y="89.9578">Publisher</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="37.5374" y="197.261">
+      <tspan x="37.5374" y="197.261"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="39.305" y="251.002">
+      <tspan x="39.305" y="251.002"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="263.812" y="255.598">
+      <tspan x="263.812" y="255.598"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="300.228" y="289.538">
+      <tspan x="300.228" y="289.538"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="292.096" y="269.386">
+      <tspan x="292.096" y="269.386"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="301.996" y="306.156">
+      <tspan x="301.996" y="306.156"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="221.354" y="141.35">
+      <tspan x="221.354" y="141.35"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="389.528" y="60.8">
+      <tspan x="389.528" y="60.8"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="141.128" y="25.0808">
+      <tspan x="141.128" y="25.0808"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="211.192" y="135.293">
+      <tspan x="211.192" y="135.293">bindings</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="130" y="14">
+      <tspan x="130" y="14"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="194" y="69">
+      <tspan x="194" y="69"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="177" y="15">
+      <tspan x="177" y="15"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="223" y="21">
+      <tspan x="223" y="21"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="143" y="22">
+      <tspan x="143" y="22"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="202.646" y="67.85">
+      <tspan x="202.646" y="67.85"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="211.84" y="39.5656">
+      <tspan x="211.84" y="39.5656"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="140.068" y="27.8984">
+      <tspan x="140.068" y="27.8984"></tspan>
+    </text>
+    <g>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="126.913" y="28.462">
+        <tspan x="126.913" y="28.462">AMQP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="231.6" y="29.2094">
+        <tspan x="231.6" y="29.2094">MetPx-Sarracenia</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="170.082" y="29.2094">
+        <tspan x="170.082" y="29.2094">Usage by</tspan>
+      </text>
+    </g>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="16.0059" y="181.369">
+      <tspan x="16.0059" y="181.369">can produce</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="54.8614" y="187.086">
+      <tspan x="54.8614" y="187.086"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="163.049" y="216.784">
+      <tspan x="163.049" y="216.784"></tspan>
+    </text>
+    <g>
+      <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="200.614" y="58.775">
+        <tspan x="200.614" y="58.775">Broker</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="170.563" y="74.2958">
+        <tspan xml:space="preserve" x="170.563" y="74.2958">  (AMQP Server)</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="203.364" y="89.8522">
+        <tspan x="203.364" y="89.8522">Pump</tspan>
+      </text>
+    </g>
+    <g>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #0000ff" d="M 74.8014,133.591 A 605.289,605.289 0 0 1 349.64,215.928"/>
+      <polygon style="fill: #0000ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0000ff" fill-rule="evenodd" points="356.088,219.758 344.945,218.834 349.68,215.861 350.142,210.29 "/>
+    </g>
+    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="169.028" y="171.755">
+      <tspan x="169.028" y="171.755">post</tspan>
+      <tspan x="169.028" y="187.755">log</tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="140.916" y="189.099">
+      <tspan x="140.916" y="189.099"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="152.937" y="182.382">
+      <tspan x="152.937" y="182.382"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="179.807" y="171.068">
+      <tspan x="179.807" y="171.068"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="46.3154" y="86.4222">
+      <tspan x="46.3154" y="86.4222"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="46.3154" y="86.4222">
+      <tspan x="46.3154" y="86.4222"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="26" y="268.416">
+      <tspan x="26" y="268.416"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="39" y="273.75">
+      <tspan x="39" y="273.75"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="179.591" y="175.501">
+      <tspan x="179.591" y="175.501"></tspan>
+    </text>
+    <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="198.019" y="184.483">
+      <tspan x="198.019" y="184.483">messages</tspan>
+    </text>
+  </g>
+</svg>

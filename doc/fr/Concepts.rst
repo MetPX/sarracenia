@@ -63,7 +63,7 @@ sur l'AMQP lui-même, un ensemble de liens est maintenu à l'adresse suivante
 le site web `Metpx <http://github.com/MetPX/blob/master/sarracenia/doc/fr/sarra.html#amqp>`_ 
 mais un moteur de recherche révèlera aussi une richesse matérielle.
 
-.. image:: AMQP4Sarra.svg
+.. image:: ../AMQP4Sarra.svg
     :scale: 50%
     :align: center
 
