@@ -34,9 +34,9 @@ The rest of the Guide assumes you are there.
 Documentation
 -------------
 
-The development process is to write up what one intends to to or have done into
+The development process is to write up what one intends to do or have done into
 a restructured text file in the doc/design sub-directory.  The files there provide
-a basis for discussion.  Ideally, the information there acts as a pieces which can
+a basis for discussion. Ideally, the information there acts as a pieces which can
 be edited into documentation for the features as they are implemented.
 
 Each new component sr\_whatever, should have relevant man pages implemented.
@@ -902,7 +902,20 @@ Example::
 Updating The Project Website
 ----------------------------
 
-The MetPX website is built from the documentation in the various modules in the project. It builds using all **.rst** files found in **sarracenia/doc** as well as *some* of the **.rst** files found in **sundew/doc**.
+Prior to March 2018, the primary web-site for the project was metpx.sf.net.
+That MetPX website was built from the documentation in the various modules
+in the project. It builds using all **.rst** files found in 
+**sarracenia/doc** as well as *some* of the **.rst** files found in 
+**sundew/doc**. In the Spring of 2018, development moved to github.com.
+That site renders .rst when showing pages, so separate processing to render
+web pages is no longer needed.
+
+On the current web site, updating is done by committing changes to .rst files
+directly on github. There is no post-processing required. As the links are all
+relative and other services such as gitlabl also support such rendering, the
+*website* is portable to gitlab.science, etc...  And the entry point is from
+the README.rst file at the root directory of each repository.
+
 
 Building Locally
 ~~~~~~~~~~~~~~~~
@@ -918,9 +931,16 @@ From a command shell::
   cd site
   make
 
+note::  the makefile contains a commented line *sed that replaces .rst with .html in the files.
+To build the pages locally, this sed is needed, so un-comment it, but don't commit the change
+because it will break the *updating The website* procedure.
+
 
 Updating The Website
 ~~~~~~~~~~~~~~~~~~~~
+
+Today, just edit the pages in the git repository, and they will be active as soon as they are pushed
+to the master branch.
 
 To publish the site to sourceforge (updating metpx.sourceforge.net), you must have a sourceforge.net account
 and have the required permissions to modify the site.
@@ -928,6 +948,11 @@ and have the required permissions to modify the site.
 From a shell, run::
 
   make SFUSER=myuser deploy
+
+Only the index-e.html and index-f.html pages are used on the sf.net website 
+today. Unless you want to change those pages, this operation is useless.
+For all other pages, the links go directly into the various .rst files on
+github.com.
 
 
 
