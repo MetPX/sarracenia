@@ -26,7 +26,7 @@ setup(
     long_description=(read('README.rst') + '\n\n' +
                       read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
-    url='http://metpx.sourceforge.net/',
+    url='https://github.com/MetPX/sarracenia',
     license='GPLv2',
     author='Shared Services Canada, Supercomputing, Data Interchange',
     author_email='Peter.Silva@canada.ca',

@@ -40,8 +40,7 @@ a basis for discussion. Ideally, the information there acts as a pieces which ca
 be edited into documentation for the features as they are implemented.
 
 Each new component sr\_whatever, should have relevant man pages implemented.
-The Guides should also be revised.  The form of the documentation is still under
-discussion.  Current thinking:
+The Guides should also be revised to reflect additions or changes:
 
 - `Install.rst <Install.rst>`_ (Installation)
 - `Dev.rst <Dev.rst>`_ (this guide for developers)
@@ -50,7 +49,13 @@ discussion.  Current thinking:
 - `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
 
 When there are new sections, they should likely start out in design/ and after
-review, graduate into the main documentation.
+review, graduate into the main documentation.  
+
+The french documentation has the same file names as the English, but it placed
+under the fr/ sub-directory.  It's easiest if the documentation is produced in 
+both languages at once. At least use an auto translation too (such as 
+www.deepl.com) to provide a starting point. (and same procedure in reverse 
+for francophones.)
 
 
 Development
@@ -752,10 +757,8 @@ To publish a release one needs to:
 
 - Set the version.
 - upload the release to pypi.org so that installation with pip succeeds.
-- upload the release to launchpad.org, so that the installation of debian packages
+- upload the release to launchpad.net, so that the installation of debian packages
   using the repository succeeds.
-- upload the packages to sourceforge for other users to download the package directly
-- upload updated documentation to sourceforge.
 
 
 Versioning Scheme

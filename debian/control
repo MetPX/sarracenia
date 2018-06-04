@@ -5,14 +5,14 @@ Maintainer: Shared Services Canada Supercomputing <ssc.hpc-chp.spc@canada.ca>
 Build-Depends: debhelper (>= 9), python3, python3-setuptools, python3-docutils, dh-python
 Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
-Vcs-Git: http://git.code.sf.net/p/metpx/git
+Vcs-Git: https://github.com/MetPX/sarracenia
 
 Package: python3-metpx-sarracenia
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Recommends: python3-paramiko
 Suggests: rabbitmq-server
-Homepage: http://metpx.sourceforge.net
+Homepage: https://github.com/MetPX/sarracenia
 Description: Directory mirroring in real-time for users, file servers and web sites.
  Part of the Meteorological Product Exchanger project, Sarracenia publishes
  advertisement messages to an AMQP broker containing URLS of files in real-time.
