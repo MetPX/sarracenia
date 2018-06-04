@@ -30,7 +30,7 @@ prendre la forme :
 Instructions d´Installations
 ----------------------------
 
- Guide d´Installation <Install.rst>
+`Guide d´Installation <Install.rst>`_
 
 git origin/master 
 -----------------
