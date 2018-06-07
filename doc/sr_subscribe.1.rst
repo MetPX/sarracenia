@@ -104,10 +104,6 @@ While manual pages provide an index or reference for all options,
 new users will find the guides provide more helpful examples and walk 
 throughs and should start with them.
 
-meta:
-* `Overview <sarra.rst>`_ - Introduction.
-* `Concepts <Concepts.rst>`_ - Concepts and Glossary
-
 users:
 
 * `Installation <Install.rst>`_ - initial installation.
@@ -120,9 +116,14 @@ Administrators:
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
-and contributors:
+contributors:
 
 * `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
+
+meta:
+
+* `Overview <sarra.rst>`_ - Introduction.
+* `Concepts <Concepts.rst>`_ - Concepts and Glossary
 
 There are also other manual pages available here: `See Also`_
 
