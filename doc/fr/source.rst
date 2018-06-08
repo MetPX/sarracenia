@@ -1,15 +1,11 @@
 
-==============
- Data Sources
-==============
+===================================
+ Guide pour les sources de données
+===================================
 
----------------------------------------------------
-Injecting Data into a MetPX-Sarracenia Pump Network
----------------------------------------------------
-
-----------------------------------------------------------------------------
-Injection de données dans un réseau de pompage MetPX-Sarracenia Pump Network
-----------------------------------------------------------------------------
+---------------------------------------------------------------
+Injection de données dans un réseau de pompage MetPX-Sarracenia 
+---------------------------------------------------------------
 
 .. warning::
   **FIXME** : Les sections manquantes sont mises en évidence par **FIXME**. Ce qui est ici devrait être exact !
@@ -94,8 +90,8 @@ décrivons d'abord cette affaire.
 
 
 
-SFTP Injection
---------------
+Injection avec SFTP
+-------------------
 
 L'utilisation directe de la commande sr_post(1) est la façon la plus simple 
 d'injecter des données dans le réseau de pompes. Pour utiliser sr_post, vous
@@ -103,30 +99,25 @@ devez savoir :
 
 - le nom du courtier local : ( disons : ddsr.cmc.ec.ec.gc.ca. ).
 - vos informations d'authentification pour ce courtier ( disons : user=rnd : password=rndpw)
-- votre propre nom de serveur. (disons : grincheux.cmc.ec.ec.gc.ca).
+- votre propre nom de serveur. (disons : grumpy.cmc.ec.ec.gc.ca).
 - votre propre nom d'utilisateur sur votre serveur (disons : peter)
 
 Supposons que l'objectif est que la pompe accède au compte de Peter via SFTP. 
 Alors vous avez besoin pour prendre la clé publique de l´usager de la pompe, et 
 la placer dans les .ssh/authorized_keys de peter sur le serveur que vous 
-utilisez (*grumpy*), il faut faire quelque chose comme ceci: :
+utilisez (*grumpy*), il faut faire quelque chose comme ceci::
 
-  wget http://ddsr.cmc.ec.gca/config/pump.pub >>~peter/.ssh/authorized_keys
+  cat pump.pub >>~peter/.ssh/authorized_keys
 
-... avertissement: :
-  FIXME** : ce répertoire de configuration n'est pas encore implémenté. 
-  besoin d'obtenir la clé publique en parlant à un administrateur pour 
-  l'instant.
-
-Cela permettra à la pompe d'accéder au compte de Peter sur grincheux à l'aide 
+Cela permettra à la pompe d'accéder au compte de Peter sur grumpy à l'aide 
 de sa clé privée. Donc en supposant qu'on est connecté au compte de Peter sur
-grincheux, on peut stocker les information pour se connecter au courtier comme
-ceci:
+grumpy, on peut stocker les information pour se connecter au courtier comme
+ceci::
 
   echo'amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca' >> ~/.config/sarra/credentials.conf :
 
 
-.. Note: :
+.. Note::
   Les mots de passe sont toujours stockés dans le fichier credentials.conf.
 
 Il ne nous reste plus qu'à trouver où envoyer le fichier.  Sr_post fait la 
@@ -138,9 +129,7 @@ données soient transmises à plusieurs pompes de données avec l'option *to*.
 Donc maintenant la ligne de commande pour sr_post est juste l'url à pour que 
 ddsr récupère le fichier fichier sur le serveur grumpy::
 
-  sr_post -to test_cluster \
-  -broker amqp://guest:guest@localhost/ \
-  -post_base_dir /var/www/posts/ \
+  sr_post -broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
   -post_url  http://grumpy:81/frog.dna
 
   2016-01-20 14:53:49,014 [INFO] Output AMQP  broker(localhost) user(guest) vhost(/)
@@ -166,6 +155,36 @@ et voici la sortie correspondante du fichier journal d'abonnement::
   2016-01-20 14:53:49,381 [INFO] message published :
   2016-01-20 14:53:49,381 [INFO] exchange xpublic topic v02.post.20160120.guest.frog.dna
   2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna
+
+Ou bien, voici le log d'une instance sr_sarra::
+
+  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://grumpy:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
+  2016-01-20 14:53:49,377 [INFO] Downloads: http://grumpy:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16
+  2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.report.frog.dna 20160120145349.19 http://grumpy:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
+  2016-01-20 14:53:49,381 [INFO] message published :
+  2016-01-20 14:53:49,381 [INFO] exchange xpublic topic v02.post.20160120.guest.frog.dna
+  2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna
+
+la commande demande à ddsr de récupérer le fichier treefrog/frog.dna en enregistrant les données.
+dans grumpy comme peter (en utilisant la clé privée de la pompe.) pour le récupérer et l'afficher.
+sur la pompe, pour le transfert vers les autres destinations de la pompe.
+
+Comme sr_subscribe, on peut aussi placer les fichiers de configuration dans un répertoire sr_post spécifique::
+
+  blacklab% sr_post edit dissem.conf
+
+  broker amqps://rnd@ddsr.cmc.ec.gc.ca/
+  to DDIEDM,DDIDOR,ARCHPC
+  url sftp://peter@grumpy
+
+et puis::
+
+  sr_post -c dissem -url treefrog/frog.dna
+
+
+
+
 
 
 

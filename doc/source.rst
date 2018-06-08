@@ -91,18 +91,13 @@ Assume the goal is for the pump to access peter's account via SFTP. Then you nee
 to take the pump´s public key, and place it in peter's .ssh/authorized_keys.
 On the server you are using (*grumpy*), one needs to do something like this::
 
-  wget http://ddsr.cmc.ec.gca/config/pump.pub >>~peter/.ssh/authorized_keys
-
-.. warning::
-  **FIXME**: this config directory is not implemented yet.  need to get public key
-  by talking to an admin for now.
+  cat pump.pub >>~peter/.ssh/authorized_keys
 
 This will enable the pump to access peter's account on grumpy using his private key.
 So assuming one is logged in to Peter's account on grumpy, one can store the broker
 credentials safely::
 
   echo 'amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca' >> ~/.config/sarra/credentials.conf:
-
 
 .. Note::
   Passwords are always stored in the credentials.conf file.
@@ -135,7 +130,7 @@ and here is the related output from the subscribe log file::
 
 Or alternatively, here is the log from an sr_sarra instance::
 
-  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://grumpy:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=test_cluster
+  2016-01-20 14:53:49,376 [INFO] Received v02.post.frog.dna '20160120145349.19 http://grumpy:81/ frog.dna' parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_cluster=ddsr.cmc.ec.gc.ca
   2016-01-20 14:53:49,377 [INFO] downloading/copying into /var/www/test/20160120/guest/frog.dna
   2016-01-20 14:53:49,377 [INFO] Downloads: http://grumpy:81/frog.dna  into /var/www/test/20160120/guest/frog.dna 0-16
   2016-01-20 14:53:49,380 [INFO] 201 Downloaded : v02.report.frog.dna 20160120145349.19 http://grumpy:81/ frog.dna 201 sarra-server-trusty guest 0.360282 parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c from_cluster=test_cluster source=guest to_clusters=test_cluster message=Downloaded
@@ -152,9 +147,8 @@ Similar to sr_subscribe, one can also place configuration files in an sr_post sp
 
   blacklab% sr_post edit dissem.conf
 
-  broker amqps://rnd@ddsr.cmc.ec.gc.ca/
-  to DDIEDM,DDIDOR,ARCHPC
-  url sftp://peter@grumpy
+  post_broker amqps://rnd@ddsr.cmc.ec.gc.ca/
+  post_base_url sftp://peter@grumpy
 
 and then::
 
