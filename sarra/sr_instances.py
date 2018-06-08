@@ -254,6 +254,9 @@ class sr_instances(sr_config):
                return
            elif action == 'sanity' :
                return
+           elif (action == 'start' or action == 'restart' ) and (self.sleep <= 0):
+               self.logger.info("start|restart do nothing if sleep <= 0. exiting." )
+               return
 
         # No config provided
 
