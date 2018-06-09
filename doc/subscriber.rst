@@ -7,13 +7,18 @@
 Receiving Data from a MetPX-Sarracenia Data Pump
 ------------------------------------------------
 
-.. warning::
-  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
+[ `version française <fr/subscriber.rst>`_ ]
+
 
 .. contents::
 
 Revision Record
 ---------------
+
+When viewed in a git repository, use git to understand versioning.
+This section is used when printing a document, where as part of
+creation of a printable document the appropriate values will
+be extracted from git.
 
 :version: @Version@
 :date: @Date@

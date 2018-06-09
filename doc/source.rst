@@ -8,7 +8,8 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 ---------------------------------------------------
 
 .. warning::
-  **FIXME**: Missing sections are highlighted by **FIXME**. What is here should be accurate!
+  **FIXME**: Missing sections are highlighted by **FIXME**. 
+  Not really ready for use, too much missing for now.
 
 .. contents::
 

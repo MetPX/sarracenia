@@ -7,13 +7,17 @@
 Recevoir des données d´une pompe MetPX-Sarracenia
 -------------------------------------------------
 
-.. warning::
-  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
+[ `English version <../subscriber.rst>`_ ]
 
 .. contents::
 
 Revision Record
 ---------------
+
+Quand on visionne le document dans un dépôt git, on utilise celui-ci pour 
+suivre la version. Cette section sert uniquement lors de la production
+d´un document sur papier. Durant sa préparation les champs ci-dessous
+vont être remplacés par les valeurs approprié.
 
 :version: @Version@
 :date: @Date@

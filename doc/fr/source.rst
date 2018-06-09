@@ -8,7 +8,8 @@ Injection de données dans un réseau de pompage MetPX-Sarracenia
 ---------------------------------------------------------------
 
 .. warning::
-  **FIXME** : Les sections manquantes sont mises en évidence par **FIXME**. Ce qui est ici devrait être exact !
+  **FIXME** : Les sections manquantes sont mises en évidence par **FIXME**.
+  pas vraiment utile actuelement.
 
 .. contents::
 

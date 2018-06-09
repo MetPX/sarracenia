@@ -3,6 +3,10 @@
  Sarracenia Janvier 2018
 -------------------------
 
+
+[ `English version <../deployment_2018.rst>`_ ]
+
+
 Sarracenia est une petite application développée de façon itérative 
 en s'adressant à une seule cas d´usage à la fois de sorte que le
 développement et le déploiement sont inextricablement liés jusqu'ici. 
